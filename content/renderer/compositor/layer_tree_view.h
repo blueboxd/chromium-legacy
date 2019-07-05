@@ -133,11 +133,6 @@ class CONTENT_EXPORT LayerTreeView
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void ForceRecalculateRasterScales() override;
-  void SetEventListenerProperties(
-      cc::EventListenerClass eventClass,
-      cc::EventListenerProperties properties) override;
-  cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass eventClass) const override;
   void SetHaveScrollEventHandlers(bool) override;
   bool HaveScrollEventHandlers() const override;
   int LayerTreeId() const override;
@@ -197,6 +192,9 @@ class CONTENT_EXPORT LayerTreeView
       base::OnceCallback<void(base::TimeTicks)> callback);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+  const cc::LayerTreeHost* layer_tree_host() const {
+    return layer_tree_host_.get();
+  }
 
  protected:
   friend class RenderViewImplScaleFactorTest;

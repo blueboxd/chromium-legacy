@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
@@ -73,7 +74,7 @@ TEST_P(CleanerSettingsTest, CleanerLogsPermissions) {
 
   bool logs_upload_allowed =
       expect_logs_collection_enabled && !uploading_blocked_;
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   if (!with_test_logging_url_)
     logs_upload_allowed = false;
 #endif

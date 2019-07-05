@@ -12,6 +12,21 @@ namespace {
 
 using NGBlockNodeForTest = NGLayoutTest;
 
+TEST_F(NGBlockNodeForTest, IsFloatingForOutOfFlowFloating) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      float: left;
+      position: absolute;
+    }
+    </style>
+    <div id=container></div>
+  )HTML");
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+  EXPECT_FALSE(container.IsFloating());
+}
+
 TEST_F(NGBlockNodeForTest, ChildInlineAndBlock) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

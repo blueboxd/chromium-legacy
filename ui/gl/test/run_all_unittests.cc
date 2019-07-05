@@ -18,37 +18,11 @@
 #if defined(USE_OZONE)
 #include "base/command_line.h"
 #include "mojo/core/embedder/embedder.h"                  // nogncheck
-#include "services/service_manager/public/cpp/service.h"  // nogncheck
-#include "services/service_manager/public/cpp/service_binding.h"  // nogncheck
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"  // nogncheck
 #include "services/viz/public/interfaces/constants.mojom.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace {
-#if defined(USE_OZONE)
-class OzoneDrmTestService : public service_manager::Service {
- public:
-  explicit OzoneDrmTestService(service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {}
-  ~OzoneDrmTestService() override = default;
-
-  service_manager::BinderRegistry* registry() { return &registry_; }
-
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
- private:
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(OzoneDrmTestService);
-};
-#endif
-
 class GlTestSuite : public base::TestSuite {
  public:
   GlTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {
@@ -69,23 +43,17 @@ class GlTestSuite : public base::TestSuite {
             base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
 #if defined(USE_OZONE)
-    // OzonePlatform DRM implementation may attempt to connect to the viz
-    // service to acquire interfaces.
-    service_ = std::make_unique<OzoneDrmTestService>(
-        connector_factory_.RegisterInstance(viz::mojom::kVizServiceName));
-
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread. Note that this mode
     // still requires a mojo pipe for in-process communication between the host
     // and GPU components.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    params.connector = connector_factory_.GetDefaultConnector();
+    params.using_mojo = true;
 
     // This initialization must be done after ScopedTaskEnvironment has
     // initialized the UI thread.
     ui::OzonePlatform::InitializeForUI(params);
-    ui::OzonePlatform::GetInstance()->AddInterfaces(service_->registry());
 #endif
   }
 
@@ -95,11 +63,6 @@ class GlTestSuite : public base::TestSuite {
 
  private:
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
-
-#if defined(USE_OZONE)
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<OzoneDrmTestService> service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GlTestSuite);
 };

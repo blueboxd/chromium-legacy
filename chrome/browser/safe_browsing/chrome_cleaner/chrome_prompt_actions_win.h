@@ -31,8 +31,8 @@ class ChromePromptActions {
  public:
   // TODO(crbug.com/969139): This mirrors the PromptAcceptance enums from
   // chrome_prompt.mojom and chrome_prompt.proto. Once the
-  // ChromeCleanupVersionFreeIPC experiment is over remove this and use the
-  // proto version directly.
+  // ChromeCleanupProtobufIPC experiment is over remove this and use the proto
+  // version directly.
   enum class PromptAcceptance {
     UNSPECIFIED,
     // The user explicitly accepted the cleanup operation and cleaner logs

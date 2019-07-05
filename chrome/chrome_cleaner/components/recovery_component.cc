@@ -22,6 +22,7 @@
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/components/component_unpacker.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/http/http_agent.h"
@@ -133,7 +134,7 @@ bool RecoveryComponent::IsAvailable() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 // Only add the recovery component in official builds, unless it's forced, and
 // not if it's explicitly disabled.
-#if defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   return !command_line->HasSwitch(kNoRecoveryComponentSwitch);
 #else
   return command_line->HasSwitch(kForceRecoveryComponentSwitch);

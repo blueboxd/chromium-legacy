@@ -327,7 +327,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
                        'resource_map_header', 'resource_map_source'):
       return 'cp1252'
     if output_type in ('android', 'c_format',  'plist', 'plist_strings', 'doc',
-                       'json', 'android_policy', 'chrome_messages_json'):
+                       'json', 'android_policy', 'chrome_messages_json',
+                       'policy_templates'):
       return 'utf_8'
     # TODO(gfeher) modify here to set utf-8 encoding for admx/adml
     return 'utf_16'

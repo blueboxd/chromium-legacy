@@ -123,7 +123,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
     grd_string_io = StringIO.StringIO(grd_text)
 
     # Parse the grit tree and load the policies' JSON with a gatherer.
-    grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name)
+    grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name, defines={'_google_chrome': True})
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
 
@@ -146,41 +146,41 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
     # desc is 'translated' to some pseudo-English
     #   'ThïPïs pôPôlïPïcýPý dôéPôés stüPüff'.
     expected = u"""{
-  'policy_definitions': [
+  "policy_definitions": [
     {
-      'caption': '''%s''',
-      'features': {'can_be_recommended': True, 'dynamic_refresh': True},
-      'name': 'MainPolicy',
-      'tags': [],
-      'desc': '''Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.''',
-      'type': 'main',
-      'example_value': True,
-      'supported_on': ['chrome_os:29-'],
-      'schema': {
-        'properties': {
-          'default_launch_container': {
-            'enum': [
-              'tab',
-              'window',
+      "caption": "%s",
+      "features": {"can_be_recommended": true, "dynamic_refresh": true},
+      "name": "MainPolicy",
+      "tags": [],
+      "desc": "Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.",
+      "type": "main",
+      "example_value": true,
+      "supported_on": ["chrome_os:29-"],
+      "schema": {
+        "properties": {
+          "default_launch_container": {
+            "enum": [
+              "tab",
+              "window"
             ],
-            'type': 'string',
+            "type": "string"
           },
-          'users_number': {
-            'description': '''%s''',
-            'type': 'integer',
-          },
+          "users_number": {
+            "description": "%s",
+            "type": "integer"
+          }
         },
-        'type': 'object',
-      },
-    },
+        "type": "object"
+      }
+    }
   ],
-  'policy_atomic_group_definitions': [
+  "policy_atomic_group_definitions": [
   ],
-  'messages': {
-      'message_string_id': {
-        'text': '''%s'''
-      },
-  },
+  "messages": {
+    "message_string_id": {
+      "text": "%s"
+    }
+  }
 
 }""" % (caption_translation, schema_key_description_translation,
         message_translation)

@@ -12,12 +12,13 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -33,7 +34,7 @@ namespace chrome_cleaner {
 
 namespace {
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 ResultCode SpawnWithoutSandboxForTesting(
     Engine::Name engine_name,
     scoped_refptr<EngineClient> engine_client,
@@ -129,7 +130,7 @@ std::pair<ResultCode, scoped_refptr<EngineClient>> SpawnEngineSandbox(
       connection_error_callback, mojo_task_runner,
       std::move(interface_metadata_observer));
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   if (chrome_cleaner::Settings::GetInstance()
           ->run_without_sandbox_for_testing()) {
     ResultCode result_code = SpawnWithoutSandboxForTesting(

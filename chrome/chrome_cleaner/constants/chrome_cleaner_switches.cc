@@ -4,6 +4,8 @@
 
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 
+#include "chrome/chrome_cleaner/buildflags.h"
+
 namespace chrome_cleaner {
 
 // Command line switches
@@ -163,7 +165,7 @@ const char kUserResponseTimeoutMinutesSwitch[] = "user-response-timeout";
 // shouldn't be set if |kExecutionModeSwitch| is not ExecutionMode::kCleaner.
 const char kWithCleanupModeLogsSwitch[] = "with-cleanup-mode-logs";
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 // Don't allow EnableSecureDllLoading to run when this is set. This is only to
 // be used in tests.
 const char kAllowUnsecureDLLsSwitch[] = "allow-unsecure-dlls";

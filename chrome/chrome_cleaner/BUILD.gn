@@ -2,8 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 import("//testing/test.gni")
+
+# Generate a buildflag header so code can check is_official_chrome_cleaner_build.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags =
+      [ "IS_OFFICIAL_CHROME_CLEANER_BUILD=$is_official_chrome_cleaner_build" ]
+}
 
 group("engine_definitions") {
   if (is_official_chrome_cleaner_build) {

@@ -82,11 +82,8 @@ void InputEventPrediction::HandleEvents(
         ApplyResampling(frame_time, coalesced_event.EventPointer());
 
       base::TimeTicks predict_time =
-          enable_resampling_
-              ? coalesced_event.EventPointer()->TimeStamp() +
-                    kPredictionInterval
-              : std::max(frame_time,
-                         coalesced_event.EventPointer()->TimeStamp());
+          coalesced_event.CoalescedEvent(coalesced_size - 1).TimeStamp() +
+          kPredictionInterval;
       for (uint32_t i = 0; i < kPredictEventCount; i++) {
         if (!AddPredictedEvent(predict_time, coalesced_event))
           break;

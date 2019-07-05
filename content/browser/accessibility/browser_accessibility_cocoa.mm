@@ -258,12 +258,11 @@ AXPlatformRange CreateTextRange(const BrowserAccessibility& start_object,
   return AXPlatformRange(std::move(anchor), std::move(focus));
 }
 
-void AddMisspelledTextAttributes(
-    const std::vector<AXPlatformRange>& anchor_ranges,
-    NSMutableAttributedString* attributed_string) {
+void AddMisspelledTextAttributes(const AXPlatformRange& ax_range,
+                                 NSMutableAttributedString* attributed_string) {
   int anchor_start_offset = 0;
   [attributed_string beginEditing];
-  for (const AXPlatformRange& anchor_range : anchor_ranges) {
+  for (const AXPlatformRange& anchor_range : ax_range) {
     DCHECK(!anchor_range.IsNull());
     DCHECK_EQ(anchor_range.anchor()->GetAnchor(),
               anchor_range.focus()->GetAnchor())
@@ -317,10 +316,9 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
 
   NSMutableAttributedString* attributed_text =
       [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
-  const std::vector<AXPlatformRange> anchor_ranges = ax_range.GetAnchors();
   // Currently, we only decorate the attributed string with misspelling
   // information.
-  AddMisspelledTextAttributes(anchor_ranges, attributed_text);
+  AddMisspelledTextAttributes(ax_range, attributed_text);
   return attributed_text;
 }
 
@@ -2389,11 +2387,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       [[[NSMutableAttributedString alloc] initWithString:value] autorelease];
 
   if (!owner_->IsTextOnlyObject()) {
-    const std::vector<AXPlatformRange> anchorRanges =
-        AXPlatformRange(owner_->CreatePositionAt(0),
-                        owner_->CreatePositionAt(int{text.length()}))
-            .GetAnchors();
-    AddMisspelledTextAttributes(anchorRanges, attributedValue);
+    AXPlatformRange ax_range(owner_->CreatePositionAt(0),
+                             owner_->CreatePositionAt(int{text.length()}));
+    AddMisspelledTextAttributes(ax_range, attributedValue);
   }
 
   return [attributedValue attributedSubstringFromRange:range];

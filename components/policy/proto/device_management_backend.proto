@@ -1117,14 +1117,6 @@ message ChromeSignedInUser {
   optional string obfudscated_gaiaid = 2;
 }
 
-// Icon of an extension.
-message ExtensionIcon {
-  // A number representing the width and height of the icon.
-  optional int32 size = 1;
-  // The url of icon image.
-  optional string url = 2;
-}
-
 // Extension information.
 message ExtensionRequest {
   // ID of the installed app/extension for a Chrome app or extension.
@@ -1135,6 +1127,8 @@ message ExtensionRequest {
 
 // Extension information.
 message Extension {
+  reserved 7;
+
   // ID of the installed app/extension for a Chrome app or extension.
   optional string id = 1;
   // Currently installed version of the extension.
@@ -1153,14 +1147,13 @@ message Extension {
     TYPE_LEGACY_PACKAGED_APP = 4;
     TYPE_THEME = 5;
     TYPE_USER_SCRIPT = 6;
+    TYPE_PLATFORM_APP = 7;
+    TYPE_LOGIN_SCREEN_EXTENSION = 8;
   }
   optional ExtensionType app_type = 5;
 
   // URL of the homepage.
   optional string homepage_url = 6;
-
-  // Icons of the extension.
-  repeated ExtensionIcon icons = 7;
 
   // The installation source of the extension.
   enum InstallType {

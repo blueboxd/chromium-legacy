@@ -21,10 +21,9 @@
 #if defined(USE_GBM)
 #include <gbm.h>
 #if defined(USE_VULKAN)
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_intel.h>
-#endif  // defined(USE_GBM)
+#include "gpu/vulkan/vulkan_implementation.h"
 #endif  // defined(USE_VULKAN)
+#endif  // defined(USE_GBM)
 
 namespace base {
 class CommandLine;
@@ -190,6 +189,7 @@ class ClientBase {
   base::ScopedFD drm_fd_;
   std::unique_ptr<gbm_device> device_;
 #if defined(USE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> vk_implementation_;
   std::unique_ptr<ScopedVkInstance> vk_instance_;
   std::unique_ptr<ScopedVkDevice> vk_device_;
   std::unique_ptr<ScopedVkCommandPool> vk_command_pool_;

@@ -174,13 +174,21 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   const auto& list = To<CSSValueList>(value);
   DCHECK(list.length() >= 1 && list.length() <= 3);
 
-  Scale scale(1, 1, 1);
-  for (wtf_size_t i = 0; i < list.length(); i++) {
-    const CSSValue& item = list.Item(i);
-    scale.array[i] = To<CSSPrimitiveValue>(item).GetDoubleValue();
+  if (list.length() == 1) {
+    double scale = To<CSSPrimitiveValue>(list.Item(0)).GetDoubleValue();
+    // single value defines a 2d scale according to the spec
+    // see https://drafts.csswg.org/css-transforms-2/#propdef-scale
+    return Scale(scale, scale, 1).CreateInterpolationValue();
+  } else if (list.length() == 2) {
+    double x_scale = To<CSSPrimitiveValue>(list.Item(0)).GetDoubleValue();
+    double y_scale = To<CSSPrimitiveValue>(list.Item(1)).GetDoubleValue();
+    return Scale(x_scale, y_scale, 1).CreateInterpolationValue();
+  } else {
+    double x_scale = To<CSSPrimitiveValue>(list.Item(0)).GetDoubleValue();
+    double y_scale = To<CSSPrimitiveValue>(list.Item(1)).GetDoubleValue();
+    double z_scale = To<CSSPrimitiveValue>(list.Item(2)).GetDoubleValue();
+    return Scale(x_scale, y_scale, z_scale).CreateInterpolationValue();
   }
-
-  return scale.CreateInterpolationValue();
 }
 
 void CSSScaleInterpolationType::AdditiveKeyframeHook(

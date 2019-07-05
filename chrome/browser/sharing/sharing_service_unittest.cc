@@ -80,8 +80,7 @@ class SharingServiceTest : public testing::Test {
         base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
         base::WrapUnique(sharing_device_registration_),
         base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
-        &device_info_tracker_, &fake_local_device_info_provider_,
-        &fake_sync_service_);
+        &device_info_tracker_, &fake_sync_service_);
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
   void OnMessageSent(base::Optional<std::string> message_id) {}

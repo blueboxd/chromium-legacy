@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "chrome/chrome_cleaner/settings/settings_definitions.h"
@@ -90,7 +91,7 @@ bool GetLogsUploadAllowed(const base::CommandLine& command_line,
   if (command_line.HasSwitch(kNoReportUploadSwitch))
     return false;
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   // Unofficial builds upload logs only if test a logging URL is specified.
   if (!command_line.HasSwitch(kTestLoggingURLSwitch))
     return false;
@@ -366,7 +367,7 @@ void Settings::Initialize(const base::CommandLine& command_line,
   has_parent_pipe_handle_ =
       command_line.HasSwitch(mojo::PlatformChannel::kHandleSwitch);
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   remove_report_only_uws_ = command_line.HasSwitch(kRemoveScanOnlyUwS);
   run_without_sandbox_for_testing_ =
       command_line.HasSwitch(kRunWithoutSandboxForTestingSwitch);

@@ -30,6 +30,12 @@ extern const char kChromeMojoPipeTokenSwitch[];
 // Indicates that a cleaner run was started by Chrome.
 extern const char kChromePromptSwitch[];
 
+// Handle to the read end of a pipe for communicating with Chrome.
+extern const char kChromeReadHandleSwitch[];
+
+// Handle to the write end of a pipe for communicating with Chrome.
+extern const char kChromeWriteHandleSwitch[];
+
 // Indicates that the current Chrome installation was a system-level
 // installation.
 extern const char kChromeSystemInstallSwitch[];

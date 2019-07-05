@@ -21,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/win/win_util.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/crash/crash_reporter.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
@@ -110,7 +111,7 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
                       sandbox::TargetPolicy::FAKE_USER_GDI_INIT, nullptr);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   base::FilePath product_path;
   GetAppDataProductDirectory(&product_path);
   if (!product_path.value().empty()) {

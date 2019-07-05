@@ -976,48 +976,54 @@ void ChromeClientImpl::SetEventListenerProperties(
     return;
 
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  // The widget may be nullptr if the frame is provisional.
-  // TODO(dcheng): This needs to be cleaned up at some point.
-  // https://crbug.com/578349
-  if (web_frame->IsProvisional()) {
-    // If we hit a provisional frame, we expect it to be during initialization
-    // in which case the |properties| should be 'nothing'.
-    DCHECK(properties == cc::EventListenerProperties::kNone);
-    return;
-  }
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   // TODO(https://crbug.com/820787): When creating a local root, the widget
   // won't be set yet. While notifications in this case are technically
   // redundant, it adds an awkward special case.
   if (!widget) {
+    if (web_frame->IsProvisional()) {
+      // If we hit a provisional frame, we expect it to be during initialization
+      // in which case the |properties| should be 'nothing'.
+      DCHECK(properties == cc::EventListenerProperties::kNone);
+    }
     return;
   }
 
-  // This relies on widget always pointing to a WebFrameWidgetBase when
-  // |frame| points to an OOPIF frame, i.e. |frame|'s mainFrame() is
-  // remote.
   WebWidgetClient* client = widget->Client();
-  if (WebLayerTreeView* tree_view = widget->GetLayerTreeView()) {
-    tree_view->SetEventListenerProperties(event_class, properties);
-    if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
-      client->HasTouchEventHandlers(
-          properties != cc::EventListenerProperties::kNone ||
-          tree_view->EventListenerProperties(
-              cc::EventListenerClass::kTouchEndOrCancel) !=
-              cc::EventListenerProperties::kNone);
-    } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-      client->HasTouchEventHandlers(
-          properties != cc::EventListenerProperties::kNone ||
-          tree_view->EventListenerProperties(
-              cc::EventListenerClass::kTouchStartOrMove) !=
-              cc::EventListenerProperties::kNone);
-    } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
-      client->HasPointerRawUpdateEventHandlers(
-          properties != cc::EventListenerProperties::kNone);
-    }
-  } else {
-    client->HasTouchEventHandlers(true);
+
+  client->SetEventListenerProperties(event_class, properties);
+
+  bool has_touch_end_or_cancel_handler =
+      client->EventListenerProperties(
+          cc::EventListenerClass::kTouchEndOrCancel) !=
+      cc::EventListenerProperties::kNone;
+
+  if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
+    client->SetHasTouchEventHandlers(properties !=
+                                         cc::EventListenerProperties::kNone ||
+                                     has_touch_end_or_cancel_handler);
+  } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
+    client->SetHasTouchEventHandlers(properties !=
+                                         cc::EventListenerProperties::kNone ||
+                                     has_touch_end_or_cancel_handler);
+  } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
+    client->SetHasPointerRawUpdateEventHandlers(
+        properties != cc::EventListenerProperties::kNone);
   }
+}
+
+cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
+    LocalFrame* frame,
+    cc::EventListenerClass event_class) const {
+  if (!frame)
+    return cc::EventListenerProperties::kNone;
+
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+  if (!widget)
+    return cc::EventListenerProperties::kNone;
+  WebWidgetClient* client = widget->Client();
+  return client->EventListenerProperties(event_class);
 }
 
 void ChromeClientImpl::BeginLifecycleUpdates() {
@@ -1035,20 +1041,6 @@ void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
 void ChromeClientImpl::StopDeferringCommits(
     cc::PaintHoldingCommitTrigger trigger) {
   web_view_->StopDeferringCommits(trigger);
-}
-
-cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
-    LocalFrame* frame,
-    cc::EventListenerClass event_class) const {
-  if (!frame)
-    return cc::EventListenerProperties::kNone;
-
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-
-  if (!widget || !widget->GetLayerTreeView())
-    return cc::EventListenerProperties::kNone;
-  return widget->GetLayerTreeView()->EventListenerProperties(event_class);
 }
 
 void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,

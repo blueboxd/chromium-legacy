@@ -701,10 +701,14 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
     return;
-  base::Optional<AccountInfo> primary_account_info =
+  auto* personal_data_manager =
+      PersonalDataManagerFactory::GetForProfile(profile);
+  if (!personal_data_manager)
+    return;
+  base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccount(
-          identity_manager->GetPrimaryAccountInfo());
-  account_info_ = primary_account_info.value_or(AccountInfo{});
+          personal_data_manager->GetAccountInfoForPaymentsServer());
+  account_info_ = account_info.value_or(AccountInfo{});
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {

@@ -3915,7 +3915,7 @@ class TouchEventHandlerWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
   // WebWidgetClient methods
-  void HasTouchEventHandlers(bool state) override {
+  void SetHasTouchEventHandlers(bool state) override {
     // Only count the times the state changes.
     if (state != has_touch_event_handler_)
       has_touch_event_handler_count_[state]++;
@@ -3937,11 +3937,11 @@ class TouchEventHandlerWebWidgetClient
   bool has_touch_event_handler_;
 };
 
-// This test verifies that WebWidgetClient::hasTouchEventHandlers is called
+// This test verifies that WebWidgetClient::SetHasTouchEventHandlers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
-TEST_F(WebViewTest, HasTouchEventHandlers) {
+TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =

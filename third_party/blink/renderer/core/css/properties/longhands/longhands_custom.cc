@@ -5146,18 +5146,26 @@ const CSSValue* Scale::ParseSingleValue(CSSParserTokenRange& range,
   if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSValue* scale =
+  CSSValue* x_scale =
       css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
-  if (!scale)
+  if (!x_scale)
     return nullptr;
+
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*scale);
-  scale = css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
-  if (scale) {
-    list->Append(*scale);
-    scale = css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
-    if (scale)
-      list->Append(*scale);
+  list->Append(*x_scale);
+
+  CSSValue* y_scale =
+      css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  if (y_scale) {
+    CSSValue* z_scale =
+        css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+    if (z_scale) {
+      list->Append(*y_scale);
+      list->Append(*z_scale);
+    } else if (To<CSSPrimitiveValue>(x_scale)->GetDoubleValue() !=
+               To<CSSPrimitiveValue>(y_scale)->GetDoubleValue()) {
+      list->Append(*y_scale);
+    }
   }
 
   return list;
@@ -5169,16 +5177,24 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node* styled_node,
     bool allow_visited_style) const {
-  if (!style.Scale())
+  ScaleTransformOperation* scale = style.Scale();
+  if (!scale)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
+
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSNumericLiteralValue::Create(
-      style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));
-  list->Append(*CSSNumericLiteralValue::Create(
-      style.Scale()->Y(), CSSPrimitiveValue::UnitType::kNumber));
-  if (style.Scale()->Z() != 1) {
+      scale->X(), CSSPrimitiveValue::UnitType::kNumber));
+
+  if (scale->Z() == 1) {
+    if (scale->X() != scale->Y()) {
+      list->Append(*CSSNumericLiteralValue::Create(
+          scale->Y(), CSSPrimitiveValue::UnitType::kNumber));
+    }
+  } else {
     list->Append(*CSSNumericLiteralValue::Create(
-        style.Scale()->Z(), CSSPrimitiveValue::UnitType::kNumber));
+        scale->Y(), CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(*CSSNumericLiteralValue::Create(
+        scale->Z(), CSSNumericLiteralValue::UnitType::kNumber));
   }
   return list;
 }

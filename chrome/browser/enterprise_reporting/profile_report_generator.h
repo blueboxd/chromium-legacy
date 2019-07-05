@@ -39,7 +39,7 @@ class ProfileReportGenerator {
   // Get Signin information includes email and gaia id.
   virtual void GetSigninUserInfo();
 
-  // TODO(zmin): void GetExtensionInfo();
+  void GetExtensionInfo();
   // TODO(zmin): void GetPluginInfo();
   // TODO(zmin): void GetChromePolicyInfo();
   // TODO(zmin): void GetExtensionPolicyInfo();

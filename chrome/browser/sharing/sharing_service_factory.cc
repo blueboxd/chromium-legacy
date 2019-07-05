@@ -95,8 +95,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   return new SharingService(std::move(sync_prefs), std::move(vapid_key_manager),
                             std::move(sharing_device_registration),
                             std::move(fcm_sender), std::move(fcm_handler),
-                            device_info_tracker, local_device_info_provider,
-                            sync_service);
+                            device_info_tracker, sync_service);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

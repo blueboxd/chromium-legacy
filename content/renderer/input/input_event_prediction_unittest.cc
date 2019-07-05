@@ -341,10 +341,9 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
     EXPECT_EQ(event.TimeStamp(), frame_time);
 
     EXPECT_EQ(coalesced_event.PredictedEventSize(), 3u);
-    // When we have resampling, first predicted event time stamp is 8ms from
-    // resampled event timestamp(frame time).
+    // First predicted event time stamp is 8ms from original event timestamp.
     EXPECT_EQ(coalesced_event.PredictedEvent(0).TimeStamp(),
-              frame_time + base::TimeDelta::FromMilliseconds(8));
+              event_time + base::TimeDelta::FromMilliseconds(8));
   }
 
   {
@@ -365,8 +364,7 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
     EXPECT_EQ(event.TimeStamp(), event_time);
 
     EXPECT_EQ(coalesced_event.PredictedEventSize(), 3u);
-    // Because of no resampling, first predicted event time stamp is 8ms from
-    // original event timestamp.
+    // First predicted event time stamp is 8ms from original event timestamp.
     EXPECT_EQ(coalesced_event.PredictedEvent(0).TimeStamp(),
               event_time + base::TimeDelta::FromMilliseconds(8));
   }

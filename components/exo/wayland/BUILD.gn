@@ -4,26 +4,14 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
-declare_args() {
-  # Enable experimental vulkan wayland client.
-  enable_vulkan_wayland_client = false
-}
-
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {
     packages = [ "xkbcommon" ]
-  }
-}
-
-if (use_ozone) {
-  if (enable_vulkan_wayland_client) {
-    pkg_config("vulkan") {
-      packages = [ "vulkan" ]
-    }
   }
 }
 
@@ -229,7 +217,7 @@ source_set("unit_tests") {
 config("client_support_config") {
   if (ozone_platform_gbm) {
     defines = [ "USE_GBM" ]
-    if (enable_vulkan_wayland_client) {
+    if (enable_vulkan) {
       defines += [ "USE_VULKAN" ]
     }
   }
@@ -245,6 +233,8 @@ source_set("client_support") {
 
   deps = [
     "//base",
+    "//gpu/vulkan:vulkan",
+    "//gpu/vulkan/init:init",
     "//ui/gl",
     "//ui/gl/init",
   ]
@@ -263,9 +253,6 @@ source_set("client_support") {
 
   if (ozone_platform_gbm) {
     configs += [ "//ui/gl:gl_config" ]
-    if (enable_vulkan_wayland_client) {
-      configs += [ ":vulkan" ]
-    }
     deps += [
       "//build/config/linux/libdrm",
       "//ui/ozone",
@@ -556,7 +543,7 @@ if (ozone_platform_gbm) {
     configs += [ "//ui/gl:gl_config" ]
   }
 
-  if (enable_vulkan_wayland_client) {
+  if (enable_vulkan) {
     executable("wayland_vulkan_client") {
       sources = [
         "clients/vulkan.cc",
@@ -566,6 +553,7 @@ if (ozone_platform_gbm) {
         ":client_support",
         "//base",
         "//build/config/linux/libdrm",
+        "//gpu/vulkan/init",
         "//skia",
         "//third_party/wayland:wayland_client",
         "//third_party/wayland-protocols:linux_dmabuf_protocol",

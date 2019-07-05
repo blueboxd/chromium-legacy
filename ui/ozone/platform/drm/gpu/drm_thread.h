@@ -178,9 +178,9 @@ class DrmThread : public base::Thread,
   // DrmThread serves requests from two different client threads.
   mojo::AssociatedBindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
 
-  // The mojo implementation of DrmDevice requires a BindingSet because the
-  // DrmThread services requests from different client threads when operating in
-  // mus mode
+  // This is a BindingSet because the regular Binding causes the sequence
+  // checker in InterfaceEndpointClient to fail during teardown.
+  // TODO(samans): Figure out why.
   mojo::BindingSet<ozone::mojom::DrmDevice> drm_bindings_;
 
   // The AcceleratedWidget from the last call to CreateWindow.

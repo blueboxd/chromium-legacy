@@ -75,6 +75,7 @@ template("chrome_cleaner_executable") {
       ":shutdown_sequence",
       "//base",
       "//build/win:default_exe_manifest",
+      "//chrome/chrome_cleaner:buildflags",
       "//chrome/chrome_cleaner/constants:common_strings",
       "//chrome/chrome_cleaner/constants:version_header",
       "//chrome/chrome_cleaner/crash:crashpad_lib",

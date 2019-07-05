@@ -162,33 +162,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       LocalFrame* frame,
       cc::EventListenerClass event_class,
       cc::EventListenerProperties properties) override {
-    DCHECK(frame->IsMainFrame());
-    WebWidgetClient* client = popup_->WidgetClient();
-    if (WebLayerTreeView* layer_tree_view = popup_->layer_tree_view_) {
-      layer_tree_view->SetEventListenerProperties(event_class, properties);
-      if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
-        client->HasTouchEventHandlers(
-            properties != cc::EventListenerProperties::kNone ||
-            EventListenerProperties(
-                frame, cc::EventListenerClass::kTouchEndOrCancel) !=
-                cc::EventListenerProperties::kNone);
-      } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-        client->HasTouchEventHandlers(
-            properties != cc::EventListenerProperties::kNone ||
-            EventListenerProperties(
-                frame, cc::EventListenerClass::kTouchStartOrMove) !=
-                cc::EventListenerProperties::kNone);
-      }
-    } else {
-      client->HasTouchEventHandlers(true);
-    }
+    // WebPagePopup always routes input to main thread (set up in RenderWidget),
+    // so no need to update listener properties.
   }
   cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
       cc::EventListenerClass event_class) const override {
-    if (popup_->layer_tree_view_) {
-      return popup_->layer_tree_view_->EventListenerProperties(event_class);
-    }
+    // WebPagePopup always routes input to main thread (set up in RenderWidget),
+    // so no need to update listener properties.
     return cc::EventListenerProperties::kNone;
   }
 

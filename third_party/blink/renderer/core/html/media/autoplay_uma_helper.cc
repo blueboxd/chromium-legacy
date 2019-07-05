@@ -29,9 +29,6 @@ constexpr base::TimeDelta kMaxOffscreenDurationUma =
     base::TimeDelta::FromHours(1);
 constexpr int32_t kOffscreenDurationUmaBucketCount = 50;
 
-constexpr base::TimeDelta kMaxWaitTimeUma = base::TimeDelta::FromSeconds(30);
-constexpr int32_t kWaitTimeBucketCount = 50;
-
 // Returns a int64_t with the following structure:
 // 0b0001 set if there is a user gesture on the stack.
 // 0b0010 set if there was a user gesture on the page.
@@ -59,20 +56,11 @@ AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
       muted_video_play_method_intersection_observer_(nullptr),
       is_visible_(false),
       muted_video_offscreen_duration_intersection_observer_(nullptr) {
-  element->addEventListener(event_type_names::kLoadstart, this, false);
 }
 
 AutoplayUmaHelper::~AutoplayUmaHelper() = default;
 
-void AutoplayUmaHelper::OnLoadStarted() {
-  if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeURL)
-    load_start_time_ = CurrentTimeTicks();
-}
-
 void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
-  base::Optional<base::TimeDelta> autoplay_wait_time;
-  if (!load_start_time_.is_null())
-    autoplay_wait_time = CurrentTimeTicks() - load_start_time_;
   DEFINE_STATIC_LOCAL(EnumerationHistogram, video_histogram,
                       ("Media.Video.Autoplay",
                        static_cast<int>(AutoplaySource::kNumberOfUmaSources)));
@@ -97,34 +85,8 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     video_histogram.Count(static_cast<int>(source));
     if (element_->muted())
       muted_video_histogram.Count(static_cast<int>(source));
-    if (autoplay_wait_time.has_value()) {
-      if (source == AutoplaySource::kAttribute) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Media.Video.Autoplay.Attribute.WaitTime",
-                                   *autoplay_wait_time,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   kMaxWaitTimeUma, kWaitTimeBucketCount);
-      } else if (source == AutoplaySource::kMethod) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Media.Video.Autoplay.PlayMethod.WaitTime",
-                                   *autoplay_wait_time,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   kMaxWaitTimeUma, kWaitTimeBucketCount);
-      }
-    }
   } else {
     audio_histogram.Count(static_cast<int>(source));
-    if (autoplay_wait_time.has_value()) {
-      if (source == AutoplaySource::kAttribute) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Autoplay.Attribute.WaitTime",
-                                   *autoplay_wait_time,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   kMaxWaitTimeUma, kWaitTimeBucketCount);
-      } else if (source == AutoplaySource::kMethod) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Autoplay.PlayMethod.WaitTime",
-                                   *autoplay_wait_time,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   kMaxWaitTimeUma, kWaitTimeBucketCount);
-      }
-    }
   }
 
   // Record dual source.
@@ -263,9 +225,7 @@ void AutoplayUmaHelper::OnIntersectionChangedForMutedVideoOffscreenDuration(
 
 void AutoplayUmaHelper::Invoke(ExecutionContext* execution_context,
                                Event* event) {
-  if (event->type() == event_type_names::kLoadstart)
-    OnLoadStarted();
-  else if (event->type() == event_type_names::kPlaying)
+  if (event->type() == event_type_names::kPlaying)
     HandlePlayingEvent();
   else if (event->type() == event_type_names::kPause)
     HandlePauseEvent();

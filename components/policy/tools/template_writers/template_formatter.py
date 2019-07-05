@@ -8,6 +8,7 @@ writers and emits various template and doc files (admx, html, json etc.).
 
 import codecs
 import collections
+import json
 import optparse
 import os
 import re
@@ -111,6 +112,19 @@ def _ParseVersionFile(version_path):
   return None
 
 
+def _JsonToUtf8Encoding(data, ignore_dicts=False):
+  if isinstance(data, unicode):
+    return data.encode('utf-8')
+  elif isinstance(data, list):
+    return [_JsonToUtf8Encoding(item, False) for item in data]
+  elif isinstance(data, dict):
+    return {
+        _JsonToUtf8Encoding(key): _JsonToUtf8Encoding(value)
+        for key, value in data.iteritems()
+    }
+  return data
+
+
 def main(argv):
   '''Main policy template conversion script.
   Usage: template_formatter
@@ -181,8 +195,11 @@ def main(argv):
     # Load the policy data.
     policy_templates_json_path = options.translations.replace(
         _LANG_PLACEHOLDER, lang)
-    with codecs.open(policy_templates_json_path, 'r', 'utf-16') as policy_file:
-      policy_data = eval(policy_file.read())
+    # Loads the localized policy json file which must be a valid json file
+    # encoded in utf-8.
+    with codecs.open(policy_templates_json_path, 'r', 'utf-8') as policy_file:
+      policy_data = json.loads(
+          policy_file.read(), object_hook=_JsonToUtf8Encoding)
 
     # Preprocess the policy data.
     policy_generator = policy_template_generator.PolicyTemplateGenerator(

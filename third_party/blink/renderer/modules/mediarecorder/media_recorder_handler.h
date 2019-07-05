@@ -45,6 +45,8 @@ struct WebMediaConfiguration;
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
 class MODULES_EXPORT MediaRecorderHandler
     : public GarbageCollectedFinalized<MediaRecorderHandler> {
+  USING_PRE_FINALIZER(MediaRecorderHandler, Dispose);
+
  public:
   static MediaRecorderHandler* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -80,7 +82,8 @@ class MODULES_EXPORT MediaRecorderHandler
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
 
-  EAGERLY_FINALIZE();
+   void Dispose();
+
   void Trace(blink::Visitor*);
 
  private:

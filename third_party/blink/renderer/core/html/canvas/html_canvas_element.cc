@@ -1089,9 +1089,6 @@ HTMLCanvasElement::CreateAccelerated2dBuffer() {
   if (!surface->IsValid())
     return nullptr;
 
-  if (MemoryPressureListenerRegistry::IsLowEndDevice())
-    surface->DisableDeferral(kDisableDeferralReasonLowEndDevice);
-
   return surface;
 }
 

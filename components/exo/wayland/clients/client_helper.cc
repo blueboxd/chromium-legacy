@@ -16,7 +16,10 @@
 
 #if defined(USE_GBM)
 #include <gbm.h>
-#endif
+#if defined(USE_VULKAN)
+#include "gpu/vulkan/vulkan_function_pointers.h"
+#endif  // defined(USE_VULKAN)
+#endif  // defined(USE_GBM)
 
 // Convenient macro that is used to define default deleters for object
 // types allowing them to be used with std::unique_ptr.

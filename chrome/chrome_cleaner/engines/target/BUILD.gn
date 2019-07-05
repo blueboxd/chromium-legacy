@@ -28,6 +28,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/crash:crash_keys",
     "//chrome/chrome_cleaner/engines/common",

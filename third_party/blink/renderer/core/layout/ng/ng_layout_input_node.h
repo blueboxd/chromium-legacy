@@ -83,9 +83,9 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool IsBlockFlow() const { return IsBlock() && box_->IsLayoutBlockFlow(); }
   bool IsColumnSpanAll() const { return IsBlock() && box_->IsColumnSpanAll(); }
-  bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
+  bool IsFloating() const { return IsBlock() && box_->IsFloating(); }
   bool IsOutOfFlowPositioned() const {
-    return IsBlock() && Style().HasOutOfFlowPosition();
+    return IsBlock() && box_->IsOutOfFlowPositioned();
   }
   bool IsReplaced() const { return box_->IsLayoutReplaced(); }
   bool IsAbsoluteContainer() const {

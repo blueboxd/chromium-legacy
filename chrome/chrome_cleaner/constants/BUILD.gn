@@ -66,6 +66,10 @@ source_set("common_strings") {
     "common_registry_names.cc",
     "common_registry_names.h",
   ]
+
+  public_deps = [
+    "//chrome/chrome_cleaner:buildflags",
+  ]
 }
 
 source_set("uws_id") {

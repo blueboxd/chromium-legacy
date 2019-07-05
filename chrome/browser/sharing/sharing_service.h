@@ -21,7 +21,6 @@
 
 namespace syncer {
 class DeviceInfoTracker;
-class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
@@ -46,23 +45,23 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       std::unique_ptr<SharingFCMSender> fcm_sender,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
       syncer::DeviceInfoTracker* device_info_tracker,
-      syncer::LocalDeviceInfoProvider* device_info_provider,
       syncer::SyncService* sync_service);
   ~SharingService() override;
 
   // Returns a list of DeviceInfo that is available to receive messages.
   // All returned devices has the specified |required_capabilities| defined in
   // SharingDeviceCapability enum.
-  std::vector<SharingDeviceInfo> GetDeviceCandidates(
+  virtual std::vector<SharingDeviceInfo> GetDeviceCandidates(
       int required_capabilities) const;
 
   // Sends a message to the device specified by GUID.
   // |callback| will be invoked with message_id if synchronous operation
   // succeeded, or base::nullopt if operation failed.
-  void SendMessageToDevice(const std::string& device_guid,
-                           base::TimeDelta time_to_live,
-                           chrome_browser_sharing::SharingMessage message,
-                           SendMessageCallback callback);
+  virtual void SendMessageToDevice(
+      const std::string& device_guid,
+      base::TimeDelta time_to_live,
+      chrome_browser_sharing::SharingMessage message,
+      SendMessageCallback callback);
 
   // Registers a handler of a given SharingMessage payload type.
   void RegisterHandler(
@@ -85,7 +84,6 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   std::unique_ptr<SharingFCMSender> fcm_sender_;
   std::unique_ptr<SharingFCMHandler> fcm_handler_;
   syncer::DeviceInfoTracker* device_info_tracker_;
-  syncer::LocalDeviceInfoProvider* device_info_provider_;
   syncer::SyncService* sync_service_;
   AckMessageHandler ack_message_handler_;
   PingMessageHandler ping_message_handler_;

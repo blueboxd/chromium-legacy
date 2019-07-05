@@ -226,9 +226,17 @@ class TestWebWidgetClient : public WebWidgetClient {
                                 ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
+  void SetEventListenerProperties(
+      cc::EventListenerClass event_class,
+      cc::EventListenerProperties properties) override;
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass event_class) const override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_view_->layer_tree_host();
+  }
+  const cc::LayerTreeHost* layer_tree_host() const {
     return layer_tree_view_->layer_tree_host();
   }
   cc::AnimationHost* animation_host() { return animation_host_; }

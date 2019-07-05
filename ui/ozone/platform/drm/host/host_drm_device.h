@@ -38,10 +38,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
  public:
   explicit HostDrmDevice(DrmCursor* cursor);
 
-  // Start the DRM service. Runs the |OnDrmServiceStartedCallback| when the
-  // service has launched and initiates the remaining startup.
-  void AsyncStartDrmDevice(const DrmDeviceConnector& connector);
-
   // Blocks until the DRM service has come up. Use this entry point only when
   // supporting launch of the service where the ozone UI and GPU
   // reponsibilities are performed by the same underlying thread.
@@ -50,10 +46,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void ProvideManagers(DrmDisplayHostManager* display_manager,
                        DrmOverlayManagerHost* overlay_manager);
 
-  void OnGpuServiceLaunched(ui::ozone::mojom::DrmDevicePtr drm_device_ptr);
-
-  void OnGpuServiceLaunchedCompositor(
-      ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor);
+  void OnGpuServiceLaunched(
+      ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info);
 
   // Invoked by DrmDeviceConnector on loss of GPU service.
   void OnGpuServiceLost();
@@ -145,11 +139,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   // Mojo implementation of the DrmDevice. Will be bound on the "main" thread.
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_;
 
-  // When running under mus, this is the UI thread specific DrmDevice ptr for
-  // use by the compositor.
-  // TODO(rjkroege): When mash is removed, this code can also be removed.
-  ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor_;
-
   DrmDisplayHostManager* display_manager_;  // Not owned.
   DrmOverlayManagerHost* overlay_manager_;  // Not owned.
   DrmCursor* const cursor_;                 // Not owned.
@@ -157,12 +146,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   std::unique_ptr<HostCursorProxy> cursor_proxy_;
 
   THREAD_CHECKER(on_io_thread_);  // Needs to be rebound as is allocated on the
-                                  // window server  thread.
-  THREAD_CHECKER(on_window_server_thread_);
-  // When running under mus, some entry points are used from the mus thread
-  // and some are used from the ui thread. In general. In that case, the
-  // on_ui_thread_ and on_window_server_thread_ will differ. In particular,
-  // entry points used by the compositor use the ui thread.
+                                  // UI thread.
   THREAD_CHECKER(on_ui_thread_);
 
   bool connected_ = false;

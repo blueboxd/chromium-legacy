@@ -5,6 +5,7 @@
 #include "chrome/chrome_cleaner/settings/settings.h"
 
 #include "base/command_line.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,7 @@ TEST_F(ReporterSettingsTest, ReporterLogsPermissions) {
         EXPECT_EQ(sber, settings->logs_collection_enabled());
 
         bool expect_logs_upload_allowed = sber && uploading_enabled;
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
         if (!with_test_logging_url)
           expect_logs_upload_allowed = false;
 #endif

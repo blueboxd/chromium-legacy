@@ -3271,12 +3271,12 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
   return actual;
 }
 
-void RenderWidget::HasPointerRawUpdateEventHandlers(bool has_handlers) {
+void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
   if (input_event_queue_)
     input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
-void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
+void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
   if (has_touch_handlers_ && *has_touch_handlers_ == has_handlers)
     return;
 
@@ -3513,6 +3513,19 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
 void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
   NotifySwapAndPresentationTime(base::NullCallback(), std::move(callback));
+}
+
+void RenderWidget::SetEventListenerProperties(
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
+  layer_tree_view_->layer_tree_host()->SetEventListenerProperties(event_class,
+                                                                  properties);
+}
+
+cc::EventListenerProperties RenderWidget::EventListenerProperties(
+    cc::EventListenerClass event_class) const {
+  return layer_tree_view_->layer_tree_host()->event_listener_properties(
+      event_class);
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(

@@ -193,17 +193,6 @@ void LayerTreeView::ForceRecalculateRasterScales() {
   layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
-void LayerTreeView::SetEventListenerProperties(
-    cc::EventListenerClass event_class,
-    cc::EventListenerProperties properties) {
-  layer_tree_host_->SetEventListenerProperties(event_class, properties);
-}
-
-cc::EventListenerProperties LayerTreeView::EventListenerProperties(
-    cc::EventListenerClass event_class) const {
-  return layer_tree_host_->event_listener_properties(event_class);
-}
-
 void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
   layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
 }

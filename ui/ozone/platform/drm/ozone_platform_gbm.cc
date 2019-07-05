@@ -177,28 +177,17 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   void InitializeUI(const InitParams& args) override {
-    // Ozone drm can operate in four modes configured at
-    // runtime. Three process modes:
+    // Ozone drm can operate in three modes configured at runtime.
     //   1. legacy mode where host and viz components communicate
-    //      via param traits IPC.
+    //      via param traits IPC. This will be soon deprecated in favor of 3.
     //   2. single-process mode where host and viz components
     //      communicate via in-process mojo. Single-process mode can be single
     //      or multi-threaded.
     //   3. multi-process mode where host and viz components communicate
     //      via mojo IPC.
-    //
-    // and 2 connection modes
-    //   a. Viz is launched via content::GpuProcessHost and it notifies the
-    //   ozone host when Viz becomes available. b. The ozone host uses a
-    //   service manager to launch and connect to Viz.
-    //
-    // Combinations 1a, 2b, and 3a, and 3b are supported and expected to work.
-    // Combination 1a will hopefully be deprecated and replaced with 3a.
-    // Combination 2b adds undesirable code-debt and the intent is to remove
-    // it.
 
     single_process_ = args.single_process;
-    using_mojo_ = args.using_mojo || args.connector != nullptr;
+    using_mojo_ = args.using_mojo;
     host_thread_ = base::PlatformThread::CurrentRef();
 
     device_manager_ = CreateDeviceManager();
@@ -221,8 +210,8 @@ class OzonePlatformGbm : public OzonePlatform {
 
     if (using_mojo_) {
       host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
-      drm_device_connector_ = std::make_unique<DrmDeviceConnector>(
-          args.connector, viz::mojom::kVizServiceName, host_drm_device_);
+      drm_device_connector_ =
+          std::make_unique<DrmDeviceConnector>(host_drm_device_);
       adapter = host_drm_device_.get();
     } else {
       gpu_platform_support_host_.reset(
@@ -244,7 +233,6 @@ class OzonePlatformGbm : public OzonePlatform {
     if (using_mojo_) {
       host_drm_device_->ProvideManagers(display_manager_.get(),
                                         overlay_manager_host.get());
-      host_drm_device_->AsyncStartDrmDevice(*drm_device_connector_);
     }
 
     overlay_manager_ = std::move(overlay_manager_host);
@@ -290,6 +278,13 @@ class OzonePlatformGbm : public OzonePlatform {
 
       // One-thread execution does not permit use of the sandbox.
       AfterSandboxEntry();
+
+      // Connect host and gpu here since OnGpuServiceLaunched() is not called in
+      // the single-threaded mode.
+      ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
+      drm_thread_proxy_->AddBindingDrmDevice(
+          mojo::MakeRequest(&drm_device_ptr));
+      drm_device_connector_->ConnectSingleThreaded(std::move(drm_device_ptr));
       host_drm_device_->BlockingStartDrmDevice();
     }
   }

@@ -238,10 +238,8 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  // LocalSurfaceId is not needed in Viz hit-test.
-  if (!guest_) {
+  if (!guest_)
     return point;
-  }
 
   RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
   if (!root_rwhv)

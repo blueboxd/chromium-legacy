@@ -62,6 +62,11 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
@@ -154,15 +159,13 @@ crbug.com/737018 [ win10 nvidia-0x1cb3 d3d9 ] conformance/ogles/GL/atan/atan_001
 crbug.com/680754 [ win10 nvidia-0x1cb3 d3d9 ] conformance/ogles/GL/cos/cos_001_to_006.html [ Failure ]
 crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/video/* [ RetryOnFailure ]
-crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+# TODO(ynovikov): re-enable when crbug.com/979444 is fixed
+#crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/829389 [ win10 nvidia-0x1cb3 d3d9 passthrough ] conformance/uniforms/uniform-samplers-test.html [ RetryOnFailure ]
 
 # Win10 / NVIDIA Quadro P400 failures
 crbug.com/728670 [ win10 nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 crbug.com/728670 [ win10 nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
-
-# Win7 / NVIDIA Quadro P400 failures
-crbug.com/979444 [ win7 nvidia-0x1cb3 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Win7 / NVIDIA D3D9 failures
 crbug.com/690248 [ win7 nvidia d3d9 ] conformance/canvas/canvas-test.html [ RetryOnFailure ]
@@ -335,7 +338,8 @@ crbug.com/931016 [ win amd vulkan passthrough ] conformance/textures/image_bitma
 crbug.com/angleproject/3343 [ win amd vulkan passthrough ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
 crbug.com/857644 [ win passthrough amd vulkan ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ Failure ]
 crbug.com/957644 [ win passthrough amd vulkan ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
-crbug.com/957644 [ win passthrough amd vulkan ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+# TODO(ynovikov): re-enable when crbug.com/979444 is fixed
+#crbug.com/957644 [ win passthrough amd vulkan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -365,7 +369,6 @@ crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-word
 # Mac Intel
 crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/979444 [ mac intel ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Mac Retina NVidia failures
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
@@ -395,7 +398,6 @@ crbug.com/715001 [ linux nvidia-0x1cb3 ] conformance/limits/gl-max-texture-dimen
 crbug.com/703779 [ linux nvidia-0x1cb3 opengl ] conformance/textures/misc/texture-size.html [ Failure ]
 crbug.com/913969 [ linux nvidia-0x1cb3 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/913969 [ linux nvidia-0x1cb3 ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
-crbug.com/979444 [ linux nvidia-0x1cb3 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # NVIDIA P400 OpenGL, Debug
 crbug.com/918995 [ linux debug nvidia-0x1cb3 ] conformance/canvas/draw-webgl-to-canvas-test.html [ RetryOnFailure ]
@@ -520,7 +522,6 @@ crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 no-angle ] 
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] WebglExtension_EXT_sRGB [ Failure ]
 crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
-crbug.com/979444 [ android qualcomm-adreno-(tm)-418 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]

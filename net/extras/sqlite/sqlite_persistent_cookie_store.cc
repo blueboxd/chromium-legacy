@@ -257,7 +257,6 @@ class SQLitePersistentCookieStore::Backend
                                          std::move(client_task_runner)),
         num_pending_(0),
         restore_old_session_cookies_(restore_old_session_cookies),
-        num_cookies_read_(0),
         num_priority_waiting_(0),
         total_priority_requests_(0),
         crypto_(crypto_delegate) {}
@@ -271,7 +270,6 @@ class SQLitePersistentCookieStore::Backend
 
   // Steps through all results of |smt|, makes a cookie from each, and adds the
   // cookie to |cookies|. Returns true if everything loaded successfully.
-  // Always updates |num_cookies_read_|.
   bool MakeCookiesFromSQLStatement(
       std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
       sql::Statement* statement);
@@ -414,11 +412,6 @@ class SQLitePersistentCookieStore::Backend
   // The cumulative time spent loading the cookies on the background runner.
   // Incremented and reported from the background runner.
   base::TimeDelta cookie_load_duration_;
-
-  // The total number of cookies read. Incremented and reported on the
-  // background runner.  Includes those that were malformed, not decrypted
-  // correctly, etc.
-  int num_cookies_read_;
 
   // Guards the following metrics-related properties (only accessed when
   // starting/completing priority loads or completing the total load).
@@ -724,9 +717,6 @@ void SQLitePersistentCookieStore::Backend::ReportMetrics() {
 
     UMA_HISTOGRAM_COUNTS_100("Cookie.PriorityLoadCount",
                              total_priority_requests_);
-
-    UMA_HISTOGRAM_COUNTS_10000("Cookie.NumberOfLoadedCookies",
-                               num_cookies_read_);
   }
 }
 
@@ -894,7 +884,6 @@ bool SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
   sql::Statement& smt = *statement;
   bool ok = true;
   while (smt.Step()) {
-    ++num_cookies_read_;
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {

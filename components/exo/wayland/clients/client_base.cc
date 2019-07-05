@@ -41,6 +41,10 @@
 #include <gbm.h>
 #include <xf86drm.h>
 
+#if defined(USE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
+#endif
 #include "ui/ozone/public/ozone_platform.h"  // nogncheck
 #endif
 
@@ -500,10 +504,15 @@ bool ClientBase::Init(const InitParams& params) {
     DCHECK(gr_context_);
 
 #if defined(USE_VULKAN)
+    vk_implementation_ = gpu::CreateVulkanImplementation();
+    CHECK(vk_implementation_) << "Can't create VulkanImplementation";
+    bool ret = vk_implementation_->InitializeVulkanInstance(false);
+    CHECK(ret) << "Failed to initialize VulkanImplementation";
     vk_instance_ = CreateVkInstance();
-
     uint32_t queue_family_index = UINT32_MAX;
     vk_device_ = CreateVkDevice(vk_instance_->get(), &queue_family_index);
+    CHECK(gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
+        vk_device_->get(), true));
     vk_render_pass_ = CreateVkRenderPass(vk_device_->get());
 
     vkGetDeviceQueue(vk_device_->get(), queue_family_index, 0, &vk_queue_);
@@ -513,7 +522,6 @@ bool ClientBase::Init(const InitParams& params) {
 #endif  // defined(USE_VULKAN)
   }
 #endif  // defined(USE_GBM)
-
   surface_.reset(static_cast<wl_surface*>(
       wl_compositor_create_surface(globals_.compositor.get())));
   if (!surface_) {
@@ -856,6 +864,21 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 #if defined(USE_VULKAN)
     // TODO(dcastagna): remove this hack as soon as the extension
     // "VK_EXT_external_memory_dma_buf" is available.
+#define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL 1024
+    typedef struct VkDmaBufImageCreateInfo_ {
+      VkStructureType
+          sType;  // Must be VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL
+      const void* pNext;  // Pointer to next structure.
+      int fd;
+      VkFormat format;
+      VkExtent3D extent;  // Depth must be 1
+      uint32_t strideInBytes;
+    } VkDmaBufImageCreateInfo;
+    typedef VkResult(VKAPI_PTR * PFN_vkCreateDmaBufImageINTEL)(
+        VkDevice device, const VkDmaBufImageCreateInfo* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMem,
+        VkImage* pImage);
+
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image_intel =
         reinterpret_cast<PFN_vkCreateDmaBufImageINTEL>(
             vkGetDeviceProcAddr(vk_device_->get(), "vkCreateDmaBufImageINTEL"));

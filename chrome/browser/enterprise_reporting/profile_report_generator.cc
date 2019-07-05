@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -51,6 +52,12 @@ void ProfileReportGenerator::GetSigninUserInfo() {
   auto* signed_in_user_info = report_->mutable_chrome_signed_in_user();
   signed_in_user_info->set_email(account_info.email);
   signed_in_user_info->set_obfudscated_gaiaid(account_info.gaia);
+}
+
+void ProfileReportGenerator::GetExtensionInfo() {
+  if (!extensions_and_plugins_enabled_)
+    return;
+  AppendExtensionInfoIntoProfileReport(profile_, report_.get());
 }
 
 }  // namespace enterprise_reporting

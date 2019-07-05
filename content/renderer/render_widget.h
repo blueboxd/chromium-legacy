@@ -429,8 +429,8 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::Point& image_offset) override;
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
-  void HasPointerRawUpdateEventHandlers(bool has_handlers) override;
-  void HasTouchEventHandlers(bool has_handlers) override;
+  void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
+  void SetHasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
@@ -457,6 +457,11 @@ class CONTENT_EXPORT RenderWidget
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
+  void SetEventListenerProperties(
+      cc::EventListenerClass event_class,
+      cc::EventListenerProperties properties) override;
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass event_class) const override;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once

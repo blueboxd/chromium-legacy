@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/engines/common/engine_resources.h"
 #include "chrome/chrome_cleaner/os/digest_verifier.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
@@ -67,7 +68,7 @@ bool ExtractEmbeddedLibraries(Engine::Name engine,
 
 void VerifyEngineLibraryAllowed(Engine::Name engine,
                                 const base::string16& requested_library) {
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   if (Settings::GetInstance()->run_without_sandbox_for_testing())
     return;
 #endif
@@ -81,7 +82,7 @@ void VerifyEngineLibraryAllowed(Engine::Name engine,
 }
 
 void VerifyRunningInSandbox() {
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   if (Settings::GetInstance()->run_without_sandbox_for_testing())
     return;
 #endif
@@ -98,7 +99,7 @@ extern "C" FARPROC WINAPI DllLoadHook(unsigned dliNotify, PDelayLoadInfo pdli) {
 
       VerifyEngineLibraryAllowed(engine, requested_library);
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
       const std::unordered_map<base::string16, base::string16>
           library_replacements = GetLibraryTestReplacements(engine);
       if (library_replacements.count(requested_library)) {
@@ -179,7 +180,7 @@ bool LoadAndValidateLibraries(Engine::Name engine,
   // just because they can't be loaded.
   const bool enable_validation = GetLibraryTestReplacements(engine).empty();
 
-#if defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   CHECK(enable_validation)
       << "Library validation should not be disabled in official build";
 #endif

@@ -19,6 +19,7 @@ source_set("components") {
 
   deps = [
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:extension_file_logger_lib",
     "//chrome/chrome_cleaner/chrome_utils:extensions_util_lib",

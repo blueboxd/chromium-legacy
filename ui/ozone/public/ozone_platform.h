@@ -23,10 +23,6 @@ namespace IPC {
 class MessageFilter;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 
 class CursorFactoryOzone;
@@ -69,15 +65,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // Additional initialization params for the platform. Platforms must not
   // retain a reference to this structure.
   struct InitParams {
-    // Ozone may retain this pointer for later use. An Ozone platform embedder
-    // may set this value if operating in the idiomatic mojo fashion with a
-    // service manager. Mojo transport does not require a service manager but in
-    // that case ozone will not be able to connect to the DRM and cursor
-    // services. Instead the host must invoke |OnGpuServiceLaunched| as
-    // described in ui/ozone/public/gpu_platform_support_host.h to inform the
-    // ozone host that a process containing these services is running.
-    service_manager::Connector* connector = nullptr;
-
     // Setting this to true indicates that the platform implementation should
     // operate as a single process for platforms (i.e. drm) that are usually
     // split between a host and viz specific portion.

@@ -90,6 +90,9 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   friend class AXPlatformNodeTextProviderTest;
   base::string16 GetString();
   ui::AXPlatformNodeWin* owner() const;
+  AXPlatformNodeDelegate* GetDelegate(
+      const AXPositionInstanceType* position) const;
+
   template <typename AnchorIterator, typename ExpandMatchLambda>
   HRESULT FindAttributeRange(const TEXTATTRIBUTEID text_attribute_id,
                              VARIANT attribute_val,
@@ -124,9 +127,6 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       CreateNextPositionFunction create_next_position,
       const int count,
       int* units_moved);
-
-  AXPlatformNodeDelegate* GetDelegate(
-      const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const;
 
   CComPtr<ui::AXPlatformNodeWin> owner_;
   AXPositionInstance start_;

@@ -668,6 +668,17 @@ void TestWebWidgetClient::InjectGestureScrollEvent(
   injected_scroll_gesture_data_.push_back(data);
 }
 
+void TestWebWidgetClient::SetEventListenerProperties(
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
+  layer_tree_host()->SetEventListenerProperties(event_class, properties);
+}
+
+cc::EventListenerProperties TestWebWidgetClient::EventListenerProperties(
+    cc::EventListenerClass event_class) const {
+  return layer_tree_host()->event_listener_properties(event_class);
+}
+
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
   layer_tree_host()->RegisterViewportLayers(layers);

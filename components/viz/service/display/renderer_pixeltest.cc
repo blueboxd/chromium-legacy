@@ -4928,22 +4928,12 @@ gfx::ColorSpace src_color_spaces[] = {
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE170M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::LOG),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::LOG_SQRT),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_4),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT1361_ECG),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_10),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_12),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTEST2084),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTEST428_1),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::ARIB_STD_B67),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
-    gfx::ColorSpace(PrimaryID::BT709,
-                    TransferID::BT2020_10,
-                    MatrixID::BT2020_CL,
-                    RangeID::FULL),
 };
 
 gfx::ColorSpace dst_color_spaces[] = {
@@ -4957,15 +4947,9 @@ gfx::ColorSpace dst_color_spaces[] = {
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE170M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::LOG),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::LOG_SQRT),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_4),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT1361_ECG),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_10),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_12),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTEST2084),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::ARIB_STD_B67),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
 };
@@ -4993,20 +4977,19 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::ValuesIn(dst_color_spaces),
                      testing::ValuesIn(color_space_premul_values)));
 
-// TODO(crbug.com/939442): Enable these tests for SkiaRenderer.
-// INSTANTIATE_TEST_SUITE_P(
-//     FromColorSpace,
-//     SkiaColorTransformPixelTest,
-//     testing::Combine(testing::ValuesIn(src_color_spaces),
-//                      testing::ValuesIn(intermediate_color_spaces),
-//                      testing::ValuesIn(color_space_premul_values)));
+INSTANTIATE_TEST_SUITE_P(
+    FromColorSpace,
+    SkiaColorTransformPixelTest,
+    testing::Combine(testing::ValuesIn(src_color_spaces),
+                     testing::ValuesIn(intermediate_color_spaces),
+                     testing::ValuesIn(color_space_premul_values)));
 
-// INSTANTIATE_TEST_SUITE_P(
-//     ToColorSpace,
-//     SkiaColorTransformPixelTest,
-//     testing::Combine(testing::ValuesIn(intermediate_color_spaces),
-//                      testing::ValuesIn(dst_color_spaces),
-//                      testing::ValuesIn(color_space_premul_values)));
+INSTANTIATE_TEST_SUITE_P(
+    ToColorSpace,
+    SkiaColorTransformPixelTest,
+    testing::Combine(testing::ValuesIn(intermediate_color_spaces),
+                     testing::ValuesIn(dst_color_spaces),
+                     testing::ValuesIn(color_space_premul_values)));
 
 #endif  // !defined(OS_ANDROID)
 

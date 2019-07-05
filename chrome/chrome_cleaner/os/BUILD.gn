@@ -54,6 +54,7 @@ source_set("common_os") {
 
   deps = [
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:version_header",
     "//chrome/chrome_cleaner/proto:file_digest_proto",

@@ -10,6 +10,7 @@ include_rules = [
     "+base/time/time.h",
     "+base/threading/thread_checker.h",
     "+cc/input/browser_controls_state.h",
+    "+cc/input/event_listener_properties.h",
     "+cc/input/overscroll_behavior.h",
     "+cc/input/layer_selection_bound.h",
     "+cc/paint/node_holder.h",

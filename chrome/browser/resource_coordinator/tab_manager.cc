@@ -165,23 +165,6 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
 
-  // Create the graph observer. This is the source of page almost idle data and
-  // EQT measurements.
-  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
-    // The performance manager is torn down on its own sequence so its safe to
-    // pass it unretained. The observer itself learns of the tab manager tear
-    // down via the weak ptr it is given.
-    perf_man->CallOnGraph(
-        FROM_HERE, base::BindOnce(
-                       [](std::unique_ptr<ResourceCoordinatorSignalObserver>
-                              rc_signal_observer,
-                          performance_manager::GraphImpl* graph) {
-                         graph->PassToGraph(std::move(rc_signal_observer));
-                       },
-                       std::make_unique<ResourceCoordinatorSignalObserver>(
-                           weak_ptr_factory_.GetWeakPtr())));
-  }
-
   stats_collector_.reset(new TabManagerStatsCollector());
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
@@ -223,6 +206,23 @@ void TabManager::Start() {
     }
   }
 #endif
+
+  // Create the graph observer. This is the source of page almost idle data and
+  // EQT measurements.
+  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
+    // The performance manager is torn down on its own sequence so its safe to
+    // pass it unretained. The observer itself learns of the tab manager tear
+    // down via the weak ptr it is given.
+    perf_man->CallOnGraph(
+        FROM_HERE, base::BindOnce(
+                       [](std::unique_ptr<ResourceCoordinatorSignalObserver>
+                              rc_signal_observer,
+                          performance_manager::GraphImpl* graph) {
+                         graph->PassToGraph(std::move(rc_signal_observer));
+                       },
+                       std::make_unique<ResourceCoordinatorSignalObserver>(
+                           weak_ptr_factory_.GetWeakPtr())));
+  }
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {

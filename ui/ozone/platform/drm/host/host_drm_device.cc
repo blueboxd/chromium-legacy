@@ -27,35 +27,9 @@ HostDrmDevice::HostDrmDevice(DrmCursor* cursor) : cursor_(cursor) {
 }
 
 HostDrmDevice::~HostDrmDevice() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuThreadRetired();
-}
-
-// Setup the DRM device if we are using the ServiceManager.
-void HostDrmDevice::AsyncStartDrmDevice(const DrmDeviceConnector& connector) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
-
-  // We bind here using the provided connector object.
-  if (!connector.BindableNow())
-    return;
-
-  connector.BindInterfaceDrmDevice(&drm_device_ptr_);
-
-  // Bind the cursor interface pointers.
-  ui::ozone::mojom::DeviceCursorAssociatedPtr cursor_ptr_ui, cursor_ptr_io;
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_ui));
-
-  // This interface pointer is bound on the wrong thread. But that's OK because
-  // we'll re-bind it the first time that it's used from the I/O thread in
-  // HostCursorProxy.
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_io));
-
-  // Stash the cursor_proxy so that we can install it in the callback.
-  cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
-                                                    std::move(cursor_ptr_io));
-
-  OnDrmServiceStarted();
 }
 
 // TODO(rjkroege): Remove the need for this entry point.
@@ -87,7 +61,7 @@ void HostDrmDevice::ProvideManagers(DrmDisplayHostManager* display_manager,
 }
 
 void HostDrmDevice::RunObservers() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   for (GpuThreadObserver& observer : gpu_thread_observers_) {
     observer.OnGpuProcessLaunched();
     observer.OnGpuThreadReady();
@@ -102,7 +76,7 @@ void HostDrmDevice::RunObservers() {
 }
 
 void HostDrmDevice::AddGpuThreadObserver(GpuThreadObserver* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   gpu_thread_observers_.AddObserver(observer);
   if (IsConnected()) {
     observer->OnGpuProcessLaunched();
@@ -111,12 +85,12 @@ void HostDrmDevice::AddGpuThreadObserver(GpuThreadObserver* observer) {
 }
 
 void HostDrmDevice::RemoveGpuThreadObserver(GpuThreadObserver* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   gpu_thread_observers_.RemoveObserver(observer);
 }
 
 bool HostDrmDevice::IsConnected() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
 
   // TODO(rjkroege): Need to set to connected_ to false when we lose the Viz
   // process connection.
@@ -126,17 +100,17 @@ bool HostDrmDevice::IsConnected() {
 // Services needed for DrmDisplayHostMananger.
 void HostDrmDevice::RegisterHandlerForDrmDisplayHostManager(
     DrmDisplayHostManager* handler) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_ = handler;
 }
 
 void HostDrmDevice::UnRegisterHandlerForDrmDisplayHostManager() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_ = nullptr;
 }
 
 bool HostDrmDevice::GpuCreateWindow(gfx::AcceleratedWidget widget) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -145,7 +119,7 @@ bool HostDrmDevice::GpuCreateWindow(gfx::AcceleratedWidget widget) {
 }
 
 bool HostDrmDevice::GpuDestroyWindow(gfx::AcceleratedWidget widget) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -155,7 +129,7 @@ bool HostDrmDevice::GpuDestroyWindow(gfx::AcceleratedWidget widget) {
 
 bool HostDrmDevice::GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
                                            const gfx::Rect& bounds) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -188,14 +162,14 @@ bool HostDrmDevice::GpuCheckOverlayCapabilities(
   auto callback =
       base::BindOnce(&HostDrmDevice::GpuCheckOverlayCapabilitiesCallback, this);
 
-  drm_device_ptr_compositor_->CheckOverlayCapabilities(widget, overlays,
-                                                       std::move(callback));
+  drm_device_ptr_->CheckOverlayCapabilities(widget, overlays,
+                                            std::move(callback));
 
   return true;
 }
 
 bool HostDrmDevice::GpuRefreshNativeDisplays() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -209,7 +183,7 @@ bool HostDrmDevice::GpuRefreshNativeDisplays() {
 bool HostDrmDevice::GpuConfigureNativeDisplay(int64_t id,
                                               const DisplayMode_Params& pmode,
                                               const gfx::Point& origin) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -225,7 +199,7 @@ bool HostDrmDevice::GpuConfigureNativeDisplay(int64_t id,
 }
 
 bool HostDrmDevice::GpuDisableNativeDisplay(int64_t id) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback =
@@ -237,7 +211,7 @@ bool HostDrmDevice::GpuDisableNativeDisplay(int64_t id) {
 }
 
 bool HostDrmDevice::GpuTakeDisplayControl() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback =
@@ -249,7 +223,7 @@ bool HostDrmDevice::GpuTakeDisplayControl() {
 }
 
 bool HostDrmDevice::GpuRelinquishDisplayControl() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback =
@@ -262,7 +236,7 @@ bool HostDrmDevice::GpuRelinquishDisplayControl() {
 
 bool HostDrmDevice::GpuAddGraphicsDevice(const base::FilePath& path,
                                          base::ScopedFD fd) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   base::File file(fd.release());
@@ -273,7 +247,7 @@ bool HostDrmDevice::GpuAddGraphicsDevice(const base::FilePath& path,
 }
 
 bool HostDrmDevice::GpuRemoveGraphicsDevice(const base::FilePath& path) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -283,7 +257,7 @@ bool HostDrmDevice::GpuRemoveGraphicsDevice(const base::FilePath& path) {
 }
 
 bool HostDrmDevice::GpuGetHDCPState(int64_t display_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback = base::BindOnce(&HostDrmDevice::GpuGetHDCPStateCallback, this);
@@ -295,7 +269,7 @@ bool HostDrmDevice::GpuGetHDCPState(int64_t display_id) {
 
 bool HostDrmDevice::GpuSetHDCPState(int64_t display_id,
                                     display::HDCPState state) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback = base::BindOnce(&HostDrmDevice::GpuSetHDCPStateCallback, this);
@@ -307,7 +281,7 @@ bool HostDrmDevice::GpuSetHDCPState(int64_t display_id,
 
 bool HostDrmDevice::GpuSetColorMatrix(int64_t display_id,
                                       const std::vector<float>& color_matrix) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -319,7 +293,7 @@ bool HostDrmDevice::GpuSetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
@@ -331,60 +305,59 @@ void HostDrmDevice::GpuCheckOverlayCapabilitiesCallback(
     gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& overlays,
     const OverlayStatusList& returns) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   overlay_manager_->GpuSentOverlayResult(widget, overlays, returns);
 }
 
 void HostDrmDevice::GpuConfigureNativeDisplayCallback(int64_t display_id,
                                                       bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuConfiguredDisplay(display_id, success);
 }
 
 // TODO(rjkroege): Remove the unnecessary conversion back into params.
 void HostDrmDevice::GpuRefreshNativeDisplaysCallback(
     std::vector<std::unique_ptr<display::DisplaySnapshot>> displays) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuHasUpdatedNativeDisplays(
       CreateDisplaySnapshotParams(displays));
 }
 
 void HostDrmDevice::GpuDisableNativeDisplayCallback(int64_t display_id,
                                                     bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuConfiguredDisplay(display_id, success);
 }
 
 void HostDrmDevice::GpuTakeDisplayControlCallback(bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuTookDisplayControl(success);
 }
 
 void HostDrmDevice::GpuRelinquishDisplayControlCallback(bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuRelinquishedDisplayControl(success);
 }
 
 void HostDrmDevice::GpuGetHDCPStateCallback(int64_t display_id,
                                             bool success,
                                             display::HDCPState state) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuReceivedHDCPState(display_id, success, state);
 }
 
 void HostDrmDevice::GpuSetHDCPStateCallback(int64_t display_id,
                                             bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuUpdatedHDCPState(display_id, success);
 }
 
 // Invoked in response to the successful launching of the GPU service.
 void HostDrmDevice::OnGpuServiceLaunched(
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+    ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info) {
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
 
-  // Rebind InterfacePtrs to the window server thread.
-  drm_device_ptr_.Bind(drm_device_ptr.PassInterface());
+  drm_device_ptr_.Bind(std::move(drm_device_ptr_info));
 
   // Create two DeviceCursor connections: one for the UI thread and one for the
   // IO thread.
@@ -394,19 +367,12 @@ void HostDrmDevice::OnGpuServiceLaunched(
 
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. As a result, it has an InterfacePtr for both
-  // the window server and I/O thread.  cursor_ptr_io is already bound correctly
-  // to an I/O thread by GpuProcessHost.
+  // the UI and I/O thread.  cursor_ptr_io is already bound correctly to an I/O
+  // thread by GpuProcessHost.
   cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
                                                     std::move(cursor_ptr_io));
 
   OnDrmServiceStarted();
-}
-
-void HostDrmDevice::OnGpuServiceLaunchedCompositor(
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor) {
-  DETACH_FROM_THREAD(on_ui_thread_);
-  drm_device_ptr_compositor.Bind(drm_device_ptr_compositor.PassInterface());
-  drm_device_ptr_compositor_ = std::move(drm_device_ptr_compositor);
 }
 
 void HostDrmDevice::OnGpuServiceLost() {

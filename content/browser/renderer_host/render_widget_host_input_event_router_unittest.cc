@@ -156,8 +156,6 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
 
   void SetHittestResult(RenderWidgetHostViewBase* result_view,
                         bool query_renderer) {
-    current_hittest_result_ = result_view;
-    force_query_renderer_on_hit_test_ = query_renderer;
     DCHECK(GetHostFrameSinkManager());
 
     viz::HostFrameSinkManager::DisplayHitTestQueryMap hit_test_map;
@@ -171,10 +169,6 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
   void Reset() { last_gesture_seen_ = blink::WebInputEvent::kUndefined; }
 
  private:
-  // Used to stub out non-viz hittesting.
-  RenderWidgetHostViewBase* current_hittest_result_ = nullptr;
-  bool force_query_renderer_on_hit_test_ = false;
-
   blink::WebInputEvent::Type last_gesture_seen_ =
       blink::WebInputEvent::kUndefined;
   uint32_t unique_id_for_last_touch_ack_ = 0;

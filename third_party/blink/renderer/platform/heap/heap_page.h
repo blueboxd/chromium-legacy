@@ -153,8 +153,7 @@ uint32_t ComputeRandomMagic();
 // | in construction (1 bit)      | true: bit not set; false bit set
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
 // | wrapper mark bit (1 bit)     |
-// | unused (1 bit)               |
-// | mark bit (1 bit)             |
+// | unused (2 bits)              |
 //
 // Notes:
 // - 14 bits for |gc_info_index} (type information) are enough as there are
@@ -165,8 +164,6 @@ uint32_t ComputeRandomMagic();
 // - |size| for large objects is encoded as 0. The size of a large object is
 //   stored in |LargeObjectPage::PayloadSize()|.
 constexpr uint32_t kHeaderMarkBitMask = 1;
-constexpr uint32_t kHeaderUnusedBit1Mask = 2;
-constexpr uint32_t kHeaderWrapperMarkBitMask = 4;
 constexpr uint32_t kHeaderSizeMask = ((uint32_t{1} << 14) - 1) << 3;
 constexpr uint32_t kHeaderIsInConstructionMask = uint32_t{1} << 17;
 constexpr uint32_t kHeaderGCInfoIndexShift = 18;
@@ -220,10 +217,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void SetSize(size_t size);
 
   bool IsLargeObject() const;
-
-  bool IsWrapperHeaderMarked() const;
-  void MarkWrapperHeader();
-  void UnmarkWrapperHeader();
 
   bool IsMarked() const;
   void Mark();
@@ -1084,24 +1077,6 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   }
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return size - sizeof(HeapObjectHeader);
-}
-
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsWrapperHeaderMarked()
-    const {
-  CheckHeader();
-  return encoded_ & kHeaderWrapperMarkBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkWrapperHeader() {
-  CheckHeader();
-  DCHECK(!IsWrapperHeaderMarked());
-  encoded_ |= kHeaderWrapperMarkBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::UnmarkWrapperHeader() {
-  CheckHeader();
-  DCHECK(IsWrapperHeaderMarked());
-  encoded_ &= ~kHeaderWrapperMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {

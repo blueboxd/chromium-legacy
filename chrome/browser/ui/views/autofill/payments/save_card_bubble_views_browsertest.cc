@@ -14,6 +14,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -42,6 +43,7 @@
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -326,7 +328,11 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void SetAccountFullName(const std::string& full_name) {
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo();
+    PersonalDataManager* personal_data_manager =
+        PersonalDataManagerFactory::GetForProfile(browser()->profile());
+    CoreAccountInfo core_info =
+        personal_data_manager->GetAccountInfoForPaymentsServer();
+
     AccountInfo account_info;
     account_info.account_id = core_info.account_id;
     account_info.gaia = core_info.gaia;
@@ -1363,6 +1369,84 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+// Sets up Chrome with Sync-the-transport mode enabled, with the Wallet datatype
+// as enabled type as well as editable cardholder name enabled.
+class
+    SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ protected:
+  SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest() =
+      default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Set up Sync the transport mode, so that sync starts on content-area
+    // signins. Also add wallet data type to the list of enabled types and
+    // enable EditableCardholderName experiment.
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled
+        {features::kAutofillUpstream,
+         features::kAutofillUpstreamEditableCardholderName,
+         features::kAutofillEnableAccountWalletStorage,
+         switches::kSyncSupportSecondaryAccount},
+        // Disabled
+        {});
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
+
+    SaveCardBubbleViewsFullFormBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest);
+};
+
+// Tests the upload save bubble when sync transport for Wallet data is active.
+// Ensures that if cardholder name is explicitly requested, it is prefilled with
+// the name from the user's Google Account.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest,
+    Upload_TransportMode_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
+  // Signing in (without making the account Chrome's primary one or explicitly
+  // setting up Sync) causes the Sync machinery to start up in standalone
+  // transport mode.
+  secondary_account_helper::SignInSecondaryAccount(
+      browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+  SetAccountFullName("John Smith");
+
+  ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
+            harness_->service()->GetTransportState());
+
+  ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            harness_->service()->GetTransportState());
+  ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  NavigateTo(kCreditCardAndAddressUploadForm);
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // The textfield should be prefilled with the name on the user's Google
+  // Account.
+  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
+      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+  EXPECT_EQ(cardholder_name_textfield->text(),
+            base::ASCIIToUTF16("John Smith"));
 }
 
 #endif  // !OS_CHROMEOS

@@ -332,12 +332,17 @@ class CORE_EXPORT ChromeClient
   virtual void ClearLayerSelection(LocalFrame*) {}
   virtual void UpdateLayerSelection(LocalFrame*, const cc::LayerSelection&) {}
 
+  // The client keeps track of which touch/mousewheel event types have handlers,
+  // and if they do, whether the handlers are passive and/or blocking. This
+  // allows the client to know which optimizations can be used for the
+  // associated event classes.
   virtual void SetEventListenerProperties(LocalFrame*,
                                           cc::EventListenerClass,
                                           cc::EventListenerProperties) = 0;
   virtual cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
       cc::EventListenerClass) const = 0;
+
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
   virtual void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool) = 0;

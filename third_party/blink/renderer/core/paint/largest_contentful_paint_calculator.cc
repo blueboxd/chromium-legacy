@@ -61,13 +61,17 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
   last_type_ = type;
   if (type == LargestContentType::kImage) {
     const ImageResourceContent* cached_image = largest_image_->cached_image;
+    Node* image_node = DOMNodeIds::NodeForId(largest_image_->node_id);
+
     // |cached_image| is a weak pointer, so it may be null. This can only happen
     // if the image has been removed, which means that the largest image is not
     // up-to-date. This can happen when this method call came from
     // OnLargestTextUpdated(). It is safe to ignore the image in this case: the
     // correct largest content should be identified on the next call to
     // OnLargestImageUpdated().
-    if (!cached_image)
+    // For similar reasons, |image_node| may be null and it is safe to ignore
+    // the |largest_image_| content in this case as well.
+    if (!cached_image || !image_node)
       return;
 
     const KURL& url = cached_image->Url();
@@ -84,7 +88,6 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
         url.ProtocolIsData()
             ? url.GetString().Left(ImageElementTiming::kInlineImageMaxChars)
             : url.GetString();
-    Node* image_node = DOMNodeIds::NodeForId(largest_image_->node_id);
     // Do not expose element attribution from shadow trees.
     Element* image_element =
         image_node->IsInShadowTree() ? nullptr : ToElement(image_node);

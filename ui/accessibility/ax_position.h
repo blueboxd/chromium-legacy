@@ -220,6 +220,10 @@ class AXPosition {
     return GetAnchor() && kind_ == AXPositionKind::TEXT_POSITION;
   }
 
+  bool IsLeafTextPosition() const {
+    return IsTextPosition() && !AnchorChildCount();
+  }
+
   // TODO(nektar): Update logic of AtStartOfAnchor() for text_offset_ == 0 and
   // fix related bug.
   bool AtStartOfAnchor() const {

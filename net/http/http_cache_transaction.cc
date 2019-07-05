@@ -3496,17 +3496,9 @@ void HttpCache::Transaction::RecordHistograms() {
 
   TimeDelta before_send_time = send_request_since_ - first_cache_access_since_;
   TimeDelta after_send_time = now - send_request_since_;
-  int64_t before_send_percent = (total_time.ToInternalValue() == 0)
-                                    ? 0
-                                    : before_send_time * 100 / total_time;
-  DCHECK_GE(before_send_percent, 0);
-  DCHECK_LE(before_send_percent, 100);
-  base::HistogramBase::Sample before_send_sample =
-      static_cast<base::HistogramBase::Sample>(before_send_percent);
 
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest", total_time);
   UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend", before_send_time);
-  UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend", before_send_sample);
 
   // TODO(gavinp): Remove or minimize these histograms, particularly the ones
   // below this comment after we have received initial data.
@@ -3516,29 +3508,21 @@ void HttpCache::Transaction::RecordHistograms() {
                           before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.CantConditionalize",
                           after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.CantConditionalize",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_NOT_IN_CACHE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.NotCached", before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.NotCached", after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.NotCached",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_VALIDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated", before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Validated", after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Validated",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_UPDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Updated", after_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated", before_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Updated",
-                               before_send_sample);
       break;
     }
     default:

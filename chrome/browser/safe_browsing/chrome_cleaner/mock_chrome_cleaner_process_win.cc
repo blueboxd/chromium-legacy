@@ -24,6 +24,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -168,6 +170,46 @@ class MockCleanerResultsMojo : public MockCleanerResults {
   std::unique_ptr<ChromePromptPtr> chrome_prompt_ptr_ =
       std::make_unique<ChromePromptPtr>();
   std::unique_ptr<ScopedIPCSupport> scoped_ipc_support_;
+};
+
+// MockCleanerResultsProtobuf
+
+class MockCleanerResultsProtobuf : public MockCleanerResults {
+ public:
+  MockCleanerResultsProtobuf(const MockChromeCleanerProcess::Options& options,
+                             const base::CommandLine& command_line)
+      : MockCleanerResults(options) {
+    uint32_t handle_value;
+    if (base::StringToUint(command_line.GetSwitchValueNative(
+                               chrome_cleaner::kChromeReadHandleSwitch),
+                           &handle_value)) {
+      read_handle_.Set(base::win::Uint32ToHandle(handle_value));
+    }
+    if (base::StringToUint(command_line.GetSwitchValueNative(
+                               chrome_cleaner::kChromeWriteHandleSwitch),
+                           &handle_value)) {
+      write_handle_.Set(base::win::Uint32ToHandle(handle_value));
+    }
+  }
+
+  ~MockCleanerResultsProtobuf() override = default;
+
+  void SendScanResults(base::OnceClosure done_closure) override {
+    if (!read_handle_.IsValid() || !write_handle_.IsValid()) {
+      LOG(ERROR) << "IPC pipes were not connected correctly";
+      std::move(done_closure).Run();
+      return;
+    }
+    // TODO(crbug.com/969139): Populate a request proto based on |options_| and
+    // send it.
+    if (options_.crash_point() == CrashPoint::kAfterRequestSent) {
+      ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
+    }
+  }
+
+ private:
+  base::win::ScopedHandle read_handle_;
+  base::win::ScopedHandle write_handle_;
 };
 
 scoped_refptr<extensions::Extension> CreateExtension(const base::string16& name,
@@ -482,10 +524,8 @@ int MockChromeCleanerProcess::Run() {
     mock_results = std::make_unique<MockCleanerResultsMojo>(
         options_, io_thread.task_runner(), *command_line_);
   } else {
-    // TODO(crbug.com/969139): Implement MockCleanerResultsProtobuf and
-    // initialize it here.
-    LOG(ERROR) << "Missing " << chrome_cleaner::kChromeMojoPipeTokenSwitch;
-    return kInternalTestFailureExitCode;
+    mock_results =
+        std::make_unique<MockCleanerResultsProtobuf>(options_, *command_line_);
   }
 
   if (options_.crash_point() == CrashPoint::kAfterConnection)

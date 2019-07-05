@@ -16,10 +16,10 @@
 
 namespace ui {
 
-// A range of ax positions.
+// A range delimited by two positions in the AXTree.
 //
 // In order to avoid any confusion regarding whether a deep or a shallow copy is
-// being performed, this class can be moved but not copied.
+// being performed, this class can be moved, but not copied.
 template <class AXPositionType>
 class AXRange {
  public:
@@ -30,16 +30,8 @@ class AXRange {
         focus_(AXPositionType::CreateNullPosition()) {}
 
   AXRange(AXPositionInstance anchor, AXPositionInstance focus) {
-    if (anchor) {
-      anchor_ = std::move(anchor);
-    } else {
-      anchor_ = AXPositionType::CreateNullPosition();
-    }
-    if (focus) {
-      focus_ = std::move(focus);
-    } else {
-      focus = AXPositionType::CreateNullPosition();
-    }
+    anchor_ = anchor ? std::move(anchor) : AXPositionType::CreateNullPosition();
+    focus_ = focus ? std::move(focus) : AXPositionType::CreateNullPosition();
   }
 
   AXRange(const AXRange& other) = delete;
@@ -47,6 +39,23 @@ class AXRange {
   AXRange(AXRange&& other) : AXRange() {
     anchor_.swap(other.anchor_);
     focus_.swap(other.focus_);
+  }
+
+  virtual ~AXRange() {}
+
+  AXPositionType* anchor() const {
+    DCHECK(anchor_);
+    return anchor_.get();
+  }
+
+  AXPositionType* focus() const {
+    DCHECK(focus_);
+    return focus_.get();
+  }
+
+  bool IsNull() const {
+    DCHECK(anchor_ && focus_);
+    return anchor_->IsNullPosition() || focus_->IsNullPosition();
   }
 
   AXRange& operator=(const AXRange& other) = delete;
@@ -70,28 +79,126 @@ class AXRange {
 
   bool operator!=(const AXRange& other) const { return !(*this == other); }
 
-  virtual ~AXRange() {}
-
-  bool IsNull() const {
-    return !anchor_ || !focus_ || anchor_->IsNullPosition() ||
-           focus_->IsNullPosition();
-  }
-
-  AXPositionType* anchor() const {
-    DCHECK(anchor_);
-    return anchor_.get();
-  }
-
-  AXPositionType* focus() const {
-    DCHECK(focus_);
-    return focus_.get();
-  }
-
   AXRange GetForwardRange() const {
-    DCHECK(!IsNull());
-    if (*focus_ < *anchor_)
-      return AXRange(focus_->Clone(), anchor_->Clone());
-    return AXRange(anchor_->Clone(), focus_->Clone());
+    return (*focus_ < *anchor_) ? AXRange(focus_->Clone(), anchor_->Clone())
+                                : AXRange(anchor_->Clone(), focus_->Clone());
+  }
+
+  // We define a "leaf text range" as an AXRange whose endpoints are leaf text
+  // positions located within the same anchor of the AXTree.
+  bool IsLeafTextRange() const {
+    return !IsNull() && anchor_->GetAnchor() == focus_->GetAnchor() &&
+           anchor_->IsLeafTextPosition() && focus_->IsLeafTextPosition();
+  }
+
+  // We can decompose any given AXRange into multiple "leaf text ranges".
+  // As an example, consider the following HTML code:
+  //
+  //   <p>line with text<br><input type="checkbox">line with checkbox</p>
+  //
+  // It will produce the following AXTree; notice that the leaf text nodes
+  // (enclosed in parenthesis) compose its text representation:
+  //
+  //   paragraph
+  //     staticText name='line with text'
+  //       (inlineTextBox name='line with text')
+  //     lineBreak name='<newline>'
+  //       (inlineTextBox name='<newline>')
+  //     (checkBox)
+  //     staticText name='line with checkbox'
+  //       (inlineTextBox name='line with checkbox')
+  //
+  // Suppose we have an AXRange containing all elements from the example above.
+  // The text representation of such range, with AXRange's endpoints marked by
+  // opening and closing brackets, will look like the following:
+  //
+  //   "[line with text\n{checkBox}line with checkbox]"
+  //
+  // Note that in the text representation {checkBox} is not visible, but it is
+  // effectively a "leaf text range", so we include it in the example above only
+  // to visualize how the iterator should work.
+  //
+  // Decomposing the AXRange above into its "leaf text ranges" would result in:
+  //
+  //   "[line with text][\n][{checkBox}][line with checkbox]"
+  //
+  // This class allows AXRange to be iterated through all "leaf text ranges"
+  // contained between its endpoints, composing the entire range.
+  class Iterator : public std::iterator<std::input_iterator_tag, AXRange> {
+   public:
+    Iterator()
+        : current_start_(AXPositionType::CreateNullPosition()),
+          iterator_end_(AXPositionType::CreateNullPosition()) {}
+
+    Iterator(AXPositionInstance start, AXPositionInstance end) {
+      if (end && !end->IsNullPosition()) {
+        current_start_ = !start ? AXPositionType::CreateNullPosition()
+                                : start->AsLeafTextPosition();
+        iterator_end_ = end->AsLeafTextPosition();
+      } else {
+        current_start_ = AXPositionType::CreateNullPosition();
+        iterator_end_ = AXPositionType::CreateNullPosition();
+      }
+    }
+
+    Iterator(const Iterator& other) = delete;
+
+    Iterator(Iterator&& other)
+        : current_start_(std::move(other.current_start_)),
+          iterator_end_(std::move(other.iterator_end_)) {}
+
+    ~Iterator() = default;
+
+    bool operator==(const Iterator& other) const {
+      return current_start_->GetAnchor() == other.current_start_->GetAnchor() &&
+             iterator_end_->GetAnchor() == other.iterator_end_->GetAnchor() &&
+             *current_start_ == *other.current_start_ &&
+             *iterator_end_ == *other.iterator_end_;
+    }
+
+    bool operator!=(const Iterator& other) const { return !(*this == other); }
+
+    // Only forward iteration is supported, so operator-- is not implemented.
+    Iterator& operator++() {
+      DCHECK(!current_start_->IsNullPosition());
+      if (current_start_->GetAnchor() == iterator_end_->GetAnchor()) {
+        current_start_ = AXPositionType::CreateNullPosition();
+      } else {
+        current_start_ =
+            current_start_->CreateNextAnchorPosition()->AsLeafTextPosition();
+        DCHECK_LE(*current_start_, *iterator_end_);
+      }
+      return *this;
+    }
+
+    AXRange operator*() const {
+      DCHECK(!current_start_->IsNullPosition());
+      AXPositionInstance current_end =
+          (current_start_->GetAnchor() != iterator_end_->GetAnchor())
+              ? current_start_->CreatePositionAtEndOfAnchor()
+              : iterator_end_->Clone();
+      DCHECK_LE(*current_end, *iterator_end_);
+
+      AXRange current_anchor_range(current_start_->Clone(),
+                                   std::move(current_end));
+      DCHECK(current_anchor_range.IsLeafTextRange());
+      return std::move(current_anchor_range);
+    }
+
+   private:
+    AXPositionInstance current_start_;
+    AXPositionInstance iterator_end_;
+  };
+
+  Iterator begin() const {
+    AXRange forward_range = GetForwardRange();
+    return Iterator(std::move(forward_range.anchor_),
+                    std::move(forward_range.focus_));
+  }
+
+  Iterator end() const {
+    AXRange forward_range = GetForwardRange();
+    return Iterator(nullptr, std::move(forward_range.focus_));
   }
 
   base::string16 GetText() const {
@@ -127,47 +234,12 @@ class AXRange {
     return text.substr(0, text_length);
   }
 
-  // Returns a vector of all ranges (each of them spanning a single anchor)
-  // between the anchor_ and focus_ endpoints of this instance.
-  std::vector<AXRange<AXPositionType>> GetAnchors() const {
-    std::vector<AXRange<AXPositionType>> anchors;
-    if (IsNull())
-      return anchors;
-
-    AXRange forward_range = GetForwardRange();
-    AXPositionInstance current_anchor_start =
-        forward_range.anchor()->AsLeafTextPosition();
-    AXPositionInstance range_end = forward_range.focus()->AsLeafTextPosition();
-
-    while (!current_anchor_start->IsNullPosition()) {
-      // When the current start reaches the same anchor as this AXRange's end,
-      // simply append this last anchor (trimmed at range_end) and exit.
-      if (current_anchor_start->GetAnchor() == range_end->GetAnchor()) {
-        anchors.emplace_back(current_anchor_start->Clone(), range_end->Clone());
-        return anchors;
-      }
-
-      AXPositionInstance current_anchor_end =
-          current_anchor_start->CreatePositionAtEndOfAnchor();
-      DCHECK_EQ(current_anchor_start->GetAnchor(),
-                current_anchor_end->GetAnchor());
-      DCHECK_LE(*current_anchor_start, *current_anchor_end);
-      DCHECK_LE(*current_anchor_end, *range_end);
-
-      anchors.emplace_back(current_anchor_start->Clone(),
-                           current_anchor_end->Clone());
-      current_anchor_start =
-          current_anchor_end->CreateNextAnchorPosition()->AsLeafTextPosition();
-    }
-    return anchors;
-  }
-
   // Appends rects in screen coordinates of all anchor nodes that span between
   // anchor_ and focus_. Rects outside of the viewport are skipped.
   std::vector<gfx::Rect> GetScreenRects() const {
     std::vector<gfx::Rect> rects;
 
-    for (const AXRange& anchor_range : GetAnchors()) {
+    for (const AXRange& anchor_range : *this) {
       DCHECK(!anchor_range.IsNull());
       AXPositionInstance anchor_end =
           anchor_range.focus()->AsLeafTextPosition();

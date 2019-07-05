@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 using ::testing::_;
 using ::testing::ByRef;
@@ -439,7 +440,7 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
 
   scoped_refptr<blink::WebMediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
-      int render_frame_id,
+      blink::WebLocalFrame* web_frame,
       const std::string& device_id) override {
     return audio_renderer_;
   }

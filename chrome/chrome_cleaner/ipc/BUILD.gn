@@ -40,6 +40,7 @@ source_set("sandbox") {
 
   deps = [
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/crash:crashpad_lib",
     "//chrome/chrome_cleaner/os:common_os",
@@ -89,6 +90,7 @@ source_set("unittest_sources") {
     ":sandbox",
     "//base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/interfaces:mojo_sandbox_hooks_test_interface",
     "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/os:common_os",

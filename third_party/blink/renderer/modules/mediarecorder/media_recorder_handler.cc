@@ -124,6 +124,11 @@ MediaRecorderHandler::MediaRecorderHandler(
 
 MediaRecorderHandler::~MediaRecorderHandler() = default;
 
+void MediaRecorderHandler::Dispose() {
+  webm_muxer_.reset();
+  task_runner_.reset();
+}
+
 bool MediaRecorderHandler::CanSupportMimeType(const String& type,
                                               const String& web_codecs) {
   DCHECK(IsMainThread());

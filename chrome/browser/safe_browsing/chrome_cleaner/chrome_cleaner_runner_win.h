@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_RUNNER_WIN_H_
 
 #include <limits>
-#include <memory>
 
 #include "base/callback.h"
 #include "base/command_line.h"

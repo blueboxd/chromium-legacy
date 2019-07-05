@@ -22,6 +22,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/viz/common/features.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -48,11 +49,6 @@ constexpr float kScrollScaleFactor = 0.0125f;
 
 constexpr char kDockedMagnifierViewportWindowName[] =
     "DockedMagnifierViewportWindow";
-
-// Returns true if High Contrast mode is enabled.
-bool IsHighContrastEnabled() {
-  return Shell::Get()->accessibility_controller()->high_contrast_enabled();
-}
 
 // Returns the current cursor location in screen coordinates.
 inline gfx::Point GetCursorScreenPoint() {
@@ -116,6 +112,12 @@ double GetMagnifierLayerRotationAngle(
 // viewport widget and the separator layer.
 aura::Window* GetViewportParentContainerForRoot(aura::Window* root) {
   return root->GetChildById(kShellWindowId_DockedMagnifierContainer);
+}
+
+// Returns true if the docked magnifier should use layer mirroring rather than
+// ui::Reflector. Layer mirroring is used when OOP-D is enabled.
+bool ShouldUseLayerMirroring() {
+  return features::IsVizDisplayCompositorEnabled();
 }
 
 }  // namespace
@@ -234,38 +236,69 @@ void DockedMagnifierControllerImpl::CenterOnPoint(
     point_in_pixels.set_y(minimum_point_of_interest_height_);
 
   // The pixel space is the magnified space.
-  host->GetRootTransform().TransformPoint(&point_in_pixels);
+  if (!ShouldUseLayerMirroring()) {
+    // When ui::Reflector is used, the texture has the root transform applied to
+    // it. The same transform should be applied to the |point_in_pixels| to map
+    // it to the corresponding location in the texture. This is not the case
+    // when layer mirroring is used.
+    host->GetRootTransform().TransformPoint(&point_in_pixels);
+  }
   const float scale = GetScale();
   point_in_pixels.Scale(scale);
 
-  // Transform steps: (Note that the transform is applied in the opposite order)
-  // 1- Scale the layer by |scale|.
-  // 2- Translate the point of interest back to the origin so that we can rotate
-  //    around the Z-axis.
-  // 3- Rotate around the Z-axis to undo the effect of screen rotation (if any).
-  // 4- Translate the point of interest to the center point of the viewport
-  //    widget.
   gfx::Transform transform;
+  if (ShouldUseLayerMirroring()) {
+    // When layer mirroring is used, the mirrored content is not rotated around
+    // Z-axis; so, there is no need to compnesate for it.
+    // Transform steps: (Note that the transform is applied in the opposite
+    // order)
+    // 1- Scale the layer by |scale|.
+    // 2- Translate the point of interest to the center point of the viewport
+    //    widget.
 
-  // 4- Translate to the center of the viewport widget.
-  const gfx::Point viewport_center_point =
-      GetViewportWidgetBoundsInRoot(current_source_root_window_).CenterPoint();
-  transform.Translate(viewport_center_point.x(), viewport_center_point.y());
+    // 2- Translate to the center of the viewport widget.
+    const gfx::Point viewport_center_point =
+        GetViewportWidgetBoundsInRoot(current_source_root_window_)
+            .CenterPoint();
+    transform.Translate(viewport_center_point.x() - point_in_pixels.x(),
+                        viewport_center_point.y() - point_in_pixels.y());
 
-  // 3- Rotate around Z-axis. Account for a possibly rotated screen.
-  const int64_t display_id =
-      screen->GetDisplayNearestPoint(point_in_screen).id();
-  DCHECK_NE(display_id, display::kInvalidDisplayId);
-  const auto& display_info =
-      Shell::Get()->display_manager()->GetDisplayInfo(display_id);
-  transform.RotateAboutZAxis(
-      GetMagnifierLayerRotationAngle(display_info.GetActiveRotation()));
+    // 1- Scale.
+    transform.Scale(scale, scale);
+  } else {
+    // When ui::Reflector is used, the mirrored content is rotated around
+    // Z-axis; so, we need to compnesate for it.
+    // Transform steps: (Note that the transform is applied in the opposite
+    // order)
+    // 1- Scale the layer by |scale|.
+    // 2- Translate the point of interest back to the origin so that we can
+    //    rotate around the Z-axis.
+    // 3- Rotate around the Z-axis to undo the effect of screen rotation (if
+    //    any).
+    // 4- Translate the point of interest to the center point of the viewport
+    //    widget.
 
-  // 2- Translate back to origin.
-  transform.Translate(-point_in_pixels.x(), -point_in_pixels.y());
+    // 4- Translate to the center of the viewport widget.
+    const gfx::Point viewport_center_point =
+        GetViewportWidgetBoundsInRoot(current_source_root_window_)
+            .CenterPoint();
+    transform.Translate(viewport_center_point.x(), viewport_center_point.y());
 
-  // 1- Scale.
-  transform.Scale(scale, scale);
+    // 3- Rotate around Z-axis. Account for a possibly rotated screen.
+    const int64_t display_id =
+        screen->GetDisplayNearestPoint(point_in_screen).id();
+    DCHECK_NE(display_id, display::kInvalidDisplayId);
+    const auto& display_info =
+        Shell::Get()->display_manager()->GetDisplayInfo(display_id);
+    transform.RotateAboutZAxis(
+        GetMagnifierLayerRotationAngle(display_info.GetActiveRotation()));
+
+    // 2- Translate back to origin.
+    transform.Translate(-point_in_pixels.x(), -point_in_pixels.y());
+
+    // 1- Scale.
+    transform.Scale(scale, scale);
+  }
 
   // When updating the transform, we don't want any animation, otherwise the
   // movement of the mouse won't be very smooth. We want the magnifier layer to
@@ -399,7 +432,12 @@ void DockedMagnifierControllerImpl::OnDisplayConfigurationChanged() {
         GetViewportWidgetBoundsInRoot(current_source_root_window_);
     viewport_widget_->SetBounds(viewport_bounds);
     viewport_background_layer_->SetBounds(viewport_bounds);
-    viewport_magnifier_layer_->SetBounds(viewport_bounds);
+    if (!ShouldUseLayerMirroring()) {
+      // In case of layer mirroring, |viewport_magnifier_layer_| automatically
+      // matches size of mirrored layer and there is no need to set its bounds
+      // here.
+      viewport_magnifier_layer_->SetBounds(viewport_bounds);
+    }
     separator_layer_->SetBounds(
         SeparatorBoundsFromViewportBounds(viewport_bounds));
     SetViewportHeightInWorkArea(current_source_root_window_,
@@ -520,10 +558,17 @@ void DockedMagnifierControllerImpl::SwitchCurrentSourceRootWindowIfNeeded(
 
   DCHECK(aura::Env::GetInstance()->context_factory_private());
   DCHECK(viewport_widget_);
-  reflector_ =
-      aura::Env::GetInstance()->context_factory_private()->CreateReflector(
-          current_source_root_window_->layer()->GetCompositor(),
-          viewport_magnifier_layer_.get());
+  if (ShouldUseLayerMirroring()) {
+    auto* magnified_container = current_source_root_window_->GetChildById(
+        kShellWindowId_MagnifiedContainer);
+    viewport_magnifier_layer_->SetShowReflectedLayerSubtree(
+        magnified_container->layer());
+  } else {
+    reflector_ =
+        aura::Env::GetInstance()->context_factory_private()->CreateReflector(
+            current_source_root_window_->layer()->GetCompositor(),
+            viewport_magnifier_layer_.get());
+  }
 }
 
 void DockedMagnifierControllerImpl::InitFromUserPrefs() {
@@ -544,11 +589,19 @@ void DockedMagnifierControllerImpl::InitFromUserPrefs() {
       base::BindRepeating(&DockedMagnifierControllerImpl::
                               OnFullscreenMagnifierEnabledPrefChanged,
                           base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityHighContrastEnabled,
-      base::BindRepeating(
-          &DockedMagnifierControllerImpl::OnHighContrastEnabledPrefChanged,
-          base::Unretained(this)));
+  if (!ShouldUseLayerMirroring()) {
+    // When ui::Reflector is used and high contrast is enabled, the reflected
+    // texture is already inverted and will be inverted once more because the
+    // root window is set to be inverted, undoing the original inversion. To
+    // prevent that, observe changes to the high contrast mode and invert the
+    // magnifier layer one more time.  Layer mirroring mode does not have this
+    // issue.
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityHighContrastEnabled,
+        base::BindRepeating(
+            &DockedMagnifierControllerImpl::OnHighContrastEnabledPrefChanged,
+            base::Unretained(this)));
+  }
 
   OnEnabledPrefChanged();
 }
@@ -631,10 +684,13 @@ void DockedMagnifierControllerImpl::OnFullscreenMagnifierEnabledPrefChanged() {
 }
 
 void DockedMagnifierControllerImpl::OnHighContrastEnabledPrefChanged() {
+  DCHECK(!ShouldUseLayerMirroring());
+
   if (!GetEnabled())
     return;
 
-  viewport_magnifier_layer_->SetLayerInverted(IsHighContrastEnabled());
+  viewport_magnifier_layer_->SetLayerInverted(
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
 }
 
 void DockedMagnifierControllerImpl::Refresh() {
@@ -645,7 +701,7 @@ void DockedMagnifierControllerImpl::Refresh() {
 void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   DCHECK(GetEnabled());
   DCHECK(current_source_root_window_);
-  DCHECK(!reflector_);
+  DCHECK(ShouldUseLayerMirroring() || !reflector_);
 
   const auto viewport_bounds =
       GetViewportWidgetBoundsInRoot(current_source_root_window_);
@@ -687,9 +743,12 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   //    and magnified.
   viewport_magnifier_layer_ =
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
-  viewport_magnifier_layer_->SetLayerInverted(IsHighContrastEnabled());
   viewport_layer->Add(viewport_magnifier_layer_.get());
   viewport_layer->SetMasksToBounds(true);
+
+  // In case of ui::Reflector, handle high contrast mode.
+  if (!ShouldUseLayerMirroring())
+    OnHighContrastEnabledPrefChanged();
 
   // 5- Update the workarea of the current screen such that an area enough to
   //    contain the viewport and the separator is allocated at the top of the
@@ -771,7 +830,13 @@ void DockedMagnifierControllerImpl::MaybeCachePointOfInterestMinimumHeight(
   // anticipate ourselves.
   gfx::Vector3dF scaled_magnifier_bottom_in_pixels(
       0.0f, viewport_bounds.bottom() + kSeparatorHeight, 0.0f);
-  host->GetRootTransform().TransformVector(&scaled_magnifier_bottom_in_pixels);
+  if (!ShouldUseLayerMirroring()) {
+    // For ui::Reflector, the reflected texture has root transform applied to
+    // it. Apply the same transform to map the point to its corresponding
+    // location on the reflected texture.
+    host->GetRootTransform().TransformVector(
+        &scaled_magnifier_bottom_in_pixels);
+  }
   const float scale = GetScale();
   scaled_magnifier_bottom_in_pixels.Scale(scale);
 
@@ -784,7 +849,11 @@ void DockedMagnifierControllerImpl::MaybeCachePointOfInterestMinimumHeight(
 
   // 3- Back to non-magnified space to get point (b)'s height.
   minimum_height_vector.Scale(1 / scale);
-  host->GetInverseRootTransform().TransformVector(&minimum_height_vector);
+  if (!ShouldUseLayerMirroring()) {
+    // For ui::Reflector, apply the reverse root transform to undo the transform
+    // applied earlier.
+    host->GetInverseRootTransform().TransformVector(&minimum_height_vector);
+  }
   minimum_point_of_interest_height_ = minimum_height_vector.Length();
   is_minimum_point_of_interest_height_valid_ = true;
 }

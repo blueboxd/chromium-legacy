@@ -29,6 +29,7 @@ source_set("common") {
   deps = [
     ":interface_metadata_observer",
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:uws_id",

@@ -2273,7 +2273,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   tab_ui_module_tmpl("${target_name}__tab_ui_bundle_module") {
     manifest_package = chrome_public_manifest_package
-    module_name = "TabUiMonochromePublic"
+    module_name = "TabUi" + _bundle_name
     base_module_target = ":$_base_module_target_name"
     uncompress_shared_libraries = true
     version_code = _version_code

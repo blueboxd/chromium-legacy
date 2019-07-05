@@ -11,6 +11,7 @@
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
 
@@ -53,7 +54,7 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
 scoped_refptr<blink::WebMediaStreamAudioRenderer>
 TestMediaStreamRendererFactory::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
-    int render_frame_id,
+    blink::WebLocalFrame* web_frame,
     const std::string& device_id) {
   return nullptr;
 }

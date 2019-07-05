@@ -38,6 +38,7 @@ source_set("settings") {
   deps = [
     ":settings_types",
     "//base",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//components/chrome_cleaner/public/constants:constants",
   ]
@@ -126,6 +127,7 @@ source_set("unittest_sources") {
     ":settings_definitions",
     "//base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//components/chrome_cleaner/public/constants:constants",

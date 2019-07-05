@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/components/recovery_component.h"
 #include "chrome/chrome_cleaner/components/system_report_component.h"
 #include "chrome/chrome_cleaner/components/system_restore_point_component.h"
@@ -107,7 +108,7 @@ void AddComponents(chrome_cleaner::MainController* main_controller,
                    base::CommandLine* command_line,
                    chrome_cleaner::JsonParserAPI* json_parser,
                    chrome_cleaner::SandboxedShortcutParser* shortcut_parser) {
-#if defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   // Ensure that the system restore point component runs first.
   main_controller->AddComponent(
       std::make_unique<chrome_cleaner::SystemRestorePointComponent>(
@@ -308,7 +309,7 @@ chrome_cleaner::ResultCode ReturnWithResultCode(
 
   bool self_delete = CanSelfDelete(result_code);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-#if defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   self_delete = self_delete &&
                 !command_line->HasSwitch(chrome_cleaner::kNoSelfDeleteSwitch);
 #else

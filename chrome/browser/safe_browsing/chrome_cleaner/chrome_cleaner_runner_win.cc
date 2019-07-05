@@ -4,11 +4,13 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -26,6 +28,8 @@
 #include "chrome/installer/util/install_util.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
 namespace safe_browsing {
@@ -153,17 +157,41 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
   TRACE_EVENT0("safe_browsing",
                "ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread");
 
+  auto on_connection_closed = base::BindOnce(
+      &ChromeCleanerRunner::OnConnectionClosed, base::RetainedRef(this));
   auto actions = std::make_unique<ChromePromptActions>(
       extension_service, base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
                                         base::RetainedRef(this)));
-  // TODO(crbug.com/969139): Instantiate ChromePromptChannelProtobuf when the
-  // experiment is enabled.
-  std::unique_ptr<ChromePromptChannel> channel =
-      std::make_unique<ChromePromptChannelMojo>(this, std::move(actions));
+
+  // ChromePromptChannel method calls will be posted to this sequence using
+  // WeakPtr's, so the channel must be deleted on the same sequence.
+  scoped_refptr<base::SequencedTaskRunner> channel_task_runner;
+  using ChromePromptChannelPtr =
+      std::unique_ptr<ChromePromptChannel, base::OnTaskRunnerDeleter>;
+  ChromePromptChannelPtr channel(nullptr, base::OnTaskRunnerDeleter(nullptr));
+  if (base::FeatureList::IsEnabled(kChromeCleanupProtobufIPCFeature)) {
+    // The channel will make blocking calls to ::WriteFile.
+    channel_task_runner = base::CreateSequencedTaskRunner({base::MayBlock()});
+    channel =
+        ChromePromptChannelPtr(new ChromePromptChannelProtobuf(
+                                   std::move(on_connection_closed),
+                                   std::move(actions), channel_task_runner),
+                               base::OnTaskRunnerDeleter(channel_task_runner));
+  } else {
+    // Mojo uses the IO thread.
+    channel_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
+    channel = ChromePromptChannelPtr(
+        new ChromePromptChannelMojo(std::move(on_connection_closed),
+                                    std::move(actions), channel_task_runner),
+        base::OnTaskRunnerDeleter(channel_task_runner));
+  }
 
   base::LaunchOptions launch_options;
-  channel->PrepareForCleaner(&cleaner_command_line_,
-                             &launch_options.handles_to_inherit);
+  if (!channel->PrepareForCleaner(&cleaner_command_line_,
+                                  &launch_options.handles_to_inherit)) {
+    return ProcessStatus(LaunchStatus::kLaunchFailed);
+  }
 
   base::Process cleaner_process =
       g_test_delegate
@@ -174,7 +202,8 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
     channel->CleanupAfterCleanerLaunchFailed();
     return ProcessStatus(LaunchStatus::kLaunchFailed);
   }
-  channel->ConnectToCleaner(cleaner_process);
+  channel->ConnectToCleaner(
+      ChromePromptChannel::CreateDelegateForProcess(cleaner_process));
 
   int exit_code = -1;
   if (!cleaner_process.WaitForExit(&exit_code)) {

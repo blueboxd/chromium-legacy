@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
@@ -76,7 +78,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
 scoped_refptr<blink::WebMediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
-    int render_frame_id,
+    blink::WebLocalFrame* web_frame,
     const std::string& device_id) {
   DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
@@ -104,6 +106,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     blink::WebRtcLogMessage("Error: No native track for WebMediaStreamTrack");
     return nullptr;
   }
+
+  int render_frame_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
 
   // If the track has a local source, or is a remote track that does not use the
   // WebRTC audio pipeline, return a new TrackAudioRenderer instance.

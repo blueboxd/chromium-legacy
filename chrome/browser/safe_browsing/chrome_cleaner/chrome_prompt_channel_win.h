@@ -7,9 +7,14 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/launch.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
+#include "base/process/process.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
+#include "base/win/scoped_handle.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -18,7 +23,6 @@
 
 namespace base {
 class CommandLine;
-class Process;
 }  // namespace base
 
 namespace safe_browsing {
@@ -29,17 +33,41 @@ class ChromePromptImpl;
 
 class ChromePromptActions;
 
+// Handles IPC to the Chrome Cleaner process. The Chrome Cleaner process will
+// send requests and ChromePromptChannel will handle the request, often by
+// using ChromePromptActions, and write the response.
 class ChromePromptChannel {
  public:
-  ChromePromptChannel(scoped_refptr<ChromeCleanerRunner> owner,
-                      std::unique_ptr<ChromePromptActions> actions);
+  // Gives access to the Chrome Cleaner process that the channel communicates
+  // with.
+  class CleanerProcessDelegate {
+   public:
+    virtual ~CleanerProcessDelegate() = default;
+
+    virtual base::ProcessHandle Handle() const = 0;
+
+    virtual void TerminateOnError() const = 0;
+  };
+
+  // Returns a CleanerProcessDelegate that wraps |process|.
+  static std::unique_ptr<CleanerProcessDelegate> CreateDelegateForProcess(
+      const base::Process& process);
+
+  // Creates a ChromePromptChannel that calls |on_connection_closed| when the
+  // IPC channel closes (either normally or on error) and uses |actions| to
+  // fulfill requests. |task_runner| can be used to run any tasks that must be
+  // seqeuenced with destruction of the ChromePromptChannel.
+  ChromePromptChannel(base::OnceClosure on_connection_closed,
+                      std::unique_ptr<ChromePromptActions> actions,
+                      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
   virtual ~ChromePromptChannel();
 
   // Prepares an IPC channel to be used by the cleaner process that is about to
   // be launched. Adds all handles used by the channel to |handles_to_inherit|
   // so that the cleaner process can access them, and adds switches to
   // |command_line| that the cleaner process can use to connect to the channel.
-  virtual void PrepareForCleaner(
+  virtual bool PrepareForCleaner(
       base::CommandLine* command_line,
       base::HandlesToInheritVector* handles_to_inherit) = 0;
 
@@ -48,31 +76,38 @@ class ChromePromptChannel {
   virtual void CleanupAfterCleanerLaunchFailed() = 0;
 
   // Kicks off communication between the IPC channel prepared by
-  // PrepareForCleaner and the process in |cleaner_process|.
-  virtual void ConnectToCleaner(const base::Process& cleaner_process) = 0;
+  // PrepareForCleaner and the process in |cleaner_process|. If the connection
+  // fails, |connection_closed_callback_| should be called.
+  virtual void ConnectToCleaner(
+      std::unique_ptr<CleanerProcessDelegate> cleaner_process) = 0;
 
  protected:
-  scoped_refptr<ChromeCleanerRunner> owner_;
+  base::OnceClosure on_connection_closed_;
   std::unique_ptr<ChromePromptActions> actions_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:
   ChromePromptChannel(const ChromePromptChannel& other) = delete;
   ChromePromptChannel& operator=(const ChromePromptChannel& other) = delete;
 };
 
+// Handles IPC to the Chrome Cleaner process using Mojo.
 class ChromePromptChannelMojo : public ChromePromptChannel {
  public:
-  ChromePromptChannelMojo(scoped_refptr<ChromeCleanerRunner> owner,
-                          std::unique_ptr<ChromePromptActions> actions);
+  ChromePromptChannelMojo(base::OnceClosure on_connection_closed,
+                          std::unique_ptr<ChromePromptActions> actions,
+                          scoped_refptr<base::SequencedTaskRunner> task_runner);
+
   ~ChromePromptChannelMojo() override;
 
-  void PrepareForCleaner(
+  bool PrepareForCleaner(
       base::CommandLine* command_line,
       base::HandlesToInheritVector* handles_to_inherit) override;
 
   void CleanupAfterCleanerLaunchFailed() override;
 
-  void ConnectToCleaner(const base::Process& cleaner_process) override;
+  void ConnectToCleaner(
+      std::unique_ptr<CleanerProcessDelegate> cleaner_process) override;
 
  private:
   ChromePromptChannelMojo(const ChromePromptChannelMojo& other) = delete;
@@ -86,9 +121,52 @@ class ChromePromptChannelMojo : public ChromePromptChannel {
   mojo::PlatformChannel mojo_channel_;
   mojo::ScopedMessagePipeHandle request_pipe_;
 
-  std::unique_ptr<internal::ChromePromptImpl,
-                  content::BrowserThread::DeleteOnIOThread>
-      chrome_prompt_impl_;
+  std::unique_ptr<internal::ChromePromptImpl> chrome_prompt_impl_;
+
+  base::WeakPtrFactory<ChromePromptChannelMojo> weak_factory_;
+};
+
+// Handles IPC to the Chrome Cleaner process by serializing protobufs over
+// a pipe.
+class ChromePromptChannelProtobuf : public ChromePromptChannel {
+ public:
+  ChromePromptChannelProtobuf(
+      base::OnceClosure on_connection_closed,
+      std::unique_ptr<ChromePromptActions> actions,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  ~ChromePromptChannelProtobuf() override;
+
+  bool PrepareForCleaner(
+      base::CommandLine* command_line,
+      base::HandlesToInheritVector* handles_to_inherit) override;
+
+  void CleanupAfterCleanerLaunchFailed() override;
+
+  void ConnectToCleaner(
+      std::unique_ptr<CleanerProcessDelegate> cleaner_process) override;
+
+ private:
+  ChromePromptChannelProtobuf(const ChromePromptChannelProtobuf& other) =
+      delete;
+  ChromePromptChannelProtobuf& operator=(
+      const ChromePromptChannelProtobuf& other) = delete;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Requests always flow from the Chrome Cleanup tool to Chrome.
+  // This class owns request_read_handle_ but request_write_handle_ will be
+  // closed once it is passed to the child process.
+  base::win::ScopedHandle request_read_handle_;
+  base::win::ScopedHandle request_write_handle_;
+
+  // Responses flow from Chrome to the Chrome Cleanup tool.
+  // This class owns response_write_handle_ but response_read_handle_ will be
+  // closed once it is passed to the child process.
+  base::win::ScopedHandle response_read_handle_;
+  base::win::ScopedHandle response_write_handle_;
+
+  base::WeakPtrFactory<ChromePromptChannelProtobuf> weak_factory_;
 };
 
 }  // namespace safe_browsing

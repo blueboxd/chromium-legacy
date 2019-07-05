@@ -347,17 +347,17 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
 
-  int routing_id = MSG_ROUTING_NONE;
+  blink::WebLocalFrame* web_frame = nullptr;
   GURL url = source.IsURL() ? GURL(source.GetAsURL()) : GURL();
 
   if (frame) {
     // Report UMA and RAPPOR metrics.
     media::ReportMetrics(load_type, url, *frame_, media_log_.get());
-    routing_id = frame->GetRoutingID();
+    web_frame = frame->GetWebFrame();
   }
 
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
-      web_stream_, routing_id, initial_audio_output_device_id_);
+      web_stream_, web_frame, initial_audio_output_device_id_);
 
   if (!audio_renderer_)
     blink::WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
@@ -554,7 +554,7 @@ void WebMediaPlayerMS::ReloadAudio() {
 
       SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
       audio_renderer_ = renderer_factory_->GetAudioRenderer(
-          web_stream_, frame->GetRoutingID(), initial_audio_output_device_id_);
+          web_stream_, frame->GetWebFrame(), initial_audio_output_device_id_);
 
       // |audio_renderer_| can be null in tests.
       if (!audio_renderer_)

@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_2D_LAYER_BRIDGE_H_
 
 #include <memory>
+#include <random>
 #include <utility>
 
 #include "base/macros.h"
@@ -36,6 +37,8 @@
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -207,7 +210,26 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   };
   mutable SnapshotState snapshot_state_;
 
+  void ClearPendingRasterTimers();
+  void FinishRasterTimers(gpu::gles2::GLES2Interface*);
+  struct RasterTimer {
+    // The id for querying the duration of the gpu-side of the draw
+    GLuint gl_query_id = 0u;
+
+    // The duration of the CPU-side of the draw
+    base::TimeDelta cpu_raster_duration;
+  };
+
   CanvasResourceHost* resource_host_;
+  viz::TransferableResource previous_frame_resource_;
+
+  // For measuring a sample of frames for end-to-end raster time
+  // Every frame has a 1% chance of being sampled
+  static constexpr float kRasterMetricProbability = 0.01;
+
+  std::mt19937 random_generator_;
+  std::bernoulli_distribution bernoulli_distribution_;
+  Deque<RasterTimer> pending_raster_timers_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
 

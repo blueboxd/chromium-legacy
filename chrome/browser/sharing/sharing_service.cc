@@ -23,7 +23,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
-#include "components/sync_device_info/local_device_info_provider.h"
 
 namespace {
 // TODO(knollr): Should this be configurable or shared between similar features?
@@ -37,7 +36,6 @@ SharingService::SharingService(
     std::unique_ptr<SharingFCMSender> fcm_sender,
     std::unique_ptr<SharingFCMHandler> fcm_handler,
     syncer::DeviceInfoTracker* device_info_tracker,
-    syncer::LocalDeviceInfoProvider* device_info_provider,
     syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
@@ -45,18 +43,8 @@ SharingService::SharingService(
       fcm_sender_(std::move(fcm_sender)),
       fcm_handler_(std::move(fcm_handler)),
       device_info_tracker_(device_info_tracker),
-      device_info_provider_(device_info_provider),
       sync_service_(sync_service),
       weak_ptr_factory_(this) {
-  DCHECK(sync_prefs_);
-  DCHECK(vapid_key_manager_);
-  DCHECK(sharing_device_registration_);
-  DCHECK(fcm_sender_);
-  DCHECK(fcm_handler_);
-  DCHECK(device_info_tracker_);
-  DCHECK(device_info_provider_);
-  DCHECK(sync_service_);
-
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       &ack_message_handler_);

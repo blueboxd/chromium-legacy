@@ -131,8 +131,6 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // for recording as long as this observer is non-null.
   Member<IntersectionObserver>
       muted_video_offscreen_duration_intersection_observer_;
-
-  base::TimeTicks load_start_time_;
 };
 
 }  // namespace blink

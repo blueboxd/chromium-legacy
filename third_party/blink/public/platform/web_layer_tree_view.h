@@ -28,7 +28,6 @@
 
 #include "base/callback.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/input/event_listener_properties.h"
 #include "cc/layers/layer.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/element_id.h"
@@ -91,8 +90,6 @@ class WebLayerTreeView {
   virtual void ForceRecalculateRasterScales() {}
 
   // Input properties ---------------------------------------------------
-  virtual void SetEventListenerProperties(cc::EventListenerClass,
-                                          cc::EventListenerProperties) {}
   virtual void UpdateEventRectsForSubframeIfNecessary() {}
   virtual void SetHaveScrollEventHandlers(bool) {}
 
@@ -101,10 +98,6 @@ class WebLayerTreeView {
 
   // Debugging / dangerous ---------------------------------------------
 
-  virtual cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass) const {
-    return cc::EventListenerProperties::kNone;
-  }
   virtual bool HaveScrollEventHandlers() const { return false; }
 
   virtual int LayerTreeId() const { return 0; }

@@ -29,10 +29,12 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/elapsed_timer.h"
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
@@ -66,6 +68,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       size_(size),
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr),
+      random_generator_((uint32_t)base::RandUint64()),
+      bernoulli_distribution_(kRasterMetricProbability),
       weak_ptr_factory_(this) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
@@ -85,6 +89,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DLayerBridgeIsDeferred",
                         is_deferral_enabled_);
+
+  ClearPendingRasterTimers();
   if (IsHibernating())
     logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
   ResetResourceProvider();
@@ -472,16 +478,120 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
     rate_limiter_->Reset();
 }
 
+void Canvas2DLayerBridge::ClearPendingRasterTimers() {
+  gpu::gles2::GLES2Interface* gl_interface = nullptr;
+  if (IsAccelerated() && SharedGpuContext::ContextProviderWrapper() &&
+      SharedGpuContext::ContextProviderWrapper()->ContextProvider()) {
+    gl_interface = SharedGpuContext::ContextProviderWrapper()
+                       ->ContextProvider()
+                       ->ContextGL();
+  }
+
+  if (gl_interface) {
+    while (!pending_raster_timers_.IsEmpty()) {
+      RasterTimer rt = pending_raster_timers_.TakeFirst();
+      gl_interface->DeleteQueriesEXT(1, &rt.gl_query_id);
+    }
+  } else {
+    pending_raster_timers_.clear();
+  }
+}
+
+void Canvas2DLayerBridge::FinishRasterTimers(
+    gpu::gles2::GLES2Interface* gl_interface) {
+  // If the context was lost, then the old queries are not valid anymore
+  if (!CheckResourceProviderValid()) {
+    ClearPendingRasterTimers();
+    return;
+  }
+
+  // Finish up any pending queries that are complete
+  while (!pending_raster_timers_.IsEmpty()) {
+    auto it = pending_raster_timers_.begin();
+    GLuint complete = 1;
+    gl_interface->GetQueryObjectuivEXT(
+        it->gl_query_id, GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
+        &complete);
+    if (!complete) {
+      break;
+    }
+
+    GLuint raw_gpu_duration = 0u;
+    gl_interface->GetQueryObjectuivEXT(it->gl_query_id, GL_QUERY_RESULT_EXT,
+                                       &raw_gpu_duration);
+    base::TimeDelta gpu_duration_microseconds =
+        base::TimeDelta::FromMicroseconds(raw_gpu_duration);
+    base::TimeDelta total_time =
+        gpu_duration_microseconds + it->cpu_raster_duration;
+
+    base::TimeDelta min = base::TimeDelta::FromMicroseconds(1);
+    base::TimeDelta max = base::TimeDelta::FromMilliseconds(100);
+    int num_buckets = 100;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Blink.Canvas.RasterDuration.Accelerated.GPU",
+        gpu_duration_microseconds, min, max, num_buckets);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Blink.Canvas.RasterDuration.Accelerated.CPU", it->cpu_raster_duration,
+        min, max, num_buckets);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Blink.Canvas.RasterDuration.Accelerated.Total", total_time, min, max,
+        num_buckets);
+
+    gl_interface->DeleteQueriesEXT(1, &it->gl_query_id);
+
+    pending_raster_timers_.erase(it);
+  }
+}
+
 void Canvas2DLayerBridge::FlushRecording() {
   if (!have_recorded_draw_commands_ || !GetOrCreateResourceProvider())
     return;
 
   TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
-  cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
-  {
+  gpu::gles2::GLES2Interface* gl_interface = nullptr;
+  if (IsAccelerated() && SharedGpuContext::ContextProviderWrapper() &&
+      SharedGpuContext::ContextProviderWrapper()->ContextProvider()) {
+    gl_interface = SharedGpuContext::ContextProviderWrapper()
+                       ->ContextProvider()
+                       ->ContextGL();
+    FinishRasterTimers(gl_interface);
+  }
+
+  bool measure_raster_metric = gl_interface && is_deferral_enabled_ &&
+                               bernoulli_distribution_(random_generator_);
+  RasterTimer rasterTimer;
+  base::Optional<base::ElapsedTimer> timer;
+  // Start Recording the raster duration
+  if (measure_raster_metric) {
+    if (IsAccelerated()) {
+      GLuint gl_id = 0u;
+      gl_interface->GenQueriesEXT(1, &gl_id);
+      gl_interface->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, gl_id);
+      rasterTimer.gl_query_id = gl_id;
+    }
+    timer.emplace();
+  }
+
+  {  // Make a new scope so that PaintRecord gets deleted and that gets timed
+    cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
     sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
     canvas->drawPicture(recording);
+    ResourceProvider()->FlushSkia();
+  }
+
+  // Finish up the timing operation
+  if (measure_raster_metric) {
+    if (IsAccelerated()) {
+      rasterTimer.cpu_raster_duration = timer->Elapsed();
+      gl_interface->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+      pending_raster_timers_.push_back(rasterTimer);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "Blink.Canvas.RasterDuration.Unaccelerated", timer->Elapsed(),
+          base::TimeDelta::FromMicroseconds(1),
+          base::TimeDelta::FromMilliseconds(100), 100);
+    }
   }
 
   // Rastering the recording would have locked images, since we've flushed
@@ -510,6 +620,7 @@ bool Canvas2DLayerBridge::CheckResourceProviderValid() {
   if (ResourceProvider() && IsAccelerated() &&
       ResourceProvider()->IsGpuContextLost()) {
     context_lost_ = true;
+    ClearPendingRasterTimers();
     ResetResourceProvider();
     if (resource_host_)
       resource_host_->NotifyGpuContextLost();

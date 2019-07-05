@@ -8,7 +8,7 @@
 
 ## Step 1: Identify the Commit
 
-### MonochromePublic.apk Alerts (Single Commit)
+### Monochrome.minimal.apks Alerts (Single Commit)
 
  * Zoom in on the graph to make sure the alert is not
    [off-by-one](https://github.com/catapult-project/catapult/issues/3444)
@@ -16,7 +16,7 @@
    * It will be obvious from this whether or not the point is off. Use the
      "nudge" feature to correct it when this happens.
 
-### MonochromePublic.apk Alerts (Multiple Commits or Rolls)
+### Monochrome.minimal.apks Alerts (Multiple Commits or Rolls)
 
  * Bisects [will not help you](https://bugs.chromium.org/p/chromium/issues/detail?id=678338).
  * For rolls, you can sometimes guess the commit(s) that caused the regression
@@ -24,34 +24,25 @@
  * Otherwise, use [diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md#diagnose_bloat_py)
    in a [local Android checkout](https://chromium.googlesource.com/chromium/src/+/master/docs/android_build_instructions.md)
    to build all commits locally and find the culprit.
- * Go to step 2.
+   * If there were multiple commits due to a build breakage, use `--apply-patch`
+     with the fixing commit (last one in the range).
 
 **Example:**
 
-     tools/binary_size/diagnose_bloat.py AFTER_GIT_REV --reference-rev BEFORE_GIT_REV --subrepo v8 --all
+     tools/binary_size/diagnose_bloat.py AFTER_GIT_REV --reference-rev BEFORE_GIT_REV --all [--subrepo v8] [--apply-patch AFTER_GIT_REV]
 
  * You can usually find the before and after revs in the roll commit message
 ([example](https://chromium.googlesource.com/chromium/src/+/10c40fd863f4ae106650bba93b845f25c9b733b1))
-    * Note that you may need to click through the link for the list of changes
-      in order to find the actual first commit hash and use that one instead
-      since some rollers (including v8) use extra commits for tagging not in
-      master. In the linked example `BEFORE_GIT_REV` would actually be
+    * You may need to click through for the list of changes to find the actual
+      first commit hash since some rollers (e.g. v8's) use an extra commit for
+      tagging. In the linked example `BEFORE_GIT_REV` would actually be
       `876f37c` and not `c1dec05f`.
 
-### Monochrome.apk (downstream) Alerts
+### SystemWebviewGoogle.apk Alerts
 
- * The regression most likely already occurred in the upstream
-   MonochromePublic.apk target. Look at the
-   [graph of Monochrome.apk and MonochromePublic.apk overlaid](https://chromeperf.appspot.com/report?sid=0564daf322ebf9959099fec631ea1966d3293b109ca086f7ee476d5fdc6f7d50&num_points=1500)
-   to find the culprit and de-dupe with upstream alert.
- * If no upstream regression was found, look through the downstream commits
-   within the given date range to find the culprit.
-    * Via `git log --format=fuller` (be sure to look at `CommitDate` and not
-      `AuthorDate`)
- * If the culprit is not obvious, follow the steps from the "multiple commits"
-   section above, filing a bug and running `diagnose_bloat.py`
-   (with `--subrepo=clank`).
-
+* Check if the same increase happened in Monochrome.minimal.apks.
+   * The goal is to ensure nothing creeps into webview unintentionally.
+ 
 ## Step 2: File Bug or Silence Alert
 
 * If the commit message's `Binary-Size:` footer clearly justifies the size
@@ -90,7 +81,9 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > 50kb so we'd really appreciate you taking some time exploring options to
 > address this regression!
 
-If the regression is >50kb, add ReleaseBlock-Stable **M-##** (next branch cut).*
+* If the regression is >50kb, add ReleaseBlock-Stable **M-##** (next branch cut).*
+* If the regression was caused by a non-Googler, assign it to the closest Googler
+  to the patch (e.g. reviewer). The size graphs are [not public](https://bugs.chromium.org/p/chromium/issues/detail?id=962483).
 
 # Debugging Apk Size Increase
 
@@ -187,3 +180,6 @@ Close the bug as "Won't Fix".
  * Check [alert page](https://chromeperf.appspot.com/alerts?sheriff=Binary%20Size%20Sheriff) regularly for new alerts.
  * Join [g/chrome-binary-size-alerts](https://goto.google.com/chrome-binary-size-alerts).
  * Deal with alerts as outlined above.
+ 
+## Step 3: Ping / Clear out Old Regression Bugs
+ * https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3DPerformance-Size+type%3DBug-Regression+resource_sizes

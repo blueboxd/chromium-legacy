@@ -58,7 +58,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
-
   return S_OK;
 }
 
@@ -239,9 +238,13 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *result = nullptr;
+  AXPositionInstance matched_range_start = nullptr;
+  AXPositionInstance matched_range_end = nullptr;
+
+  std::vector<AXNodeRange> anchors;
   AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-  AXPositionInstance matched_range_start = nullptr, matched_range_end = nullptr;
+  for (AXNodeRange anchor_range : range)
+    anchors.emplace_back(std::move(anchor_range));
 
   auto expand_match = [&matched_range_start, &matched_range_end, is_backward](
                           auto& current_start, auto& current_end) {
@@ -357,29 +360,19 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
 
-  AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-
-  if (anchors.empty())
-    return UIA_E_ELEMENTNOTAVAILABLE;
-
   base::win::ScopedVariant attribute_value_variant;
+  AXNodeRange range(start_->Clone(), end_->Clone());
 
-  for (auto&& current_range : anchors) {
-    DCHECK(current_range.anchor()->GetAnchor() ==
-           current_range.focus()->GetAnchor());
-
-    AXPlatformNodeDelegate* delegate = GetDelegate(current_range.anchor());
-    DCHECK(delegate);
+  for (const AXNodeRange& anchor_range : range) {
+    AXPositionInstanceType* anchor_start = anchor_range.anchor();
+    AXPlatformNodeDelegate* delegate = GetDelegate(anchor_start);
+    DCHECK(anchor_start && delegate);
 
     AXPlatformNodeWin* platform_node = static_cast<AXPlatformNodeWin*>(
-        delegate->GetFromNodeID(current_range.anchor()->GetAnchor()->id()));
+        delegate->GetFromNodeID(anchor_start->anchor_id()));
     DCHECK(platform_node);
-    if (!platform_node)
-      continue;
 
     base::win::ScopedVariant current_variant;
-
     HRESULT hr = platform_node->GetTextAttributeValue(
         attribute_id, current_variant.Receive());
     if (FAILED(hr))
@@ -391,7 +384,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
         *value = attribute_value_variant.Release();
         return S_OK;
       }
-    } else if (0 != attribute_value_variant.Compare(current_variant)) {
+    } else if (attribute_value_variant.Compare(current_variant)) {
       V_VT(value) = VT_UNKNOWN;
       return ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(value));
     }
@@ -441,7 +434,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
   }
 
   *rectangles = safe_array;
-
   return S_OK;
 }
 
@@ -547,7 +539,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
   }
 
   *units_moved = start_units_moved;
-
   return S_OK;
 }
 
@@ -800,6 +791,15 @@ ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
   return owner_;
 }
 
+AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
+    const AXPositionInstanceType* position) const {
+  AXTreeManager* manager =
+      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
+  return manager
+             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
+             : owner()->GetDelegate();
+}
+
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
     const AXPositionInstance& endpoint,
@@ -966,16 +966,6 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
 
   *units_moved = count;
   return current_endpoint;
-}
-
-AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
-    const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const {
-  AXTreeManager* manager =
-      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
-
-  return manager
-             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
-             : owner()->GetDelegate();
 }
 
 }  // namespace ui

@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -186,10 +187,10 @@ class WebWidgetClient {
   virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Called to update if pointerrawupdate events should be sent.
-  virtual void HasPointerRawUpdateEventHandlers(bool) {}
+  virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
 
   // Called to update if touch events should be sent.
-  virtual void HasTouchEventHandlers(bool) {}
+  virtual void SetHasTouchEventHandlers(bool) {}
 
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
@@ -301,6 +302,18 @@ class WebWidgetClient {
   // submitted (still called "swapped") to the display compositor (either with
   // DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
+
+  // Set or get what event handlers exist in the document contained in the
+  // WebWidget in order to inform the compositor thread if it is able to handle
+  // an input event, or it needs to pass it to the main thread to be handled.
+  // The class is the type of input event, and for each class there is a
+  // properties defining if the compositor thread can handle the event.
+  virtual void SetEventListenerProperties(cc::EventListenerClass,
+                                          cc::EventListenerProperties) {}
+  virtual cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass) const {
+    return cc::EventListenerProperties::kNone;
+  }
 };
 
 }  // namespace blink

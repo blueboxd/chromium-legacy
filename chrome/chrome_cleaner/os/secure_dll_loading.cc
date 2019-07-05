@@ -5,9 +5,10 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/os/secure_dll_loading.h"
 
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 #include "base/command_line.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
@@ -17,7 +18,7 @@ namespace chrome_cleaner {
 const wchar_t kEmptyDll[] = L"empty_dll.dll";
 
 bool EnableSecureDllLoading() {
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   // We can't use base::CommandLine::ForCurrentProcess() here because that
   // initializes CommandLine, which breaks expectations later about CommandLine
   // being unset.

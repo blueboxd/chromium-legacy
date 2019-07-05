@@ -416,8 +416,7 @@ void SyncManagerImpl::NotifyInitializationSuccess() {
   for (auto& observer : observers_) {
     observer.OnInitializationComplete(
         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), true,
-        InitialSyncEndedTypes());
+        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), true);
   }
 }
 
@@ -425,8 +424,7 @@ void SyncManagerImpl::NotifyInitializationFailure() {
   for (auto& observer : observers_) {
     observer.OnInitializationComplete(
         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), false,
-        ModelTypeSet());
+        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()), false);
   }
 }
 

@@ -11,7 +11,7 @@
     <PreferenceCategory
         android:key="user_category"
         android:title="@string/user"/>
-    <org.chromium.chrome.browser.preferences.SignInPreference
+    <org.chromium.chrome.browser.preferences.sync.SignInPreference
         android:key="sign_in"
         android:title="@string/sign_in_to_chrome"/>
 

@@ -530,11 +530,24 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
     // contributes to a particular element/attribute pair.
     SVGSMILElement* result_element = sandwich.front();
     result_element->ResetAnimatedType();
-    // Go through the sandwich from lowest prio to highest and generate
-    // the animated value (if any.)
-    for (auto& animation : sandwich) {
-      animation->UpdateAnimatedValue(result_element);
+
+    // Animations have to be applied lowest to highest prio.
+    //
+    // Only calculate the relevant animations. If we actually set the
+    // animation value, we don't need to calculate what is beneath it
+    // in the sandwich.
+    auto* sandwich_start = sandwich.end();
+    while (sandwich_start != sandwich.begin()) {
+      --sandwich_start;
+      if ((*sandwich_start)->OverwritesUnderlyingAnimationValue())
+        break;
     }
+
+    for (auto* sandwich_it = sandwich_start; sandwich_it != sandwich.end();
+         sandwich_it++) {
+      (*sandwich_it)->UpdateAnimatedValue(result_element);
+    }
+
     animations_to_apply.push_back(result_element);
   }
 

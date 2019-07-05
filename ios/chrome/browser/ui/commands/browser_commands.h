@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 
 class GURL;
-@class OpenNewTabCommand;
 @class ReadingListAddCommand;
 @class SendTabToSelfCommand;
 

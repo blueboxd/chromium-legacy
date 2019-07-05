@@ -113,8 +113,7 @@
 
   self.actionHandler = [[ToolbarButtonActionsHandler alloc] init];
   self.actionHandler.dispatcher = self.dispatcher;
-  self.actionHandler.browserState = self.browserState;
-  self.actionHandler.webStateList = self.webStateList;
+  self.actionHandler.incognito = self.browserState->IsOffTheRecord();
 
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];

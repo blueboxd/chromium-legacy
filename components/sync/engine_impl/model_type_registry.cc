@@ -88,9 +88,12 @@ void ModelTypeRegistry::ConnectNonBlockingType(
   bool initial_sync_done =
       activation_response->model_type_state.initial_sync_done();
   // Attempt migration if the USS initial sync hasn't been done, there is a
-  // migrator function, and directory has data for this type.
+  // migrator function, and directory has data for this |type|, and |type| is
+  // not NIGORI. Nigori is exceptional, because it has a small amount of data,
+  // which is just downloaded from the server again.
   bool do_migration = !initial_sync_done && !uss_migrator_.is_null() &&
-                      directory()->InitialSyncEndedForType(type);
+                      directory()->InitialSyncEndedForType(type) &&
+                      type != NIGORI;
   bool trigger_initial_sync = !initial_sync_done && !do_migration;
 
   // Save a raw pointer to the processor for connecting later.
@@ -243,14 +246,14 @@ ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
-  // TODO(pavely): GetInitialSyncEndedTypes is queried at the end of sync
-  // manager initialization when update handlers aren't set up yet. Returning
-  // correct set of types is important because otherwise data for al types will
-  // be redownloaded during configuration. For now let's return union of types
-  // reported by directory and types reported by update handlers. We need to
-  // refactor initialization and configuratrion flow to be able to only query
-  // this set from update handlers.
+  // To prevent initial sync of USS types before we reach UssMigrator, we
+  // collect initial sync state from Directory.
+  // TODO(crbug.com/981480): consider cleaning configuration flow in a way,
+  // that this logic is not needed.
   ModelTypeSet result = directory()->InitialSyncEndedTypes();
+  // We don't apply UssMigrator for Nigori, so we need to check only update
+  // handler state.
+  result.Remove(NIGORI);
   for (const auto& kv : update_handler_map_) {
     if (kv.second->IsInitialSyncEnded())
       result.Put(kv.first);

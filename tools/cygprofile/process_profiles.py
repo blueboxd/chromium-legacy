@@ -486,13 +486,19 @@ class ProfileManager(object):
       for bucket in el['caller_and_count']:
         count += long(bucket['count'])
 
-    assert total_calls_count == count, ('Instrumentation missed calls!. '
-                                        '{} != {}').format(total_calls_count,
-                                                           count)
+    # This is a sanity check to ensure the number of race-related
+    # inconsistencies is small.
+    if total_calls_count != count:
+      logging.warn('Instrumentation missed calls! %u != %u', total_calls_count,
+                   count)
+      assert abs(total_calls_count - count) < 3, (
+          'Instrumentation call count differs by too much.')
 
   def GetProcessOffsetGraph(self):
     """Returns a dict that maps each process type to a list of processes's
        call graph data.
+
+    Typical process type keys are 'gpu-process', 'renderer', 'browser'.
     """
     graph_by_process = collections.defaultdict(list)
     for f in self._filenames:
@@ -535,7 +541,7 @@ class ProfileManager(object):
   def _ProcessName(cls, filename):
     # The filename starts with 'profile-hitmap-' and ends with
     # '-PID-TIMESTAMP.txt_X'. Anything in between is the process name. The
-    # browser has an empty process name, which is insterted here.
+    # browser has an empty process name, which is inserted here.
     process_name_parts = os.path.basename(filename).split('-')[2:-2]
     if not process_name_parts:
       return 'browser'

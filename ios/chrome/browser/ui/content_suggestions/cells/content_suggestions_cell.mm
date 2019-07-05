@@ -265,14 +265,21 @@ const CGFloat kAnimationDuration = 0.3;
   [NSLayoutConstraint activateConstraints:@[
     // Image.
     _imageSizeConstraint,
-    [_imageContainer.bottomAnchor
-        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
     [_imageContainer.widthAnchor
         constraintEqualToAnchor:_imageContainer.heightAnchor],
+    [_imageContainer.topAnchor
+        constraintEqualToAnchor:self.contentView.topAnchor
+                       constant:kStandardSpacing],
+    [_imageContainer.bottomAnchor
+        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
+    [_imageContainer.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kStandardSpacing],
 
-    // Additional Information.
-    [_additionalInformationLabel.trailingAnchor
-        constraintEqualToAnchor:_titleLabel.trailingAnchor],
+    // Title label.
+    [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor
+                       constant:-kStandardSpacing],
 
     // Favicon.
     [_faviconView.leadingAnchor
@@ -285,6 +292,13 @@ const CGFloat kAnimationDuration = 0.3;
     [_faviconView.topAnchor
         constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
                                     constant:kSmallSpacing],
+
+    // Additional Information.
+    [_additionalInformationLabel.leadingAnchor
+        constraintEqualToAnchor:_faviconView.trailingAnchor
+                       constant:kSmallSpacing],
+    [_additionalInformationLabel.trailingAnchor
+        constraintEqualToAnchor:_titleLabel.trailingAnchor],
 
     // No image icon.
     [_noImageIcon.centerXAnchor
@@ -330,22 +344,6 @@ const CGFloat kAnimationDuration = 0.3;
   } else {
     [NSLayoutConstraint activateConstraints:self.standardConstraints];
   }
-
-  ApplyVisualConstraintsWithMetrics(
-      @[
-        @"H:[title]-(space)-|",
-        @"H:|-(space)-[image]",
-        @"V:|-(space)-[image]",
-        @"H:[favicon]-(small)-[additional]",
-      ],
-      @{
-        @"image" : _imageContainer,
-        @"title" : _titleLabel,
-        @"additional" : _additionalInformationLabel,
-        @"favicon" : _faviconView,
-      },
-      @{ @"space" : @(kStandardSpacing),
-         @"small" : @(kSmallSpacing) });
 }
 
 + (CGFloat)standardSpacing {

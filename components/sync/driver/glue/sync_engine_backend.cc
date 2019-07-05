@@ -111,8 +111,7 @@ void SyncEngineBackend::DoRefreshTypes(ModelTypeSet types) {
 void SyncEngineBackend::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    bool success,
-    const ModelTypeSet restored_types) {
+    bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
@@ -132,21 +131,6 @@ void SyncEngineBackend::OnInitializationComplete(
   // the UI thread yet.
   js_backend_ = js_backend;
   debug_info_listener_ = debug_info_listener;
-
-  // Before proceeding any further, we need to download the control types and
-  // purge any partial data (ie. data downloaded for a type that was on its way
-  // to being initially synced, but didn't quite make it.).  The following
-  // configure cycle will take care of this.  It depends on the registrar state
-  // which we initialize below to ensure that we don't perform any downloads if
-  // all control types have already completed their initial sync.
-  registrar_->SetInitialTypes(restored_types);
-
-  ConfigureReason reason = restored_types.Empty()
-                               ? CONFIGURE_REASON_NEW_CLIENT
-                               : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
-
-  ModelTypeSet new_control_types =
-      registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
 
   ModelTypeConnector* model_type_connector =
       sync_manager_->GetModelTypeConnector();
@@ -175,6 +159,22 @@ void SyncEngineBackend::OnInitializationComplete(
       model_type_connector->RegisterDirectoryType(control_type, GROUP_PASSIVE);
     }
   }
+
+  // Before proceeding any further, we need to download the control types and
+  // purge any partial data (ie. data downloaded for a type that was on its way
+  // to being initially synced, but didn't quite make it.).  The following
+  // configure cycle will take care of this.  It depends on the registrar state
+  // which we initialize below to ensure that we don't perform any downloads if
+  // all control types have already completed their initial sync.
+  registrar_->SetInitialTypes(sync_manager_->InitialSyncEndedTypes());
+
+  ConfigureReason reason = sync_manager_->InitialSyncEndedTypes().Empty()
+                               ? CONFIGURE_REASON_NEW_CLIENT
+                               : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+
+  ModelTypeSet new_control_types = registrar_->ConfigureDataTypes(
+      /*types_to_add=*/ControlTypes(),
+      /*types_to_remove=*/ModelTypeSet());
 
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);

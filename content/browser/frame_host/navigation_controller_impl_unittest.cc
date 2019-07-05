@@ -3247,21 +3247,21 @@ TEST_F(NavigationControllerTest,
   EXPECT_EQ(1, rph->bad_msg_count());
 }
 
-// Some pages can have subframes with the same base URL (minus the reference) as
-// the main page. Even though this is hard, it can happen, and we don't want
-// these subframe navigations to affect the toplevel document. They should
-// instead be ignored.  http://crbug.com/5585
+// This test verifies that a subframe navigation that would qualify as
+// same-document within the main frame, given its URL, has no impact on the
+// main frame.
+// Original bug: http://crbug.com/5585
 TEST_F(NavigationControllerTest, SameSubframe) {
   NavigationControllerImpl& controller = controller_impl();
   // Navigate the main frame.
   const GURL url("http://www.google.com/");
-  NavigationSimulator::NavigateAndCommitFromDocument(url, main_test_rfh());
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
 
   // We should be at the first navigation entry.
   EXPECT_EQ(controller.GetEntryCount(), 1);
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 
-  // Add and navigate a subframe that would normally count as in-page.
+  // Add and navigate a subframe that is "same-document" with the main frame.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
@@ -3274,18 +3274,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL subframe_url("http://www.google.com/#");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
-  params.url = subframe_url;
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(subframe_url);
-  subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
-  subframe->PrepareForCommit();
-  subframe->SendNavigateWithParams(&params, false);
+  NavigationSimulator::NavigateAndCommitFromDocument(subframe_url, subframe);
 
   // Nothing should have changed.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -3425,21 +3414,22 @@ TEST_F(NavigationControllerTest, LazyReloadWithOnlyPendingEntry) {
       ui::PAGE_TRANSITION_TYPED));
 }
 
-// Tests a subframe navigation while a toplevel navigation is pending.
-// http://crbug.com/43967
+// Verify that a subframe navigation happening during an ongoing main frame
+// navigation does not change the displayed URL.
+// Original bug: http://crbug.com/43967
 TEST_F(NavigationControllerTest, SubframeWhilePending) {
   NavigationControllerImpl& controller = controller_impl();
   // Load the first page.
   const GURL url1("http://foo/");
   NavigateAndCommit(url1);
 
-  // Now start a pending load to a totally different page, but don't commit it.
+  // Now start a load to a totally different page, but don't commit it.
   const GURL url2("http://bar/");
-  controller.LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  auto main_frame_navigation =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  main_frame_navigation->Start();
 
-  // Send a subframe update from the first page, as if one had just
-  // automatically loaded. Auto subframes don't increment the page ID.
+  // Navigate a subframe.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
@@ -3452,26 +3442,10 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL url1_sub("http://foo/subframe");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
-  params.url = url1_sub;
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url1_sub);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1_sub, subframe);
 
-  // This should return false meaning that nothing was actually updated.
-  subframe->SendRendererInitiatedNavigationRequest(url1_sub, false);
-  subframe->PrepareForCommit();
-  subframe->SendNavigateWithParams(&params, false);
-
-  // The notification should have updated the last committed one, and not
-  // the pending load.
+  // The subframe navigation should have no effect on the displayed url.
   EXPECT_EQ(url1, controller.GetLastCommittedEntry()->GetURL());
-
-  // The active entry should be unchanged by the subframe load.
   EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
 }
 

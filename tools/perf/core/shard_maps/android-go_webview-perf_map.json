@@ -1,25 +1,12 @@
 {
     "0": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "end": 8
-            }
-        }
+        "benchmarks": {}
     },
     "1": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 8,
-                "end": 14
-            }
-        }
+        "benchmarks": {}
     },
     "2": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 14
-            }
-        }
+        "benchmarks": {}
     },
     "3": {
         "benchmarks": {}

@@ -163,6 +163,18 @@ class ExtendedAttributes(object):
         """
         return key in self._attributes
 
+    def __iter__(self):
+        """
+        Yields all ExtendedAttribute instances.
+        """
+        for attrs in self._attributes.values():
+            for attr in attrs:
+                yield attr
+
+    def __str__(self):
+        attrs = [str(attr) for attr in self]
+        return '[{}]'.format(', '.join(attrs))
+
     def get(self, key):
         """
         Returns an exnteded attribute whose key is |key|.

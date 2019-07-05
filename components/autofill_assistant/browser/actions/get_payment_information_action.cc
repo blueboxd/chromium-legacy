@@ -104,11 +104,14 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
               .basic_card_issuer_network;
       processed_action_proto_->mutable_payment_details()
           ->set_card_issuer_network(card_issuer_network);
+      DVLOG(3) << "Storing selected credit card in client memory.";
       delegate_->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
 
       if (!get_payment_information.billing_address_name().empty()) {
         DCHECK(payment_information->billing_address);
+        DVLOG(3) << "Storing billing address in client memory under '"
+                 << get_payment_information.billing_address_name() << "'.";
         delegate_->GetClientMemory()->set_selected_address(
             get_payment_information.billing_address_name(),
             std::move(payment_information->billing_address));
@@ -117,6 +120,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
 
     if (!get_payment_information.shipping_address_name().empty()) {
       DCHECK(payment_information->shipping_address);
+      DVLOG(3) << "Storing shipping address in client memory under '"
+               << get_payment_information.shipping_address_name() << "'.";
       delegate_->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->shipping_address));
@@ -142,9 +147,13 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       contact_profile.SetRawInfo(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
           base::ASCIIToUTF16(payment_information->payer_phone));
-      delegate_->GetClientMemory()->set_selected_address(
-          contact_details_proto.contact_details_name(),
-          std::make_unique<autofill::AutofillProfile>(contact_profile));
+      if (!contact_details_proto.contact_details_name().empty()) {
+        DVLOG(3) << "Storing contact info in client memory under '"
+                 << contact_details_proto.contact_details_name() << "'.";
+        delegate_->GetClientMemory()->set_selected_address(
+            contact_details_proto.contact_details_name(),
+            std::make_unique<autofill::AutofillProfile>(contact_profile));
+      }
     }
     processed_action_proto_->mutable_payment_details()
         ->set_is_terms_and_conditions_accepted(

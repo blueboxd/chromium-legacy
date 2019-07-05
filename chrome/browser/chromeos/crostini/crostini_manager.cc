@@ -2333,38 +2333,45 @@ void CrostiniManager::OnExportLxdContainer(
 
 void CrostiniManager::OnExportLxdContainerProgress(
     const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal) {
+  using ProgressSignal = vm_tools::cicerone::ExportLxdContainerProgressSignal;
+
   if (signal.owner_id() != owner_id_)
     return;
 
-  bool exporting = false;
-  ExportContainerProgressStatus status;
   CrostiniResult result;
   switch (signal.status()) {
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_PACK:
-      exporting = true;
-      status = ExportContainerProgressStatus::PACK;
-      break;
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::
-        EXPORTING_DOWNLOAD:
-      exporting = true;
-      status = ExportContainerProgressStatus::DOWNLOAD;
-      break;
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::DONE:
+    case ProgressSignal::EXPORTING_PACK:
+    case ProgressSignal::EXPORTING_DOWNLOAD: {
+      // If we are still exporting, call progress observers.
+      const auto status = signal.status() == ProgressSignal::EXPORTING_PACK
+                              ? ExportContainerProgressStatus::PACK
+                              : ExportContainerProgressStatus::DOWNLOAD;
+      for (auto& observer : export_container_progress_observers_) {
+        observer.OnExportContainerProgress(
+            signal.vm_name(), signal.container_name(), status,
+            signal.progress_percent(), signal.progress_speed());
+      }
+      return;
+    }
+    case ProgressSignal::EXPORTING_STREAMING: {
+      const StreamingExportStatus status{
+          .total_files = signal.total_input_files(),
+          .total_bytes = signal.total_input_bytes(),
+          .exported_files = signal.input_files_streamed(),
+          .exported_bytes = signal.input_bytes_streamed()};
+      for (auto& observer : export_container_progress_observers_) {
+        observer.OnExportContainerProgress(signal.vm_name(),
+                                           signal.container_name(), status);
+      }
+      return;
+    }
+    case ProgressSignal::DONE:
       result = CrostiniResult::SUCCESS;
       break;
     default:
       result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
       LOG(ERROR) << "Failed during export container: " << signal.status()
                  << ", " << signal.failure_reason();
-  }
-
-  if (exporting) {
-    for (auto& observer : export_container_progress_observers_) {
-      observer.OnExportContainerProgress(
-          signal.vm_name(), signal.container_name(), status,
-          signal.progress_percent(), signal.progress_speed());
-    }
-    return;
   }
 
   // Invoke original callback with either success or failure.

@@ -16,7 +16,6 @@ source_set("identity_manager") {
 
   public_deps = [
     "//base",
-    "//components/signin/public/identity_manager",
   ]
 
   deps = [

@@ -7198,6 +7198,7 @@
       'schema': {
         'type': 'array',
         'items': { 'type': 'string' },
+        'sensitiveValue': True,
       },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,

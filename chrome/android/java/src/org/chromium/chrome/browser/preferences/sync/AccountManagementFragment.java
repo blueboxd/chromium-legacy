@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.signin;
+package org.chromium.chrome.browser.preferences.sync;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
@@ -37,8 +37,16 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
+import org.chromium.chrome.browser.signin.AccountAdder;
+import org.chromium.chrome.browser.signin.ConfirmManagedSyncDataDialog;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.ProfileDataCache;
+import org.chromium.chrome.browser.signin.SignOutDialogFragment;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogListener;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.signin.SigninUtils;
+import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -187,8 +195,8 @@ public class AccountManagementFragment extends PreferenceFragment
     private boolean canAddAccounts() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return true;
 
-        UserManager userManager = (UserManager) getActivity()
-                .getSystemService(Context.USER_SERVICE);
+        UserManager userManager =
+                (UserManager) getActivity().getSystemService(Context.USER_SERVICE);
         return !userManager.hasUserRestriction(UserManager.DISALLOW_MODIFY_ACCOUNTS);
     }
 
@@ -250,11 +258,11 @@ public class AccountManagementFragment extends PreferenceFragment
             String parentText;
 
             if (!secondParent.isEmpty()) {
-                parentText = res.getString(R.string.account_management_two_parent_names,
-                        firstParent, secondParent);
+                parentText = res.getString(
+                        R.string.account_management_two_parent_names, firstParent, secondParent);
             } else if (!firstParent.isEmpty()) {
-                parentText = res.getString(R.string.account_management_one_parent_name,
-                        firstParent);
+                parentText =
+                        res.getString(R.string.account_management_one_parent_name, firstParent);
             } else {
                 parentText = res.getString(R.string.account_management_no_parental_data);
             }
@@ -439,8 +447,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @return Whether the sign out is not disabled due to a child/EDU account.
      */
     private static boolean getSignOutAllowedPreferenceValue() {
-        return ContextUtils.getAppSharedPreferences()
-                .getBoolean(SIGN_OUT_ALLOWED, true);
+        return ContextUtils.getAppSharedPreferences().getBoolean(SIGN_OUT_ALLOWED, true);
     }
 
     /**

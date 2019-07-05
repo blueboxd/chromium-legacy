@@ -19,7 +19,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'media.mobile',
   'media_perftests',
   'memory.desktop',
-  'memory.top_10_mobile',
   'net_perftests',
   'octane',
   'passthrough_command_buffer_perftests',

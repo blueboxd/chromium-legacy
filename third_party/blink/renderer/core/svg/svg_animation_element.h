@@ -74,6 +74,8 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   AnimationMode GetAnimationMode() const { return animation_mode_; }
   CalcMode GetCalcMode() const { return calc_mode_; }
 
+  bool OverwritesUnderlyingAnimationValue() override;
+
   template <typename AnimatedType>
   void AnimateDiscreteType(float percentage,
                            const AnimatedType& from_type,

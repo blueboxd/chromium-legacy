@@ -83,9 +83,8 @@ void FakeSyncManager::Init(InitArgs* args) {
   }
 
   for (auto& observer : observers_) {
-    observer.OnInitializationComplete(WeakHandle<JsBackend>(),
-                                      WeakHandle<DataTypeDebugInfoListener>(),
-                                      true, initial_sync_ended_types_);
+    observer.OnInitializationComplete(
+        WeakHandle<JsBackend>(), WeakHandle<DataTypeDebugInfoListener>(), true);
   }
 }
 

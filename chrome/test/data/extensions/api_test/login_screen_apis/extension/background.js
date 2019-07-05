@@ -5,6 +5,10 @@
 const cannotCreateMultipleWindowsErrorMessage =
     'Can\'t create more than one window per extension.';
 const cannotCloseNoWindowErrorMessage = 'No open window to close.';
+const cannotAccessLocalStorageErrorMessage =
+    '"local" is not available for login screen extensions';
+const cannotAccessSyncStorageErrorMessage =
+    '"sync" is not available for login screen extensions';
 
 const tests = {
   /* LoginScreenUi ************************************************************/
@@ -35,6 +39,32 @@ const tests = {
   'LoginScreenUiCannotCloseNoWindow': () => {
     chrome.loginScreenUi.close(() => {
       chrome.test.assertLastError(cannotCloseNoWindowErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+
+  /* Storage ******************************************************************/
+  'StorageCannotAccessLocalStorage': () => {
+    chrome.storage.local.get(() => {
+      chrome.test.assertLastError(cannotAccessLocalStorageErrorMessage);
+      chrome.storage.local.set({foo: 'bar'}, () => {
+        chrome.test.assertLastError(cannotAccessLocalStorageErrorMessage);
+        chrome.test.succeed();
+      });
+    });
+  },
+  'StorageCannotAccessSyncStorage': () => {
+    chrome.storage.sync.get(() => {
+      chrome.test.assertLastError(cannotAccessSyncStorageErrorMessage);
+      chrome.storage.sync.set({foo: 'bar'}, () => {
+        chrome.test.assertLastError(cannotAccessSyncStorageErrorMessage);
+        chrome.test.succeed();
+      });
+    });
+  },
+  'StorageCanAccessManagedStorage': () => {
+    chrome.storage.managed.get(() => {
+      chrome.test.assertNoLastError();
       chrome.test.succeed();
     });
   },

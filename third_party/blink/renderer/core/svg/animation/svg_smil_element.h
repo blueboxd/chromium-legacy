@@ -111,6 +111,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void ClearAnimatedType() = 0;
   virtual void ApplyResultsToTarget() = 0;
 
+  // Returns true if this animation "sets" the
+  // value of the animation. Thus all previous
+  // animations are rendered useless.
+  virtual bool OverwritesUnderlyingAnimationValue() = 0;
+
   bool AnimatedTypeIsLocked() const { return animated_property_locked_; }
   void LockAnimatedType() {
     DCHECK(!animated_property_locked_);

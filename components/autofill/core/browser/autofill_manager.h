@@ -66,6 +66,16 @@ struct FormFieldData;
 // We show the credit card signin promo only a certain number of times.
 extern const int kCreditCardSigninPromoImpressionLimit;
 
+// Enum for the value patterns metric. Don't renumerate existing value. They are
+// used for metrics.
+// TODO(crbug.com/966475): Add support for IBAN
+// (https://en.wikipedia.org/wiki/International_Bank_Account_Number).
+enum class ValuePatternsMetric {
+  kNoPatternFound = 0,
+  kUpiVpa = 1,
+  kMaxValue = kUpiVpa,
+};
+
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillHandler,

@@ -102,7 +102,7 @@ void DeviceOAuth2TokenService::OnRefreshTokenRevoked(
     on_refresh_token_revoked_callback_.Run(account_id);
 }
 
-void DeviceOAuth2TokenService::FetchOAuth2Token(
+bool DeviceOAuth2TokenService::HandleAccessTokenFetch(
     OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -120,22 +120,20 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
       pending_requests_.push_back(new PendingRequest(
           request->AsWeakPtr(), client_id, client_secret, scopes));
       GetDeviceDelegate()->RequestValidation();
-      return;
+      return true;
     case DeviceOAuth2TokenServiceDelegate::STATE_NO_TOKEN:
       FailRequest(request, GoogleServiceAuthError::USER_NOT_SIGNED_UP);
-      return;
+      return true;
     case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_INVALID:
       FailRequest(request, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-      return;
+      return true;
     case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_VALID:
-      // Pass through to OAuth2TokenService to satisfy the request.
-      OAuth2TokenService::FetchOAuth2Token(request, account_id,
-                                           url_loader_factory, client_id,
-                                           client_secret, scopes);
-      return;
+      // Let OAuth2AccessTokenManager handle the request.
+      return false;
   }
 
   NOTREACHED() << "Unexpected state " << GetDeviceDelegate()->state_;
+  return false;
 }
 
 void DeviceOAuth2TokenService::FlushPendingRequests(

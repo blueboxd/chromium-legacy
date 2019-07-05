@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
-  "+components",
+  "+components/signin/public",
+  "+components/variations",
   "+net",
   "+services/data_decoder/public/cpp",
   "+services/network/public/cpp",

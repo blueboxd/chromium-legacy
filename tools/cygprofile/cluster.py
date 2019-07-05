@@ -152,7 +152,7 @@ class Clustering(object):
           if caller in whitelist or callee == caller:
             continue
 
-          # Multiply by -1, the biggest the count the smaller the distance
+          # Multiply by -1, the bigger the count the smaller the distance
           # should be.
           dist = caller_info.count * -1
           if (caller, callee) in pairs:
@@ -263,7 +263,7 @@ class Clustering(object):
 
 def _GetOffsetSymbolName(processor, dump_offset):
   dump_offset_to_symbol_info = \
-    processor.GetDumpOffsetToSymboInfolIncludingWhitelist()
+      processor.GetDumpOffsetToSymboInfolIncludingWhitelist()
   offset_to_primary = processor.OffsetToPrimaryMap()
   idx = dump_offset / 2
   assert dump_offset >= 0 and idx < len(dump_offset_to_symbol_info), (
@@ -291,7 +291,7 @@ def _GetSymbolsCallGraph(profiles, processor):
   offsets_graph = profiles.GetProcessOffsetGraph();
   process_symbols_graph = collections.defaultdict(list)
 
-  # |process_type| can be : browser, renderer...etc.
+  # |process_type| can be : browser, renderer, gpu-process, etc.
   for process_type in offsets_graph:
     for process in offsets_graph[process_type]:
       process = sorted(process, key=lambda k: long(k['index']))
@@ -306,7 +306,7 @@ def _GetSymbolsCallGraph(profiles, processor):
           caller_offset = long(bucket['caller_offset'])
           count = long(bucket['count'])
           if caller_offset == 0:
-            misses = count
+            misses += count
             continue
 
           caller_symbol_name = _GetOffsetSymbolName(processor, caller_offset)

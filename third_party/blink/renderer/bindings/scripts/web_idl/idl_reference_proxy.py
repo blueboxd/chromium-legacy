@@ -98,6 +98,10 @@ class RefByIdFactory(object):
         self._target_attrs = target_attrs
         self._target_attrs_with_priority = target_attrs_with_priority
 
+    @classmethod
+    def is_reference(cls, obj):
+        return isinstance(obj, cls._RefById)
+
     def create(self, identifier):
         assert not self._did_resolve
         ref = RefByIdFactory._RefById(identifier, self._target_attrs,

@@ -589,7 +589,7 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 
 // Enable garbage collection of WebAssembly code.
 const base::Feature kWebAssemblyCodeGC{"WebAssemblyCodeGC",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly SIMD
 // https://github.com/WebAssembly/Simd

@@ -75,13 +75,6 @@ NSString* SerializePasswordFormFillData(
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(void (^)(BOOL))completionHandler;
 
-// Finds given field, identified by |fieldIdentifier| in the given |formName|
-// and focus it, which should trigger a form focus event. If not nil, calls
-// |completionHandler| with YES if the field was found and event was dispatched.
-- (void)focusOnForm:(NSString*)formName
-      fieldIdentifier:(NSString*)fieldIdentifier
-    completionHandler:(void (^)(BOOL))completionHandler;
-
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

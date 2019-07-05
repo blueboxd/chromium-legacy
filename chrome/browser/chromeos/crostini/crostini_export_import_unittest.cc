@@ -21,6 +21,15 @@
 
 namespace crostini {
 
+struct ExportProgressOptionalArguments {
+  int progress_percent{};  // TODO(juwa): remove this once tremplin has been
+                           // shipped.
+  uint32_t total_files{};
+  uint64_t total_bytes{};
+  uint32_t files_streamed{};
+  uint64_t bytes_streamed{};
+};
+
 struct ImportProgressOptionalArguments {
   int progress_percent{};
   uint64_t available_space{};
@@ -31,13 +40,17 @@ class CrostiniExportImportTest : public testing::Test {
  public:
   void SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status status,
-      int progress_percent) {
+      const ExportProgressOptionalArguments& arguments = {}) {
     vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
     signal.set_owner_id(CryptohomeIdForProfile(profile()));
     signal.set_vm_name(kCrostiniDefaultVmName);
     signal.set_container_name(kCrostiniDefaultContainerName);
     signal.set_status(status);
-    signal.set_progress_percent(progress_percent);
+    signal.set_progress_percent(arguments.progress_percent);
+    signal.set_total_input_files(arguments.total_files);
+    signal.set_total_input_bytes(arguments.total_bytes);
+    signal.set_input_files_streamed(arguments.files_streamed);
+    signal.set_input_bytes_streamed(arguments.bytes_streamed);
     fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
   }
 
@@ -117,13 +130,14 @@ class CrostiniExportImportTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
 };
 
-TEST_F(CrostiniExportImportTest, TestExportSuccess) {
+// TODO(juwa): remove this once tremplin has been shipped.
+TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   crostini_export_import()->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
   run_loop_->RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import()->GetNotificationForTesting(container_id_);
-  EXPECT_NE(notification, nullptr);
+  ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
@@ -131,7 +145,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   // 20% PACK = 10% overall.
   SendExportProgress(vm_tools::cicerone::
                          ExportLxdContainerProgressSignal_Status_EXPORTING_PACK,
-                     20);
+                     {.progress_percent = 20});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 10);
@@ -140,24 +154,79 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   SendExportProgress(
       vm_tools::cicerone::
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
-      20);
+      {.progress_percent = 20});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
 
-  // Close notification and update progress.  Should not update notification.
+  // Close notification and update progress. Should not update notification.
   notification->Close(false);
   SendExportProgress(
       vm_tools::cicerone::
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
-      40);
+      {.progress_percent = 40});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
 
   // Done.
   SendExportProgress(
-      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE, 0);
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::DONE);
+}
+
+TEST_F(CrostiniExportImportTest, TestExportSuccess) {
+  crostini_export_import()->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+  run_loop_->RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import()->GetNotificationForTesting(container_id_);
+  ASSERT_NE(notification, nullptr);
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 0);
+
+  // STREAMING 10% bytes done + 30% files done = 20% overall.
+  SendExportProgress(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_STREAMING,
+      {.total_files = 100,
+       .total_bytes = 100,
+       .files_streamed = 30,
+       .bytes_streamed = 10});
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 20);
+
+  // STREAMING 66% bytes done + 55% files done then floored = 60% overall.
+  SendExportProgress(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_STREAMING,
+      {.total_files = 100,
+       .total_bytes = 100,
+       .files_streamed = 55,
+       .bytes_streamed = 66});
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 60);
+
+  // Close notification and update progress. Should not update notification.
+  notification->Close(false);
+  SendExportProgress(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_STREAMING,
+      {.total_files = 100,
+       .total_bytes = 100,
+       .files_streamed = 90,
+       .bytes_streamed = 85});
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 60);
+
+  // Done.
+  SendExportProgress(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::DONE);
 }
@@ -171,7 +240,7 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
 
   // Failed.
   SendExportProgress(
-      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED, 0);
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::FAILED);
 }
@@ -182,7 +251,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   run_loop_->RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import()->GetNotificationForTesting(container_id_);
-  EXPECT_NE(notification, nullptr);
+  ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
@@ -205,7 +274,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
 
-  // Close notification and update progress.  Should not update notification.
+  // Close notification and update progress. Should not update notification.
   notification->Close(false);
   SendImportProgress(
       vm_tools::cicerone::

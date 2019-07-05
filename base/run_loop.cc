@@ -117,8 +117,7 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
 RunLoop::RunLoop(Type type)
     : delegate_(GetTlsDelegate().Get()),
       type_(type),
-      origin_task_runner_(ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+      origin_task_runner_(ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_) << "A RunLoop::Delegate must be bound to this thread prior "
                        "to using RunLoop.";
   DCHECK(origin_task_runner_);

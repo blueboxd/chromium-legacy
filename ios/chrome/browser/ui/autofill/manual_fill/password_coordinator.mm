@@ -139,6 +139,10 @@
   __weak id<PasswordCoordinatorDelegate> delegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
     [delegate openPasswordSettings];
+    if (IsIPadIdiom()) {
+      // Settings close the popover but don't send a message to reopen it.
+      [delegate fallbackCoordinatorDidDismissPopover:self];
+    }
   }];
 }
 

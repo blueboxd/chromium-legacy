@@ -352,7 +352,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
     percentage = percentage < 0.5 ? 0 : 1;
 
   // Target element might have changed.
-  SVGElement* target_element = this->targetElement();
+  SVGElement* target_element = targetElement();
 
   // Values-animation accumulates using the last values entry corresponding to
   // the end of duration time.
@@ -419,8 +419,8 @@ bool SVGAnimateElement::CalculateFromAndByValues(const String& from_string,
 void SVGAnimateElement::ResetAnimatedType() {
   ResolveTargetProperty();
 
-  SVGElement* target_element = this->targetElement();
-  const QualifiedName& attribute_name = this->AttributeName();
+  SVGElement* target_element = targetElement();
+  const QualifiedName& attribute_name = AttributeName();
 
   if (!ShouldApplyAnimation(*target_element, attribute_name))
     return;
@@ -451,7 +451,7 @@ void SVGAnimateElement::ClearAnimatedType() {
   // the lock is held. See crbug.com/581546.
   DCHECK(!AnimatedTypeIsLocked());
 
-  SVGElement* target_element = this->targetElement();
+  SVGElement* target_element = targetElement();
   if (!target_element) {
     animated_value_.Clear();
     return;

@@ -24,26 +24,12 @@ typedef struct {
 } KeyboardState;
 
 // Delegate informed about the visible/hidden state of the keyboard.
-// TODO(crbug.com/974226): look into deprecating
-// keyboardWillShowWithHardwareKeyboardAttached and investigate
-// keyboardDidStayOnScreen + keyboardDidHide.
 @protocol KeyboardObserverHelperConsumer <NSObject>
-
-// Indicates that |UIKeyboardWillShowNotification| was posted. And informs if a
-// physical keyboard is attached. On iPad also considers
-// |UIKeyboardDidChangeFrameNotification| since when the keyboard is not docked,
-// |UIKeyboardWillShowNotification| isn't posted.
-- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard;
 
 // Indicates that |UIKeyboardWillHideNotification| was posted but the keyboard
 // was not hidden. For example, this can happen when jumping between fields.
 - (void)keyboardDidStayOnScreen;
 
-// Indicates that |UIKeyboardWillHideNotification| was posted and the keyboard
-// was actually dismissed.
-- (void)keyboardDidHide;
-
-@optional
 // Indicates that the keyboard state changed, at least on one of the
 // |KeyboardState| aspects.
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState;

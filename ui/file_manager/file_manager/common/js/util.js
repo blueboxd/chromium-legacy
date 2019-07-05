@@ -1299,21 +1299,13 @@ util.validateExternalDriveName = (name, volumeInfo) => {
 
   const fileSystem = volumeInfo.diskFileSystemType;
   const nameLength = name.length;
+  const lengthLimit = VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit;
 
   // Verify length for the target file system type
-  if (fileSystem == VolumeManagerCommon.FileSystemType.VFAT &&
-      nameLength >
-          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
-        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT));
-  } else if (
-      fileSystem == VolumeManagerCommon.FileSystemType.EXFAT &&
-      nameLength >
-          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
-        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT));
+  if (lengthLimit.hasOwnProperty(fileSystem) &&
+      nameLength > lengthLimit[fileSystem]) {
+    return Promise.reject(
+        strf('ERROR_EXTERNAL_DRIVE_LONG_NAME', lengthLimit[fileSystem]));
   }
 
   // Checks if name contains only printable ASCII (from ' ' to '~')

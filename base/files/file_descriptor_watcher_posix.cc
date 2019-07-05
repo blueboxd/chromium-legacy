@@ -156,8 +156,7 @@ FileDescriptorWatcher::Controller::Controller(MessagePumpForIO::Mode mode,
                                               const RepeatingClosure& callback)
     : callback_(callback),
       io_thread_task_runner_(
-          tls_fd_watcher.Get().Get()->io_thread_task_runner()),
-      weak_factory_(this) {
+          tls_fd_watcher.Get().Get()->io_thread_task_runner()) {
   DCHECK(!callback_.is_null());
   DCHECK(io_thread_task_runner_);
   watcher_ = std::make_unique<Watcher>(weak_factory_.GetWeakPtr(), mode, fd);

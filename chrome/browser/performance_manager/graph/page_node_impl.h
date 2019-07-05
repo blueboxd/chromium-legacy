@@ -146,6 +146,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
   const GURL& GetMainFrameUrl() const override;
+  const WebContentsProxy& GetContentProxy() const override;
 
   void AddFrame(FrameNodeImpl* frame_node);
   void RemoveFrame(FrameNodeImpl* frame_node);

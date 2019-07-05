@@ -177,7 +177,7 @@
       [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
 
   [searchButton addTarget:self.actionHandler
-                   action:@selector(searchAction)
+                   action:@selector(searchAction:)
          forControlEvents:UIControlEventTouchUpInside];
   if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
     BOOL isIncognito = self.style == INCOGNITO;

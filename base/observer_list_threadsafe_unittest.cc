@@ -80,8 +80,7 @@ class AddRemoveThread : public Foo {
             SingleThreadTaskRunnerThreadMode::DEDICATED)),
         in_list_(false),
         start_(Time::Now()),
-        do_notifies_(notify),
-        weak_factory_(this) {
+        do_notifies_(notify) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
@@ -132,7 +131,7 @@ class AddRemoveThread : public Foo {
 
   bool do_notifies_;    // Whether these threads should do notifications.
 
-  base::WeakPtrFactory<AddRemoveThread> weak_factory_;
+  base::WeakPtrFactory<AddRemoveThread> weak_factory_{this};
 };
 
 }  // namespace

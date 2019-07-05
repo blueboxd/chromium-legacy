@@ -880,11 +880,10 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
   MOCK_METHOD1(OnSyncCycleCompleted, void(const SyncCycleSnapshot&));  // NOLINT
-  MOCK_METHOD4(OnInitializationComplete,
+  MOCK_METHOD3(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&,
                     const WeakHandle<DataTypeDebugInfoListener>&,
-                    bool,
-                    ModelTypeSet));                                 // NOLINT
+                    bool));                                         // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));   // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));           // NOLINT
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));  // NOLINT
@@ -935,7 +934,7 @@ class SyncManagerTest : public testing::Test,
     extensions_activity_ = new ExtensionsActivity();
 
     sync_manager_.AddObserver(&manager_observer_);
-    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))
+    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&js_backend_),
                         SaveArg<2>(&initialization_succeeded_)));
 

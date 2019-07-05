@@ -176,6 +176,15 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
 }
 
+TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
+  SetBodyInnerHTML("<iframe scrolling='no'></iframe>");
+  EXPECT_FALSE(ChildDocument().View()->CanHaveScrollbars());
+
+  ChildDocument().WillChangeFrameOwnerProperties(0, 0, kScrollbarAlwaysOn,
+                                                 false);
+  EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
+}
+
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.

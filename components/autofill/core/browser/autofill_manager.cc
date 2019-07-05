@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -189,6 +190,27 @@ std::string GetAPIKeyForUrl(version_info::Channel channel) {
   if (channel == version_info::Channel::STABLE)
     return google_apis::GetAPIKey();
   return google_apis::GetNonStableAPIKey();
+}
+
+ValuePatternsMetric GetValuePattern(const base::string16& value) {
+  if (IsUPIVirtualPaymentAddress(value))
+    return ValuePatternsMetric::kUpiVpa;
+  return ValuePatternsMetric::kNoPatternFound;
+}
+
+void LogValuePatternsMetric(const FormData& form) {
+  for (const FormFieldData& field : form.fields) {
+    if (!field.IsVisible()) {
+      // Ignore hidden fields.
+      continue;
+    }
+    base::string16 value;
+    base::TrimWhitespace(field.value, base::TRIM_ALL, &value);
+    if (value.empty())
+      continue;
+    base::UmaHistogramEnumeration("Autofill.SubmittedValuePatterns",
+                                  GetValuePattern(value));
+  }
 }
 
 bool IsAddressForm(FieldTypeGroup field_type_group) {
@@ -402,6 +424,9 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
           features::kAutofillSaveOnProbablySubmitted)) {
     return;
   }
+
+  // Always let the value patterns metric upload data.
+  LogValuePatternsMetric(form);
 
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);

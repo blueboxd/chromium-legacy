@@ -139,18 +139,4 @@ NSString* JSONEscape(NSString* JSONString) {
              }];
 }
 
-- (void)focusOnForm:(NSString*)formName
-      fieldIdentifier:(NSString*)fieldIdentifier
-    completionHandler:(void (^)(BOOL))completionHandler {
-  NSString* script = [NSString stringWithFormat:@"__gCrWeb.passwords."
-                                                @"focusOnFormField(%@, %@)",
-                                                JSONEscape(formName),
-                                                JSONEscape(fieldIdentifier)];
-  [_receiver executeJavaScript:script
-             completionHandler:^(id result, NSError*) {
-               if (completionHandler)
-                 completionHandler([result isEqual:@YES]);
-             }];
-}
-
 @end

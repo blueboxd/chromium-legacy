@@ -155,7 +155,9 @@ void TapOnWebElementWithID(const std::string& elementID) {
   AssertElementIsFocused(kFormElementID1);
 
   // Create the callback expectation.
-  OCMExpect([self.keyboardObserverDelegateMock keyboardDidHide]);
+  KeyboardState keyboardState = {NO, NO, NO, NO, NO};
+  OCMExpect([self.keyboardObserverDelegateMock
+      keyboardWillChangeToState:keyboardState]);
 
   // Tap the "Submit" button, and let the run loop spin.
   TapOnWebElementWithID(kFormElementSubmit);

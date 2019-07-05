@@ -143,9 +143,6 @@ PerformanceEntryVector Performance::getEntries() {
   PerformanceEntryVector entries;
 
   entries.AppendVector(resource_timing_buffer_);
-  entries.AppendVector(event_timing_buffer_);
-  entries.AppendVector(element_timing_buffer_);
-  entries.AppendVector(layout_jank_buffer_);
   if (first_input_timing_)
     entries.push_back(first_input_timing_);
   if (!navigation_timing_)
@@ -274,46 +271,20 @@ PerformanceEntryVector Performance::getEntriesByName(
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
 
-  if (!entry_type.IsNull() && type == PerformanceEntry::kInvalid)
+  if (!entry_type.IsNull() &&
+      !PerformanceEntry::IsValidTimelineEntryType(type)) {
+    String message = "Deprecated API for given entry type.";
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
     return entries;
+  }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kResource) {
     for (const auto& resource : resource_timing_buffer_) {
       if (resource->name() == name)
         entries.push_back(resource);
     }
-  }
-
-  if (entry_type.IsNull() || type == PerformanceEntry::kLayoutJank) {
-    for (const auto& layout_jank : layout_jank_buffer_) {
-      if (layout_jank->name() == name)
-        entries.push_back(layout_jank);
-    }
-  }
-  if (type == PerformanceEntry::kLayoutJank) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kLayoutJankExplicitlyRequested);
-  }
-  if (entry_type.IsNull() || type == PerformanceEntry::kElement) {
-    for (const auto& element : element_timing_buffer_) {
-      if (element->name() == name)
-        entries.push_back(element);
-    }
-  }
-  if (type == PerformanceEntry::kElement) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kElementTimingExplicitlyRequested);
-  }
-
-  if (entry_type.IsNull() || type == PerformanceEntry::kEvent) {
-    for (const auto& event : event_timing_buffer_) {
-      if (event->name() == name)
-        entries.push_back(event);
-    }
-  }
-  if (type == PerformanceEntry::kEvent) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kEventTimingExplicitlyRequested);
   }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kFirstInput) {

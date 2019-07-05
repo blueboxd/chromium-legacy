@@ -386,7 +386,7 @@ class BASE_EXPORT RunLoop {
   const scoped_refptr<SingleThreadTaskRunner> origin_task_runner_;
 
   // WeakPtrFactory for QuitClosure safety.
-  WeakPtrFactory<RunLoop> weak_factory_;
+  WeakPtrFactory<RunLoop> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };

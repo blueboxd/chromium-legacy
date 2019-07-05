@@ -68,6 +68,33 @@ class InSessionConfirmPasswordChangeUI : public ui::WebDialogUI {
   DISALLOW_COPY_AND_ASSIGN(InSessionConfirmPasswordChangeUI);
 };
 
+// System dialog wrapping chrome://urgent-password-expiry-notification
+class UrgentPasswordExpiryNotificationDialog : public SystemWebDialogDelegate {
+ public:
+  static void Show(int less_than_n_days);
+  static void Dismiss();
+
+ protected:
+  explicit UrgentPasswordExpiryNotificationDialog(int less_than_n_days);
+  ~UrgentPasswordExpiryNotificationDialog() override;
+
+  // ui::WebDialogDelegate:
+  void GetDialogSize(gfx::Size* size) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UrgentPasswordExpiryNotificationDialog);
+};
+
+// For chrome:://urgent-password-expiry-notification
+class UrgentPasswordExpiryNotificationUI : public ui::WebDialogUI {
+ public:
+  explicit UrgentPasswordExpiryNotificationUI(content::WebUI* web_ui);
+  ~UrgentPasswordExpiryNotificationUI() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UrgentPasswordExpiryNotificationUI);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_PASSWORD_CHANGE_UI_H_

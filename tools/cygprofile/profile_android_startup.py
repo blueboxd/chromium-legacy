@@ -264,7 +264,7 @@ class AndroidProfileTool(object):
     """
     if self._pregenerated_profiles:
       logging.info('Using pregenerated profiles instead of running profile')
-      logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
+      logging.info('Profile files:\n%s', '\n'.join(self._pregenerated_profiles))
       return self._pregenerated_profiles
     self._device.adb.Logcat(clear=True)
     self._Install(apk)

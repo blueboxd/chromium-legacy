@@ -79,8 +79,8 @@ struct Arrow {
   WeakPtr<Target> target;
 };
 struct TargetWithFactory : public Target {
-  TargetWithFactory() : factory(this) {}
-  WeakPtrFactory<Target> factory;
+  TargetWithFactory() {}
+  WeakPtrFactory<Target> factory{this};
 };
 
 // Helper class to create and destroy weak pointer copies

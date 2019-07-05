@@ -379,6 +379,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   subtitleLabel.adjustsFontForContentSizeCategory = YES;
 
   UIButton* learnMoreButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  learnMoreButton.accessibilityTraits = UIAccessibilityTraitLink;
   [learnMoreButton
       setTitle:l10n_util::GetNSString(IDS_NEW_TAB_OTR_LEARN_MORE_LINK)
       forState:UIControlStateNormal];

@@ -45,18 +45,12 @@ class JsSyncManagerObserverTest : public testing::Test {
 
 TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
   base::DictionaryValue expected_details;
-  ModelTypeSet restored_types;
-  restored_types.Put(BOOKMARKS);
-  restored_types.Put(NIGORI);
-  expected_details.Set("restoredTypes", ModelTypeSetToValue(restored_types));
-
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onInitializationComplete",
                             HasDetailsAsDictionary(expected_details)));
 
   js_sync_manager_observer_.OnInitializationComplete(
-      WeakHandle<JsBackend>(), WeakHandle<DataTypeDebugInfoListener>(), true,
-      restored_types);
+      WeakHandle<JsBackend>(), WeakHandle<DataTypeDebugInfoListener>(), true);
   PumpLoop();
 }
 

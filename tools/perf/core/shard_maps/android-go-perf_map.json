@@ -1,17 +1,9 @@
 {
     "0": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "end": 9
-            }
-        }
+        "benchmarks": {}
     },
     "1": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 9
-            }
-        }
+        "benchmarks": {}
     },
     "2": {
         "benchmarks": {

@@ -575,8 +575,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(http://crbug.com/824840): Find out if this is necessary with network
     // service, and make it work on UI thread if so.
     if (resource_request_->request_body && !IsNavigationLoaderOnUIEnabled()) {
-      GetBodyBlobDataHandles(resource_request_->request_body.get(),
-                             resource_context_, &blob_handles_);
+      bool result =
+          GetBodyBlobDataHandles(resource_request_->request_body.get(),
+                                 resource_context_, &blob_handles_);
+      // When network service is enabled, we are not supposed to get blobs
+      // here. See if this causes a crash to verify.
+      CHECK(result && blob_handles_.empty());
     }
 
     StartInternal(

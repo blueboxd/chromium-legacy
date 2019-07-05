@@ -31,7 +31,6 @@ media.desktop,dalecurtis@chromium.org,Internals>Media,,"aac,audio_only,audio_vid
 media.mobile,dalecurtis@chromium.org,Internals>Media,,"aac,audio_only,audio_video,background,beginning_to_end,busyjs,cns,h264,mp3,mse,opus,seek,src,video_only,vorbis,vp9"
 media_perftests,"crouleau@chromium.org, dalecurtis@chromium.org",Internals>Media,,
 memory.desktop,erikchen@chromium.org,,,
-memory.top_10_mobile,perezju@chromium.org,,,
 net_perftests,net-dev@chromium.org,Internals>Network,,
 octane,hablich@chromium.org,Blink>JavaScript,,
 passthrough_command_buffer_perftests,net-dev@chromium.org,Internals>Network,,

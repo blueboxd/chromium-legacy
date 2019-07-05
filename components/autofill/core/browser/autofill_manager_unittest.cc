@@ -4133,6 +4133,28 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   FormSubmitted(form);
 }
 
+// Test that the value patterns metric is reported.
+TEST_F(AutofillManagerTest, FormSubmitted_ValuePatternsMetric) {
+  // Set up our form data.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("Some label", "my-field", "user@okaxis", "text",
+                            &field);
+  field.is_focusable = true;  // The metric skips hidden fields.
+  form.name = ASCIIToUTF16("my-form");
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(form);
+  histogram_tester.ExpectUniqueSample("Autofill.SubmittedValuePatterns",
+                                      autofill::ValuePatternsMetric::kUpiVpa,
+                                      1);
+}
+
 // Test that when Autofill is disabled, Autocomplete suggestions are still
 // queried.
 TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {

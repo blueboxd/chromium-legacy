@@ -405,7 +405,7 @@ _CONFIG = [
             ('base::Bind(|Once|Repeating)',
              'Use WTF::Bind or WTF::BindRepeating.'),
             ('std::(deque|map|set|vector)',
-             'Use WTF containers like WTF::HashMap instead of the banned std containers.'),
+             'Use WTF containers like WTF::Deque, WTF::HashMap, WTF::HashSet or WTF::Vector instead of the banned std containers.'),
         ],
     },
     {

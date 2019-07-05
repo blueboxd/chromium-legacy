@@ -47,17 +47,11 @@
             "loading.mobile": {
                 "begin": 43
             },
-            "media.mobile": {},
-            "memory.top_10_mobile": {
-                "end": 3
-            }
+            "media.mobile": {}
         }
     },
     "4": {
         "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 3
-            },
             "octane": {}
         }
     },

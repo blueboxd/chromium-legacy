@@ -422,7 +422,7 @@ class BASE_EXPORT SequenceManagerImpl
     return main_thread_only_;
   }
 
-  WeakPtrFactory<SequenceManagerImpl> weak_factory_;
+  WeakPtrFactory<SequenceManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SequenceManagerImpl);
 };

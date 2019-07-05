@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/insession_confirm_password_change_handler_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/urgent_password_expiry_notification_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -37,6 +38,8 @@ namespace {
 PasswordChangeDialog* g_dialog = nullptr;
 
 ConfirmPasswordChangeDialog* g_confirm_dialog = nullptr;
+
+UrgentPasswordExpiryNotificationDialog* g_notification_dialog = nullptr;
 
 std::string GetPasswordChangeUrl(Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -74,6 +77,9 @@ constexpr int kMaxPasswordChangeDialogHeight = 640;
 // shown in the dialog.
 constexpr int kMaxConfirmPasswordChangeDialogWidth = 560;
 constexpr int kMaxConfirmPasswordChangeDialogHeight = 420;
+
+constexpr int kMaxNotificationDialogWidth = 560;
+constexpr int kMaxNotificationDialogHeight = 320;
 
 // Given a desired width and height, returns the same size if it fits on screen,
 // or the closest possible size that will fit on the screen.
@@ -223,5 +229,86 @@ InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
 }
 
 InSessionConfirmPasswordChangeUI::~InSessionConfirmPasswordChangeUI() = default;
+
+UrgentPasswordExpiryNotificationDialog::UrgentPasswordExpiryNotificationDialog(
+    int less_than_n_days)
+    : SystemWebDialogDelegate(
+          GURL(std::string(
+                   chrome::kChromeUIUrgentPasswordExpiryNotificationUrl) +
+               base::NumberToString(less_than_n_days)),
+          /*title=*/base::string16()) {}
+
+UrgentPasswordExpiryNotificationDialog::
+    ~UrgentPasswordExpiryNotificationDialog() {
+  DCHECK_EQ(this, g_notification_dialog);
+  g_notification_dialog = nullptr;
+}
+
+void UrgentPasswordExpiryNotificationDialog::GetDialogSize(
+    gfx::Size* size) const {
+  *size = FitSizeToDisplay(kMaxNotificationDialogWidth,
+                           kMaxNotificationDialogHeight);
+}
+
+// static
+void UrgentPasswordExpiryNotificationDialog::Show(int less_than_n_days) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_notification_dialog) {
+    // TODO(https://crbug.com/930109): Update the existing dialog
+    // with less_than_n_days, or make the dialog update automatically.
+    g_notification_dialog->Focus();
+    return;
+  }
+  g_notification_dialog =
+      new UrgentPasswordExpiryNotificationDialog(less_than_n_days);
+  g_notification_dialog->ShowSystemDialog();
+}
+
+// static
+void UrgentPasswordExpiryNotificationDialog::Dismiss() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_notification_dialog)
+    g_notification_dialog->Close();
+}
+
+UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
+    content::WebUI* web_ui)
+    : ui::WebDialogUI(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  CHECK(profile->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled));
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
+      chrome::kChromeUIUrgentPasswordExpiryNotificationHost);
+
+  // chrome://urgent-password-expiry-notification/3 shows a title something like
+  // "Less than 3 days remaining" - so we extract the 3 here:
+  const std::string url_suffix =
+      web_ui->GetWebContents()->GetURL().ExtractFileName();
+  int less_than_n_days = 0;
+  base::StringToInt(url_suffix, &less_than_n_days);
+  less_than_n_days = std::max(less_than_n_days, 0);
+  const base::string16 title = l10n_util::GetPluralStringFUTF16(
+      IDS_PASSWORD_EXPIRY_DAYS_BODY, less_than_n_days);
+  source->AddString("title", title);
+
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"body", IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL},
+      {"button", IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON}};
+  AddLocalizedStringsBulk(source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
+
+  source->SetJsonPath("strings.js");
+  source->SetDefaultResource(IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML);
+  source->AddResourcePath("urgent_password_expiry_notification.js",
+                          IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_JS);
+
+  web_ui->AddMessageHandler(
+      std::make_unique<UrgentPasswordExpiryNotificationHandler>());
+
+  content::WebUIDataSource::Add(profile, source);
+}
+
+UrgentPasswordExpiryNotificationUI::~UrgentPasswordExpiryNotificationUI() =
+    default;
 
 }  // namespace chromeos

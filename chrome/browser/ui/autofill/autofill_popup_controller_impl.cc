@@ -320,6 +320,8 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   // coming up in Multi-Window mode, mark the source as unavailable.
   mf_controller->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                           /*has_suggestions=*/false);
+  mf_controller->UpdateSourceAvailability(FillingSource::TOUCH_TO_FILL,
+                                          /*has_suggestions=*/false);
   mf_controller->Hide();
 #endif
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
@@ -565,8 +567,15 @@ void AutofillPopupControllerImpl::ClearState() {
 
 void AutofillPopupControllerImpl::HideViewAndDie() {
 #if defined(OS_ANDROID)
+  // Mark the popup-like filling sources as unavailable.
+  // Note: We don't invoke ManualFillingController::Hide() here, as we might
+  // switch between text input fields.
   ManualFillingController::GetOrCreate(web_contents_)
       ->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                 /*has_suggestions=*/false);
+
+  ManualFillingController::GetOrCreate(web_contents_)
+      ->UpdateSourceAvailability(FillingSource::TOUCH_TO_FILL,
                                  /*has_suggestions=*/false);
 #endif
 

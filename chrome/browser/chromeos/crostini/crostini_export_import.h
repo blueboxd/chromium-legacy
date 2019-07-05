@@ -89,6 +89,8 @@ class CrostiniExportImport : public KeyedService,
       ContainerId container_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestDeprecatedExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportSuccess);
@@ -107,12 +109,18 @@ class CrostiniExportImport : public KeyedService,
              base::FilePath path,
              CrostiniManager::CrostiniResultCallback callback);
 
-  // crostini::ExportContainerProgressObserver implementation.
+  // DEPRECATED crostini::ExportContainerProgressObserver implementation.
+  // TODO(juwa): delete this once the new version of tremplin has shipped.
   void OnExportContainerProgress(const std::string& vm_name,
                                  const std::string& container_name,
                                  crostini::ExportContainerProgressStatus status,
                                  int progress_percent,
                                  uint64_t progress_speed) override;
+
+  // crostini::ExportContainerProgressObserver implementation.
+  void OnExportContainerProgress(const std::string& vm_name,
+                                 const std::string& container_name,
+                                 const StreamingExportStatus& status) override;
 
   // crostini::ImportContainerProgressObserver implementation.
   void OnImportContainerProgress(const std::string& vm_name,

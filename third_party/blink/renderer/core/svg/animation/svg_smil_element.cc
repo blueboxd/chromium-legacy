@@ -996,16 +996,16 @@ unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
   DCHECK(interval_.begin.IsFinite());
 
   double active_time = std::max(elapsed - interval_.begin.Value(), 0.0);
-  double simple_duration_value = simple_duration.Value();
-  double repeating_duration = RepeatingDuration().Value();
+  SMILTime repeating_duration = RepeatingDuration();
   if (elapsed >= interval_.end || active_time > repeating_duration) {
-    unsigned repeat =
-        static_cast<unsigned>(repeating_duration / simple_duration_value);
-    if (!fmod(repeating_duration, simple_duration_value))
+    unsigned repeat = static_cast<unsigned>(repeating_duration.Value() /
+                                            simple_duration.Value());
+    if (!fmod(repeating_duration.Value(), simple_duration.Value()))
       return repeat - 1;
     return repeat;
   }
-  unsigned repeat = static_cast<unsigned>(active_time / simple_duration_value);
+  unsigned repeat =
+      static_cast<unsigned>(active_time / simple_duration.Value());
   return repeat;
 }
 
@@ -1020,9 +1020,8 @@ float SVGSMILElement::CalculateAnimationPercent(double elapsed) const {
   DCHECK(simple_duration.IsFinite());
   DCHECK(interval_.begin.IsFinite());
 
+  SMILTime repeating_duration = RepeatingDuration();
   double active_time = elapsed - interval_.begin.Value();
-  double simple_duration_value = simple_duration.Value();
-  double repeating_duration = RepeatingDuration().Value();
   if (elapsed >= interval_.end || active_time > repeating_duration) {
     // Use the interval to compute the interval position if we've passed the
     // interval end, otherwise use the "repeating duration". This prevents a
@@ -1032,16 +1031,16 @@ float SVGSMILElement::CalculateAnimationPercent(double elapsed) const {
     if (elapsed >= interval_.end)
       last_active_duration = interval_.end.Value() - interval_.begin.Value();
     else
-      last_active_duration = repeating_duration;
-    double percent = last_active_duration / simple_duration_value;
+      last_active_duration = repeating_duration.Value();
+    double percent = last_active_duration / simple_duration.Value();
     percent = percent - floor(percent);
     float epsilon = std::numeric_limits<float>::epsilon();
     if (percent < epsilon || 1 - percent < epsilon)
       return 1.0f;
     return clampTo<float>(percent);
   }
-  double simple_time = fmod(active_time, simple_duration_value);
-  return clampTo<float>(simple_time / simple_duration_value);
+  double simple_time = fmod(active_time, simple_duration.Value());
+  return clampTo<float>(simple_time / simple_duration.Value());
 }
 
 SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {

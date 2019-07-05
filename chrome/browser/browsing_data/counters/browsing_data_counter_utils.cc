@@ -4,6 +4,9 @@
 
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
+#include <string>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
@@ -167,11 +170,7 @@ base::string16 GetChromeCounterTextFromResult(
 
     std::vector<base::string16> counts;
     if (password_count) {
-      counts.emplace_back(l10n_util::GetPluralStringFUTF16(
-          passwords_and_signin_data_result->is_sync_enabled()
-              ? IDS_DEL_PASSWORDS_COUNTER_SYNCED
-              : IDS_DEL_PASSWORDS_COUNTER,
-          password_count));
+      counts.emplace_back(browsing_data::GetCounterTextFromResult(result));
     }
     if (signin_data_count) {
       counts.emplace_back(l10n_util::GetPluralStringFUTF16(

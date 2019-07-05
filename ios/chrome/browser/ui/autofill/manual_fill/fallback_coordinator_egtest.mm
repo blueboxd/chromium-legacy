@@ -176,8 +176,9 @@ BOOL IsKeyboardDockedForLayout(UIView* layout) {
   return [@(maxY) isEqualToNumber:@(screenBounds.size.height)];
 }
 
-// Undocks the keyboard by swiping it up. Does nothing if already undocked.
-void UndockKeyboard() {
+// Undocks and split the keyboard by swiping it up. Does nothing if already
+// undocked.
+void UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
@@ -496,8 +497,8 @@ void DockKeyboard() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Same as before but with the keyboard undocked.
-- (void)testUndockedInputAccessoryBarIsPresentAfterPickers {
+// Same as before but with the keyboard undocked the re-docked.
+- (void)testRedockedInputAccessoryBarIsPresentAfterPickers {
   // No need to run if not iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
@@ -510,13 +511,15 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockKeyboard();
+  UndockAndSplitKeyboard();
 
-  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
-  // properly with the keyboard, instead this waits with a condition for the
-  // icon to appear.
+  // When keyboard is split, icons are not visible, so we rely on timeout before
+  // docking again, because EarlGrey synchronization isn't working properly with
+  // the keyboard.
   [self waitForMatcherToBeVisible:ProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
+
+  DockKeyboard();
 
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -554,11 +557,10 @@ void DockKeyboard() {
   // bar.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-  DockKeyboard();
 }
 
-// Test the input accessory bar is present when undocking the keyboard.
+// Test the input accessory bar is present when undocking then docking the
+// keyboard.
 - (void)testInputAccessoryBarIsPresentAfterUndockingKeyboard {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
@@ -571,11 +573,11 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockKeyboard();
+  UndockAndSplitKeyboard();
 
-  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
-  // properly with the keyboard, instead this waits with a condition for the
-  // icon to appear.
+  // When keyboard is split, icons are not visible, so we rely on timeout before
+  // docking again, because EarlGrey synchronization isn't working properly with
+  // the keyboard.
   [self waitForMatcherToBeVisible:ProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
 

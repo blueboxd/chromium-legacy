@@ -57,10 +57,6 @@
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
 
-// Track the use of hardware keyboard, when there's a notification of keyboard
-// use but no keyboard on the screen.
-@property(nonatomic, assign) BOOL hardwareKeyboard;
-
 // The JS manager for interacting with the underlying form.
 @property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
 
@@ -237,19 +233,13 @@
 
 #pragma mark - KeyboardObserverHelperConsumer
 
-- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
-  self.hardwareKeyboard = isHardwareKeyboard;
-  [self updateSuggestionsIfNeeded];
-}
-
 - (void)keyboardDidStayOnScreen {
   [self.consumer removeAnimationsOnKeyboardView];
 }
 
-- (void)keyboardDidHide {
-  if (_webState && _webState->IsVisible()) {
-    [self reset];
-  }
+- (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
+  [self updateSuggestionsIfNeeded];
+  [self.consumer keyboardWillChangeToState:keyboardState];
 }
 
 #pragma mark - FormActivityObserver
@@ -334,19 +324,7 @@
 
 - (void)webStateWasHidden:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  // On some iPhone with newers iOS (>11.3) when a view controller is presented,
-  // i.e. "all passwords", after dismissing it the keyboard appears and the last
-  // element is focused. Different devices were not consistent with minor
-  // versions changes. On iPad it always stays dismissed. It is important to
-  // reset on iPads because the accessory will stay without the keyboard, due
-  // how the it is added, On iPhones it will be hidden and reset when other text
-  // element gets the focus. On iPad the keyboard stays dismissed.
-  if (IsIPadIdiom()) {
-    [self reset];
-    [self.consumer restoreOriginalKeyboardViewAndClearReferences];
-  } else {
-    [self pauseCustomKeyboardView];
-  }
+  [self pauseCustomKeyboardView];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -518,8 +496,7 @@
     self.currentProvider = provider;
     // Post it to the consumer.
     [self.consumer showAccessorySuggestions:suggestions
-                           suggestionClient:provider
-                         isHardwareKeyboard:self.hardwareKeyboard];
+                           suggestionClient:provider];
   }
 }
 
@@ -538,9 +515,6 @@
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
   self.editingUIKitTextInput = NO;
   [self continueCustomKeyboardView];
-  if (IsIPadIdiom()) {
-    [self updateSuggestionsIfNeeded];
-  }
 }
 
 #pragma mark - PasswordFetcherDelegate

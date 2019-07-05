@@ -179,10 +179,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // used by the profiles.
   void MigrateLegacyProfileNamesAndDownloadAvatars();
 
-  // Remove statistics values that have previously been stored and are not used
-  // anymore.
-  void RemoveDeprecatedStatistics();
-
   std::vector<std::string> sorted_keys_;
   const base::FilePath user_data_dir_;
 

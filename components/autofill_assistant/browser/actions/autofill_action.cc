@@ -93,6 +93,7 @@ void AutofillAction::OnWaitForElement(bool element_found) {
     return;
   }
 
+  DVLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
   const autofill::AutofillProfile* profile =
       delegate_->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
@@ -188,6 +189,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(bool allow_fallback) {
   // If there are any fallbacks for the empty fields, set them, otherwise fail
   // immediately.
   bool has_fallbacks = false;
+  DVLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
   auto* profile = delegate_->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
   for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
@@ -229,6 +231,7 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   }
 
   // Set the next field to its fallback value.
+  DVLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
   std::string fallback_value = base::UTF16ToUTF8(GetAddressFieldValue(
       delegate_->GetClientMemory()->selected_address(name_),
       required_fields.Get(required_fields_index).address_field()));

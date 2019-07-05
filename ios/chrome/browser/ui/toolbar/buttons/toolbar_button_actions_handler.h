@@ -7,13 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
-namespace ios {
-class ChromeBrowserState;
-}
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
-class WebStateList;
 
 // Handler for the actions associated with the different toolbar buttons.
 @interface ToolbarButtonActionsHandler : NSObject
@@ -23,11 +19,8 @@ class WebStateList;
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 
-// WebStateList used to insert new tab.
-@property(nonatomic, assign) WebStateList* webStateList;
-
-// BrowserState used to create new tab.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+// Whether this handler is created in incognito.
+@property(nonatomic, assign) BOOL incognito;
 
 // Action when the back button is tapped.
 - (void)backAction;
@@ -57,7 +50,7 @@ class WebStateList;
 - (void)bookmarkAction;
 
 // Action when the search button is tapped.
-- (void)searchAction;
+- (void)searchAction:(id)sender;
 
 // Action when the button to cancel the omnibox focus is tapped.
 - (void)cancelOmniboxFocusAction;

@@ -240,14 +240,11 @@ class StepRecorder(object):
 class ClankCompiler(object):
   """Handles compilation of clank."""
 
-  def __init__(self, out_dir, step_recorder, arch, jobs, max_load, use_goma,
-               goma_dir, system_health_profiling, monochrome, public,
-               orderfile_location):
+  def __init__(self, out_dir, step_recorder, arch, use_goma, goma_dir,
+               system_health_profiling, monochrome, public, orderfile_location):
     self._out_dir = out_dir
     self._step_recorder = step_recorder
     self._arch = arch
-    self._jobs = jobs
-    self._max_load = max_load
     self._use_goma = use_goma
     self._goma_dir = goma_dir
     self._system_health_profiling = system_health_profiling
@@ -314,8 +311,21 @@ class ClankCompiler(object):
          '--args=' + ' '.join(args)])
 
     self._step_recorder.RunCommand(
-        ['ninja', '-C', os.path.join(self._out_dir, 'Release'),
-         '-j' + str(self._jobs), '-l' + str(self._max_load), target])
+        ['autoninja', '-C',
+         os.path.join(self._out_dir, 'Release'), target])
+
+  def ForceRelink(self):
+    """Forces libchrome.so or libmonochrome.so to be re-linked.
+
+    With partitioned libraries enabled, deleting these library files does not
+    guarantee they'll be recreated by the linker (they may simply be
+    re-extracted from a combined library). To be safe, touch a source file
+    instead. See http://crbug.com/972701 for more explanation.
+    """
+    file_to_touch = os.path.join(constants.DIR_SOURCE_ROOT, 'chrome', 'browser',
+                              'chrome_browser_main_android.cc')
+    assert os.path.exists(file_to_touch)
+    self._step_recorder.RunCommand(['touch', file_to_touch])
 
   def CompileChromeApk(self, instrumented, use_call_graph, force_relink=False):
     """Builds a Chrome.apk either with or without order_profiling on.
@@ -326,7 +336,7 @@ class ClankCompiler(object):
       force_relink: Whether libchromeview.so should be re-created.
     """
     if force_relink:
-      self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
+      self.ForceRelink()
     self.Build(instrumented, use_call_graph, self._apk_target)
 
   def CompileLibchrome(self, instrumented, use_call_graph, force_relink=False):
@@ -338,7 +348,7 @@ class ClankCompiler(object):
       force_relink: (bool) Whether libchrome.so should be re-created.
     """
     if force_relink:
-      self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
+      self.ForceRelink()
     self.Build(instrumented, use_call_graph, self._libchrome_target)
 
 
@@ -576,7 +586,7 @@ class OrderfileGenerator(object):
     self._instrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_instrumented_out')
     if self._options.use_call_graph:
-        self._instrumented_out_dir += '_call_graph'
+      self._instrumented_out_dir += '_call_graph'
 
     self._uninstrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
@@ -656,6 +666,14 @@ class OrderfileGenerator(object):
     self._step_recorder.BeginStep('Generate Profile Data')
     files = []
     logging.getLogger().setLevel(logging.DEBUG)
+
+    if self._options.profile_save_dir:
+      # The directory must not preexist, to ensure purity of data. Check
+      # before profiling to save time.
+      if os.path.exists(self._options.profile_save_dir):
+        raise Exception('Profile save directory must not pre-exist')
+      os.makedirs(self._options.profile_save_dir)
+
     if self._options.system_health_orderfile:
       files = self._profiler.CollectSystemHealthProfile(
           self._compiler.chrome_apk)
@@ -940,12 +958,12 @@ class OrderfileGenerator(object):
     """
     try:
       _UnstashOutputDirectory(out_directory)
-      self._compiler = ClankCompiler(
-          out_directory, self._step_recorder,
-          self._options.arch, self._options.jobs, self._options.max_load,
-          self._options.use_goma, self._options.goma_dir,
-          self._options.system_health_orderfile, self._monochrome,
-          self._options.public, self._GetPathToOrderfile())
+      self._compiler = ClankCompiler(out_directory, self._step_recorder,
+                                     self._options.arch, self._options.use_goma,
+                                     self._options.goma_dir,
+                                     self._options.system_health_orderfile,
+                                     self._monochrome, self._options.public,
+                                     self._GetPathToOrderfile())
 
       if no_orderfile:
         orderfile_path = self._GetPathToOrderfile()
@@ -992,12 +1010,10 @@ class OrderfileGenerator(object):
       try:
         _UnstashOutputDirectory(self._instrumented_out_dir)
         self._compiler = ClankCompiler(
-            self._instrumented_out_dir,
-            self._step_recorder, self._options.arch, self._options.jobs,
-            self._options.max_load, self._options.use_goma,
-            self._options.goma_dir, self._options.system_health_orderfile,
-            self._monochrome, self._options.public,
-            self._GetPathToOrderfile())
+            self._instrumented_out_dir, self._step_recorder, self._options.arch,
+            self._options.use_goma, self._options.goma_dir,
+            self._options.system_health_orderfile, self._monochrome,
+            self._options.public, self._GetPathToOrderfile())
         if not self._options.pregenerated_profiles:
           # If there are pregenerated profiles, the instrumented build should
           # not be changed to avoid invalidating the pregenerated profile
@@ -1034,8 +1050,7 @@ class OrderfileGenerator(object):
         _UnstashOutputDirectory(self._uninstrumented_out_dir)
         self._compiler = ClankCompiler(
             self._uninstrumented_out_dir, self._step_recorder,
-            self._options.arch, self._options.jobs, self._options.max_load,
-            self._options.use_goma, self._options.goma_dir,
+            self._options.arch, self._options.use_goma, self._options.goma_dir,
             self._options.system_health_orderfile, self._monochrome,
             self._options.public, self._GetPathToOrderfile())
 
@@ -1132,12 +1147,11 @@ def CreateArgumentParser():
       '--branch', action='store', default='master',
       help='When running on buildbot with a netrc, the branch orderfile '
       'hashes get checked into.')
-  # Note: -j50 was causing issues on the bot.
+  # Obsolete (Autoninja is now used, and this argument is ignored).
   parser.add_argument(
-      '-j', '--jobs', action='store', default=20,
-      help='Number of jobs to use for compilation.')
-  parser.add_argument(
-      '-l', '--max-load', action='store', default=4, help='Max cpu load.')
+      '-j', '--jobs', help='Obsolete. Number of jobs to use for compilation.')
+  # Obsolete (Autoninja is now used, and this argument is ignored).
+  parser.add_argument('-l', '--max-load', help='Obsolete. Max cpu load.')
   parser.add_argument('--goma-dir', help='GOMA directory.')
   parser.add_argument(
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
@@ -1198,7 +1212,7 @@ def CreateArgumentParser():
 
 
 def CreateOrderfile(options, orderfile_updater_class=None):
-  """Creates an oderfile.
+  """Creates an orderfile.
 
   Args:
     options: As returned from optparse.OptionParser.parse_args()

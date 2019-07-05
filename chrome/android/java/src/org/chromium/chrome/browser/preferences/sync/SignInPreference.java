@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences;
+package org.chromium.chrome.browser.preferences.sync;
 
 import android.content.Context;
 import android.preference.Preference;
@@ -16,7 +16,8 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -119,7 +120,7 @@ public class SignInPreference
      * Should be called when the {@link PreferenceFragment} which used {@link SignInPreference} gets
      * destroyed. Used to record "ImpressionsTilDismiss" histogram.
      */
-    void onPreferenceFragmentDestroyed() {
+    public void onPreferenceFragmentDestroyed() {
         if (mSigninPromoController != null) {
             mSigninPromoController.onPromoDestroyed();
         }

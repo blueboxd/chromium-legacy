@@ -454,9 +454,10 @@ CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
  * Supported disk file system types for renaming.
  * @private @const {!Array<!VolumeManagerCommon.FileSystemType>}
  */
-CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_ = [
+CommandHandler.RENAME_DISK_FILE_SYSTEM_SUPPORT_ = [
   VolumeManagerCommon.FileSystemType.EXFAT,
-  VolumeManagerCommon.FileSystemType.VFAT
+  VolumeManagerCommon.FileSystemType.VFAT,
+  VolumeManagerCommon.FileSystemType.NTFS,
 ];
 
 /**
@@ -1223,7 +1224,7 @@ CommandHandler.COMMANDS_['rename'] = new class extends Command {
           const removable =
               location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
           event.canExecute = removable && writable &&
-              CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
+              CommandHandler.RENAME_DISK_FILE_SYSTEM_SUPPORT_.indexOf(
                   volumeInfo.diskFileSystemType) > -1;
           event.command.setHidden(!removable);
           return removable;

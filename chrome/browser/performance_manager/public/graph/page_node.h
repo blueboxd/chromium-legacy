@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/resource_coordinator/public/mojom/lifecycle.mojom-shared.h"
 
@@ -76,6 +77,11 @@ class PageNode : public Node {
   // Returns the URL the main frame last committed a navigation to.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
+
+  // Returns the web contents associated with this page node. It is valid to
+  // call this function on any thread but the weak pointer must only be
+  // dereferenced on the UI thread.
+  virtual const WebContentsProxy& GetContentProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNode);

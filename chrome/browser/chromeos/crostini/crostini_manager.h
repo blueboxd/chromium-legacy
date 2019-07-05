@@ -94,9 +94,13 @@ enum class UninstallPackageProgressStatus {
   UNINSTALLING,  // In progress
 };
 
+// TODO(juwa): delete this once the new version of tremplin has shipped.
 enum class ExportContainerProgressStatus {
+  // Deprecated. Has been replaced by STREAMING.
   PACK,
+  // Deprecated. Has been replaced by STREAMING.
   DOWNLOAD,
+  STREAMING,
 };
 
 enum class ImportContainerProgressStatus {
@@ -109,6 +113,13 @@ enum class ImportContainerProgressStatus {
 struct VmInfo {
   VmState state;
   vm_tools::concierge::VmInfo info;
+};
+
+struct StreamingExportStatus {
+  uint32_t total_files;
+  uint64_t total_bytes;
+  uint32_t exported_files;
+  uint64_t exported_bytes;
 };
 
 struct ContainerInfo {
@@ -179,14 +190,21 @@ class PendingAppListUpdatesObserver : public base::CheckedObserver {
 
 class ExportContainerProgressObserver {
  public:
-  // A successfully started container export will continually fire progress
-  // events until the original callback from ExportLxdContainer is invoked with
-  // a status of SUCCESS or CONTAINER_EXPORT_FAILED.
+  // DEPCRECATED. A successfully started container export will continually fire
+  // progress events until the original callback from ExportLxdContainer is
+  // invoked with a status of SUCCESS or CONTAINER_EXPORT_FAILED.
   virtual void OnExportContainerProgress(const std::string& vm_name,
                                          const std::string& container_name,
                                          ExportContainerProgressStatus status,
                                          int progress_percent,
                                          uint64_t progress_speed) = 0;
+
+  // A successfully started container export will continually fire progress
+  // events until the original callback from ExportLxdContainer is invoked with
+  // a status of SUCCESS or CONTAINER_EXPORT_FAILED.
+  virtual void OnExportContainerProgress(const std::string& vm_name,
+                                         const std::string& container_name,
+                                         const StreamingExportStatus&) = 0;
 };
 
 class ImportContainerProgressObserver {

@@ -31,7 +31,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
@@ -42,7 +41,6 @@ import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -190,21 +188,14 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      */
     @CallSuper
     protected void performPostInflationStartup() {
-        final View firstDrawView = getViewToBeDrawnBeforeInitializingNative();
+        View firstDrawView = getViewToBeDrawnBeforeInitializingNative();
         assert firstDrawView != null;
-        ViewTreeObserver.OnPreDrawListener firstDrawListener =
-                new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        firstDrawView.getViewTreeObserver().removeOnPreDrawListener(this);
-                        mFirstDrawComplete = true;
-                        if (!mStartupDelayed) {
-                            onFirstDrawComplete();
-                        }
-                        return true;
-                    }
-                };
-        firstDrawView.getViewTreeObserver().addOnPreDrawListener(firstDrawListener);
+        FirstDrawDetector.waitForFirstDraw(firstDrawView, () -> {
+            mFirstDrawComplete = true;
+            if (!mStartupDelayed) {
+                onFirstDrawComplete();
+            }
+        });
     }
 
     /**
@@ -559,13 +550,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     private void onFirstDrawComplete() {
         assert mFirstDrawComplete;
         assert !mStartupDelayed;
-
-        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
-            @Override
-            public void run() {
-                mNativeInitializationController.firstDrawComplete();
-            }
-        });
+        TraceEvent.instant("onFirstDrawComplete");
+        mNativeInitializationController.firstDrawComplete();
     }
 
     @Override

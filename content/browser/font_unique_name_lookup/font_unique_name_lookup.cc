@@ -68,6 +68,16 @@ void LogUMAFontScanningDuration(base::TimeDelta duration) {
                              duration);
 }
 
+void LogUMALookupTableReadyDuration(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Fonts.AndroidFontLookupTableReadyTime",
+                             duration);
+}
+
+void LogUMALookupTableLoadFromFileDuration(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Fonts.AndroidFontLookupLoadFromFileTime",
+                             duration);
+}
+
 bool IsRelevantNameRecord(const FT_SfntName& sfnt_name) {
   if (sfnt_name.name_id != TT_NAME_ID_FULL_NAME &&
       sfnt_name.name_id != TT_NAME_ID_PS_NAME)
@@ -344,11 +354,21 @@ void FontUniqueNameLookup::ScheduleLoadOrUpdateTable() {
                                  // size, which it doesn't if the LoadFromFile()
                                  // failed. If it doesn't have a size, the table
                                  // is rebuild by calling UpdateTable().
-
-                                 instance->LoadFromFile();
+                                 base::TimeTicks prepare_table_start_time =
+                                     base::TimeTicks::Now();
+                                 bool loaded_from_file =
+                                     instance->LoadFromFile();
+                                 if (loaded_from_file) {
+                                   LogUMALookupTableLoadFromFileDuration(
+                                       base::TimeTicks::Now() -
+                                       prepare_table_start_time);
+                                 }
                                  if (instance->UpdateTableIfNeeded()) {
                                    instance->PersistToFile();
                                  }
+                                 LogUMALookupTableReadyDuration(
+                                     base::TimeTicks::Now() -
+                                     prepare_table_start_time);
                                  instance->proto_storage_ready_.Signal();
                                  instance->PostCallbacks();
                                },

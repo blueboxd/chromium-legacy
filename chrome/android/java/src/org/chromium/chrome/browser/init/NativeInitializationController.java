@@ -9,9 +9,7 @@ import android.content.Intent;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,12 +104,8 @@ class NativeInitializationController {
             assert !mHasSignaledLibraryLoaded;
             mHasSignaledLibraryLoaded = true;
 
-            // Allow the UI thread to continue its initialization - so that this call back
-            // doesn't block priority work on the UI thread until it's idle.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                if (mActivityDelegate.isActivityFinishingOrDestroyed()) return;
-                mActivityDelegate.onCreateWithNative();
-            });
+            if (mActivityDelegate.isActivityFinishingOrDestroyed()) return;
+            mActivityDelegate.onCreateWithNative();
         }
     }
 

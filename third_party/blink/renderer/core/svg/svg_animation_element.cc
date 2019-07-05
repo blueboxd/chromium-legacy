@@ -629,4 +629,11 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   CalculateAnimatedValue(effective_percent, repeat_count, result_element);
 }
 
+bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() {
+  return !IsAdditive() && !IsAccumulated() &&
+         GetAnimationMode() != kToAnimation &&
+         GetAnimationMode() != kByAnimation &&
+         GetAnimationMode() != kNoAnimation;
+}
+
 }  // namespace blink

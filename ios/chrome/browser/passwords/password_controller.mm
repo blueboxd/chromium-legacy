@@ -786,13 +786,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   __weak PasswordController* weakSelf = self;
 
-  auto restoreFocus = ^{
+  auto popupDismissed = ^{
     [weakSelf generatePasswordPopupDismissed];
-    // Suggestion are still visible but they lost their state, so by forcing
-    // a focus event on the current field, it will reset the suggestions.
-    [weakSelf.formHelper focusOnForm:formName
-                     fieldIdentifier:fieldIdentifier
-                   completionHandler:nil];
   };
 
   [self.actionSheetCoordinator
@@ -802,12 +797,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                       injectGeneratedPasswordForFormName:formName
                                        generatedPassword:
                                            weakSelf.generatedPotentialPassword
-                                       completionHandler:restoreFocus];
+                                       completionHandler:popupDismissed];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                         action:restoreFocus
+                                         action:popupDismissed
                                           style:UIAlertActionStyleCancel];
 
   // Set 'suggest' as preferred action, as per UX.

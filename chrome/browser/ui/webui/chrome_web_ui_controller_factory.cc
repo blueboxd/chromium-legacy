@@ -499,6 +499,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     }
     return &NewWebUI<chromeos::InSessionConfirmPasswordChangeUI>;
   }
+  if (url.host_piece() ==
+      chrome::kChromeUIUrgentPasswordExpiryNotificationHost) {
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kSamlInSessionPasswordChangeEnabled)) {
+      return nullptr;
+    }
+    return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIAccountManagerWelcomeHost)
     return &NewWebUI<chromeos::AccountManagerWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)

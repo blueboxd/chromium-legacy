@@ -2520,15 +2520,14 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
 
 class CancelableTask {
  public:
-  explicit CancelableTask(const TickClock* clock)
-      : clock_(clock), weak_factory_(this) {}
+  explicit CancelableTask(const TickClock* clock) : clock_(clock) {}
 
   void RecordTimeTask(std::vector<TimeTicks>* run_times) {
     run_times->push_back(clock_->NowTicks());
   }
 
   const TickClock* clock_;
-  WeakPtrFactory<CancelableTask> weak_factory_;
+  WeakPtrFactory<CancelableTask> weak_factory_{this};
 };
 
 TEST_P(SequenceManagerTest, TaskQueueObserver_SweepCanceledDelayedTasks) {
@@ -4510,14 +4509,14 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
 
 class CancelableTaskWithDestructionObserver {
  public:
-  CancelableTaskWithDestructionObserver() : weak_factory_(this) {}
+  CancelableTaskWithDestructionObserver() {}
 
   void Task(std::unique_ptr<ScopedClosureRunner> destruction_observer) {
     destruction_observer_ = std::move(destruction_observer);
   }
 
   std::unique_ptr<ScopedClosureRunner> destruction_observer_;
-  WeakPtrFactory<CancelableTaskWithDestructionObserver> weak_factory_;
+  WeakPtrFactory<CancelableTaskWithDestructionObserver> weak_factory_{this};
 };
 
 TEST_P(SequenceManagerTest, PeriodicHousekeeping) {

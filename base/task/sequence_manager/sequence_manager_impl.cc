@@ -191,8 +191,7 @@ SequenceManagerImpl::SequenceManagerImpl(
 
       empty_queues_to_reload_(associated_thread_),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
-      main_thread_only_(associated_thread_, settings_),
-      weak_factory_(this) {
+      main_thread_only_(associated_thread_, settings_) {
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);

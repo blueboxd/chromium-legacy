@@ -53,15 +53,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     id<ManualFillAccessoryViewControllerDelegate>
         manualFillAccessoryViewControllerDelegate;
 
-// Called when the keyboard will or did change frame.
-- (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification;
+// Remember last keyboard state to allow resuming properly.
+@property(nonatomic, assign) KeyboardState lastKeyboardState;
 
 @end
 
 @implementation FormInputAccessoryViewController {
-  // Last registered keyboard rectangle.
-  CGRect _keyboardFrame;
-
   // Whether suggestions have previously been shown.
   BOOL _suggestionsHaveBeenShown;
 }
@@ -98,16 +95,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
                                  alpha:1];
 
     }
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardWillOrDidChangeFrame:)
-               name:UIKeyboardWillChangeFrameNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardWillOrDidChangeFrame:)
-               name:UIKeyboardDidChangeFrameNotification
-             object:nil];
   }
   return self;
 }
@@ -176,28 +163,30 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
-- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
-                suggestionClient:(id<FormSuggestionClient>)suggestionClient
-              isHardwareKeyboard:(BOOL)hardwareKeyboard {
-  // On ipad if the keyboard isn't visible don't show the custom view.
-  if (IsIPadIdiom() &&
-      (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
-               .size.height == 0 ||
-       CGRectEqualToRect(_keyboardFrame, CGRectZero))) {
-    [self removeCustomInputAccessoryView];
-    return;
+- (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
+  self.lastKeyboardState = keyboardState;
+
+  if (!IsIPadIdiom()) {
+    // On iPhones, when using a hardware keyboard, for most models, there's no
+    // space to show suggestions because of the on-screen menu button.
+    self.inputAccessoryView.leadingView.hidden = keyboardState.isHardware;
+
+    // On iPhones when the field is a selector the keyboard becomes a picker.
+    // Restore the keyboard in these cases, but allow the user to return to see
+    // the info in Manual Fallback.
+    if (keyboardState.isPicker) {
+      [self.manualFillAccessoryViewController resetAnimated:NO];
+      [self unlockManualFallbackView];
+      [self.keyboardReplacementView removeFromSuperview];
+      self.keyboardReplacementView = nil;
+      return;
+    }
   }
 
   // Create the views if they don't exist already.
-  if (!self.formSuggestionView) {
-    self.formSuggestionView = [[FormSuggestionView alloc] init];
-    self.formSuggestionView.formSuggestionViewDelegate = self;
-  }
+  if (keyboardState.isVisible && !self.inputAccessoryView) {
+    [self createFormSuggestionViewIfNeeded];
 
-  [self.formSuggestionView updateClient:suggestionClient
-                            suggestions:suggestions];
-
-  if (!self.inputAccessoryView) {
     self.inputAccessoryView = [[FormInputAccessoryView alloc] init];
     if (IsIPadIdiom()) {
       [self.inputAccessoryView
@@ -216,10 +205,26 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     }
   }
 
-  // On iPhones, when using a hardware keyboard, for most models, there's no
-  // space to show suggestions because of the on-screen menu button.
-  self.inputAccessoryView.leadingView.hidden = hardwareKeyboard;
+  if (self.inputAccessoryView) {
+    if (!keyboardState.isVisible || keyboardState.isSplit || self.paused) {
+      self.inputAccessoryView.hidden = true;
+      self.grayBackgroundView.hidden = true;
+    } else {
+      // Make sure the input accessory is there if needed.
+      [self prepareToShowSuggestions];
+      [self addInputAccessoryViewIfNeeded];
+      [self addCustomKeyboardViewIfNeeded];
+      self.inputAccessoryView.hidden = false;
+      self.grayBackgroundView.hidden = false;
+    }
+  }
+}
 
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
+                suggestionClient:(id<FormSuggestionClient>)suggestionClient {
+  [self createFormSuggestionViewIfNeeded];
+  [self.formSuggestionView updateClient:suggestionClient
+                            suggestions:suggestions];
   [self addInputAccessoryViewIfNeeded];
 }
 
@@ -230,12 +235,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   self.keyboardReplacementView = nil;
 }
 
-// TODO:(crbug.com/923857) Merge this method and restoreOriginalKeyboardView.
-- (void)restoreOriginalKeyboardViewAndClearReferences {
-  [self restoreOriginalKeyboardView];
-  self.inputAccessoryView = nil;
-}
-
 - (void)pauseCustomKeyboardView {
   [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
@@ -244,6 +243,9 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 - (void)continueCustomKeyboardView {
   self.paused = NO;
+  // Apply any keyboard state change that happened while this controller was
+  // paused.
+  [self keyboardWillChangeToState:self.lastKeyboardState];
 }
 
 - (void)removeAnimationsOnKeyboardView {
@@ -292,6 +294,14 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 #pragma mark - Private
+
+// Create formSuggestionView if not done yet.
+- (void)createFormSuggestionViewIfNeeded {
+  if (!self.formSuggestionView) {
+    self.formSuggestionView = [[FormSuggestionView alloc] init];
+    self.formSuggestionView.formSuggestionViewDelegate = self;
+  }
+}
 
 // Removes the custom views related to the input accessory view.
 - (void)removeCustomInputAccessoryView {
@@ -344,58 +354,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 
   return nil;
-}
-
-// Returns YES if one the first level of children has "Picker" in their class
-// name. No otherwise.
-- (BOOL)containsPickerView:(UIView*)view {
-  for (UIView* subview in view.subviews) {
-    if ([NSStringFromClass([subview class]) rangeOfString:@"Picker"].location !=
-        NSNotFound) {
-      return YES;
-    }
-  }
-  return NO;
-}
-
-- (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
-  CGRect keyboardFrame =
-      [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-  UIView* keyboardView = [self getKeyboardView];
-  // On iPhones when the field is a selector the keyboard becomes a picker.
-  // Restore the keyboard in these cases, but allow the user to return to see
-  // the info in Manual Fallback.
-  if (!IsIPadIdiom() && [self containsPickerView:keyboardView]) {
-    [self.manualFillAccessoryViewController resetAnimated:NO];
-    [self unlockManualFallbackView];
-    [self.keyboardReplacementView removeFromSuperview];
-    self.keyboardReplacementView = nil;
-    return;
-  }
-  CGRect windowRect = keyboardView.window.bounds;
-  // On iPad when the keyboard is undocked, on iOS 11 and 12,
-  // `UIKeyboard*HideNotification` or `UIKeyboard*ShowNotification` are not
-  // being sent. So the check for all devices is done here.
-  if (CGRectContainsRect(windowRect, keyboardFrame)) {
-    _keyboardFrame = keyboardFrame;
-    // Make sure the input accessory is there if needed.
-    [self prepareToShowSuggestions];
-    [self addInputAccessoryViewIfNeeded];
-    [self addCustomKeyboardViewIfNeeded];
-  } else {
-    _keyboardFrame = CGRectZero;
-  }
-  // On ipad we hide the views so they don't stick around at the bottom. Only
-  // needed on iPad because we add the view directly to the keyboard view.
-  if (IsIPadIdiom() && self.inputAccessoryView) {
-    if (CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      self.inputAccessoryView.hidden = true;
-      self.grayBackgroundView.hidden = true;
-    } else {
-      self.inputAccessoryView.hidden = false;
-      self.grayBackgroundView.hidden = false;
-    }
-  }
 }
 
 - (void)addCustomKeyboardViewIfNeeded {

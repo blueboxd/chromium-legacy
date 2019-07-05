@@ -55,17 +55,11 @@
             "loading.mobile": {
                 "begin": 69
             },
-            "media.mobile": {},
-            "memory.top_10_mobile": {
-                "end": 11
-            }
+            "media.mobile": {}
         }
     },
     "5": {
         "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 11
-            },
             "octane": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},

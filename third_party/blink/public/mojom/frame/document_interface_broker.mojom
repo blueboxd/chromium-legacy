@@ -16,12 +16,44 @@ import "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom";
 // An interface through which the renderer may request document-scoped
 // interfaces from the browser.
 interface DocumentInterfaceBroker {
+  // Binds the blink.mojom.AudioContextManager interface request to its remote
+  // implementation in the browser process, to allow sending real-time
+  // notifications originated from Blink's AudioContext.
   GetAudioContextManager(blink.mojom.AudioContextManager& request);
+
+  // Binds the blink.mojom.Authenticator interface request to its remote
+  // implementation in the browser process, to allow directing authenticators to
+  // create or use a public key credential.
   GetAuthenticator(blink.mojom.Authenticator& request);
+
+  // Binds the blink.mojom.CredentialManager interface request to its remote
+  // implementation in the browser process, to allow storing, retrieving and
+  // handling credentials.
   GetCredentialManager(blink.mojom.CredentialManager& request);
+
+  // Binds the blink.mojom.FrameHostTestInterface interface request to its
+  // remote implementation in the browser process, to allow using this test
+  // interface to exercise requesting document-scoped interfaces from the
+  // RenderFrameHost through the DocumentInterfaceBroker interface.
   GetFrameHostTestInterface(blink.mojom.FrameHostTestInterface& request);
-  GetPushMessaging(pending_receiver<blink.mojom.PushMessaging> request);
-  GetVirtualAuthenticatorManager(blink.test.mojom.VirtualAuthenticatorManager& request);
+
+  // Binds the blink.mojom.PushMessaging pending receiver request to its remote
+  // implementation in the browser process, to allow subscribing, unsubscribing
+  // and retrieving subscriptions related to push notifications (see Push API).
+  GetPushMessaging(pending_receiver<blink.mojom.PushMessaging> receiver);
+
+  // Binds the blink.test.mojom.VirtualAuthenticatorManager interface request to
+  // its remote implementation in the browser process, to manage a virtual
+  // environment that allows talking virtual authenticators via the WebAuth API.
+  GetVirtualAuthenticatorManager(
+      blink.test.mojom.VirtualAuthenticatorManager& request);
+
+  // Binds the blink.mojom.AppCacheHost interface request to its remote
+  // implementation in the browser process, to allow handling and interacting
+  // with the AppCache for a given host, referenced by the |host_id| parameter.
+  // This method also requires a remote of the blink.mojom.AppCacheFrontend
+  // interface, referenced by |frontend|, to enable communicating with the
+  // renderer process from the AppCacheService's implementation.
   RegisterAppCacheHost(blink.mojom.AppCacheHost& host_request,
                        AppCacheFrontend frontend,
                        mojo_base.mojom.UnguessableToken host_id);

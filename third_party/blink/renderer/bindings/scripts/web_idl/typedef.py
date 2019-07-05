@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
 from .common import WithCodeGeneratorInfo
 from .common import WithComponent
 from .common import WithDebugInfo
@@ -35,4 +34,4 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         Returns the type to have an alias.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'Not implemented yet'

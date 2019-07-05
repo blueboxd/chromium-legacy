@@ -7,9 +7,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/public/graph/graph_operations.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
@@ -39,42 +37,47 @@ TabManager::ResourceCoordinatorSignalObserver::
 TabManager::ResourceCoordinatorSignalObserver::
     ~ResourceCoordinatorSignalObserver() = default;
 
-bool TabManager::ResourceCoordinatorSignalObserver::ShouldObserve(
-    const NodeBase* node) {
-  return node->type() == performance_manager::PageNodeImpl::Type() ||
-         node->type() == performance_manager::ProcessNodeImpl::Type();
-}
-
 void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdleChanged(
-    PageNodeImpl* page_node) {
+    const PageNode* page_node) {
   // Only notify of changes to almost idle.
-  if (!page_node->page_almost_idle())
+  if (!page_node->IsPageAlmostIdle())
     return;
   // Forward the notification over to the UI thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&OnPageAlmostIdleOnUi, tab_manager_,
-                     page_node->contents_proxy(), page_node->navigation_id()));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(&OnPageAlmostIdleOnUi, tab_manager_,
+                                          page_node->GetContentProxy(),
+                                          page_node->GetNavigationID()));
 }
 
 void TabManager::ResourceCoordinatorSignalObserver::
-    OnExpectedTaskQueueingDurationSample(ProcessNodeImpl* process_node) {
+    OnExpectedTaskQueueingDurationSample(const ProcessNode* process_node) {
   // Report this measurement to all pages that are hosting a main frame in
   // the process that was sampled.
   const base::TimeDelta& duration =
-      process_node->expected_task_queueing_duration();
-  for (auto* frame_node : process_node->frame_nodes()) {
-    if (!frame_node->IsMainFrame())
-      continue;
-    auto* page_node = frame_node->page_node();
-
+      process_node->GetExpectedTaskQueueingDuration();
+  auto associated_page_nodes =
+      performance_manager::GraphOperations::GetAssociatedPageNodes(
+          process_node);
+  for (auto* page_node : associated_page_nodes) {
     // Forward the notification over to the UI thread.
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi, tab_manager_,
-                       page_node->contents_proxy(), page_node->navigation_id(),
-                       duration));
+                       page_node->GetContentProxy(),
+                       page_node->GetNavigationID(), duration));
   }
+}
+
+void TabManager::ResourceCoordinatorSignalObserver::OnPassedToGraph(
+    Graph* graph) {
+  graph->AddPageNodeObserver(this);
+  graph->AddProcessNodeObserver(this);
+}
+
+void TabManager::ResourceCoordinatorSignalObserver::OnTakenFromGraph(
+    Graph* graph) {
+  graph->RemovePageNodeObserver(this);
+  graph->RemoveProcessNodeObserver(this);
 }
 
 // static

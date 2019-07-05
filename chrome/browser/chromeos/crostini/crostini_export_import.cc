@@ -274,6 +274,26 @@ void CrostiniExportImport::OnExportContainerProgress(
   }
 }
 
+void CrostiniExportImport::OnExportContainerProgress(
+    const std::string& vm_name,
+    const std::string& container_name,
+    const StreamingExportStatus& status) {
+  ContainerId container_id(vm_name, container_name);
+  auto it = notifications_.find(container_id);
+  DCHECK(it != notifications_.end())
+      << ContainerIdToString(container_id) << " has no notification to update";
+
+  const auto files_percent = 100.0 * status.exported_files / status.total_files;
+  const auto bytes_percent = 100.0 * status.exported_bytes / status.total_bytes;
+
+  // Averaging the two percentages gives a more accurate estimation.
+  // TODO(juwa): investigate more accurate approximations of percent.
+  const auto percent = (files_percent + bytes_percent) / 2.0;
+
+  it->second->UpdateStatus(CrostiniExportImportNotification::Status::RUNNING,
+                           static_cast<int>(percent));
+}
+
 void CrostiniExportImport::ImportAfterSharing(
     const ContainerId& container_id,
     CrostiniManager::CrostiniResultCallback callback,

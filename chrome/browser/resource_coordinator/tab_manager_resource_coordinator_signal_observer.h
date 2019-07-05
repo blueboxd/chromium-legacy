@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_RESOURCE_COORDINATOR_SIGNAL_OBSERVER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 
@@ -17,23 +19,31 @@ namespace resource_coordinator {
 // TODO(chrisha): Kill this thing entirely and move all of tab manager into the
 // performance manager.
 class TabManager::ResourceCoordinatorSignalObserver
-    : public performance_manager::GraphImplObserverDefaultImpl {
+    : public performance_manager::GraphOwned,
+      public performance_manager::ProcessNode::ObserverDefaultImpl,
+      public performance_manager::PageNode::ObserverDefaultImpl {
  public:
-  using NodeBase = performance_manager::NodeBase;
-  using PageNodeImpl = performance_manager::PageNodeImpl;
-  using ProcessNodeImpl = performance_manager::ProcessNodeImpl;
+  using Graph = performance_manager::Graph;
+  using PageNode = performance_manager::PageNode;
+  using ProcessNode = performance_manager::ProcessNode;
   using WebContentsProxy = performance_manager::WebContentsProxy;
 
   explicit ResourceCoordinatorSignalObserver(
       const base::WeakPtr<TabManager>& tab_manager);
   ~ResourceCoordinatorSignalObserver() override;
 
-  // GraphObserver:
-  // These functions run on the performance manager sequence.
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
+  // ProcessNode::ObserverDefaultImpl:
+  // This function run on the performance manager sequence.
   void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) override;
+      const ProcessNode* process_node) override;
+
+  // PageNode::ObserverDefaultImpl:
+  // This function run on the performance manager sequence.
+  void OnPageAlmostIdleChanged(const PageNode* page_node) override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
 
  private:
   // Determines if a message should still be dispatched for the given

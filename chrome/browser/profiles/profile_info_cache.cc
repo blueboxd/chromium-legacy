@@ -54,12 +54,6 @@ const char kSigninRequiredKey[] = "signin_required";
 const char kSupervisedUserId[] = "managed_user_id";
 const char kAccountIdKey[] = "account_id_key";
 
-// TODO(dullweber): Remove these constants after the stored data is removed.
-const char kStatsBrowsingHistoryKeyDeprecated[] = "stats_browsing_history";
-const char kStatsPasswordsKeyDeprecated[] = "stats_passwords";
-const char kStatsBookmarksKeyDeprecated[] = "stats_bookmarks";
-const char kStatsSettingsKeyDeprecated[] = "stats_settings";
-
 void DeleteBitmap(const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -113,8 +107,6 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // profile names.
   if (!disable_avatar_download_for_testing_)
     MigrateLegacyProfileNamesAndDownloadAvatars();
-
-  RemoveDeprecatedStatistics();
 }
 
 ProfileInfoCache::~ProfileInfoCache() {
@@ -743,19 +735,6 @@ void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
     }
   }
 #endif
-}
-
-void ProfileInfoCache::RemoveDeprecatedStatistics() {
-  for (size_t i = 0; i < GetNumberOfProfiles(); i++) {
-    if (GetInfoForProfileAtIndex(i)->HasKey(kStatsBookmarksKeyDeprecated)) {
-      auto info = GetInfoForProfileAtIndex(i)->CreateDeepCopy();
-      info->Remove(kStatsBookmarksKeyDeprecated, nullptr);
-      info->Remove(kStatsBrowsingHistoryKeyDeprecated, nullptr);
-      info->Remove(kStatsPasswordsKeyDeprecated, nullptr);
-      info->Remove(kStatsSettingsKeyDeprecated, nullptr);
-      SetInfoForProfileAtIndex(i, std::move(info));
-    }
-  }
 }
 
 void ProfileInfoCache::AddProfile(const base::FilePath& profile_path,

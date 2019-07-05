@@ -57,11 +57,6 @@ Polymer({
     this.$.dialog.showModal();
   },
 
-  /** @private */
-  cancel_: function() {
-    this.$.dialog.cancel();
-  },
-
   /**
    * @private
    */

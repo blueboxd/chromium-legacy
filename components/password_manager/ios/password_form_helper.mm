@@ -446,12 +446,4 @@ constexpr char kCommandPrefix[] = "passwordForm";
                     completionHandler:extractFormDataCompletionHandler];
 }
 
-- (void)focusOnForm:(NSString*)formName
-      fieldIdentifier:(NSString*)fieldIdentifier
-    completionHandler:(nullable void (^)(BOOL))completionHandler {
-  [self.jsPasswordManager focusOnForm:formName
-                      fieldIdentifier:fieldIdentifier
-                    completionHandler:completionHandler];
-}
-
 @end

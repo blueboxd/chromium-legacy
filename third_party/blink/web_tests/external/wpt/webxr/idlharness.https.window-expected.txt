@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 203 tests; 198 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 202 tests; 197 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -11,14 +11,14 @@ PASS XR interface: existence and properties of interface prototype object
 PASS XR interface: existence and properties of interface prototype object's "constructor" property
 PASS XR interface: existence and properties of interface prototype object's @@unscopables property
 PASS XR interface: operation supportsSession(XRSessionMode)
-PASS XR interface: operation requestSession(XRSessionMode)
+PASS XR interface: operation requestSession(XRSessionMode, XRSessionInit)
 PASS XR interface: attribute ondevicechange
 PASS XR must be primary interface of navigator.xr
 PASS Stringification of navigator.xr
 PASS XR interface: navigator.xr must inherit property "supportsSession(XRSessionMode)" with the proper type
 PASS XR interface: calling supportsSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
-PASS XR interface: navigator.xr must inherit property "requestSession(XRSessionMode)" with the proper type
-PASS XR interface: calling requestSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
+PASS XR interface: navigator.xr must inherit property "requestSession(XRSessionMode, XRSessionInit)" with the proper type
+PASS XR interface: calling requestSession(XRSessionMode, XRSessionInit) on navigator.xr with too few arguments must throw TypeError
 PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
 PASS XRSession interface: existence and properties of interface object
 PASS XRSession interface object length
@@ -182,7 +182,6 @@ PASS XRInputSourceEvent interface: existence and properties of interface prototy
 PASS XRInputSourceEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRInputSourceEvent interface: attribute frame
 PASS XRInputSourceEvent interface: attribute inputSource
-PASS XRInputSourceEvent interface: attribute buttonIndex
 PASS XRInputSourcesChangeEvent interface: existence and properties of interface object
 PASS XRInputSourcesChangeEvent interface object length
 PASS XRInputSourcesChangeEvent interface object name

@@ -186,8 +186,7 @@ class FormSuggestionControllerTest : public PlatformTest {
     };
     [[[mock_consumer_ stub] andDo:mockShow]
         showAccessorySuggestions:[OCMArg any]
-                suggestionClient:[OCMArg any]
-              isHardwareKeyboard:NO];
+                suggestionClient:[OCMArg any]];
 
     // Mock restore keyboard to verify cleanup.
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {

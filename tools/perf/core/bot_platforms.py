@@ -107,7 +107,6 @@ _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES = frozenset([
 _WIN_7_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_7_GPU_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_GO_BENCHMARK_NAMES = frozenset([
-    'memory.top_10_mobile',
     'system_health.memory_mobile',
     'system_health.common_mobile',
     'startup.mobile',

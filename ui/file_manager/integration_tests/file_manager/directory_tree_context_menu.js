@@ -895,10 +895,16 @@
    * Tests context menu for USB root (single and multiple partitions).
    */
   testcase.dirContextMenuUsbs = async () => {
-    const singleUsbMenus = [
+    const ext4UsbMenus = [
       ['#unmount', true],
       ['#format', true],
       ['#rename', false],
+      ['#share-with-linux', true],
+    ];
+    const ntfsUsbMenus = [
+      ['#unmount', true],
+      ['#format', true],
+      ['#rename', true],
       ['#share-with-linux', true],
     ];
     const partitionsRootMenus = [
@@ -932,7 +938,7 @@
 
     // Check the context menu for single partition ext4 USB.
     await checkContextMenu(
-        appId, '/fake-usb', singleUsbMenus, true /* rootMenu */);
+        appId, '/fake-usb', ext4UsbMenus, true /* rootMenu */);
 
     // Check the context menu for a folder inside a single USB partition.
     await checkContextMenu(
@@ -950,6 +956,14 @@
     // Check the context menu for a folder inside a partition1.
     await checkContextMenu(
         appId, '/Drive Label/partition-1/A', folderMenus, false /* rootMenu */);
+
+    // Remount the single partition ext4 USB as NTFS
+    await sendTestMessage({name: 'unmountUsb'});
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Check the context menu for a single partition NTFS USB.
+    await checkContextMenu(
+        appId, '/fake-usb', ntfsUsbMenus, true /* rootMenu */);
   };
 
   /**

@@ -108,6 +108,10 @@ initWithBaseViewController:(UIViewController*)viewController
   __weak id<CardCoordinatorDelegate> delegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
     [delegate openCardSettings];
+    if (IsIPadIdiom()) {
+      // Settings close the popover but don't send a message to reopen it.
+      [delegate fallbackCoordinatorDidDismissPopover:self];
+    }
   }];
 }
 

@@ -61,11 +61,11 @@ namespace internal {
 template <typename CallbackType>
 class CancelableCallbackImpl {
  public:
-  CancelableCallbackImpl() : weak_ptr_factory_(this) {}
+  CancelableCallbackImpl() {}
 
   // |callback| must not be null.
   explicit CancelableCallbackImpl(CallbackType callback)
-      : callback_(std::move(callback)), weak_ptr_factory_(this) {
+      : callback_(std::move(callback)) {
     DCHECK(callback_);
   }
 
@@ -128,7 +128,7 @@ class CancelableCallbackImpl {
 
   // The stored closure that may be cancelled.
   CallbackType callback_;
-  mutable base::WeakPtrFactory<CancelableCallbackImpl> weak_ptr_factory_;
+  mutable base::WeakPtrFactory<CancelableCallbackImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CancelableCallbackImpl);
 };

@@ -32,8 +32,7 @@ ThreadControllerImpl::ThreadControllerImpl(
                                     ? funneled_sequence_manager->GetTaskRunner()
                                     : nullptr),
       time_source_(time_source),
-      work_deduplicator_(associated_thread_),
-      weak_factory_(this) {
+      work_deduplicator_(associated_thread_) {
   if (task_runner_ || funneled_sequence_manager_)
     work_deduplicator_.BindToCurrentThread();
   immediate_do_work_closure_ =

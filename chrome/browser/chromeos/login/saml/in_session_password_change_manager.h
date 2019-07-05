@@ -32,6 +32,10 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer {
   explicit InSessionPasswordChangeManager(Profile* primary_profile);
   ~InSessionPasswordChangeManager() override;
 
+  // Start the in-session password change flow by showing a dialog that embeds
+  // the user's SAML IdP change-password page:
+  void StartInSessionPasswordChange();
+
   // Change cryptohome password for primary user.
   void ChangePassword(const std::string& old_password,
                       const std::string& new_password);

@@ -10,6 +10,10 @@ specific_include_rules = {
     "+components/signin/core/browser/primary_account_manager.h",
     "+components/signin/core/browser/primary_account_policy_manager.h",
     "+components/signin/core/browser/profile_oauth2_token_service.h",
+    "+components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h",
+    "+components/signin/internal/identity_manager/accounts_mutator_impl.h",
+    "+components/signin/internal/identity_manager/diagnostics_provider_impl.h",
+    "+components/signin/internal/identity_manager/primary_account_mutator_impl.h",
   ],
 
   "profile_oauth2_token_service_builder.cc": [

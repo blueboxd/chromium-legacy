@@ -235,25 +235,6 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
 };
 
 /**
- * Finds given field, identified by |fieldIdentifier| in the given |formName|
- * and focus it, which should trigger a form focus event.
- * @return {boolean} if field was found and focused.
- */
-__gCrWeb.passwords['focusOnFormField'] = function(formName, fieldIdentifier) {
-  var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
-  if (!form)
-    return false;
-  var inputs = getFormInputElements_(form);
-  var field =
-      findInputByFieldIdentifier_(inputs, fieldIdentifier);
-  if (!field)
-    return false;
-  __gCrWeb.fill.createAndDispatchHTMLEvent(
-        field, field.value, 'focus', true, false);
-  return true;
-};
-
-/**
  * Given a description of a form (origin, action and input fields),
  * finds that form on the page and fills in the specified username
  * and password.

@@ -106,25 +106,14 @@
     },
     "11": {
         "benchmarks": {
-            "media.mobile": {},
-            "memory.top_10_mobile": {
-                "end": 5
-            }
+            "media.mobile": {}
         }
     },
     "12": {
-        "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 5,
-                "end": 16
-            }
-        }
+        "benchmarks": {}
     },
     "13": {
         "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 16
-            },
             "octane": {}
         }
     },

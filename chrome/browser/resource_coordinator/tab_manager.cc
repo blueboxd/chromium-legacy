@@ -171,13 +171,15 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
     // The performance manager is torn down on its own sequence so its safe to
     // pass it unretained. The observer itself learns of the tab manager tear
     // down via the weak ptr it is given.
-    perf_man->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &performance_manager::PerformanceManager::RegisterObserver,
-            base::Unretained(perf_man),
-            std::make_unique<ResourceCoordinatorSignalObserver>(
-                weak_ptr_factory_.GetWeakPtr())));
+    perf_man->CallOnGraph(
+        FROM_HERE, base::BindOnce(
+                       [](std::unique_ptr<ResourceCoordinatorSignalObserver>
+                              rc_signal_observer,
+                          performance_manager::GraphImpl* graph) {
+                         graph->PassToGraph(std::move(rc_signal_observer));
+                       },
+                       std::make_unique<ResourceCoordinatorSignalObserver>(
+                           weak_ptr_factory_.GetWeakPtr())));
   }
 
   stats_collector_.reset(new TabManagerStatsCollector());

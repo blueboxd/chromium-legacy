@@ -80,8 +80,8 @@ using testing::SizeIs;
 using testing::StrictMock;
 using testing::_;
 
-const char kHomepageUrl[] = "http://ho.me/";
-const char kHomepageTitle[] = "Home";
+const char kHomepageUrl[] = "http://homepa.ge/";
+const char kHomepageTitle[] = "Homepage";
 const char kTestExploreUrl[] = "https://example.com/";
 const char kTestExploreTitle[] = "Example";
 

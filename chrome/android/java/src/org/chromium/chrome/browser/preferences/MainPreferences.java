@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
+import org.chromium.chrome.browser.preferences.sync.SignInPreference;
 import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;

@@ -240,7 +240,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   base::TimeTicks swap_time =
       GetTimeOrigin() + base::TimeDelta::FromSecondsD(6.0);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(1u, performance_->getBufferedEntriesByType("event").size());
 
   page_holder_->GetFrame()
       .Loader()
@@ -250,7 +250,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(2u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
   GetFrame()->PrepareForCommit();
@@ -258,7 +258,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(3u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(3u, performance_->getBufferedEntriesByType("event").size());
 }
 
 TEST_F(WindowPerformanceTest, Expose100MsEvents) {
@@ -283,9 +283,9 @@ TEST_F(WindowPerformanceTest, Expose100MsEvents) {
       start_time + base::TimeDelta::FromMicroseconds(100100);
   SimulateSwapPromise(swap_time);
   // Only the longer event should have been reported.
-  EXPECT_EQ(1u, performance_->getEntriesByType("event").size());
-  EXPECT_EQ(1u, performance_->getEntriesByName("mousedown", "event").size());
-  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+  const auto& entries = performance_->getBufferedEntriesByType("event");
+  EXPECT_EQ(1u, entries.size());
+  EXPECT_EQ("mousedown", entries.at(0)->name());
 }
 
 TEST_F(WindowPerformanceTest, EventTimingDuration) {
@@ -302,14 +302,14 @@ TEST_F(WindowPerformanceTest, EventTimingDuration) {
   base::TimeTicks short_swap_time =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1003);
   SimulateSwapPromise(short_swap_time);
-  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(0u, performance_->getBufferedEntriesByType("event").size());
 
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
   base::TimeTicks long_swap_time =
       GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2000);
   SimulateSwapPromise(long_swap_time);
-  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(1u, performance_->getBufferedEntriesByType("event").size());
 
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
@@ -317,7 +317,7 @@ TEST_F(WindowPerformanceTest, EventTimingDuration) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);
   SimulateSwapPromise(long_swap_time);
-  EXPECT_EQ(2u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 }
 
 TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
@@ -333,13 +333,12 @@ TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
         start_time + base::TimeDelta::FromMilliseconds(200);
     performance_->RegisterEventTiming("click", start_time, processing_start,
                                       processing_end, false);
-    EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+    EXPECT_EQ(0u, performance_->getBufferedEntriesByType("event").size());
   }
   base::TimeTicks swap_time =
       GetTimeOrigin() + base::TimeDelta::FromSeconds(num_events);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(num_events,
-            performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(num_events, performance_->getBufferedEntriesByType("event").size());
 }
 
 // Test for existence of 'first-input' given different types of first events.

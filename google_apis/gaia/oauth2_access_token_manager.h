@@ -24,6 +24,7 @@ class OAuth2AccessTokenManager {
  public:
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
+  class RequestImpl;
 
   class Delegate {
    public:
@@ -48,6 +49,18 @@ class OAuth2AccessTokenManager {
     // fetching access tokens. Default implementation returns nullptr.
     virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
         const;
+
+    // Gives the delegate a chance to handle the access token request before
+    // the manager sends the request over the network. Returns true if the
+    // request was handled by the delegate (in which case the manager will not
+    // send the request) and false otherwise.
+    virtual bool HandleAccessTokenFetch(
+        RequestImpl* request,
+        const CoreAccountId& account_id,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        const std::string& client_id,
+        const std::string& client_secret,
+        const ScopeSet& scopes);
 
     // Called when an access token is invalidated.
     virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,

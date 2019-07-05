@@ -29,6 +29,16 @@ OAuth2AccessTokenManager::Delegate::GetURLLoaderFactory() const {
   return nullptr;
 }
 
+bool OAuth2AccessTokenManager::Delegate::HandleAccessTokenFetch(
+    RequestImpl* request,
+    const CoreAccountId& account_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const ScopeSet& scopes) {
+  return false;
+}
+
 OAuth2AccessTokenManager::Request::Request() {}
 
 OAuth2AccessTokenManager::Request::~Request() {}
@@ -630,7 +640,14 @@ OAuth2AccessTokenManager::StartRequestForClientWithContext(
   if (token_response && token_response->access_token.length()) {
     InformConsumerWithCachedTokenResponse(token_response, request.get(),
                                           request_parameters);
+  } else if (delegate_->HandleAccessTokenFetch(request.get(), account_id,
+                                               url_loader_factory, client_id,
+                                               client_secret, scopes)) {
+    // The delegate handling the fetch request means that we *don't* perform a
+    // fetch.
   } else {
+    // The token isn't in the cache and the delegate isn't fetching it: fetch it
+    // ourselves!
     // TODO(https://crbug.com/967598): Use directly
     // OAuth2AccessTokenManager::FetchOAuth2Token this fully manages access
     // tokens independently of OAuth2TokenService. For now, some tests need to

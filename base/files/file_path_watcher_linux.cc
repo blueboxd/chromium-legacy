@@ -252,7 +252,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   // appear after it, that is not possible.
   WeakPtr<FilePathWatcherImpl> weak_ptr_;
 
-  WeakPtrFactory<FilePathWatcherImpl> weak_factory_;
+  WeakPtrFactory<FilePathWatcherImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
@@ -391,7 +391,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
   }
 }
 
-FilePathWatcherImpl::FilePathWatcherImpl() : weak_factory_(this) {
+FilePathWatcherImpl::FilePathWatcherImpl() {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 

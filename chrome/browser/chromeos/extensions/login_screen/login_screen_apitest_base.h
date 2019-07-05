@@ -16,6 +16,7 @@ namespace chromeos {
 // login screen. The extension is whitelisted to run as a force-installed "login
 // screen extension" and is also whitelisted for the following APIs:
 // * loginScreenUi
+// * storage
 // The extension's code can be found in
 // chrome/test/data/extensions/api_test/login_screen_apis/
 class LoginScreenApitestBase

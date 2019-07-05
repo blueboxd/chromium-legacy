@@ -371,6 +371,10 @@ const FrameNode* PageNodeImpl::GetMainFrameNode() const {
   return GetMainFrameNodeImpl();
 }
 
+const WebContentsProxy& PageNodeImpl::GetContentProxy() const {
+  return contents_proxy();
+}
+
 const GURL& PageNodeImpl::GetMainFrameUrl() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_url();

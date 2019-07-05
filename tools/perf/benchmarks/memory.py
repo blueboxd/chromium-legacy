@@ -99,23 +99,3 @@ class MemoryBenchmarkDesktop(_MemoryInfra):
   @classmethod
   def ShouldAddValue(cls, name, _):
     return DefaultShouldAddValueForMemoryMeasurement(name)
-
-
-@benchmark.Info(emails=['perezju@chromium.org'])
-class MemoryBenchmarkTop10Mobile(_MemoryInfra):
-  """Measure foreground/background memory on top 10 mobile page set.
-
-  This metric provides memory measurements for the System Health Plan of
-  Chrome on Android.
-  """
-  page_set = page_sets.MemoryTop10Mobile
-  options = {'pageset_repeat': 5}
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_10_mobile'
-
-  @classmethod
-  def ShouldAddValue(cls, name, _):
-    return DefaultShouldAddValueForMemoryMeasurement(name)

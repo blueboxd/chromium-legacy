@@ -36,6 +36,11 @@ InSessionPasswordChangeManager::InSessionPasswordChangeManager(
 
 InSessionPasswordChangeManager::~InSessionPasswordChangeManager() {}
 
+void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
+  UrgentPasswordExpiryNotificationDialog::Dismiss();
+  PasswordChangeDialog::Show(primary_profile_);
+}
+
 void InSessionPasswordChangeManager::ChangePassword(
     const std::string& old_password,
     const std::string& new_password) {

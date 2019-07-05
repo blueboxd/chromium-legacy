@@ -69,8 +69,8 @@ class DeviceOAuth2TokenService
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
 
  protected:
-  // Implementation of OAuth2TokenService.
-  void FetchOAuth2Token(
+  // Implementation of OAuth2AccessTokenManager::Delegate
+  bool HandleAccessTokenFetch(
       OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

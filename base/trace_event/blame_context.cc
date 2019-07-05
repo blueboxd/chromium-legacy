@@ -24,8 +24,7 @@ BlameContext::BlameContext(const char* category,
       id_(id),
       parent_scope_(parent_context ? parent_context->scope() : nullptr),
       parent_id_(parent_context ? parent_context->id() : 0),
-      category_group_enabled_(nullptr),
-      weak_factory_(this) {
+      category_group_enabled_(nullptr) {
   DCHECK(!parent_context || !std::strcmp(name_, parent_context->name()))
       << "Parent blame context must have the same name";
 }

@@ -67,7 +67,6 @@ class OrderfileStorySet(story.StorySet):
       'background:tools:gmail',
       'browse:chrome:newtab',
       'browse:chrome:omnibox',
-      'browse:news:cnn',
       'browse:news:cnn:2018',
       'browse:news:globo',
       'browse:news:toi',
@@ -260,7 +259,6 @@ class OrderfileMemory(system_health.MobileMemorySystemHealth):
   """Benchmark for native code memory footprint evaluation."""
   class OrderfileMemoryStorySet(story.StorySet):
     _STORY_SET = set([
-      'browse:news:cnn',
       'browse:news:cnn:2018',
       'browse:social:facebook'
     ])

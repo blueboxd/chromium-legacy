@@ -1,8 +1,6 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// This class is only built in Chrome OS.
 
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_POLICY_MANAGER_IMPL_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_POLICY_MANAGER_IMPL_H_

@@ -5623,6 +5623,7 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
     }
   }
   if (scrolling_mode != owner->ScrollingMode() && View()) {
+    View()->SetCanHaveScrollbars(scrolling_mode != kScrollbarAlwaysOff);
     View()->SetNeedsLayout();
   }
 }

@@ -252,6 +252,10 @@ const char kChromeUISmbCredentialsURL[] = "chrome://smb-credentials-dialog/";
 const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUIUserImageHost[] = "userimage";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
+const char kChromeUIUrgentPasswordExpiryNotificationHost[] =
+    "urgent-password-expiry-notification";
+const char kChromeUIUrgentPasswordExpiryNotificationUrl[] =
+    "chrome://urgent-password-expiry-notification/";
 // Keep alphabetized.
 
 bool IsSystemWebUIHost(base::StringPiece host) {

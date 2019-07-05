@@ -15,6 +15,8 @@ source_set("identity_manager") {
     "diagnostics_provider.h",
     "identity_manager.cc",
     "identity_manager.h",
+    "identity_manager_builder.cc",
+    "identity_manager_builder.h",
     "primary_account_access_token_fetcher.cc",
     "primary_account_access_token_fetcher.h",
     "primary_account_mutator.h",
@@ -32,8 +34,16 @@ source_set("identity_manager") {
   ]
 
   deps = [
+    "//components/image_fetcher/core",
     "//components/signin/core/browser:internals",
+    "//components/signin/internal/identity_manager",
     "//services/network/public/cpp",
+  ]
+
+  allow_circular_includes_from = [
+    # This target is a pair with internal/identity_manager. They always go
+    # together and include headers from each other.
+    "//components/signin/internal/identity_manager",
   ]
 }
 

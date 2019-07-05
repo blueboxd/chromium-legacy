@@ -104,10 +104,10 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
     if (entry_type == kInvalid) {
       return true;
     }
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        HashSet<PerformanceEntryType>, valid_timeline_entry_types,
-        ({kNavigation, kMark, kMeasure, kResource, kTaskAttribution, kPaint,
-          kEvent, kFirstInput, kElement, kLayoutJank}));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(HashSet<PerformanceEntryType>,
+                                    valid_timeline_entry_types,
+                                    ({kNavigation, kMark, kMeasure, kResource,
+                                      kTaskAttribution, kPaint, kFirstInput}));
     return valid_timeline_entry_types.Contains(entry_type);
   }
 

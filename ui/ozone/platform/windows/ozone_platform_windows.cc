@@ -76,6 +76,11 @@ class OzonePlatformWindows : public OzonePlatform {
       override {
     return std::make_unique<display::FakeDisplayDelegate>();
   }
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    NOTREACHED();
+    return nullptr;
+  }
 
   void InitializeUI(const InitParams& params) override {
     window_manager_ = std::make_unique<WindowsWindowManager>();

@@ -132,17 +132,6 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
       : TestRenderWidgetHostView(rwh) {}
   ~MockRootRenderWidgetHostView() override = default;
 
-  viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate*,
-                                      const gfx::PointF&,
-                                      gfx::PointF*,
-                                      bool* query_renderer) override {
-    if (force_query_renderer_on_hit_test_)
-      *query_renderer = true;
-    DCHECK(current_hittest_result_)
-        << "Must set a Hittest result before calling this function";
-    return current_hittest_result_->GetFrameSinkId();
-  }
-
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,

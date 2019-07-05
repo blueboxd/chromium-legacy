@@ -37,19 +37,12 @@ void MirrorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   if (unoccluded_content_rect.IsEmpty())
     return;
 
+  const bool contents_opaque = false;
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  bool contents_opaque = false;
-  auto* effect_node = GetEffectTree().Node(effect_tree_index());
-  shared_quad_state->SetAll(
-      draw_properties().target_space_transform, content_rect, content_rect,
-      draw_properties().rounded_corner_bounds, draw_properties().clip_rect,
-      draw_properties().is_clipped, contents_opaque, draw_properties().opacity,
-      effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
-                                      : effect_node->blend_mode,
-      GetSortingContextId());
-  shared_quad_state->is_fast_rounded_corner =
-      draw_properties().is_fast_rounded_corner;
+  PopulateScaledSharedQuadStateWithContentRects(
+      shared_quad_state, GetIdealContentsScale(), content_rect, content_rect,
+      contents_opaque);
 
   AppendDebugBorderQuad(render_pass, content_rect, shared_quad_state,
                         append_quads_data);
@@ -79,6 +72,10 @@ gfx::Rect MirrorLayerImpl::GetDamageRect() const {
   // TOOD(mohsen): Currently, the whole layer is marked as damaged. We should
   // only consider the damage from the mirrored layer.
   return gfx::Rect(bounds());
+}
+
+gfx::Rect MirrorLayerImpl::GetEnclosingRectInTargetSpace() const {
+  return GetScaledEnclosingRectInTargetSpace(GetIdealContentsScale());
 }
 
 const char* MirrorLayerImpl::LayerTypeAsString() const {

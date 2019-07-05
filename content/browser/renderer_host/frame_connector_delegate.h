@@ -119,20 +119,6 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const gfx::PointF& point,
       const viz::SurfaceId& surface_id);
 
-  // Given a point in the coordinate space of a different Surface, transform
-  // it into the coordinate space for this view (corresponding to
-  // local_surface_id).
-  // TransformPointToLocalCoordSpaceLegacy() can only transform points between
-  // surfaces where one is embedded (not necessarily directly) within the
-  // other, and will return false if this is not the case. For points that can
-  // be in sibling surfaces, they must first be converted to the root
-  // surface's coordinate space.
-  virtual bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      const viz::SurfaceId& local_surface_id,
-      gfx::PointF* transformed_point);
-
   // Transform a point into the coordinate space of the root
   // RenderWidgetHostView, for the current view's coordinate space.
   // Returns false if |target_view| and |view_| do not have the same root

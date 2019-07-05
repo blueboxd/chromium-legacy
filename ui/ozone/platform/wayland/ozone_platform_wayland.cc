@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
@@ -97,16 +98,6 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    // Some unit tests may try to set custom input method context factory
-    // after InitializeUI. Thus instead of creating factory in InitializeUI
-    // it is set at this point if none exists
-    if (!LinuxInputMethodContextFactory::instance() &&
-        !input_method_context_factory_) {
-      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
-      input_method_context_factory_.reset(factory);
-      LinuxInputMethodContextFactory::SetInstance(factory);
-    }
-
     auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());
     if (!window->Initialize(std::move(properties)))
       return nullptr;
@@ -129,6 +120,21 @@ class OzonePlatformWayland : public OzonePlatform {
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
     return connection_->clipboard();
+  }
+
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    // Some unit tests may try to set custom input method context factory
+    // after InitializeUI. Thus instead of creating factory in InitializeUI
+    // it is set at this point if none exists
+    if (!LinuxInputMethodContextFactory::instance() &&
+        !input_method_context_factory_) {
+      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
+      input_method_context_factory_.reset(factory);
+      LinuxInputMethodContextFactory::SetInstance(factory);
+    }
+
+    return std::make_unique<InputMethodAuraLinux>(delegate);
   }
 
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

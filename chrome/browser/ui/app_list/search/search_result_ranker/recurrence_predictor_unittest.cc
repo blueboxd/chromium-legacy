@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 
 #include <exception>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -22,6 +23,7 @@
 
 using testing::_;
 using testing::FloatEq;
+using testing::FloatNear;
 using testing::Pair;
 using testing::UnorderedElementsAre;
 
@@ -500,6 +502,142 @@ TEST_F(MarkovPredictorTest, ToAndFromProto) {
 
     EXPECT_EQ(predictor_->Rank(5u), new_predictor.Rank(5u));
   }
+}
+
+class ExponentialWeightsEnsembleTest : public testing::Test {
+ protected:
+  // Test ensemble config with a fake, a frecency, and a conditional frequency
+  // predictor.
+  ExponentialWeightsEnsembleConfig MakeConfig() {
+    ExponentialWeightsEnsembleConfig config;
+    config.set_learning_rate(1.0f);
+
+    config.add_predictors()->mutable_fake_predictor();
+    config.add_predictors()->mutable_frecency_predictor()->set_decay_coeff(
+        0.5f);
+    config.add_predictors()->mutable_conditional_frequency_predictor();
+
+    return config;
+  }
+
+  std::unique_ptr<ExponentialWeightsEnsemble> MakeEnsemble(
+      const ExponentialWeightsEnsembleConfig& config) {
+    return std::make_unique<ExponentialWeightsEnsemble>(config);
+  }
+
+  // A predictor that always returns the same prediction, whose weight is
+  // expected to decay in an ensemble.
+  class BadPredictor : public FakePredictor {
+   public:
+    // FakePredictor:
+    std::map<unsigned int, float> Rank(unsigned int condition) override {
+      return {{417u, 1.0f}};
+    }
+  };
+};
+
+TEST_F(ExponentialWeightsEnsembleTest, RankWithNoTargets) {
+  auto ensemble = MakeEnsemble(MakeConfig());
+  EXPECT_TRUE(ensemble->Rank(0u).empty());
+}
+
+TEST_F(ExponentialWeightsEnsembleTest, SimpleRecordAndRank) {
+  // Test a model with a single predictor. Because there is only one model, its
+  // weight should always be 1.0.
+  ExponentialWeightsEnsembleConfig config;
+  config.set_learning_rate(1.0f);
+  config.add_predictors()->mutable_conditional_frequency_predictor();
+  auto ewe = MakeEnsemble(config);
+
+  ewe->Train(0u, 0u);
+  ewe->Train(0u, 0u);
+  ewe->Train(0u, 0u);
+  ewe->Train(0u, 0u);
+  ewe->Train(2u, 1u);
+  ewe->Train(2u, 1u);
+  ewe->Train(2u, 1u);
+  ewe->Train(3u, 1u);
+
+  EXPECT_THAT(ewe->Rank(0u), UnorderedElementsAre(Pair(0u, FloatEq(1.0f))));
+  EXPECT_THAT(ewe->Rank(1u), UnorderedElementsAre(Pair(2u, FloatEq(0.75f)),
+                                                  Pair(3u, FloatEq(0.25f))));
+}
+
+TEST_F(ExponentialWeightsEnsembleTest, GoodModelAndBadModel) {
+  // Test with two predictors, one of which is always wrong and whose weight
+  // should go to zero.
+  ExponentialWeightsEnsembleConfig config;
+  config.set_learning_rate(1.0f);
+  config.add_predictors()->mutable_fake_predictor();
+  // Because the bad predictor isn't a real predictor, add a fake predictor and
+  // manually replace it after the ensemble is constructed.
+  config.add_predictors()->mutable_fake_predictor();
+
+  auto ewe = MakeEnsemble(config);
+  ewe->predictors_[1].first = std::make_unique<BadPredictor>();
+
+  for (int i = 0; i < 5; ++i)
+    ewe->Train(1u, 0u);
+  for (int i = 0; i < 5; ++i)
+    ewe->Train(2u, 0u);
+
+  // Expect the result scores from the ensemble to be approximately the scores
+  // from the predictor itself, as the weight should be near 1. Expect the
+  // result from the bad predictor to have a score near 0.
+  EXPECT_THAT(ewe->predictors_[0].second, FloatNear(1.0f, 0.05f));
+  EXPECT_THAT(ewe->predictors_[1].second, FloatNear(0.0f, 0.05f));
+  EXPECT_THAT(ewe->Rank(0u),
+              UnorderedElementsAre(Pair(1u, FloatNear(5.0f, 0.05f)),
+                                   Pair(2u, FloatNear(5.0f, 0.05f)),
+                                   Pair(417u, FloatNear(0.0f, 0.05f))));
+}
+
+TEST_F(ExponentialWeightsEnsembleTest, TwoBalancedModels) {
+  // Test with two identical predictors. Their weights should stay balanced over
+  // time.
+  ExponentialWeightsEnsembleConfig config;
+  config.set_learning_rate(1.0f);
+  config.add_predictors()->mutable_fake_predictor();
+  config.add_predictors()->mutable_fake_predictor();
+  auto ewe = MakeEnsemble(config);
+
+  for (int i = 0; i < 5; ++i)
+    ewe->Train(1u, 0u);
+  for (int i = 0; i < 5; ++i)
+    ewe->Train(2u, 0u);
+
+  // The scores should be exactly those from one fake predictor, and their
+  // weights should be 0.5 each.
+  EXPECT_THAT(ewe->predictors_[0].second, FloatEq(0.5f));
+  EXPECT_THAT(ewe->predictors_[1].second, FloatEq(0.5f));
+  EXPECT_THAT(ewe->Rank(0u), UnorderedElementsAre(Pair(1u, FloatEq(5.0f)),
+                                                  Pair(2u, FloatEq(5.0f))));
+}
+
+TEST_F(ExponentialWeightsEnsembleTest, ToAndFromProto) {
+  // Add in another predictor for completeness.
+  auto config = MakeConfig();
+  config.add_predictors()->mutable_markov_predictor();
+  auto ensemble_a = MakeEnsemble(config);
+
+  // Do some training.
+  for (int i = 0; i < 10; ++i)
+    for (int j = 0; j < i; ++j)
+      ensemble_a->Train(j, i);
+  for (int i = 0; i < 10; ++i)
+    for (int j = 0; j < i; ++j)
+      ensemble_a->Train(2 * j, 0u);
+
+  // Expect a new ensemble loaded from the old ensemble's state to have the same
+  // rankings.
+  RecurrencePredictorProto proto;
+  ensemble_a->ToProto(&proto);
+
+  auto ensemble_b = MakeEnsemble(config);
+  ensemble_b->FromProto(proto);
+
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(ensemble_a->Rank(i), ensemble_b->Rank(i));
 }
 
 }  // namespace app_list

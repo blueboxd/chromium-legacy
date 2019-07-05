@@ -333,13 +333,8 @@ void BrowserXRRuntime::InitializeAndGetDisplayInfo(
     return;
   }
 
-  int render_process_id =
-      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1;
-  int render_frame_id =
-      render_frame_host ? render_frame_host->GetRoutingID() : -1;
   pending_initialization_callbacks_.push_back(std::move(callback));
   runtime_->EnsureInitialized(
-      render_process_id, render_frame_id,
       base::BindOnce(&BrowserXRRuntime::OnInitialized, base::Unretained(this)));
 }
 

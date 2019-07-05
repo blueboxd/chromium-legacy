@@ -1034,18 +1034,6 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 };
 #endif  // OS_ANDROID
 
-const FeatureEntry::FeatureParam kVizHitTestDrawQuadEnabled[] = {
-    {"provider", "draw_quad"}};
-
-const FeatureEntry::FeatureParam kVizHitTestSurfaceLayerEnabled[] = {
-    {"provider", "surface_layer"}};
-
-const FeatureEntry::FeatureVariation kVizHitTestVariations[] = {
-    {"DrawQuad", kVizHitTestDrawQuadEnabled,
-     base::size(kVizHitTestDrawQuadEnabled), nullptr},
-    {"SurfaceLayer", kVizHitTestSurfaceLayerEnabled,
-     base::size(kVizHitTestSurfaceLayerEnabled), nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
@@ -2961,11 +2949,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
-    {"enable-viz-hit-test", flag_descriptions::kVizHitTestName,
+    {"enable-viz-hit-test-surface-layer", flag_descriptions::kVizHitTestName,
      flag_descriptions::kVizHitTestDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kEnableVizHitTest,
-                                    kVizHitTestVariations,
-                                    "VizHitTestDataSource")},
+     FEATURE_VALUE_TYPE(features::kEnableVizHitTestSurfaceLayer)},
 
 #if BUILDFLAG(ENABLE_PDF)
 #if defined(OS_CHROMEOS)

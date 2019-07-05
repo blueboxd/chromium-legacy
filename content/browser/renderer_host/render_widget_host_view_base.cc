@@ -11,7 +11,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -43,9 +42,7 @@
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
-    : use_viz_hit_test_(features::IsVizHitTestingEnabled()),
-      host_(RenderWidgetHostImpl::From(host)),
-      weak_factory_(this) {
+    : host_(RenderWidgetHostImpl::From(host)), weak_factory_(this) {
   host_->render_frame_metadata_provider()->AddObserver(this);
 }
 
@@ -630,42 +627,6 @@ bool RenderWidgetHostViewBase::ScreenRectIsUnstableFor(
   return false;
 }
 
-viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
-    viz::SurfaceHittestDelegate* delegate,
-    const gfx::PointF& point,
-    gfx::PointF* transformed_point,
-    bool* out_query_renderer) {
-  float device_scale_factor = ui::GetScaleFactorForNativeView(GetNativeView());
-  DCHECK(device_scale_factor != 0.0f);
-
-  // The surface hittest happens in device pixels, so we need to convert the
-  // |point| from DIPs to pixels before hittesting.
-  gfx::PointF point_in_pixels =
-      gfx::ConvertPointToPixel(device_scale_factor, point);
-  viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  if (!surface_id.is_valid()) {
-    // Force a query of the renderer if we don't have a surface id yet.
-    *out_query_renderer = true;
-    return GetFrameSinkId();
-  }
-  viz::SurfaceHittest hittest(delegate,
-                              GetFrameSinkManager()->surface_manager());
-  gfx::Transform target_transform;
-  viz::SurfaceId target_local_surface_id = hittest.GetTargetSurfaceAtPoint(
-      surface_id, gfx::ToFlooredPoint(point_in_pixels), &target_transform,
-      out_query_renderer);
-  *transformed_point = point_in_pixels;
-  if (target_local_surface_id.is_valid()) {
-    target_transform.TransformPoint(transformed_point);
-  }
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
-  // It is possible that the renderer has not yet produced a surface, in which
-  // case we return our current FrameSinkId.
-  auto frame_sink_id = target_local_surface_id.frame_sink_id();
-  return frame_sink_id.is_valid() ? frame_sink_id : GetFrameSinkId();
-}
-
 void RenderWidgetHostViewBase::ProcessMouseEvent(
     const blink::WebMouseEvent& event,
     const ui::LatencyInfo& latency) {
@@ -712,26 +673,6 @@ gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
 gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
     const gfx::PointF& point) {
   return point;
-}
-
-bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  if (use_viz_hit_test_) {
-    return TransformPointToLocalCoordSpaceViz(point, original_surface,
-                                              transformed_point);
-  }
-  return TransformPointToLocalCoordSpaceLegacy(point, original_surface,
-                                               transformed_point);
-}
-
-bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  *transformed_point = point;
-  return true;
 }
 
 bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
@@ -861,7 +802,6 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     RenderWidgetHostViewBase* target_view,
     const gfx::PointF& point,
     gfx::PointF* transformed_point) const {
-  DCHECK(use_viz_hit_test_);
   DCHECK(original_view);
   DCHECK(target_view);
   viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
@@ -921,8 +861,6 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
     return true;
   }
 
-  if (!use_viz_hit_test_)
-    return false;
   viz::FrameSinkId root_frame_sink_id = GetRootFrameSinkId();
   if (!root_frame_sink_id.is_valid())
     return false;
@@ -970,11 +908,10 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
   return true;
 }
 
-bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceViz(
+bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
-  DCHECK(use_viz_hit_test_);
   viz::FrameSinkId original_frame_sink_id = original_surface.frame_sink_id();
   viz::FrameSinkId target_frame_sink_id = GetFrameSinkId();
   if (!original_frame_sink_id.is_valid() || !target_frame_sink_id.is_valid())

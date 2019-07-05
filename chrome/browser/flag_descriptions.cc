@@ -777,10 +777,10 @@ const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
     "GPU process.";
 
-const char kVizHitTestName[] = "Viz Hit-test";
+const char kVizHitTestName[] = "Viz Hit-test SurfaceLayer";
 const char kVizHitTestDescription[] =
-    "If enabled, event targeting uses the new viz-assisted hit-testing logic, "
-    "with hit-test data computed from the CompositorFrame or the SurfaceLayer.";
+    "If enabled, event targeting uses hit-test data computed from the "
+    "SurfaceLayer.";
 
 const char kCompositorThreadedScrollbarScrollingName[] =
     "Compositor threaded scrollbar scrolling";

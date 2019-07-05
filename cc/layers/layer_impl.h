@@ -129,13 +129,19 @@ class CC_EXPORT LayerImpl {
   void PopulateSharedQuadState(viz::SharedQuadState* state,
                                bool contents_opaque) const;
 
-  // If using this, you need to override GetEnclosingRectInTargetSpace() to
+  // If using these two, you need to override GetEnclosingRectInTargetSpace() to
   // use GetScaledEnclosingRectInTargetSpace(). To do otherwise may result in
   // inconsistent values, and drawing/clipping problems.
   void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
-                                     float layer_to_content_scale_x,
-                                     float layer_to_content_scale_y,
+                                     float layer_to_content_scale,
                                      bool contents_opaque) const;
+  void PopulateScaledSharedQuadStateWithContentRects(
+      viz::SharedQuadState* state,
+      float layer_to_content_scale,
+      const gfx::Rect& content_rect,
+      const gfx::Rect& content_visible_rect,
+      bool contents_opaque) const;
+
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
   // AppendQuads and DidDraw will not be called. If WillDraw returns true,
   // DidDraw is guaranteed to be called before another WillDraw or before

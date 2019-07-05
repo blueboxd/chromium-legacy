@@ -143,7 +143,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   PopulateScaledSharedQuadState(shared_quad_state, device_scale_factor,
-                                device_scale_factor, contents_opaque());
+                                contents_opaque());
 
   if (surface_range_.IsValid()) {
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();

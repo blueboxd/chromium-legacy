@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chromeos/components/drivefs/drivefs_util.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -212,8 +213,7 @@ void ContinueGetSelectedFileInfoWithDriveFsMetadata(
   const int index = params->selected_files.size();
   const auto& path = params->file_paths[index];
   params->selected_files.emplace_back(path, path);
-  if (metadata &&
-      metadata->type == drivefs::mojom::FileMetadata::Type::kHosted &&
+  if (metadata && drivefs::IsHosted(metadata->type) &&
       !metadata->alternate_url.empty()) {
     params->selected_files.back().url.emplace(
         std::move(metadata->alternate_url));

@@ -24,7 +24,6 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/common/content_switches.h"
@@ -185,23 +184,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceInternal(
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
   return local_surface_id_.is_valid();
-}
-
-bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (!surface_id.is_valid() || enable_viz_)
-    return false;
-  *transformed_point = point;
-  if (original_surface == surface_id)
-    return true;
-
-  viz::SurfaceHittest hittest(nullptr,
-                              GetFrameSinkManager()->surface_manager());
-  return hittest.TransformPointToTargetSurface(original_surface, surface_id,
-                                               transformed_point);
 }
 
 void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {

@@ -264,11 +264,11 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
         video_frame->natural_size());
   }
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
-      WTF::BindRepeating(&VideoTrackRecorder::Counter::DecreaseCount,
-                         num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(ConvertToBaseCallback(
-      CrossThreadBindRepeating([](scoped_refptr<VideoFrame> video_frame) {},
-                               std::move(video_frame))));
+      WTF::Bind(&VideoTrackRecorder::Counter::DecreaseCount,
+                num_frames_in_encode_->GetWeakPtr())));
+  wrapped_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
+      CrossThreadBindOnce([](scoped_refptr<VideoFrame> video_frame) {},
+                          std::move(video_frame))));
   num_frames_in_encode_->IncreaseCount();
 
   PostCrossThreadTask(*encoding_task_runner_.get(), FROM_HERE,

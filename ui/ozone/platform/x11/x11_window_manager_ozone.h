@@ -5,7 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_X11_X11_WINDOW_MANAGER_OZONE_H_
 #define UI_OZONE_PLATFORM_X11_X11_WINDOW_MANAGER_OZONE_H_
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -27,8 +29,15 @@ class X11WindowManagerOzone {
   // Gets the current X11WindowOzone recipient of mouse events.
   X11WindowOzone* event_grabber() const { return event_grabber_; }
 
+  // Gets the window corresponding to the AcceleratedWidget |widget|.
+  void AddWindow(X11WindowOzone* window);
+  void RemoveWindow(X11WindowOzone* window);
+  X11WindowOzone* GetWindow(gfx::AcceleratedWidget widget) const;
+
  private:
   X11WindowOzone* event_grabber_;
+
+  base::flat_map<gfx::AcceleratedWidget, X11WindowOzone*> windows_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowManagerOzone);
 };

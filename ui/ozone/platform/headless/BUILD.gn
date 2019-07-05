@@ -26,6 +26,7 @@ source_set("headless") {
     "//base",
     "//skia",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/events",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",
@@ -35,4 +36,8 @@ source_set("headless") {
     "//ui/platform_window",
     "//ui/platform_window/stub",
   ]
+
+  if (is_fuchsia) {
+    deps += [ "//ui/base/ime/fuchsia" ]
+  }
 }

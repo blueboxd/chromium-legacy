@@ -3860,7 +3860,7 @@ bool Document::ShouldComplete() {
          !fetcher_->BlockingRequestCount() && !IsDelayingLoadEvent() &&
          !javascript_url_task_handle_.IsActive() &&
          load_event_progress_ != kLoadEventInProgress &&
-         AllDescendantsAreComplete(this);
+         AllDescendantsAreComplete(this) && !Fetcher()->IsInRequestResource();
 }
 
 void Document::Abort() {

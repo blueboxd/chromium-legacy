@@ -14,6 +14,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
+#include "ui/base/ime/input_method_minimal.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -103,6 +104,11 @@ class OzonePlatformCast : public OzonePlatform {
     // On Cast platform the display is initialized by low-level non-Ozone code.
     return nullptr;
   }
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    return std::make_unique<InputMethodMinimal>(delegate);
+  }
+
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
                                      gfx::BufferUsage usage) const override {
     return format == gfx::BufferFormat::BGRA_8888 &&

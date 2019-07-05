@@ -67,8 +67,6 @@ if (enable_vr) {
         "android/gvr/gvr_gamepad_data_fetcher.cc",
         "android/gvr/gvr_gamepad_data_fetcher.h",
         "android/gvr/gvr_gamepad_data_provider.h",
-        "android/gvr/vr_module_delegate.cc",
-        "android/gvr/vr_module_delegate.h",
       ]
 
       if (enable_arcore) {

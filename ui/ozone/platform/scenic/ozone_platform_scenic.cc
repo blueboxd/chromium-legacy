@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
@@ -110,6 +111,11 @@ class OzonePlatformScenic
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
     return window_manager_->CreateScreen();
+  }
+
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    return std::make_unique<InputMethodFuchsia>(delegate);
   }
 
   void InitializeUI(const InitParams& params) override {

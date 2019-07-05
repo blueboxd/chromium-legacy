@@ -187,7 +187,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_,
-                                internal_contents_scale_, contents_opaque());
+                                contents_opaque());
 
   // Appends a dummy quad here, which will be updated later once the resource
   // is ready in UpdateHudTexture(). We don't add a TextureDrawQuad directly

@@ -64,6 +64,16 @@ message MarkovPredictorProto {
   required RecurrencePredictorProto frequencies = 1;
 }
 
+// Simple ensemble predictor.
+message ExponentialWeightsEnsembleProto {
+  // The state of each component predictor.
+  repeated RecurrencePredictorProto predictors = 1;
+
+  // The weights assigned to each member predictor. The order of |weights|
+  // corresponds to the order of |predictors|.
+  repeated float weights = 2;
+}
+
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
@@ -72,5 +82,6 @@ message RecurrencePredictorProto {
     HourBinPredictorProto hour_bin_predictor = 3;
     ConditionalFrequencyPredictorProto conditional_frequency_predictor = 4;
     MarkovPredictorProto markov_predictor = 5;
+    ExponentialWeightsEnsembleProto exponential_weights_ensemble = 6;
   }
 }

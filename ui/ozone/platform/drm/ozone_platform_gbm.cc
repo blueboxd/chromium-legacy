@@ -57,6 +57,12 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
+#else
+#include "ui/base/ime/input_method_minimal.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -154,6 +160,14 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     return std::make_unique<DrmNativeDisplayDelegate>(display_manager_.get());
+  }
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+#if defined(OS_CHROMEOS)
+    return std::make_unique<InputMethodChromeOS>(delegate);
+#else
+    return std::make_unique<InputMethodMinimal>(delegate);
+#endif
   }
 
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

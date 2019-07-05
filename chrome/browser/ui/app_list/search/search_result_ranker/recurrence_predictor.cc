@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 
+#include <cmath>
 #include <utility>
 
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
 
 namespace app_list {
 namespace {
@@ -17,6 +19,12 @@ namespace {
 constexpr int kHoursADay = 24;
 
 }  // namespace
+
+FakePredictor::FakePredictor() {
+  // The fake predictor should only be used for testing, not in production.
+  // Record an error so we know if it is being used.
+  LogConfigurationError(ConfigurationError::kFakePredictorUsed);
+}
 
 FakePredictor::FakePredictor(const FakePredictorConfig& config) {
   // The fake predictor should only be used for testing, not in production.
@@ -441,6 +449,98 @@ void MarkovPredictor::FromProto(const RecurrencePredictorProto& proto) {
   }
 
   frequencies_.FromProto(proto.markov_predictor().frequencies());
+}
+
+ExponentialWeightsEnsemble::ExponentialWeightsEnsemble(
+    const ExponentialWeightsEnsembleConfig& config)
+    : learning_rate_(config.learning_rate()) {
+  for (int i = 0; i < config.predictors_size(); ++i) {
+    predictors_.push_back(
+        {MakePredictor(config.predictors(i)), 1.0f / config.predictors_size()});
+  }
+}
+
+ExponentialWeightsEnsemble::~ExponentialWeightsEnsemble() = default;
+
+const char ExponentialWeightsEnsemble::kPredictorName[] =
+    "ExponentialWeightsEnsemble";
+const char* ExponentialWeightsEnsemble::GetPredictorName() const {
+  return kPredictorName;
+}
+
+void ExponentialWeightsEnsemble::Train(unsigned int target,
+                                       unsigned int condition) {
+  for (auto& predictor_weight : predictors_)
+    predictor_weight.first->Train(target, condition);
+
+  for (auto& predictor_weight : predictors_) {
+    const auto& ranks = predictor_weight.first->Rank(condition);
+
+    // Find the normalized score associated with the ground-truth |target|.
+    // If the predictor didn't rank the ground truth target, consider that a
+    // score of 0.
+    float total_score = 0.0f;
+    for (const auto& target_score : ranks)
+      total_score += target_score.second;
+
+    float score = 0.0f;
+    const auto& it = ranks.find(target);
+    if (total_score > 0.0f && it != ranks.end())
+      score = it->second / total_score;
+
+    // Perform an exponential weights update.
+    predictor_weight.second *= std::exp(-learning_rate_ * (1 - score));
+  }
+
+  // Re-normalize weights.
+  float total_weight = 0.0f;
+  for (const auto& predictor_weight : predictors_)
+    total_weight += predictor_weight.second;
+  for (auto& predictor_weight : predictors_) {
+    predictor_weight.second /= total_weight;
+  }
+}
+
+std::map<unsigned int, float> ExponentialWeightsEnsemble::Rank(
+    unsigned int condition) {
+  std::map<unsigned int, float> result;
+  for (const auto& predictor_weight : predictors_) {
+    const auto& ranks = predictor_weight.first->Rank(condition);
+    for (const auto& target_score : ranks) {
+      // Weights are kept normalized by Train, so all scores remain in [0,1] if
+      // the predictors' scores are in [0,1].
+      result[target_score.first] +=
+          target_score.second * predictor_weight.second;
+    }
+  }
+  return result;
+}
+
+void ExponentialWeightsEnsemble::ToProto(
+    RecurrencePredictorProto* proto) const {
+  auto* ensemble = proto->mutable_exponential_weights_ensemble();
+
+  for (const auto& predictor_weight : predictors_) {
+    predictor_weight.first->ToProto(ensemble->add_predictors());
+    ensemble->add_weights(predictor_weight.second);
+  }
+}
+
+void ExponentialWeightsEnsemble::FromProto(
+    const RecurrencePredictorProto& proto) {
+  if (!proto.has_exponential_weights_ensemble()) {
+    // TODO(921444): Add error metrics for new predictors.
+    return;
+  }
+  const auto& ensemble = proto.exponential_weights_ensemble();
+  int num_predictors = static_cast<int>(predictors_.size());
+  DCHECK_EQ(num_predictors, ensemble.predictors_size());
+  DCHECK_EQ(num_predictors, ensemble.weights_size());
+
+  for (int i = 0; i < num_predictors; ++i) {
+    predictors_[i].first->FromProto(ensemble.predictors(i));
+    predictors_[i].second = ensemble.weights(i);
+  }
 }
 
 }  // namespace app_list

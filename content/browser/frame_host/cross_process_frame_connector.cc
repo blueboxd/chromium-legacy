@@ -9,7 +9,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -212,31 +211,6 @@ gfx::PointF CrossProcessFrameConnector::TransformPointToRootCoordSpace(
   TransformPointToCoordSpaceForView(point, GetRootRenderWidgetHostView(),
                                     surface_id, &transformed_point);
   return transformed_point;
-}
-
-bool CrossProcessFrameConnector::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    const viz::SurfaceId& local_surface_id,
-    gfx::PointF* transformed_point) {
-  if (original_surface == local_surface_id) {
-    *transformed_point = point;
-    return true;
-  }
-
-  // Transformations use physical pixels rather than DIP, so conversion
-  // is necessary.
-  *transformed_point =
-      gfx::ConvertPointToPixel(view_->GetDeviceScaleFactor(), point);
-  viz::SurfaceHittest hittest(nullptr,
-                              GetFrameSinkManager()->surface_manager());
-  if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
-                                             transformed_point))
-    return false;
-
-  *transformed_point =
-      gfx::ConvertPointToDIP(view_->GetDeviceScaleFactor(), *transformed_point);
-  return true;
 }
 
 bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(

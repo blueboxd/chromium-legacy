@@ -566,7 +566,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // If |resource_| is still being used by the compositor we need to create
     // a new resource or reuse a previously recycled one. This class holds one
     // reference so we check if there is more than one.
-    if (!resource_->HasOneRef()) {
+    if (!resource_->HasOneRef() || resource()->is_lost()) {
       DCHECK(!current_resource_has_write_access_)
           << "Write access must be released before sharing the resource";
 

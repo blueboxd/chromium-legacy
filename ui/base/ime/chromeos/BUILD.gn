@@ -58,6 +58,6 @@ jumbo_component("chromeos") {
     "//third_party/icu",
     "//ui/base",
     "//ui/chromeos/strings",
-    "//ui/ozone",
+    "//ui/ozone:ozone_base",
   ]
 }

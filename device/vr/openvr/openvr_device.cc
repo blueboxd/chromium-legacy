@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -55,8 +57,7 @@ gfx::Transform HmdMatrix34ToTransform(const vr::HmdMatrix34_t& mat) {
      mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
      mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
      mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
-     0.0f,        0.0f,        0.0f,        1.0f
-  );
+     0.0f,        0.0f,        0.0f,        1.0f);
   // clang-format on
 }
 
@@ -215,9 +216,7 @@ void OpenVRDevice::RequestSession(
   outstanding_session_requests_count_++;
 }
 
-void OpenVRDevice::EnsureInitialized(int render_process_id,
-                                     int render_frame_id,
-                                     EnsureInitializedCallback callback) {
+void OpenVRDevice::EnsureInitialized(EnsureInitializedCallback callback) {
   EnsureValidDisplayInfo();
   std::move(callback).Run();
 }

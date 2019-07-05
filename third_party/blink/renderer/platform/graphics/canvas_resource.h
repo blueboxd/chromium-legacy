@@ -52,7 +52,6 @@ class PLATFORM_EXPORT CanvasResource
     : public WTF::ThreadSafeRefCounted<CanvasResource> {
  public:
   virtual ~CanvasResource();
-  virtual void Abandon() { TearDown(); }
   virtual bool IsRecycleable() const = 0;
   virtual bool IsAccelerated() const = 0;
   virtual bool SupportsAcceleratedCompositing() const = 0;
@@ -94,10 +93,32 @@ class PLATFORM_EXPORT CanvasResource
     return 0;
   }
 
+  // Called when the resource is marked lost. Losing a resource does not mean
+  // that the backing memory has been destroyed, since the resource itself keeps
+  // a ref on that memory.
+  // It means that the consumer (commonly the compositor) can not provide a sync
+  // token for the resource to be safely recycled and its the GL state may be
+  // inconsistent with when the resource was given to the compositor. So it
+  // should not be recycled for writing again but can be safely read from.
+  virtual void NotifyResourceLost() {
+    // TODO(khushalsagar): Some implementations respect the don't write again
+    // policy but some don't. Fix that once shared images replace all
+    // accelerated use-cases.
+    Abandon();
+  }
+
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
                  const CanvasColorParams&);
+
+  // Called during resource destruction if the resource is destroyed on a thread
+  // other than where it was created. This implies that no context associated
+  // cleanup can be done and any resources tied to the context may be leaked. As
+  // such, a resource must be deleted on the owning thread and this should only
+  // be called when the owning thread and its associated context was torn down
+  // before this resource could be deleted.
+  virtual void Abandon() { TearDown(); }
 
   virtual bool IsOverlayCandidate() const { return false; }
   virtual bool HasGpuMailbox() const = 0;
@@ -336,6 +357,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     return nullptr;
   }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
+  void NotifyResourceLost() final;
+
   GLuint GetTextureIdForBackendTexture() const {
     return owning_thread_data().texture_id;
   }
@@ -346,6 +369,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool has_read_access() const {
     return owning_thread_data().bitmap_image_read_refs > 0u;
   }
+  bool is_lost() const { return owning_thread_data().is_lost; }
 
  private:
   // These members are either only accessed on the owning thread, or are only
@@ -360,6 +384,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     size_t bitmap_image_read_refs = 0u;
     GLuint texture_id = 0u;
     MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
+    bool is_lost = false;
   };
 
   static void OnBitmapImageDestroyed(

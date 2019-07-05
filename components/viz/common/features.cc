@@ -5,7 +5,6 @@
 #include "components/viz/common/features.h"
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
 
@@ -14,10 +13,6 @@
 #endif
 
 namespace features {
-
-constexpr char kProvider[] = "provider";
-constexpr char kDrawQuad[] = "draw_quad";
-constexpr char kSurfaceLayer[] = "surface_layer";
 
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -35,16 +30,8 @@ const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables running the Viz-assisted hit-test logic. We still need to keep the
-// VizHitTestDrawQuad and VizHitTestSurfaceLayer features for finch launch.
-const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableVizHitTest{"VizHitTest",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use Skia's readback API instead of GLRendererCopier.
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
@@ -83,37 +70,19 @@ bool IsVizDisplayCompositorEnabled() {
 }
 
 bool IsVizHitTestingDebugEnabled() {
-  return features::IsVizHitTestingEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableVizHitTestDebug);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVizHitTestDebug);
 }
 
-// VizHitTest is considered enabled when any of its variant is turned on, or
-// when VizDisplayCompositor is turned on.
-bool IsVizHitTestingEnabled() {
-  return base::FeatureList::IsEnabled(features::kEnableVizHitTest) ||
-         base::FeatureList::IsEnabled(kVizDisplayCompositor);
-}
-
-// VizHitTestDrawQuad is enabled when this feature is explicitly enabled on
-// chrome://flags, or when VizHitTest is enabled but VizHitTestSurfaceLayer is
-// turned off.
 bool IsVizHitTestingDrawQuadEnabled() {
-  return GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
-                                          kProvider) == kDrawQuad ||
-         (IsVizHitTestingEnabled() && !IsVizHitTestingSurfaceLayerEnabled());
+  return !IsVizHitTestingSurfaceLayerEnabled();
 }
 
 // VizHitTestSurfaceLayer is enabled when this feature is explicitly enabled on
 // chrome://flags, or when it is enabled by finch and chrome://flags does not
 // conflict.
 bool IsVizHitTestingSurfaceLayerEnabled() {
-  return GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
-                                          kProvider) == kSurfaceLayer ||
-         (IsVizHitTestingEnabled() &&
-          GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
-                                           kProvider) != kDrawQuad &&
-          base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer));
+  return base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
 }
 
 bool IsUsingSkiaForGLReadback() {

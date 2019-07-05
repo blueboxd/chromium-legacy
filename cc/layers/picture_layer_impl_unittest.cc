@@ -722,8 +722,7 @@ TEST_F(PictureLayerImplTest, ScaledBoundsOverflowInt) {
       gfx::Rect(layer_bounds);
   viz::SharedQuadState state;
   active_layer()->PopulateScaledSharedQuadState(
-      &state, adjusted_scale, adjusted_scale,
-      active_layer()->contents_opaque());
+      &state, adjusted_scale, active_layer()->contents_opaque());
 }
 
 TEST_F(PictureLayerImplTest, PinchGestureTilings) {

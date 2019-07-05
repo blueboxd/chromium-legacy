@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
@@ -170,10 +171,7 @@ void GvrDevice::RequestSession(
   pending_request_session_callback_ = std::move(callback);
 
   if (!gvr_api_) {
-    int render_process_id = options->render_process_id;
-    int render_frame_id = options->render_frame_id;
-    Init(render_process_id, render_frame_id,
-         base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
+    Init(base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
                         base::Unretained(this), std::move(options)));
     return;
   }
@@ -249,12 +247,9 @@ void GvrDevice::ResumeTracking() {
   }
 }
 
-void GvrDevice::EnsureInitialized(int render_process_id,
-                                  int render_frame_id,
-                                  EnsureInitializedCallback callback) {
-  Init(render_process_id, render_frame_id,
-       base::BindOnce([](EnsureInitializedCallback callback,
-                         bool success) { std::move(callback).Run(); },
+void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+  Init(base::BindOnce([](EnsureInitializedCallback callback,
+                         bool) { std::move(callback).Run(); },
                       std::move(callback)));
 }
 
@@ -275,36 +270,7 @@ void GvrDevice::Activate(mojom::VRDisplayEventReason reason,
   OnActivate(reason, std::move(on_handled));
 }
 
-void GvrDevice::Init(int render_process_id,
-                     int render_frame_id,
-                     base::OnceCallback<void(bool)> on_finished) {
-  if (!module_delegate_) {
-    VrModuleDelegateFactory* factory = VrModuleDelegateFactory::Get();
-    if (factory) {
-      module_delegate_ =
-          factory->CreateDelegate(render_process_id, render_frame_id);
-    }
-  }
-
-  if (!module_delegate_) {
-    std::move(on_finished).Run(false);
-    return;
-  }
-  if (!module_delegate_->ModuleInstalled()) {
-    module_delegate_->InstallModule(
-        base::BindOnce(&GvrDevice::OnVrModuleInstalled,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(on_finished)));
-    return;
-  }
-  OnVrModuleInstalled(std::move(on_finished), true);
-}
-
-void GvrDevice::OnVrModuleInstalled(base::OnceCallback<void(bool)> on_finished,
-                                    bool success) {
-  if (!success) {
-    std::move(on_finished).Run(false);
-    return;
-  }
+void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice()) {
     std::move(on_finished).Run(false);

@@ -539,7 +539,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
-      int frame_tree_node_id,
       bool needs_loader_factory_interceptor,
       base::Time ui_post_time,
       std::string accept_langs) {
@@ -548,10 +547,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK(!started_);
     ui_to_io_time_ += (base::Time::Now() - ui_post_time);
     global_request_id_ = MakeGlobalRequestID();
-    frame_tree_node_id_ = frame_tree_node_id;
+    frame_tree_node_id_ = request_info->frame_tree_node_id;
     started_ = true;
     web_contents_getter_ = base::BindRepeating(
-        &WebContents::FromFrameTreeNodeId, frame_tree_node_id);
+        &WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
     navigation_ui_data_ = std::move(navigation_ui_data);
 
     base::PostTaskWithTraits(
@@ -1752,17 +1751,16 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       bypass_redirect_checks, weak_factory_.GetWeakPtr());
   RunOrPostTaskIfNecessary(
       FROM_HERE, GetLoaderRequestControllerThreadID(),
-      base::BindOnce(&URLLoaderRequestController::Start,
-                     base::Unretained(request_controller_.get()),
-                     std::move(network_factory_info),
-                     service_worker_navigation_handle_core,
-                     appcache_handle_core,
-                     std::move(prefetched_signed_exchange_cache),
-                     std::move(signed_exchange_prefetch_metric_recorder),
-                     std::move(request_info), std::move(navigation_ui_data),
-                     std::move(factory_for_webui), frame_tree_node_id,
-                     needs_loader_factory_interceptor, base::Time::Now(),
-                     std::move(accept_langs)));
+      base::BindOnce(
+          &URLLoaderRequestController::Start,
+          base::Unretained(request_controller_.get()),
+          std::move(network_factory_info),
+          service_worker_navigation_handle_core, appcache_handle_core,
+          std::move(prefetched_signed_exchange_cache),
+          std::move(signed_exchange_prefetch_metric_recorder),
+          std::move(request_info), std::move(navigation_ui_data),
+          std::move(factory_for_webui), needs_loader_factory_interceptor,
+          base::Time::Now(), std::move(accept_langs)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {

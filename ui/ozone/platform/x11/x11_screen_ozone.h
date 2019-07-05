@@ -18,10 +18,12 @@
 
 namespace ui {
 
+class X11WindowManagerOzone;
+
 // A PlatformScreen implementation for X11.
 class X11ScreenOzone : public PlatformScreen, public PlatformEventDispatcher {
  public:
-  X11ScreenOzone();
+  explicit X11ScreenOzone(X11WindowManagerOzone* wm, bool fetch = true);
   ~X11ScreenOzone() override;
 
   // PlatformScreen:
@@ -44,11 +46,14 @@ class X11ScreenOzone : public PlatformScreen, public PlatformEventDispatcher {
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
  private:
+  friend class X11ScreenOzoneTest;
+
   void AddDisplay(const display::Display& display, bool is_primary);
   void RemoveDisplay(const display::Display& display);
   void FetchDisplayList();
   gfx::Point GetCursorLocation() const;
 
+  X11WindowManagerOzone* window_manager_;
   display::DisplayList display_list_;
 
   base::ObserverList<display::DisplayObserver> observers_;

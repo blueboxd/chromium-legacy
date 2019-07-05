@@ -49,6 +49,7 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace chromeos {
 namespace input_method {
@@ -920,10 +921,12 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
       features_enabled_state_(InputMethodManager::FEATURE_ALL) {
-  if (IsRunningAsSystemCompositor())
-    keyboard_ = std::make_unique<ImeKeyboardImpl>();
-  else
+  if (IsRunningAsSystemCompositor()) {
+    keyboard_ = std::make_unique<ImeKeyboardImpl>(
+        ui::OzonePlatform::GetInstance()->GetInputController());
+  } else {
     keyboard_ = std::make_unique<FakeImeKeyboard>();
+  }
   // Initializes the system IME list.
   std::unique_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
       new ComponentExtensionIMEManagerImpl());

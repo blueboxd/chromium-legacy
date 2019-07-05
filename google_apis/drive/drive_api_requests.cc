@@ -53,7 +53,6 @@ const char kHttpBr[] = "\r\n";
 const char kMultipartMixedMimeTypePrefix[] = "multipart/mixed; boundary=";
 
 // UMA names.
-const char kUMADriveBatchUploadResponseCode[] = "Drive.BatchUploadResponseCode";
 const char kUMADriveTotalFileCountInBatchUpload[] =
     "Drive.TotalFileCountInBatchUpload";
 const char kUMADriveTotalFileSizeInBatchUpload[] =
@@ -1325,19 +1324,6 @@ void BatchUploadRequest::ProcessURLFetchResults(
     const network::ResourceResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
-  // Return the detailed raw HTTP code if the error code is abstracted
-  // DRIVE_OTHER_ERROR. If HTTP connection is failed and the status code is -1,
-  // return network status error.
-  int histogram_error = 0;
-  if (GetErrorCode() != DRIVE_OTHER_ERROR) {
-    histogram_error = GetErrorCode();
-  } else if (response_head && response_head->headers->response_code() != -1) {
-    histogram_error = response_head->headers->response_code();
-  } else {
-    histogram_error = NetError();
-  }
-  base::UmaHistogramSparse(kUMADriveBatchUploadResponseCode, histogram_error);
-
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
     RunCallbackOnPrematureFailure(GetErrorCode());
     sender_->RequestFinished(this);

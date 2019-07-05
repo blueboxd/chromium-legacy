@@ -49,6 +49,14 @@ message RecurrencePredictorConfigProto {
   // A first-order Markov chain predictor.
   message MarkovPredictorConfig {}
 
+  message ExponentialWeightsEnsembleConfig {
+    // The learning rate to apply to the ensemble weights.
+    required float learning_rate = 1;
+
+    // The configuration of the component predictors in the ensemble.
+    repeated RecurrencePredictorConfigProto predictors = 2;
+  }
+
   // The choice of which kind of predictor to use, and its configuration.
   oneof predictor {
     FakePredictorConfig fake_predictor = 1;
@@ -57,6 +65,7 @@ message RecurrencePredictorConfigProto {
     HourBinPredictorConfig hour_bin_predictor = 4;
     ConditionalFrequencyPredictorConfig conditional_frequency_predictor = 5;
     MarkovPredictorConfig markov_predictor = 6;
+    ExponentialWeightsEnsembleConfig exponential_weights_ensemble = 7;
   }
 }
 

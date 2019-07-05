@@ -58,14 +58,6 @@ gfx::PointF FrameConnectorDelegate::TransformPointToRootCoordSpace(
   return gfx::PointF();
 }
 
-bool FrameConnectorDelegate::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    const viz::SurfaceId& local_surface_id,
-    gfx::PointF* transformed_point) {
-  return false;
-}
-
 bool FrameConnectorDelegate::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,

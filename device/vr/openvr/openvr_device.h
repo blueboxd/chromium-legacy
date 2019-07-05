@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_OPENVR_DEVICE_H
-#define DEVICE_VR_OPENVR_DEVICE_H
+#ifndef DEVICE_VR_OPENVR_OPENVR_DEVICE_H_
+#define DEVICE_VR_OPENVR_OPENVR_DEVICE_H_
 
 #include <memory>
 
@@ -37,9 +37,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
-  void EnsureInitialized(int render_process_id,
-                         int render_frame_id,
-                         EnsureInitializedCallback callback) override;
+  void EnsureInitialized(EnsureInitializedCallback callback) override;
 
   void OnPollingEvents();
 
@@ -90,4 +88,4 @@ class DEVICE_VR_EXPORT OpenVRDevice
 
 }  // namespace device
 
-#endif  // DEVICE_VR_OPENVR_DEVICE_H
+#endif  // DEVICE_VR_OPENVR_OPENVR_DEVICE_H_

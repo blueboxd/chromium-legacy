@@ -224,8 +224,7 @@ void ResourceLoadObserverForFrame::DidFinishLoading(
     base::TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
-    bool should_report_corb_blocking,
-    ResponseSource response_source) {
+    bool should_report_corb_blocking) {
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   DocumentLoader& document_loader =
       frame_or_imported_document_->GetMasterDocumentLoader();
@@ -243,9 +242,7 @@ void ResourceLoadObserverForFrame::DidFinishLoading(
       idleness_detector->OnDidLoadResource();
     }
   }
-  if (response_source == ResponseSource::kNotFromMemoryCache) {
-    document.CheckCompleted();
-  }
+  document.CheckCompleted();
 }
 
 void ResourceLoadObserverForFrame::DidFailLoading(const KURL&,

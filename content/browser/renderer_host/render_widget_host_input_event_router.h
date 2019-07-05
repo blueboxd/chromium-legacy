@@ -18,7 +18,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/hit_test/hit_test_region_observer.h"
-#include "components/viz/service/surfaces/surface_hittest_delegate.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
@@ -193,20 +192,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                            InertialGSUBubblingStopsWhenParentCannotScroll);
   struct HittestData {
     bool ignored_for_hittest;
-  };
-
-  class HittestDelegate : public viz::SurfaceHittestDelegate {
-   public:
-    HittestDelegate(const std::unordered_map<viz::SurfaceId,
-                                             HittestData,
-                                             viz::SurfaceIdHash>& hittest_data);
-    bool RejectHitTarget(const viz::SurfaceDrawQuad* surface_quad,
-                         const gfx::Point& point_in_quad_space) override;
-    bool AcceptHitTarget(const viz::SurfaceDrawQuad* surface_quad,
-                         const gfx::Point& point_in_quad_space) override;
-
-    const std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>&
-        hittest_data_;
   };
 
   using FrameSinkIdOwnerMap = std::unordered_map<viz::FrameSinkId,
@@ -427,7 +412,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       hittest_data_;
 
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
-  bool use_viz_hit_test_ = false;
   bool events_being_flushed_ = false;
 
   std::unique_ptr<TouchEmulator> touch_emulator_;

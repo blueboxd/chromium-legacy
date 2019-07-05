@@ -151,22 +151,32 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
-                                              float layer_to_content_scale_x,
-                                              float layer_to_content_scale_y,
+                                              float layer_to_content_scale,
                                               bool contents_opaque) const {
-  gfx::Transform scaled_draw_transform =
-      draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
-                              SK_MScalar1 / layer_to_content_scale_y);
-  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
-      bounds(), layer_to_content_scale_x, layer_to_content_scale_y);
-  gfx::Rect scaled_visible_layer_rect = gfx::ScaleToEnclosingRect(
-      visible_layer_rect(), layer_to_content_scale_x, layer_to_content_scale_y);
+  gfx::Size scaled_bounds =
+      gfx::ScaleToCeiledSize(bounds(), layer_to_content_scale);
+  gfx::Rect scaled_visible_layer_rect =
+      gfx::ScaleToEnclosingRect(visible_layer_rect(), layer_to_content_scale);
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
+  PopulateScaledSharedQuadStateWithContentRects(
+      state, layer_to_content_scale, gfx::Rect(scaled_bounds),
+      scaled_visible_layer_rect, contents_opaque);
+}
+
+void LayerImpl::PopulateScaledSharedQuadStateWithContentRects(
+    viz::SharedQuadState* state,
+    float layer_to_content_scale,
+    const gfx::Rect& content_rect,
+    const gfx::Rect& visible_content_rect,
+    bool contents_opaque) const {
+  gfx::Transform scaled_draw_transform =
+      draw_properties_.target_space_transform;
+  scaled_draw_transform.Scale(SK_MScalar1 / layer_to_content_scale,
+                              SK_MScalar1 / layer_to_content_scale);
+
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
-  state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect,
+  state->SetAll(scaled_draw_transform, content_rect, visible_content_rect,
                 draw_properties().rounded_corner_bounds,
                 draw_properties().clip_rect, draw_properties().is_clipped,
                 contents_opaque, draw_properties().opacity,

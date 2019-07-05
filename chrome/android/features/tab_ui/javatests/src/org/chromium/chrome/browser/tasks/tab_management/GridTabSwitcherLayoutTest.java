@@ -252,6 +252,7 @@ public class GridTabSwitcherLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @DisabledTest(message = "crbug.com/981409")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         prepareTabs(1, mUrl);
         testGridToTab(false, false);

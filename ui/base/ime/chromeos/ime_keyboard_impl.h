@@ -20,7 +20,7 @@ namespace input_method {
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboardImpl
     : public ImeKeyboard {
  public:
-  ImeKeyboardImpl();
+  ImeKeyboardImpl(ui::InputController* input_controller);
   ~ImeKeyboardImpl() override;
 
   // ImeKeyboard:
@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboardImpl
   bool CapsLockIsEnabled() override;
 
  private:
-  ui::InputController* input_controller_;
+  ui::InputController* const input_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeKeyboardImpl);
 };

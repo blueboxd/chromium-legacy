@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Test for [OriginTrialEnabled] extended attribute applied to an interface.
-// This is separate from TestInterface (and TestInterface[2|3]), as the
-// [OriginTrialEnabled] attribute takes precedence over [RuntimeEnabled].
+// Test for [RuntimeEnabled] extended attribute applied to an interface that
+// references an origin trial controlled feature.
 
 [
     RuntimeEnabled=InterfaceFeatureName

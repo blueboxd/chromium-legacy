@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chromeos/components/drivefs/drivefs_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -170,8 +171,7 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
                  std::string::npos;
         }
         if (params_->available_offline) {
-          return !metadata->available_offline &&
-                 metadata->type != mojom::FileMetadata::Type::kHosted;
+          return !metadata->available_offline && IsLocal(metadata->type);
         }
         if (params_->shared_with_me) {
           return !metadata->shared;

@@ -1274,22 +1274,6 @@ void RenderWidgetHostViewMac::InjectTouchEvent(
   }
 }
 
-bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  // Transformations use physical pixels rather than DIP, so conversion
-  // is necessary.
-  float scale_factor = display_.device_scale_factor();
-  gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
-  if (!browser_compositor_->GetDelegatedFrameHost()
-           ->TransformPointToLocalCoordSpaceLegacy(
-               point_in_pixels, original_surface, transformed_point))
-    return false;
-  *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
-  return true;
-}
-
 bool RenderWidgetHostViewMac::HasFallbackSurface() const {
   return browser_compositor_->GetDelegatedFrameHost()->HasFallbackSurface();
 }

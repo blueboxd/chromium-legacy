@@ -116,6 +116,10 @@ class PLATFORM_EXPORT ResourceFetcher
   // Returns whether this fetcher is detached from the associated context.
   bool IsDetached() const;
 
+  // Returns whether RequestResource or EmulateLoadStartedForInspector are being
+  // called.
+  bool IsInRequestResource() const { return is_in_request_resource_; }
+
   // Returns the observer object associated with this fetcher.
   ResourceLoadObserver* GetResourceLoadObserver() {
     // When detached, we must have a null observer.
@@ -405,6 +409,9 @@ class PLATFORM_EXPORT ResourceFetcher
   uint32_t inflight_keepalive_bytes_ = 0;
 
   mojom::blink::BlobRegistryPtr blob_registry_ptr_;
+
+  // This is not in the bit field below because we want to use AutoReset.
+  bool is_in_request_resource_ = false;
 
   // 27 bits left
   bool auto_load_images_ : 1;

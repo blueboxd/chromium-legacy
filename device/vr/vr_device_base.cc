@@ -4,6 +4,8 @@
 
 #include "device/vr/vr_device_base.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_functions.h"
 #include "device/vr/vr_device_provider.h"
 
@@ -74,9 +76,7 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
   OnListeningForActivate(is_listening);
 }
 
-void VRDeviceBase::EnsureInitialized(int render_process_id,
-                                     int render_frame_id,
-                                     EnsureInitializedCallback callback) {
+void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
   std::move(callback).Run();
 }
 

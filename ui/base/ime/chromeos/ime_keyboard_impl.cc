@@ -5,14 +5,12 @@
 #include "ui/base/ime/chromeos/ime_keyboard_impl.h"
 
 #include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
 
 namespace chromeos {
 namespace input_method {
 
-ImeKeyboardImpl::ImeKeyboardImpl()
-    : input_controller_(
-          ui::OzonePlatform::GetInstance()->GetInputController()) {}
+ImeKeyboardImpl::ImeKeyboardImpl(ui::InputController* input_controller)
+    : input_controller_(input_controller) {}
 
 ImeKeyboardImpl::~ImeKeyboardImpl() = default;
 

@@ -88,8 +88,7 @@ void ResourceLoadObserverForWorker::DidFinishLoading(
     base::TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
-    bool should_report_corb_blocking,
-    ResponseSource) {
+    bool should_report_corb_blocking) {
   probe::DidFinishLoading(probe_, identifier, nullptr, finish_time,
                           encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);

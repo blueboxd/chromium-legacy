@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
+#include "chromeos/components/drivefs/drivefs_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -198,8 +199,7 @@ void RecentDriveSource::GotSearchResults(
 
   files_.reserve(results->size());
   for (auto& result : *results) {
-    if (result->metadata->type ==
-        drivefs::mojom::FileMetadata::Type::kDirectory) {
+    if (!drivefs::IsAFile(result->metadata->type)) {
       continue;
     }
     base::FilePath path = integration_service->GetMountPointPath().BaseName();

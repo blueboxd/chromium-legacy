@@ -1722,25 +1722,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   event_handler_->OnMouseEvent(event);
 }
 
-bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  // Transformations use physical pixels rather than DIP, so conversion
-  // is necessary.
-  gfx::PointF point_in_pixels =
-      gfx::ConvertPointToPixel(device_scale_factor_, point);
-  // TODO: this shouldn't be used with aura-mus, so that the null check so
-  // go away and become a DCHECK.
-  if (delegated_frame_host_ &&
-      !delegated_frame_host_->TransformPointToLocalCoordSpaceLegacy(
-          point_in_pixels, original_surface, transformed_point))
-    return false;
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
-  return true;
-}
-
 bool RenderWidgetHostViewAura::HasFallbackSurface() const {
   return delegated_frame_host_ && delegated_frame_host_->HasFallbackSurface();
 }

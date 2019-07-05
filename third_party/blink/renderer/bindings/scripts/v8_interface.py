@@ -887,11 +887,11 @@ def overloads_context(interface, overloads):
     for index, method in enumerate(overloads, 1):
         method['overload_index'] = index
 
-    # [OriginTrialEnabled]
+    # [RuntimeEnabled]
     # TODO(iclelland): Allow origin trials on method overloads
     # (crbug.com/621641)
     if any(method.get('origin_trial_feature_name') for method in overloads):
-        raise Exception('[OriginTrialEnabled] cannot be specified on '
+        raise Exception('[RuntimeEnabled] for origin trial cannot be specified on '
                         'overloaded methods: %s.%s' % (interface.name, overloads[0]['name']))
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)

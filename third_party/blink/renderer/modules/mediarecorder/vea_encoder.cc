@@ -244,8 +244,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       return;
     }
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
-        WTF::BindRepeating(&VEAEncoder::FrameFinished, WrapRefCounted(this),
-                           WTF::Passed(std::move(input_buffer)))));
+        WTF::Bind(&VEAEncoder::FrameFinished, WrapRefCounted(this),
+                  std::move(input_buffer))));
     libyuv::I420Copy(frame->visible_data(media::VideoFrame::kYPlane),
                      frame->stride(media::VideoFrame::kYPlane),
                      frame->visible_data(media::VideoFrame::kUPlane),

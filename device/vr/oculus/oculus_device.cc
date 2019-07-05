@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -180,9 +181,7 @@ void OculusDevice::RequestSession(
   outstanding_session_requests_count_++;
 }
 
-void OculusDevice::EnsureInitialized(int render_process_id,
-                                     int render_frame_id,
-                                     EnsureInitializedCallback callback) {
+void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
   EnsureValidDisplayInfo();
   std::move(callback).Run();
 }
@@ -259,7 +258,7 @@ void OculusDevice::OnPresentationEnded() {
 }
 
 void OculusDevice::StartOvrSession() {
-  DCHECK(outstanding_session_requests_count_ == 0);
+  DCHECK_EQ(outstanding_session_requests_count_, 0);
   ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_Invisible,
                               OVR_MINOR_VERSION, NULL, 0, 0};
   ovrResult result = ovr_Initialize(&initParams);

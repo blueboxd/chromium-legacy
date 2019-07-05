@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
@@ -57,9 +56,6 @@ class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
 
   // Request to send.
   blink::WebURLRequest request_;
-
-  // Limit how long to wait for the server.
-  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedResourceFetcherImpl);
 };

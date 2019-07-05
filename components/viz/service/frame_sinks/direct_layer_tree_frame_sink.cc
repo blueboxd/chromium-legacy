@@ -72,8 +72,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    bool use_viz_hit_test)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          std::move(compositor_task_runner),
@@ -83,7 +82,6 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       frame_sink_manager_(frame_sink_manager),
       display_(display),
       display_client_(display_client),
-      use_viz_hit_test_(use_viz_hit_test),
       receive_begin_frame_histogram_(
           GetHistogramNamed("GraphicsPipeline.%s.ReceivedBeginFrame",
                             cc::GetClientNameForMetrics())),
@@ -115,8 +113,7 @@ bool DirectLayerTreeFrameSink::BindToClient(
   // Display's context.
   display_->Initialize(this, frame_sink_manager_->surface_manager());
 
-  if (use_viz_hit_test_)
-    support_->SetUpHitTest(display_);
+  support_->SetUpHitTest(display_);
 
   return true;
 }

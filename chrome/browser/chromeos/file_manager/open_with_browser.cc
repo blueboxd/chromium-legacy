@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/components/drivefs/drivefs_util.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
@@ -144,7 +145,7 @@ void OpenHostedDriveFsFile(const base::FilePath& file_path,
                            drivefs::mojom::FileMetadataPtr metadata) {
   if (error != drive::FILE_ERROR_OK)
     return;
-  if (metadata->type != drivefs::mojom::FileMetadata::Type::kHosted) {
+  if (drivefs::IsLocal(metadata->type)) {
     OpenGDocUrlFromFile(file_path, profile);
     return;
   }

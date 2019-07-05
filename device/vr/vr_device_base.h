@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_VR_DEVICE_BASE_H
-#define DEVICE_VR_VR_DEVICE_BASE_H
+#ifndef DEVICE_VR_VR_DEVICE_BASE_H_
+#define DEVICE_VR_VR_DEVICE_BASE_H_
+
+#include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -28,9 +31,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
       mojom::XRRuntimeEventListenerAssociatedPtrInfo listener,
       mojom::XRRuntime::ListenToDeviceChangesCallback callback) final;
   void SetListeningForActivate(bool is_listening) override;
-  void EnsureInitialized(int render_process_id,
-                         int render_frame_id,
-                         EnsureInitializedCallback callback) override;
+  void EnsureInitialized(EnsureInitializedCallback callback) override;
   void SetInlinePosesEnabled(bool enable) override;
 
   virtual void RequestHitTest(
@@ -86,4 +87,4 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
 }  // namespace device
 
-#endif  // DEVICE_VR_VR_DEVICE_BASE_H
+#endif  // DEVICE_VR_VR_DEVICE_BASE_H_

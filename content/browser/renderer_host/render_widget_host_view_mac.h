@@ -207,10 +207,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void InjectTouchEvent(const blink::WebTouchEvent& event,
                         const ui::LatencyInfo& latency_info);
 
-  bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,

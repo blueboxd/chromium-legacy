@@ -169,7 +169,7 @@ struct DriveError {
 
 // Next MinVersion: 2
 struct FileMetadata {
-  enum Type {
+  [Extensible] enum Type {
     // A regular file.
     kFile,
 

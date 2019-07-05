@@ -1126,7 +1126,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
           result.Set(v8::Array::New(isolate, 0));
           return;
         }
-        std::vector<ui::LanguageSpan> language_annotation =
+        std::vector<ui::AXLanguageSpan> language_annotation =
             tree->language_info_stats->GetLanguageAnnotationForStringAttribute(
                 *node, attr);
         const std::string& attribute_value = node->GetStringAttribute(attr);

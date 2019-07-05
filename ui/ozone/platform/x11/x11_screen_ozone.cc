@@ -6,6 +6,7 @@
 
 #include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/util/display_util.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -13,6 +14,8 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
+#include "ui/ozone/platform/x11/x11_window_ozone.h"
 
 namespace ui {
 
@@ -36,11 +39,16 @@ gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
 
 }  // namespace
 
-X11ScreenOzone::X11ScreenOzone()
-    : xdisplay_(gfx::GetXDisplay()),
+X11ScreenOzone::X11ScreenOzone(X11WindowManagerOzone* wm, bool fetch)
+    : window_manager_(wm),
+      xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       xrandr_version_(GetXrandrVersion(xdisplay_)) {
-  FetchDisplayList();
+  DCHECK(window_manager_);
+
+  // TODO(nickdiego): Factor this out from ctor
+  if (fetch)
+    FetchDisplayList();
 }
 
 X11ScreenOzone::~X11ScreenOzone() {
@@ -63,8 +71,18 @@ display::Display X11ScreenOzone::GetPrimaryDisplay() const {
 
 display::Display X11ScreenOzone::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
-  // TODO(crbug.com/891175): Implement PlatformScreen for X11
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (widget == gfx::kNullAcceleratedWidget)
+    return GetPrimaryDisplay();
+
+  X11WindowOzone* window = window_manager_->GetWindow(widget);
+  if (window) {
+    const gfx::Rect pixel_rect = window->GetBounds();
+    const display::Display* matching_display =
+        display::FindDisplayWithBiggestIntersection(
+            display_list_.displays(),
+            gfx::ConvertRectToDIP(GetDeviceScaleFactor(), pixel_rect));
+    return matching_display ? *matching_display : GetPrimaryDisplay();
+  }
   return GetPrimaryDisplay();
 }
 
@@ -119,6 +137,9 @@ uint32_t X11ScreenOzone::DispatchEvent(const ui::PlatformEvent& event) {
   NOTIMPLEMENTED_LOG_ONCE();
   return ui::POST_DISPATCH_NONE;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// X11ScreenOzone, private:
 
 void X11ScreenOzone::AddDisplay(const display::Display& display,
                                 bool is_primary) {

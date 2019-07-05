@@ -11,12 +11,14 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,6 +54,9 @@ std::unique_ptr<KeyedService> BuildMockEventRouter(
 
 class ExtensionSupportsConnectionFromNativeAppTest : public ::testing::Test {
  public:
+  ExtensionSupportsConnectionFromNativeAppTest()
+      : channel_(version_info::Channel::DEV) {}
+
   void SetUp() override {
     EventRouterFactory::GetInstance()->SetTestingFactory(
         &profile_,
@@ -109,6 +114,7 @@ class ExtensionSupportsConnectionFromNativeAppTest : public ::testing::Test {
     extension_id_ = extension->id();
   }
 
+  ScopedCurrentChannel channel_;
   content::TestBrowserThreadBundle thread_bundle_;
   bool has_listener_result_ = true;
   TestingProfile profile_;

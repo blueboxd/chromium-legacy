@@ -12,7 +12,6 @@
 #include "chrome/browser/android/vr/register_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/vr/android/gvr/vr_module_delegate.h"
 #include "device/vr/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_ARCORE)
@@ -68,9 +67,10 @@ void VrModuleProvider::OnInstalledModule(
   }
 }
 
-std::unique_ptr<device::VrModuleDelegate>
-VrModuleProviderFactory::CreateDelegate(int render_process_id,
-                                        int render_frame_id) {
+// static
+std::unique_ptr<VrModuleProvider> VrModuleProviderFactory::CreateModuleProvider(
+    int render_process_id,
+    int render_frame_id) {
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
   DCHECK(render_frame_host);
@@ -86,8 +86,6 @@ VrModuleProviderFactory::CreateDelegate(int render_process_id,
 }
 
 static void JNI_VrModuleProvider_Init(JNIEnv* env) {
-  device::VrModuleDelegateFactory::Set(
-      std::make_unique<VrModuleProviderFactory>());
   GvrConsentHelper::SetInstance(std::make_unique<vr::GvrConsentHelperImpl>());
 #if BUILDFLAG(ENABLE_ARCORE)
   ArcoreConsentPromptInterface::SetInstance(new ArcoreConsentPrompt());

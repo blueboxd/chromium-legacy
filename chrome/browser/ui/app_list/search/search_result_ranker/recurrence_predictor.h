@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -28,6 +29,8 @@ using HourBinPredictorConfig =
     RecurrencePredictorConfigProto::HourBinPredictorConfig;
 using MarkovPredictorConfig =
     RecurrencePredictorConfigProto::MarkovPredictorConfig;
+using ExponentialWeightsEnsembleConfig =
+    RecurrencePredictorConfigProto::ExponentialWeightsEnsembleConfig;
 
 // |RecurrencePredictor| is the interface for all predictors used by
 // |RecurrenceRanker| to drive rankings. If a predictor has some form of
@@ -66,6 +69,7 @@ class RecurrencePredictor {
 // so should not be used for anything except testing.
 class FakePredictor : public RecurrencePredictor {
  public:
+  FakePredictor();
   explicit FakePredictor(const FakePredictorConfig& config);
   ~FakePredictor() override;
 
@@ -285,6 +289,47 @@ class MarkovPredictor : public RecurrencePredictor {
   base::Optional<unsigned int> previous_target_;
 
   DISALLOW_COPY_AND_ASSIGN(MarkovPredictor);
+};
+
+// A predictor that uses a weighted ensemble of other predictors' scores. Any
+// number of constituent predictors can be configured. On training, all
+// constituent predictors are trained, and the ensemble model itself learns
+// weights for each predictor. At inference, the ensemble ranks targets based on
+// a weighted average of its predictors.
+//
+// The weights for each predictor are trained with the exponential weights
+// algorithm. If |t'| is the correct target The weight w_i for predictor i is
+// updated according to:
+//   w_i' = w_i * exp(-learning_rate * p_i(t = t')),
+// where p_i(t) is probability (normalized score) of target t returned by
+// predictor i. Weights are kept normalized to sum to 1.
+class ExponentialWeightsEnsemble : public RecurrencePredictor {
+ public:
+  explicit ExponentialWeightsEnsemble(
+      const ExponentialWeightsEnsembleConfig& config);
+  ~ExponentialWeightsEnsemble() override;
+
+  // RecurrencePredictor:
+  void Train(unsigned int target, unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ExponentialWeightsEnsembleTest,
+                           GoodModelAndBadModel);
+  FRIEND_TEST_ALL_PREFIXES(ExponentialWeightsEnsembleTest, TwoBalancedModels);
+
+  // Pairs of the constituent predictors, and their weights.
+  std::vector<std::pair<std::unique_ptr<RecurrencePredictor>, float>>
+      predictors_;
+
+  float learning_rate_ = 0.0f;
+
+  DISALLOW_COPY_AND_ASSIGN(ExponentialWeightsEnsemble);
 };
 
 }  // namespace app_list

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -80,12 +81,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Returns a new layer that mirrors this layer and is optionally synchronized
   // with the bounds thereof. Note that children are not mirrored, and that the
   // content is only mirrored if painted by a delegate or backed by a surface.
+  // As the mirror layer rasterizes its contents separately, this might have
+  // some negative impact on performance.
   std::unique_ptr<Layer> Mirror();
-
-  // Sets up this layer to mirror contents of |mirrored_layer|. This layer
-  // should be of type |LAYER_SOLID_COLOR| and should not be a descendant of the
-  // |mirrored_layer|.
-  void MirrorLayer(Layer* mirrored_layer);
 
   // This method is relevant only if this layer is a mirror destination layer.
   // Sets whether this mirror layer's bounds are synchronized with the source
@@ -93,6 +91,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void set_sync_bounds_with_source(bool sync_bounds) {
     sync_bounds_with_source_ = sync_bounds;
   }
+
+  // Sets up this layer to mirror output of |subtree_reflected_layer|, including
+  // its entire hierarchy. |this| should be of type LAYER_SOLID_COLOR and should
+  // not be a descendant of |subtree_reflected_layer|. This is achieved by using
+  // cc::MirrorLayer which forces a render surface for |subtree_reflected_layer|
+  // to be able to embed it. This might cause extra GPU memory bandwidth and/or
+  // read/writes which can impact performance negatively.
+  void SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer);
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
@@ -583,6 +589,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   void CreateSurfaceLayerIfNecessary();
 
+  // Changes the size of |this| to match that of |layer|.
+  void MatchLayerSize(const Layer* layer);
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -593,6 +602,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   std::vector<Layer*> children_;
 
   std::vector<std::unique_ptr<LayerMirror>> mirrors_;
+
+  // The layer being reflected with its subtree by this one, if any.
+  Layer* subtree_reflected_layer_ = nullptr;
+
+  // List of layers reflecting this layer and its subtree, if any.
+  base::flat_set<Layer*> subtree_reflecting_layers_;
 
   // If true, and this is a destination mirror layer, changes to the bounds of
   // the source layer are propagated to this mirror layer.

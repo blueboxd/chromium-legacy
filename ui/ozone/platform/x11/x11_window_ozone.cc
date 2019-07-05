@@ -49,6 +49,8 @@ void X11WindowOzone::Destroy() {
   if (xwindow_ == x11::None)
     return;
 
+  RemoveFromWindowManager();
+
   // Stop processing events.
   XID xwindow = xwindow_;
   XDisplay* xdisplay = xdisplay_;
@@ -66,6 +68,7 @@ void X11WindowOzone::Create() {
   DCHECK_NE(xwindow, x11::None);
 
   SetXWindow(xwindow);
+  window_manager_->AddWindow(this);
 
   DCHECK(X11EventSourceLibevent::GetInstance());
   X11EventSourceLibevent::GetInstance()->AddXEventDispatcher(this);
@@ -336,6 +339,13 @@ void X11WindowOzone::PrepareForShutdown() {
 void X11WindowOzone::SetCursor(PlatformCursor cursor) {
   X11CursorOzone* cursor_ozone = static_cast<X11CursorOzone*>(cursor);
   XDefineCursor(xdisplay_, xwindow_, cursor_ozone->xcursor());
+}
+
+void X11WindowOzone::RemoveFromWindowManager() {
+  DCHECK(window_manager_);
+  if (xwindow_ != x11::None) {
+    window_manager_->RemoveWindow(this);
+  }
 }
 
 // CheckCanDispatchNextPlatformEvent is called by X11EventSourceLibevent to

@@ -63,10 +63,6 @@ class LatencyInfo;
 struct DidOverscrollParams;
 }
 
-namespace viz {
-class SurfaceHittestDelegate;
-}
-
 namespace content {
 
 class BrowserAccessibilityDelegate;
@@ -345,21 +341,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // page during the 500 milliseconds prior to the event.
   virtual bool ScreenRectIsUnstableFor(const blink::WebInputEvent& event);
 
-  // When there are multiple RenderWidgetHostViews for a single page, input
-  // events need to be targeted to the correct one for handling. The following
-  // methods are invoked on the RenderWidgetHostView that should be able to
-  // properly handle the event (i.e. it has focus for keyboard events, or has
-  // been identified by hit testing mouse, touch or gesture events).
-  // |out_query_renderer| is set if there is low confidence in the hit test
-  // result which means that renderer process hit testing could potentially
-  // give a different result. In that case the returned FrameSinkId and
-  // transformed point should be ignored.
-  virtual viz::FrameSinkId FrameSinkIdAtPoint(
-      viz::SurfaceHittestDelegate* delegate,
-      const gfx::PointF& point,
-      gfx::PointF* transformed_point,
-      bool* out_query_renderer);
-
   virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}
 
@@ -387,11 +368,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
                                        const viz::SurfaceId& original_surface,
                                        gfx::PointF* transformed_point);
 
-  // This is deprecated, and will be removed once Viz hit-test is the default.
-  virtual bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point);
   // Given a RenderWidgetHostViewBase that renders to a Surface that is
   // contained within this class' Surface, find the relative transform between
   // the Surfaces and apply it to a point. Returns false if a Surface has not
@@ -621,9 +597,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual bool HasFallbackSurface() const;
 
-  // Cached bool to test if the VizHitTesting feature is enabled.
-  const bool use_viz_hit_test_;
-
   // The model object. Members will become private when
   // RenderWidgetHostViewGuest is removed.
   RenderWidgetHostImpl* host_;
@@ -689,13 +662,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
                                         RenderWidgetHostViewBase* target_view,
                                         const gfx::PointF& point,
                                         gfx::PointF* transformed_point) const;
-
-  // Used to transform |point| when Viz hit-test is enabled.
-  // TransformPointToLocalCoordSpaceLegacy is used in non-Viz hit-testing.
-  bool TransformPointToLocalCoordSpaceViz(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point);
 
   bool view_stopped_flinging_for_test() const {
     return view_stopped_flinging_for_test_;

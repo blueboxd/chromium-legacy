@@ -138,15 +138,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   bool CanCopyFromCompositingSurface() const;
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  // Given the SurfaceID of a Surface that is contained within this class'
-  // Surface, find the relative transform between the Surfaces and apply it
-  // to a point. Returns false if a Surface has not yet been created or if
-  // |original_surface| is not embedded within our current Surface.
-  bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point);
-
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);

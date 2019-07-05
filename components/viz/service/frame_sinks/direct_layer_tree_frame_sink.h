@@ -73,8 +73,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      bool use_viz_hit_test);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~DirectLayerTreeFrameSink() override;
 
   // LayerTreeFrameSink implementation.
@@ -132,7 +131,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   Display* display_;
   // |display_client_| may be nullptr on platforms that do not use it.
   mojom::DisplayClient* display_client_ = nullptr;
-  bool use_viz_hit_test_ = false;
   gfx::Size last_swap_frame_size_;
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;

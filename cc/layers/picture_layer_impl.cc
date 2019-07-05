@@ -205,7 +205,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     // The downstream CA layers use shared_quad_state to generate resources of
     // the right size even if it is a solid color picture layer.
     PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
-                                  max_contents_scale, contents_opaque());
+                                  contents_opaque());
 
     AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
                           append_quads_data);
@@ -230,7 +230,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   float device_scale_factor = layer_tree_impl()->device_scale_factor();
   float max_contents_scale = MaximumTilingContentsScale();
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
-                                max_contents_scale, contents_opaque());
+                                contents_opaque());
   Occlusion scaled_occlusion;
   if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
     scaled_occlusion =

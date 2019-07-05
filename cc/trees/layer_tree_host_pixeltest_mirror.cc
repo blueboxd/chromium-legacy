@@ -20,6 +20,12 @@ class LayerTreeHostMirrorPixelTest
       public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
   RendererType renderer_type() { return GetParam(); }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // MirrorLayer is only used by UI compositor; so, match its behavior by
+    // setting layer_transforms_should_scale_layer_contents to false.
+    settings->layer_transforms_should_scale_layer_contents = false;
+  }
 };
 
 const LayerTreeTest::RendererType kRendererTypes[] = {

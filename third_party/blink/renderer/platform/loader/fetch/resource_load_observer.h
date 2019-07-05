@@ -85,8 +85,7 @@ class PLATFORM_EXPORT ResourceLoadObserver
                                 base::TimeTicks finish_time,
                                 int64_t encoded_data_length,
                                 int64_t decoded_body_length,
-                                bool should_report_corb_blocking,
-                                ResponseSource) = 0;
+                                bool should_report_corb_blocking) = 0;
 
   // Called when a request fails.
   virtual void DidFailLoading(const KURL&,

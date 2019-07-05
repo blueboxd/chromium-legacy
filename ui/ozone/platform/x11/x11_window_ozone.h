@@ -31,6 +31,8 @@ class X11WindowOzone : public PlatformWindow,
                  const gfx::Rect& bounds);
   ~X11WindowOzone() override;
 
+  gfx::AcceleratedWidget widget() const { return widget_; }
+
   // Called by |window_manager_| once capture is set to another X11WindowOzone.
   void OnLostCapture();
 
@@ -63,6 +65,8 @@ class X11WindowOzone : public PlatformWindow,
   bool DispatchXEvent(XEvent* event) override;
 
  private:
+  void RemoveFromWindowManager();
+
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;

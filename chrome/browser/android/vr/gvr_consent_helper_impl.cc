@@ -44,7 +44,7 @@ base::android::ScopedJavaLocalRef<jobject> GetTabFromRenderer(
 
 }  // namespace
 
-GvrConsentHelperImpl::GvrConsentHelperImpl() = default;
+GvrConsentHelperImpl::GvrConsentHelperImpl() : weak_ptr_(this) {}
 
 GvrConsentHelperImpl::~GvrConsentHelperImpl() = default;
 
@@ -54,11 +54,13 @@ void GvrConsentHelperImpl::PromptUserAndGetConsent(
     OnUserConsentCallback on_user_consent_callback) {
   DCHECK(!on_user_consent_callback_);
   on_user_consent_callback_ = std::move(on_user_consent_callback);
+  render_process_id_ = render_process_id;
+  render_frame_id_ = render_frame_id;
 
   JNIEnv* env = AttachCurrentThread();
   jdelegate_ = Java_VrConsentDialog_promptForUserConsent(
       env, reinterpret_cast<jlong>(this),
-      GetTabFromRenderer(render_process_id, render_frame_id));
+      GetTabFromRenderer(render_process_id_, render_frame_id_));
   if (jdelegate_.is_null()) {
     std::move(on_user_consent_callback_).Run(false);
     return;
@@ -69,9 +71,45 @@ void GvrConsentHelperImpl::OnUserConsentResult(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
     jboolean is_granted) {
-  if (on_user_consent_callback_)
-    std::move(on_user_consent_callback_).Run(!!is_granted);
   jdelegate_.Reset();
+  if (!on_user_consent_callback_)
+    return;
+
+  if (!is_granted) {
+    std::move(on_user_consent_callback_).Run(false);
+    return;
+  }
+
+  InitModule();
+}
+
+void GvrConsentHelperImpl::InitModule() {
+  if (!module_delegate_) {
+    module_delegate_ = VrModuleProviderFactory::CreateModuleProvider(
+        render_process_id_, render_frame_id_);
+  }
+
+  if (!module_delegate_) {
+    std::move(on_user_consent_callback_).Run(false);
+    return;
+  }
+
+  if (!module_delegate_->ModuleInstalled()) {
+    module_delegate_->InstallModule(base::BindOnce(
+        &GvrConsentHelperImpl::OnModuleInstalled, weak_ptr_.GetWeakPtr()));
+    return;
+  }
+
+  std::move(on_user_consent_callback_).Run(true);
+}
+
+void GvrConsentHelperImpl::OnModuleInstalled(bool success) {
+  if (!success) {
+    std::move(on_user_consent_callback_).Run(false);
+    return;
+  }
+
+  std::move(on_user_consent_callback_).Run(true);
 }
 
 }  // namespace vr

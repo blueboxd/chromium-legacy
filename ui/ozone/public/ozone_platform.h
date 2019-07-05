@@ -40,6 +40,11 @@ class SurfaceFactoryOzone;
 class SystemInputInjector;
 class PlatformClipboard;
 
+namespace internal {
+class InputMethodDelegate;
+}  // namespace internal
+class InputMethod;
+
 struct PlatformWindowInitProperties;
 
 // Base class for Ozone platform implementations.
@@ -155,6 +160,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   CreateNativeDisplayDelegate() = 0;
   virtual std::unique_ptr<PlatformScreen> CreateScreen();
   virtual PlatformClipboard* GetPlatformClipboard();
+  virtual std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) = 0;
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

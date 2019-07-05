@@ -17,6 +17,7 @@ component("drivefs") {
     "drivefs_search.h",
     "drivefs_session.cc",
     "drivefs_session.h",
+    "drivefs_util.h",
     "fake_drivefs_launcher_client.cc",
     "fake_drivefs_launcher_client.h",
     "pending_connection_manager.cc",

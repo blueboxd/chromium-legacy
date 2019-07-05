@@ -5812,9 +5812,6 @@
                     "name": "VizHitTestSurfaceLayer",
                     "enable_features": [
                         "VizHitTestSurfaceLayer"
-                    ],
-                    "disable_features": [
-                        "VizHitTestDrawQuad"
                     ]
                 }
             ]

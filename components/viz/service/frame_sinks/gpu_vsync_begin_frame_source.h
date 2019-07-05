@@ -24,6 +24,9 @@ class VIZ_SERVICE_EXPORT GpuVSyncBeginFrameSource
   GpuVSyncBeginFrameSource(uint32_t restart_id, OutputSurface* output_surface);
   ~GpuVSyncBeginFrameSource() override;
 
+  // ExternalBeginFrameSource overrides.
+  BeginFrameArgs GetMissedBeginFrameArgs(BeginFrameObserver* obs) override;
+
   // ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 

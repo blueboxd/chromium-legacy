@@ -169,9 +169,6 @@ viz_component("service") {
     "surfaces/surface_client.h",
     "surfaces/surface_dependency_deadline.cc",
     "surfaces/surface_dependency_deadline.h",
-    "surfaces/surface_hittest.cc",
-    "surfaces/surface_hittest.h",
-    "surfaces/surface_hittest_delegate.h",
     "surfaces/surface_manager.cc",
     "surfaces/surface_manager.h",
     "surfaces/surface_manager_delegate.h",
@@ -417,7 +414,6 @@ viz_source_set("unit_tests") {
     "gl/gpu_service_impl_unittest.cc",
     "hit_test/hit_test_aggregator_unittest.cc",
     "surfaces/referenced_surface_tracker_unittest.cc",
-    "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_unittest.cc",
   ]
 

@@ -31,6 +31,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -619,8 +620,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
 
   resource_load_observer_->DidFinishLoading(
       identifier, base::TimeTicks(), 0,
-      resource->GetResponse().DecodedBodyLength(), false,
-      ResourceLoadObserver::ResponseSource::kFromMemoryCache);
+      resource->GetResponse().DecodedBodyLength(), false);
 
   if (!is_static_data) {
     // Resources loaded from memory cache should be reported the first time
@@ -908,6 +908,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
+  base::AutoReset<bool> r(&is_in_request_resource_, true);
+
   // If detached, we do very early return here to skip all processing below.
   if (properties_->IsDetached()) {
     return ResourceForBlockedRequest(
@@ -1816,8 +1818,7 @@ void ResourceFetcher::HandleLoaderFinish(
     resource_load_observer_->DidFinishLoading(
         resource->InspectorId(), response_end, encoded_data_length,
         resource->GetResponse().DecodedBodyLength(),
-        should_report_corb_blocking,
-        ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
+        should_report_corb_blocking);
   }
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
@@ -2014,6 +2015,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
     const KURL& url,
     mojom::RequestContextType request_context,
     const AtomicString& initiator_name) {
+  base::AutoReset<bool> r(&is_in_request_resource_, true);
   if (CachedResource(url))
     return;
   ResourceRequest resource_request(url);

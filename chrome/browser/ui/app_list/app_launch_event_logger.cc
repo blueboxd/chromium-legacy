@@ -346,28 +346,17 @@ ukm::SourceId AppLaunchEventLogger::GetSourceId(
 std::vector<std::string> AppLaunchEventLogger::ChooseAppsToLog(
     const std::string clicked_app_id) {
   bool has_clicked_app = false;
-  std::vector<std::string> clicked_apps;
-  std::vector<std::string> unclicked_apps;
-  // Group apps by whether they have been clicked on. Do not include the
-  // currently clicked app.
+  std::vector<std::string> apps_without_current;
+  // Do not include the currently clicked app.
   for (auto& app : app_features_map_) {
     if (app.first == clicked_app_id) {
       has_clicked_app = true;
       continue;
     }
-    if (app.second.has_most_recently_used_index()) {
-      clicked_apps.push_back(app.first);
-    } else {
-      unclicked_apps.push_back(app.first);
-    }
+    apps_without_current.push_back(app.first);
   }
-
-  std::vector<std::string> apps(Sample(clicked_apps, kNumRandomAppsToLog));
-  if (apps.size() < kNumRandomAppsToLog) {
-    std::vector<std::string> unclicked_sample(
-        Sample(unclicked_apps, kNumRandomAppsToLog - apps.size()));
-    apps.insert(apps.end(), unclicked_sample.begin(), unclicked_sample.end());
-  }
+  std::vector<std::string> apps(
+      Sample(apps_without_current, kNumRandomAppsToLog));
   if (has_clicked_app) {
     apps.push_back(clicked_app_id);
   }

@@ -261,11 +261,11 @@ static void LabelLanguageForSubtreeInternal(AXNode* node, class AXTree* tree) {
   }
 }
 
-std::vector<LanguageSpan>
+std::vector<AXLanguageSpan>
 AXLanguageInfoStats::GetLanguageAnnotationForStringAttribute(
     const AXNode& node,
     ax::mojom::StringAttribute attr) {
-  std::vector<LanguageSpan> language_annotation;
+  std::vector<AXLanguageSpan> language_annotation;
   if (!node.HasStringAttribute(attr))
     return language_annotation;
 
@@ -274,11 +274,11 @@ AXLanguageInfoStats::GetLanguageAnnotationForStringAttribute(
   // Use author-provided language if present.
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
     // Use author-provided language if present.
-    language_annotation.push_back(
-        LanguageSpan{0 /* start_index */, attr_value.length() /* end_index */,
-                     node.GetStringAttribute(
-                         ax::mojom::StringAttribute::kLanguage) /* language */,
-                     1 /* probability */});
+    language_annotation.push_back(AXLanguageSpan{
+        0 /* start_index */, attr_value.length() /* end_index */,
+        node.GetStringAttribute(
+            ax::mojom::StringAttribute::kLanguage) /* language */,
+        1 /* probability */});
     return language_annotation;
   }
   // Calculate top 3 languages.
@@ -287,23 +287,24 @@ AXLanguageInfoStats::GetLanguageAnnotationForStringAttribute(
   std::vector<chrome_lang_id::NNetLanguageIdentifier::Result> top_languages =
       short_text_language_identifier_.FindTopNMostFreqLangs(
           attr_value, kMaxDetectedLanguagesPerPage);
-  // Create vector of LanguageSpans.
+  // Create vector of AXLanguageSpans.
   for (const auto& result : top_languages) {
     std::vector<chrome_lang_id::NNetLanguageIdentifier::SpanInfo> ranges =
         result.byte_ranges;
     for (const auto& span_info : ranges) {
       language_annotation.push_back(
-          LanguageSpan{span_info.start_index, span_info.end_index,
-                       result.language, span_info.probability});
+          AXLanguageSpan{span_info.start_index, span_info.end_index,
+                         result.language, span_info.probability});
     }
   }
   // Sort Language Annotations by increasing start index. LanguageAnnotations
   // with lower start index should appear earlier in the vector.
-  std::sort(language_annotation.begin(), language_annotation.end(),
-            [](const LanguageSpan& left, const LanguageSpan& right) -> bool {
-              return left.start_index <= right.start_index;
-            });
-  // Ensure that LanguageSpans do not overlap.
+  std::sort(
+      language_annotation.begin(), language_annotation.end(),
+      [](const AXLanguageSpan& left, const AXLanguageSpan& right) -> bool {
+        return left.start_index <= right.start_index;
+      });
+  // Ensure that AXLanguageSpans do not overlap.
   for (size_t i = 0; i < language_annotation.size(); ++i) {
     if (i > 0) {
       DCHECK(language_annotation[i].start_index <=

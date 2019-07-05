@@ -73,14 +73,13 @@ interface XRRuntime {
   ListenToDeviceChanges(associated XRRuntimeEventListener listener) =>
       (VRDisplayInfo? display_info);
 
-  // Ensure that the runtime has installed all prerequisites, and is ready to
+  // Ensure that the runtime has installed most prerequisites, and is ready to
   // start. May result in updated display info being sent to registered
   // listeners. RequestSession will fail if this hasn't been called.
-  // |render_process_id| and |render_frame_id| are needed to reference the tab
-  // module install UI would be shown in if necessary.
-  // TODO(crbug.com/854655): Remove |render_process_id| and |render_frame_id|
-  // and show module install UI in the browser process.
-  EnsureInitialized(int32 render_process_id, int32 render_frame_id) => ();
+  // NOTE: When crbug.com/980000 is resolved, GvrDevice::EnsureInitialized
+  // won't install GVR runtime; it will be installed in
+  // GvrDevice::RequestSession().
+  EnsureInitialized() => ();
 
   SetListeningForActivate(bool listen_for_activation);
 

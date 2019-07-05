@@ -34967,6 +34967,7 @@ from previous Chrome versions.
   <int value="-67616014" label="PDFAnnotations:enabled"/>
   <int value="-67297229" label="OfflinePagesDescriptivePendingStatus:disabled"/>
   <int value="-64839201" label="SyncUSSAutofillWalletData:disabled"/>
+  <int value="-64824628" label="VizHitTestSurfaceLayer:disabled"/>
   <int value="-59530055" label="ChromeVoxArcSupport:enabled"/>
   <int value="-59401847" label="ContentSuggestionsLargeThumbnail:disabled"/>
   <int value="-58242474" label="ash-disable-swipe-to-close-in-overview-mode"/>
@@ -35924,6 +35925,7 @@ from previous Chrome versions.
   <int value="1353113954" label="EnableMDRoundedCornersOnDialogs:enabled"/>
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
+  <int value="1356161410" label="VizHitTestSurfaceLayer:enabled"/>
   <int value="1359972809" label="enable-gesture-deletion"/>
   <int value="1360969228" label="RevampedContextMenu:enabled"/>
   <int value="1361047396" label="disable-click-delay"/>
@@ -62652,6 +62654,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="YouTubeRewriteStatus">
+  <obsolete>
+    Removed from code 07/2019.
+  </obsolete>
   <int value="0" label="Success">Embed was properly rewritten.</int>
   <int value="1" label="Success, params were rewritten">
     Embed was rewritten but the params had to be fixed.

@@ -452,29 +452,6 @@ void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
     manager->RemoveHitTestRegionObserver(this);
 }
 
-RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
-    const std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>&
-        hittest_data)
-    : hittest_data_(hittest_data) {}
-
-bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
-    const viz::SurfaceDrawQuad* surface_quad,
-    const gfx::Point& point_in_quad_space) {
-  auto it = hittest_data_.find(surface_quad->surface_range.end());
-  if (it != hittest_data_.end() && it->second.ignored_for_hittest)
-    return true;
-  return false;
-}
-
-bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
-    const viz::SurfaceDrawQuad* surface_quad,
-    const gfx::Point& point_in_quad_space) {
-  auto it = hittest_data_.find(surface_quad->surface_range.end());
-  if (it != hittest_data_.end() && !it->second.ignored_for_hittest)
-    return true;
-  return false;
-}
-
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
     : last_mouse_move_target_(nullptr),
       last_mouse_move_root_view_(nullptr),
@@ -482,7 +459,6 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       last_device_scale_factor_(1.f),
       active_touches_(0),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
-      use_viz_hit_test_(features::IsVizHitTestingEnabled()),
       touch_event_ack_queue_(new TouchEventAckQueue(this)),
       weak_ptr_factory_(this) {
   viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
@@ -592,50 +568,37 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   viz::FrameSinkId frame_sink_id;
   bool query_renderer = false;
   bool should_verify_result = false;
-  if (use_viz_hit_test_) {
-    viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
-                                               root_view->GetRootFrameSinkId());
-    if (!query) {
-      *transformed_point = point;
-      return {root_view, false, *transformed_point, false, false};
-    }
-    float device_scale_factor = root_view->GetDeviceScaleFactor();
-    DCHECK_GT(device_scale_factor, 0.0f);
-    gfx::PointF point_in_pixels =
-        gfx::ConvertPointToPixel(device_scale_factor, point);
-    viz::Target target = query->FindTargetForLocationStartingFrom(
-        source, point_in_pixels, root_view->GetFrameSinkId());
-    frame_sink_id = target.frame_sink_id;
-    if (frame_sink_id.is_valid()) {
-      *transformed_point = gfx::ConvertPointToDIP(device_scale_factor,
-                                                  target.location_in_target);
-    } else {
-      *transformed_point = point;
-    }
-    // To ensure the correctness of viz hit testing with cc generated data, we
-    // verify hit test results when:
-    // a) We use cc generated data to do synchronous hit testing and
-    // b) We use HitTestQuery to find the target (instead of reusing previous
-    // targets when hit testing latched events) and
-    // c) We are not hit testing MouseMove events which is too frequent to
-    // verify it without impacting performance.
-    // The code that implements c) locates in |FindMouseEventTarget|.
-    if (target.flags & viz::HitTestRegionFlags::kHitTestAsk)
-      query_renderer = true;
-    else if (features::IsVizHitTestingSurfaceLayerEnabled())
-      should_verify_result = true;
-  } else {
-    // The hittest delegate is used to reject hittesting quads based on extra
-    // hittesting data send by the renderer.
-    HittestDelegate delegate(hittest_data_);
-
-    // The conversion of point to transform_point is done over the course of the
-    // hit testing, and reflect transformations that would normally be applied
-    // in the renderer process if the event was being routed between frames
-    // within a single process with only one RenderWidgetHost.
-    frame_sink_id = root_view->FrameSinkIdAtPoint(
-        &delegate, point, transformed_point, &query_renderer);
+  viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
+                                             root_view->GetRootFrameSinkId());
+  if (!query) {
+    *transformed_point = point;
+    return {root_view, false, *transformed_point, false, false};
   }
+  float device_scale_factor = root_view->GetDeviceScaleFactor();
+  DCHECK_GT(device_scale_factor, 0.0f);
+  gfx::PointF point_in_pixels =
+      gfx::ConvertPointToPixel(device_scale_factor, point);
+  viz::Target target = query->FindTargetForLocationStartingFrom(
+      source, point_in_pixels, root_view->GetFrameSinkId());
+  frame_sink_id = target.frame_sink_id;
+  if (frame_sink_id.is_valid()) {
+    *transformed_point =
+        gfx::ConvertPointToDIP(device_scale_factor, target.location_in_target);
+  } else {
+    *transformed_point = point;
+  }
+  // To ensure the correctness of viz hit testing with cc generated data, we
+  // verify hit test results when:
+  // a) We use cc generated data to do synchronous hit testing and
+  // b) We use HitTestQuery to find the target (instead of reusing previous
+  // targets when hit testing latched events) and
+  // c) We are not hit testing MouseMove events which is too frequent to
+  // verify it without impacting performance.
+  // The code that implements c) locates in |FindMouseEventTarget|.
+  if (target.flags & viz::HitTestRegionFlags::kHitTestAsk)
+    query_renderer = true;
+  else if (features::IsVizHitTestingSurfaceLayerEnabled())
+    should_verify_result = true;
 
   auto* view = FindViewFromFrameSinkId(frame_sink_id);
   // Send the event to |root_view| if |view| is not in |root_view|'s sub-tree
@@ -1766,14 +1729,6 @@ RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
 
 bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
     RenderWidgetHostViewBase* target_view) const {
-  // TODO(kenrb): It would be better if we could determine if the
-  // event's point has a chance of hitting an embedded child and returning
-  // false if not, but Viz hit testing does not easily support that. This
-  // currently assumes any embedded view could potentially be the event
-  // target.
-  if (!use_viz_hit_test_)
-    return true;
-
   // Determine if |view| has any embedded children that could potentially
   // receive the event.
   auto* widget_host =

@@ -48,8 +48,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
                         base::TimeTicks finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
-                        bool should_report_corb_blocking,
-                        ResponseSource) override;
+                        bool should_report_corb_blocking) override;
   void DidFailLoading(const KURL&,
                       uint64_t identifier,
                       const ResourceError&,

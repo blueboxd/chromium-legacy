@@ -3324,9 +3324,17 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   // If gpu compositing, then any resources created with the gpu context in the
   // LayerTreeFrameSink were exported to the display compositor may be modified
   // by it, and thus we would be unable to determine what state they are in, in
-  // order to reuse them, so they must be lost. In software compositing, the
-  // resources are not modified by the display compositor (there is no stateful
-  // metadata for shared memory), so we do not need to consider them lost.
+  // order to reuse them, so they must be lost. Note that this includes resources
+  // created using the gpu context associated with |layer_tree_frame_sink_|
+  // internally by the compositor and any resources received from an external
+  // source (for instance, TextureLayers). This is because the API contract
+  // for releasing these external resources requires that the compositor return
+  // them with a valid sync token and no modifications to their GL state. Since
+  // that can not be guaranteed, these must also be marked lost.
+  //
+  // In software compositing, the resources are not modified by the display
+  // compositor (there is no stateful metadata for shared memory), so we do not
+  // need to consider them lost.
   //
   // In both cases, the resources that are exported to the display compositor
   // will have no means of being returned to this client without the

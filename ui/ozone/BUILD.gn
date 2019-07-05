@@ -132,6 +132,7 @@ jumbo_component("ozone_base") {
     "//ui/ozone/common/*",
     "//ui/ozone/public/interfaces",
     "//ui/ozone/platform/*",
+    "//ui/base/ime/chromeos/*",
   ]
 
   # Out of tree platforms can depend on this.

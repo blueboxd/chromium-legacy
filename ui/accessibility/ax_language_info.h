@@ -93,14 +93,14 @@ struct AX_EXPORT AXLanguageInfo {
   std::vector<std::string> detected_languages;
 };
 
-// Each LanguageSpan contains a language, a probability, and start and end
+// Each AXLanguageSpan contains a language, a probability, and start and end
 // indices. The indices are used to specify the substring that contains the
 // associated language. The string which the indices are relative to is not
 // included in this structure.
 // Also, the indices are relative to a Utf8 string.
 // See documentation on GetLanguageAnnotationForStringAttribute for details
 // on how to associate this object with a string.
-struct AX_EXPORT LanguageSpan {
+struct AX_EXPORT AXLanguageSpan {
   int start_index;
   int end_index;
   std::string language;
@@ -135,7 +135,7 @@ class AX_EXPORT AXLanguageInfoStats {
   // For example, if a node has name: "My name is Fred", then calling
   // GetLanguageAnnotationForStringAttribute(*node, ax::mojom::StringAttribute::
   // kName) would return language detection information about "My name is Fred".
-  std::vector<LanguageSpan> GetLanguageAnnotationForStringAttribute(
+  std::vector<AXLanguageSpan> GetLanguageAnnotationForStringAttribute(
       const AXNode& node,
       ax::mojom::StringAttribute attr);
 

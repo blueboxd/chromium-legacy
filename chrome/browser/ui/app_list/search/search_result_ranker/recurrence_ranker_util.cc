@@ -27,6 +27,9 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
     return std::make_unique<HourBinPredictor>(config.hour_bin_predictor());
   if (config.has_markov_predictor())
     return std::make_unique<MarkovPredictor>(config.markov_predictor());
+  if (config.has_exponential_weights_ensemble())
+    return std::make_unique<ExponentialWeightsEnsemble>(
+        config.exponential_weights_ensemble());
 
   LogConfigurationError(ConfigurationError::kInvalidPredictor);
   NOTREACHED();

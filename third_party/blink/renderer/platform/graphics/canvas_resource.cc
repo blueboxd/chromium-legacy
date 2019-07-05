@@ -92,8 +92,13 @@ static void ReleaseFrameResources(
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
   resource->WaitSyncToken(sync_token);
+
+  // TODO(khushalsagar): If multiple readers had access to this resource, losing
+  // it once should make sure subsequent releases don't try to recycle this
+  // resource.
+  // Also what about single buffered canvas?
   if (lost_resource)
-    resource->Abandon();
+    resource->NotifyResourceLost();
   if (resource_provider && !lost_resource && resource->IsRecycleable())
     resource_provider->RecycleResource(std::move(resource));
 }
@@ -930,6 +935,16 @@ const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
     owning_thread_data().mailbox_needs_new_sync_token = false;
   }
   return sync_token();
+}
+
+void CanvasResourceSharedImage::NotifyResourceLost() {
+  owning_thread_data().is_lost = true;
+
+  // Since the texture params are in an unknown state, reset the cached tex
+  // params state for the resource.
+  owning_thread_data().needs_gl_filter_reset = true;
+  if (WeakProvider())
+    Provider()->NotifyTexParamsModified(this);
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>

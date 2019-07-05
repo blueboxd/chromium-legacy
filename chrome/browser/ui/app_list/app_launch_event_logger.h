@@ -92,12 +92,9 @@ class AppLaunchEventLogger {
                             const std::string& app_id,
                             const std::string& arc_package_name,
                             const std::string& pwa_url);
-  // Chooses up to five apps to log, plus the app clicked on. Randomly chooses
-  // up to five apps that have previously been clicked on. These are preferred
-  // as they have metrics about past click behaviour. If there are fewer than
-  // five of these apps, then, in addition, randomly chooses from apps not
-  // clicked on, to get a total of five apps. If there are fewer than five apps
-  // that can be logged on the device, logs every app once.
+  // Chooses up to five random apps to log, plus the app clicked on.
+  // If there are fewer than five apps that can be logged on the device, logs
+  // every app once.
   std::vector<std::string> ChooseAppsToLog(const std::string clicked_app_id);
   // Records a UMA histogram of the app type clicked on.
   void RecordAppTypeClicked(AppLaunchEvent_AppType app_type);

@@ -1274,6 +1274,7 @@ void Layer::SetOffsetToTransformParent(gfx::Vector2dF offset) {
     return;
   offset_to_transform_parent_ = offset;
   SetNeedsPushProperties();
+  SetSubtreePropertyChanged();
 }
 
 void Layer::InvalidatePropertyTreesIndices() {

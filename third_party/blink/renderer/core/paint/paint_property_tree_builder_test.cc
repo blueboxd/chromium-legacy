@@ -6533,7 +6533,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
               properties->Effect()->GetCompositorElementId());
   ASSERT_TRUE(cc_effect);
   EXPECT_FLOAT_EQ(cc_effect->opacity, 0.5f);
-  EXPECT_FALSE(cc_effect->effect_changed);
+  EXPECT_TRUE(cc_effect->effect_changed);
   EXPECT_FALSE(GetChromeClient()
                    .layer_tree_host()
                    ->property_trees()

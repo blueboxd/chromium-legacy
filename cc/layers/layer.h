@@ -778,6 +778,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // layer's subtree, including itself. This causes the layer's subtree to be
   // considered damaged and re-displayed to the user.
   void SetSubtreePropertyChanged();
+  void ClearSubtreePropertyChangedForTesting() {
+    subtree_property_changed_ = false;
+  }
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
   // Internal to property tree construction. Returns ElementListType::ACTIVE

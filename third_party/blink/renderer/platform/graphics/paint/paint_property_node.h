@@ -146,6 +146,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     cc_node_id_ = id;
   }
 
+  PaintPropertyChangeType NodeChanged() const { return changed_; }
+
 #if DCHECK_IS_ON()
   String ToTreeString() const;
 
@@ -176,7 +178,6 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     DCHECK(!IsRoot());
     changed_ = std::max(changed_, changed);
   }
-  PaintPropertyChangeType NodeChanged() const { return changed_; }
 
  private:
   friend class PaintPropertyNodeTest;

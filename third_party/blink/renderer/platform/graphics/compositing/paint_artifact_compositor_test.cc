@@ -114,8 +114,12 @@ class PaintArtifactCompositorTest : public testing::Test,
   }
 
   const cc::TransformNode& GetTransformNode(const cc::Layer* layer) {
-    auto* property_trees = layer_tree_->layer_tree_host()->property_trees();
-    return *property_trees->transform_tree.Node(layer->transform_tree_index());
+    return *GetPropertyTrees().transform_tree.Node(
+        layer->transform_tree_index());
+  }
+
+  const cc::EffectNode& GetEffectNode(const cc::Layer* layer) {
+    return *GetPropertyTrees().effect_tree.Node(layer->effect_tree_index());
   }
 
   const cc::LayerTreeHost& GetLayerTreeHost() {
@@ -317,6 +321,7 @@ TEST_P(PaintArtifactCompositorTest, OneChunkWithAnOffset) {
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
   EXPECT_EQ(Translation(50, -50), child->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Size(100, 100), child->bounds());
+  EXPECT_FALSE(GetTransformNode(child).transform_changed);
 }
 
 TEST_P(PaintArtifactCompositorTest, OneTransform) {
@@ -336,6 +341,7 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
+    EXPECT_TRUE(GetTransformNode(layer).transform_changed);
 
     Vector<RectWithColor> rects_with_color;
     rects_with_color.push_back(
@@ -351,6 +357,7 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
+    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
@@ -376,6 +383,7 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
+    EXPECT_TRUE(GetTransformNode(layer).transform_changed);
 
     Vector<RectWithColor> rects_with_color;
     rects_with_color.push_back(
@@ -391,6 +399,7 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
+    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
@@ -417,6 +426,7 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
+    EXPECT_TRUE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kWhite)));
@@ -426,6 +436,7 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
+    EXPECT_TRUE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kBlack)));
@@ -4595,6 +4606,157 @@ TEST_P(PaintArtifactCompositorTest,
   EXPECT_OPACITY(effect_id, 1.f, kHasRenderSurface);
   EXPECT_OPACITY(cc_effect->parent_id, 0.5f, kHasRenderSurface);
   EXPECT_EQ(cc_effect->clip_id, cc_clip->parent_id);
+}
+
+TEST_P(PaintArtifactCompositorTest, TransformChange) {
+  auto t1 = Create2DTranslation(t0(), 10, 20);
+  TransformPaintPropertyNode::State t2_state{TransformationMatrix().Rotate(45)};
+  t2_state.direct_compositing_reasons = CompositingReason::k3DTransform;
+  auto t2 = TransformPaintPropertyNode::Create(*t1, std::move(t2_state));
+
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(*t2, c0(), e0())
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  cc::Layer* layer = ContentLayerAt(0);
+
+  // Change t1 but not t2.
+  layer->ClearSubtreePropertyChangedForTesting();
+  t2->ClearChangedToRoot();
+  t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(20, 30)});
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
+            t1->NodeChanged());
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t2->NodeChanged());
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(*t2, c0(), e0())
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(layer, ContentLayerAt(0));
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
+  EXPECT_TRUE(layer->subtree_property_changed());
+  // This is set by cc when propagating ancestor change flag to descendants.
+  EXPECT_TRUE(GetTransformNode(layer).transform_changed);
+  // This is set by PropertyTreeManager.
+  EXPECT_TRUE(GetPropertyTrees()
+                  .transform_tree.Node(GetTransformNode(layer).parent_id)
+                  ->transform_changed);
+
+  // Change t2 but not t1.
+  layer->ClearSubtreePropertyChangedForTesting();
+  t2->ClearChangedToRoot();
+  t2_state.transform_and_origin = TransformationMatrix().Rotate(135);
+  t2->Update(*t1, std::move(t2_state));
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t1->NodeChanged());
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
+            t2->NodeChanged());
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(*t2, c0(), e0())
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(layer, ContentLayerAt(0));
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
+  EXPECT_TRUE(layer->subtree_property_changed());
+  EXPECT_TRUE(GetTransformNode(layer).transform_changed);
+  EXPECT_FALSE(GetPropertyTrees()
+                   .transform_tree.Node(GetTransformNode(layer).parent_id)
+                   ->transform_changed);
+
+  // Change t2 to be 2d translation which will be decomposited.
+  layer->ClearSubtreePropertyChangedForTesting();
+  t2->ClearChangedToRoot();
+  t2_state.transform_and_origin = FloatSize(20, 30);
+  t2->Update(*t1, std::move(t2_state));
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t1->NodeChanged());
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues, t2->NodeChanged());
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(*t2, c0(), e0())
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(layer, ContentLayerAt(0));
+  // The new transform is decomposited, so there is no transform_changed, but
+  // we set subtree_property_changed because offset_from_transform_parent
+  // (calculated from the decomposited transforms) changed.
+  EXPECT_TRUE(layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(layer).transform_changed);
+}
+
+TEST_P(PaintArtifactCompositorTest, EffectChange) {
+  auto e1 = CreateOpacityEffect(e0(), t0(), nullptr, 0.5f);
+  auto e2 = CreateOpacityEffect(*e1, t0(), nullptr, 0.6f,
+                                CompositingReason::kWillChangeOpacity);
+
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(t0(), c0(), *e2)
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  cc::Layer* layer = ContentLayerAt(0);
+
+  // Change e1 but not e2.
+  layer->ClearSubtreePropertyChangedForTesting();
+  e2->ClearChangedToRoot();
+
+  EffectPaintPropertyNode::State e1_state{&t0()};
+  e1_state.opacity = 0.8f;
+  e1_state.compositor_element_id = e1->GetCompositorElementId();
+  e1->Update(e0(), std::move(e1_state));
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
+            e1->NodeChanged());
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, e2->NodeChanged());
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(t0(), c0(), *e2)
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(layer, ContentLayerAt(0));
+  // TODO(wangxianzhu): Probably avoid setting this flag on Effect change.
+  EXPECT_TRUE(layer->subtree_property_changed());
+  // This is set by cc when propagating ancestor change flag to descendants.
+  EXPECT_TRUE(GetEffectNode(layer).effect_changed);
+  // This is set by PropertyTreeManager.
+  EXPECT_TRUE(GetPropertyTrees()
+                  .effect_tree.Node(GetEffectNode(layer).parent_id)
+                  ->effect_changed);
+
+  // Change e2 but not e1.
+  layer->ClearSubtreePropertyChangedForTesting();
+  e2->ClearChangedToRoot();
+  EffectPaintPropertyNode::State e2_state{&t0()};
+  e2_state.opacity = 0.9f;
+  e2_state.direct_compositing_reasons = CompositingReason::kWillChangeOpacity;
+  e2_state.compositor_element_id = e2->GetCompositorElementId();
+  e2->Update(*e1, std::move(e2_state));
+  EXPECT_EQ(PaintPropertyChangeType::kUnchanged, e1->NodeChanged());
+  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
+            e2->NodeChanged());
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(t0(), c0(), *e2)
+             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(layer, ContentLayerAt(0));
+  // TODO(wangxianzhu): Probably avoid setting this flag on Effect change.
+  EXPECT_TRUE(layer->subtree_property_changed());
+  EXPECT_TRUE(GetEffectNode(layer).effect_changed);
+  EXPECT_FALSE(GetPropertyTrees()
+                   .effect_tree.Node(GetEffectNode(layer).parent_id)
+                   ->effect_changed);
 }
 
 }  // namespace blink

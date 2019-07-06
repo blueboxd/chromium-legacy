@@ -106,7 +106,6 @@ static void UpdateCcTransformLocalMatrix(
                                                      origin.Z());
   }
   compositor_node.needs_local_transform_update = true;
-  compositor_node.transform_changed = true;
 }
 
 static void AdjustPageScaleToUsePostLocal(cc::TransformNode& page_scale) {
@@ -118,7 +117,6 @@ static void AdjustPageScaleToUsePostLocal(cc::TransformNode& page_scale) {
   page_scale.post_local.matrix() = page_scale.local.matrix();
   page_scale.pre_local.matrix().setIdentity();
   page_scale.local.matrix().setIdentity();
-  page_scale.transform_changed = true;
 }
 
 static void SetTransformTreePageScaleFactor(
@@ -178,6 +176,7 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   property_trees->scroll_tree.SetScrollOffset(
       scroll_node->GetCompositorElementId(), cc_transform->scroll_offset);
 
+  cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   property_trees->scroll_tree.set_needs_update(true);
   return true;
@@ -202,6 +201,7 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
   // flag, we should clear it to let the compositor respect the new value.
   cc_transform->is_currently_animating = false;
 
+  cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   return true;
 }
@@ -221,6 +221,7 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
 
   SetTransformTreePageScaleFactor(&property_trees->transform_tree,
                                   cc_transform);
+  cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   return true;
 }
@@ -416,6 +417,9 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.source_node_id = parent_id;
 
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
+  compositor_node.transform_changed =
+      transform_node.NodeChanged() >=
+      PaintPropertyChangeType::kChangedOnlySimpleValues;
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
@@ -1088,6 +1092,8 @@ void PropertyTreeManager::PopulateCcEffectNode(
   }
   effect_node.blend_mode = blend_mode;
   effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();
+  effect_node.effect_changed =
+      effect.NodeChanged() >= PaintPropertyChangeType::kChangedOnlySimpleValues;
 }
 
 }  // namespace blink

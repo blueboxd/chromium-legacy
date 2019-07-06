@@ -1243,8 +1243,15 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     } else {
       new_text_size = new_size - replace_text_range_.start();
     }
+    // If |new_text_size| is 0, then we want to commit composition with current
+    // composition text if there is any. Construct |new_committed_string| to be
+    // current composition text so that |TextInputClient::InsertText| will
+    // commit current composition text.
     const base::string16& new_committed_string = string_buffer_document_.substr(
-        replace_text_range_.start(), new_text_size);
+        replace_text_range_.start(),
+        (new_text_size == 0 && selection_.end() > replace_text_range_.start())
+            ? selection_.end() - replace_text_range_.start()
+            : new_text_size);
     // if the |replace_text_range_| start is greater than |old_size|, then we
     // don't need to delete anything because the replacement text hasn't been
     // inserted into blink yet.
@@ -1267,8 +1274,16 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
       new_committed_string_offset = replace_text_range_.start();
       new_committed_string_size = replace_text_size_;
     }
+    // If |new_committed_string_size| is 0, then we want to commit composition
+    // with current composition text if there is any. Construct
+    // |new_committed_string| to be current composition text so that
+    // |TextInputClient::InsertText| will commit current composition text.
     const base::string16& new_committed_string = string_buffer_document_.substr(
-        new_committed_string_offset, new_committed_string_size);
+        new_committed_string_offset,
+        (new_committed_string_size == 0 &&
+         selection_.end() > new_committed_string_offset)
+            ? selection_.end() - new_committed_string_offset
+            : new_committed_string_size);
     // TODO(crbug.com/978678): Unify the behavior of
     //     |TextInputClient::InsertText(text)| for the empty text.
     if (!new_committed_string.empty())

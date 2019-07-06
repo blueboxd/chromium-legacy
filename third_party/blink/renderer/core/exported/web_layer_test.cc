@@ -272,6 +272,15 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
     return Compositor().layer_tree_view().layer_tree_host()->property_trees();
   }
 
+  cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
+    return GetPropertyTrees()->transform_tree.Node(
+        layer->transform_tree_index());
+  }
+
+  cc::EffectNode* GetEffectNode(const cc::Layer* layer) {
+    return GetPropertyTrees()->effect_tree.Node(layer->effect_tree_index());
+  }
+
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
   }
@@ -474,20 +483,29 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(outer_element_layer)->transform_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 
   // Modifying the transform style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr,
                               "transform: rotate(10deg)");
   UpdateAllLifecyclePhases();
+  // This is still set by the traditional GraphicsLayer::SetTransform().
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  // Set by blink::PropertyTreeManager.
+  EXPECT_TRUE(GetTransformNode(outer_element_layer)->transform_changed);
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 
   // After a frame the |subtree_property_changed| value should be reset.
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(outer_element_layer)->transform_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 }
 
 // When a property tree change occurs that affects layer transform in a simple
@@ -719,19 +737,28 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(outer_element_layer)->effect_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 
   // Modifying the filter style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "filter: blur(20px)");
   UpdateAllLifecyclePhases();
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  // Set by blink::PropertyTreeManager.
+  EXPECT_TRUE(GetEffectNode(outer_element_layer)->effect_changed);
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 
   // After a frame the |subtree_property_changed| value should be reset.
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(outer_element_layer)->effect_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 }
 
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for

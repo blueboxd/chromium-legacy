@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "base/atomicops.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
@@ -21,7 +20,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -35,41 +34,40 @@ constexpr int kMaxValueSafelyConvertableToFloat = 1 << 24;
 // emits audio samples with monotonically-increasing sample values. Includes
 // hooks for the unit tests to confirm lifecycle status and to change audio
 // format.
-class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
+class FakeMediaStreamAudioSource : public MediaStreamAudioSource,
                                    public base::PlatformThread::Delegate {
  public:
   FakeMediaStreamAudioSource()
-      : blink::MediaStreamAudioSource(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-            true),
+      : MediaStreamAudioSource(scheduler::GetSingleThreadTaskRunnerForTesting(),
+                               true),
         stop_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         next_buffer_size_(kBufferSize),
         sample_count_(0) {}
 
   ~FakeMediaStreamAudioSource() final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     EnsureSourceIsStopped();
   }
 
   bool was_started() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return !thread_.is_null();
   }
 
   bool was_stopped() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return stop_event_.IsSignaled();
   }
 
   void SetBufferSize(int new_buffer_size) {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     base::subtle::NoBarrier_Store(&next_buffer_size_, new_buffer_size);
   }
 
  protected:
   bool EnsureSourceIsStarted() final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     if (was_started())
       return true;
     if (was_stopped())
@@ -80,7 +78,7 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
   }
 
   void EnsureSourceIsStopped() final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     if (was_stopped())
       return;
     stop_event_.Signal();
@@ -93,7 +91,7 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
       // If needed, notify of the new format and re-create |audio_bus_|.
       const int buffer_size = base::subtle::NoBarrier_Load(&next_buffer_size_);
       if (!audio_bus_ || audio_bus_->frames() != buffer_size) {
-        blink::MediaStreamAudioSource::SetFormat(media::AudioParameters(
+        MediaStreamAudioSource::SetFormat(media::AudioParameters(
             media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
             media::CHANNEL_LAYOUT_MONO, kSampleRate, buffer_size));
         audio_bus_ = media::AudioBus::Create(1, buffer_size);
@@ -105,8 +103,8 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
       for (int i = 0; i < buffer_size; ++i)
         data[i] = ++sample_count_;
       CHECK_LT(sample_count_, kMaxValueSafelyConvertableToFloat);
-      blink::MediaStreamAudioSource::DeliverDataToTracks(
-          *audio_bus_, base::TimeTicks::Now());
+      MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_,
+                                                  base::TimeTicks::Now());
 
       // Sleep before producing the next chunk of audio.
       base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(
@@ -115,7 +113,7 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
   }
 
  private:
-  base::ThreadChecker main_thread_checker_;
+  THREAD_CHECKER(main_thread_checker_);
 
   base::PlatformThreadHandle thread_;
   mutable base::WaitableEvent stop_event_;
@@ -127,20 +125,16 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
   DISALLOW_COPY_AND_ASSIGN(FakeMediaStreamAudioSource);
 };
 
-// A simple blink::WebMediaStreamAudioSink that consumes audio and confirms the
+// A simple WebMediaStreamAudioSink that consumes audio and confirms the
 // sample values. Includes hooks for the unit tests to monitor the format and
 // flow of audio, whether the audio is silent, and the propagation of the
 // "enabled" state.
-class FakeMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
+class FakeMediaStreamAudioSink : public WebMediaStreamAudioSink {
  public:
-  enum EnableState {
-    NO_ENABLE_NOTIFICATION,
-    WAS_ENABLED,
-    WAS_DISABLED
-  };
+  enum EnableState { NO_ENABLE_NOTIFICATION, WAS_ENABLED, WAS_DISABLED };
 
   FakeMediaStreamAudioSink()
-      : blink::WebMediaStreamAudioSink(),
+      : WebMediaStreamAudioSink(),
         expected_sample_count_(-1),
         num_on_data_calls_(0),
         audio_is_silent_(true),
@@ -148,32 +142,32 @@ class FakeMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
         enable_state_(NO_ENABLE_NOTIFICATION) {}
 
   ~FakeMediaStreamAudioSink() final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   }
 
   media::AudioParameters params() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     base::AutoLock auto_lock(params_lock_);
     return params_;
   }
 
   int num_on_data_calls() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return base::subtle::NoBarrier_Load(&num_on_data_calls_);
   }
 
   bool is_audio_silent() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return !!base::subtle::NoBarrier_Load(&audio_is_silent_);
   }
 
   bool was_ended() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return was_ended_;
   }
 
   EnableState enable_state() const {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     return enable_state_;
   }
 
@@ -214,20 +208,19 @@ class FakeMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
     base::subtle::NoBarrier_AtomicIncrement(&num_on_data_calls_, 1);
   }
 
-  void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
-    if (state == blink::WebMediaStreamSource::kReadyStateEnded)
+  void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) final {
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+    if (state == WebMediaStreamSource::kReadyStateEnded)
       was_ended_ = true;
   }
 
   void OnEnabledChanged(bool enabled) final {
-    CHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
     enable_state_ = enabled ? WAS_ENABLED : WAS_DISABLED;
   }
 
  private:
-  base::ThreadChecker main_thread_checker_;
+  THREAD_CHECKER(main_thread_checker_);
 
   mutable base::Lock params_lock_;
   media::AudioParameters params_;
@@ -246,10 +239,9 @@ class FakeMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
 class MediaStreamAudioTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
-                                   blink::WebMediaStreamSource::kTypeAudio,
-                                   blink::WebString::FromUTF8("audio_track"),
-                                   false /* remote */);
+    blink_audio_source_.Initialize(
+        WebString::FromUTF8("audio_id"), WebMediaStreamSource::kTypeAudio,
+        WebString::FromUTF8("audio_track"), false /* remote */);
     blink_audio_track_.Initialize(blink_audio_source_.Id(),
                                   blink_audio_source_);
   }
@@ -257,20 +249,20 @@ class MediaStreamAudioTest : public ::testing::Test {
   void TearDown() override {
     blink_audio_track_.Reset();
     blink_audio_source_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    WebHeap::CollectAllGarbageForTesting();
   }
 
   FakeMediaStreamAudioSource* source() const {
     return static_cast<FakeMediaStreamAudioSource*>(
-        blink::MediaStreamAudioSource::From(blink_audio_source_));
+        MediaStreamAudioSource::From(blink_audio_source_));
   }
 
-  blink::MediaStreamAudioTrack* track() const {
-    return blink::MediaStreamAudioTrack::From(blink_audio_track_);
+  MediaStreamAudioTrack* track() const {
+    return MediaStreamAudioTrack::From(blink_audio_track_);
   }
 
-  blink::WebMediaStreamSource blink_audio_source_;
-  blink::WebMediaStreamTrack blink_audio_track_;
+  WebMediaStreamSource blink_audio_source_;
+  WebMediaStreamTrack blink_audio_track_;
 
   base::test::ScopedTaskEnvironment task_environment_;
 };
@@ -335,19 +327,19 @@ TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
 
   // Now, connect another track. ConnectToTrack() will return false, but there
   // should be a MediaStreamAudioTrack instance created and owned by the
-  // blink::WebMediaStreamTrack.
-  blink::WebMediaStreamTrack another_blink_track;
+  // WebMediaStreamTrack.
+  WebMediaStreamTrack another_blink_track;
   another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
-  EXPECT_FALSE(blink::MediaStreamAudioTrack::From(another_blink_track));
+  EXPECT_FALSE(MediaStreamAudioTrack::From(another_blink_track));
   EXPECT_FALSE(source()->ConnectToTrack(another_blink_track));
-  EXPECT_TRUE(blink::MediaStreamAudioTrack::From(another_blink_track));
+  EXPECT_TRUE(MediaStreamAudioTrack::From(another_blink_track));
 }
 
 // Tests that a sink is immediately "ended" when connected to a stopped track.
 TEST_F(MediaStreamAudioTest, AddSinkToStoppedTrack) {
   // Create a track and stop it. Then, when adding a sink, the sink should get
   // the ReadyStateEnded notification immediately.
-  blink::MediaStreamAudioTrack track(true);
+  MediaStreamAudioTrack track(true);
   track.Stop();
   FakeMediaStreamAudioSink sink;
   EXPECT_FALSE(sink.was_ended());
@@ -428,13 +420,12 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   // Create a second track and a second sink, but this time the track starts out
   // disabled. Expect the sink to be notified at the start that the track is
   // disabled.
-  blink::WebMediaStreamTrack another_blink_track;
+  WebMediaStreamTrack another_blink_track;
   another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
   EXPECT_TRUE(source()->ConnectToTrack(another_blink_track));
-  blink::MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(false);
+  MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(false);
   FakeMediaStreamAudioSink another_sink;
-  blink::MediaStreamAudioTrack::From(another_blink_track)
-      ->AddSink(&another_sink);
+  MediaStreamAudioTrack::From(another_blink_track)->AddSink(&another_sink);
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_DISABLED,
             another_sink.enable_state());
 
@@ -446,7 +437,7 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   EXPECT_TRUE(another_sink.is_audio_silent());
 
   // Now, enable the second track and expect the second sink to be notified.
-  blink::MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(true);
+  MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(true);
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_ENABLED, another_sink.enable_state());
 
   // Wait until non-silent audio reaches the second sink.
@@ -459,9 +450,8 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_DISABLED, sink.enable_state());
   EXPECT_TRUE(sink.is_audio_silent());
 
-  blink::MediaStreamAudioTrack::From(another_blink_track)
-      ->RemoveSink(&another_sink);
+  MediaStreamAudioTrack::From(another_blink_track)->RemoveSink(&another_sink);
   track()->RemoveSink(&sink);
 }
 
-}  // namespace content
+}  // namespace blink

@@ -3023,7 +3023,8 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
       visible_selection.Offset(-dirty_in_screen.point().x(),
                                -dirty_in_screen.point().y());
-      Highlight(region, stride, visible_selection, &highlighted_rects);
+      Highlight(region, stride, visible_selection, kHighlightColorR,
+                kHighlightColorG, kHighlightColorB, &highlighted_rects);
     }
   }
 
@@ -3034,7 +3035,8 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
     visible_selection.Offset(-dirty_in_screen.point().x(),
                              -dirty_in_screen.point().y());
-    Highlight(region, stride, visible_selection, &highlighted_rects);
+    Highlight(region, stride, visible_selection, kHighlightColorR,
+              kHighlightColorG, kHighlightColorB, &highlighted_rects);
   }
   form_highlights_.clear();
 }
@@ -3139,6 +3141,9 @@ pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {
 void PDFiumEngine::Highlight(void* buffer,
                              int stride,
                              const pp::Rect& rect,
+                             int color_red,
+                             int color_green,
+                             int color_blue,
                              std::vector<pp::Rect>* highlighted_rects) {
   if (!buffer)
     return;
@@ -3175,9 +3180,9 @@ void PDFiumEngine::Highlight(void* buffer,
         continue;
 
       uint8_t* pixel = static_cast<uint8_t*>(buffer) + y * stride + x * 4;
-      pixel[0] = static_cast<uint8_t>(pixel[0] * (kHighlightColorB / 255.0));
-      pixel[1] = static_cast<uint8_t>(pixel[1] * (kHighlightColorG / 255.0));
-      pixel[2] = static_cast<uint8_t>(pixel[2] * (kHighlightColorR / 255.0));
+      pixel[0] = static_cast<uint8_t>(pixel[0] * (color_blue / 255.0));
+      pixel[1] = static_cast<uint8_t>(pixel[1] * (color_green / 255.0));
+      pixel[2] = static_cast<uint8_t>(pixel[2] * (color_red / 255.0));
     }
   }
 }

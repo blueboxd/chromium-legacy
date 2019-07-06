@@ -2529,6 +2529,11 @@ if (enable_java_templates) {
           outputs = [
             _final_pathmap_path,
           ]
+
+          # The monochrome_apk_checker test needs pathmap when run on swarming.
+          data = [
+            _final_pathmap_path,
+          ]
         }
         _final_deps += [ ":$_copy_pathmap_target" ]
       }

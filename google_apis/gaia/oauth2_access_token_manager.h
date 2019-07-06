@@ -17,7 +17,6 @@ class SharedURLLoaderFactory;
 }
 
 class OAuth2AccessTokenFetcher;
-class OAuth2TokenService;
 
 // Class that manages requests for OAuth2 access tokens.
 class OAuth2AccessTokenManager {
@@ -175,11 +174,7 @@ class OAuth2AccessTokenManager {
   typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
       TokenCache;
 
-  // TODO(https://crbug.com/967598): Remove |token_service| once
-  // OAuth2AccessTokenManager fully manages access tokens independently of
-  // OAuth2TokenService.
   explicit OAuth2AccessTokenManager(
-      OAuth2TokenService* token_service,
       OAuth2AccessTokenManager::Delegate* delegate);
   virtual ~OAuth2AccessTokenManager();
 
@@ -340,9 +335,6 @@ class OAuth2AccessTokenManager {
   // List of observers to notify when access token status changes.
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
-  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
-  // fully manages access tokens independently of OAuth2TokenService.
-  OAuth2TokenService* token_service_;
   Delegate* delegate_;
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.

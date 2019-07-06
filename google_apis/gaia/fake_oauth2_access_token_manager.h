@@ -32,7 +32,6 @@ class FakeOAuth2AccessTokenManager : public OAuth2AccessTokenManager {
   };
 
   explicit FakeOAuth2AccessTokenManager(
-      OAuth2TokenService* token_service,
       OAuth2AccessTokenManager::Delegate* delegate);
   ~FakeOAuth2AccessTokenManager() override;
 

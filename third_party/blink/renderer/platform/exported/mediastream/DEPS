@@ -1,10 +1,9 @@
-
 include_rules = [
-    # TODO(crbug.com/923394): Remove these dependencies once std types are
-    # migrated to WTF types in mediastream.
-    "+base/strings/utf_string_conversions.h",
-    "+base/strings/string_number_conversions.h",
-    "+base/strings/string_split.h",
-
     "+media/base",
 ]
+
+specific_include_rules = {
+  "media_stream_audio_test\.cc" : [
+    "+base/threading/platform_thread.h",
+  ],
+}

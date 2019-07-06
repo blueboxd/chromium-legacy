@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     PrefService* user_prefs)
@@ -21,7 +20,6 @@ FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     : ProfileOAuth2TokenService(user_prefs, std::move(delegate)) {
   OverrideAccessTokenManagerForTesting(
       std::make_unique<FakeOAuth2AccessTokenManager>(
-          this /* OAuth2TokenService* */,
           this /* OAuth2AccessTokenManager::Delegate* */));
 }
 
@@ -104,27 +102,6 @@ void FakeProfileOAuth2TokenService::CancelAllRequests() {
 void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
     const CoreAccountId& account_id) {
   GetFakeAccessTokenManager()->CancelRequestsForAccount(account_id);
-}
-
-void FakeProfileOAuth2TokenService::FetchOAuth2Token(
-    OAuth2AccessTokenManager::RequestImpl* request,
-    const CoreAccountId& account_id,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) {
-  GetFakeAccessTokenManager()->FetchOAuth2Token(request, account_id,
-                                                url_loader_factory, client_id,
-                                                client_secret, scopes);
-}
-
-void FakeProfileOAuth2TokenService::InvalidateAccessTokenImpl(
-    const CoreAccountId& account_id,
-    const std::string& client_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    const std::string& access_token) {
-  GetFakeAccessTokenManager()->InvalidateAccessTokenImpl(account_id, client_id,
-                                                         scopes, access_token);
 }
 
 FakeOAuth2AccessTokenManager*

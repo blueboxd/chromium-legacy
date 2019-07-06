@@ -75,9 +75,8 @@ const char kTestEmailWithPeriod[] = "m.e@gmail.com";
 class CustomFakeOAuth2AccessTokenManager : public FakeOAuth2AccessTokenManager {
  public:
   CustomFakeOAuth2AccessTokenManager(
-      OAuth2TokenService* token_service,
       OAuth2AccessTokenManager::Delegate* delegate)
-      : FakeOAuth2AccessTokenManager(token_service, delegate) {}
+      : FakeOAuth2AccessTokenManager(delegate) {}
 
   void set_on_access_token_invalidated_info(
       CoreAccountId expected_account_id_to_invalidate,
@@ -125,7 +124,6 @@ class CustomFakeProfileOAuth2TokenService
       : FakeProfileOAuth2TokenService(user_prefs) {
     OverrideAccessTokenManagerForTesting(
         std::make_unique<CustomFakeOAuth2AccessTokenManager>(
-            this /* OAuth2TokenService* */,
             this /* OAuth2AccessTokenManager::Delegate* */));
   }
 
@@ -140,15 +138,6 @@ class CustomFakeProfileOAuth2TokenService
   }
 
  private:
-  // OAuth2TokenService:
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token) override {
-    GetCustomAccessTokenManager()->InvalidateAccessTokenImpl(
-        account_id, client_id, scopes, access_token);
-  }
-
   CustomFakeOAuth2AccessTokenManager* GetCustomAccessTokenManager() {
     return static_cast<CustomFakeOAuth2AccessTokenManager*>(
         GetAccessTokenManager());

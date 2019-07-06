@@ -66,8 +66,7 @@ class RepeatingMimeBoundaryGenerator
 class FakeOAuth2AccessTokenManagerWithCaching
     : public FakeOAuth2AccessTokenManager {
  public:
-  FakeOAuth2AccessTokenManagerWithCaching(
-      OAuth2TokenService* token_service,
+  explicit FakeOAuth2AccessTokenManagerWithCaching(
       OAuth2AccessTokenManager::Delegate* delegate);
   ~FakeOAuth2AccessTokenManagerWithCaching() override;
 
@@ -99,9 +98,8 @@ class FakeOAuth2AccessTokenManagerWithCaching
 
 FakeOAuth2AccessTokenManagerWithCaching::
     FakeOAuth2AccessTokenManagerWithCaching(
-        OAuth2TokenService* token_service,
         OAuth2AccessTokenManager::Delegate* delegate)
-    : FakeOAuth2AccessTokenManager(token_service, delegate) {}
+    : FakeOAuth2AccessTokenManager(delegate) {}
 
 FakeOAuth2AccessTokenManagerWithCaching::
     ~FakeOAuth2AccessTokenManagerWithCaching() = default;
@@ -167,7 +165,6 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
     oauth2_service_.OverrideAccessTokenManagerForTesting(
         std::make_unique<FakeOAuth2AccessTokenManagerWithCaching>(
-            &oauth2_service_ /* OAuth2TokenService* */,
             &oauth2_service_ /* OAuth2AccessTokenManager::Delegate* */));
     access_token_manager_ =
         static_cast<FakeOAuth2AccessTokenManagerWithCaching*>(

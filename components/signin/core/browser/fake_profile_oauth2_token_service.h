@@ -13,10 +13,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/fake_oauth2_access_token_manager.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 // Helper class to simplify writing unittests that depend on an instance of
 // ProfileOAuth2TokenService.
 //
@@ -90,20 +86,6 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   void CancelAllRequests() override;
 
   void CancelRequestsForAccount(const CoreAccountId& account_id) override;
-
-  void FetchOAuth2Token(
-      OAuth2AccessTokenManager::RequestImpl* request,
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const OAuth2AccessTokenManager::ScopeSet& scopes) override;
-
-  void InvalidateAccessTokenImpl(
-      const CoreAccountId& account_id,
-      const std::string& client_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      const std::string& access_token) override;
 
  private:
   FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();

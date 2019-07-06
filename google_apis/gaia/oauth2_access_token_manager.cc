@@ -11,7 +11,6 @@
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 int OAuth2AccessTokenManager::max_fetch_retry_num_ = 5;
@@ -391,11 +390,8 @@ const CoreAccountId& OAuth2AccessTokenManager::Fetcher::GetAccountId() const {
 }
 
 OAuth2AccessTokenManager::OAuth2AccessTokenManager(
-    OAuth2TokenService* token_service,
     OAuth2AccessTokenManager::Delegate* delegate)
-    : token_service_(token_service),
-      delegate_(delegate) {
-  DCHECK(token_service_);
+    : delegate_(delegate) {
   DCHECK(delegate_);
 }
 
@@ -552,13 +548,9 @@ void OAuth2AccessTokenManager::InvalidateAccessToken(
     const CoreAccountId& account_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
-  // TODO(https://crbug.com/967598): Use directly
-  // OAuth2AccessTokenManager::InvalidateAccessTokenImpl once this fully manages
-  // access tokens independently of OAuth2TokenService. For now, some tests need
-  // to call overridden of OAuth2TokenService::InvalidateAccessTokenImpl.
-  token_service_->InvalidateAccessTokenImpl(
-      account_id, GaiaUrls::GetInstance()->oauth2_chrome_client_id(), scopes,
-      access_token);
+  InvalidateAccessTokenImpl(account_id,
+                            GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+                            scopes, access_token);
 }
 
 void OAuth2AccessTokenManager::InvalidateAccessTokenImpl(
@@ -648,13 +640,8 @@ OAuth2AccessTokenManager::StartRequestForClientWithContext(
   } else {
     // The token isn't in the cache and the delegate isn't fetching it: fetch it
     // ourselves!
-    // TODO(https://crbug.com/967598): Use directly
-    // OAuth2AccessTokenManager::FetchOAuth2Token this fully manages access
-    // tokens independently of OAuth2TokenService. For now, some tests need to
-    // override OAuth2TokenService::FetchOAuth2Token.
-    token_service_->FetchOAuth2Token(request.get(), account_id,
-                                     url_loader_factory, client_id,
-                                     client_secret, scopes);
+    FetchOAuth2Token(request.get(), account_id, url_loader_factory, client_id,
+                     client_secret, scopes);
   }
   return std::move(request);
 }

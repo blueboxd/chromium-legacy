@@ -237,27 +237,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
-  // Fetches an OAuth token for the specified client/scopes. Virtual so it can
-  // be overridden for tests and for platform-specific behavior.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void FetchOAuth2Token(
-      OAuth2AccessTokenManager::RequestImpl* request,
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const OAuth2AccessTokenManager::ScopeSet& scopes);
-
-  // Invalidates the |access_token| issued for |account_id|, |client_id| and
-  // |scopes|. Virtual so it can be overridden for tests and for platform-
-  // specific behavior.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void InvalidateAccessTokenImpl(
-      const CoreAccountId& account_id,
-      const std::string& client_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      const std::string& access_token);
-
  private:
   friend class OAuth2TokenServiceDelegate;
 

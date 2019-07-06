@@ -30,7 +30,6 @@ OAuth2TokenService::OAuth2TokenService(
   DCHECK(delegate_);
   AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
-      this /* OAuth2TokenService* */,
       this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
@@ -177,17 +176,6 @@ OAuth2TokenService::StartRequestWithContext(
                                                  scopes, consumer);
 }
 
-void OAuth2TokenService::FetchOAuth2Token(
-    OAuth2AccessTokenManager::RequestImpl* request,
-    const CoreAccountId& account_id,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) {
-  token_manager_->FetchOAuth2Token(request, account_id, url_loader_factory,
-                                   client_id, client_secret, scopes);
-}
-
 bool OAuth2TokenService::AreAllCredentialsLoaded() const {
   return all_credentials_loaded_;
 }
@@ -234,16 +222,6 @@ void OAuth2TokenService::InvalidateTokenForMultilogin(
   // For desktop refresh tokens can be invalidated directly in delegate. This
   // will have no effect on mobile.
   delegate_->InvalidateTokenForMultilogin(failed_account);
-}
-
-void OAuth2TokenService::InvalidateAccessTokenImpl(
-    const CoreAccountId& account_id,
-    const std::string& client_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    const std::string& access_token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_manager_->InvalidateAccessTokenImpl(account_id, client_id, scopes,
-                                            access_token);
 }
 
 void OAuth2TokenService::OnRefreshTokensLoaded() {

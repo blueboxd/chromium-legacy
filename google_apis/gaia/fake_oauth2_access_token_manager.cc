@@ -20,9 +20,8 @@ FakeOAuth2AccessTokenManager::PendingRequest::PendingRequest(
 FakeOAuth2AccessTokenManager::PendingRequest::~PendingRequest() {}
 
 FakeOAuth2AccessTokenManager::FakeOAuth2AccessTokenManager(
-    OAuth2TokenService* token_service,
     OAuth2AccessTokenManager::Delegate* delegate)
-    : OAuth2AccessTokenManager(token_service, delegate),
+    : OAuth2AccessTokenManager(delegate),
       auto_post_fetch_response_on_message_loop_(false),
       weak_ptr_factory_(this) {}
 

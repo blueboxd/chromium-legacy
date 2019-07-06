@@ -399,6 +399,9 @@ class PDFiumEngine : public PDFEngine,
   void Highlight(void* buffer,
                  int stride,
                  const pp::Rect& rect,
+                 int color_red,
+                 int color_green,
+                 int color_blue,
                  std::vector<pp::Rect>* highlighted_rects);
 
   // Helper function to convert a device to page coordinates.  If the page is

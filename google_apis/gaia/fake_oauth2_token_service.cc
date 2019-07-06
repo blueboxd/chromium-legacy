@@ -10,23 +10,10 @@ FakeOAuth2TokenService::FakeOAuth2TokenService()
     : OAuth2TokenService(std::make_unique<FakeOAuth2TokenServiceDelegate>()) {
   OverrideAccessTokenManagerForTesting(
       std::make_unique<FakeOAuth2AccessTokenManager>(
-          this /* OAuth2TokenService* */,
           this /* OAuth2AccessTokenManager::Delegate* */));
 }
 
 FakeOAuth2TokenService::~FakeOAuth2TokenService() {
-}
-
-void FakeOAuth2TokenService::FetchOAuth2Token(
-    OAuth2AccessTokenManager::RequestImpl* request,
-    const CoreAccountId& account_id,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) {
-  GetFakeAccessTokenManager()->FetchOAuth2Token(request, account_id,
-                                                url_loader_factory, client_id,
-                                                client_secret, scopes);
 }
 
 void FakeOAuth2TokenService::AddAccount(const CoreAccountId& account_id) {

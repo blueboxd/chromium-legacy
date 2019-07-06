@@ -149,7 +149,7 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
       continue;
 
     if (token_is_valid) {
-      OAuth2TokenService::FetchOAuth2Token(
+      GetAccessTokenManager()->FetchOAuth2Token(
           scoped_request->request.get(),
           scoped_request->request->GetAccountId(),
           GetDeviceDelegate()->GetURLLoaderFactory(), scoped_request->client_id,

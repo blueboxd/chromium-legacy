@@ -2,28 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/local_media_stream_audio_source.h"
+#include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 
 #include <utility>
 
-#include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/render_frame_impl.h"
+#include "base/strings/stringprintf.h"
+#include "media/audio/audio_source_parameters.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
-namespace content {
+namespace blink {
+
+class LocalMediaStreamAudioSource::InternalFrame {
+ public:
+  explicit InternalFrame(WebLocalFrame* web_frame)
+      : frame_(web_frame ? static_cast<LocalFrame*>(
+                               WebLocalFrame::ToCoreFrame(*web_frame))
+                         : nullptr) {}
+
+  LocalFrame* frame() { return frame_.Get(); }
+  WebLocalFrame* web_frame() {
+    if (!frame_)
+      return nullptr;
+
+    return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame()));
+  }
+
+ private:
+  WeakPersistent<LocalFrame> frame_;
+};
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
-    int consumer_render_frame_id,
-    const blink::MediaStreamDevice& device,
+    WebLocalFrame* web_frame,
+    const MediaStreamDevice& device,
     const int* requested_buffer_size,
     bool disable_local_echo,
     ConstraintsRepeatingCallback started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(std::move(task_runner),
-                                    true /* is_local_source */,
-                                    disable_local_echo),
-      consumer_render_frame_id_(consumer_render_frame_id),
+    : MediaStreamAudioSource(std::move(task_runner),
+                             true /* is_local_source */,
+                             disable_local_echo),
+      internal_consumer_frame_(std::make_unique<InternalFrame>(web_frame)),
       started_callback_(std::move(started_callback)) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
   SetDevice(device);
@@ -35,7 +57,7 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
   // If the device buffer size was not provided, use a default.
   if (frames_per_buffer <= 0) {
     frames_per_buffer =
-        (device.input.sample_rate() * blink::kFallbackAudioLatencyMs) / 1000;
+        (device.input.sample_rate() * kFallbackAudioLatencyMs) / 1000;
   }
 
   // Set audio format and take into account the special case where a discrete
@@ -63,27 +85,26 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
     return true;
 
   std::string str = base::StringPrintf(
-      "LocalMediaStreamAudioSource::EnsureSourceIsStarted. render_frame_id=%d"
-      ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
+      "LocalMediaStreamAudioSource::EnsureSourceIsStarted."
+      " channel_layout=%d, sample_rate=%d, buffer_size=%d"
       ", session_id=%d, effects=%d. ",
-      consumer_render_frame_id_, device().input.channel_layout(),
-      device().input.sample_rate(), device().input.frames_per_buffer(),
-      device().session_id, device().input.effects());
-  blink::WebRtcLogMessage(str);
+      device().input.channel_layout(), device().input.sample_rate(),
+      device().input.frames_per_buffer(), device().session_id,
+      device().input.effects());
+  WebRtcLogMessage(str);
   DVLOG(1) << str;
 
-  // Sanity-check that the consuming RenderFrame still exists. This is required
-  // by AudioDeviceFactory.
-  if (!RenderFrameImpl::FromRoutingID(consumer_render_frame_id_))
+  // Sanity-check that the consuming WebLocalFrame still exists.
+  // This is required by AudioDeviceFactory.
+  if (!internal_consumer_frame_->web_frame())
     return false;
 
   VLOG(1) << "Starting local audio input device (session_id="
-          << device().session_id << ") for render frame "
-          << consumer_render_frame_id_ << " with audio parameters={"
+          << device().session_id << ") with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 
-  source_ = AudioDeviceFactory::NewAudioCapturerSource(
-      consumer_render_frame_id_,
+  source_ = Platform::Current()->NewAudioCapturerSource(
+      internal_consumer_frame_->web_frame(),
       media::AudioSourceParameters(device().session_id));
   source_->Initialize(GetAudioParameters(), this);
   source_->Start();
@@ -100,13 +121,12 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
   source_ = nullptr;
 
   VLOG(1) << "Stopped local audio input device (session_id="
-          << device().session_id << ") for render frame "
-          << consumer_render_frame_id_ << " with audio parameters={"
+          << device().session_id << ") with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 }
 
 void LocalMediaStreamAudioSource::OnCaptureStarted() {
-  started_callback_.Run(this, blink::mojom::MediaStreamRequestResult::OK, "");
+  started_callback_.Run(this, mojom::MediaStreamRequestResult::OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
@@ -123,8 +143,7 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
 }
 
 void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
-  blink::WebRtcLogMessage("LocalMediaStreamAudioSource::OnCaptureError: " +
-                          why);
+  WebRtcLogMessage("LocalMediaStreamAudioSource::OnCaptureError: " + why);
   StopSourceOnError(why);
 }
 
@@ -133,8 +152,8 @@ void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
 }
 
 void LocalMediaStreamAudioSource::ChangeSourceImpl(
-    const blink::MediaStreamDevice& new_device) {
-  blink::WebRtcLogMessage(
+    const MediaStreamDevice& new_device) {
+  WebRtcLogMessage(
       "LocalMediaStreamAudioSource::ChangeSourceImpl(new_device = " +
       new_device.id + ")");
   EnsureSourceIsStopped();
@@ -142,4 +161,4 @@ void LocalMediaStreamAudioSource::ChangeSourceImpl(
   EnsureSourceIsStarted();
 }
 
-}  // namespace content
+}  // namespace blink

@@ -124,6 +124,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            size_t data_size) override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
+  scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSourceParameters& params) override;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,

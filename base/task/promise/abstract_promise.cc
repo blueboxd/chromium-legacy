@@ -39,7 +39,7 @@ bool AbstractPromise::IsCanceled() const {
   if (dependents_.IsCanceled())
     return true;
 
-  const Executor* executor = GetExecutor();
+  const PromiseExecutor* executor = GetExecutor();
   return executor && executor->IsCancelled();
 }
 
@@ -147,12 +147,12 @@ CheckedLock& AbstractPromise::GetCheckedLock() {
 
 void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
     const base::Location& new_dependent_location,
-    Executor::ArgumentPassingType new_dependent_executor_type) {
+    PromiseExecutor::ArgumentPassingType new_dependent_executor_type) {
   switch (new_dependent_executor_type) {
-    case Executor::ArgumentPassingType::kNoCallback:
+    case PromiseExecutor::ArgumentPassingType::kNoCallback:
       return;
 
-    case Executor::ArgumentPassingType::kNormal:
+    case PromiseExecutor::ArgumentPassingType::kNormal:
       DCHECK(!dependent_move_only_promise_)
           << "Can't mix move only and non-move only " << callback_type_
           << "callback arguments for the same " << callback_type_
@@ -163,7 +163,7 @@ void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
           std::make_unique<Location>(new_dependent_location);
       return;
 
-    case Executor::ArgumentPassingType::kMove:
+    case PromiseExecutor::ArgumentPassingType::kMove:
       DCHECK(!dependent_move_only_promise_ ||
              *dependent_move_only_promise_ == new_dependent_location)
           << "Can't have multiple move only " << callback_type_
@@ -188,7 +188,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
     // Inherit |prerequisite|'s resolve ancestor if it doesn't have a resolve
     // callback.
     if (prerequisite->resolve_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       ancestor_that_could_resolve_ = prerequisite->ancestor_that_could_resolve_;
     }
 
@@ -203,7 +203,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   if (!ancestor_that_could_reject_) {
     // Inherit |prerequisite|'s reject ancestor if it doesn't have a Catch.
     if (prerequisite->reject_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       ancestor_that_could_reject_ = prerequisite->ancestor_that_could_reject_;
     }
 
@@ -218,7 +218,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   if (!must_catch_ancestor_that_could_reject_) {
     // Inherit |prerequisite|'s must catch ancestor if it doesn't have a Catch.
     if (prerequisite->reject_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       must_catch_ancestor_that_could_reject_ =
           prerequisite->must_catch_ancestor_that_could_reject_;
     }
@@ -269,20 +269,19 @@ AbstractPromise* AbstractPromise::GetCurriedPromise() {
   }
 }
 
-const AbstractPromise::Executor* AbstractPromise::GetExecutor() const {
-  return base::unique_any_cast<Executor>(&value_);
+const PromiseExecutor* AbstractPromise::GetExecutor() const {
+  return base::unique_any_cast<PromiseExecutor>(&value_);
 }
 
-AbstractPromise::Executor::PrerequisitePolicy
-AbstractPromise::GetPrerequisitePolicy() {
-  Executor* executor = GetExecutor();
+PromiseExecutor::PrerequisitePolicy AbstractPromise::GetPrerequisitePolicy() {
+  PromiseExecutor* executor = GetExecutor();
   if (!executor) {
     // If there's no executor it's because the promise has already run. We
     // can't run again however. The only circumstance in which we expect
     // GetPrerequisitePolicy() to be called after execution is when it was
     // resolved with a promise or we're already settled.
     DCHECK(IsSettled());
-    return Executor::PrerequisitePolicy::kNever;
+    return PromiseExecutor::PrerequisitePolicy::kNever;
   }
   return executor->GetPrerequisitePolicy();
 }
@@ -294,7 +293,7 @@ AbstractPromise* AbstractPromise::GetFirstSettledPrerequisite() const {
 }
 
 void AbstractPromise::Execute() {
-  const Executor* executor = GetExecutor();
+  const PromiseExecutor* executor = GetExecutor();
   DCHECK(executor || dependents_.IsCanceled())
       << from_here_.ToString() << " value_ contains " << value_.type();
 
@@ -306,7 +305,7 @@ void AbstractPromise::Execute() {
 #if DCHECK_IS_ON()
   // Clear |must_catch_ancestor_that_could_reject_| if we can catch it.
   if (reject_argument_passing_type_ !=
-      Executor::ArgumentPassingType::kNoCallback) {
+      PromiseExecutor::ArgumentPassingType::kNoCallback) {
     CheckedAutoLock lock(GetCheckedLock());
     must_catch_ancestor_that_could_reject_ = nullptr;
   }
@@ -340,18 +339,18 @@ void AbstractPromise::OnPrerequisiteResolved(
   DCHECK(resolved_prerequisite->IsResolved());
 
   switch (GetPrerequisitePolicy()) {
-    case Executor::PrerequisitePolicy::kAll:
+    case PromiseExecutor::PrerequisitePolicy::kAll:
       if (prerequisites_->DecrementPrerequisiteCountAndCheckIfZero())
         DispatchPromise();
       break;
 
-    case Executor::PrerequisitePolicy::kAny:
+    case PromiseExecutor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should resolve immediately.
       if (prerequisites_->MarkPrerequisiteAsSettling(resolved_prerequisite))
         DispatchPromise();
       break;
 
-    case Executor::PrerequisitePolicy::kNever:
+    case PromiseExecutor::PrerequisitePolicy::kNever:
       break;
   }
 }
@@ -372,12 +371,12 @@ void AbstractPromise::OnPrerequisiteRejected(
 bool AbstractPromise::OnPrerequisiteCancelled(
     AbstractPromise* canceled_prerequisite) {
   switch (GetPrerequisitePolicy()) {
-    case Executor::PrerequisitePolicy::kAll:
+    case PromiseExecutor::PrerequisitePolicy::kAll:
       // PrerequisitePolicy::kAll should cancel immediately.
       OnCanceled();
       return false;
 
-    case Executor::PrerequisitePolicy::kAny:
+    case PromiseExecutor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should only cancel if all if it's
       // pre-requisites have been canceled.
       if (prerequisites_->DecrementPrerequisiteCountAndCheckIfZero()) {
@@ -388,7 +387,7 @@ bool AbstractPromise::OnPrerequisiteCancelled(
       }
       return true;
 
-    case Executor::PrerequisitePolicy::kNever:
+    case PromiseExecutor::PrerequisitePolicy::kNever:
       // If we where resolved with a promise then we can't have had
       // PrerequisitePolicy::kAny or PrerequisitePolicy::kNever before the
       // executor was replaced with the curried promise, so pass on
@@ -653,43 +652,6 @@ void AbstractPromise::AdjacencyList::Clear() {
       node.ClearPrerequisite();
     }
   }
-}
-
-AbstractPromise::Executor::~Executor() {
-  vtable_->destructor(storage_);
-}
-
-AbstractPromise::Executor::PrerequisitePolicy
-AbstractPromise::Executor::GetPrerequisitePolicy() const {
-  return vtable_->get_prerequisite_policy(storage_);
-}
-
-bool AbstractPromise::Executor::IsCancelled() const {
-  return vtable_->is_cancelled(storage_);
-}
-
-#if DCHECK_IS_ON()
-AbstractPromise::Executor::ArgumentPassingType
-AbstractPromise::Executor::ResolveArgumentPassingType() const {
-  return vtable_->resolve_argument_passing_type(storage_);
-}
-
-AbstractPromise::Executor::ArgumentPassingType
-AbstractPromise::Executor::RejectArgumentPassingType() const {
-  return vtable_->reject_argument_passing_type(storage_);
-}
-
-bool AbstractPromise::Executor::CanResolve() const {
-  return vtable_->can_resolve(storage_);
-}
-
-bool AbstractPromise::Executor::CanReject() const {
-  return vtable_->can_reject(storage_);
-}
-#endif
-
-void AbstractPromise::Executor::Execute(AbstractPromise* promise) {
-  return vtable_->execute(storage_, promise);
 }
 
 }  // namespace internal

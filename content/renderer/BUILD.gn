@@ -206,8 +206,6 @@ target(link_target_type, "renderer") {
     "media/stream/apply_constraints_processor.h",
     "media/stream/audio_service_audio_processor_proxy.cc",
     "media/stream/audio_service_audio_processor_proxy.h",
-    "media/stream/local_media_stream_audio_source.cc",
-    "media/stream/local_media_stream_audio_source.h",
     "media/stream/media_stream_audio_processor.cc",
     "media/stream/media_stream_audio_processor.h",
     "media/stream/media_stream_center.cc",

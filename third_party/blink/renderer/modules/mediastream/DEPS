@@ -3,6 +3,7 @@ include_rules = [
     # migrated to WTF types in mediastream.
     "+base/strings/utf_string_conversions.h",
     "+base/strings/string_number_conversions.h",
+    "+base/strings/stringprintf.h",
     "+base/containers/flat_map.h",
     "+base/callback_helpers.h",
 
@@ -12,6 +13,7 @@ include_rules = [
     "+base/threading/thread_task_runner_handle.h",
 
     "+base/trace_event/trace_event.h",
+    "+media/audio",
     "+media/base",
     "+media/capture",
     "+media/mojo/interfaces",

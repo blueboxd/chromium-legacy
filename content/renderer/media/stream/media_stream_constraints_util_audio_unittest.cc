@@ -14,7 +14,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_parameters.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 
 namespace content {
@@ -126,7 +126,8 @@ class MediaStreamConstraintsUtilAudioTestBase {
         media::AudioParameters::PlatformEffectsMask::NO_EFFECTS);
   }
 
-  std::unique_ptr<LocalMediaStreamAudioSource> GetLocalMediaStreamAudioSource(
+  std::unique_ptr<blink::LocalMediaStreamAudioSource>
+  GetLocalMediaStreamAudioSource(
       bool enable_system_echo_canceller,
       bool disable_local_echo,
       bool render_to_associated_sink,
@@ -145,8 +146,9 @@ class MediaStreamConstraintsUtilAudioTestBase {
     if (render_to_associated_sink)
       device.matched_output_device_id = std::string("some_device_id");
 
-    return std::make_unique<LocalMediaStreamAudioSource>(
-        -1, device, requested_buffer_size, disable_local_echo,
+    return std::make_unique<blink::LocalMediaStreamAudioSource>(
+        /*blink::WebLocalFrame=*/nullptr, device, requested_buffer_size,
+        disable_local_echo,
         blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
@@ -391,7 +393,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
 
-    std::unique_ptr<LocalMediaStreamAudioSource> local_source =
+    std::unique_ptr<blink::LocalMediaStreamAudioSource> local_source =
         GetLocalMediaStreamAudioSource(
             false /* enable_system_echo_canceller */,
             false /* disable_local_echo */,
@@ -770,7 +772,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
   if (!IsDeviceCapture())
     return;
 
-  std::unique_ptr<LocalMediaStreamAudioSource> source =
+  std::unique_ptr<blink::LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
@@ -887,7 +889,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   if (!IsDeviceCapture())
     return;
 
-  std::unique_ptr<LocalMediaStreamAudioSource> source =
+  std::unique_ptr<blink::LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
@@ -1044,7 +1046,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
   if (!IsDeviceCapture())
     return;
 
-  std::unique_ptr<LocalMediaStreamAudioSource> source =
+  std::unique_ptr<blink::LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
@@ -1559,7 +1561,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesWithConstraints) {
 // sources that have no audio processing.
 TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
   for (bool enable_properties : {true, false}) {
-    std::unique_ptr<LocalMediaStreamAudioSource> source =
+    std::unique_ptr<blink::LocalMediaStreamAudioSource> source =
         GetLocalMediaStreamAudioSource(
             enable_properties /* enable_system_echo_canceller */,
             enable_properties /* disable_local_echo */,
@@ -1827,7 +1829,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
 }
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExperimetanlEcWithSource) {
-  std::unique_ptr<LocalMediaStreamAudioSource> source =
+  std::unique_ptr<blink::LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(
           false /* enable_system_echo_canceller */,
           false /* disable_local_echo */, false /* render_to_associated_sink */,

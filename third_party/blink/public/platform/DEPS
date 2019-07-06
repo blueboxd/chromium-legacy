@@ -23,6 +23,7 @@ include_rules = [
     "+build/build_config.h",
     "+cc",
     "+components/viz/common",
+    "+media/base/audio_capturer_source.h",
     "+media/base/audio_renderer_sink.h",
     "+media/base/video_transformation.h",
     "+mojo/public",

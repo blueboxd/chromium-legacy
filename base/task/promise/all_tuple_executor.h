@@ -56,8 +56,8 @@ class AllTuplePromiseExecutor {
 
   bool IsCancelled() const { return false; }
 
-  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return AbstractPromise::Executor::PrerequisitePolicy::kAll;
+  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
+    return PromiseExecutor::PrerequisitePolicy::kAll;
   }
 
   void Execute(AbstractPromise* promise) {
@@ -77,13 +77,11 @@ class AllTuplePromiseExecutor {
   }
 
 #if DCHECK_IS_ON()
-  AbstractPromise::Executor::ArgumentPassingType ResolveArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType ResolveArgumentPassingType() const {
     return UseMoveSemantics<ResolveTuple>::argument_passing_type;
   }
 
-  AbstractPromise::Executor::ArgumentPassingType RejectArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType RejectArgumentPassingType() const {
     return UseMoveSemantics<RejectType>::argument_passing_type;
   }
 

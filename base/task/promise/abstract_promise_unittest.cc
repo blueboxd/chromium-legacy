@@ -27,10 +27,9 @@
 using testing::ElementsAre;
 
 using ArgumentPassingType =
-    base::internal::AbstractPromise::Executor::ArgumentPassingType;
+    base::internal::PromiseExecutor::ArgumentPassingType;
 
-using PrerequisitePolicy =
-    base::internal::AbstractPromise::Executor::PrerequisitePolicy;
+using PrerequisitePolicy = base::internal::PromiseExecutor::PrerequisitePolicy;
 
 namespace base {
 namespace internal {
@@ -119,7 +118,7 @@ class AbstractPromiseTest : public testing::Test {
     std::unique_ptr<AbstractPromise::AdjacencyList> prerequisites;
 
     PrerequisitePolicy prerequisite_policy =
-        AbstractPromise::Executor::PrerequisitePolicy::kAll;
+        PromiseExecutor::PrerequisitePolicy::kAll;
 
     bool executor_can_resolve = true;
 
@@ -199,17 +198,18 @@ class AbstractPromiseTest : public testing::Test {
     }
 
     operator scoped_refptr<AbstractPromise>() {
-      return AbstractPromise::Create(
-          std::move(settings.task_runner), settings.from_here,
-          std::move(settings.prerequisites), settings.reject_policy,
-          AbstractPromise::ConstructWith<DependentList::ConstructUnresolved,
-                                         TestExecutor>(),
-          settings.prerequisite_policy,
+      PromiseExecutor::Data executor_data(
+          in_place_type_t<TestExecutor>(), settings.prerequisite_policy,
 #if DCHECK_IS_ON()
           settings.resolve_executor_type, settings.reject_executor_type,
           settings.executor_can_resolve, settings.executor_can_reject,
 #endif
           std::move(settings.callback));
+
+      return AbstractPromise::Create(
+          settings.task_runner, settings.from_here,
+          std::move(settings.prerequisites), settings.reject_policy,
+          DependentList::ConstructUnresolved(), std::move(executor_data));
     }
 
    private:

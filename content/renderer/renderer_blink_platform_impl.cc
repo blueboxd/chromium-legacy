@@ -533,6 +533,16 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 
 //------------------------------------------------------------------------------
 
+scoped_refptr<media::AudioCapturerSource>
+RendererBlinkPlatformImpl::NewAudioCapturerSource(
+    blink::WebLocalFrame* web_frame,
+    const media::AudioSourceParameters& params) {
+  return AudioDeviceFactory::NewAudioCapturerSource(
+      RenderFrame::GetRoutingIdForWebFrame(web_frame), params);
+}
+
+//------------------------------------------------------------------------------
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client,

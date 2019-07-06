@@ -12,6 +12,7 @@ blink_modules_sources("mediastream") {
     "dom_window_media_stream.h",
     "input_device_info.cc",
     "input_device_info.h",
+    "local_media_stream_audio_source.cc",
     "media_constraints_impl.cc",
     "media_constraints_impl.h",
     "media_device_info.cc",

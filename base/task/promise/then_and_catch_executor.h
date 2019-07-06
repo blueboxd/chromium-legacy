@@ -17,14 +17,18 @@ namespace internal {
 // Exists to reduce template bloat.
 class BASE_EXPORT ThenAndCatchExecutorCommon {
  public:
-  ThenAndCatchExecutorCommon(CallbackBase&& resolve_callback,
-                             CallbackBase&& reject_callback);
+  ThenAndCatchExecutorCommon(internal::CallbackBase&& resolve_executor,
+                             internal::CallbackBase&& reject_executor) noexcept
+      : resolve_callback_(std::move(resolve_executor)),
+        reject_callback_(std::move(reject_executor)) {
+    DCHECK(!resolve_callback_.is_null() || !reject_callback_.is_null());
+  }
 
-  ~ThenAndCatchExecutorCommon();
+  ~ThenAndCatchExecutorCommon() = default;
 
-  // AbstractPromise::Executor:
+  // PromiseExecutor:
   bool IsCancelled() const;
-  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const;
+  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const;
 
   using ExecuteCallback = void (*)(AbstractPromise* prerequisite,
                                    AbstractPromise* promise,
@@ -47,28 +51,6 @@ class BASE_EXPORT ThenAndCatchExecutorCommon {
 // Tag signals no callback which is used to eliminate dead code.
 struct NoCallback {};
 
-struct CouldResolveOrReject {};
-struct CanOnlyResolve {};
-struct CanOnlyReject {};
-
-template <bool can_resolve, bool can_reject>
-struct CheckResultHelper;
-
-template <>
-struct CheckResultHelper<true, false> {
-  using TagType = CanOnlyResolve;
-};
-
-template <>
-struct CheckResultHelper<true, true> {
-  using TagType = CouldResolveOrReject;
-};
-
-template <>
-struct CheckResultHelper<false, true> {
-  using TagType = CanOnlyReject;
-};
-
 template <typename ResolveOnceCallback,
           typename RejectOnceCallback,
           typename ArgResolve,
@@ -86,20 +68,13 @@ class ThenAndCatchExecutor {
   using PrerequisiteCouldReject =
       std::integral_constant<bool, !std::is_same<ArgReject, NoCallback>::value>;
 
-  ThenAndCatchExecutor(ResolveOnceCallback&& resolve_callback,
-                       RejectOnceCallback&& reject_callback)
-      : common_(std::move(resolve_callback), std::move(reject_callback)) {
-    static_assert(sizeof(CallbackBase) == sizeof(ResolveOnceCallback),
-                  "We assume it's possible to cast from CallbackBase to "
-                  "ResolveOnceCallback");
-    static_assert(sizeof(CallbackBase) == sizeof(RejectOnceCallback),
-                  "We assume it's possible to cast from CallbackBase to "
-                  "RejectOnceCallback");
-  }
+  ThenAndCatchExecutor(CallbackBase&& resolve_callback,
+                       CallbackBase&& reject_callback) noexcept
+      : common_(std::move(resolve_callback), std::move(reject_callback)) {}
 
   bool IsCancelled() const { return common_.IsCancelled(); }
 
-  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const {
+  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
     return common_.GetPrerequisitePolicy();
   }
 
@@ -110,17 +85,15 @@ class ThenAndCatchExecutor {
   }
 
 #if DCHECK_IS_ON()
-  AbstractPromise::Executor::ArgumentPassingType ResolveArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType ResolveArgumentPassingType() const {
     return common_.resolve_callback_.is_null()
-               ? AbstractPromise::Executor::ArgumentPassingType::kNoCallback
+               ? PromiseExecutor::ArgumentPassingType::kNoCallback
                : CallbackTraits<ResolveOnceCallback>::argument_passing_type;
   }
 
-  AbstractPromise::Executor::ArgumentPassingType RejectArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType RejectArgumentPassingType() const {
     return common_.reject_callback_.is_null()
-               ? AbstractPromise::Executor::ArgumentPassingType::kNoCallback
+               ? PromiseExecutor::ArgumentPassingType::kNoCallback
                : CallbackTraits<RejectOnceCallback>::argument_passing_type;
   }
 
@@ -164,9 +137,8 @@ class ThenAndCatchExecutor {
               RejectStorage>::Run(std::move(*resolve_callback), prerequisite,
                                   promise);
 
-    using CheckResultTagType = typename CheckResultHelper<
-        PromiseCallbackTraits<ResolveReturnT>::could_resolve,
-        PromiseCallbackTraits<ResolveReturnT>::could_reject>::TagType;
+    using CheckResultTagType =
+        typename PromiseCallbackTraits<ResolveReturnT>::TagType;
 
     CheckResultType(promise, CheckResultTagType());
   }
@@ -188,9 +160,8 @@ class ThenAndCatchExecutor {
               RejectStorage>::Run(std::move(*reject_callback), prerequisite,
                                   promise);
 
-    using CheckResultTagType = typename CheckResultHelper<
-        PromiseCallbackTraits<RejectReturnT>::could_resolve,
-        PromiseCallbackTraits<RejectReturnT>::could_reject>::TagType;
+    using CheckResultTagType =
+        typename PromiseCallbackTraits<RejectReturnT>::TagType;
 
     CheckResultType(promise, CheckResultTagType());
   }

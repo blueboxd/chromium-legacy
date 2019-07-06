@@ -20,8 +20,8 @@ class AllContainerPromiseExecutor {
  public:
   bool IsCancelled() const { return false; }
 
-  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return AbstractPromise::Executor::PrerequisitePolicy::kAll;
+  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
+    return PromiseExecutor::PrerequisitePolicy::kAll;
   }
 
   struct VoidResolveType {};
@@ -46,13 +46,11 @@ class AllContainerPromiseExecutor {
   }
 
 #if DCHECK_IS_ON()
-  AbstractPromise::Executor::ArgumentPassingType ResolveArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType ResolveArgumentPassingType() const {
     return UseMoveSemantics<ResolveType>::argument_passing_type;
   }
 
-  AbstractPromise::Executor::ArgumentPassingType RejectArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType RejectArgumentPassingType() const {
     return UseMoveSemantics<RejectType>::argument_passing_type;
   }
 
@@ -107,17 +105,22 @@ struct AllContainerHelper<Container, Promise<ResolveType, RejectType>> {
   static PromiseType All(const Location& from_here, const Container& promises) {
     size_t i = 0;
     std::vector<DependentList::Node> prerequisite_list(promises.size());
+    // TODO(alexclarke): Move construction of this list and AbstractPromise out
+    // of line to reduce template bloat.
     for (auto& promise : promises) {
       prerequisite_list[i++].SetPrerequisite(promise.abstract_promise_.get());
     }
+
+    internal::PromiseExecutor::Data executor_data(
+        (in_place_type_t<
+            AllContainerPromiseExecutor<ResolveType, RejectType>>()));
+
     return PromiseType(AbstractPromise::Create(
         nullptr, from_here,
         std::make_unique<AbstractPromise::AdjacencyList>(
             std::move(prerequisite_list)),
-        RejectPolicy::kMustCatchRejection,
-        AbstractPromise::ConstructWith<
-            DependentList::ConstructUnresolved,
-            AllContainerPromiseExecutor<ResolveType, RejectType>>()));
+        RejectPolicy::kMustCatchRejection, DependentList::ConstructUnresolved(),
+        std::move(executor_data)));
   }
 };
 

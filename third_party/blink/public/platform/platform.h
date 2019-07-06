@@ -41,6 +41,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -80,6 +81,7 @@ class GpuMemoryBufferManager;
 
 namespace media {
 struct AudioSinkParameters;
+struct AudioSourceParameters;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -544,6 +546,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // NOTE: This function should not be called from core/ and modules/, but
   // called by platform/graphics/ is fine.
   virtual bool IsGpuCompositingDisabled() { return true; }
+
+  // Media stream ----------------------------------------------------
+  virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSourceParameters& params) {
+    return nullptr;
+  }
 
   // WebRTC ----------------------------------------------------------
 

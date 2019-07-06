@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/do_nothing_promise.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -132,6 +134,10 @@ TEST_F(PromiseTest, GetResolveCallbackThenWithConstInt) {
 
 TEST_F(PromiseTest, GetResolveCallbackMultipleArgs) {
   ManualPromiseResolver<std::tuple<int, bool, float>> p(FROM_HERE);
+  static_assert(
+      std::is_same<OnceCallback<void(int, bool, float)>,
+                   decltype(p.GetResolveCallback<int, bool, float>())>::value,
+      "");
   p.GetResolveCallback<int, bool, float>().Run(123, true, 1.5f);
 
   RunLoop run_loop;
@@ -143,6 +149,24 @@ TEST_F(PromiseTest, GetResolveCallbackMultipleArgs) {
                          run_loop.Quit();
                        }));
 
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ManualPromiseResolverCallbackLifetimeCanOutliveParent) {
+  OnceCallback<void(int)> resolve_cb;
+
+  RunLoop run_loop;
+  {
+    ManualPromiseResolver<int> p(FROM_HERE);
+    resolve_cb = p.GetResolveCallback();
+
+    p.promise().ThenHere(FROM_HERE, BindLambdaForTesting([&](int result) {
+                           EXPECT_EQ(123, result);
+                           run_loop.Quit();
+                         }));
+  }
+
+  std::move(resolve_cb).Run(123);
   run_loop.Run();
 }
 
@@ -1112,10 +1136,11 @@ TEST_F(PromiseTest, CurriedVoidPromiseModified) {
                                    promise_resolver->promise()))
         .ThenHere(FROM_HERE, base::BindOnce([](int v) { EXPECT_EQ(v, 42); }))
         .ThenHere(FROM_HERE, run_loop.QuitClosure());
-    base::PostTaskWithTraits(FROM_HERE, {}, base::BindLambdaForTesting([&]() {
-                               promise_resolver->Resolve(42);
-                               promise_resolver.reset();
-                             }));
+    PostTaskWithTraits(FROM_HERE, {ThreadPool()},
+                       base::BindLambdaForTesting([&]() {
+                         promise_resolver->Resolve(42);
+                         promise_resolver.reset();
+                       }));
     run_loop.Run();
     scoped_task_environment_.RunUntilIdle();
   }
@@ -1650,7 +1675,7 @@ TEST_F(PromiseTest, ManualPromiseResolverRepeatingResolveCallbackCalledTwice) {
 #if DCHECK_IS_ON()
   ManualPromiseResolver<void, void> promise_resolver(
       FROM_HERE, RejectPolicy::kCatchNotRequired);
-  RepeatingCallback<void(void)> resolve =
+  RepeatingCallback<void()> resolve =
       promise_resolver.GetRepeatingResolveCallback();
 
   resolve.Run();
@@ -1663,7 +1688,7 @@ TEST_F(PromiseTest, ManualPromiseResolverRepeatingRejectCallbackCalledTwice) {
 #if DCHECK_IS_ON()
   ManualPromiseResolver<void, void> promise_resolver(
       FROM_HERE, RejectPolicy::kCatchNotRequired);
-  RepeatingCallback<void(void)> resolve =
+  RepeatingCallback<void()> resolve =
       promise_resolver.GetRepeatingRejectCallback();
 
   resolve.Run();

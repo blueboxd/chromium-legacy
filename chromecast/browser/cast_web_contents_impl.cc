@@ -7,7 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -15,6 +18,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
+#include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "content/public/browser/navigation_entry.h"
@@ -48,6 +52,24 @@ void RemoveCastWebContents(CastWebContents* instance) {
   if (it != all_cast_web_contents.end()) {
     all_cast_web_contents.erase(it);
   }
+}
+
+bool IsOriginWhitelisted(const GURL& url,
+                         const std::vector<std::string>& allowed_origins) {
+  constexpr const char kWildcard[] = "*";
+  url::Origin url_origin = url::Origin::Create(url);
+
+  for (const std::string& allowed_origin : allowed_origins) {
+    if (allowed_origin == kWildcard)
+      return true;
+
+    if (url_origin.IsSameOriginWith(url::Origin::Create(GURL(allowed_origin))))
+      return true;
+
+    // TODO(crbug.com/893236): Add handling for nonstandard origins
+    // (e.g. data: URIs).
+  }
+  return false;
 }
 
 }  // namespace
@@ -227,6 +249,50 @@ void CastWebContentsImpl::ClearRenderWidgetHostView() {
   }
 }
 
+CastWebContentsImpl::OriginScopedScript::OriginScopedScript() = default;
+
+CastWebContentsImpl::OriginScopedScript::OriginScopedScript(
+    const std::vector<std::string>& origins,
+    std::string script)
+    : origins_(std::move(origins)), script_(std::move(script)) {}
+
+CastWebContentsImpl::OriginScopedScript&
+CastWebContentsImpl::OriginScopedScript::operator=(
+    CastWebContentsImpl::OriginScopedScript&& other) {
+  origins_ = std::move(other.origins_);
+  script_ = std::move(other.script_);
+  return *this;
+}
+
+CastWebContentsImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+void CastWebContentsImpl::AddBeforeLoadJavaScript(
+    base::StringPiece id,
+    const std::vector<std::string>& origins,
+    base::StringPiece script) {
+  DCHECK(!id.empty() && !script.empty() && !origins.empty())
+      << "Invalid empty parameters were passed to AddBeforeLoadJavascript";
+  // If there is no script with the identifier |id|, then create a place for it
+  // at the end of the injection sequence.
+  if (before_load_scripts_.find(id.as_string()) == before_load_scripts_.end()) {
+    before_load_scripts_order_.push_back(id.as_string());
+  }
+  before_load_scripts_[id.as_string()] =
+      OriginScopedScript(origins, script.as_string());
+}
+
+void CastWebContentsImpl::RemoveBeforeLoadJavaScript(base::StringPiece id) {
+  before_load_scripts_.erase(id.as_string());
+
+  for (auto script_id_iter = before_load_scripts_order_.begin();
+       script_id_iter != before_load_scripts_order_.end(); ++script_id_iter) {
+    if (*script_id_iter == id) {
+      before_load_scripts_order_.erase(script_id_iter);
+      return;
+    }
+  }
+}
+
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
@@ -379,6 +445,35 @@ void CastWebContentsImpl::DidStartNavigation(
   UpdatePageState();
   DCHECK_EQ(page_state_, PageState::LOADING);
   NotifyPageState();
+}
+
+void CastWebContentsImpl::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (before_load_scripts_.empty())
+    return;
+
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
+    return;
+
+  chromecast::shell::mojom::OnLoadScriptInjectorAssociatedPtr
+      before_load_script_injector;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&before_load_script_injector);
+
+  // Provision the renderer's ScriptInjector with the scripts scoped to this
+  // page's origin.
+  before_load_script_injector->ClearOnLoadScripts();
+  for (auto script_id : before_load_scripts_order_) {
+    const OriginScopedScript& origin_scoped_script =
+        before_load_scripts_[script_id];
+    if (IsOriginWhitelisted(navigation_handle->GetURL(),
+                            origin_scoped_script.origins())) {
+      before_load_script_injector->AddOnLoadScript(
+          origin_scoped_script.script());
+    }
+  }
 }
 
 void CastWebContentsImpl::DidFinishNavigation(

@@ -1946,6 +1946,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityVideo) {
   RunHtmlTest(FILE_PATH_LITERAL("video.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityNodeChangedCrashInEditableText) {
+  RunHtmlTest(FILE_PATH_LITERAL("node-changed-crash-in-editable-text.html"));
+}
+
 // TODO(crbug.com/916003): Fix race condition.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityNoSourceVideo) {

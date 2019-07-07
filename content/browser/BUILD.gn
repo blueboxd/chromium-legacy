@@ -2082,6 +2082,10 @@ jumbo_source_set("browser") {
     defines += [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+  }
+
   if (is_chromecast && is_linux) {
     sources += [
       "tracing/cast_tracing_agent.cc",

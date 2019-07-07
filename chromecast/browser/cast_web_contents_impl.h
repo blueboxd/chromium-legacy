@@ -13,10 +13,12 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
@@ -57,6 +59,10 @@ class CastWebContentsImpl : public CastWebContents,
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
+  void AddBeforeLoadJavaScript(base::StringPiece id,
+                               const std::vector<std::string>& origins,
+                               base::StringPiece script) override;
+  void RemoveBeforeLoadJavaScript(base::StringPiece id) override;
 
   // Observer interface:
   void AddObserver(Observer* observer) override;
@@ -73,6 +79,8 @@ class CastWebContentsImpl : public CastWebContents,
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -102,6 +110,22 @@ class CastWebContentsImpl : public CastWebContents,
       content::WebContentsObserver::MediaStoppedReason reason) override;
 
  private:
+  struct OriginScopedScript {
+    OriginScopedScript();
+    OriginScopedScript(const std::vector<std::string>& origins,
+                       std::string script);
+    OriginScopedScript& operator=(OriginScopedScript&& other);
+    ~OriginScopedScript();
+
+    const std::vector<std::string>& origins() const { return origins_; }
+    const std::string script() const { return script_; }
+
+    std::vector<std::string> origins_;
+    std::string script_;
+
+    DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
+  };
+
   void OnPageLoading();
   void OnPageLoaded();
   void UpdatePageState();
@@ -134,6 +158,9 @@ class CastWebContentsImpl : public CastWebContents,
   bool stop_notified_;
   bool notifying_;
   int last_error_;
+
+  std::map<std::string, OriginScopedScript> before_load_scripts_;
+  std::vector<std::string> before_load_scripts_order_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

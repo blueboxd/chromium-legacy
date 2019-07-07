@@ -15,6 +15,9 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -46,6 +49,7 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::Property;
 
 namespace content {
@@ -108,6 +112,7 @@ class MockCastWebContentsObserver : public CastWebContents::Observer {
            service_manager::InterfaceProvider* frame_interfaces,
            blink::AssociatedInterfaceProvider* frame_associated_interfaces));
   MOCK_METHOD1(ResourceLoadFailed, void(CastWebContents* cast_web_contents));
+  MOCK_METHOD1(UpdateTitle, void(const base::string16& title));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastWebContentsObserver);
@@ -119,6 +124,45 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   ~MockWebContentsDelegate() override = default;
 
   MOCK_METHOD1(CloseContents, void(content::WebContents* source));
+};
+
+class TitleChangeObserver : public CastWebContents::Observer {
+ public:
+  TitleChangeObserver() = default;
+  ~TitleChangeObserver() override = default;
+
+  // Spins a Runloop until the title of the page matches the |expected_title|
+  // that have been set.
+  void RunUntilTitleEquals(base::StringPiece expected_title) {
+    expected_title_ = expected_title.as_string();
+    // Spin the runloop until the expected conditions are met.
+    if (current_title_ != expected_title_) {
+      expected_title_ = expected_title.as_string();
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+  // CastWebContents::Observer implementation:
+  void UpdateTitle(const base::string16& title) override {
+    // Resumes execution of RunUntilTitleEquals() if |title| matches
+    // expectations.
+    std::string title_utf8 = base::UTF16ToUTF8(title);
+    current_title_ = title_utf8;
+    if (!quit_closure_.is_null() && current_title_ == expected_title_) {
+      DCHECK_EQ(current_title_, expected_title_);
+      std::move(quit_closure_).Run();
+    }
+  }
+
+ private:
+  std::string current_title_;
+  std::string expected_title_;
+
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TitleChangeObserver);
 };
 
 }  // namespace
@@ -157,6 +201,7 @@ class CastWebContentsBrowserTest : public content::BrowserTestBase,
     cast_web_contents_ =
         std::make_unique<CastWebContentsImpl>(web_contents_.get(), init_params);
     mock_cast_wc_observer_.Observe(cast_web_contents_.get());
+    title_change_observer_.Observe(cast_web_contents_.get());
 
     render_frames_.clear();
     content::WebContentsObserver::Observe(web_contents_.get());
@@ -178,7 +223,8 @@ class CastWebContentsBrowserTest : public content::BrowserTestBase,
 
   MockWebContentsDelegate mock_wc_delegate_;
   MockCastWebContentsDelegate mock_cast_wc_delegate_;
-  MockCastWebContentsObserver mock_cast_wc_observer_;
+  NiceMock<MockCastWebContentsObserver> mock_cast_wc_observer_;
+  TitleChangeObserver title_change_observer_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<CastWebContentsImpl> cast_web_contents_;
 
@@ -601,6 +647,249 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, NotifyMissingResource) {
   base::FilePath path = GetTestDataFilePath("missing_resource.html");
   cast_web_contents_->LoadUrl(content::GetFileUrlWithQuery(path, ""));
   run_loop->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ExecuteJavaScriptOnLoad) {
+  // ===========================================================================
+  // Test: Injecting script to change title should work.
+  // ===========================================================================
+  constexpr char kExpectedTitle[] = "hello";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  // The original title will be loaded first and then the injected script. Other
+  // scripts must run after the injected script.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kExpectedTitle)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+  constexpr char kBindingsId[] = "1234";
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId, {gurl.GetOrigin().spec()}, "stashed_title = 'hello';");
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kExpectedTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptUpdatedOnLoad) {
+  // ===========================================================================
+  // Test: Verify that this script replaces the previous script with same
+  // binding id, as opposed to being injected alongside it. (The latter would
+  // result in the title being "helloclobber").
+  // ===========================================================================
+  constexpr char kReplaceTitle[] = "clobber";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kReplaceTitle)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  constexpr char kBindingsId[] = "1234";
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId, {gurl.GetOrigin().spec()}, "stashed_title = 'hello';");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId, {gurl.GetOrigin().spec()},
+      "stashed_title = document.title + 'clobber';");
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kReplaceTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptOnLoadOrdered) {
+  // ===========================================================================
+  // Test: Verifies that bindings are injected in order by producing a
+  // cumulative, non-commutative result.
+  // ===========================================================================
+  constexpr char kExpectedTitle[] = "hello there";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+  constexpr char kBindingsId1[] = "1234";
+  constexpr char kBindingsId2[] = "5678";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  // The original title will be loaded first and then the injected script. Other
+  // scripts must run after the injected script.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kExpectedTitle)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId1, {gurl.GetOrigin().spec()}, "stashed_title = 'hello';");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId2, {gurl.GetOrigin().spec()}, "stashed_title += ' there';");
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kExpectedTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptOnLoadRemoved) {
+  // ===========================================================================
+  // Test: Verifies that bindings could be removed successfully before page
+  // starts loading.
+  // ===========================================================================
+  constexpr char kExpectedTitle[] = "foo";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+  constexpr char kBindingsId1[] = "1234";
+  constexpr char kBindingsId2[] = "5678";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  // The original title will be loaded first and then the injected script. Other
+  // scripts must run after the injected script.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kExpectedTitle)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId1, {gurl.GetOrigin().spec()}, "stashed_title = 'foo';");
+  // Add a script which clobbers "foo".
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId2, {gurl.GetOrigin().spec()}, "stashed_title = 'bar';");
+  // Deletes the clobbering script.
+  cast_web_contents_->RemoveBeforeLoadJavaScript(kBindingsId2);
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kExpectedTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptOnLoadWrongOrigin) {
+  // ===========================================================================
+  // Test: Injecting script should not happen if the to-be-loaded page's origin
+  // is not whitelisted for the injection script.
+  // ===========================================================================
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+  constexpr char kBindingsId[] = "1234";
+
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId, {"http://example.com"}, "stashed_title = 'hello';");
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptOnLoadWildcardOrigin) {
+  // Start test server for hosting test HTML pages.
+  embedded_test_server()->ServeFilesFromSourceDirectory(GetTestDataPath());
+  StartTestServer();
+  // ===========================================================================
+  // Test: Injecting script should be able to load on arbitrary origins with
+  // wildcard origin restriction set.
+  // ===========================================================================
+  constexpr char kInjectedTitle1[] = "hello";
+  constexpr char kInjectedTitle2[] = "world";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+  constexpr char kBindingsId1[] = "1234";
+  constexpr char kBindingsId2[] = "5678";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)))
+      .Times(2);
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kInjectedTitle1)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kInjectedTitle2)));
+
+  GURL gurl{embedded_test_server()->GetURL("/dynamic_title.html")};
+
+  cast_web_contents_->AddBeforeLoadJavaScript(kBindingsId1, {"*"},
+                                              "stashed_title = 'hello';");
+  // Test script injection for the origin 127.0.0.1.
+  // Load title "hello":
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kInjectedTitle1);
+
+  // Load AboutBlank page:
+  cast_web_contents_->LoadUrl(GURL(url::kAboutBlankURL));
+
+  cast_web_contents_->AddBeforeLoadJavaScript(kBindingsId2, {"*"},
+                                              "stashed_title = 'world';");
+  // Test script injection using a different origin ("localhost"), which should
+  // still be picked up by the wildcard. And the title should be initialized as
+  // origianl title first, then as 'world'.
+  GURL alt_url =
+      embedded_test_server()->GetURL("localhost", "/dynamic_title.html");
+  cast_web_contents_->LoadUrl(alt_url);
+  title_change_observer_.RunUntilTitleEquals(kInjectedTitle2);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       ExecuteJavaScriptOnLoadEarlyAndLateRegistrations) {
+  // ===========================================================================
+  // Test: Tests that we can inject scripts before and after RenderFrame
+  // creation.
+  // ===========================================================================
+  constexpr char kExpectedTitle1[] = "foo";
+  constexpr char kExpectedTitle2[] = "foo bar";
+  constexpr char kOriginalTitle[] =
+      "Welcome to Stan the Offline Dino's Homepage";
+  constexpr char kBindingsId1[] = "1234";
+  constexpr char kBindingsId2[] = "5678";
+
+  // The script should be able to run before HTML <script> tag starts running.
+  // The original title will be loaded first and then the injected script. Other
+  // scripts must run after the injected script.
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kExpectedTitle2)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kExpectedTitle1)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)))
+      .Times(2);
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("dynamic_title.html"), "");
+
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId1, {gurl.GetOrigin().spec()}, "stashed_title = 'foo';");
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kExpectedTitle1);
+
+  // Inject bindings after RenderFrameCreation
+  cast_web_contents_->AddBeforeLoadJavaScript(
+      kBindingsId2, {gurl.GetOrigin().spec()}, "stashed_title += ' bar';");
+
+  // Navigate away to clean the state.
+  cast_web_contents_->LoadUrl(GURL(url::kAboutBlankURL));
+
+  // Navigate back and see if both scripts are working.
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kExpectedTitle2);
 }
 
 }  // namespace chromecast

@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -271,6 +273,34 @@ class CastWebContents {
   // load while in blocking state.
   virtual void BlockMediaStarting(bool blocked) = 0;
   virtual void EnableBackgroundVideoPlayback(bool enabled) = 0;
+
+  // ===========================================================================
+  // Page Communication
+  // ===========================================================================
+
+  // Executes a UTF-8 encoded |script| for every subsequent page load where
+  // the frame's URL has an origin reflected in |origins|. The script is
+  // executed early, prior to the execution of the document's scripts.
+  //
+  // Scripts are identified by a string-based client-managed |id|. Any
+  // script previously injected using the same |id| will be replaced.
+  //
+  // The order in which multiple bindings are executed is the same as the
+  // order in which the bindings were Added. If a script is added which
+  // clobbers an existing script of the same |id|, the previous script's
+  // precedence in the injection order will be preserved.
+  // |script| and |id| must be non-empty string.
+  //
+  // At least one |origins| entry must be specified.
+  // If a wildcard "*" is specified in |origins|, then the script will be
+  // evaluated for all documents.
+  virtual void AddBeforeLoadJavaScript(base::StringPiece id,
+                                       const std::vector<std::string>& origins,
+                                       base::StringPiece script) = 0;
+
+  // Removes a previously added JavaScript snippet identified by |id|.
+  // This is a no-op if there is no JavaScript snippet identified by |id|.
+  virtual void RemoveBeforeLoadJavaScript(base::StringPiece id) = 0;
 
   // ===========================================================================
   // Utility Methods

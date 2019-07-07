@@ -59,6 +59,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
@@ -615,6 +616,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeNetworkDelegates();
 
   cast_content_browser_client_->CreateGeneralAudienceBrowsingService();
+
+  // Disable RenderFrameHost's Javascript injection restrictions so that the
+  // Cast Web Service can implement its own JS injection policy at a higher
+  // level.
+  content::RenderFrameHost::AllowInjectingJavaScript();
 
   cast_browser_process_->cast_service()->Start();
 

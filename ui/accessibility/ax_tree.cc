@@ -149,6 +149,8 @@ struct AXTreeUpdateState {
   // reparented if they are in this list and removed from somewhere else.
   std::set<int> potentially_reparented_ids;
 
+  std::unordered_set<int> node_data_changed_ids;
+
   // Keeps track of new nodes created during this update.
   std::set<const AXNode*> new_nodes;
 
@@ -528,10 +530,21 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     changes.push_back(AXTreeObserver::Change(node, change));
   }
 
+  // Update the unignored cached values as necessary.
   for (int parent_id : update_state.invalidate_unignored_cached_values_ids) {
     AXNode* parent = GetFromId(parent_id);
     if (parent)
       parent->UpdateUnignoredCachedValues();
+  }
+
+  // Now that the unignored cached values are up to date, update observers to
+  // node changes.
+  for (int node_data_changed_id : update_state.node_data_changed_ids) {
+    AXNode* node = GetFromId(node_data_changed_id);
+    if (node) {
+      for (AXTreeObserver& observer : observers_)
+        observer.OnNodeChanged(this, node);
+    }
   }
 
   // Tree is no longer updating.
@@ -681,8 +694,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     node->SetData(src);
   }
 
-  for (AXTreeObserver& observer : observers_)
-    observer.OnNodeChanged(this, node);
+  update_state->node_data_changed_ids.insert(node->id());
 
   // First, delete nodes that used to be children of this node but aren't
   // anymore.

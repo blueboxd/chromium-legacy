@@ -195,7 +195,7 @@ void LayoutShiftTracker::AccumulateJank(
 
 #if DCHECK_IS_ON()
   LocalFrame& frame = frame_view_->GetFrame();
-  if (ShouldLog(frame)) {
+  if (!HadRecentInput() && ShouldLog(frame)) {
     DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", "
              << source.DebugName() << " moved from " << old_rect.ToString()
@@ -314,8 +314,9 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!HadRecentInput() && ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
-             << (jank_fraction * 100) << "% janked; raising score to "
-             << score_;
+             << (jank_fraction * 100) << "% janked with distance fraction "
+             << move_distance_factor << "; raising score to "
+             << score_with_move_distance_;
   }
 #endif
 

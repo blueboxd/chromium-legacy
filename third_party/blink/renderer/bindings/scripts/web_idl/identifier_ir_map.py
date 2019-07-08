@@ -128,8 +128,12 @@ class IdentifierIRMap(object):
                 irs = self.find_by_kind(ir.kind)
                 assert ir not in irs[ir.identifier]
             else:
-                self.find_by_identifier(ir.identifier)
-                assert False
+                duplicated_ir = self.find_by_identifier(ir.identifier)
+                # We don't allow to declare a definition of an IDL definition in
+                # multiple places.
+                raise ValueError('{} {} is defined twice.\n  {}\n  {}'.format(
+                    ir.kind, ir.identifier, ir.debug_info.locations[0],
+                    duplicated_ir.debug_info.locations[0]))
         except KeyError:
             pass
         self.add(ir)

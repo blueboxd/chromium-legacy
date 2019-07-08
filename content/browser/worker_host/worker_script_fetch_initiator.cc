@@ -364,7 +364,9 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       // Get the direct network factory from |loader_factory_getter|. When
       // NetworkService is enabled, it returns a factory that doesn't support
       // reconnection to the network service after a crash, but it's OK since
-      // it's used for a single shared worker startup.
+      // it's used only for a single request to fetch the worker's main script
+      // during startup. If the network service crashes, worker startup should
+      // simply fail.
       network::mojom::URLLoaderFactoryPtr network_factory_ptr;
       loader_factory_getter->CloneNetworkFactory(
           mojo::MakeRequest(&network_factory_ptr));
@@ -390,16 +392,20 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       &ServiceWorkerContextWrapper::resource_context, service_worker_context);
 
   // NetworkService (PlzWorker):
-  // Start loading a shared worker main script.
+  // Start loading a web worker main script.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // TODO(nhiroki): Figure out what we should do in |wc_getter| for loading
-    // shared worker's main script.
+    // web worker's main script. Returning the WebContents of the closest
+    // ancestor's frame is a possible option, but it doesn't work when a shared
+    // worker creates a dedicated worker after the closest ancestor's frame is
+    // gone. The frame tree node ID has the same issue.
     base::RepeatingCallback<WebContents*()> wc_getter =
         base::BindRepeating([]() -> WebContents* { return nullptr; });
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
         GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
             *resource_request, resource_context, wc_getter,
-            nullptr /* navigation_ui_data */, -1 /* frame_tree_node_id */);
+            nullptr /* navigation_ui_data */,
+            RenderFrameHost::kNoFrameTreeNodeId);
 
     WorkerScriptFetcher::CreateAndStart(
         std::make_unique<WorkerScriptLoaderFactory>(
@@ -454,8 +460,8 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
   // NetworkService (PlzWorker):
   // Prepare the controller service worker info to pass to the renderer. This is
   // only provided if NetworkService is enabled. In the non-NetworkService case,
-  // the controller is sent in SetController IPCs during the request for the
-  // shared worker script.
+  // the controller is sent in SetController IPCs during the request for the web
+  // worker script.
   blink::mojom::ControllerServiceWorkerInfoPtr controller;
   base::WeakPtr<ServiceWorkerObjectHost> controller_service_worker_object_host;
   if (subresource_loader_params &&

@@ -42,7 +42,7 @@ const char AppLaunchEventLogger::kShouldSync[] = "should_sync";
 
 namespace {
 
-constexpr unsigned int kNumRandomAppsToLog = 5;
+constexpr unsigned int kNumRandomAppsToLog = 25;
 const char kArcScheme[] = "arc://";
 const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
 
@@ -489,7 +489,7 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
                                        kTotalHoursBucketSizeMultiplier))
       .Record(ukm::UkmRecorder::Get());
 
-  // Log click data about the app clicked on and up to five other apps. This
+  // Log click data about the app clicked on and up to 25 other apps. This
   // represents the state of the data immediately before the click.
   const std::vector<std::string> apps_to_log =
       ChooseAppsToLog(app_launch_event.app_id());

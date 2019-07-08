@@ -860,11 +860,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerHost> binding_;
 
-  // The number of fetch event responses that the service worker is streaming to
-  // the browser process. We try to not stop the service worker while there is
-  // an inflight response.
-  int inflight_stream_response_count_ = 0;
-
   // Set to true if the worker has no inflight events and the idle timer has
   // been triggered. Set back to false if another event starts since the worker
   // is no longer idle.

@@ -724,6 +724,7 @@
       'gpu-try-linux-nvidia-dbg': 'gpu_tests_debug_trybot',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
+      'linux-annotator-rel': 'release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-coverage-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',

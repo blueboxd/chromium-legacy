@@ -19,15 +19,36 @@ namespace blink {
 
 namespace {
 
+// Tables need special handling, unfortunately. The code in this file assumes
+// that if an element has a height or width specified, that's what its final
+// height/width will be. Tables don't follow this pattern though; they treat
+// specified height/width as a second min-height or min-width.
+bool IsTable(const ComputedStyle& style) {
+  return style.Display() == EDisplay::kTable ||
+         style.Display() == EDisplay::kInlineTable;
+}
+
+inline Length TableAwareHeight(const ComputedStyle& style) {
+  if (IsTable(style))
+    return Length::Auto();
+  return style.Height();
+}
+
+inline Length TableAwareWidth(const ComputedStyle& style) {
+  if (IsTable(style))
+    return Length::Auto();
+  return style.Width();
+}
+
 bool AbsoluteHorizontalNeedsEstimate(const ComputedStyle& style) {
-  const Length& width = style.Width();
+  const Length& width = TableAwareWidth(style);
   return width.IsIntrinsic() || style.MinWidth().IsIntrinsic() ||
          style.MaxWidth().IsIntrinsic() ||
          (width.IsAuto() && (style.Left().IsAuto() || style.Right().IsAuto()));
 }
 
 bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
-  const Length& height = style.Height();
+  const Length& height = TableAwareHeight(style);
   return height.IsIntrinsic() || style.MinHeight().IsIntrinsic() ||
          style.MaxHeight().IsIntrinsic() ||
          (height.IsAuto() && (style.Top().IsAuto() || style.Bottom().IsAuto()));
@@ -56,15 +77,24 @@ bool IsTopDominant(const WritingMode container_writing_mode,
 LayoutUnit ResolveMinWidth(const NGConstraintSpace& space,
                            const ComputedStyle& style,
                            const NGBoxStrut& border_padding,
-                           const base::Optional<MinMaxSize>& child_minmax,
-                           const Length& width) {
+                           const base::Optional<MinMaxSize>& child_minmax) {
+  const Length& min_width = style.MinWidth();
   if (space.GetWritingMode() == WritingMode::kHorizontalTb) {
-    return ResolveMinInlineLength(space, style, border_padding, child_minmax,
-                                  width, LengthResolvePhase::kLayout);
+    LayoutUnit resolved_min_width =
+        ResolveMinInlineLength(space, style, border_padding, child_minmax,
+                               min_width, LengthResolvePhase::kLayout);
+    if (!IsTable(style))
+      return resolved_min_width;
+    Length table_width = style.Width();
+    if (table_width.IsAuto())
+      return resolved_min_width;
+    LayoutUnit resolved_width = ResolveMainInlineLength(
+        space, style, border_padding, child_minmax, table_width);
+    return std::max(resolved_min_width, resolved_width);
   }
   LayoutUnit computed_width =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveMinBlockLength(space, style, border_padding, width,
+  return ResolveMinBlockLength(space, style, border_padding, min_width,
                                computed_width, LengthResolvePhase::kLayout);
 }
 
@@ -101,15 +131,21 @@ LayoutUnit ResolveMainWidth(const NGConstraintSpace& space,
 LayoutUnit ResolveMinHeight(const NGConstraintSpace& space,
                             const ComputedStyle& style,
                             const NGBoxStrut& border_padding,
-                            const base::Optional<MinMaxSize>& child_minmax,
-                            const Length& height) {
+                            const base::Optional<MinMaxSize>& child_minmax) {
+  const Length& min_height = style.MinHeight();
   if (space.GetWritingMode() != WritingMode::kHorizontalTb) {
-    return ResolveMinInlineLength(space, style, border_padding, child_minmax,
-                                  height, LengthResolvePhase::kLayout);
+    LayoutUnit resolved_min_height =
+        ResolveMinInlineLength(space, style, border_padding, child_minmax,
+                               min_height, LengthResolvePhase::kLayout);
+    if (!IsTable(style))
+      return resolved_min_height;
+    LayoutUnit resolved_height = ResolveMainInlineLength(
+        space, style, border_padding, child_minmax, style.Height());
+    return std::max(resolved_min_height, resolved_height);
   }
   LayoutUnit computed_height =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveMinBlockLength(space, style, border_padding, height,
+  return ResolveMinBlockLength(space, style, border_padding, min_height,
                                computed_height, LengthResolvePhase::kLayout);
 }
 
@@ -346,12 +382,12 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 
   // If calculated width is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  LayoutUnit min = ResolveMinWidth(space, style, border_padding, child_minmax,
-                                   style.MinWidth());
+  LayoutUnit min = ResolveMinWidth(space, style, border_padding, child_minmax);
   LayoutUnit max = ResolveMaxWidth(space, style, border_padding, child_minmax,
                                    style.MaxWidth());
-  if (width != ConstrainByMinMax(*width, min, max)) {
-    width = ConstrainByMinMax(*width, min, max);
+  LayoutUnit constrained_width = ConstrainByMinMax(*width, min, max);
+  if (width != constrained_width) {
+    width = constrained_width;
     // Because this function only changes "width" when it's not already
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
@@ -512,8 +548,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
 
   // If calculated height is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  LayoutUnit min = ResolveMinHeight(space, style, border_padding, child_minmax,
-                                    style.MinHeight());
+  LayoutUnit min = ResolveMinHeight(space, style, border_padding, child_minmax);
   LayoutUnit max = ResolveMaxHeight(space, style, border_padding, child_minmax,
                                     style.MaxHeight());
   if (height != ConstrainByMinMax(*height, min, max)) {
@@ -619,7 +654,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
   NGAbsolutePhysicalPosition position;
   if (style.IsHorizontalWritingMode()) {
     base::Optional<LayoutUnit> width;
-    if (!style.Width().IsAuto()) {
+    if (!TableAwareWidth(style).IsAuto()) {
       width = ResolveMainWidth(space, style, border_padding, child_minmax,
                                style.Width());
     } else if (replaced_size.has_value()) {
@@ -630,7 +665,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
         container_writing_mode, container_direction, &position);
   } else {
     base::Optional<LayoutUnit> height;
-    if (!style.Height().IsAuto()) {
+    if (!TableAwareHeight(style).IsAuto()) {
       height = ResolveMainHeight(space, style, border_padding, child_minmax,
                                  style.Height());
     } else if (replaced_size.has_value()) {
@@ -663,7 +698,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
   }
   if (style.IsHorizontalWritingMode()) {
     base::Optional<LayoutUnit> height;
-    if (!style.Height().IsAuto()) {
+    if (!TableAwareHeight(style).IsAuto()) {
       height = ResolveMainHeight(space, style, border_padding, child_minmax,
                                  style.Height());
     } else if (replaced_size.has_value()) {
@@ -674,7 +709,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
         container_writing_mode, container_direction, position);
   } else {
     base::Optional<LayoutUnit> width;
-    if (!style.Width().IsAuto()) {
+    if (!TableAwareWidth(style).IsAuto()) {
       width = ResolveMainWidth(space, style, border_padding, child_minmax,
                                style.Width());
     } else if (replaced_size.has_value()) {

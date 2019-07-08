@@ -16,6 +16,7 @@ class WithIdentifier(object):
     identifier."""
 
     def __init__(self, identifier):
+        assert isinstance(identifier, Identifier)
         self._identifier = identifier
 
     @property
@@ -97,8 +98,8 @@ class WithComponent(object):
         'modules',
     )
 
-    def __init__(self, components):
-        self._components = components
+    def __init__(self, component):
+        self._components = [component]
 
     @property
     def components(self):
@@ -110,10 +111,29 @@ class WithComponent(object):
 
 
 class DebugInfo(object):
-    """DebugInfo provides some information for debugging."""
+    """Provides information useful for debugging."""
 
-    def __init__(self, filepaths):
-        self._filepaths = tuple(filepaths)
+    class Location(object):
+        def __init__(self, filepath, line_number=None):
+            self._filepath = filepath
+            self._line_number = line_number
+
+        def __str__(self):
+            location = self.filepath
+            if self.line_number is not None:
+                location += '({})'.format(self.line_number)
+            return location
+
+        @property
+        def filepath(self):
+            return self._filepath
+
+        @property
+        def line_number(self):
+            return self._line_number
+
+    def __init__(self, filepath, line_number=None):
+        self._locations = [DebugInfo.Location(filepath, line_number)]
 
     @property
     def filepaths(self):
@@ -121,15 +141,22 @@ class DebugInfo(object):
         Returns a list of filepaths where this IDL definition comes from.
         @return tuple(FilePath)
         """
-        return self._filepaths
+        return tuple(location.filepath for location in self.locations)
+
+    @property
+    def locations(self):
+        """
+        Returns a list of locations where this IDL object comes from.
+        @return tuple((FilePath, int))
+        """
+        return self._locations
 
 
 class WithDebugInfo(object):
     """WithDebugInfo class is an interface that its inheritances can have DebugInfo."""
 
     def __init__(self, debug_info=None):
-        self._debug_info = debug_info or DebugInfo(
-            filepaths=('<<unspecified>>', ))
+        self._debug_info = debug_info or DebugInfo(filepath='<<unspecified>>')
 
     @property
     def debug_info(self):

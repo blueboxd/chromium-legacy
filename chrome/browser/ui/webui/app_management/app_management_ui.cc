@@ -40,7 +40,7 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
       {"location", IDS_APP_MANAGEMENT_LOCATION},
       {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
       {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
-      {"morePermissions", IDS_APP_MANAGEMENT_MORE_PERMISSIONS},
+      {"moreSettings", IDS_APP_MANAGEMENT_MORE_SETTINGS},
       {"noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS},
       {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
       {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},

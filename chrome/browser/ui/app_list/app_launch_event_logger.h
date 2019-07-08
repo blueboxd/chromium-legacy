@@ -42,7 +42,7 @@ namespace app_list {
 // a hash of the package name, and for PWAs and bookmark apps the keys are the
 // urls associated with the PWA/bookmark.
 // At the time of app launch this class logs metrics about the app clicked on
-// and another five apps that were not clicked on, chosen at random.
+// and up to another 25 apps that were not clicked on, chosen at random.
 class AppLaunchEventLogger {
  public:
   AppLaunchEventLogger();
@@ -92,8 +92,8 @@ class AppLaunchEventLogger {
                             const std::string& app_id,
                             const std::string& arc_package_name,
                             const std::string& pwa_url);
-  // Chooses up to five random apps to log, plus the app clicked on.
-  // If there are fewer than five apps that can be logged on the device, logs
+  // Chooses up to 25 random apps to log, plus the app clicked on.
+  // If there are fewer than 25 apps that can be logged on the device, logs
   // every app once.
   std::vector<std::string> ChooseAppsToLog(const std::string clicked_app_id);
   // Records a UMA histogram of the app type clicked on.

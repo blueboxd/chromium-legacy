@@ -41,6 +41,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1010,6 +1011,17 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
     }
   }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  // If opening in Guest mode switch is provided, load the default profile so
+  // that last opened profile would not trigger a user management dialog.
+  if (command_line.HasSwitch(switches::kGuest)) {
+    PrefService* service = g_browser_process->local_state();
+    DCHECK(service);
+    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled))
+      return profiles::GetDefaultProfileDir(user_data_dir);
+  }
+#endif
 
   if (command_line.HasSwitch(switches::kProfileDirectory)) {
     return user_data_dir.Append(

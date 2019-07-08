@@ -94,11 +94,30 @@
    * @return {string} text Text value in the field name.
    */
   async function getQuickViewMetadataBoxField(appId, name) {
+    let filesMetadataBox = 'files-metadata-box';
+
+    /**
+     * <files-metadata-box> field rendering is async. The field name has been
+     * rendered when the 'metadata' attribute indicates that.
+     */
+    switch (name) {
+      case 'Size':
+        filesMetadataBox += '[metadata~="size"]';
+        break;
+      case 'Modified Time':
+      case 'Type':
+        filesMetadataBox += '[metadata~="mime"]';
+        break;
+      default:
+        filesMetadataBox += '[metadata~="meta"]';
+        break;
+    }
+
     /**
      * The <files-metadata-box> element resides in the #quick-view shadow DOM
      * as a child of the #dialog element.
      */
-    let quickViewQuery = ['#quick-view', '#dialog[open] files-metadata-box'];
+    let quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
 
     /**
      * The <files-metadata-entry key="name"> element resides in the shadow DOM
@@ -789,6 +808,52 @@
     chrome.test.assertEq(model, 'FinePix S5000');
     const film = await getQuickViewMetadataBoxField(appId, 'Device settings');
     chrome.test.assertEq('f/2.8 0.004 5.7mm ISO200', film);
+  };
+
+  /**
+   * Tests opening Quick View on an RAW image. The RAW image has EXIF and that
+   * information should be displayed in the QuickView metadata box.
+   */
+  testcase.openQuickViewImageRaw = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    // Open Files app on Downloads containing ENTRIES.rawImage.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.rawImage], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.rawImage.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/x-olympus-orf', mimeType);
+
+    // Check: the image EXIF metadata should be displayed.
+    // TODO(crbug.com/965370) Make the metadata controller extract and display
+    // the RAW image EXIF metadata in the metadata box.
   };
 
   /**

@@ -30,6 +30,8 @@ source_set("cups_proxy") {
   if (use_cups) {
     configs += [ "//printing:cups" ]
     sources += [
+      "ipp_attribute_validator.cc",
+      "ipp_attribute_validator.h",
       "ipp_validator.cc",
       "ipp_validator.h",
       "printer_installer.cc",

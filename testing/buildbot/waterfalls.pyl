@@ -1703,9 +1703,6 @@
         }
       },
       'linux-annotator-rel': {
-        'mixins': [
-          'linux-trusty',
-        ],
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
         }

@@ -6,11 +6,13 @@ var FilesMetadataBox = Polymer({
   is: 'files-metadata-box',
 
   properties: {
-    // File media type, e.g. image, video.
+    // File path and type, e.g. image, video.
+    filePath: String,
     type: String,
+
+    // File size, modification time, mimeType.
     size: String,
     modificationTime: String,
-    filePath: String,
     mediaMimeType: String,
 
     // File type specific metadata below.
@@ -69,6 +71,16 @@ var FilesMetadataBox = Polymer({
      * @private
      */
     hasFileSpecificInfo_: Boolean,
+
+    /**
+     * FilesMetadataBox [metadata] attribute. Used to indicate the metadata box
+     * field rendering phases.
+     * @private
+     */
+    metadata: {
+      type: String,
+      reflectToAttribute: true,
+    },
   },
 
   /**
@@ -76,10 +88,15 @@ var FilesMetadataBox = Polymer({
    * @param {boolean} keepSizeFields do not clear size and isSizeLoading fields.
    */
   clear: function(keepSizeFields) {
+    this.filePath = '';
     this.type = '';
+
+    if (!keepSizeFields) {
+      this.size = '';
+      this.isSizeLoading = false;
+    }
     this.modificationTime = '';
     this.mediaMimeType = '';
-    this.filePath = '';
 
     this.imageWidth = 0;
     this.imageHeight = 0;
@@ -92,10 +109,7 @@ var FilesMetadataBox = Polymer({
     this.mediaYearRecorded = '';
     this.ifd = null;
 
-    if (!keepSizeFields) {
-      this.size = '';
-      this.isSizeLoading = false;
-    }
+    this.metadata = '';
   },
 
   /**
@@ -138,6 +152,21 @@ var FilesMetadataBox = Polymer({
            this.mediaArtist || this.mediaAlbum || this.mediaDuration ||
            this.mediaGenre || this.mediaTrack || this.mediaYearRecorded ||
            this.ifd);
+  },
+
+  /**
+   * Update the metadata attribute with the rendered metadata |type|.
+   * @param {?string} type
+   * @public
+   */
+  metadataRendered: function(type) {
+    if (!type) {
+      this.metadata = '';
+    } else if (!this.metadata) {
+      this.metadata = type;
+    } else {
+      this.metadata += ' ' + type;
+    }
   },
 
   /**

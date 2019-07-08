@@ -68,16 +68,16 @@ web_idl_scripts = get_path_info([
                                   "web_idl/enumeration.py",
                                   "web_idl/extended_attribute.py",
                                   "web_idl/identifier_ir_map.py",
+                                  "web_idl/idl_compiler.py",
                                   "web_idl/idl_reference_proxy.py",
                                   "web_idl/idl_types.py",
                                   "web_idl/includes.py",
                                   "web_idl/interface.py",
+                                  "web_idl/ir_builder.py",
                                   "web_idl/literal_token.py",
                                   "web_idl/namespace.py",
                                   "web_idl/operation.py",
                                   "web_idl/typedef.py",
-                                  "web_idl/utilities.py",
-                                  "web_idl/idl_definition_builder.py",
                                 ],
                                 "abspath")
 

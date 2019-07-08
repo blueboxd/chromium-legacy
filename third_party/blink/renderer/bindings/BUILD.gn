@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 
 action("interfaces_info") {
@@ -42,5 +43,34 @@ generate_global_constructors("global_constructors_idls") {
   deps = [
     "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
     "//third_party/blink/renderer/bindings/modules:modules_global_objects",
+  ]
+}
+
+blink_python_runner("web_idl_database") {
+  script = "$bindings_scripts_dir/build_web_idl_database.py"
+
+  inputs =
+      [
+        "$bindings_core_output_dir/web_idl_collection_for_core.pickle",
+        "$bindings_modules_output_dir/web_idl_collection_for_modules.pickle",
+      ] + web_idl_scripts
+  outputs = [
+    "$bindings_output_dir/web_idl_database.pickle",
+  ]
+
+  args = [
+    "--output",
+    rebase_path("$bindings_output_dir/web_idl_database.pickle", root_build_dir),
+    "--",
+    rebase_path("$bindings_core_output_dir/web_idl_collection_for_core.pickle",
+                root_build_dir),
+    rebase_path(
+        "$bindings_modules_output_dir/web_idl_collection_for_modules.pickle",
+        root_build_dir),
+  ]
+
+  deps = [
+    "//third_party/blink/renderer/bindings/core:core_web_idl_collection",
+    "//third_party/blink/renderer/bindings/modules:modules_web_idl_collection",
   ]
 }

@@ -380,17 +380,26 @@ MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
     const NGBoxStrut& border_padding,
     const MinMaxSizeInput& input) {
   LayoutBox* box = node.GetLayoutBox();
-  if (!box->PreferredLogicalWidthsDirty() &&
-      !box->NeedsPreferredWidthsRecalculation()) {
+  // If we've already populated the legacy preferred logical widths cache for
+  // this node at the bottom of this function, use those cached results here.
+  // Or, if we're working on a table, use the legacy preferred widths code
+  // instead of ComputeMinAndMaxContentContribution below because
+  // ComputeMinAndMaxContentContribution assumes that if an element has a
+  // specified size, that's its final size, which tables don't follow.
+  if ((!box->PreferredLogicalWidthsDirty() &&
+       !box->NeedsPreferredWidthsRecalculation()) ||
+      box->IsTable()) {
     return MinMaxSize{box->MinPreferredLogicalWidth(),
                       box->MaxPreferredLogicalWidth()};
   }
 
+  // Compute the intrinsic sizes without regard to the specified sizes.
   MinMaxSize result = node.ComputeMinMaxSize(node.Style().GetWritingMode(),
                                              input, &constraint_space);
-  // Cache these computed values.
+  // Apply the specified min, main, max sizes.
   MinMaxSize contribution = ComputeMinAndMaxContentContribution(
       node.Style().GetWritingMode(), node.Style(), border_padding, result);
+  // Cache these computed values.
   box->SetPreferredLogicalWidthsFromNG(contribution);
   return result;
 }

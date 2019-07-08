@@ -16,6 +16,7 @@ class Includes(WithComponent, WithDebugInfo):
              WithDebugInfo):
         def __init__(self,
                      interface_identifier,
+                     mixin_identifier,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
@@ -32,6 +33,9 @@ class Includes(WithComponent, WithDebugInfo):
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
+
+            self.interafce_identifier = interface_identifier
+            self.mixin_identifier = mixin_identifier
 
     @property
     def interface(self):

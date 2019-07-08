@@ -19,6 +19,7 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
+                     values,
                      extended_attributes=None,
                      code_generator_info=None,
                      component=None,
@@ -31,6 +32,9 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
+
+            assert isinstance(values, (list, tuple))
+            self.values = tuple(values)
 
     @property
     def values(self):

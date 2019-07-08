@@ -151,6 +151,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   } else if (item.size) {
     this.metadataBox_.size =
         this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
+    this.metadataBox_.metadataRendered('size');
   }
 
   this.updateModificationTime_(entry, isSameEntry, items);
@@ -159,11 +160,13 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     this.metadataModel_.get([entry], ['contentMimeType']).then(items => {
       const item = items[0];
       this.metadataBox_.mediaMimeType = item.contentMimeType || '';
+      this.metadataBox_.metadataRendered('mime');
     });
   } else {
     this.metadataModel_.get([entry], ['mediaMimeType']).then(items => {
       const item = items[0];
       this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
+      this.metadataBox_.metadataRendered('mime');
     });
   }
 
@@ -178,6 +181,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
                 /** @type {number} */ (item.imageHeight);
             this.metadataBox_.imageWidth =
                 /** @type {number} */ (item.imageWidth);
+            this.metadataBox_.metadataRendered('meta');
           });
     } else {
       this.metadataModel_
@@ -207,6 +211,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
             this.metadataBox_.mediaTitle = item.mediaTitle || '';
             this.metadataBox_.mediaTrack = item.mediaTrack || '';
             this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
+            this.metadataBox_.metadataRendered('meta');
           });
     }
   }
@@ -293,5 +298,6 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
 
     this.metadataBox_.size = this.fileMetadataFormatter_.formatSize(size, true);
     this.metadataBox_.isSizeLoading = false;
+    this.metadataBox_.metadataRendered('size');
   });
 };

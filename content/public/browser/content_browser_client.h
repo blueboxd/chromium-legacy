@@ -1158,8 +1158,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();
 
-  // Allows the embedder to register one or more URLLoaderThrottles for a
-  // navigation request.
+  // Allows the embedder to register one or more URLLoaderThrottles for one of
+  // the following requests:
+  // 1) A navigation request.
+  // 2) A request for a dedicated worker's main script (when PlzDedicatedWorker
+  //    is enabled).
+  // 3) A request for a shared worker's main script.
+  //
+  // For a request for worker's main script, |wc_getter|, |navigation_ui_data|,
+  // and |frame_tree_node_id| take a callback returning a nullptr, nullptr, and
+  // RenderFrameHost::kNoFrameTreeNodeId respectively.
+  //
   // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>>

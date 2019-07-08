@@ -17,6 +17,7 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
              WithDebugInfo):
         def __init__(self,
                      identifier,
+                     idl_type,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
@@ -27,6 +28,8 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
+
+            self.idl_type = idl_type
 
     @property
     def idl_type(self):

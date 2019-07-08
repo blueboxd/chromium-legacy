@@ -3777,7 +3777,10 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
 
   available_height -= root_margin_border_padding_height;
 
-  if (IsTable() && IsOutOfFlowPositioned())
+  // LayoutNG already includes padding in
+  // OverrideContainingBlockContentLogicalHeight so we only need to add it here
+  // for legacy containing blocks.
+  if (IsTable() && IsOutOfFlowPositioned() && !cb->IsLayoutNGObject())
     available_height += cb->PaddingLogicalHeight();
 
   return available_height;

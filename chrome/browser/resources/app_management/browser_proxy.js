@@ -60,6 +60,8 @@ cr.define('app_management', function() {
               {
                 title: 'Chrome App',
                 type: AppType.kExtension,
+                description:
+                    'A Chrome App installed from the Chrome Web Store.',
               },
               ),
           app_management.FakePageHandler.createApp(
@@ -74,6 +76,7 @@ cr.define('app_management', function() {
               {
                 title: 'Chrome App, OEM installed',
                 type: AppType.kExtension,
+                description: 'A Chrome App installed by an OEM.',
                 installSource: InstallSource.kOem,
               },
               ),

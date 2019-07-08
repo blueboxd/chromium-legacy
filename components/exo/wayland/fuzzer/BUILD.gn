@@ -124,6 +124,7 @@ source_set("unit_tests") {
     "//components/exo:test_support",
     "//components/exo/wayland",
     "//skia",
+    "//third_party/wayland:wayland_util",
   ]
 }
 

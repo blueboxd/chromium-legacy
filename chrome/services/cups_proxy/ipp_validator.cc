@@ -17,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "chrome/services/cups_proxy/ipp_attribute_validator.h"
 #include "net/http/http_util.h"
 #include "printing/backend/cups_ipp_util.h"
 
@@ -128,10 +129,9 @@ ipp_t* IppValidator::ValidateIppMessage(
     return nullptr;
   }
 
-  if (!ippSetOperation(ipp.get(),
-                       static_cast<ipp_op_t>(ipp_message->operation_id))) {
+  const ipp_op_t ipp_oper_id = static_cast<ipp_op_t>(ipp_message->operation_id);
+  if (!ippSetOperation(ipp.get(), ipp_oper_id))
     return nullptr;
-  }
 
   if (!ippSetRequestId(ipp.get(), ipp_message->request_id)) {
     return nullptr;
@@ -141,6 +141,10 @@ ipp_t* IppValidator::ValidateIppMessage(
   for (size_t i = 0; i < ipp_message->attributes.size(); ++i) {
     cups_ipp_parser::mojom::IppAttributePtr attribute =
         std::move(ipp_message->attributes[i]);
+
+    if (ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
+                          attribute->values.size()))
+      return nullptr;
 
     switch (attribute->type) {
       case cups_ipp_parser::mojom::ValueType::BOOLEAN: {

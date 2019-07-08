@@ -680,16 +680,17 @@ void ThemeService::ClearAllThemeData() {
   if (!ready_)
     return;
 
+  base::Optional<std::string> previous_theme_id;
+  if (UsingExtensionTheme())
+    previous_theme_id = GetThemeID();
+
   SwapThemeSupplier(nullptr);
   ClearThemePrefs();
 
-  // There should be no more infobars. This may not be the case because of
-  // http://crbug.com/62154
-  // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
-  // be called as a result of OnExtensionUnloaded().
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ThemeService::RemoveUnusedThemes,
-                                weak_ptr_factory_.GetWeakPtr(), true));
+  // Disable extension after modifying the prefs so that unloading the extension
+  // doesn't trigger |ClearAllThemeData| again.
+  if (previous_theme_id.has_value())
+    DisableExtension(previous_theme_id.value());
 }
 
 void ThemeService::FixInconsistentPreferencesIfNeeded() {}

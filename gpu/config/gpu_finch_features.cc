@@ -63,11 +63,6 @@ const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Use the passthrough command decoder by default.  This can be overridden with
-// the --use-cmd-decoder=passthrough or --use-cmd-decoder=validating flags.
-const base::Feature kDefaultPassthroughCommandDecoder{
-    "DefaultPassthroughCommandDecoder", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Allow putting a video swapchain underneath the main swapchain, so overlays
 // can be used even if there are controls on top of the video. It can be
 // enabled only when overlay is supported.

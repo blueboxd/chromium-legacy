@@ -132,7 +132,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   Error range_parse_result_;
 
-  base::WeakPtrFactory<URLRequestFileJob> weak_ptr_factory_;
+  base::WeakPtrFactory<URLRequestFileJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestFileJob);
 };

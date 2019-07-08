@@ -591,6 +591,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
+      native_theme_observer_(this),
       had_inner_webcontents_(false),
       loading_weak_factory_(this),
       weak_factory_(this) {
@@ -613,7 +614,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   registry_.AddInterface(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
 
-  dark_mode_observer_.Start();
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
+  native_theme_observer_.Add(native_theme);
+  in_high_contrast_ = native_theme->UsesHighContrastColors();
+  in_dark_mode_ = native_theme->SystemDarkModeEnabled();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -7226,8 +7230,24 @@ void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
 }
 
-void WebContentsImpl::OnDarkModeChanged(bool dark_mode) {
-  NotifyPreferencesChanged();
+void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  DCHECK(native_theme_observer_.IsObserving(observed_theme));
+
+  bool in_dark_mode = observed_theme->SystemDarkModeEnabled();
+  bool in_high_contrast = observed_theme->UsesHighContrastColors();
+  bool preferences_changed = false;
+
+  if (in_dark_mode_ != in_dark_mode) {
+    in_dark_mode_ = in_dark_mode;
+    preferences_changed = true;
+  }
+  if (in_high_contrast_ != in_high_contrast) {
+    in_high_contrast_ = in_high_contrast;
+    preferences_changed = true;
+  }
+
+  if (preferences_changed)
+    NotifyPreferencesChanged();
 }
 
 }  // namespace content

@@ -2113,6 +2113,91 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   waiter->Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MemoryCacheResource_Recorded) {
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Cache-Control: max-age=60\r\n"
+      "\r\n";
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  auto cached_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/cachetime",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/page_with_cached_subresource.html"),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  // Load a resource large enough to record a nonzero number of kilobytes.
+  cached_response->WaitForRequest();
+  cached_response->Send(kHttpResponseHeader);
+  cached_response->Send(std::string(10 * 1024, ' '));
+  cached_response->Done();
+
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+
+  // Re-navigate the page to the same url with a different query string so the
+  // main resource is not loaded from the disk cache. The subresource will be
+  // loaded from the memory cache.
+  waiter = CreatePageLoadMetricsTestWaiter();
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/page_with_cached_subresource.html?xyz"),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  // Favicon is not fetched this time.
+  waiter->AddMinimumCompleteResourcesExpectation(2);
+  waiter->Wait();
+
+  // Verify no resources were cached for the first load.
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramCacheCompletedResources, 0, 1);
+  histogram_tester_.ExpectBucketCount(internal::kHistogramPageLoadCacheBytes, 0,
+                                      1);
+
+  // Force histograms to record.
+  NavigateToUntrackedUrl();
+
+  // Verify that the cached resource from the memory cache is recorded
+  // correctly.
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramCacheCompletedResources, 1, 1);
+  histogram_tester_.ExpectBucketCount(internal::kHistogramPageLoadCacheBytes,
+                                      10, 1);
+}
+
+// Verifies that css image resources shared across document do not cause a
+// crash, and are only counted once per context. https://crbug.com/979459.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MemoryCacheResources_RecordedOncePerContext) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/page_load_metrics/document_with_css_image_sharing.html"));
+
+  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->Wait();
+
+  // Force histograms to record.
+  NavigateToUntrackedUrl();
+
+  // Verify that cached resources are only reported once per context.
+  histogram_tester_.ExpectBucketCount(
+      internal::kHistogramCacheCompletedResources, 2, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   content::SetupCrossSiteRedirector(embedded_test_server());

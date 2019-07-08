@@ -239,7 +239,7 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   // Time when the connection to the proxy was started.
   base::TimeTicks connect_start_time_;
 
-  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
+  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJob);
 };

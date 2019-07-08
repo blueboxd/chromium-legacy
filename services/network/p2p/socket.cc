@@ -70,8 +70,7 @@ P2PSocket::P2PSocket(Delegate* delegate,
     : delegate_(delegate),
       client_(std::move(client)),
       binding_(this, std::move(socket)),
-      protocol_type_(protocol_type),
-      weak_ptr_factory_(this) {
+      protocol_type_(protocol_type) {
   binding_.set_connection_error_handler(
       base::BindOnce(&P2PSocket::OnError, base::Unretained(this)));
 }

@@ -227,6 +227,12 @@ class PDFiumEngine : public PDFEngine,
   // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
 
+  // Appends a PDFiumPage with |page_rect| to |pages_| or sets existing
+  // PDFiumPage for |page_index| to |page_rect|. |page_index| is 0-based.
+  void AppendPageRectToPages(const pp::Rect& page_rect,
+                             size_t page_index,
+                             bool reload);
+
   // Loads information about the pages in the document and calculate the
   // document size.
   void LoadPageInfo(bool reload);

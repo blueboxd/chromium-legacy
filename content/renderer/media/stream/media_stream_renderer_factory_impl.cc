@@ -10,7 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
+#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -107,8 +108,6 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     return nullptr;
   }
 
-  int render_frame_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
-
   // If the track has a local source, or is a remote track that does not use the
   // WebRTC audio pipeline, return a new TrackAudioRenderer instance.
   if (!blink::PeerConnectionRemoteAudioTrack::From(audio_track)) {
@@ -117,6 +116,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     DVLOG(1) << "Creating TrackAudioRenderer for "
              << (audio_track->is_local_track() ? "local" : "remote")
              << " track.";
+    int render_frame_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
     return new TrackAudioRenderer(audio_tracks[0], render_frame_id,
                                   0 /* no session_id */, device_id);
   }
@@ -127,15 +127,15 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   DCHECK(audio_device);
 
   // Share the existing renderer if any, otherwise create a new one.
-  scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
+  scoped_refptr<blink::WebRtcAudioRenderer> renderer(audio_device->renderer());
   if (renderer) {
     DVLOG(1) << "Using existing WebRtcAudioRenderer for remote WebRTC track.";
   } else {
     DVLOG(1) << "Creating WebRtcAudioRenderer for remote WebRTC track.";
-    renderer = new WebRtcAudioRenderer(
+
+    renderer = new blink::WebRtcAudioRenderer(
         GetPeerConnectionDependencyFactory()->GetWebRtcSignalingThread(),
-        web_stream, render_frame_id, GetSessionIdForWebRtcAudioRenderer(),
-        device_id);
+        web_stream, web_frame, GetSessionIdForWebRtcAudioRenderer(), device_id);
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       blink::WebRtcLogMessage(

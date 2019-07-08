@@ -499,6 +499,7 @@ viz_source_set("perf_tests") {
     "display/bsp_tree_perftest.cc",
     "display/display_perftest.cc",
     "display/gl_renderer_copier_perftest.cc",
+    "display/renderer_perftest.cc",
     "display/surface_aggregator_perftest.cc",
   ]
 
@@ -509,6 +510,7 @@ viz_source_set("perf_tests") {
     "//cc",
     "//cc:test_support",
     "//cc/base",
+    "//components/viz/client:client",
     "//components/viz/test:test_support",
     "//testing/gtest",
     "//testing/perf",

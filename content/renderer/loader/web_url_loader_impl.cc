@@ -1098,6 +1098,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetDidServiceWorkerNavigationPreload(
       info.did_service_worker_navigation_preload);
   response->SetEncodedDataLength(info.encoded_data_length);
+  response->SetEncodedBodyLength(info.encoded_body_length);
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);

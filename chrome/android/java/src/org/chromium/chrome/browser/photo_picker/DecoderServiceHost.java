@@ -112,12 +112,6 @@ public class DecoderServiceHost
         // The URI for the file containing the bitmap to decode.
         public Uri mUri;
 
-        // Whether this is a high priority request. All decoding request start out high priority,
-        // and those that contain requests to decode a video, will be broken up into two requests
-        // each (a high priority one to decode the first frame and a low-priority one to decode the
-        // rest of the frames).
-        boolean mHighPriorityRequest;
-
         // The requested size (width and height) of the bitmap, once decoded.
         public int mSize;
 
@@ -132,17 +126,21 @@ public class DecoderServiceHost
         long mTimestamp;
 
         public DecoderServiceParams(Uri uri, int size, @PickerBitmap.TileTypes int fileType,
-                boolean highPriorityRequest, ImagesDecodedCallback callback) {
+                ImagesDecodedCallback callback) {
             mUri = uri;
             mSize = size;
             mFileType = fileType;
-            mHighPriorityRequest = highPriorityRequest;
             mCallback = callback;
         }
     }
 
-    // Map of file paths to pending decoding requests.
-    private LinkedHashMap<String, DecoderServiceParams> mPendingRequests = new LinkedHashMap<>();
+    // Map of file paths to pending decoding requests of high priority.
+    private LinkedHashMap<String, DecoderServiceParams> mHighPriorityRequests =
+            new LinkedHashMap<>();
+
+    // Map of file paths to pending decoding requests of low priority.
+    private LinkedHashMap<String, DecoderServiceParams> mLowPriorityRequests =
+            new LinkedHashMap<>();
 
     // Map of file paths to processing decoding requests.
     private LinkedHashMap<String, DecoderServiceParams> mProcessingRequests = new LinkedHashMap<>();
@@ -199,61 +197,62 @@ public class DecoderServiceHost
      */
     public void decodeImage(Uri uri, @PickerBitmap.TileTypes int fileType, int size,
             ImagesDecodedCallback callback) {
-        DecoderServiceParams params = new DecoderServiceParams(
-                uri, size, fileType, /*highPriorityRequest*/ true, callback);
-        mPendingRequests.put(uri.getPath(), params);
-        if (mPendingRequests.size() == 1) dispatchNextDecodeRequest();
+        DecoderServiceParams params = new DecoderServiceParams(uri, size, fileType, callback);
+        mHighPriorityRequests.put(uri.getPath(), params);
+        if (mHighPriorityRequests.size() == 1) dispatchNextDecodeRequest();
     }
 
     /**
-     * Fetches the next decoding request from the queue. High-priority requests are returned first,
-     * then low-priority ones that have had their high-priority counterpart processed already.
-     * @return The highest priority request pending, or null. Null can be returned in two scenarios:
+     * Fetches the next high-priority decoding request from the queue and removes it from the queue.
+     * If that request is a video decoding request, a request for decoding additional frames is
+     * added to the low-priority queue.
+     * @return Next high-priority request pending.
+     */
+    private DecoderServiceParams getNextHighPriority() {
+        assert mHighPriorityRequests.size() > 0;
+        DecoderServiceParams params = mHighPriorityRequests.entrySet().iterator().next().getValue();
+        mHighPriorityRequests.remove(params.mUri.getPath());
+        if (params.mFileType == PickerBitmap.TileTypes.VIDEO) {
+            // High-priority decoding requests for videos are requests for first frames (see
+            // dispatchDecodeVideoRequest). Adding another low-priority request is a request for
+            // decoding the rest of the frames.
+            DecoderServiceParams lowPriorityRequest = new DecoderServiceParams(
+                    params.mUri, params.mSize, params.mFileType, params.mCallback);
+            mLowPriorityRequests.put(params.mUri.getPath(), lowPriorityRequest);
+        }
+        return params;
+    }
+
+    /**
+     * Fetches the next low-priority decoding request from the queue and removes it from the queue.
+     * @return Next low-priority request pending, or null. Null can be returned in two scenarios:
      *         If no requests remain or if the only request remaining is a low-priority request
      *         where it's high-priority counterpart is still being processed.
      */
-    private DecoderServiceParams getNextRequestByPriority() {
-        DecoderServiceParams firstNonPriority = null;
-        for (DecoderServiceParams request : mPendingRequests.values()) {
-            if (request.mHighPriorityRequest) return request;
-            if (firstNonPriority == null) {
-                boolean foundAlreadyProcessing = false;
-                for (DecoderServiceParams processing : mProcessingRequests.values()) {
-                    if (request.mUri.getPath().equals(processing.mUri.getPath())) {
-                        foundAlreadyProcessing = true;
-                        break;
-                    }
-                }
-                if (!foundAlreadyProcessing) firstNonPriority = request;
-            }
+    private DecoderServiceParams getNextLowPriority() {
+        for (DecoderServiceParams request : mLowPriorityRequests.values()) {
+            String filePath = request.mUri.getPath();
+            if (mProcessingRequests.get(filePath) != null) continue;
+            mLowPriorityRequests.remove(filePath);
+            return request;
         }
-        return firstNonPriority;
+        return null;
     }
 
     /**
      * Dispatches the next image/video for decoding (from the queue).
      */
     private void dispatchNextDecodeRequest() {
-        DecoderServiceParams params = getNextRequestByPriority();
+        boolean highPriority = mHighPriorityRequests.entrySet().iterator().hasNext();
+        DecoderServiceParams params = highPriority ? getNextHighPriority() : getNextLowPriority();
         if (params != null) {
-            mPendingRequests.remove(params.mUri.getPath());
             mProcessingRequests.put(params.mUri.getPath(), params);
 
             params.mTimestamp = SystemClock.elapsedRealtime();
             if (params.mFileType != PickerBitmap.TileTypes.VIDEO) {
                 dispatchDecodeImageRequest(params);
             } else {
-                dispatchDecodeVideoRequest(params);
-
-                // High-priority decoding requests for videos are requests for first frames (see
-                // dispatchDecodeVideoRequest). Add another low-priority request for decoding the
-                // rest of the frames.
-                if (params.mHighPriorityRequest) {
-                    DecoderServiceParams lowPriorityRequest =
-                            new DecoderServiceParams(params.mUri, params.mSize, params.mFileType,
-                                    /*highPriorityRequest=*/false, params.mCallback);
-                    mPendingRequests.put(params.mUri.getPath(), lowPriorityRequest);
-                }
+                dispatchDecodeVideoRequest(params, highPriority);
             }
             return;
         }
@@ -352,13 +351,14 @@ public class DecoderServiceHost
     /**
      * Communicates with the utility process to decode a single video.
      * @param params The information about the decoding request.
+     * @param highPriority True if the decoding request is a high-priority request.
      */
-    private void dispatchDecodeVideoRequest(DecoderServiceParams params) {
+    private void dispatchDecodeVideoRequest(DecoderServiceParams params, boolean highPriority) {
         // Videos are decoded by the system (on N+) using a restricted helper process, so
         // there's no need to use our custom sandboxed process.
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
 
-        int frames = params.mHighPriorityRequest ? 1 : 20;
+        int frames = highPriority ? 1 : 20;
         int intervalMs = 500;
         mWorkerTask = new DecodeVideoTask(
                 this, mContentResolver, params.mUri, params.mSize, frames, intervalMs);
@@ -416,7 +416,8 @@ public class DecoderServiceHost
      * @param filePath The path to the image to cancel decoding.
      */
     public void cancelDecodeImage(String filePath) {
-        mPendingRequests.remove(filePath);
+        mHighPriorityRequests.remove(filePath);
+        mLowPriorityRequests.remove(filePath);
         mProcessingRequests.remove(filePath);
     }
 

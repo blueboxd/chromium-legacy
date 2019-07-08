@@ -219,7 +219,9 @@ void PreviewsPageLoadMetricsObserver::OnResourceDataUseObserved(
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    if (!resource->was_fetched_via_cache && resource->is_complete) {
+    if (resource->cache_type ==
+            page_load_metrics::mojom::CacheType::kNotCached &&
+        resource->is_complete) {
       num_network_resources_++;
     }
     total_network_bytes_ += resource->delta_bytes;

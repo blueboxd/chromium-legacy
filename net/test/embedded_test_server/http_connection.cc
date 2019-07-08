@@ -18,8 +18,7 @@ HttpConnection::HttpConnection(std::unique_ptr<StreamSocket> socket,
                                const HandleRequestCallback& callback)
     : socket_(std::move(socket)),
       callback_(callback),
-      read_buf_(base::MakeRefCounted<IOBufferWithSize>(4096)),
-      weak_factory_(this) {}
+      read_buf_(base::MakeRefCounted<IOBufferWithSize>(4096)) {}
 
 HttpConnection::~HttpConnection() {
   weak_factory_.InvalidateWeakPtrs();

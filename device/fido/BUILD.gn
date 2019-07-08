@@ -166,6 +166,7 @@ component("fido") {
   public_deps = [
     "//base",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//services/device/public/mojom",
   ]
 

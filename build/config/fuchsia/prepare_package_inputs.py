@@ -145,10 +145,10 @@ def BuildManifest(args):
     cmx_file_path = os.path.join(os.path.dirname(args.manifest_path),
                                  args.app_name + '.cmx')
     with open(cmx_file_path, 'w') as component_manifest_file:
-      component_manifest = {
+      component_manifest = json.load(open(args.manifest_input_path, 'r'))
+      component_manifest.update({
           'program': { 'binary': args.app_filename },
-          'sandbox': json.load(open(args.sandbox_policy_path, 'r')),
-      }
+      })
       json.dump(component_manifest, component_manifest_file)
 
       manifest.write('meta/%s=%s\n' %
@@ -172,8 +172,8 @@ def main():
   parser.add_argument('--app-name', required=True, help='Package name')
   parser.add_argument('--app-filename', required=True,
       help='Path to the main application binary relative to the output dir.')
-  parser.add_argument('--sandbox-policy-path', required=True,
-      help='Path to the sandbox policy file relative to the output dir.')
+  parser.add_argument('--manifest-input-path', required=True,
+      help='Path to the manifest file relative to the output dir.')
   parser.add_argument('--runtime-deps-file', required=True,
       help='File with the list of runtime dependencies.')
   parser.add_argument('--depfile-path', required=True,

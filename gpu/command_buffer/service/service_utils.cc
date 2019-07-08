@@ -11,8 +11,8 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 
 #if defined(USE_EGL)
 #include "ui/gl/gl_surface_egl.h"
@@ -86,20 +86,7 @@ gl::GLContextAttribs GenerateGLContextAttribs(
 }
 
 bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
-  std::string switch_value;
-  if (command_line->HasSwitch(switches::kUseCmdDecoder)) {
-    switch_value = command_line->GetSwitchValueASCII(switches::kUseCmdDecoder);
-  }
-
-  if (switch_value == kCmdDecoderPassthroughName) {
-    return true;
-  } else if (switch_value == kCmdDecoderValidatingName) {
-    return false;
-  } else {
-    // Unrecognized or missing switch, use the default.
-    return base::FeatureList::IsEnabled(
-        features::kDefaultPassthroughCommandDecoder);
-  }
+  return gl::UsePassthroughCommandDecoder(command_line);
 }
 
 bool PassthroughCommandDecoderSupported() {

@@ -329,6 +329,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   gfx::ScopedSysColorChangeListener color_change_listener_;
   mutable std::map<int, SkColor> system_colors_;
 
+  // Used to notify the web native theme of changes to dark mode and high
+  // contrast.
+  std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
+      color_scheme_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };
 

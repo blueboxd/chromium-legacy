@@ -234,13 +234,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Next bitstream ID.
   int32_t next_bitstream_buffer_id_ = 0;
 
+  SEQUENCE_CHECKER(client_sequence_checker_);
+  SEQUENCE_CHECKER(decoder_sequence_checker_);
+
   // |weak_this_| must be dereferenced and invalidated on
   // |decoder_task_runner_|.
   base::WeakPtr<V4L2SliceVideoDecoder> weak_this_;
   base::WeakPtrFactory<V4L2SliceVideoDecoder> weak_this_factory_;
-
-  SEQUENCE_CHECKER(client_sequence_checker_);
-  SEQUENCE_CHECKER(decoder_sequence_checker_);
 };
 
 }  // namespace media

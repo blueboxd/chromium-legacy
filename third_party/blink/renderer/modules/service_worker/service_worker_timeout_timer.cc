@@ -58,9 +58,7 @@ ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
 ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     base::RepeatingClosure idle_callback,
     const base::TickClock* tick_clock)
-    : idle_callback_(std::move(idle_callback)),
-      tick_clock_(tick_clock),
-      weak_factory_(this) {}
+    : idle_callback_(std::move(idle_callback)), tick_clock_(tick_clock) {}
 
 ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   in_dtor_ = true;

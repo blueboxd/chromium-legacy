@@ -165,8 +165,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
 
   // net::URLRequestTestJob:
   void Start() override {
-    scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
-        new net::SSLCertRequestInfo);
+    auto cert_request_info = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info->cert_authorities = test_authorities();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

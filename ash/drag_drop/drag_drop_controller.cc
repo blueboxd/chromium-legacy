@@ -127,8 +127,7 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
 // DragDropController, public:
 
 DragDropController::DragDropController()
-    : drag_data_(NULL),
-      drag_operation_(0),
+    : drag_operation_(0),
       drag_window_(NULL),
       drag_source_window_(NULL),
       should_block_during_drag_drop_(true),
@@ -150,7 +149,7 @@ DragDropController::~DragDropController() {
 }
 
 int DragDropController::StartDragAndDrop(
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& screen_location,
@@ -159,7 +158,7 @@ int DragDropController::StartDragAndDrop(
   if (!enabled_ || IsDragDropInProgress())
     return 0;
 
-  const ui::OSExchangeData::Provider* provider = &data.provider();
+  const ui::OSExchangeData::Provider* provider = &data->provider();
   // We do not support touch drag/drop without a drag image.
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH &&
       provider->GetDragImage().size().IsEmpty())
@@ -190,7 +189,7 @@ int DragDropController::StartDragAndDrop(
     drag_source_window_->AddObserver(this);
   pending_long_tap_.reset();
 
-  drag_data_ = &data;
+  drag_data_ = std::move(data);
   drag_operation_ = operation;
 
   float drag_image_scale = 1;
@@ -430,7 +429,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+      ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                             event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
@@ -440,7 +439,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+      ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                             event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
@@ -481,11 +480,11 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    ui::DropTargetEvent e(*drag_data_, event.location_f(),
+    ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                           event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
     ui::Event::DispatcherApi(&e).set_target(target);
-    drag_operation_ = delegate->OnPerformDrop(e);
+    drag_operation_ = delegate->OnPerformDrop(e, std::move(drag_data_));
     if (drag_operation_ == 0)
       StartCanceledAnimation(kCancelAnimationDuration);
     else
@@ -587,7 +586,7 @@ void DragDropController::Cleanup() {
   if (drag_window_)
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;
-  drag_data_ = NULL;
+  drag_data_.reset();
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.
   std::unique_ptr<ash::DragDropTracker> holder = std::move(drag_drop_tracker_);

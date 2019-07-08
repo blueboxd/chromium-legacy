@@ -402,7 +402,10 @@ void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto const& resource : resources) {
-    if (resource->was_fetched_via_cache) {
+    if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
+      continue;
+    if (resource->cache_type !=
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (resource->is_complete) {
         if (resource->is_secure_scheme) {
           secure_cached_bytes_ += resource->encoded_body_length;

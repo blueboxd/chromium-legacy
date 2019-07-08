@@ -343,8 +343,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
                                           pref_service);
     google_services_user_account_id_.MoveToSequence(io_task_runner);
-    sync_suppress_start_.Init(syncer::prefs::kSyncSuppressStart, pref_service);
-    sync_suppress_start_.MoveToSequence(io_task_runner);
+    sync_requested_.Init(syncer::prefs::kSyncRequested, pref_service);
+    sync_requested_.MoveToSequence(io_task_runner);
     sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
                                     pref_service);
     sync_first_setup_complete_.MoveToSequence(io_task_runner);
@@ -475,8 +475,7 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
 }
 
 bool ProfileIOData::IsSyncEnabled() const {
-  return sync_first_setup_complete_.GetValue() &&
-         !sync_suppress_start_.GetValue();
+  return sync_first_setup_complete_.GetValue() && sync_requested_.GetValue();
 }
 
 #if !defined(OS_CHROMEOS)
@@ -579,7 +578,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   google_services_user_account_id_.Destroy();
-  sync_suppress_start_.Destroy();
+  sync_requested_.Destroy();
   sync_first_setup_complete_.Destroy();
 #if !defined(OS_CHROMEOS)
   signin_scoped_device_id_.Destroy();

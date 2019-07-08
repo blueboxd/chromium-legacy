@@ -255,15 +255,17 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->WillSendBeginMainFrameOnThread(this);
   }
 
-  void DidSendBeginMainFrame() override {
-    LayerTreeHostImpl::DidSendBeginMainFrame();
+  void DidSendBeginMainFrame(const viz::BeginFrameArgs& args) override {
+    LayerTreeHostImpl::DidSendBeginMainFrame(args);
     test_hooks_->DidSendBeginMainFrameOnThread(this);
   }
 
   void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
-      std::vector<std::unique_ptr<SwapPromise>> swap_promises) override {
-    LayerTreeHostImpl::BeginMainFrameAborted(reason, std::move(swap_promises));
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises,
+      const viz::BeginFrameArgs& args) override {
+    LayerTreeHostImpl::BeginMainFrameAborted(reason, std::move(swap_promises),
+                                             args);
     test_hooks_->BeginMainFrameAbortedOnThread(this, reason);
   }
 

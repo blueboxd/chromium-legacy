@@ -104,9 +104,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD0(GetMainFrameCertStatus, net::CertStatus());
-  MOCK_CONST_METHOD2(AutofillHttpAuth,
-                     void(const autofill::PasswordForm&,
-                          const PasswordFormManagerForUI*));
+  MOCK_METHOD2(AutofillHttpAuth,
+               void(const autofill::PasswordForm&,
+                    const PasswordFormManagerForUI*));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
   // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.

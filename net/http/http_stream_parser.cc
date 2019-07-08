@@ -211,8 +211,7 @@ HttpStreamParser::HttpStreamParser(StreamSocket* stream_socket,
       connection_is_reused_(connection_is_reused),
       net_log_(net_log),
       sent_last_chunk_(false),
-      upload_error_(OK),
-      weak_ptr_factory_(this) {
+      upload_error_(OK) {
   io_callback_ = base::BindRepeating(&HttpStreamParser::OnIOComplete,
                                      weak_ptr_factory_.GetWeakPtr());
 }

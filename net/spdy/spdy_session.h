@@ -285,7 +285,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
   State next_state_;
 
-  base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStreamRequest);
 };
@@ -1212,7 +1212,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // SpdySession is refcounted because we don't need to keep the SpdySession
   // alive if the last reference is within a RunnableMethod.  Just revoke the
   // method.
-  base::WeakPtrFactory<SpdySession> weak_factory_;
+  base::WeakPtrFactory<SpdySession> weak_factory_{this};
 };
 
 }  // namespace net

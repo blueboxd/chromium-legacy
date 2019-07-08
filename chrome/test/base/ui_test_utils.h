@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -163,6 +164,11 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir);
 
 // Blocks until an application modal dialog is shown and returns it.
 app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog();
+
+#if defined(TOOLKIT_VIEWS)
+// Blocks until the given view attains the given visibility state.
+void WaitForViewVisibility(Browser* browser, ViewID vid, bool visible);
+#endif
 
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index

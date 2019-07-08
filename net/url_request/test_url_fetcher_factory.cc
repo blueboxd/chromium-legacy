@@ -359,8 +359,7 @@ FakeURLFetcher::FakeURLFetcher(const GURL& url,
                                const std::string& response_data,
                                HttpStatusCode response_code,
                                URLRequestStatus::Status status)
-    : TestURLFetcher(0, url, d),
-      weak_factory_(this) {
+    : TestURLFetcher(0, url, d) {
   Error error = OK;
   switch(status) {
     case URLRequestStatus::SUCCESS:

@@ -1407,16 +1407,17 @@ void MenuController::StartDrag(SubmenuView* source,
   item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
   gfx::ImageSkia image(gfx::ImageSkiaRep(canvas.GetBitmap(), raster_scale));
 
-  OSExchangeData data;
-  item->GetDelegate()->WriteDragData(item, &data);
-  data.provider().SetDragImage(image, press_loc.OffsetFromOrigin());
+  std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
+  item->GetDelegate()->WriteDragData(item, data.get());
+  data->provider().SetDragImage(image, press_loc.OffsetFromOrigin());
 
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   did_initiate_drag_ = true;
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
-  item->GetWidget()->RunShellDrag(nullptr, data, widget_loc, drag_ops,
+  item->GetWidget()->RunShellDrag(nullptr, std::move(data), widget_loc,
+                                  drag_ops,
                                   ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   // MenuController may have been deleted so check before accessing member
   // variables.

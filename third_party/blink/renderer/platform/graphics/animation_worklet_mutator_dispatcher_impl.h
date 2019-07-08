@@ -170,7 +170,8 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   std::unique_ptr<base::TickClock> tick_clock_;
 
-  base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
+  base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AnimationWorkletMutatorDispatcherImpl);
 };

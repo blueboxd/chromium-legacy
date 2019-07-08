@@ -8,8 +8,7 @@
 
 namespace blink {
 
-StaticDataNavigationBodyLoader::StaticDataNavigationBodyLoader()
-    : weak_factory_(this) {}
+StaticDataNavigationBodyLoader::StaticDataNavigationBodyLoader() {}
 
 StaticDataNavigationBodyLoader::~StaticDataNavigationBodyLoader() = default;
 

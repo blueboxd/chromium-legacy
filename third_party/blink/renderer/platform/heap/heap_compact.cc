@@ -107,6 +107,9 @@ class HeapCompact::MovableObjectFixups final {
     auto interior_it = interior_fixups_.find(slot);
     CHECK(interior_fixups_.end() == interior_it);
     interior_fixups_.insert({slot, nullptr});
+#if DCHECK_IS_ON()
+    interior_slot_to_object_.insert(slot, header->Payload());
+#endif  // DCHECK_IS_ON()
     LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
   }
 
@@ -152,6 +155,20 @@ class HeapCompact::MovableObjectFixups final {
   }
 
   void Relocate(Address from, Address to) {
+#if DCHECK_IS_ON()
+    moved_objects_.insert(from);
+#endif  // DCHECK_IS_ON()
+
+    // Interior slots always need to be processed for moved objects.
+    // Consider an object A with slot A.x pointing to value B where A is
+    // allocated on a movable page itself. When B is finally moved, it needs to
+    // find the corresponding slot A.x. Object A may be moved already and the
+    // memory may have been freed, which would result in a crash.
+    if (!interior_fixups_.empty()) {
+      RelocateInteriorFixups(from, to,
+                             HeapObjectHeader::FromPayload(to)->PayloadSize());
+    }
+
     auto it = fixups_.find(from);
     // This means that there is no corresponding slot for a live backing store.
     // This may happen because a mutator may change the slot to point to a
@@ -200,6 +217,12 @@ class HeapCompact::MovableObjectFixups final {
           len = kMaxNameLen;
         strncpy(slot_container_name, name, len);
         slot_container_name[len - 1] = 0;
+#if DCHECK_IS_ON()
+        // Check that the containing object has not been moved yet.
+        auto reverse_it = interior_slot_to_object_.find(slot);
+        DCHECK(interior_slot_to_object_.end() != reverse_it);
+        DCHECK(moved_objects_.end() == moved_objects_.find(reverse_it->value));
+#endif  // DCHECK_IS_ON()
       } else {
         LOG_HEAP_COMPACTION()
             << "Redirected slot: " << slot << " => " << slot_location;
@@ -208,13 +231,9 @@ class HeapCompact::MovableObjectFixups final {
       }
     }
 
-    // If the slot has subsequently been updated, a prefinalizer or
-    // a destructor having mutated and expanded/shrunk the collection,
-    // do not update and relocate the slot -- |from| is no longer valid
-    // and referenced.
-    //
-    // The slot's contents may also have been cleared during weak processing;
-    // no work to be done in that case either.
+    // If the slot has subsequently been updated, e.g. a destructor having
+    // mutated and expanded/shrunk the collection, do not update and relocate
+    // the slot -- |from| is no longer valid and referenced.
     if (UNLIKELY(*slot != from)) {
       LOG_HEAP_COMPACTION()
           << "No relocation: slot = " << slot << ", *slot = " << *slot
@@ -226,23 +245,14 @@ class HeapCompact::MovableObjectFixups final {
     // Update the slots new value.
     *slot = to;
 
-    size_t size = 0;
-
     // Execute potential fixup callbacks.
     MovableReference* callback_slot =
         reinterpret_cast<MovableReference*>(it->second);
     auto callback = fixup_callbacks_.find(callback_slot);
     if (UNLIKELY(callback != fixup_callbacks_.end())) {
-      size = HeapObjectHeader::FromPayload(to)->PayloadSize();
-      callback->value.second(callback->value.first, from, to, size);
+      callback->value.second(callback->value.first, from, to,
+                             HeapObjectHeader::FromPayload(to)->PayloadSize());
     }
-
-    if (interior_fixups_.empty())
-      return;
-
-    if (!size)
-      size = HeapObjectHeader::FromPayload(to)->PayloadSize();
-    RelocateInteriorFixups(from, to, size);
   }
 
 #if DEBUG_HEAP_COMPACTION
@@ -318,6 +328,13 @@ class HeapCompact::MovableObjectFixups final {
   // BasePage instances. The void* type was selected to allow to check
   // arbitrary addresses.
   HashSet<void*> relocatable_pages_;
+
+#if DCHECK_IS_ON()
+  // The following two collections are used to allow refer back from a slot to
+  // an already moved object.
+  HashSet<void*> moved_objects_;
+  HashMap<MovableReference*, MovableReference> interior_slot_to_object_;
+#endif  // DCHECK_IS_ON()
 };
 
 void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(

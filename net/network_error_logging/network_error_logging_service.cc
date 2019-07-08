@@ -182,10 +182,7 @@ void RecordSignedExchangeRequestOutcome(
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
   explicit NetworkErrorLoggingServiceImpl(PersistentNelStore* store)
-      : store_(store),
-        started_loading_policies_(false),
-        initialized_(false),
-        weak_factory_(this) {
+      : store_(store), started_loading_policies_(false), initialized_(false) {
     if (!PoliciesArePersisted())
       initialized_ = true;
   }
@@ -345,7 +342,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // Backlog of tasks waiting on initialization.
   std::vector<base::OnceClosure> task_backlog_;
 
-  base::WeakPtrFactory<NetworkErrorLoggingServiceImpl> weak_factory_;
+  base::WeakPtrFactory<NetworkErrorLoggingServiceImpl> weak_factory_{this};
 
   bool PoliciesArePersisted() const { return store_ != nullptr; }
 

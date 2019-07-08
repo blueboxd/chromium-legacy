@@ -108,7 +108,7 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
 
   bool is_disposed_ = false;
   uint32_t paused_count_ = 0;
-  base::WeakPtrFactory<WorkerScheduler> weak_factory_;
+  base::WeakPtrFactory<WorkerScheduler> weak_factory_{this};
 };
 
 }  // namespace scheduler

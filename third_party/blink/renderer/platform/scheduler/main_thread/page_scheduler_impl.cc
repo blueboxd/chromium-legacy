@@ -155,8 +155,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       freeze_on_network_idle_enabled_(base::FeatureList::IsEnabled(
           blink::features::kFreezeBackgroundTabOnNetworkIdle)),
       delay_for_background_and_network_idle_tab_freezing_(
-          GetDelayForBackgroundAndNetworkIdleTabFreezing()),
-      weak_factory_(this) {
+          GetDelayForBackgroundAndNetworkIdleTabFreezing()) {
   page_lifecycle_state_tracker_.reset(new PageLifecycleStateTracker(
       this, kDefaultPageVisibility == PageVisibilityState::kVisible
                 ? PageLifecycleState::kActive

@@ -158,6 +158,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Updates the total bounds of all buttons.
   void UpdateButtonUnionBounds();
 
+  bool ShouldShowGuestButton() const;
+
   OobeDialogState dialog_state_ = OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
   bool allow_guest_in_oobe_ = false;

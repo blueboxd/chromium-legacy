@@ -559,7 +559,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     Animation* animation = transitions_.Take(property).animation;
     KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
-    if (effect->HasActiveAnimationsOnCompositor(property) &&
+    if (effect && effect->HasActiveAnimationsOnCompositor(property) &&
         pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
@@ -671,7 +671,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
       state.update.CancelTransition(property);
       KeyframeEffect* effect =
           ToKeyframeEffect(running_transition->animation->effect());
-      if (effect->HasActiveAnimationsOnCompositor())
+      if (effect && effect->HasActiveAnimationsOnCompositor())
         retargeted_compositor_transition = running_transition;
       DCHECK(!state.animating_element->GetElementAnimations() ||
              !state.animating_element->GetElementAnimations()

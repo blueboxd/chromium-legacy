@@ -40,8 +40,7 @@ FuzzedSocket::FuzzedSocket(FuzzedDataProvider* data_provider,
                            net::NetLog* net_log)
     : data_provider_(data_provider),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)),
-      remote_address_(IPEndPoint(IPAddress::IPv4Localhost(), 80)),
-      weak_factory_(this) {}
+      remote_address_(IPEndPoint(IPAddress::IPv4Localhost(), 80)) {}
 
 FuzzedSocket::~FuzzedSocket() = default;
 

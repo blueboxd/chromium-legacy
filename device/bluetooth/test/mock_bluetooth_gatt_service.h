@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

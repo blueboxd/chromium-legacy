@@ -138,7 +138,7 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
 
   // Observers are not owned by the scheduler.
   std::unordered_map<Observer*, ObserverType> lifecycle_observers_;
-  base::WeakPtrFactory<FrameOrWorkerScheduler> weak_factory_;
+  base::WeakPtrFactory<FrameOrWorkerScheduler> weak_factory_{this};
 };
 
 }  // namespace blink

@@ -149,7 +149,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
 
   base::MemoryPressureListener memory_pressure_listener_;
 
-  base::WeakPtrFactory<MemBackendImpl> weak_factory_;
+  base::WeakPtrFactory<MemBackendImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MemBackendImpl);
 };

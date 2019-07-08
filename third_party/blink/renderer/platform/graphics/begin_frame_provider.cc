@@ -23,8 +23,7 @@ BeginFrameProvider::BeginFrameProvider(
       efs_binding_(this),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
-      begin_frame_client_(client),
-      weak_factory_(this) {}
+      begin_frame_client_(client) {}
 
 void BeginFrameProvider::ResetCompositorFrameSink() {
   compositor_frame_sink_.reset();

@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
@@ -2762,11 +2763,17 @@ class FakeOfflinePageAutoFetcher
 class TestPageAutoFetcherHelper : public PageAutoFetcherHelper {
  public:
   explicit TestPageAutoFetcherHelper(
-      chrome::mojom::OfflinePageAutoFetcherPtr fetcher)
-      : PageAutoFetcherHelper(nullptr) {
-    fetcher_ = std::move(fetcher);
+      base::RepeatingCallback<chrome::mojom::OfflinePageAutoFetcherPtr()>
+          binder)
+      : PageAutoFetcherHelper(nullptr), binder_(binder) {}
+  bool Bind() override {
+    if (!fetcher_)
+      fetcher_ = binder_.Run();
+    return true;
   }
-  bool Bind() override { return true; }
+
+ private:
+  base::RepeatingCallback<chrome::mojom::OfflinePageAutoFetcherPtr()> binder_;
 };
 
 // Provides set up for testing the 'auto fetch on dino' feature.
@@ -2783,12 +2790,16 @@ class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
         chrome::mojom::OfflinePageAutoFetcher::Name_,
         base::BindRepeating(&FakeOfflinePageAutoFetcher::AddBinding,
                             base::Unretained(&fake_fetcher_)));
-    chrome::mojom::OfflinePageAutoFetcherPtr fetcher_ptr;
-    render_thread()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &fetcher_ptr);
-    ASSERT_TRUE(fetcher_ptr);
+
+    auto binder = base::BindLambdaForTesting([&]() {
+      chrome::mojom::OfflinePageAutoFetcherPtr fetcher_ptr;
+      render_thread()->GetConnector()->BindInterface(
+          content::mojom::kBrowserServiceName, &fetcher_ptr);
+      return fetcher_ptr;
+    });
+
     core()->SetPageAutoFetcherHelperForTesting(
-        std::make_unique<TestPageAutoFetcherHelper>(std::move(fetcher_ptr)));
+        std::make_unique<TestPageAutoFetcherHelper>(binder));
   }
 
  protected:

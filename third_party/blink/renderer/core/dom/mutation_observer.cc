@@ -108,9 +108,7 @@ MutationObserver::MutationObserver(ExecutionContext* execution_context,
                   .NextObserverPriority();
 }
 
-MutationObserver::~MutationObserver() {
-  CancelInspectorAsyncTasks();
-}
+MutationObserver::~MutationObserver() = default;
 
 void MutationObserver::observe(Node* node,
                                const MutationObserverInit* observer_init,

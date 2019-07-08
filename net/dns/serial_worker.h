@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE SerialWorker
 
   State state_;
 
-  base::WeakPtrFactory<SerialWorker> weak_factory_;
+  base::WeakPtrFactory<SerialWorker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SerialWorker);
 };

@@ -227,7 +227,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   bool resource_recycling_enabled_ = true;
   bool is_single_buffered_ = false;
 
-  base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CanvasResourceProvider);
 };

@@ -698,7 +698,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   bool get_network_id_asynchronously_ = false;
 #endif
 
-  base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkQualityEstimator);
 };

@@ -400,8 +400,6 @@ public class DataReductionStatsPreference extends Preference {
      * of all data received (after compression), and the percent data reduction
      * and the range of dates over which these statistics apply.
      */
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("DefaultLocale")
     private void updateDetailData() {
         // To determine the correct day labels, adjust the network stats time values by their
         // offset from the client's current time.

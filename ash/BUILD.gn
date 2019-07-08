@@ -607,6 +607,8 @@ component("ash") {
     "sticky_keys/sticky_keys_overlay.cc",
     "sticky_keys/sticky_keys_overlay.h",
     "sticky_keys/sticky_keys_state.h",
+    "style/ash_color_provider.cc",
+    "style/ash_color_provider.h",
     "system/accessibility/accessibility_feature_disable_dialog.cc",
     "system/accessibility/accessibility_feature_disable_dialog.h",
     "system/accessibility/accessibility_feature_pod_controller.cc",

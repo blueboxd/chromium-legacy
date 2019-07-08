@@ -67,6 +67,7 @@ bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
 std::vector<GLImplementation> GetAllowedGLImplementations() {
   std::vector<GLImplementation> impls;
   impls.push_back(kGLImplementationEGLGLES2);
+  impls.push_back(kGLImplementationEGLANGLE);
   return impls;
 }
 
@@ -74,6 +75,7 @@ bool GetGLWindowSystemBindingInfo(const GLVersionInfo& gl_info,
                                   GLWindowSystemBindingInfo* info) {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
       return GetGLWindowSystemBindingInfoEGL(info);
     default:
       return false;
@@ -113,6 +115,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   CHECK_NE(kGLImplementationNone, GetGLImplementation());
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
       if (window != gfx::kNullAcceleratedWidget) {
         return InitializeGLSurface(new NativeViewGLSurfaceEGL(window, nullptr));
       } else {
@@ -129,14 +132,14 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
   CHECK_NE(kGLImplementationNone, GetGLImplementation());
   switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2: {
+    case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE: {
       if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
           (size.width() == 0 && size.height() == 0)) {
-        return InitializeGLSurfaceWithFormat(
-            new SurfacelessEGL(size), format);
+        return InitializeGLSurfaceWithFormat(new SurfacelessEGL(size), format);
       } else {
-        return InitializeGLSurfaceWithFormat(
-            new PbufferGLSurfaceEGL(size), format);
+        return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(size),
+                                             format);
       }
     }
     case kGLImplementationMockGL:
@@ -153,6 +156,7 @@ void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
   DCHECK_NE(kGLImplementationNone, implementation);
   switch (implementation) {
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
       SetDisabledExtensionsEGL(disabled_extensions);
       break;
     case kGLImplementationMockGL:
@@ -168,6 +172,7 @@ bool InitializeExtensionSettingsOneOffPlatform() {
   DCHECK_NE(kGLImplementationNone, implementation);
   switch (implementation) {
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
       return InitializeExtensionSettingsOneOffEGL();
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:

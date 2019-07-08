@@ -85,6 +85,8 @@ jumbo_component("gl") {
     "gl_enums.h",
     "gl_enums_implementation_autogen.h",
     "gl_export.h",
+    "gl_features.cc",
+    "gl_features.h",
     "gl_fence.cc",
     "gl_fence.h",
     "gl_fence_arb.cc",

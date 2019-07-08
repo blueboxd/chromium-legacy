@@ -98,7 +98,7 @@ DWORD DesktopDropTargetWin::OnDrop(IDataObject* data_object,
   DragDropDelegate* delegate;
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
   if (delegate) {
-    drag_operation = delegate->OnPerformDrop(*event);
+    drag_operation = delegate->OnPerformDrop(*event, std::move(data));
     DragDropClient* client = aura::client::GetDragDropClient(root_window_);
     if (client && !client->IsDragDropInProgress() &&
         drag_operation != ui::DragDropTypes::DRAG_NONE) {

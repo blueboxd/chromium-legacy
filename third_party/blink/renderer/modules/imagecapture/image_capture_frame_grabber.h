@@ -145,7 +145,7 @@ class ImageCaptureFrameGrabber final : public MediaStreamVideoSink {
   bool frame_grab_in_progress_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<ImageCaptureFrameGrabber> weak_factory_;
+  base::WeakPtrFactory<ImageCaptureFrameGrabber> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageCaptureFrameGrabber);
 };

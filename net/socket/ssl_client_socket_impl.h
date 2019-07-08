@@ -302,7 +302,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool is_fatal_cert_error_;
 
   NetLogWithSource net_log_;
-  base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_;
+  base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSocketImpl);
 };

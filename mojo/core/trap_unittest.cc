@@ -1486,6 +1486,10 @@ TEST_F(TrapTest, TriggersRemoveEachOtherWithinEventHandlers) {
       [](MojoHandle b) { WriteMessage(b, kTestMessageToA); }, b));
   runner.Start();
 
+  // To enforce that the two traps run concurrently, wait until the WriteMessage
+  // above has made a readable before firing the readable trap on b.
+  wait_for_a_to_notify.Wait();
+
   WriteMessage(a, kTestMessageToB);
 
   wait_for_a_to_cancel.Wait();

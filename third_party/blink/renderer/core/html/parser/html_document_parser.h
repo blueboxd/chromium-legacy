@@ -271,7 +271,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool added_pending_parser_blocking_stylesheet_;
   bool is_waiting_for_stylesheets_;
 
-  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;
+  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_{this};
 };
 
 }  // namespace blink

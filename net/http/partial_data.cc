@@ -41,8 +41,7 @@ PartialData::PartialData()
       final_range_(false),
       sparse_entry_(true),
       truncated_(false),
-      initial_validation_(false),
-      weak_factory_(this) {}
+      initial_validation_(false) {}
 
 PartialData::~PartialData() = default;
 

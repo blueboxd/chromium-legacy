@@ -31,7 +31,7 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
                                                        UnitType type) {
   // TODO(timloh): This looks wrong.
   if (std::isinf(value))
-    return nullptr;
+    value = 0;
 
   if (value < 0 || value > CSSValuePool::kMaximumCacheableIntegerValue)
     return MakeGarbageCollected<CSSNumericLiteralValue>(value, type);

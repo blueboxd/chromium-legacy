@@ -126,7 +126,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   base::OneShotTimer retry_timer_;
 
   CompletionRepeatingCallback write_callback_;
-  base::WeakPtrFactory<QuicChromiumPacketWriter> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumPacketWriter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumPacketWriter);
 };

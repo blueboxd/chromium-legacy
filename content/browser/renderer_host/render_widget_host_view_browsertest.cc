@@ -163,7 +163,6 @@ class CommitBeforeSwapAckSentHelper : public DidCommitNavigationInterceptor {
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     frame_observer_->WaitForAnyFrameSubmission();
     return true;
   }

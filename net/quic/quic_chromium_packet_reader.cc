@@ -32,8 +32,7 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
       yield_after_(quic::QuicTime::Infinite()),
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(
           static_cast<size_t>(quic::kMaxOutgoingPacketSize))),
-      net_log_(net_log),
-      weak_factory_(this) {}
+      net_log_(net_log) {}
 
 QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
 

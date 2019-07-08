@@ -8,8 +8,11 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/init/input_method_factory.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {
@@ -34,6 +37,13 @@ void ExoTestBase::TearDown() {
   WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
   AshTestBase::TearDown();
+}
+
+viz::SurfaceManager* ExoTestBase::GetSurfaceManager() {
+  return static_cast<ui::InProcessContextFactory*>(
+             aura::Env::GetInstance()->context_factory_private())
+      ->GetFrameSinkManager()
+      ->surface_manager();
 }
 
 }  // namespace test

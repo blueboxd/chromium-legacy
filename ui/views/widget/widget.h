@@ -626,7 +626,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // OnDragDone() is called on it. |location| is in the widget's coordinate
   // system.
   void RunShellDrag(View* view,
-                    const ui::OSExchangeData& data,
+                    std::unique_ptr<ui::OSExchangeData> data,
                     const gfx::Point& location,
                     int operation,
                     ui::DragDropTypes::DragEventSource source);
@@ -812,9 +812,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Called when the delegate's CanResize or CanMaximize changes.
   void OnSizeConstraintsChanged();
-
-  // Called when WidgetDelegate::CanActivate() changes.
-  void OnCanActivateChanged();
 
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.

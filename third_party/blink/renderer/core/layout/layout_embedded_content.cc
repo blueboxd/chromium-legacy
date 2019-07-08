@@ -384,8 +384,11 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // TODO(szager): Refactor this functionality into EmbeddedContentView, rather
   // than reimplementing in each concrete subclass.
   LayoutView* layout_view = View();
-  if (layout_view && layout_view->HasOverflowClip())
-    frame_rect.Move(layout_view->ScrolledContentOffset());
+  if (layout_view && layout_view->HasOverflowClip()) {
+    // Floored because the frame_rect in a content view is an IntRect. We may
+    // want to reevaluate that since scroll offsets/layout can be fractional.
+    frame_rect.Move(FlooredIntSize(layout_view->ScrolledContentOffset()));
+  }
 
   embedded_content_view.SetFrameRect(frame_rect);
 }

@@ -19,21 +19,21 @@ class FormGroup {
  public:
   virtual ~FormGroup() {}
 
-  // Used to determine the type of a field based on the text that a user enters
-  // into the field, interpreted in the given |app_locale| if appropriate.  The
-  // field types can then be reported back to the server.  This method is
-  // additive on |matching_types|.
+  // Used to determine the type of a field based on the |text| that a user
+  // enters into the field, interpreted in the given |app_locale| if
+  // appropriate. The field types can then be reported back to the server.  This
+  // method is additive on |matching_types|.
   virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
                                 ServerFieldTypeSet* matching_types) const;
 
   // Returns a set of server field types for which this FormGroup has non-empty
-  // data.  This method is additive on |non_empty_types|.
+  // data. This method is additive on |non_empty_types|.
   virtual void GetNonEmptyTypes(const std::string& app_locale,
                                 ServerFieldTypeSet* non_empty_types) const;
 
   // Returns the string associated with |type|, without canonicalizing the
-  // returned value.  For user-visible strings, use GetInfo() instead.
+  // returned value. For user-visible strings, use GetInfo() instead.
   virtual base::string16 GetRawInfo(ServerFieldType type) const = 0;
 
   // Sets this FormGroup object's data for |type| to |value|, without
@@ -72,7 +72,7 @@ class FormGroup {
   friend class AutofillProfile;
 
   // Returns a set of server field types for which this FormGroup can store
-  // data.  This method is additive on |supported_types|.
+  // data. This method is additive on |supported_types|.
   virtual void GetSupportedTypes(ServerFieldTypeSet* supported_types) const = 0;
 
   // Returns the string that should be auto-filled into a text field given the

@@ -362,7 +362,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
 
-  base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_;
+  base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadTaskQueue);
 };

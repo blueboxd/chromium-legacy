@@ -39,10 +39,9 @@ class AverageLagTrackerTest : public testing::Test {
 
     touch_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-        event_time, 1);
+        event_time);
     touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time,
-        1);
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time);
     average_lag_tracker_->AddLatencyInFrame(touch_latency, frame_time,
                                             "ScrollBegin");
   }
@@ -56,11 +55,9 @@ class AverageLagTrackerTest : public testing::Test {
     touch_latency.set_predicted_scroll_update_delta(
         predicted_delta != 0 ? predicted_delta : delta);
     touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, event_time,
-        1);
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, event_time);
     touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time,
-        1);
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time);
     average_lag_tracker_->AddLatencyInFrame(touch_latency, frame_time,
                                             "ScrollUpdate");
   }

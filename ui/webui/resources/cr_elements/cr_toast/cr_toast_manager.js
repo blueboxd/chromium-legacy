@@ -31,6 +31,16 @@ Polymer({
     undoLabel: String,
   },
 
+  /** @return {boolean} */
+  get isToastOpen() {
+    return this.$.toast.open;
+  },
+
+  /** @return {boolean} */
+  get isUndoButtonHidden() {
+    return this.$.button.hidden;
+  },
+
   /** @override */
   attached: function() {
     assert(!cr.toastManager.instance_);

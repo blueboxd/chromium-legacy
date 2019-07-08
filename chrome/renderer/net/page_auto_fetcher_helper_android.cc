@@ -18,6 +18,12 @@ PageAutoFetcherHelper::PageAutoFetcherHelper(content::RenderFrame* render_frame)
     : render_frame_(render_frame) {}
 PageAutoFetcherHelper::~PageAutoFetcherHelper() = default;
 
+void PageAutoFetcherHelper::OnCommitLoad() {
+  // Make sure we don't try to re-use the same mojo interface for more than one
+  // page. Otherwise, the browser side will use the old page's URL.
+  fetcher_.reset();
+}
+
 void PageAutoFetcherHelper::TrySchedule(
     bool user_requested,
     base::OnceCallback<void(FetcherScheduleResult)> complete_callback) {

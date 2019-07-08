@@ -185,7 +185,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
 
   // Provides weak pointers so that MediaStreamAudioTracks won't call
   // StopAudioDeliveryTo() if this instance dies first.
-  base::WeakPtrFactory<MediaStreamAudioSource> weak_factory_;
+  base::WeakPtrFactory<MediaStreamAudioSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioSource);
 };

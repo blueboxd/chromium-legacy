@@ -689,12 +689,12 @@ void NativeWidgetAura::FlashFrame(bool flash) {
 }
 
 void NativeWidgetAura::RunShellDrag(View* view,
-                                    const ui::OSExchangeData& data,
+                                    std::unique_ptr<ui::OSExchangeData> data,
                                     const gfx::Point& location,
                                     int operation,
                                     ui::DragDropTypes::DragEventSource source) {
   if (window_)
-    views::RunShellDrag(window_, data, location, operation, source);
+    views::RunShellDrag(window_, std::move(data), location, operation, source);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1032,7 +1032,8 @@ void NativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event,
+                                    std::unique_ptr<ui::OSExchangeData> data) {
   DCHECK(drop_helper_.get() != nullptr);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);

@@ -498,12 +498,11 @@ TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
 }
 
 TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
-  bookmarks::BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(
-      std::make_unique<bookmarks::BookmarkPermanentNode>(100));
-  bookmarks::BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+  auto owned_extra_node =
+      std::make_unique<bookmarks::BookmarkPermanentNode>(100);
+  bookmarks::BookmarkPermanentNode* extra_node = owned_extra_node.get();
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
-  client->SetExtraNodesToLoad(std::move(extra_nodes));
+  client->SetExtraNodeToLoad(std::move(owned_extra_node));
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));

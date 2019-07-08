@@ -158,10 +158,10 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
 
 TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   WebContentsViewAura* view = GetView();
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
-  data.SetString(string_data);
+  data->SetString(string_data);
 
 #if defined(OS_WIN)
   const std::vector<ui::FileInfo> test_file_infos = {
@@ -181,9 +181,9 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
       {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file3")), base::FilePath()},
   };
 #endif
-  data.SetFilenames(test_file_infos);
+  data->SetFilenames(test_file_infos);
 
-  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+  ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
@@ -216,7 +216,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  view->OnPerformDrop(event);
+  view->OnPerformDrop(event, std::move(data));
   run_loop.Run();
 
   CheckDropData(view);
@@ -241,10 +241,10 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
 #if defined(OS_WIN) || defined(USE_X11)
 TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   WebContentsViewAura* view = GetView();
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
-  data.SetString(string_data);
+  data->SetString(string_data);
 
 #if defined(OS_WIN)
   const std::vector<ui::FileInfo> test_file_infos = {
@@ -264,13 +264,13 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
       {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file3")), base::FilePath()},
   };
 #endif
-  data.SetFilenames(test_file_infos);
+  data->SetFilenames(test_file_infos);
 
   // Simulate the drag originating in the renderer process, in which case
   // any file data should be filtered out (anchor drag scenario).
-  data.MarkOriginatedFromRenderer();
+  data->MarkOriginatedFromRenderer();
 
-  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+  ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
@@ -296,7 +296,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  view->OnPerformDrop(event);
+  view->OnPerformDrop(event, std::move(data));
   run_loop.Run();
 
   CheckDropData(view);
@@ -316,10 +316,10 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
 #if defined(OS_WIN)
 TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   WebContentsViewAura* view = GetView();
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
-  data.SetString(string_data);
+  data->SetString(string_data);
 
   const std::vector<std::pair<base::FilePath, std::string>>
       test_filenames_and_contents = {
@@ -331,10 +331,10 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
            std::string("just some more data")},
       };
 
-  data.provider().SetVirtualFileContentsForTesting(test_filenames_and_contents,
-                                                   TYMED_ISTREAM);
+  data->provider().SetVirtualFileContentsForTesting(test_filenames_and_contents,
+                                                    TYMED_ISTREAM);
 
-  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+  ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
@@ -363,7 +363,7 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  view->OnPerformDrop(event);
+  view->OnPerformDrop(event, std::move(data));
   run_loop.Run();
 
   CheckDropData(view);
@@ -395,10 +395,10 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
 
 TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
   WebContentsViewAura* view = GetView();
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
-  data.SetString(string_data);
+  data->SetString(string_data);
 
   const std::vector<std::pair<base::FilePath, std::string>>
       test_filenames_and_contents = {
@@ -410,14 +410,14 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
            std::string("just some more data")},
       };
 
-  data.provider().SetVirtualFileContentsForTesting(test_filenames_and_contents,
-                                                   TYMED_ISTREAM);
+  data->provider().SetVirtualFileContentsForTesting(test_filenames_and_contents,
+                                                    TYMED_ISTREAM);
 
   // Simulate the drag originating in the renderer process, in which case
   // any file data should be filtered out (anchor drag scenario).
-  data.MarkOriginatedFromRenderer();
+  data->MarkOriginatedFromRenderer();
 
-  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+  ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
@@ -438,7 +438,7 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  view->OnPerformDrop(event);
+  view->OnPerformDrop(event, std::move(data));
   run_loop.Run();
 
   CheckDropData(view);
@@ -450,21 +450,21 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
 
 TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
   WebContentsViewAura* view = GetView();
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   const std::string url_spec = "https://www.wikipedia.org/";
   const GURL url(url_spec);
   const base::string16 url_title = base::ASCIIToUTF16("Wikipedia");
-  data.SetURL(url, url_title);
+  data->SetURL(url, url_title);
 
   // SetUrl should also add a virtual .url (internet shortcut) file.
   std::vector<ui::FileInfo> file_infos;
-  EXPECT_TRUE(data.GetVirtualFilenames(&file_infos));
+  EXPECT_TRUE(data->GetVirtualFilenames(&file_infos));
   ASSERT_EQ(1ULL, file_infos.size());
   EXPECT_EQ(base::FilePath(url_title + base::ASCIIToUTF16(".url")),
             file_infos[0].display_name);
 
-  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+  ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
@@ -487,7 +487,7 @@ TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  view->OnPerformDrop(event);
+  view->OnPerformDrop(event, std::move(data));
   run_loop.Run();
 
   CheckDropData(view);

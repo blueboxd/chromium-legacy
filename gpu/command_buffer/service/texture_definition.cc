@@ -270,6 +270,7 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
   switch (gl::GetGLImplementation()) {
 #if !defined(OS_MACOSX)
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLANGLE:
       return NativeImageBufferEGL::Create(texture_id);
 #endif
     case gl::kGLImplementationMockGL:

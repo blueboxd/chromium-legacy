@@ -106,7 +106,7 @@ class ResourceLoadingCancellingThrottle
     resource->received_data_length = 10 * 1024;
     resource->delta_bytes = 10 * 1024;
     resource->encoded_body_length = 10 * 1024;
-    resource->was_fetched_via_cache = false;
+    resource->cache_type = page_load_metrics::mojom::CacheType::kNotCached;
     resource->is_complete = true;
     resource->is_primary_frame_resource = true;
     resources.push_back(std::move(resource));
@@ -338,7 +338,9 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     resource->encoded_body_length = resource_size_in_kbyte << 10;
     resource->reported_as_ad_resource = is_ad_resource;
     resource->is_complete = true;
-    resource->was_fetched_via_cache = static_cast<bool>(resource_cached);
+    resource->cache_type = (resource_cached == ResourceCached::NOT_CACHED)
+                               ? page_load_metrics::mojom::CacheType::kNotCached
+                               : page_load_metrics::mojom::CacheType::kHttp;
     resource->mime_type = mime_type;
     resource->is_primary_frame_resource = true;
     resource->is_main_frame_resource =

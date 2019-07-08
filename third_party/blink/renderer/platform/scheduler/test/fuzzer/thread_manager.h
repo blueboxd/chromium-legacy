@@ -77,7 +77,7 @@ class PLATFORM_EXPORT ThreadManager {
 
     // Should outlive |this|.
     ThreadManager* thread_manager_;
-    base::WeakPtrFactory<Task> weak_ptr_factory_;
+    base::WeakPtrFactory<Task> weak_ptr_factory_{this};
   };
 
   void RunAction(const SequenceManagerTestDescription::Action& action);

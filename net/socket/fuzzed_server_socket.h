@@ -52,7 +52,7 @@ class FuzzedServerSocket : public ServerSocket {
   bool first_accept_;
   bool listen_called_;
 
-  base::WeakPtrFactory<FuzzedServerSocket> weak_factory_;
+  base::WeakPtrFactory<FuzzedServerSocket> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FuzzedServerSocket);
 };
 

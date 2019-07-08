@@ -14,13 +14,12 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/aura/env.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
@@ -68,6 +67,13 @@ class SurfaceTest : public test::ExoTestBase,
     return gfx::ConvertRectToPixel(device_scale_factor(), rect);
   }
 
+  const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
+    viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
+    const viz::CompositorFrame& frame =
+        GetSurfaceManager()->GetSurfaceForId(surface_id)->GetActiveFrame();
+    return frame;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceTest);
 };
@@ -112,17 +118,6 @@ TEST_P(SurfaceTest, Attach) {
   // the assertion below.
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1, release_buffer_call_count);
-}
-
-const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
-  viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
-  viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                             ->context_factory_private()
-                                             ->GetFrameSinkManager()
-                                             ->surface_manager();
-  const viz::CompositorFrame& frame =
-      surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
-  return frame;
 }
 
 TEST_P(SurfaceTest, Damage) {

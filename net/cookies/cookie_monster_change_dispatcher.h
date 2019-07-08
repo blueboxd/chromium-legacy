@@ -105,7 +105,7 @@ class CookieMonsterChangeDispatcher : public CookieChangeDispatcher {
 
     // Used to cancel delayed calls to DoDispatchChange() when the subscription
     // gets destroyed.
-    base::WeakPtrFactory<Subscription> weak_ptr_factory_;
+    base::WeakPtrFactory<Subscription> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Subscription);
   };
@@ -149,7 +149,7 @@ class CookieMonsterChangeDispatcher : public CookieChangeDispatcher {
   THREAD_CHECKER(thread_checker_);
 
   // Vends weak pointers to subscriptions.
-  base::WeakPtrFactory<CookieMonsterChangeDispatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CookieMonsterChangeDispatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonsterChangeDispatcher);
 };

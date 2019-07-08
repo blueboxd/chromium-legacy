@@ -165,7 +165,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -603,7 +604,8 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
 
   // There is no signed-in user, so also nobody has decided that Sync should be
   // started.
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -611,7 +613,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   // Sign in. Now Sync-the-transport could start, but gets deferred by default.
   // Sync-the-feature still doesn't start until the user says they want it.
   SimulateTestUserSignin();
-  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());

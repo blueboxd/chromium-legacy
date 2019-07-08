@@ -174,8 +174,7 @@ class FuzzedMdnsSocket : public DatagramServerSocket {
  public:
   explicit FuzzedMdnsSocket(FuzzedDataProvider* data_provider)
       : data_provider_(data_provider),
-        local_address_(FuzzIPAddress(data_provider_), 5353),
-        weak_factory_(this) {}
+        local_address_(FuzzIPAddress(data_provider_), 5353) {}
 
   int Listen(const IPEndPoint& address) override { return OK; }
 
@@ -281,7 +280,7 @@ class FuzzedMdnsSocket : public DatagramServerSocket {
   const IPEndPoint local_address_;
   const NetLogWithSource net_log_;
 
-  base::WeakPtrFactory<FuzzedMdnsSocket> weak_factory_;
+  base::WeakPtrFactory<FuzzedMdnsSocket> weak_factory_{this};
 };
 
 class FuzzedMdnsSocketFactory : public MDnsSocketFactory {

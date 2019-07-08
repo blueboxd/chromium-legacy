@@ -591,7 +591,7 @@ TEST_F(BidirectionalStreamTest,
 }
 
 TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
-  scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
+  auto cert_request = base::MakeRefCounted<SSLCertRequestInfo>();
   cert_request->host_and_port = host_port_pair_;
 
   // First attempt receives client auth request.

@@ -422,13 +422,6 @@ Response InspectorLayerTreeAgent::compositingReasons(
 
 Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
                                                String* snapshot_id) {
-  const cc::Layer* layer = nullptr;
-  Response response = LayerById(layer_id, layer);
-  if (!response.isSuccess())
-    return response;
-  if (!layer->DrawsContent())
-    return Response::Error("Layer does not draw content");
-
   suppress_layer_paint_events_ = true;
 
   // If we hit a devtool break point in the middle of document lifecycle, for
@@ -444,6 +437,13 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 
   suppress_layer_paint_events_ = false;
+
+  const cc::Layer* layer = nullptr;
+  Response response = LayerById(layer_id, layer);
+  if (!response.isSuccess())
+    return response;
+  if (!layer->DrawsContent())
+    return Response::Error("Layer does not draw content");
 
   auto picture = layer->GetPicture();
   if (!picture)

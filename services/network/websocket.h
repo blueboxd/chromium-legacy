@@ -186,7 +186,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // per-renderer WebSocket throttling.
   bool handshake_succeeded_;
 
-  base::WeakPtrFactory<WebSocket> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };

@@ -110,20 +110,23 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     PlatformThread::SetName(thread_name_);
   }
 
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
     if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
+      return nullptr;
     }
-    return task_source;
+    auto run_intent = task_source->WillRunTask();
+    DCHECK(run_intent);
+    return {std::move(task_source), std::move(run_intent)};
   }
 
-  void DidRunTask(RegisteredTaskSource task_source) override {
+  void DidProcessTask(RegisteredTaskSource task_source) override {
     if (task_source) {
-      EnqueueTaskSource(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      EnqueueTaskSource(TransactionWithRegisteredTaskSource::FromTaskSource(
           std::move(task_source)));
     }
   }
@@ -199,9 +202,9 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   // Returns true iff the worker must wakeup, i.e. task source is allowed to run
   // and the worker was not awake.
   bool EnqueueTaskSource(
-      RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+      TransactionWithRegisteredTaskSource transaction_with_task_source) {
     CheckedAutoLock auto_lock(lock_);
-    priority_queue_.Push(std::move(task_source_and_transaction));
+    priority_queue_.Push(std::move(transaction_with_task_source));
     if (!worker_awake_ && CanRunNextTaskSource()) {
       worker_awake_ = true;
       return true;
@@ -250,7 +253,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     // This scheme below allows us to cover the following scenarios:
     // * Only WorkerThreadDelegate::GetWork() has work:
     //   Always return the task source from GetWork().
@@ -305,8 +308,11 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
+      return nullptr;
     }
-    return task_source;
+    auto run_intent = task_source->WillRunTask();
+    DCHECK(run_intent);
+    return {std::move(task_source), std::move(run_intent)};
   }
 
   void OnMainExit(WorkerThread* /* worker */) override {

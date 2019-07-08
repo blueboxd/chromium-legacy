@@ -47,6 +47,9 @@ enum DownloadDangerType {
   // Download URL whitelisted by enterprise policy.
   DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY = 9,
 
+  // Download is pending a more detailed verdict.
+  DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING = 10,
+
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
   DOWNLOAD_DANGER_TYPE_MAX

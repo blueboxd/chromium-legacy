@@ -6455,7 +6455,7 @@
           "hard_timeout": 3600,
           "io_timeout": 3600
         },
-        "test": "cros_vm_sanity_test"
+        "test": "cros_browser_sanity_test"
       },
       {
         "isolate_coverage_data": true,
@@ -25163,9 +25163,7 @@
       {
         "args": [
           "--build-revision=${got_revision}",
-          "--enable-logging",
-          "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always"
+          "--gtest_filter=SkiaGold*"
         ],
         "experiment_percentage": 100,
         "merge": {

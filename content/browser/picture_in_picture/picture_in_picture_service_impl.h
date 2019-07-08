@@ -5,9 +5,13 @@
 #ifndef CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "base/containers/unique_ptr_adapters.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 
 namespace content {
@@ -22,20 +26,28 @@ class PictureInPictureSession;
 class CONTENT_EXPORT PictureInPictureServiceImpl final
     : public content::FrameServiceBase<blink::mojom::PictureInPictureService> {
  public:
-  static void Create(RenderFrameHost*,
-                     blink::mojom::PictureInPictureServiceRequest);
+  static void Create(
+      RenderFrameHost*,
+      mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
+
+  // Temporary method while RenderProcessHostImpl does not migrate from using
+  // service_manager::BinderRegistry to using service_manager::BinderMap.
+  static void CreateFromRequest(RenderFrameHost*,
+                                blink::mojom::PictureInPictureServiceRequest);
+
   static PictureInPictureServiceImpl* CreateForTesting(
       RenderFrameHost*,
-      blink::mojom::PictureInPictureServiceRequest);
+      mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
 
   // PictureInPictureService implementation.
-  void StartSession(uint32_t player_id,
-                    const base::Optional<viz::SurfaceId>& surface_id,
-                    const gfx::Size& natural_size,
-                    bool show_play_pause_button,
-                    bool show_mute_button,
-                    blink::mojom::PictureInPictureSessionObserverPtr,
-                    StartSessionCallback) final;
+  void StartSession(
+      uint32_t player_id,
+      const base::Optional<viz::SurfaceId>& surface_id,
+      const gfx::Size& natural_size,
+      bool show_play_pause_button,
+      bool show_mute_button,
+      mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,
+      StartSessionCallback) final;
 
   PictureInPictureSession* active_session_for_testing() const {
     return active_session_.get();
@@ -44,8 +56,9 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
  private:
   friend class PictureInPictureSession;
 
-  PictureInPictureServiceImpl(RenderFrameHost*,
-                              blink::mojom::PictureInPictureServiceRequest);
+  PictureInPictureServiceImpl(
+      RenderFrameHost*,
+      mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
   ~PictureInPictureServiceImpl() override;
 
   RenderFrameHost* render_frame_host_ = nullptr;

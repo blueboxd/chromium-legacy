@@ -82,7 +82,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoRendererSink
 
   THREAD_CHECKER(main_thread_checker_);
 
-  base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_;
+  base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
 };

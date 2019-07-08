@@ -169,8 +169,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                           request_info_.socket_tag,
                                           request_info_.network_isolation_key)),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
-      init_connection_already_resumed_(false),
-      ptr_factory_(this) {
+      init_connection_already_resumed_(false) {
   // QUIC can only be spoken to servers, never to proxies.
   if (alternative_protocol == kProtoQUIC)
     DCHECK(proxy_info_.is_direct());

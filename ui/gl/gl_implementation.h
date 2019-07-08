@@ -30,11 +30,12 @@ enum GLImplementation {
   kGLImplementationDesktopGLCoreProfile = 2,
   kGLImplementationSwiftShaderGL = 3,
   kGLImplementationAppleGL = 4,
-  kGLImplementationEGLGLES2 = 5,
+  kGLImplementationEGLGLES2 = 5,  // Native EGL/GLES2
   kGLImplementationMockGL = 6,
   kGLImplementationStubGL = 7,
   kGLImplementationDisabled = 8,
-  kMaxValue = kGLImplementationDisabled,
+  kGLImplementationEGLANGLE = 9,  // EGL/GL implemented using ANGLE
+  kMaxValue = kGLImplementationEGLANGLE,
 };
 
 struct GL_EXPORT GLWindowSystemBindingInfo {

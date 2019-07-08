@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -266,6 +267,26 @@ TEST(SessionCommandsTest, ProcessCapabilities_Merge) {
   ASSERT_TRUE(result.HasKey("timeouts"));
   ASSERT_TRUE(result.HasKey("unhandledPromptBehavior"));
   ASSERT_FALSE(result.HasKey("pageLoadStrategy"));
+
+  // Selection by platformName
+  std::string platform_name =
+      base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+  status = ProcessCapabilitiesJson(
+      R"({
+       "capabilities": {
+         "alwaysMatch": { "timeouts": { "script": 10 } },
+         "firstMatch": [
+           { "platformName": "LINUX", "pageLoadStrategy": "none" },
+           { "platformName": ")" +
+          platform_name + R"(", "pageLoadStrategy": "eager" }
+         ]
+       }
+     })",
+      &result);
+  printf("THIS IS PLATFORM: %s", platform_name.c_str());
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_EQ(result.FindKey("platformName")->GetString(), platform_name);
+  ASSERT_EQ(result.FindKey("pageLoadStrategy")->GetString(), "eager");
 
   // Selection by browserName
   status = ProcessCapabilitiesJson(

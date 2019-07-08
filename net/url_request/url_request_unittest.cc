@@ -537,7 +537,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   // Closure to run to exit RunUntilBlocked().
   base::OnceClosure on_blocked_;
 
-  base::WeakPtrFactory<BlockingNetworkDelegate> weak_factory_;
+  base::WeakPtrFactory<BlockingNetworkDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlockingNetworkDelegate);
 };
@@ -548,8 +548,7 @@ BlockingNetworkDelegate::BlockingNetworkDelegate(BlockMode block_mode)
       auth_retval_(AUTH_REQUIRED_RESPONSE_NO_ACTION),
       block_on_(0),
       target_auth_credentials_(nullptr),
-      stage_blocked_for_callback_(NOT_BLOCKED),
-      weak_factory_(this) {}
+      stage_blocked_for_callback_(NOT_BLOCKED) {}
 
 void BlockingNetworkDelegate::RunUntilBlocked() {
   base::RunLoop run_loop;

@@ -18,8 +18,7 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
           std::make_unique<BeginFrameProvider>(begin_frame_provider_params,
                                                this)),
       callback_collection_(context),
-      context_(context),
-      weak_factory_(this) {}
+      context_(context) {}
 
 int WorkerAnimationFrameProvider::RegisterCallback(
     FrameRequestCallbackCollection::FrameCallback* callback) {

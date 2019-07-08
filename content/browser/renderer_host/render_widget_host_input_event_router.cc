@@ -1351,23 +1351,6 @@ void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
     // call, and shouldn't be used after this point.
     OnRenderWidgetHostViewBaseDestroyed(it_to_remove->second);
   }
-
-  for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
-    if (it->first.frame_sink_id() == id)
-      it = hittest_data_.erase(it);
-    else
-      ++it;
-  }
-}
-
-void RenderWidgetHostInputEventRouter::OnHittestData(
-    const FrameHostMsg_HittestData_Params& params) {
-  if (owner_map_.find(params.surface_id.frame_sink_id()) == owner_map_.end()) {
-    return;
-  }
-  HittestData data;
-  data.ignored_for_hittest = params.ignored_for_hittest;
-  hittest_data_[params.surface_id] = data;
 }
 
 RenderWidgetHostImpl*

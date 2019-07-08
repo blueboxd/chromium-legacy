@@ -807,8 +807,7 @@ class HostResolverManager::ProcTask {
         proc_task_runner_(std::move(proc_task_runner)),
         attempt_number_(0),
         net_log_(job_net_log),
-        tick_clock_(tick_clock),
-        weak_ptr_factory_(this) {
+        tick_clock_(tick_clock) {
     DCHECK(callback_);
     if (!params_.resolver_proc.get())
       params_.resolver_proc = HostResolverProc::GetDefault();
@@ -991,7 +990,7 @@ class HostResolverManager::ProcTask {
   // Used to loop back from the blocking lookup attempt tasks as well as from
   // delayed retry tasks. Invalidate WeakPtrs on completion and cancellation to
   // cancel handling of such posted tasks.
-  base::WeakPtrFactory<ProcTask> weak_ptr_factory_;
+  base::WeakPtrFactory<ProcTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProcTask);
 };
@@ -1522,8 +1521,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         tick_clock_(tick_clock),
         net_log_(
             NetLogWithSource::Make(source_net_log.net_log(),
-                                   NetLogSourceType::HOST_RESOLVER_IMPL_JOB)),
-        weak_ptr_factory_(this) {
+                                   NetLogSourceType::HOST_RESOLVER_IMPL_JOB)) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CREATE_JOB);
 
     net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB,
@@ -2348,7 +2346,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // Iterator to |this| in the JobMap. |nullopt| if not owned by the JobMap.
   base::Optional<JobMap::iterator> self_iterator_;
 
-  base::WeakPtrFactory<Job> weak_ptr_factory_;
+  base::WeakPtrFactory<Job> weak_ptr_factory_{this};
 };
 
 //-----------------------------------------------------------------------------
@@ -2372,9 +2370,7 @@ HostResolverManager::HostResolverManager(
       use_proctask_by_default_(false),
       allow_fallback_to_proctask_(true),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      invalidation_in_progress_(false),
-      weak_ptr_factory_(this),
-      probe_weak_ptr_factory_(this) {
+      invalidation_in_progress_(false) {
   PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
   dispatcher_.reset(new PrioritizedDispatcher(job_limits));
   max_queued_jobs_ = job_limits.total_jobs * 100u;

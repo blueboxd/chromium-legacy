@@ -352,14 +352,10 @@ void OfflinePageBridge::GetAllPages(
   DCHECK(j_result_obj);
   DCHECK(j_callback_obj);
 
-  ScopedJavaGlobalRef<jobject> j_result_ref;
-  j_result_ref.Reset(env, j_result_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
-  offline_page_model_->GetAllPages(base::BindOnce(
-      &MultipleOfflinePageItemCallback, j_result_ref, j_callback_ref));
+  offline_page_model_->GetAllPages(
+      base::BindOnce(&MultipleOfflinePageItemCallback,
+                     ScopedJavaGlobalRef<jobject>(j_result_obj),
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::GetPageByOfflineId(
@@ -367,11 +363,9 @@ void OfflinePageBridge::GetPageByOfflineId(
     const JavaParamRef<jobject>& obj,
     jlong offline_id,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
   offline_page_model_->GetPageByOfflineId(
-      offline_id,
-      base::BindOnce(&SingleOfflinePageItemCallback, j_callback_ref));
+      offline_id, base::BindOnce(&SingleOfflinePageItemCallback,
+                                 ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 std::vector<ClientId> getClientIdsFromObjectArrays(
@@ -402,13 +396,12 @@ void OfflinePageBridge::DeletePagesByClientId(
     const JavaParamRef<jobjectArray>& j_namespaces_array,
     const JavaParamRef<jobjectArray>& j_ids_array,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
   PageCriteria criteria;
   criteria.client_ids =
       getClientIdsFromObjectArrays(env, j_namespaces_array, j_ids_array);
   offline_page_model_->DeletePagesWithCriteria(
-      criteria, base::BindOnce(&DeletePageCallback, j_callback_ref));
+      criteria, base::BindOnce(&DeletePageCallback,
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::DeletePagesByClientIdAndOrigin(
@@ -418,14 +411,13 @@ void OfflinePageBridge::DeletePagesByClientIdAndOrigin(
     const base::android::JavaParamRef<jobjectArray>& j_ids_array,
     const base::android::JavaParamRef<jstring>& j_origin,
     const base::android::JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
   PageCriteria criteria;
   criteria.client_ids =
       getClientIdsFromObjectArrays(env, j_namespaces_array, j_ids_array);
   criteria.request_origin = ConvertJavaStringToUTF8(j_origin);
   offline_page_model_->DeletePagesWithCriteria(
-      criteria, base::BindOnce(&DeletePageCallback, j_callback_ref));
+      criteria, base::BindOnce(&DeletePageCallback,
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::DeletePagesByOfflineId(
@@ -433,8 +425,6 @@ void OfflinePageBridge::DeletePagesByOfflineId(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jlongArray>& j_offline_ids_array,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
   std::vector<int64_t> offline_ids;
   base::android::JavaLongArrayToInt64Vector(env, j_offline_ids_array,
                                             &offline_ids);
@@ -442,7 +432,8 @@ void OfflinePageBridge::DeletePagesByOfflineId(
   PageCriteria criteria;
   criteria.offline_ids = std::move(offline_ids);
   offline_page_model_->DeletePagesWithCriteria(
-      criteria, base::BindOnce(&DeletePageCallback, j_callback_ref));
+      criteria, base::BindOnce(&DeletePageCallback,
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::GetPagesByClientId(
@@ -452,18 +443,14 @@ void OfflinePageBridge::GetPagesByClientId(
     const JavaParamRef<jobjectArray>& j_namespaces_array,
     const JavaParamRef<jobjectArray>& j_ids_array,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_result_ref;
-  j_result_ref.Reset(env, j_result_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
   std::vector<ClientId> client_ids =
       getClientIdsFromObjectArrays(env, j_namespaces_array, j_ids_array);
   PageCriteria criteria;
   criteria.client_ids = client_ids;
   offline_page_model_->GetPagesWithCriteria(
-      criteria, base::BindOnce(&MultipleOfflinePageItemCallback, j_result_ref,
-                               j_callback_ref));
+      criteria, base::BindOnce(&MultipleOfflinePageItemCallback,
+                               ScopedJavaGlobalRef<jobject>(j_result_obj),
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::GetPagesByRequestOrigin(
@@ -472,17 +459,12 @@ void OfflinePageBridge::GetPagesByRequestOrigin(
     const JavaParamRef<jobject>& j_result_obj,
     const JavaParamRef<jstring>& j_request_origin,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_result_ref;
-  j_result_ref.Reset(env, j_result_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
   PageCriteria criteria;
   criteria.request_origin = ConvertJavaStringToUTF8(env, j_request_origin);
   offline_page_model_->GetPagesWithCriteria(
-      criteria, base::BindOnce(&MultipleOfflinePageItemCallback, j_result_ref,
-                               j_callback_ref));
+      criteria, base::BindOnce(&MultipleOfflinePageItemCallback,
+                               ScopedJavaGlobalRef<jobject>(j_result_obj),
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::GetPagesByNamespace(
@@ -491,17 +473,13 @@ void OfflinePageBridge::GetPagesByNamespace(
     const JavaParamRef<jobject>& j_result_obj,
     const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jobject>& j_callback_obj) {
-  ScopedJavaGlobalRef<jobject> j_result_ref(env, j_result_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
   PageCriteria criteria;
   criteria.client_namespaces =
       std::vector<std::string>{ConvertJavaStringToUTF8(env, j_namespace)};
   offline_page_model_->GetPagesWithCriteria(
-      criteria, base::BindOnce(&MultipleOfflinePageItemCallback, j_result_ref,
-                               j_callback_ref));
+      criteria, base::BindOnce(&MultipleOfflinePageItemCallback,
+                               ScopedJavaGlobalRef<jobject>(j_result_obj),
+                               ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::SelectPageForOnlineUrl(
@@ -512,12 +490,10 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
     const JavaParamRef<jobject>& j_callback_obj) {
   DCHECK(j_callback_obj);
 
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
   OfflinePageUtils::SelectPagesForURL(
       key_, GURL(ConvertJavaStringToUTF8(env, j_online_url)), tab_id,
-      base::BindOnce(&SelectPageCallback, j_callback_ref));
+      base::BindOnce(&SelectPageCallback,
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,
@@ -529,9 +505,6 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
                                  const JavaParamRef<jstring>& j_origin) {
   DCHECK(j_callback_obj);
   DCHECK(j_web_contents);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
 
   OfflinePageModel::SavePageParams save_page_params;
   std::unique_ptr<OfflinePageArchiver> archiver;
@@ -551,7 +524,9 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
 
   offline_page_model_->SavePage(
       save_page_params, std::move(archiver), web_contents,
-      base::Bind(&SavePageCallback, j_callback_ref, save_page_params.url));
+      base::Bind(&SavePageCallback,
+                 ScopedJavaGlobalRef<jobject>(j_callback_obj),
+                 save_page_params.url));
 }
 
 void OfflinePageBridge::PublishInternalPageByOfflineId(
@@ -559,9 +534,6 @@ void OfflinePageBridge::PublishInternalPageByOfflineId(
     const base::android::JavaParamRef<jobject>& obj,
     const jlong j_offline_id,
     const base::android::JavaParamRef<jobject>& j_published_callback) {
-  ScopedJavaGlobalRef<jobject> j_published_callback_ref;
-  j_published_callback_ref.Reset(env, j_published_callback);
-
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForKey(key_);
   DCHECK(offline_page_model);
@@ -569,7 +541,8 @@ void OfflinePageBridge::PublishInternalPageByOfflineId(
   offline_page_model->GetPageByOfflineId(
       j_offline_id,
       base::Bind(&OfflinePageBridge::PublishInternalArchive,
-                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 ScopedJavaGlobalRef<jobject>(j_published_callback),
                  PublishSource::kPublishByOfflineId));
 }
 
@@ -578,9 +551,6 @@ void OfflinePageBridge::PublishInternalPageByGuid(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_guid,
     const base::android::JavaParamRef<jobject>& j_published_callback) {
-  ScopedJavaGlobalRef<jobject> j_published_callback_ref;
-  j_published_callback_ref.Reset(env, j_published_callback);
-
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForKey(key_);
   DCHECK(offline_page_model);
@@ -590,7 +560,8 @@ void OfflinePageBridge::PublishInternalPageByGuid(
   offline_page_model->GetPagesWithCriteria(
       criteria,
       base::BindOnce(&OfflinePageBridge::PublishInternalArchiveOfFirstItem,
-                     weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ScopedJavaGlobalRef<jobject>(j_published_callback),
                      PublishSource::kPublishByGuid));
 }
 

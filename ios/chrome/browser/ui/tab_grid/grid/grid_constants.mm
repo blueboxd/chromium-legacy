@@ -64,6 +64,10 @@ const int kGridDarkThemeCellSelectionColor = 0x9AA0A6;
 const int kGridDarkThemeCellCloseButtonTintColor = 0xFFFFFF;
 const CGFloat kGridDarkThemeCellHighlightColorAlpha = 0.7;
 const int kGridDarkThemeCellSeparatorColor = 0x535354;
+// Extra dark theme colors until iOS 12 gets removed.
+const int kGridDarkThemeCellDetailColor = 0xEBEBF5;
+const CGFloat kGridDarkThemeCellDetailAlpha = 0.6;
+const int kGridDarkThemeCellTintColor = 0x8AB4F9;
 
 // GridCell dimensions.
 const CGSize kGridCellSizeSmall = CGSize{144.0f, 168.0f};

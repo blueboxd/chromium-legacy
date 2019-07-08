@@ -566,8 +566,7 @@ QuicChromiumClientSession::StreamRequest::StreamRequest(
     : session_(session),
       requires_confirmation_(requires_confirmation),
       stream_(nullptr),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {}
+      traffic_annotation_(traffic_annotation) {}
 
 QuicChromiumClientSession::StreamRequest::~StreamRequest() {
   if (stream_)
@@ -789,8 +788,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       ignore_read_error_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency &&
-          this->connection()->transport_version() >= quic::QUIC_VERSION_43),
-      weak_factory_(this) {
+          this->connection()->transport_version() >= quic::QUIC_VERSION_43) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));

@@ -115,7 +115,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   enum class FailureMode { SYNC, ASYNC };
 
   explicit ReadErrorUploadDataStream(FailureMode mode)
-      : UploadDataStream(true, 0), async_(mode), weak_factory_(this) {}
+      : UploadDataStream(true, 0), async_(mode) {}
   ~ReadErrorUploadDataStream() override {}
 
  private:
@@ -138,7 +138,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
 
   const FailureMode async_;
 
-  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_;
+  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };

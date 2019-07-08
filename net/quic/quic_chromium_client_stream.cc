@@ -46,8 +46,7 @@ QuicChromiumClientStream::Handle::Handle(QuicChromiumClientStream* stream)
       read_headers_buffer_(nullptr),
       read_body_buffer_len_(0),
       net_error_(ERR_UNEXPECTED),
-      net_log_(stream->net_log()),
-      weak_factory_(this) {
+      net_log_(stream->net_log()) {
   SaveState();
 }
 
@@ -414,8 +413,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       quic_version_(session->connection()->transport_version()),
       can_migrate_to_cellular_network_(true),
       initial_headers_frame_len_(0),
-      trailing_headers_frame_len_(0),
-      weak_factory_(this) {}
+      trailing_headers_frame_len_(0) {}
 
 QuicChromiumClientStream::QuicChromiumClientStream(
     quic::PendingStream* pending,
@@ -432,8 +430,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       quic_version_(session->connection()->transport_version()),
       can_migrate_to_cellular_network_(true),
       initial_headers_frame_len_(0),
-      trailing_headers_frame_len_(0),
-      weak_factory_(this) {}
+      trailing_headers_frame_len_(0) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
   if (handle_)

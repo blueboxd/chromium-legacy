@@ -21,10 +21,12 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
  public:
   ~SyncUserSettings() override = default;
 
-  // Whether the user wants Sync to run, a.k.a. the Sync feature toggle in
-  // settings. This maps to DISABLE_REASON_USER_CHOICE.
-  // NOTE: This is true by default, even if the user has never enabled Sync or
-  // isn't even signed in.
+  // Whether the user wants Sync to run. This is false by default, but gets set
+  // to true early in the Sync setup flow, after the user has pressed "turn on
+  // Sync" but before they have actually confirmed the settings (that's
+  // IsFirstSetupComplete()). After Sync is enabled, this can get set to false
+  // by the Sync feature toggle in settings, or when Sync gets reset from the
+  // dashboard. This maps to DISABLE_REASON_USER_CHOICE.
   virtual bool IsSyncRequested() const = 0;
   virtual void SetSyncRequested(bool requested) = 0;
 

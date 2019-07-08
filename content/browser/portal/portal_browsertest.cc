@@ -7,6 +7,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -490,9 +491,58 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
   fdo2.Wait();
 }
 
+// This is for testing how portals interact with input hit testing. It is
+// parameterized on the kind of viz hit testing used.
+class PortalHitTestBrowserTest : public PortalBrowserTest,
+                                 public ::testing::WithParamInterface<bool> {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PortalBrowserTest::SetUpCommandLine(command_line);
+    const bool use_viz_hit_test_surface_layer = GetParam();
+    if (use_viz_hit_test_surface_layer) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnableVizHitTestSurfaceLayer);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kEnableVizHitTestSurfaceLayer);
+    }
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         PortalHitTestBrowserTest,
+                         ::testing::Bool());
+
+namespace {
+
+// Fails the test if an input event is sent to the given RenderWidgetHost.
+class FailOnInputEvent : public RenderWidgetHost::InputEventObserver {
+ public:
+  explicit FailOnInputEvent(RenderWidgetHostImpl* rwh)
+      : rwh_(rwh->GetWeakPtr()) {
+    rwh->AddInputEventObserver(this);
+  }
+
+  ~FailOnInputEvent() override {
+    if (rwh_)
+      rwh_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    FAIL() << "Unexpected " << blink::WebInputEvent::GetName(event.GetType());
+  }
+
+ private:
+  base::WeakPtr<RenderWidgetHostImpl> rwh_;
+};
+
+}  // namespace
+
 // Tests that input events targeting the portal are only received by the parent
 // renderer.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DispatchInputEvent) {
+IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
@@ -519,10 +569,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DispatchInputEvent) {
   navigation_observer.Wait();
   WaitForHitTestDataOrChildSurfaceReady(portal_frame);
 
-  // Create listeners for both widgets.
-  RenderWidgetHostMouseEventMonitor main_frame_monitor(
-      main_frame->GetRenderWidgetHost());
-  RenderWidgetHostMouseEventMonitor portal_frame_monitor(
+  FailOnInputEvent no_input_to_portal_frame(
       portal_frame->GetRenderWidgetHost());
   EXPECT_TRUE(ExecJs(main_frame,
                      "var clicked = false;"
@@ -536,8 +583,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DispatchInputEvent) {
   // Route the mouse event.
   gfx::Point root_location =
       portal_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
-  main_frame_monitor.ResetEventReceived();
-  portal_frame_monitor.ResetEventReceived();
   InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
                              blink::WebInputEvent::kMouseDown);
   SimulateRoutedMouseEvent(web_contents_impl, blink::WebInputEvent::kMouseDown,
@@ -546,8 +591,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DispatchInputEvent) {
   waiter.Wait();
 
   // Check that the click event was only received by the main frame.
-  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_FALSE(portal_frame_monitor.EventWasReceived());
   EXPECT_EQ(true, EvalJs(main_frame, "clicked"));
   EXPECT_EQ(false, EvalJs(portal_frame, "clicked"));
 }

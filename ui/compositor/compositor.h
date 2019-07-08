@@ -64,7 +64,6 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
-class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceIdAllocation;
@@ -114,9 +113,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
 
   // Allocate a new client ID for the display compositor.
   virtual viz::FrameSinkId AllocateFrameSinkId() = 0;
-
-  // Gets the frame sink manager.
-  virtual viz::FrameSinkManagerImpl* GetFrameSinkManager() = 0;
 
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;

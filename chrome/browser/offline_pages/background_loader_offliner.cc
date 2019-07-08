@@ -83,17 +83,6 @@ void RecordOffliningPreviewsUMA(const ClientId& client_id,
       is_previews_enabled);
 }
 
-void RecordResourceCompletionUMA(bool image_complete,
-                                 bool css_complete,
-                                 bool xhr_complete) {
-  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Image",
-                            image_complete);
-  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Css",
-                            css_complete);
-  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Xhr",
-                            xhr_complete);
-}
-
 void HandleLoadTerminationCancel(
     Offliner::CompletionCallback completion_callback,
     const SavePageRequest& canceled_request) {
@@ -166,39 +155,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
        IsNetworkPredictionDisabled(browser_context_))) {
     DVLOG(1) << "WARNING: Unable to load when 3rd party cookies blocked or "
              << "prediction disabled";
-    // Record user metrics for third party cookies being disabled or network
-    // prediction being disabled.
-    if (AreThirdPartyCookiesBlocked(browser_context_)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "OfflinePages.Background.CctApiDisableStatus",
-          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                               THIRD_PARTY_COOKIES_DISABLED),
-          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                               NETWORK_PREDICTION_DISABLED) +
-              1);
-    }
-    if (IsNetworkPredictionDisabled(browser_context_)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "OfflinePages.Background.CctApiDisableStatus",
-          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                               NETWORK_PREDICTION_DISABLED),
-          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                               NETWORK_PREDICTION_DISABLED) +
-              1);
-    }
-
     return false;
-  }
-
-  // Record UMA that the load was allowed to proceed.
-  if (request.client_id().name_space == kCCTNamespace) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OfflinePages.Background.CctApiDisableStatus",
-        static_cast<int>(
-            OfflinePagesCctApiPrerenderAllowedStatus::PRERENDER_ALLOWED),
-        static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                             NETWORK_PREDICTION_DISABLED) +
-            1);
   }
 
   if (!OfflinePageModel::CanSaveURL(request.url())) {
@@ -294,6 +251,7 @@ void BackgroundLoaderOffliner::CanDownload(
     base::OnceCallback<void(bool)> callback) {
   if (!pending_request_.get()) {
     std::move(callback).Run(false);  // Shouldn't happen though...
+    return;
   }
 
   bool should_allow_downloads = false;
@@ -486,10 +444,6 @@ void BackgroundLoaderOffliner::StartSnapshot() {
   RequestStats& image_stats = stats_[ResourceDataType::IMAGE];
   RequestStats& css_stats = stats_[ResourceDataType::TEXT_CSS];
   RequestStats& xhr_stats = stats_[ResourceDataType::XHR];
-  bool image_complete = (image_stats.requested == image_stats.completed);
-  bool css_complete = (css_stats.requested == css_stats.completed);
-  bool xhr_complete = (xhr_stats.requested == xhr_stats.completed);
-  RecordResourceCompletionUMA(image_complete, css_complete, xhr_complete);
 
   // Add loading signal into the MHTML that will be generated if the command
   // line flag is set for it.

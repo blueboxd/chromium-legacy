@@ -134,6 +134,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedInfo, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
+  MOCK_METHOD0(ShouldSendLocalBackgroundSelected, bool());
   MOCK_METHOD0(ShouldProcessThemeChangeMessages, bool());
 };
 
@@ -841,6 +842,31 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
 
   EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_)).Times(0);
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
+}
+
+TEST_F(SearchIPCRouterTest, SendLocalBackgroundSelectedMsg) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendLocalBackgroundSelected())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*mock_embedded_search_client(), LocalBackgroundSelected());
+  GetSearchIPCRouter().SendLocalBackgroundSelected();
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendLocalBackgroundSelectedMsg) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendLocalBackgroundSelected())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  EXPECT_CALL(*mock_embedded_search_client(), LocalBackgroundSelected())
+      .Times(0);
+  GetSearchIPCRouter().SendLocalBackgroundSelected();
 }
 
 TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLWithAttributionsMsg) {

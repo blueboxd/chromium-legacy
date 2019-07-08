@@ -54,8 +54,7 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       closed_is_first_stream_(false),
       has_sent_headers_(false),
       send_request_headers_automatically_(true),
-      may_invoke_callbacks_(true),
-      weak_factory_(this) {}
+      may_invoke_callbacks_(true) {}
 
 BidirectionalStreamQuicImpl::~BidirectionalStreamQuicImpl() {
   if (stream_) {

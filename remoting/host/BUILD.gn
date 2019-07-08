@@ -486,6 +486,7 @@ source_set("unit_tests") {
     "desktop_process_unittest.cc",
     "desktop_session_agent_unittest.cc",
     "ftl_host_change_notification_listener_unittest.cc",
+    "ftl_signaling_connector_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
     "heartbeat_sender_unittest.cc",

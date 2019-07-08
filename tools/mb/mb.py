@@ -1283,11 +1283,10 @@ class MetaBuildWrapper(object):
       ]
     elif test_type == 'script':
       cmdline = []
-      # If we're testing a CrOS simplechrome build, assume we need to launch a
-      # VM first. So prepend the command to run with the VM launcher.
-      # TODO(bpastene): Differentiate between CrOS VM and hardware tests.
+      # If we're testing a CrOS simplechrome build, assume we need to prepare a
+      # DUT for testing. So prepend the command to run with the test wrapper.
       if is_simplechrome:
-        cmdline = [os.path.join('bin', 'launch_cros_vm')]
+        cmdline = [os.path.join('bin', 'cros_test_wrapper')]
       cmdline += [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])

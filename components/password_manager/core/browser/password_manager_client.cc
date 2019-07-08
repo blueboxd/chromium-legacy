@@ -37,12 +37,11 @@ void PasswordManagerClient::GeneratePassword() {}
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
     const GURL& origin,
-    const std::vector<const autofill::PasswordForm*>* federated_matches) const {
-}
+    const std::vector<const autofill::PasswordForm*>* federated_matches) {}
 
 void PasswordManagerClient::AutofillHttpAuth(
     const autofill::PasswordForm& preferred_match,
-    const PasswordFormManagerForUI* form_manager) const {}
+    const PasswordFormManagerForUI* form_manager) {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;

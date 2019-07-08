@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -36,6 +37,7 @@ public class ProgressBarMediatorTest {
     private static final String SAMPLE_URL = "https://www.google.com/chrome";
     private static final String SAMPLE_URL_SHORT = "google.com";
 
+    private ProgressBarMediator mProgressBarMediator;
     private PropertyModel mModel;
     private ArgumentCaptor<TabObserver> mTabObserver;
     private Tab mTab;
@@ -48,32 +50,29 @@ public class ProgressBarMediatorTest {
                 return SAMPLE_URL_SHORT;
             }
         });
-    }
-
-    private ProgressBarMediator initProgressBarMediator() {
-        mModel = spy(new PropertyModel.Builder(ProgressBarProperties.ALL_KEYS).build());
+        mModel = new PropertyModel.Builder(ProgressBarProperties.ALL_KEYS).build();
         mTabObserver = ArgumentCaptor.forClass(TabObserver.class);
         mTab = mock(Tab.class);
         ActivityTabProvider activityTabProvider = spy(ActivityTabProvider.class);
         when(activityTabProvider.get()).thenReturn(mTab);
-        ProgressBarMediator progressBarMediator =
-                new ProgressBarMediator(mModel, activityTabProvider);
+        mProgressBarMediator = new ProgressBarMediator(mModel, activityTabProvider);
         verify(mTab).addObserver(mTabObserver.capture());
-        return progressBarMediator;
     }
 
     @Test
     public void visibilityTest() {
-        ProgressBarMediator progressBarMediator = initProgressBarMediator();
+        NavigationHandle navigationHandle = mock(NavigationHandle.class);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), false);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
-        mTabObserver.getValue().onPageLoadStarted(mTab, SAMPLE_URL);
+        when(navigationHandle.isInMainFrame()).thenReturn(true);
+        when(navigationHandle.getUrl()).thenReturn(SAMPLE_URL);
+        mTabObserver.getValue().onDidStartNavigation(mTab, navigationHandle);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
 
         // Mock page load finish, but not display timeout. The progress bar should still be visible.
-        mTabObserver.getValue().onPageLoadFinished(mTab, SAMPLE_URL);
+        mTabObserver.getValue().onLoadStopped(mTab, true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
 
@@ -83,7 +82,7 @@ public class ProgressBarMediatorTest {
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
         // The progress bar should be shown on activity resume.
-        progressBarMediator.onActivityResume();
+        mProgressBarMediator.onActivityResume();
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
 
@@ -93,12 +92,14 @@ public class ProgressBarMediatorTest {
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
         // The progress bar should be disabled for native pages.
-        mTabObserver.getValue().onPageLoadStarted(mTab, UrlConstants.NTP_URL);
+        when(navigationHandle.getUrl()).thenReturn(UrlConstants.NTP_URL);
+        mTabObserver.getValue().onDidStartNavigation(mTab, navigationHandle);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), false);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
         // Mock display timeout before page load finish.
-        mTabObserver.getValue().onPageLoadStarted(mTab, SAMPLE_URL);
+        when(navigationHandle.getUrl()).thenReturn(SAMPLE_URL);
+        mTabObserver.getValue().onDidStartNavigation(mTab, navigationHandle);
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
@@ -106,8 +107,13 @@ public class ProgressBarMediatorTest {
 
     @Test
     public void progressAndUrlTest() {
-        initProgressBarMediator();
         Assert.assertNull(mModel.get(ProgressBarProperties.URL));
+
+        NavigationHandle navigationHandle = mock(NavigationHandle.class);
+        when(navigationHandle.isInMainFrame()).thenReturn(true);
+        when(navigationHandle.getUrl()).thenReturn(SAMPLE_URL);
+
+        mTabObserver.getValue().onDidStartNavigation(mTab, navigationHandle);
 
         when(mTab.getUrl()).thenReturn(SAMPLE_URL);
         mTabObserver.getValue().onLoadProgressChanged(mTab, 10);

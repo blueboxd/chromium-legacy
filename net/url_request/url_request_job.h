@@ -462,7 +462,7 @@ class NET_EXPORT URLRequestJob {
   // completed.
   CompletionOnceCallback read_raw_callback_;
 
-  base::WeakPtrFactory<URLRequestJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestJob);
 };

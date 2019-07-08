@@ -4,6 +4,8 @@
 
 #include "content/browser/picture_in_picture/picture_in_picture_session.h"
 
+#include <utility>
+
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -17,14 +19,14 @@ PictureInPictureSession::PictureInPictureSession(
     const gfx::Size& natural_size,
     bool show_play_pause_button,
     bool show_mute_button,
-    mojo::InterfaceRequest<blink::mojom::PictureInPictureSession> request,
-    blink::mojom::PictureInPictureSessionObserverPtr observer,
+    mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
+    mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
     gfx::Size* window_size)
     : service_(service),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       player_id_(player_id),
       observer_(std::move(observer)) {
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PictureInPictureSession::OnConnectionError, base::Unretained(this)));
 
   GetController().SetActiveSession(this);

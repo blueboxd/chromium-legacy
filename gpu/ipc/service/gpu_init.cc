@@ -85,12 +85,12 @@ OverlaySupport FlagsToOverlaySupport(UINT flags) {
 
 void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
 #if defined(OS_WIN)
-// This has to be called after a context is created, active GPU is identified,
-// and GPU driver bug workarounds are computed again. Otherwise the workaround
-// |disable_direct_composition| may not be correctly applied.
-// Also, this has to be called after falling back to SwiftShader decision is
-// finalized because this function depends on GL is ANGLE's GLES or not.
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+  // This has to be called after a context is created, active GPU is identified,
+  // and GPU driver bug workarounds are computed again. Otherwise the workaround
+  // |disable_direct_composition| may not be correctly applied.
+  // Also, this has to be called after falling back to SwiftShader decision is
+  // finalized because this function depends on GL is ANGLE's GLES or not.
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
     DCHECK(gpu_info);
     gpu_info->direct_composition =
         gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();

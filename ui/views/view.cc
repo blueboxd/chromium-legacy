@@ -2848,14 +2848,15 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   if (widget->dragged_view())
     return false;
 
-  OSExchangeData data;
-  WriteDragData(press_pt, &data);
+  std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
+  WriteDragData(press_pt, data.get());
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
   gfx::Point widget_location(event.location());
   ConvertPointToWidget(this, &widget_location);
-  widget->RunShellDrag(this, data, widget_location, drag_operations, source);
+  widget->RunShellDrag(this, std::move(data), widget_location, drag_operations,
+                       source);
   // WARNING: we may have been deleted.
   return true;
 }

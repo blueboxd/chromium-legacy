@@ -59,7 +59,7 @@ group("telemetry_chrome_test") {
   if (is_chromeos && cros_board != "") {
     data_deps += [
       "//chromeos:cros_chrome_deploy",
-      "//chromeos:cros_vm_launcher",
+      "//chromeos:cros_test_wrapper",
     ]
   }
 

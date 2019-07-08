@@ -189,7 +189,7 @@ class MODULES_EXPORT CachedStorageArea
 
   Persistent<HeapHashMap<WeakMember<Source>, String>> areas_;
 
-  base::WeakPtrFactory<CachedStorageArea> weak_factory_;
+  base::WeakPtrFactory<CachedStorageArea> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CachedStorageArea);
 };

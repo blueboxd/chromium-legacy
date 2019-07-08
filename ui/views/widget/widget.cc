@@ -807,7 +807,7 @@ ui::InputMethod* Widget::GetInputMethod() {
 }
 
 void Widget::RunShellDrag(View* view,
-                          const ui::OSExchangeData& data,
+                          std::unique_ptr<ui::OSExchangeData> data,
                           const gfx::Point& location,
                           int operation,
                           ui::DragDropTypes::DragEventSource source) {
@@ -818,7 +818,8 @@ void Widget::RunShellDrag(View* view,
     observer.OnWidgetDragWillStart(this);
 
   WidgetDeletionObserver widget_deletion_observer(this);
-  native_widget_->RunShellDrag(view, data, location, operation, source);
+  native_widget_->RunShellDrag(view, std::move(data), location, operation,
+                               source);
 
   // The widget may be destroyed during the drag operation.
   if (!widget_deletion_observer.IsWidgetAlive())
@@ -1042,11 +1043,6 @@ void Widget::OnSizeConstraintsChanged() {
 }
 
 void Widget::OnOwnerClosing() {}
-
-void Widget::OnCanActivateChanged() {
-  if (native_widget_)
-    native_widget_->OnCanActivateChanged();
-}
 
 std::string Widget::GetName() const {
   return native_widget_->GetName();

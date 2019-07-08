@@ -267,8 +267,7 @@ class QuicStreamFactory::CertVerifierJob {
             std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
                                                          net_log)),
         start_time_(base::TimeTicks::Now()),
-        net_log_(net_log),
-        weak_factory_(this) {}
+        net_log_(net_log) {}
 
   ~CertVerifierJob() {
     if (verify_callback_)
@@ -319,7 +318,7 @@ class QuicStreamFactory::CertVerifierJob {
   const base::TimeTicks start_time_;
   const NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
-  base::WeakPtrFactory<CertVerifierJob> weak_factory_;
+  base::WeakPtrFactory<CertVerifierJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifierJob);
 };
@@ -500,7 +499,7 @@ class QuicStreamFactory::Job {
   base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
   std::set<QuicStreamRequest*> stream_requests_;
-  base::WeakPtrFactory<Job> weak_factory_;
+  base::WeakPtrFactory<Job> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -533,8 +532,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       host_resolution_finished_(false),
       connection_retried_(false),
       session_(nullptr),
-      network_(NetworkChangeNotifier::kInvalidNetworkHandle),
-      weak_factory_(this) {
+      network_(NetworkChangeNotifier::kInvalidNetworkHandle) {
   net_log_.BeginEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB,
       base::Bind(&NetLogQuicStreamFactoryJobCallback, &key_.server_id()));
@@ -1156,8 +1154,7 @@ QuicStreamFactory::QuicStreamFactory(
       ssl_config_service_(ssl_config_service),
       enable_socket_recv_optimization_(enable_socket_recv_optimization),
       initial_rtt_for_handshake_milliseconds_(
-          initial_rtt_for_handshake_milliseconds),
-      weak_factory_(this) {
+          initial_rtt_for_handshake_milliseconds) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   crypto_config_.set_user_agent_id(user_agent_id);

@@ -205,6 +205,7 @@ class SearchBox : public content::RenderFrameObserver,
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
   void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
+  void LocalBackgroundSelected() override;
 
   void AddCustomLinkResult(bool success);
   void UpdateCustomLinkResult(bool success);

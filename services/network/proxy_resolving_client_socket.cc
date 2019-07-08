@@ -42,8 +42,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
       use_tls_(use_tls),
       net_log_(net::NetLogWithSource::Make(network_session_->net_log(),
                                            net::NetLogSourceType::SOCKET)),
-      next_state_(STATE_NONE),
-      weak_factory_(this) {
+      next_state_(STATE_NONE) {
   // TODO(xunjieli): Handle invalid URLs more gracefully (at mojo API layer
   // or when the request is created).
   DCHECK(url_.is_valid());

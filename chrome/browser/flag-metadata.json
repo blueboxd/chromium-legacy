@@ -2129,7 +2129,7 @@
   {
     "name": "grid-layout-for-ntp-shortcuts",
     "owners": [ "kristipark", "ramyan" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 78
   },
   {
     "name": "handwriting-gesture",

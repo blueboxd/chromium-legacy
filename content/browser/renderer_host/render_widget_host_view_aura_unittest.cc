@@ -170,26 +170,6 @@ std::string GetMessageNames(
   return base::JoinString(result, " ");
 }
 
-uint64_t FrameIndexForView(RenderWidgetHostViewAura* view) {
-  return ImageTransportFactory::GetInstance()
-      ->GetContextFactoryPrivate()
-      ->GetFrameSinkManager()
-      ->surface_manager()
-      ->GetSurfaceForId(view->GetCurrentSurfaceId())
-      ->GetActiveFrameIndex();
-}
-
-const gfx::Rect& DamageRectForView(RenderWidgetHostViewAura* view) {
-  return ImageTransportFactory::GetInstance()
-      ->GetContextFactoryPrivate()
-      ->GetFrameSinkManager()
-      ->surface_manager()
-      ->GetSurfaceForId(view->GetCurrentSurfaceId())
-      ->GetActiveFrame()
-      .render_pass_list.back()
-      ->damage_rect;
-}
-
 // Simple observer that keeps track of changes to a window for tests.
 class TestWindowObserver : public aura::WindowObserver {
  public:
@@ -626,6 +606,15 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void SendNotConsumedAcks(MockWidgetInputHandler::MessageVector& events) {
     events.clear();
+  }
+
+  // TODO(crbug.com/844469): Delete this helper once Viz launches as it will be
+  // obsolete.
+  viz::FrameSinkManagerImpl* GetFrameSinkManager() {
+    DCHECK(!features::IsVizDisplayCompositorEnabled());
+    return view_->GetDelegatedFrameHost()
+        ->GetCompositorFrameSinkSupportForTesting()
+        ->frame_sink_manager();
   }
 
   const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
@@ -3094,12 +3083,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   if (features::IsVizDisplayCompositorEnabled())
     return;
 
-  viz::FakeSurfaceObserver manager_observer;
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
-                                     ->GetFrameSinkManager()
-                                     ->surface_manager();
-  manager->AddObserver(&manager_observer);
+  viz::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
 
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
@@ -3138,8 +3122,6 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   surface->SendAckToClient();
   view_->renderer_compositor_frame_sink_->Flush();
   EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-
-  manager->RemoveObserver(&manager_observer);
 }
 
 // Resizing in fullscreen mode should send the up-to-date screen info.
@@ -3702,10 +3684,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   view_->SetSize(view_rect.size());
 
   viz::FakeSurfaceObserver observer;
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  viz::SurfaceManager* surface_manager = factory->GetContextFactoryPrivate()
-                                             ->GetFrameSinkManager()
-                                             ->surface_manager();
+  viz::SurfaceManager* surface_manager =
+      GetFrameSinkManager()->surface_manager();
   surface_manager->AddObserver(&observer);
 
   view_->SetNeedsBeginFrames(true);
@@ -5657,12 +5637,8 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   viz::TestLatestLocalSurfaceIdLookupDelegate delegate;
   delegate.SetSurfaceIdMap(
       viz::SurfaceId(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId));
-  viz::FrameSinkManagerImpl* frame_sink_manager =
-      view_->GetDelegatedFrameHost()
-          ->GetCompositorFrameSinkSupportForTesting()
-          ->frame_sink_manager();
   const viz::HitTestRegionList* active_hit_test_region_list =
-      frame_sink_manager->hit_test_manager()->GetActiveHitTestRegionList(
+      GetFrameSinkManager()->hit_test_manager()->GetActiveHitTestRegionList(
           &delegate, surface_id.frame_sink_id());
   EXPECT_EQ(active_hit_test_region_list->flags,
             viz::HitTestRegionFlags::kHitTestMine);

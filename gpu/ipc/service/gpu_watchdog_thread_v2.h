@@ -15,6 +15,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
  public:
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded);
+
+  static std::unique_ptr<GpuWatchdogThreadImplV2>
+  Create(bool start_backgrounded, base::TimeDelta timeout, bool test_mode);
+
   ~GpuWatchdogThreadImplV2() override;
 
   // Implements GpuWatchdogThread.
@@ -23,6 +27,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnForegrounded() override;
   void OnInitComplete() override;
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
+  bool IsGpuHangDetected() override;
 
   // Implements base::Thread.
   void Init() override;
@@ -40,7 +45,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnResume() override;
 
  private:
-  GpuWatchdogThreadImplV2();
+  GpuWatchdogThreadImplV2(base::TimeDelta timeout, bool test_mode);
   void OnAddPowerObserver();
   void OnWatchdogBackgrounded();
   void OnWatchdogForegrounded();
@@ -80,6 +85,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
   bool is_backgrounded_ = false;
+
+  // For gpu testing only.
+  const bool is_test_mode_;
+  // Set by the watchdog thread and Read by the test thread.
+  base::AtomicFlag test_result_timeout_and_gpu_hang_;
 
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
 

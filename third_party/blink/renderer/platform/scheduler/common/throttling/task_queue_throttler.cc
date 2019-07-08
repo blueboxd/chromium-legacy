@@ -76,8 +76,7 @@ TaskQueueThrottler::TaskQueueThrottler(
       tracing_controller_(tracing_controller),
       tick_clock_(thread_scheduler->GetTickClock()),
       time_domain_(new ThrottledTimeDomain()),
-      allow_throttling_(true),
-      weak_factory_(this) {
+      allow_throttling_(true) {
   pump_throttled_tasks_closure_.Reset(base::BindRepeating(
       &TaskQueueThrottler::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
   forward_immediate_work_callback_ =

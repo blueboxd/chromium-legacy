@@ -8,6 +8,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -75,9 +76,9 @@ PageResourceDataUse::PageResourceDataUse()
       is_canceled_(false),
       reported_as_ad_resource_(false),
       is_main_frame_resource_(false),
-      was_fetched_via_cache_(false),
       is_secure_scheme_(false),
-      proxy_used_(false) {}
+      proxy_used_(false),
+      cache_type_(mojom::CacheType::kNotCached) {}
 
 PageResourceDataUse::PageResourceDataUse(const PageResourceDataUse& other) =
     default;
@@ -105,7 +106,8 @@ void PageResourceDataUse::DidStartResponse(
 
   proxy_used_ = !response_head.proxy_server.is_direct();
   mime_type_ = response_head.mime_type;
-  was_fetched_via_cache_ = response_head.was_fetched_via_cache;
+  if (response_head.was_fetched_via_cache)
+    cache_type_ = mojom::CacheType::kHttp;
   is_secure_scheme_ = response_url.SchemeIsCryptographic();
   is_primary_frame_resource_ =
       resource_type == content::ResourceType::kMainFrame ||
@@ -133,6 +135,23 @@ void PageResourceDataUse::DidCancelResponse() {
   is_canceled_ = true;
 }
 
+void PageResourceDataUse::DidLoadFromMemoryCache(const GURL& response_url,
+                                                 int request_id,
+                                                 int64_t encoded_body_length,
+                                                 const std::string& mime_type) {
+  origin_ = url::Origin::Create(response_url);
+  resource_id_ = request_id;
+  mime_type_ = mime_type;
+  is_secure_scheme_ = response_url.SchemeIsCryptographic();
+  cache_type_ = mojom::CacheType::kMemory;
+
+  // Resources from the memory cache cannot be a primary frame resource.
+  is_primary_frame_resource_ = false;
+
+  is_complete_ = true;
+  encoded_body_length_ = encoded_body_length;
+}
+
 bool PageResourceDataUse::IsFinishedLoading() {
   return is_complete_ || is_canceled_;
 }
@@ -154,6 +173,7 @@ int PageResourceDataUse::CalculateNewlyReceivedBytes() {
 }
 
 mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
+  DCHECK(cache_type_ == mojom::CacheType::kMemory ? is_complete_ : true);
   mojom::ResourceDataUpdatePtr resource_data_update =
       mojom::ResourceDataUpdate::New();
   resource_data_update->request_id = resource_id();
@@ -166,7 +186,7 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->is_main_frame_resource = is_main_frame_resource_;
   resource_data_update->mime_type = mime_type_;
   resource_data_update->encoded_body_length = encoded_body_length_;
-  resource_data_update->was_fetched_via_cache = was_fetched_via_cache_;
+  resource_data_update->cache_type = cache_type_;
   resource_data_update->is_secure_scheme = is_secure_scheme_;
   resource_data_update->proxy_used = proxy_used_;
   resource_data_update->is_primary_frame_resource = is_primary_frame_resource_;

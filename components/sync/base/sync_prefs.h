@@ -187,7 +187,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   void OnSyncManagedPrefChanged();
   void OnFirstSetupCompletePrefChange();
-  void OnSyncSuppressedPrefChange();
+  void OnSyncRequestedPrefChange();
 
   // Never null.
   PrefService* const pref_service_;
@@ -200,7 +200,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   BooleanPrefMember pref_first_setup_complete_;
 
-  BooleanPrefMember pref_sync_suppressed_;
+  BooleanPrefMember pref_sync_requested_;
 
   bool local_sync_enabled_;
 
@@ -218,6 +218,7 @@ void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
 #if defined(OS_CHROMEOS)
 void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service);
 #endif  // defined(OS_CHROMEOS)
+void MigrateSyncSuppressedPref(PrefService* pref_service);
 
 }  // namespace syncer
 

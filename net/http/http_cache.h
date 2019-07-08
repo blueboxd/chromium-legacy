@@ -663,7 +663,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<HttpCache> weak_factory_;
+  base::WeakPtrFactory<HttpCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpCache);
 };

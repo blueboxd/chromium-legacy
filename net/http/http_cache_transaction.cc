@@ -193,8 +193,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       parallel_writing_pattern_(PARALLEL_WRITING_NONE),
       moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(nullptr),
-      in_do_loop_(false),
-      weak_factory_(this) {
+      in_do_loop_(false) {
   TRACE_EVENT0("io", "HttpCacheTransaction::Transaction");
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
                     base::size(kValidationHeaders),

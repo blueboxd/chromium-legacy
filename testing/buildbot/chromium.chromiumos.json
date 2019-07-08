@@ -141,7 +141,7 @@
             }
           ]
         },
-        "test": "cros_vm_sanity_test"
+        "test": "cros_browser_sanity_test"
       },
       {
         "merge": {
@@ -627,7 +627,7 @@
             }
           ]
         },
-        "test": "cros_vm_sanity_test",
+        "test": "cros_browser_sanity_test",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }

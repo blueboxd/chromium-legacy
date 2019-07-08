@@ -60,6 +60,6 @@ interface PictureInPictureService {
       gfx.mojom.Size natural_size,
       bool show_play_pause_button,
       bool show_mute_button,
-      PictureInPictureSessionObserver observer)
-          => (PictureInPictureSession? session, gfx.mojom.Size size);
+      pending_remote<PictureInPictureSessionObserver> observer)
+          => (pending_remote<PictureInPictureSession>? session, gfx.mojom.Size size);
 };

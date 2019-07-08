@@ -14,10 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_descriptor_cast.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_service_cast.h"
 #include "device/bluetooth/cast/bluetooth_utils.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
 namespace {

@@ -179,8 +179,7 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
       requested_sub_protocols_(std::move(requested_sub_protocols)),
       requested_extensions_(std::move(requested_extensions)),
       stream_request_(request),
-      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
-      weak_ptr_factory_(this) {
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager) {
   DCHECK(connect_delegate);
   DCHECK(request);
 }

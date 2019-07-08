@@ -486,8 +486,7 @@ int TestWebFrameClient::loads_in_progress_ = 0;
 
 TestWebFrameClient::TestWebFrameClient()
     : interface_provider_(new service_manager::InterfaceProvider()),
-      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown),
-      weak_factory_(this) {}
+      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {

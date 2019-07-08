@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -49,6 +50,10 @@ public class DownloadUtilsTest {
     @Before
     public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER, false);
+        ChromeFeatureList.setTestFeatures(features);
     }
 
     @After

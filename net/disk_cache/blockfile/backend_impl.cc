@@ -173,8 +173,7 @@ BackendImpl::BackendImpl(
       consider_evicting_at_op_end_(false),
       net_log_(net_log),
       done_(base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED),
-      ptr_factory_(this) {}
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 BackendImpl::BackendImpl(
     const base::FilePath& path,
@@ -202,8 +201,7 @@ BackendImpl::BackendImpl(
       consider_evicting_at_op_end_(false),
       net_log_(net_log),
       done_(base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED),
-      ptr_factory_(this) {}
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 BackendImpl::~BackendImpl() {
   if (user_flags_ & kNoRandom) {
@@ -1936,11 +1934,6 @@ void BackendImpl::ReportStats() {
   stats_.SetCounter(Stats::FATAL_ERROR, 0);
   stats_.SetCounter(Stats::DOOM_CACHE, 0);
   stats_.SetCounter(Stats::DOOM_RECENT, 0);
-
-  int age = (Time::Now() -
-             Time::FromInternalValue(data_->header.create_time)).InHours();
-  if (age)
-    CACHE_UMA(HOURS, "FilesAge", 0, age);
 
   int64_t total_hours = stats_.GetCounter(Stats::TIMER) / 120;
   if (!data_->header.create_time || !data_->header.lru.filled) {

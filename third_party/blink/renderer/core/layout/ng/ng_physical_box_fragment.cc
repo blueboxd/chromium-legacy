@@ -152,7 +152,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   return PhysicalRect({}, Size());
 }
 
-IntSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
+LayoutSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
   const LayoutBox* box = ToLayoutBox(GetLayoutObject());
   return box->ScrolledContentOffset();

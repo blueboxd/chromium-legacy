@@ -144,17 +144,6 @@ TestImageTransportFactory::GetHostFrameSinkManager() {
   return &host_frame_sink_manager_;
 }
 
-viz::FrameSinkManagerImpl* TestImageTransportFactory::GetFrameSinkManager() {
-  if (enable_viz_) {
-    // Nothing should use FrameSinkManagerImpl with VizDisplayCompositor
-    // enabled.
-    NOTREACHED();
-    return nullptr;
-  }
-
-  return frame_sink_manager_impl_.get();
-}
-
 void TestImageTransportFactory::DisableGpuCompositing() {
   NOTIMPLEMENTED();
 }

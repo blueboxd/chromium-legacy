@@ -194,8 +194,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
       : should_connect_(should_connect),
         is_connected_(false),
         addrlist_(addrlist),
-        net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)),
-        weak_factory_(this) {}
+        net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {}
 
   // Call this method to get a closure which will trigger the connect callback
   // when called. The closure can be called even after the socket is deleted; it
@@ -322,7 +321,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
   CompletionOnceCallback callback_;
   ConnectionAttempts connection_attempts_;
 
-  base::WeakPtrFactory<MockTriggerableClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockTriggerableClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockTriggerableClientSocket);
 };

@@ -265,7 +265,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   const base::TimeDelta delay_for_background_and_network_idle_tab_freezing_;
 
   std::unique_ptr<PageLifecycleStateTracker> page_lifecycle_state_tracker_;
-  base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<PageSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PageSchedulerImpl);
 };

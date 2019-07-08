@@ -22,6 +22,8 @@ class PageAutoFetcherHelper {
       chrome::mojom::OfflinePageAutoFetcherScheduleResult;
   explicit PageAutoFetcherHelper(content::RenderFrame* render_frame);
   virtual ~PageAutoFetcherHelper();
+  // Should be called for each page load.
+  void OnCommitLoad();
   void TrySchedule(
       bool user_requested,
       base::OnceCallback<void(FetcherScheduleResult)> complete_callback);

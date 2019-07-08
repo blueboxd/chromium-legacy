@@ -7223,6 +7223,12 @@
     "scripts": [
       {
         "isolate_coverage_data": true,
+        "name": "check_static_initializers",
+        "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
+        "isolate_coverage_data": true,
         "name": "checkdeps",
         "script": "checkdeps.py",
         "swarming": {}

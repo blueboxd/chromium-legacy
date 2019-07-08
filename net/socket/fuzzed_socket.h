@@ -131,7 +131,7 @@ class FuzzedSocket : public TransportClientSocket {
 
   IPEndPoint remote_address_;
 
-  base::WeakPtrFactory<FuzzedSocket> weak_factory_;
+  base::WeakPtrFactory<FuzzedSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedSocket);
 };

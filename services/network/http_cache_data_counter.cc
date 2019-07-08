@@ -59,8 +59,7 @@ HttpCacheDataCounter::HttpCacheDataCounter(
     HttpCacheDataCounterCallback callback)
     : start_time_(start_time),
       end_time_(end_time),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 HttpCacheDataCounter::~HttpCacheDataCounter() {}
 

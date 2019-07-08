@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE URLRequestFileDirJob
   scoped_refptr<IOBuffer> read_buffer_;
   int read_buffer_length_;
 
-  base::WeakPtrFactory<URLRequestFileDirJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestFileDirJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestFileDirJob);
 };

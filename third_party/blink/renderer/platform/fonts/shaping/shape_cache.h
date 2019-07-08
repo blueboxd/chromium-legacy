@@ -109,7 +109,7 @@ class ShapeCache {
   };
 
  public:
-  ShapeCache() : weak_factory_(this) {
+  ShapeCache() {
     // TODO(cavalcantii): Investigate tradeoffs of reserving space
     // in short_string_map.
   }
@@ -233,7 +233,7 @@ class ShapeCache {
   SingleCharMap single_char_map_;
   SmallStringMap short_string_map_;
   unsigned version_ = 0;
-  base::WeakPtrFactory<ShapeCache> weak_factory_;
+  base::WeakPtrFactory<ShapeCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShapeCache);
 };

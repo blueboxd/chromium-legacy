@@ -37,6 +37,8 @@ const char* GetDangerTypeString(
       return "UncommonContent";
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return "PotentiallyUnwanted";
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+      return "AsyncScanning";
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:

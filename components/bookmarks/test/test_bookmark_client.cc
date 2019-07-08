@@ -36,33 +36,26 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
       new BookmarkModel(std::move(client)));
   std::unique_ptr<BookmarkLoadDetails> details =
       std::make_unique<BookmarkLoadDetails>(client_ptr);
-  details->LoadExtraNodes();
+  details->LoadExtraNode();
   details->CreateUrlIndex();
   bookmark_model->DoneLoading(std::move(details));
   return bookmark_model;
 }
 
-void TestBookmarkClient::SetExtraNodesToLoad(
-    BookmarkPermanentNodeList extra_nodes) {
-  extra_nodes_ = std::move(extra_nodes);
-  // Keep a copy of the nodes in |unowned_extra_nodes_| for the accessor
+void TestBookmarkClient::SetExtraNodeToLoad(
+    std::unique_ptr<BookmarkPermanentNode> extra_node) {
+  extra_node_ = std::move(extra_node);
+  // Keep a copy of the node in |unowned_extra_node_| for the accessor
   // functions.
-  for (const auto& node : extra_nodes_)
-    unowned_extra_nodes_.push_back(node.get());
+  unowned_extra_node_ = extra_node_.get();
 }
 
 bool TestBookmarkClient::IsExtraNodeRoot(const BookmarkNode* node) {
-  return base::Contains(unowned_extra_nodes_, node);
+  return unowned_extra_node_ == node;
 }
 
 bool TestBookmarkClient::IsAnExtraNode(const BookmarkNode* node) {
-  if (!node)
-    return false;
-  for (const auto* extra_node : unowned_extra_nodes_) {
-    if (node->HasAncestor(extra_node))
-      return true;
-  }
-  return false;
+  return node && node->HasAncestor(unowned_extra_node_);
 }
 
 bool TestBookmarkClient::IsPermanentNodeVisible(
@@ -77,9 +70,9 @@ bool TestBookmarkClient::IsPermanentNodeVisible(
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
-LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
-  return base::BindOnce(&TestBookmarkClient::LoadExtraNodes,
-                        std::move(extra_nodes_));
+LoadExtraCallback TestBookmarkClient::GetLoadExtraNodeCallback() {
+  return base::BindOnce(&TestBookmarkClient::LoadExtraNode,
+                        std::move(extra_node_));
 }
 
 bool TestBookmarkClient::CanSetPermanentNodeTitle(
@@ -104,10 +97,10 @@ void TestBookmarkClient::DecodeBookmarkSyncMetadata(
     const base::RepeatingClosure& schedule_save_closure) {}
 
 // static
-BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
-    BookmarkPermanentNodeList extra_nodes,
+std::unique_ptr<BookmarkPermanentNode> TestBookmarkClient::LoadExtraNode(
+    std::unique_ptr<BookmarkPermanentNode> extra_node,
     int64_t* next_id) {
-  return extra_nodes;
+  return extra_node;
 }
 
 }  // namespace bookmarks

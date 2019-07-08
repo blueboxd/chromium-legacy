@@ -14,7 +14,7 @@ namespace blink {
 // A simple class for mocking CodeCacheLoader.
 class CodeCacheLoaderMock : public CodeCacheLoader {
  public:
-  CodeCacheLoaderMock() : weak_ptr_factory_(this) {}
+  CodeCacheLoaderMock() {}
   ~CodeCacheLoaderMock() override = default;
 
   // CodeCacheLoader methods:
@@ -29,7 +29,7 @@ class CodeCacheLoaderMock : public CodeCacheLoader {
   base::WeakPtr<CodeCacheLoaderMock> GetWeakPtr();
 
  private:
-  base::WeakPtrFactory<CodeCacheLoaderMock> weak_ptr_factory_;
+  base::WeakPtrFactory<CodeCacheLoaderMock> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CodeCacheLoaderMock);
 };

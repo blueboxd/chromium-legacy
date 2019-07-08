@@ -35,8 +35,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
   return static_cast<MediaStreamVideoSource*>(source.GetPlatformSource());
 }
 
-MediaStreamVideoSource::MediaStreamVideoSource()
-    : state_(NEW), weak_factory_(this) {
+MediaStreamVideoSource::MediaStreamVideoSource() : state_(NEW) {
   track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
       Platform::Current()->GetIOTaskRunner(), GetWeakPtr());
 }

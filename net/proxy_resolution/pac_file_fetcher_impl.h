@@ -161,7 +161,7 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
 
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.
-  base::WeakPtrFactory<PacFileFetcherImpl> weak_factory_;
+  base::WeakPtrFactory<PacFileFetcherImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PacFileFetcherImpl);
 };

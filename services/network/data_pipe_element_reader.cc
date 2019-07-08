@@ -21,8 +21,7 @@ DataPipeElementReader::DataPipeElementReader(
       data_pipe_getter_(std::move(data_pipe_getter)),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+                      base::SequencedTaskRunnerHandle::Get()) {}
 
 DataPipeElementReader::~DataPipeElementReader() {}
 

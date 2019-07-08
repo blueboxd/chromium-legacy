@@ -118,7 +118,8 @@ class BASE_EXPORT TaskTracker {
   // (which indicates that it should be reenqueued). WillPostTask() must have
   // allowed the task in front of |task_source| to be posted before this is
   // called.
-  RegisteredTaskSource RunAndPopNextTask(RegisteredTaskSource task_source);
+  RegisteredTaskSource RunAndPopNextTask(
+      RunIntentWithRegisteredTaskSource task_source);
 
   // Returns true once shutdown has started (StartShutdown() was called).
   // Note: sequential consistency with the thread calling StartShutdown() isn't

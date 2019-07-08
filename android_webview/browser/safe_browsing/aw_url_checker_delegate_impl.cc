@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
@@ -124,8 +125,13 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     const security_interstitials::UnsafeResource& resource,
     SafeBrowsingAction action,
     bool reporting) {
-  if (!reporting)
-    ui_manager->SetExtendedReportingAllowed(false);
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+
+  if (!reporting) {
+    AwBrowserContext* browser_context =
+        AwBrowserContext::FromWebContents(web_contents);
+    browser_context->SetExtendedReportingAllowed(false);
+  }
 
   // TODO(ntfschr): fully handle reporting once we add support (crbug/688629)
   bool proceed;
@@ -147,7 +153,6 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
       NOTREACHED();
   }
 
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
   content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
   GURL main_frame_url = entry ? entry->GetURL() : GURL();
 

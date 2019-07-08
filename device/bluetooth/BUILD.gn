@@ -78,6 +78,7 @@ source_set("fake_bluetooth") {
 
   deps = [
     ":bluetooth",
+    "//device/bluetooth/public/cpp",
     "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
     "//mojo/public/cpp/bindings",
   ]
@@ -206,8 +207,6 @@ component("bluetooth") {
     "bluetooth_socket_win.h",
     "bluetooth_task_manager_win.cc",
     "bluetooth_task_manager_win.h",
-    "bluetooth_uuid.cc",
-    "bluetooth_uuid.h",
     "string_util_icu.cc",
     "string_util_icu.h",
   ]
@@ -227,6 +226,10 @@ component("bluetooth") {
     "//net",
     "//third_party/re2",
     "//ui/base",
+  ]
+
+  public_deps = [
+    "//device/bluetooth/public/cpp",
   ]
 
   if (is_android) {
@@ -447,9 +450,7 @@ component("bluetooth") {
           "cast/bluetooth_utils.h",
         ]
 
-        public_deps = [
-          "//chromecast/public",
-        ]
+        public_deps += [ "//chromecast/public" ]
 
         deps += [
           "//chromecast/device/bluetooth:util",
@@ -496,6 +497,7 @@ static_library("mocks") {
   public_deps = [
     ":bluetooth",
     "//base",
+    "//device/bluetooth/public/cpp",
     "//net",
     "//testing/gmock",
   ]

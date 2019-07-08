@@ -59,7 +59,7 @@ class MODULES_EXPORT HtmlAudioElementCapturerSource final
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<HtmlAudioElementCapturerSource> weak_factory_;
+  base::WeakPtrFactory<HtmlAudioElementCapturerSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HtmlAudioElementCapturerSource);
 };

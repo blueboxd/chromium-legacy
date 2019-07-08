@@ -67,8 +67,7 @@ QuicHttpStream::QuicHttpStream(
       user_buffer_len_(0),
       session_error_(ERR_UNEXPECTED),
       found_promise_(false),
-      in_loop_(false),
-      weak_factory_(this) {}
+      in_loop_(false) {}
 
 QuicHttpStream::~QuicHttpStream() {
   CHECK(!in_loop_);

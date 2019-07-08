@@ -15,9 +15,7 @@
 namespace blink {
 
 MediaStreamAudioTrack::MediaStreamAudioTrack(bool is_local_track)
-    : WebPlatformMediaStreamTrack(is_local_track),
-      is_enabled_(1),
-      weak_factory_(this) {
+    : WebPlatformMediaStreamTrack(is_local_track), is_enabled_(1) {
   DVLOG(1) << "MediaStreamAudioTrack@" << this << "::MediaStreamAudioTrack("
            << (is_local_track ? "local" : "remote") << " track)";
 }

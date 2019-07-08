@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -26,7 +27,11 @@ class EGLApiTest : public testing::Test {
     g_driver_egl.fn.eglGetErrorFn = &FakeGetError;
     g_driver_egl.fn.eglGetProcAddressFn = &FakeGetProcAddress;
 
+#if defined(OS_WIN)
+    SetGLImplementation(kGLImplementationEGLANGLE);
+#else
     SetGLImplementation(kGLImplementationEGLGLES2);
+#endif
   }
 
   void TearDown() override {

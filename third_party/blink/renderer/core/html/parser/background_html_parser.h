@@ -133,7 +133,7 @@ class BackgroundHTMLParser {
 
   bool starting_script_;
 
-  base::WeakPtrFactory<BackgroundHTMLParser> weak_factory_;
+  base::WeakPtrFactory<BackgroundHTMLParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundHTMLParser);
 };

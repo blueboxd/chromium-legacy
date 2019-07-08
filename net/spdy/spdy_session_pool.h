@@ -447,7 +447,7 @@ class NET_EXPORT SpdySessionPool
 
   NetworkQualityEstimator* network_quality_estimator_;
 
-  base::WeakPtrFactory<SpdySessionPool> weak_ptr_factory_;
+  base::WeakPtrFactory<SpdySessionPool> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPool);
 };

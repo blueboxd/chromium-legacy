@@ -113,9 +113,6 @@ class ScopedTaskEnvironment {
     DEFAULT = ASYNC
   };
 
-  // TODO(carlscab): Deprecated. Migrate all uses and remove.
-  using ExecutionMode = ThreadPoolExecutionMode;
-
   enum class NowSource {
     // base::Time::Now() and base::TimeTicks::Now() are real time.
     REAL_TIME,

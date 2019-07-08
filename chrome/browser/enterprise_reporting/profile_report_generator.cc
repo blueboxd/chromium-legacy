@@ -5,6 +5,8 @@
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 
 #include "base/files/file_path.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,10 +14,12 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
 
 namespace enterprise_reporting {
 
-ProfileReportGenerator::ProfileReportGenerator() = default;
+ProfileReportGenerator::ProfileReportGenerator() : weak_ptr_factory_(this) {}
 
 ProfileReportGenerator::~ProfileReportGenerator() = default;
 
@@ -27,21 +31,31 @@ void ProfileReportGenerator::set_policies_enabled(bool enabled) {
   policies_enabled_ = enabled;
 }
 
-std::unique_ptr<em::ChromeUserProfileInfo>
-ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
-                                      const std::string& name) {
+void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
+                                           const std::string& name,
+                                           ReportCallback callback) {
+  callback_ = std::move(callback);
+
   profile_ = g_browser_process->profile_manager()->GetProfileByPath(path);
-  if (!profile_)
-    return nullptr;
+
+  if (!profile_) {
+    CheckReportStatusAsync();
+    return;
+  }
 
   report_ = std::make_unique<em::ChromeUserProfileInfo>();
   report_->set_id(path.AsUTF8Unsafe());
   report_->set_name(name);
   report_->set_is_full_report(true);
 
-  GetSigninUserInfo();
+  is_plugin_info_ready_ = false;
 
-  return std::move(report_);
+  GetSigninUserInfo();
+  GetExtensionInfo();
+  GetPluginInfo();
+
+  CheckReportStatusAsync();
+  return;
 }
 
 void ProfileReportGenerator::GetSigninUserInfo() {
@@ -58,6 +72,51 @@ void ProfileReportGenerator::GetExtensionInfo() {
   if (!extensions_and_plugins_enabled_)
     return;
   AppendExtensionInfoIntoProfileReport(profile_, report_.get());
+}
+
+void ProfileReportGenerator::GetPluginInfo() {
+  if (!extensions_and_plugins_enabled_) {
+    is_plugin_info_ready_ = true;
+    return;
+  }
+
+  content::PluginService::GetInstance()->GetPlugins(
+      base::BindOnce(&ProfileReportGenerator::OnPluginsLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ProfileReportGenerator::OnPluginsLoaded(
+    const std::vector<content::WebPluginInfo>& plugins) {
+  for (auto plugin : plugins) {
+    auto* plugin_info = report_->add_plugins();
+    plugin_info->set_name(base::UTF16ToUTF8(plugin.name));
+    plugin_info->set_version(base::UTF16ToUTF8(plugin.version));
+    plugin_info->set_filename(plugin.path.BaseName().AsUTF8Unsafe());
+    plugin_info->set_description(base::UTF16ToUTF8(plugin.desc));
+  }
+
+  is_plugin_info_ready_ = true;
+  CheckReportStatus();
+}
+
+void ProfileReportGenerator::CheckReportStatus() {
+  // Report is not generated, return nullptr.
+  if (!report_) {
+    std::move(callback_).Run(nullptr);
+    return;
+  }
+
+  // Report is not ready, quit and wait.
+  if (!is_plugin_info_ready_)
+    return;
+
+  std::move(callback_).Run(std::move(report_));
+}
+
+void ProfileReportGenerator::CheckReportStatusAsync() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ProfileReportGenerator::CheckReportStatus,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace enterprise_reporting

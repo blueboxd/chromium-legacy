@@ -2685,4 +2685,7 @@ const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
 const char kCertificateManagementAllowed[] = "certificate_management_allowed";
 #endif
 
+const char kSharingVapidKey[] = "sharing.vapid_key";
+const char kSharingSyncedDevices[] = "sharing.synced_devices";
+
 }  // namespace prefs

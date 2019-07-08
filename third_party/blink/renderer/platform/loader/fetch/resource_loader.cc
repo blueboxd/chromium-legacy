@@ -181,8 +181,7 @@ class ResourceLoader::CodeCacheRequest {
       : status_(kNoRequestSent),
         code_cache_loader_(std::move(code_cache_loader)),
         gurl_(url),
-        defers_loading_(defers_loading),
-        weak_ptr_factory_(this) {
+        defers_loading_(defers_loading) {
     DCHECK(RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
   }
 
@@ -236,7 +235,7 @@ class ResourceLoader::CodeCacheRequest {
   base::Time cached_code_response_time_;
   base::Time resource_response_time_;
   bool use_isolated_code_cache_ = false;
-  base::WeakPtrFactory<CodeCacheRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<CodeCacheRequest> weak_ptr_factory_{this};
 };
 
 bool ResourceLoader::CodeCacheRequest::FetchFromCodeCache(

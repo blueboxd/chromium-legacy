@@ -187,14 +187,12 @@ class PasswordManagerClient {
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
       const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches)
-      const;
+      const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Sends username/password from |preferred_match| for filling in the http auth
   // prompt.
-  virtual void AutofillHttpAuth(
-      const autofill::PasswordForm& preferred_match,
-      const PasswordFormManagerForUI* form_manager) const;
+  virtual void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
+                                const PasswordFormManagerForUI* form_manager);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;

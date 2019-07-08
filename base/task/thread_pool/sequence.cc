@@ -50,23 +50,41 @@ void Sequence::Transaction::PushTask(Task task) {
   sequence()->queue_.push(std::move(task));
 
   // AddRef() matched by manual Release() when the sequence has no more tasks
-  // to run (in DidRunTask() or Clear()).
+  // to run (in DidProcessTask() or Clear()).
   if (should_be_queued && sequence()->task_runner())
     sequence()->task_runner()->AddRef();
 }
 
-Optional<Task> Sequence::TakeTask() {
+TaskSource::RunIntent Sequence::WillRunTask() {
+  // There should never be a second call to WillRunTask() before DidProcessTask
+  // since the RunIntent is always marked a saturated.
   DCHECK(!has_worker_);
+
+  // It's ok to access |has_worker_| outside of a Transaction since
+  // WillRunTask() is externally synchronized, always called in sequence with
+  // TakeTask() and DidProcessTask() and only called if |!queue_.empty()|, which
+  // means it won't race with WillPushTask()/PushTask().
+  has_worker_ = true;
+  return MakeRunIntent(ConcurrencyStatus::kSaturated);
+}
+
+size_t Sequence::GetMaxConcurrency() const {
+  return 1;
+}
+
+Optional<Task> Sequence::TakeTask() {
+  DCHECK(has_worker_);
   DCHECK(!queue_.empty());
   DCHECK(queue_.front().task);
 
-  has_worker_ = true;
   auto next_task = std::move(queue_.front());
   queue_.pop();
   return std::move(next_task);
 }
 
-bool Sequence::DidRunTask() {
+bool Sequence::DidProcessTask(bool /* was_run */) {
+  // There should never be a call to DidProcessTask without an associated
+  // WillRunTask().
   DCHECK(has_worker_);
   has_worker_ = false;
   if (queue_.empty()) {

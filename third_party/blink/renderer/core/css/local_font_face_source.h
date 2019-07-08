@@ -75,7 +75,7 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
 
   AtomicString font_name_;
   LocalFontHistograms histograms_;
-  base::WeakPtrFactory<LocalFontFaceSource> weak_factory_;
+  base::WeakPtrFactory<LocalFontFaceSource> weak_factory_{this};
 };
 
 }  // namespace blink

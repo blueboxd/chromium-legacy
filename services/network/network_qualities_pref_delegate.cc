@@ -70,8 +70,7 @@ NetworkQualitiesPrefDelegate::NetworkQualitiesPrefDelegate(
     PrefService* pref_service,
     net::NetworkQualityEstimator* network_quality_estimator)
     : prefs_manager_(std::make_unique<PrefDelegateImpl>(pref_service)),
-      network_quality_estimator_(network_quality_estimator),
-      weak_ptr_factory_(this) {
+      network_quality_estimator_(network_quality_estimator) {
   DCHECK(pref_service);
   DCHECK(network_quality_estimator_);
 

@@ -184,7 +184,7 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
 
   for (const auto& lc : other.latency_components()) {
     if (lc.first == type) {
-      AddLatencyNumberWithTimestamp(lc.first, lc.second, 1);
+      AddLatencyNumberWithTimestamp(lc.first, lc.second);
     }
   }
 
@@ -208,7 +208,7 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
 
   for (const auto& lc : other.latency_components()) {
     if (!FindLatency(lc.first, nullptr)) {
-      AddLatencyNumberWithTimestamp(lc.first, lc.second, 1);
+      AddLatencyNumberWithTimestamp(lc.first, lc.second);
     }
   }
 
@@ -221,28 +221,24 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
 }
 
 void LatencyInfo::AddLatencyNumber(LatencyComponentType component) {
-  AddLatencyNumberWithTimestampImpl(component, base::TimeTicks::Now(), 1,
-                                    nullptr);
+  AddLatencyNumberWithTimestampImpl(component, base::TimeTicks::Now(), nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTraceName(
     LatencyComponentType component,
     const char* trace_name_str) {
-  AddLatencyNumberWithTimestampImpl(component, base::TimeTicks::Now(), 1,
+  AddLatencyNumberWithTimestampImpl(component, base::TimeTicks::Now(),
                                     trace_name_str);
 }
 
-void LatencyInfo::AddLatencyNumberWithTimestamp(
-    LatencyComponentType component,
-    base::TimeTicks time,
-    uint32_t event_count) {
-  AddLatencyNumberWithTimestampImpl(component, time, event_count, nullptr);
+void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
+                                                base::TimeTicks time) {
+  AddLatencyNumberWithTimestampImpl(component, time, nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     LatencyComponentType component,
     base::TimeTicks time,
-    uint32_t event_count,
     const char* trace_name_str) {
   const unsigned char* latency_info_enabled =
       g_latency_info_enabled.Get().latency_info_enabled;

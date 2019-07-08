@@ -23,7 +23,7 @@ public class LinkerTests implements Linker.TestRunner {
                              boolean isBrowserProcess) {
         boolean checkSharedRelro;
         if (isBrowserProcess) {
-            // Linker may share RELROs in the browser.
+            // LegacyLinker may share RELROs in the browser.
             switch (Linker.BROWSER_SHARED_RELRO_CONFIG) {
                 case Linker.BROWSER_SHARED_RELRO_CONFIG_NEVER:
                     checkSharedRelro = false;

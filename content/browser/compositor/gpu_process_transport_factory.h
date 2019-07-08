@@ -109,7 +109,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
  private:
   struct PerCompositorData;

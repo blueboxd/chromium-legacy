@@ -92,7 +92,9 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
     bool is_complete) {
   auto resource_data_update =
       page_load_metrics::mojom::ResourceDataUpdate::New();
-  resource_data_update->was_fetched_via_cache = was_cached;
+  resource_data_update->cache_type =
+      was_cached ? page_load_metrics::mojom::CacheType::kHttp
+                 : page_load_metrics::mojom::CacheType::kNotCached;
   resource_data_update->delta_bytes = delta_bytes;
   resource_data_update->received_data_length = delta_bytes;
   resource_data_update->encoded_body_length = encoded_body_length;

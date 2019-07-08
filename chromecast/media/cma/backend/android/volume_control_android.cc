@@ -24,7 +24,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cma/backend/android/audio_track_jni_headers/VolumeControl_jni.h"
 #if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
-#include "jni/VolumeMap_jni.h"
+#include "chromecast/media/cma/backend/android/audio_track_jni_headers/VolumeMap_jni.h"
 #endif
 
 namespace chromecast {

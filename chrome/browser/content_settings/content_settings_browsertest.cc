@@ -12,7 +12,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -21,10 +20,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -33,8 +34,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -746,12 +745,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   TabSpecificContentSettings* tab_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
 
-  content::WindowedNotificationObserver javascript_content_blocked_observer(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      base::BindRepeating(&TabSpecificContentSettings::IsContentBlocked,
-                          base::Unretained(tab_settings),
-                          CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-
   base::string16 expected_title(base::ASCIIToUTF16("Failed"));
   content::TitleWatcher title_watcher(web_contents, expected_title);
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Imported"));
@@ -759,7 +752,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), http_url);
 
   // The import must be blocked.
-  javascript_content_blocked_observer.Wait();
+  ui_test_utils::WaitForViewVisibility(
+      browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
   EXPECT_TRUE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -925,24 +919,16 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     // before the blocked content can be reported to the browser process.
     // See http://crbug.com/306702.
     // Therefore, when expecting blocked content, we must wait until it has been
-    // reported by checking IsContentBlocked() when notified that
-    // NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED. (It is not sufficient to wait
-    // for just the notification because the same notification is reported for
-    // other reasons and the notification contains no indication of what
-    // caused it.)
-    content::WindowedNotificationObserver javascript_content_blocked_observer(
-              chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-              base::Bind(&TabSpecificContentSettings::IsContentBlocked,
-                                   base::Unretained(tab_settings),
-                                   CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-
+    // reported by waiting for the appropriate icon to appear in the location
+    // bar, and checking IsContentBlocked().
     ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path));
 
     // Always wait for the page to load.
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
     if (expect_is_javascript_content_blocked) {
-      javascript_content_blocked_observer.Wait();
+      ui_test_utils::WaitForViewVisibility(
+          browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
     } else {
       // Since there is no notification that content is not blocked and no
       // content is blocked when |expect_is_javascript_content_blocked| is

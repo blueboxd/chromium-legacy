@@ -16,7 +16,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/navigation_entry.h"
@@ -643,17 +645,12 @@ IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, MAYBE_OpenAppFromIframe) {
 
   ui_test_utils::NavigateToURL(
       browser(), GetTestBaseURL("app_process").Resolve("path3/container.html"));
+  ui_test_utils::WaitForViewVisibility(browser(), VIEW_ID_CONTENT_SETTING_POPUP,
+                                       true);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   PopupBlockerTabHelper* popup_blocker_tab_helper =
       PopupBlockerTabHelper::FromWebContents(tab);
-  if (!popup_blocker_tab_helper->GetBlockedPopupsCount()) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-        content::NotificationService::AllSources());
-    observer.Wait();
-  }
-
   EXPECT_EQ(1u, popup_blocker_tab_helper->GetBlockedPopupsCount());
 }
 

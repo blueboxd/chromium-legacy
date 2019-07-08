@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -25,8 +28,8 @@ class VideoWakeLockPictureInPictureSession
     : public mojom::blink::PictureInPictureSession {
  public:
   explicit VideoWakeLockPictureInPictureSession(
-      mojo::InterfaceRequest<mojom::blink::PictureInPictureSession> request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<mojom::blink::PictureInPictureSession> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~VideoWakeLockPictureInPictureSession() override = default;
 
   void Stop(StopCallback callback) final { std::move(callback).Run(); }
@@ -38,7 +41,7 @@ class VideoWakeLockPictureInPictureSession
               bool show_mute_button) final {}
 
  private:
-  mojo::Binding<mojom::blink::PictureInPictureSession> binding_;
+  mojo::Receiver<mojom::blink::PictureInPictureSession> receiver_;
 };
 
 // The VideoWakeLockPictureInPictureService implements the PictureInPicture
@@ -47,30 +50,31 @@ class VideoWakeLockPictureInPictureSession
 class VideoWakeLockPictureInPictureService
     : public mojom::blink::PictureInPictureService {
  public:
-  VideoWakeLockPictureInPictureService() : binding_(this) {}
+  VideoWakeLockPictureInPictureService() : receiver_(this) {}
   ~VideoWakeLockPictureInPictureService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(
-        mojom::blink::PictureInPictureServiceRequest(std::move(handle)));
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::PictureInPictureService>(
+        std::move(handle)));
   }
 
-  void StartSession(uint32_t,
-                    const base::Optional<viz::SurfaceId>&,
-                    const blink::WebSize&,
-                    bool,
-                    bool,
-                    mojom::blink::PictureInPictureSessionObserverPtr,
-                    StartSessionCallback callback) final {
-    mojom::blink::PictureInPictureSessionPtr session_ptr;
+  void StartSession(
+      uint32_t,
+      const base::Optional<viz::SurfaceId>&,
+      const blink::WebSize&,
+      bool,
+      bool,
+      mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
+      StartSessionCallback callback) final {
+    mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote;
     session_.reset(new VideoWakeLockPictureInPictureSession(
-        mojo::MakeRequest(&session_ptr)));
+        session_remote.InitWithNewPipeAndPassReceiver()));
 
-    std::move(callback).Run(std::move(session_ptr), WebSize());
+    std::move(callback).Run(std::move(session_remote), WebSize());
   }
 
  private:
-  mojo::Binding<mojom::blink::PictureInPictureService> binding_;
+  mojo::Receiver<mojom::blink::PictureInPictureService> receiver_;
   std::unique_ptr<VideoWakeLockPictureInPictureSession> session_;
 };
 

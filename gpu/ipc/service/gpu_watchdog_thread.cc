@@ -134,6 +134,10 @@ void GpuWatchdogThreadImplV1::GpuWatchdogHistogram(
   UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
 }
 
+bool GpuWatchdogThreadImplV1::IsGpuHangDetected() {
+  return false;
+}
+
 void GpuWatchdogThreadImplV1::Init() {
   // Schedule the first check.
   OnCheck(false);

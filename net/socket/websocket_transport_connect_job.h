@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   bool had_ipv4_;
   bool had_ipv6_;
 
-  base::WeakPtrFactory<WebSocketTransportConnectJob> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSocketTransportConnectJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTransportConnectJob);
 };

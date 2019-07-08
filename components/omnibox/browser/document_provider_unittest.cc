@@ -673,6 +673,10 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
       "https://www.google.com/url?url=https://drive.google.com/"
       "open?id%3Dthe_doc_id",
       "the_doc_id");
+  CheckDeduper(
+      "https://www.google.com/url?url=https://drive.google.com/"
+      "open?id%3Dthe_doc_id%26Dusp%3Dchrome_omnibox",
+      "the_doc_id");
 
   // URLs that do not represent documents:
   CheckDeduper("https://drive.google.com/b/domain.com/open?id=the_doc-id", "");

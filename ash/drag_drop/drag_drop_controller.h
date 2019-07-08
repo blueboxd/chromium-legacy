@@ -51,7 +51,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
   // Overridden from aura::client::DragDropClient:
-  int StartDragAndDrop(const ui::OSExchangeData& data,
+  int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
@@ -111,7 +111,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   bool enabled_ = false;
   std::unique_ptr<DragImageView> drag_image_;
   gfx::Vector2d drag_image_offset_;
-  const ui::OSExchangeData* drag_data_;
+  std::unique_ptr<ui::OSExchangeData> drag_data_;
   int drag_operation_;
 
   // Window that is currently under the drag cursor.

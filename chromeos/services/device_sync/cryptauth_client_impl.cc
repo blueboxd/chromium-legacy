@@ -393,9 +393,9 @@ void CryptAuthClientImpl::SyncMetadata(
           "cryptauth_v2_devicesync_sync_metadata", "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "CryptAuth V2 Device Manager"
+        sender: "CryptAuth Device Syncer"
         description:
-          "Sends device metadata to CryptAuth and recieves metadata data for "
+          "Sends device metadata to CryptAuth and receives metadata data for "
           "the user's other devices."
         trigger:
           "CryptAuth will potentially instruct the client to invoke "
@@ -435,7 +435,7 @@ void CryptAuthClientImpl::ShareGroupPrivateKey(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "CryptAuth V2 Device Manager"
+        sender: "CryptAuth Device Syncer"
         description:
           "The device shares the group private key by encrypting it with the "
           "public key of the user's other devices."
@@ -504,8 +504,6 @@ void CryptAuthClientImpl::BatchNotifyGroupDevices(
       callback, error_callback, partial_traffic_annotation);
 }
 
-// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
-// when method is used in codebase.
 void CryptAuthClientImpl::BatchGetFeatureStatuses(
     const cryptauthv2::BatchGetFeatureStatusesRequest& request,
     const BatchGetFeatureStatusesCallback& callback,
@@ -516,12 +514,13 @@ void CryptAuthClientImpl::BatchGetFeatureStatuses(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "TBD"
+        sender: "CryptAuth Device Syncer"
         description:
           "The client queries CryptAuth for the state of features on the "
           "user's devices, for example, whether or not Magic Tether is enabled "
           "on any of the user's phones."
-        trigger: "TBD"
+        trigger:
+          "Called after SyncMetadata as part of the v2 DeviceSync flow."
         data: "The user device IDs and feature types to query."
         destination: GOOGLE_OWNED_SERVICE
       }

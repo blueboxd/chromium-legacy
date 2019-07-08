@@ -58,4 +58,9 @@ specific_include_rules = {
     "+gpu/vulkan/init/vulkan_factory.h",
     "+gpu/vulkan/vulkan_implementation.h",
   ],
+
+  "run_all_perftests\.cc": [
+    "+mojo/core/embedder/embedder.h",
+    "+skia/ext/event_tracer_impl.h",
+  ],
 }

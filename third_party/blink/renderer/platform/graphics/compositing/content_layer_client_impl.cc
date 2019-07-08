@@ -28,8 +28,7 @@ ContentLayerClientImpl::ContentLayerClientImpl()
       raster_invalidator_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
                               base::Unretained(this))),
-      layer_state_(PropertyTreeState::Uninitialized()),
-      weak_ptr_factory_(this) {
+      layer_state_(PropertyTreeState::Uninitialized()) {
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 }
 

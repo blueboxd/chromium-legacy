@@ -33,39 +33,7 @@ bool HasIcon(const ContentSettingImageModel& model) {
   return !model.GetIcon(gfx::kPlaceholderColor).IsEmpty();
 }
 
-// Forward all NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED to the specified
-// ContentSettingImageModel.
-class NotificationForwarder : public content::NotificationObserver {
- public:
-  explicit NotificationForwarder(ContentSettingImageModel* model)
-      : model_(model) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-                   content::NotificationService::AllSources());
-  }
-  ~NotificationForwarder() override {}
-
-  void clear() {
-    registrar_.RemoveAll();
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
-      model_->Update(content::Source<content::WebContents>(source).ptr());
-    }
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  ContentSettingImageModel* model_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationForwarder);
-};
-
-class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
-};
+using ContentSettingImageModelTest = ChromeRenderViewHostTestHarness;
 
 TEST_F(ContentSettingImageModelTest, Update) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
@@ -325,13 +293,12 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
 // Regression test for http://crbug.com/161854.
 TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
-  auto content_setting_image_model =
-      ContentSettingImageModel::CreateForContentType(
-          ContentSettingImageModel::ImageType::IMAGES);
-  NotificationForwarder forwarder(content_setting_image_model.get());
+  EXPECT_EQ(nullptr,
+            TabSpecificContentSettings::FromWebContents(web_contents()));
   // Should not crash.
-  TabSpecificContentSettings::CreateForWebContents(web_contents());
-  forwarder.clear();
+  ContentSettingImageModel::CreateForContentType(
+      ContentSettingImageModel::ImageType::IMAGES)
+      ->Update(web_contents());
 }
 
 TEST_F(ContentSettingImageModelTest, SubresourceFilter) {

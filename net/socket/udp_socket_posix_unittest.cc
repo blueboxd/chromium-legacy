@@ -133,8 +133,7 @@ class UDPSocketPosixTest : public TestWithScopedTaskEnvironment {
       : TestWithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         socket_(DatagramSocket::DEFAULT_BIND, &client_log_, NetLogSource()),
-        callback_fired_(false),
-        weak_factory_(this) {
+        callback_fired_(false) {
     write_callback_ = base::BindRepeating(&UDPSocketPosixTest::OnWriteComplete,
                                           weak_factory_.GetWeakPtr());
   }
@@ -236,7 +235,7 @@ class UDPSocketPosixTest : public TestWithScopedTaskEnvironment {
   struct iovec msg_iov_[kNumMsgs];
   struct mmsghdr msgvec_[kNumMsgs];
 #endif
-  base::WeakPtrFactory<UDPSocketPosixTest> weak_factory_;
+  base::WeakPtrFactory<UDPSocketPosixTest> weak_factory_{this};
 };
 
 TEST_F(UDPSocketPosixTest, InternalSendBuffers) {

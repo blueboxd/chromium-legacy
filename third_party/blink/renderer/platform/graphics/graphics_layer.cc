@@ -86,8 +86,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_clipping_mask_layer_(nullptr),
       contents_layer_(nullptr),
       contents_layer_id_(0),
-      rendering_context3d_(0),
-      weak_ptr_factory_(this) {
+      rendering_context3d_(0) {
 #if DCHECK_IS_ON()
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();

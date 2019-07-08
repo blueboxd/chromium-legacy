@@ -222,6 +222,13 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   viz::BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
 
+  const viz::BeginFrameArgs& last_dispatched_begin_main_frame_args() const {
+    return last_dispatched_begin_main_frame_args_;
+  }
+  const viz::BeginFrameArgs& last_activate_origin_frame_args() const {
+    return last_activate_origin_frame_args_;
+  }
+
   void ClearHistory();
 
  protected:
@@ -249,6 +256,17 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   BeginFrameTracker begin_impl_frame_tracker_;
   viz::BeginFrameAck last_begin_frame_ack_;
   viz::BeginFrameArgs begin_main_frame_args_;
+
+  // For keeping track of the original BeginFrameArgs from the Main Thread
+  // that led to the corresponding action, i.e.:
+  //    BeginMainFrame => Commit => Activate => Submit
+  // So, |last_commit_origin_frame_args_| is the BeginFrameArgs that was
+  // dispatched to the main-thread, and lead to the commit to happen.
+  // |last_activate_origin_frame_args_| is then set to that BeginFrameArgs when
+  // the committed change is activated.
+  viz::BeginFrameArgs last_dispatched_begin_main_frame_args_;
+  viz::BeginFrameArgs last_commit_origin_frame_args_;
+  viz::BeginFrameArgs last_activate_origin_frame_args_;
 
   // Task posted for the deadline or drawing phase of the scheduler. This task
   // can be rescheduled e.g. when the condition for the deadline is met, it is

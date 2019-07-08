@@ -427,8 +427,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       policy_enforcer_(context.ct_policy_enforcer),
       pkp_bypassed_(false),
       is_fatal_cert_error_(false),
-      net_log_(stream_socket_->NetLog()),
-      weak_factory_(this) {
+      net_log_(stream_socket_->NetLog()) {
   CHECK(cert_verifier_);
   CHECK(transport_security_state_);
   CHECK(cert_transparency_verifier_);

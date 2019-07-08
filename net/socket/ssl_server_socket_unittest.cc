@@ -103,11 +103,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
 class FakeDataChannel {
  public:
   FakeDataChannel()
-      : read_buf_len_(0),
-        closed_(false),
-        write_called_after_close_(false),
-        weak_factory_(this) {
-  }
+      : read_buf_len_(0), closed_(false), write_called_after_close_(false) {}
 
   int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback) {
     DCHECK(read_callback_.is_null());
@@ -214,7 +210,7 @@ class FakeDataChannel {
   // asynchronously.
   bool write_called_after_close_;
 
-  base::WeakPtrFactory<FakeDataChannel> weak_factory_;
+  base::WeakPtrFactory<FakeDataChannel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDataChannel);
 };
@@ -791,7 +787,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
             connect_callback.GetResult(
                 client_socket_->Connect(connect_callback.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+  auto request_info = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info.get());
 
   // Check that the authority name that arrived in the CertificateRequest
@@ -825,7 +821,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
             connect_callback.GetResult(
                 client_socket_->Connect(connect_callback.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+  auto request_info = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info.get());
 
   // Check that the authority name that arrived in the CertificateRequest
@@ -851,7 +847,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
             connect_callback2.GetResult(
                 client_socket_->Connect(connect_callback2.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info2 = new SSLCertRequestInfo();
+  auto request_info2 = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info2.get());
 
   // Check that the authority name that arrived in the CertificateRequest

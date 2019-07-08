@@ -20,7 +20,7 @@ namespace network {
 class WebSocketFactory::Delegate final : public WebSocket::Delegate {
  public:
   Delegate(WebSocketFactory* factory, int32_t process_id)
-      : factory_(factory), process_id_(process_id), weak_factory_(this) {}
+      : factory_(factory), process_id_(process_id) {}
   ~Delegate() override {}
 
   net::URLRequestContext* GetURLRequestContext() override {
@@ -81,7 +81,7 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
   const int process_id_;
   std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
 
-  base::WeakPtrFactory<Delegate> weak_factory_;
+  base::WeakPtrFactory<Delegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };

@@ -67,7 +67,7 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
   // Whether a write is currently in flight.
   bool write_blocked_;
 
-  base::WeakPtrFactory<QuicSimpleServerPacketWriter> weak_factory_;
+  base::WeakPtrFactory<QuicSimpleServerPacketWriter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerPacketWriter);
 };

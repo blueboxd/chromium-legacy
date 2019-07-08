@@ -264,16 +264,9 @@ OverlayWindowViews::OverlayWindowViews(
 OverlayWindowViews::~OverlayWindowViews() = default;
 
 gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
-  gfx::Rect work_area =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(IsVisible()
-                                        ? GetNativeWindow()
-                                        : controller_->GetInitiatorWebContents()
-                                              ->GetTopLevelNativeWindow())
-          .work_area();
+  gfx::Rect work_area = GetWorkAreaForWindow();
 
-  // Upper bound size of the window is 50% of the display width and height.
-  max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  UpdateMaxSize(work_area, window_bounds_.size());
 
   // Lower bound size of the window is a fixed value to allow for minimal sizes
   // on UI affordances, such as buttons.
@@ -840,6 +833,10 @@ void OverlayWindowViews::OnNativeWidgetMove() {
   // shown.
   window_bounds_ = GetBounds();
 
+  // Update the maximum size of the widget in case we have moved to another
+  // window.
+  UpdateMaxSize(GetWorkAreaForWindow(), window_bounds_.size());
+
 #if defined(OS_CHROMEOS)
   // Update the positioning of some icons when the window is moved.
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
@@ -1086,6 +1083,31 @@ ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
 
 ui::Layer* OverlayWindowViews::GetResizeHandleLayer() {
   return resize_handle_view_->layer();
+}
+
+gfx::Rect OverlayWindowViews::GetWorkAreaForWindow() const {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(IsVisible()
+                                    ? GetNativeWindow()
+                                    : controller_->GetInitiatorWebContents()
+                                          ->GetTopLevelNativeWindow())
+      .work_area();
+}
+
+gfx::Size OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area,
+                                            const gfx::Size& window_size) {
+  max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
+
+  if (!IsVisible())
+    return window_size;
+
+  if (window_size.width() <= max_size_.width() &&
+      window_size.height() <= max_size_.height()) {
+    return window_size;
+  }
+
+  SetSize(max_size_);
+  return gfx::Size(max_size_);
 }
 
 void OverlayWindowViews::TogglePlayPause() {

@@ -91,7 +91,7 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
 
   IPEndPoint remote_address_;
 
-  base::WeakPtrFactory<FuzzedDatagramClientSocket> weak_factory_;
+  base::WeakPtrFactory<FuzzedDatagramClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedDatagramClientSocket);
 };

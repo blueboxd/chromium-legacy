@@ -423,7 +423,7 @@ public class LibraryLoader {
 
                     // If the libraries are located in the zip file, assert that the device API
                     // level is M or higher. On devices lower than M, the libraries should
-                    // always be loaded by Linker.
+                    // always be loaded by LegacyLinker.
                     assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
 
                     // Load libraries using the system linker.

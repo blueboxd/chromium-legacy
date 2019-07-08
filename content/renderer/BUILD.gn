@@ -286,8 +286,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/webrtc_audio_device_impl.h",
     "media/webrtc/webrtc_audio_device_not_impl.cc",
     "media/webrtc/webrtc_audio_device_not_impl.h",
-    "media/webrtc/webrtc_audio_renderer.cc",
-    "media/webrtc/webrtc_audio_renderer.h",
     "media/webrtc/webrtc_audio_sink.cc",
     "media/webrtc/webrtc_audio_sink.h",
     "media/webrtc/webrtc_media_stream_track_adapter.cc",

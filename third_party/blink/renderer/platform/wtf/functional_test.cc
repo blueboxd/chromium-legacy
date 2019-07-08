@@ -52,7 +52,7 @@ class UnwrappedClass {
 
 class HasWeakPtrSupport {
  public:
-  HasWeakPtrSupport() : weak_ptr_factory_(this) {}
+  HasWeakPtrSupport() {}
 
   base::WeakPtr<HasWeakPtrSupport> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -63,7 +63,7 @@ class HasWeakPtrSupport {
   void Increment(int* counter) { ++*counter; }
 
  private:
-  base::WeakPtrFactory<HasWeakPtrSupport> weak_ptr_factory_;
+  base::WeakPtrFactory<HasWeakPtrSupport> weak_ptr_factory_{this};
 };
 
 }  // namespace WTF

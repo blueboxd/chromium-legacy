@@ -46,9 +46,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
       was_ever_used_(false),
       net_log_(NetLogWithSource::Make(spdy_stream->net_log().net_log(),
                                       NetLogSourceType::PROXY_CLIENT_SOCKET)),
-      source_dependency_(source_net_log.source()),
-      weak_factory_(this),
-      write_callback_weak_factory_(this) {
+      source_dependency_(source_net_log.source()) {
   request_.method = "CONNECT";
   request_.url = GURL("https://" + endpoint.ToString());
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,

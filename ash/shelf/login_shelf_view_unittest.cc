@@ -371,7 +371,8 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 }
 
 TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
-  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  login_shelf_view_->SetAllowLoginAsGuest(/*allow_guest=*/true);
+  login_shelf_view_->ShowGuestButtonInOobe(/*show=*/true);
   SetUserCount(0);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);

@@ -53,8 +53,7 @@ QuicHttpProxyBackendStream::QuicHttpProxyBackendStream(
       buf_(base::MakeRefCounted<IOBuffer>(kBufferSize)),
       response_completed_(false),
       headers_set_(false),
-      quic_response_(new quic::QuicBackendResponse()),
-      weak_factory_(this) {}
+      quic_response_(new quic::QuicBackendResponse()) {}
 
 QuicHttpProxyBackendStream::~QuicHttpProxyBackendStream() {}
 

@@ -131,8 +131,7 @@ void MDnsConnection::SocketHandler::SendDone(int rv) {
 }
 
 MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
-}
+    : delegate_(delegate) {}
 
 MDnsConnection::~MDnsConnection() = default;
 

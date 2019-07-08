@@ -131,7 +131,7 @@ class LinkerTestCaseBase(object):
     Args:
       is_low_memory: True to simulate a low-memory device, False otherwise.
     """
-    test_suffix = 'ForLinker'
+    test_suffix = 'ForLegacyLinker'
     self.is_low_memory = is_low_memory
     if is_low_memory:
       test_suffix += 'LowMemoryDevice'

@@ -38,7 +38,7 @@ struct FaviconImageResult;
 // HistoryService and the TabRestoreService, and then updates the NSMenu when
 // there is new data.
 //
-// The history menu is broken up into sections: most visisted and recently
+// The history menu is broken up into sections: recently visited and recently
 // closed. The overall menu has a tag of IDC_HISTORY_MENU, with the user content
 // items having the local tags defined in the enum below. Items within a section
 // all share the same tag. The structure of the menu is laid out in MainMenu.xib

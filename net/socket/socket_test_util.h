@@ -588,7 +588,7 @@ class SequencedSocketData : public SocketDataProvider {
   // Used by RunUntilPaused.  NULL at all other times.
   std::unique_ptr<base::RunLoop> run_until_paused_run_loop_;
 
-  base::WeakPtrFactory<SequencedSocketData> weak_factory_;
+  base::WeakPtrFactory<SequencedSocketData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SequencedSocketData);
 };
@@ -752,7 +752,7 @@ class MockClientSocket : public TransportClientSocket {
   NetLogWithSource net_log_;
 
  private:
-  base::WeakPtrFactory<MockClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
 };
@@ -913,7 +913,7 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   ProxyClientSocketDataProvider* data_;
   scoped_refptr<HttpAuthController> auth_controller_;
 
-  base::WeakPtrFactory<MockProxyClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockProxyClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockProxyClientSocket);
 };
@@ -995,7 +995,7 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;
 
-  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };
@@ -1102,7 +1102,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   bool data_transferred_ = false;
   bool tagged_before_data_transferred_ = true;
 
-  base::WeakPtrFactory<MockUDPClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockUDPClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockUDPClientSocket);
 };

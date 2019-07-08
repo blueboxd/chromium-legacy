@@ -135,4 +135,32 @@ suite('manager tests', function() {
     loadTimeData.getBoolean('isManaged');
     loadTimeData.getString('managedByOrg');
   });
+
+  test('toast is shown when clear-all-command is fired', () => {
+    const toastManager = cr.toastManager.getInstance();
+    assertFalse(toastManager.isToastOpen);
+    const event = new Event('command', {bubbles: true});
+    event.command = {id: 'clear-all-command'};
+    manager.dispatchEvent(event);
+    assertTrue(toastManager.isToastOpen);
+    assertFalse(toastManager.isUndoButtonHidden);
+  });
+
+  test('toast is hidden when undo-command is fired', () => {
+    const toastManager = cr.toastManager.getInstance();
+    toastManager.show('');
+    const event = new Event('command', {bubbles: true});
+    event.command = {id: 'undo-command'};
+    assertTrue(toastManager.isToastOpen);
+    manager.dispatchEvent(event);
+    assertFalse(toastManager.isToastOpen);
+  });
+
+  test('toast is hidden when undo is clicked', () => {
+    const toastManager = cr.toastManager.getInstance();
+    toastManager.show('');
+    assertTrue(toastManager.isToastOpen);
+    toastManager.dispatchEvent(new Event('undo-click'));
+    assertFalse(toastManager.isToastOpen);
+  });
 });

@@ -450,7 +450,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
   WebEffectiveConnectionType effective_connection_type_;
   Vector<String> console_messages_;
 
-  base::WeakPtrFactory<TestWebFrameClient> weak_factory_;
+  base::WeakPtrFactory<TestWebFrameClient> weak_factory_{this};
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that

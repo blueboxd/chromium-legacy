@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
@@ -32,8 +35,8 @@ class MockPictureInPictureSession
     : public mojom::blink::PictureInPictureSession {
  public:
   MockPictureInPictureSession(
-      mojo::InterfaceRequest<mojom::blink::PictureInPictureSession> request)
-      : binding_(this, std::move(request)) {
+      mojo::PendingReceiver<mojom::blink::PictureInPictureSession> receiver)
+      : receiver_(this, std::move(receiver)) {
     ON_CALL(*this, Stop(_)).WillByDefault([](StopCallback callback) {
       std::move(callback).Run();
     });
@@ -49,7 +52,7 @@ class MockPictureInPictureSession
                     bool));
 
  private:
-  mojo::Binding<mojom::blink::PictureInPictureSession> binding_;
+  mojo::Receiver<mojom::blink::PictureInPictureSession> receiver_;
 };
 
 // The MockPictureInPictureService implements the PictureInPicture service in
@@ -58,7 +61,7 @@ class MockPictureInPictureSession
 class MockPictureInPictureService
     : public mojom::blink::PictureInPictureService {
  public:
-  MockPictureInPictureService() : binding_(this) {
+  MockPictureInPictureService() {
     // Setup default implementations.
     ON_CALL(*this, StartSession(_, _, _, _, _, _, _))
         .WillByDefault(testing::Invoke(
@@ -67,38 +70,40 @@ class MockPictureInPictureService
   ~MockPictureInPictureService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(
-        mojom::blink::PictureInPictureServiceRequest(std::move(handle)));
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::PictureInPictureService>(
+        std::move(handle)));
 
-    session_.reset(
-        new MockPictureInPictureSession(mojo::MakeRequest(&session_ptr_)));
+    session_.reset(new MockPictureInPictureSession(
+        session_remote_.InitWithNewPipeAndPassReceiver()));
   }
 
-  MOCK_METHOD7(StartSession,
-               void(uint32_t,
-                    const base::Optional<viz::SurfaceId>&,
-                    const blink::WebSize&,
-                    bool,
-                    bool,
-                    mojom::blink::PictureInPictureSessionObserverPtr,
-                    StartSessionCallback));
+  MOCK_METHOD7(
+      StartSession,
+      void(uint32_t,
+           const base::Optional<viz::SurfaceId>&,
+           const blink::WebSize&,
+           bool,
+           bool,
+           mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
+           StartSessionCallback));
 
   MockPictureInPictureSession& Session() { return *session_.get(); }
 
-  void StartSessionInternal(uint32_t,
-                            const base::Optional<viz::SurfaceId>&,
-                            const blink::WebSize&,
-                            bool,
-                            bool,
-                            mojom::blink::PictureInPictureSessionObserverPtr,
-                            StartSessionCallback callback) {
-    std::move(callback).Run(std::move(session_ptr_), WebSize());
+  void StartSessionInternal(
+      uint32_t,
+      const base::Optional<viz::SurfaceId>&,
+      const blink::WebSize&,
+      bool,
+      bool,
+      mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
+      StartSessionCallback callback) {
+    std::move(callback).Run(std::move(session_remote_), WebSize());
   }
 
  private:
-  mojo::Binding<mojom::blink::PictureInPictureService> binding_;
+  mojo::Receiver<mojom::blink::PictureInPictureService> receiver_{this};
   std::unique_ptr<MockPictureInPictureSession> session_;
-  mojom::blink::PictureInPictureSessionPtr session_ptr_;
+  mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureService);
 };
@@ -241,8 +246,7 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
 
 TEST_F(PictureInPictureControllerTest, StartObserving) {
   EXPECT_FALSE(PictureInPictureControllerImpl::From(GetDocument())
-                   .GetSessionObserverBindingForTesting()
-                   .is_bound());
+                   .IsSessionObserverReceiverBoundForTesting());
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
@@ -257,14 +261,12 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
                                      event_type_names::kEnterpictureinpicture);
 
   EXPECT_TRUE(PictureInPictureControllerImpl::From(GetDocument())
-                  .GetSessionObserverBindingForTesting()
-                  .is_bound());
+                  .IsSessionObserverReceiverBoundForTesting());
 }
 
 TEST_F(PictureInPictureControllerTest, StopObserving) {
   EXPECT_FALSE(PictureInPictureControllerImpl::From(GetDocument())
-                   .GetSessionObserverBindingForTesting()
-                   .is_bound());
+                   .IsSessionObserverReceiverBoundForTesting());
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
@@ -286,8 +288,7 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
                                      event_type_names::kLeavepictureinpicture);
 
   EXPECT_FALSE(PictureInPictureControllerImpl::From(GetDocument())
-                   .GetSessionObserverBindingForTesting()
-                   .is_bound());
+                   .IsSessionObserverReceiverBoundForTesting());
 }
 
 TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {

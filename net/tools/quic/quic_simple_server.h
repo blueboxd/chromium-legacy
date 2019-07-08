@@ -119,7 +119,7 @@ class QuicSimpleServer {
 
   quic::QuicSimpleServerBackend* quic_simple_server_backend_;
 
-  base::WeakPtrFactory<QuicSimpleServer> weak_factory_;
+  base::WeakPtrFactory<QuicSimpleServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServer);
 };

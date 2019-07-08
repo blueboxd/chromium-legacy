@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
@@ -48,8 +47,6 @@ public class DownloadFileProviderTest {
     @Mock
     private DownloadDirectoryProvider.Delegate mMockDirectoryDelegate;
 
-    private CallbackHelper mUriCallbackHelper = new CallbackHelper();
-
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -66,13 +63,8 @@ public class DownloadFileProviderTest {
      * @throws Exception
      */
     private void verifyContentUri(String filePath, Uri expected) throws Exception {
-        final Uri[] result = {null};
-        DownloadFileProvider.createContentUri(filePath, mMockDirectoryDelegate, (Uri uri) -> {
-            result[0] = uri;
-            mUriCallbackHelper.notifyCalled();
-        });
-        mUriCallbackHelper.waitForCallback();
-        Assert.assertEquals(expected, result[0]);
+        Assert.assertEquals(
+                expected, DownloadFileProvider.createContentUri(filePath, mMockDirectoryDelegate));
     }
 
     /**

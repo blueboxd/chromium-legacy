@@ -79,7 +79,10 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
   void OnDragEntered(const ui::DropTargetEvent& event) override {}
   int OnDragUpdated(const ui::DropTargetEvent& event) override { return 0; }
   void OnDragExited() override {}
-  int OnPerformDrop(const ui::DropTargetEvent& event) override { return 0; }
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override {
+    return 0;
+  }
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(

@@ -116,7 +116,7 @@ class BLINK_PLATFORM_EXPORT WebAudioSourceProviderImpl
   media::MediaLog* const media_log_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_;
+  base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebAudioSourceProviderImpl);
 };

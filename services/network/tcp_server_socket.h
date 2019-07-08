@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
   std::unique_ptr<net::StreamSocket> accepted_socket_;
   net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<TCPServerSocket> weak_factory_;
+  base::WeakPtrFactory<TCPServerSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocket);
 };

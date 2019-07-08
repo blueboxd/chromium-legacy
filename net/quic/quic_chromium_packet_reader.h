@@ -70,7 +70,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   scoped_refptr<IOBufferWithSize> read_buffer_;
   NetLogWithSource net_log_;
 
-  base::WeakPtrFactory<QuicChromiumPacketReader> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumPacketReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumPacketReader);
 };

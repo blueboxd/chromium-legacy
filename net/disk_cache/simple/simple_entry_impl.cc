@@ -85,14 +85,6 @@ void RecordHeaderSize(net::CacheType cache_type, int size) {
   SIMPLE_CACHE_UMA(COUNTS_10000, "HeaderSize", cache_type, size);
 }
 
-int g_open_entry_count = 0;
-
-void AdjustOpenEntryCountBy(net::CacheType cache_type, int offset) {
-  g_open_entry_count += offset;
-  SIMPLE_CACHE_UMA(COUNTS_10000,
-                   "GlobalOpenEntryCount", cache_type, g_open_entry_count);
-}
-
 void InvokeCallbackIfBackendIsAlive(
     const base::WeakPtr<SimpleBackendImpl>& backend,
     net::CompletionOnceCallback completion_callback,
@@ -1510,7 +1502,6 @@ void SimpleEntryImpl::CreationOperationComplete(
   SIMPLE_CACHE_UMA(TIMES,
                    "EntryCreationTime", cache_type_,
                    (base::TimeTicks::Now() - start_time));
-  AdjustOpenEntryCountBy(cache_type_, 1);
 
   net_log_.AddEvent(end_event_type);
 
@@ -1702,7 +1693,6 @@ void SimpleEntryImpl::CloseOperationComplete(
   DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_ ||
          STATE_UNINITIALIZED == state_);
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_END);
-  AdjustOpenEntryCountBy(cache_type_, -1);
   if (cache_type_ == net::APP_CACHE &&
       in_results->estimated_trailer_prefetch_size > 0 && backend_.get() &&
       backend_->index()) {

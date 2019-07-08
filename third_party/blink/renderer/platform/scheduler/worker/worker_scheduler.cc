@@ -31,8 +31,7 @@ WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
           worker_thread_scheduler->CreateTaskQueue("worker_pausable_tq")),
       unpausable_task_queue_(
           worker_thread_scheduler->CreateTaskQueue("worker_unpausable_tq")),
-      thread_scheduler_(worker_thread_scheduler),
-      weak_factory_(this) {
+      thread_scheduler_(worker_thread_scheduler) {
   task_runners_.insert(
       std::make_pair(throttleable_task_queue_,
                      throttleable_task_queue_->CreateQueueEnabledVoter()));

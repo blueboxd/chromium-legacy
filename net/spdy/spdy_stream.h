@@ -530,7 +530,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
+  base::WeakPtrFactory<SpdyStream> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStream);
 };

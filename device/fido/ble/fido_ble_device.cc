@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_constants.h"

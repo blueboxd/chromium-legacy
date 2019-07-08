@@ -3259,10 +3259,10 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   }
 }
 
-IntSize PaintLayer::ScrolledContentOffset() const {
+LayoutSize PaintLayer::ScrolledContentOffset() const {
   if (GetLayoutObject().HasOverflowClip())
     return GetLayoutBox()->ScrolledContentOffset();
-  return IntSize();
+  return LayoutSize();
 }
 
 PaintLayerClipper PaintLayer::Clipper(

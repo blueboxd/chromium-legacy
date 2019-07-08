@@ -428,6 +428,10 @@ class PLATFORM_EXPORT ResourceResponse final {
     network_accessed_ = network_accessed;
   }
 
+  bool FromArchive() const { return from_archive_; }
+
+  void SetFromArchive(bool from_archive) { from_archive_ = from_archive; }
+
   bool IsSignedExchangeInnerResponse() const {
     return is_signed_exchange_inner_response_;
   }
@@ -512,6 +516,9 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // True if this resource was loaded from the network.
   bool network_accessed_ = false;
+
+  // True if this resource was loaded from a MHTML archive.
+  bool from_archive_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =

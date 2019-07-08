@@ -103,7 +103,16 @@ class OverlayWindowViews : public content::OverlayWindow,
   ui::Layer* video_layer_for_testing() const;
   cc::Layer* GetLayerForTesting() override;
 
+  // Update the max size of the widget based on |work_area| and |window_size|.
+  // The return value is the new size of the window if it was resized and is
+  // only used for testing.
+  gfx::Size UpdateMaxSize(const gfx::Rect& work_area,
+                          const gfx::Size& window_size);
+
  private:
+  // Return the work area for the nearest display the widget is on.
+  gfx::Rect GetWorkAreaForWindow() const;
+
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
   // playing a new video (i.e. different aspect ratio). This also updates

@@ -1926,5 +1926,35 @@ TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   holder->Grow(8);
 }
 
+TEST(IncrementalMarkingTest, HeapCompactWithStaleSlotInNestedContainer) {
+  // Regression test: https://crbug.com/980962
+  //
+  // Test ensures that interior pointers are updated even if the backing store
+  // itself is not referenced anymore. Consider the case where a |B| is
+  // references a value |V| through slot |B.x|. Even if |B| is not referred to
+  // from an actual object any more, the slot |B.x| needs to be in valid state
+  // when |V| is moved.
+
+  using Nested = HeapVector<HeapVector<Member<Object>>>;
+
+  // Allocate dummy storage so that other vector backings are actually moved.
+  MakeGarbageCollected<HeapVector<Member<Object>>>()->push_back(
+      MakeGarbageCollected<Object>());
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
+  driver.Start();
+  Nested* outer = MakeGarbageCollected<Nested>();
+  outer->push_back(HeapVector<Member<Object>>());
+  outer->at(0).push_back(MakeGarbageCollected<Object>());
+  // The outer HeapVector object is not marked, which leaves the backing store
+  // as marked with a valid slot inside. Now, if the outer backing store moves
+  // first and its page is freed, then referring to the slot when the inner
+  // backing store is moved may crash.
+  outer = nullptr;
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink

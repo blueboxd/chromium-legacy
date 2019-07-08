@@ -55,8 +55,7 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
     std::unique_ptr<disk_cache::Backend::Iterator> iterator)
     : condition_(condition),
       completion_callback_(std::move(completion_callback)),
-      iterator_(std::move(iterator)),
-      weak_factory_(this) {}
+      iterator_(std::move(iterator)) {}
 
 ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() = default;
 

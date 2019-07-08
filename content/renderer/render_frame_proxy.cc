@@ -267,16 +267,6 @@ void RenderFrameProxy::ResendVisualProperties() {
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_ && compositing_helper_->surface_id().is_valid()) {
-    FrameHostMsg_HittestData_Params params;
-    params.surface_id = compositing_helper_->surface_id();
-    params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
-    render_widget_->QueueMessage(
-        new FrameHostMsg_HittestData(render_widget_->routing_id(), params));
-  }
-}
-
 void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
   pending_visual_properties_.screen_info = screen_info;
   if (crashed_) {

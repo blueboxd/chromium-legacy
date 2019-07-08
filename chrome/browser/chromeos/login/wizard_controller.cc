@@ -1493,7 +1493,7 @@ void WizardController::OnAccessibilityStatusChanged(
 }
 
 void WizardController::OnGuestModePolicyUpdated() {
-  ash::LoginScreen::Get()->ShowGuestButtonInOobe(
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(
       user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 

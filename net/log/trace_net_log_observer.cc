@@ -47,8 +47,7 @@ class TracedValue : public base::trace_event::ConvertableToTraceFormat {
 
 }  // namespace
 
-TraceNetLogObserver::TraceNetLogObserver()
-    : net_log_to_watch_(nullptr), weak_factory_(this) {}
+TraceNetLogObserver::TraceNetLogObserver() : net_log_to_watch_(nullptr) {}
 
 TraceNetLogObserver::~TraceNetLogObserver() {
   DCHECK(!net_log_to_watch_);

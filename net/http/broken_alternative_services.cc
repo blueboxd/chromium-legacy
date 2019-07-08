@@ -34,7 +34,7 @@ base::TimeDelta ComputeBrokenAlternativeServiceExpirationDelay(
 BrokenAlternativeServices::BrokenAlternativeServices(
     Delegate* delegate,
     const base::TickClock* clock)
-    : delegate_(delegate), clock_(clock), weak_ptr_factory_(this) {
+    : delegate_(delegate), clock_(clock) {
   DCHECK(delegate_);
   DCHECK(clock_);
 }

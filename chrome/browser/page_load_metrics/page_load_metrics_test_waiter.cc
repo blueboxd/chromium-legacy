@@ -153,7 +153,8 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
     HandleResourceUpdate(resource);
     if (resource->is_complete) {
       current_complete_resources_++;
-      if (!resource->was_fetched_via_cache)
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached)
         current_network_body_bytes_ += resource->encoded_body_length;
     }
     current_network_bytes_ += resource->delta_bytes;

@@ -441,8 +441,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     managed_bookmark_service_->BookmarkModelCreated(model.get());
     int64_t next_id = 0;
     static_cast<bookmarks::TestBookmarkClient*>(model->client())
-        ->SetExtraNodesToLoad(
-            managed_bookmark_service_->GetLoadExtraNodesCallback().Run(
+        ->SetExtraNodeToLoad(
+            managed_bookmark_service_->GetLoadExtraNodeCallback().Run(
                 &next_id));
     if (delete_bookmarks) {
       base::DeleteFile(data_path.Append(FILE_PATH_LITERAL("dummy_bookmarks")),

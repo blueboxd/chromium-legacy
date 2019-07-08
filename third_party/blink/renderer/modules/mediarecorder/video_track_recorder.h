@@ -115,7 +115,7 @@ class MODULES_EXPORT VideoTrackRecorder
 
    private:
     uint32_t count_;
-    base::WeakPtrFactory<Counter> weak_factory_;
+    base::WeakPtrFactory<Counter> weak_factory_{this};
   };
 
   // Base class to describe a generic Encoder, encapsulating all actual encoder
@@ -317,7 +317,7 @@ class MODULES_EXPORT VideoTrackRecorder
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  base::WeakPtrFactory<VideoTrackRecorder> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoTrackRecorder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };

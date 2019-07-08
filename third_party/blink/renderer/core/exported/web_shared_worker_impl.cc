@@ -87,8 +87,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
       creation_address_space_(mojom::IPAddressSpace::kPublic),
       parent_execution_context_task_runners_(
           ParentExecutionContextTaskRunners::Create()),
-      appcache_host_id_(appcache_host_id),
-      weak_ptr_factory_(this) {
+      appcache_host_id_(appcache_host_id) {
   DCHECK(IsMainThread());
 }
 

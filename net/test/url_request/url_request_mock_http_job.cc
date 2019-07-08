@@ -130,8 +130,7 @@ URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
     : URLRequestFileJob(request,
                         network_delegate,
                         file_path,
-                        base::CreateTaskRunnerWithTraits({base::MayBlock()})),
-      weak_ptr_factory_(this) {}
+                        base::CreateTaskRunnerWithTraits({base::MayBlock()})) {}
 
 URLRequestMockHTTPJob::~URLRequestMockHTTPJob() = default;
 

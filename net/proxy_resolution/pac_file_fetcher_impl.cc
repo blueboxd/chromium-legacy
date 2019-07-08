@@ -335,8 +335,7 @@ PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
       result_text_(nullptr),
       max_response_bytes_(kDefaultMaxResponseBytes),
       max_duration_(kDefaultMaxDuration),
-      allow_file_url_(allow_file_url),
-      weak_factory_(this) {
+      allow_file_url_(allow_file_url) {
   DCHECK(url_request_context);
 }
 

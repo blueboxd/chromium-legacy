@@ -82,7 +82,7 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   }
 
   MarkPromiseSettled();
-  ReportCdmResultUMA(key_system_uma_prefix_ + uma_name_,
+  ReportCdmResultUMA(key_system_uma_prefix_ + uma_name_, 0,
                      ConvertStatusToUMAResult(status));
 
   // Only report time for promise resolution (not rejection).
@@ -99,7 +99,7 @@ void NewSessionCdmResultPromise::reject(CdmPromise::Exception exception_code,
            << ", error_message = " << error_message;
 
   MarkPromiseSettled();
-  ReportCdmResultUMA(uma_name_,
+  ReportCdmResultUMA(uma_name_, system_code,
                      ConvertCdmExceptionToResultForUMA(exception_code));
   web_cdm_result_.CompleteWithError(ConvertCdmException(exception_code),
                                     system_code,

@@ -133,7 +133,8 @@ class WMHelper : public aura::client::DragDropDelegate {
   void OnDragEntered(const ui::DropTargetEvent& event) override = 0;
   int OnDragUpdated(const ui::DropTargetEvent& event) override = 0;
   void OnDragExited() override = 0;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override = 0;
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override = 0;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(WMHelper);

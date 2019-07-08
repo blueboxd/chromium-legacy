@@ -361,8 +361,7 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
       sequence_number_(0),
       read_state_(IDLE),
       write_state_(IDLE),
-      busy_before_sync_reads_(false),
-      weak_factory_(this) {
+      busy_before_sync_reads_(false) {
   // Check that reads and writes have a contiguous set of sequence numbers
   // starting from 0 and working their way up, with no repeats and skipping
   // no values.
@@ -860,7 +859,7 @@ MockClientSocketFactory::CreateProxyClientSocket(
 }
 
 MockClientSocket::MockClientSocket(const NetLogWithSource& net_log)
-    : connected_(false), net_log_(net_log), weak_factory_(this) {
+    : connected_(false), net_log_(net_log) {
   local_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 123);
   peer_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 0);
 }
@@ -1305,8 +1304,7 @@ MockProxyClientSocket::MockProxyClientSocket(
     : net_log_(socket->NetLog()),
       socket_(std::move(socket)),
       data_(data),
-      auth_controller_(auth_controller),
-      weak_factory_(this) {
+      auth_controller_(auth_controller) {
   DCHECK(data_);
 }
 
@@ -1472,8 +1470,7 @@ MockSSLClientSocket::MockSSLClientSocket(
     SSLSocketDataProvider* data)
     : net_log_(stream_socket->NetLog()),
       stream_socket_(std::move(stream_socket)),
-      data_(data),
-      weak_factory_(this) {
+      data_(data) {
   DCHECK(data_);
   peer_addr_ = data->connect.peer_addr;
 }
@@ -1674,8 +1671,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
-      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)),
-      weak_factory_(this) {
+      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)) {
   DCHECK(data_);
   data_->Initialize(this);
   peer_addr_ = data->connect_data().peer_addr;

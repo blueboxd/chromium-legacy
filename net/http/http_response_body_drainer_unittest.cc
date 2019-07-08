@@ -85,8 +85,7 @@ class MockHttpStream : public HttpStream {
         is_sync_(false),
         is_last_chunk_zero_size_(false),
         is_complete_(false),
-        can_reuse_connection_(true),
-        weak_factory_(this) {}
+        can_reuse_connection_(true) {}
   ~MockHttpStream() override = default;
 
   // HttpStream implementation.
@@ -177,7 +176,7 @@ class MockHttpStream : public HttpStream {
   bool is_complete_;
   bool can_reuse_connection_;
 
-  base::WeakPtrFactory<MockHttpStream> weak_factory_;
+  base::WeakPtrFactory<MockHttpStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockHttpStream);
 };

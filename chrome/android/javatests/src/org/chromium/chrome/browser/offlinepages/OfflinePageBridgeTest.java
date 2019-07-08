@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageMod
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.DeletePageResult;
@@ -99,6 +100,31 @@ public class OfflinePageBridgeTest {
         if (!incognitoProfile) Assert.assertNotNull(mOfflinePageBridge);
     }
 
+    private OfflinePageBridge getBridgeForProfileKey() throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        AtomicReference<OfflinePageBridge> offlinePageBridgeRef = new AtomicReference<>();
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            ProfileKey profileKey = ProfileKey.getLastUsedProfileKey();
+            // Ensure we start in an offline state.
+            OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfileKey(profileKey);
+            offlinePageBridgeRef.set(offlinePageBridge);
+            if (offlinePageBridge == null || offlinePageBridge.isOfflinePageModelLoaded()) {
+                semaphore.release();
+                return;
+            }
+            offlinePageBridge.addObserver(new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageModelLoaded() {
+                    semaphore.release();
+                    offlinePageBridge.removeObserver(this);
+                }
+            });
+        });
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertNotNull(offlinePageBridgeRef.get());
+        return offlinePageBridgeRef.get();
+    }
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -120,6 +146,13 @@ public class OfflinePageBridgeTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+    }
+
+    @Test
+    @MediumTest
+    public void testProfileAndKeyMapToSameOfflinePageBridge() throws Exception {
+        OfflinePageBridge offlinePageBridgeRetrievedByKey = getBridgeForProfileKey();
+        Assert.assertSame(mOfflinePageBridge, offlinePageBridgeRetrievedByKey);
     }
 
     @Test

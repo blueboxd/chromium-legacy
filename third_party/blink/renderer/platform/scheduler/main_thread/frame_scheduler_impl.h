@@ -339,9 +339,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
 
   // TODO(altimin): Remove after we have have 1:1 relationship between frames
   // and documents.
-  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_;
+  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_{this};
 
-  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };

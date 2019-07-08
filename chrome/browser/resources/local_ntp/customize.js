@@ -1357,6 +1357,12 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   $(customize.IDS.EDIT_BG_ICON)
       .setAttribute('title', configData.translatedStrings.customizeBackground);
 
+  // Selecting a local image for the background should close the picker.
+  if (configData.richerPicker) {
+    ntpApiHandle.onlocalbackgroundselected =
+        customize.richerPicker_applyCustomization;
+  }
+
   // Edit gear icon interaction events.
   const editBackgroundInteraction = function() {
     if (configData.richerPicker) {

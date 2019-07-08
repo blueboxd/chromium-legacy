@@ -76,9 +76,12 @@ const char kSyncWifiCredentials[] = "sync.wifi_credentials";
 // sync.
 const char kSyncManaged[] = "sync.managed";
 
-// Boolean to prevent sync from automatically starting up.  This is
-// used when sync is disabled by the user in sync settings.
-const char kSyncSuppressStart[] = "sync.suppress_start";
+// Boolean whether has requested sync to be enabled. This is set early in the
+// sync setup flow, after the user has pressed "turn on sync" but before they
+// have accepted the confirmation dialog (that maps to kSyncFirstSetupComplete).
+// This is also set to false when sync is disabled by the user in sync settings,
+// or when sync was reset from the dashboard.
+const char kSyncRequested[] = "sync.requested";
 
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.

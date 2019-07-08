@@ -30,7 +30,7 @@ namespace {
 class MockURLRequestJob : public URLRequestJob {
  public:
   MockURLRequestJob(URLRequest* request, NetworkDelegate* network_delegate)
-      : URLRequestJob(request, network_delegate), weak_factory_(this) {}
+      : URLRequestJob(request, network_delegate) {}
 
   void Start() override {
     // Start reading asynchronously so that all error reporting and data
@@ -48,7 +48,7 @@ class MockURLRequestJob : public URLRequestJob {
     NotifyHeadersComplete();
   }
 
-  base::WeakPtrFactory<MockURLRequestJob> weak_factory_;
+  base::WeakPtrFactory<MockURLRequestJob> weak_factory_{this};
 };
 
 class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {

@@ -170,7 +170,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   ConnectionAttempts connection_attempts_;
   ConnectionAttempts fallback_connection_attempts_;
 
-  base::WeakPtrFactory<TransportConnectJob> weak_ptr_factory_;
+  base::WeakPtrFactory<TransportConnectJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TransportConnectJob);
 };

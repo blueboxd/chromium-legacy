@@ -654,13 +654,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // TODO(crbug.com/804589) : Dark style on remote tabs.
   // The styler must be set before the view controller is loaded.
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-  styler.tableViewSectionHeaderBlurEffect = nil;
   styler.tableViewBackgroundColor = UIColorFromRGB(kGridBackgroundColor);
-  styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
-  styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.cellHighlightColor =
       [UIColor colorWithWhite:0 alpha:kGridDarkThemeCellHighlightColorAlpha];
-  styler.cellSeparatorColor = UIColorFromRGB(kGridDarkThemeCellSeparatorColor);
+  // For iOS 13, setting the overrideUserInterfaceStyle to dark forces the use
+  // of dark mode colors for all the colors in this view. However, this
+  // override is not available on pre-iOS 13 devices, so the dark mode colors
+  // must be provided manually.
+  if (@available(iOS 13, *)) {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    self.remoteTabsViewController.overrideUserInterfaceStyle =
+        UIUserInterfaceStyleDark;
+#endif
+  } else {
+    styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
+    styler.headerFooterTitleColor =
+        UIColorFromRGB(kGridDarkThemeCellTitleColor);
+    styler.cellDetailColor = UIColorFromRGB(kGridDarkThemeCellDetailColor,
+                                            kGridDarkThemeCellDetailAlpha);
+    styler.headerFooterDetailColor = UIColorFromRGB(
+        kGridDarkThemeCellDetailColor, kGridDarkThemeCellDetailAlpha);
+    styler.tintColor = UIColorFromRGB(kGridDarkThemeCellTintColor);
+  }
   self.remoteTabsViewController.styler = styler;
 
   UIView* contentView = self.scrollContentView;

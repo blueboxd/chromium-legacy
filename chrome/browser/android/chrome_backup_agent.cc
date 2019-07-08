@@ -33,13 +33,13 @@ const char* backed_up_preferences_[] = {
     syncer::prefs::kSyncPasswords,
     syncer::prefs::kSyncPreferences,
     syncer::prefs::kSyncPriorityPreferences,
+    syncer::prefs::kSyncRequested,
     syncer::prefs::kSyncSessions,
     syncer::prefs::kSyncSupervisedUserSettings,
     syncer::prefs::kSyncSupervisedUserSharedSettings,
     syncer::prefs::kSyncSupervisedUserWhitelists,
     syncer::prefs::kSyncTabs,
     syncer::prefs::kSyncTypedUrls,
-    syncer::prefs::kSyncSuppressStart,
 };
 
 }  // namespace

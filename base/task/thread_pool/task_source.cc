@@ -15,6 +15,28 @@
 namespace base {
 namespace internal {
 
+TaskSource::RunIntent::RunIntent(RunIntent&& other)
+    : task_source_(other.task_source_),
+      concurrency_status_(other.concurrency_status_) {
+  other.task_source_ = nullptr;
+}
+
+TaskSource::RunIntent::~RunIntent() {
+  DCHECK_EQ(task_source_, nullptr);
+}
+
+TaskSource::RunIntent& TaskSource::RunIntent::operator=(RunIntent&& other) {
+  DCHECK_EQ(task_source_, nullptr);
+  task_source_ = other.task_source_;
+  other.task_source_ = nullptr;
+  concurrency_status_ = other.concurrency_status_;
+  return *this;
+}
+
+TaskSource::RunIntent::RunIntent(const TaskSource* task_source,
+                                 ConcurrencyStatus concurrency_status)
+    : task_source_(task_source), concurrency_status_(concurrency_status) {}
+
 TaskSource::Transaction::Transaction(TaskSource* task_source)
     : task_source_(task_source) {
   task_source->lock_.Acquire();
@@ -32,12 +54,14 @@ TaskSource::Transaction::~Transaction() {
   }
 }
 
-Optional<Task> TaskSource::Transaction::TakeTask() {
+Optional<Task> TaskSource::Transaction::TakeTask(RunIntent intent) {
+  DCHECK_EQ(intent.task_source_, task_source());
+  intent.Release();
   return task_source_->TakeTask();
 }
 
-bool TaskSource::Transaction::DidRunTask() {
-  return task_source_->DidRunTask();
+bool TaskSource::Transaction::DidProcessTask(bool was_run) {
+  return task_source_->DidProcessTask(was_run);
 }
 
 SequenceSortKey TaskSource::Transaction::GetSortKey() const {
@@ -52,6 +76,11 @@ void TaskSource::Transaction::UpdatePriority(TaskPriority priority) {
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     return;
   task_source_->traits_.UpdatePriority(priority);
+}
+
+TaskSource::RunIntent TaskSource::MakeRunIntent(
+    ConcurrencyStatus concurrency_status) const {
+  return RunIntent(this, concurrency_status);
 }
 
 void TaskSource::SetHeapHandle(const HeapHandle& handle) {
@@ -114,7 +143,7 @@ RegisteredTaskSource& RegisteredTaskSource::operator=(
 RegisteredTaskSource::RegisteredTaskSource(
     scoped_refptr<TaskSource> task_source,
     TaskTracker* task_tracker)
-    : task_source_(task_source), task_tracker_(task_tracker) {}
+    : task_source_(std::move(task_source)), task_tracker_(task_tracker) {}
 
 }  // namespace internal
 }  // namespace base

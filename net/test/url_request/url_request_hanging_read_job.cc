@@ -47,8 +47,8 @@ URLRequestHangingReadJob::URLRequestHangingReadJob(
     URLRequest* request,
     NetworkDelegate* network_delegate)
     : URLRequestJob(request, network_delegate),
-      content_length_(10),  // non-zero content-length
-      weak_factory_(this) {}
+      content_length_(10)  // non-zero content-length
+{}
 
 void URLRequestHangingReadJob::Start() {
   // Start reading asynchronously so that all error reporting and data

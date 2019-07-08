@@ -141,7 +141,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
   int last_id_;
   std::map<int, std::unique_ptr<HttpConnection>> id_to_connection_;
 
-  base::WeakPtrFactory<HttpServer> weak_ptr_factory_;
+  base::WeakPtrFactory<HttpServer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };

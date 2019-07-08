@@ -65,7 +65,7 @@ const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
 }  // namespace
 
 FtlSignalingConnector::FtlSignalingConnector(
-    FtlSignalStrategy* signal_strategy,
+    SignalStrategy* signal_strategy,
     base::OnceClosure auth_failed_callback)
     : signal_strategy_(signal_strategy),
       auth_failed_callback_(std::move(auth_failed_callback)),

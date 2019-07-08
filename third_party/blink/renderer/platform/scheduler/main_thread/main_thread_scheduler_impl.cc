@@ -238,8 +238,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                         helper_.GetClock(),
                         helper_.NowTicks()),
       any_thread_(this),
-      policy_may_need_update_(&any_thread_lock_),
-      weak_factory_(this) {
+      policy_may_need_update_(&any_thread_lock_) {
   // Compositor task queue and default task queue should be managed by
   // WebThreadScheduler. Control task queue should not.
   task_runners_.insert(

@@ -77,7 +77,8 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNelStore
 
   const scoped_refptr<Backend> backend_;
 
-  base::WeakPtrFactory<SQLitePersistentReportingAndNelStore> weak_factory_;
+  base::WeakPtrFactory<SQLitePersistentReportingAndNelStore> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentReportingAndNelStore);
 };

@@ -191,7 +191,8 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override;
 
   // Completes a drop operation by communicating the drop data to the renderer
   // process.

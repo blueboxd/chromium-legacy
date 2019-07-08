@@ -32,15 +32,11 @@ class BookmarkModel;
 class BookmarkNode;
 class UrlIndex;
 
-// A list of BookmarkPermanentNodes that owns them.
-using BookmarkPermanentNodeList =
-    std::vector<std::unique_ptr<BookmarkPermanentNode>>;
-
-// A callback that generates a BookmarkPermanentNodeList, given a max ID to
-// use. The max ID argument will be updated after any new nodes have been
-// created and assigned IDs.
+// A callback that generates a std::unique_ptr<BookmarkPermanentNode>, given a
+// max ID to use. The max ID argument will be updated after if a new node has
+// been created and assigned an ID.
 using LoadExtraCallback =
-    base::OnceCallback<BookmarkPermanentNodeList(int64_t*)>;
+    base::OnceCallback<std::unique_ptr<BookmarkPermanentNode>(int64_t*)>;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
@@ -55,9 +51,9 @@ class BookmarkLoadDetails {
   explicit BookmarkLoadDetails(BookmarkClient* client);
   ~BookmarkLoadDetails();
 
-  // Loads the extra nodes and adds them to |root_|. Returns true if at least
-  // one node was added that has children.
-  bool LoadExtraNodes();
+  // Loads the extra node and adds it to |root_|. Returns true if the added node
+  // has children.
+  bool LoadExtraNode();
 
   BookmarkNode* root_node() { return root_node_ptr_; }
   BookmarkPermanentNode* bb_node() { return bb_node_; }

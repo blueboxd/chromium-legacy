@@ -29,8 +29,7 @@ class Profile;
 
 class TabSharingUI : public MediaStreamUI,
                      public TabStripModelObserver,
-                     public BrowserListObserver,
-                     public infobars::InfoBarManager::Observer {
+                     public BrowserListObserver {
  public:
   TabSharingUI(const content::DesktopMediaID& media_id,
                base::string16 app_name);
@@ -51,11 +50,6 @@ class TabSharingUI : public MediaStreamUI,
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
-
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarRemoved(infobars::InfoBar* info_bar, bool animate) override;
-  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                         infobars::InfoBar* new_infobar) override;
 
   // Runs |source_callback_| to start sharing the tab containing |infobar|.
   // Removes infobars on all tabs; OnStarted() will recreate the infobars with

@@ -30,8 +30,7 @@ namespace {
 class UDPSocketPerfTest : public PlatformTest {
  public:
   UDPSocketPerfTest()
-      : buffer_(base::MakeRefCounted<IOBufferWithSize>(kPacketSize)),
-        weak_factory_(this) {}
+      : buffer_(base::MakeRefCounted<IOBufferWithSize>(kPacketSize)) {}
 
   void DoneWritePacketsToSocket(UDPClientSocket* socket,
                                 int num_of_packets,
@@ -52,7 +51,7 @@ class UDPSocketPerfTest : public PlatformTest {
  protected:
   static const int kPacketSize = 1024;
   scoped_refptr<IOBufferWithSize> buffer_;
-  base::WeakPtrFactory<UDPSocketPerfTest> weak_factory_;
+  base::WeakPtrFactory<UDPSocketPerfTest> weak_factory_{this};
 };
 
 const int UDPSocketPerfTest::kPacketSize;

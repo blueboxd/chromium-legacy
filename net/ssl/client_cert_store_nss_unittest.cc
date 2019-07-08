@@ -100,7 +100,7 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
 
   {
     // Request certificates matching B CA, |client_1|'s issuer.
-    scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo);
+    auto request = base::MakeRefCounted<SSLCertRequestInfo>();
     request->cert_authorities.push_back(std::string(
         reinterpret_cast<const char*>(kAuthority1DN), sizeof(kAuthority1DN)));
 
@@ -133,7 +133,7 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
 
   {
     // Request certificates matching C Root CA, |client_1_ca|'s issuer.
-    scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo);
+    auto request = base::MakeRefCounted<SSLCertRequestInfo>();
     request->cert_authorities.push_back(
         std::string(reinterpret_cast<const char*>(kAuthorityRootDN),
                     sizeof(kAuthorityRootDN)));
@@ -212,7 +212,7 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
       0x31, 0x21, 0x30, 0x1f, 0x06, 0x03, 0x55, 0x04, 0x0a, 0x0c, 0x18, 0x49,
       0x6e, 0x74, 0x65, 0x72, 0x6e, 0x65, 0x74, 0x20, 0x57, 0x69, 0x64, 0x67,
       0x69, 0x74, 0x73, 0x20, 0x50, 0x74, 0x79, 0x20, 0x4c, 0x74, 0x64};
-  scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo);
+  auto request = base::MakeRefCounted<SSLCertRequestInfo>();
   request->cert_authorities.push_back(std::string(
       reinterpret_cast<const char*>(kAuthorityDN), sizeof(kAuthorityDN)));
 

@@ -68,6 +68,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -1088,11 +1089,26 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 };
 
 class WebContentsSplitCacheBrowserTestEnabled
-    : public WebContentsSplitCacheBrowserTest {
+    : public WebContentsSplitCacheBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   WebContentsSplitCacheBrowserTestEnabled() {
-    feature_list.InitAndEnableFeature(
-        net::features::kSplitCacheByTopFrameOrigin);
+    if (GetParam()) {
+      feature_list.InitWithFeatures(
+          {/*Enabled features*/
+           // To enable kPlzDedicatedWorker, we also need to enable
+           // kOffMainThreadDedicatedWorkerScriptFetch and
+           // kNetworkService.
+           net::features::kSplitCacheByTopFrameOrigin,
+           blink::features::kPlzDedicatedWorker,
+           blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
+           network::features::kNetworkService},
+          {/*Disabled features*/});
+    } else {
+      feature_list.InitWithFeatures(
+          {/*Enabled feature*/ net::features::kSplitCacheByTopFrameOrigin},
+          {/*Disabled feature*/ blink::features::kPlzDedicatedWorker});
+    }
   }
 
  private:
@@ -1111,7 +1127,7 @@ class WebContentsSplitCacheBrowserTestDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1189,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
                                GenURL("c.com", "/title1.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled,
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                        SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
@@ -1263,6 +1279,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
       GenURL("f.com", "/title1.html"), GenURL("e.com", "/title1.html"),
       GenURL("e.com", "/worker.js")));
 }
+
+INSTANTIATE_TEST_SUITE_P(SplitCacheParamByPlzDedicatedWorker,
+                         WebContentsSplitCacheBrowserTestEnabled,
+                         ::testing::Values(true, false));
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        ResourceLoadCompleteFromLocalResource) {

@@ -79,7 +79,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   BeginFrameProviderClient* begin_frame_client_;
 
-  base::WeakPtrFactory<BeginFrameProvider> weak_factory_;
+  base::WeakPtrFactory<BeginFrameProvider> weak_factory_{this};
 };
 
 }  // namespace blink

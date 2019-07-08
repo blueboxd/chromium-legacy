@@ -967,7 +967,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   PollableThreadSafeFlag policy_may_need_update_;
 
-  base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImpl);
 };

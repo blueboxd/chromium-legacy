@@ -185,6 +185,24 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
                       'To do so, use GN arg:\n'
                       '    disable_incremental_isolated_processes=true')
 
+    target_sdk_version = int(apk.GetTargetSdkVersion())
+    # Beta Q builds apply whitelist to targetSdk=28 as well.
+    if target_sdk_version >= 28 and device.build_version_sdk >= 29:
+      apis_allowed = ''.join(
+          device.RunShellCommand(
+              ['settings', 'get', 'global', 'hidden_api_policy'],
+              check_return=True))
+      if apis_allowed.strip() not in '01':
+        msg = """\
+Cannot use incremental installs on Android Q+ without first enabling access to
+non-SDK interfaces (https://developer.android.com/preview/non-sdk-q).
+
+To enable access:
+   adb -s {0} shell settings put global hidden_api_policy 0
+To restore back to default:
+   adb -s {0} shell settings delete global hidden_api_policy"""
+        raise Exception(msg.format(device.serial))
+
   cache_path = _DeviceCachePath(device)
   def restore_cache():
     if not enable_device_cache:

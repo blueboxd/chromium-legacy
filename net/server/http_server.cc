@@ -56,8 +56,7 @@ HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
                        HttpServer::Delegate* delegate)
     : server_socket_(std::move(server_socket)),
       delegate_(delegate),
-      last_id_(0),
-      weak_ptr_factory_(this) {
+      last_id_(0) {
   DCHECK(server_socket_);
   // Start accepting connections in next run loop in case when delegate is not
   // ready to get callbacks.

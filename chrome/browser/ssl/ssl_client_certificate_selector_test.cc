@@ -33,7 +33,7 @@ SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
-  cert_request_info_ = new net::SSLCertRequestInfo;
+  cert_request_info_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
   cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
 }
 

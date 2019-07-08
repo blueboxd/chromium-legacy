@@ -328,7 +328,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   base::OnceClosure remove_last_track_callback_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;
+  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };

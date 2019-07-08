@@ -23,6 +23,11 @@ namespace {
 using ::testing::InSequence;
 using ::testing::StrictMock;
 
+// Obsolete pref that used to store if sync should be prevented from
+// automatically starting up. This is now replaced by its inverse
+// kSyncRequested.
+const char kSyncSuppressStart[] = "sync.suppress_start";
+
 class SyncPrefsTest : public testing::Test {
  protected:
   SyncPrefsTest() {
@@ -77,12 +82,12 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(false));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(false));
-  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(false));
   EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
+  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(false));
 
   ASSERT_FALSE(sync_prefs_->IsManaged());
   ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
-  ASSERT_TRUE(sync_prefs_->IsSyncRequested());
+  ASSERT_FALSE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
 
@@ -98,10 +103,10 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   sync_prefs_->ClearPreferences();
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
-  sync_prefs_->SetSyncRequested(false);
-  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(true);
   EXPECT_TRUE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(false);
+  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
@@ -126,20 +131,16 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
 }
 
-// -----------------------------------------------------------------------------
-// Test that manipulate selected types.
-// -----------------------------------------------------------------------------
-
 TEST_F(SyncPrefsTest, Basic) {
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
   sync_prefs_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
 
-  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
-  sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(true);
   EXPECT_TRUE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(false);
+  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
 
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
   const base::Time& now = base::Time::Now();
@@ -191,6 +192,201 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
     EXPECT_EQ(UserSelectableTypeSet{type}, sync_prefs_->GetSelectedTypes());
   }
 }
+
+// Similar to SyncPrefsTest, but does not create a SyncPrefs instance. This lets
+// individual tests set up the "before" state of the PrefService before
+// SyncPrefs gets created.
+class SyncPrefsMigrationTest : public testing::Test {
+ protected:
+  SyncPrefsMigrationTest() {
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+  }
+
+  base::test::ScopedTaskEnvironment task_environment_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+};
+
+TEST_F(SyncPrefsMigrationTest, SyncSuppressed_NotSet) {
+  // Sync was never enabled, so none of the relevant prefs have an explicit
+  // value.
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncFirstSetupComplete));
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // After the migration, Sync should still be disabled.
+  SyncPrefs prefs(&pref_service_);
+  EXPECT_FALSE(prefs.IsSyncRequested());
+  EXPECT_FALSE(prefs.IsFirstSetupComplete());
+
+  // The new pref should still not have an explicit value.
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+}
+
+TEST_F(SyncPrefsMigrationTest, SyncSuppressed_SyncEnabled) {
+  // Sync is enabled, so kSyncSuppressStart is false and kSyncFirstSetupComplete
+  // is true.
+  pref_service_.SetBoolean(kSyncSuppressStart, false);
+  pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, true);
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // After the migration, Sync should still be enabled, and the old pref value
+  // should be gone.
+  SyncPrefs prefs(&pref_service_);
+  EXPECT_TRUE(prefs.IsSyncRequested());
+  EXPECT_TRUE(prefs.IsFirstSetupComplete());
+
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  EXPECT_TRUE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+}
+
+TEST_F(SyncPrefsMigrationTest, SyncSuppressed_SyncEnabledImplicitly) {
+  // Sync is enabled implicitly: kSyncSuppressStart does not have a value, so it
+  // defaults to false, but kSyncFirstSetupComplete is true. This state should
+  // not exist, but it could happen if at some point in the past, the Sync setup
+  // flow failed to actually set Sync to requested (see crbug.com/973770).
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, true);
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // After the migration, Sync should still be enabled, and the old pref value
+  // should be gone.
+  SyncPrefs prefs(&pref_service_);
+  EXPECT_TRUE(prefs.IsSyncRequested());
+  EXPECT_TRUE(prefs.IsFirstSetupComplete());
+
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  EXPECT_TRUE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+}
+
+TEST_F(SyncPrefsMigrationTest, SyncSuppressed_SyncDisabledWithFirstSetup) {
+  // Sync is explicitly disabled, so kSyncSuppressStart is true.
+  pref_service_.SetBoolean(kSyncSuppressStart, true);
+  pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, true);
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // After the migration, Sync should still be disabled, and the old pref value
+  // should be gone.
+  SyncPrefs prefs(&pref_service_);
+  EXPECT_FALSE(prefs.IsSyncRequested());
+  EXPECT_TRUE(prefs.IsFirstSetupComplete());
+
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  EXPECT_TRUE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+}
+
+TEST_F(SyncPrefsMigrationTest, SyncSuppressed_SyncDisabledWithoutFirstSetup) {
+  // Sync is explicitly disabled, so kSyncSuppressStart is true.
+  pref_service_.SetBoolean(kSyncSuppressStart, true);
+  pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, false);
+  ASSERT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // After the migration, Sync should still be disabled, and the old pref value
+  // should be gone.
+  SyncPrefs prefs(&pref_service_);
+  EXPECT_FALSE(prefs.IsSyncRequested());
+  EXPECT_FALSE(prefs.IsFirstSetupComplete());
+
+  EXPECT_FALSE(pref_service_.GetUserPrefValue(kSyncSuppressStart));
+  EXPECT_TRUE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
+}
+
+enum BooleanPrefState { PREF_FALSE, PREF_TRUE, PREF_UNSET };
+
+// There are three prefs which are relevant for the "SyncSuppressed" migration:
+// The old kSyncSuppressStart, the new kSyncRequested, and the (unchanged)
+// kSyncFirstSetupComplete. Each can be explicitly true, explicitly false, or
+// unset. This class is parameterized to cover all possible combinations.
+class SyncPrefsSyncSuppressedMigrationCombinationsTest
+    : public SyncPrefsMigrationTest,
+      public testing::WithParamInterface<testing::tuple<BooleanPrefState,
+                                                        BooleanPrefState,
+                                                        BooleanPrefState>> {
+ protected:
+  void SetBooleanUserPrefValue(const char* pref_name, BooleanPrefState state) {
+    switch (state) {
+      case PREF_FALSE:
+        pref_service_.SetBoolean(pref_name, false);
+        break;
+      case PREF_TRUE:
+        pref_service_.SetBoolean(pref_name, true);
+        break;
+      case PREF_UNSET:
+        pref_service_.ClearPref(pref_name);
+        break;
+    }
+  }
+
+  BooleanPrefState GetBooleanUserPrefValue(const char* pref_name) const {
+    const base::Value* pref_value = pref_service_.GetUserPrefValue(pref_name);
+    if (!pref_value) {
+      return PREF_UNSET;
+    }
+    return pref_value->GetBool() ? PREF_TRUE : PREF_FALSE;
+  }
+
+  bool BooleanUserPrefMatches(const char* pref_name,
+                              BooleanPrefState state) const {
+    const base::Value* pref_value = pref_service_.GetUserPrefValue(pref_name);
+    switch (state) {
+      case PREF_FALSE:
+        return pref_value && !pref_value->GetBool();
+      case PREF_TRUE:
+        return pref_value && pref_value->GetBool();
+      case PREF_UNSET:
+        return !pref_value;
+    }
+  }
+};
+
+TEST_P(SyncPrefsSyncSuppressedMigrationCombinationsTest, Idempotent) {
+  // Set the initial values (true, false, or unset) of the three prefs from the
+  // test params.
+  SetBooleanUserPrefValue(kSyncSuppressStart, testing::get<0>(GetParam()));
+  SetBooleanUserPrefValue(prefs::kSyncFirstSetupComplete,
+                          testing::get<1>(GetParam()));
+  SetBooleanUserPrefValue(prefs::kSyncRequested, testing::get<2>(GetParam()));
+
+  // Do the first migration.
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // Record the resulting pref values.
+  BooleanPrefState expect_suppress_start =
+      GetBooleanUserPrefValue(kSyncSuppressStart);
+  BooleanPrefState expect_first_setup_complete =
+      GetBooleanUserPrefValue(prefs::kSyncFirstSetupComplete);
+  BooleanPrefState expect_requested =
+      GetBooleanUserPrefValue(prefs::kSyncRequested);
+
+  // Do the second migration.
+  syncer::MigrateSyncSuppressedPref(&pref_service_);
+
+  // Verify that the pref values did not change.
+  EXPECT_TRUE(
+      BooleanUserPrefMatches(kSyncSuppressStart, expect_suppress_start));
+  EXPECT_TRUE(BooleanUserPrefMatches(prefs::kSyncFirstSetupComplete,
+                                     expect_first_setup_complete));
+  EXPECT_TRUE(BooleanUserPrefMatches(prefs::kSyncRequested, expect_requested));
+}
+
+// Not all combinations of pref values are possible in practice, but anyway the
+// migration should always be idempotent, so we test all combinations here.
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SyncPrefsSyncSuppressedMigrationCombinationsTest,
+    testing::Combine(::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
+                     ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
+                     ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET)));
 
 }  // namespace
 

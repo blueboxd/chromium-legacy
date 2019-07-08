@@ -35,8 +35,7 @@ HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
       is_started_(false),
       last_sample_rate_(0),
       last_num_channels_(0),
-      last_bus_frames_(0),
-      weak_factory_(this) {
+      last_bus_frames_(0) {
   DCHECK(audio_source_);
 }
 

@@ -378,7 +378,8 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   int64_t cache_bytes = 0;
   for (const auto& resource : resources) {
     if (resource->is_complete) {
-      if (!resource->was_fetched_via_cache)
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached)
         network_bytes += resource->encoded_body_length;
       else
         cache_bytes += resource->encoded_body_length;
@@ -457,7 +458,8 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
   int64_t cache_bytes = 0;
   for (const auto& resource : resources) {
     if (resource->is_complete) {
-      if (!resource->was_fetched_via_cache)
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached)
         network_bytes += resource->encoded_body_length;
       else
         cache_bytes += resource->encoded_body_length;
@@ -530,7 +532,8 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   int64_t cache_bytes = 0;
   for (const auto& resource : resources) {
     if (resource->is_complete) {
-      if (!resource->was_fetched_via_cache)
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached)
         network_bytes += resource->encoded_body_length;
       else
         cache_bytes += resource->encoded_body_length;

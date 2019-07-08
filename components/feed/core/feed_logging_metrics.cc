@@ -691,7 +691,7 @@ void FeedLoggingMetrics::OnInternalError(int internal_error) {
   // TODO(https://crbug.com/935602): The max value here is fragile, figure out
   // some way to test the @IntDef size.
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.InternalError",
-                            internal_error, 10);
+                            internal_error, 13);
 }
 
 void FeedLoggingMetrics::OnTokenCompleted(bool was_synthetic,

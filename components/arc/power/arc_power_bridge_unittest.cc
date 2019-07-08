@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -188,6 +189,20 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
   EXPECT_DOUBLE_EQ(kUpdatedBrightness, power_instance_->screen_brightness());
   ASSERT_TRUE(power_bridge_->TriggerNotifyBrightnessTimerForTesting());
   EXPECT_DOUBLE_EQ(kAndroidBrightness, power_instance_->screen_brightness());
+}
+
+TEST_F(ArcPowerBridgeTest, PowerSupplyInfoChanged) {
+  base::Optional<power_manager::PowerSupplyProperties> prop =
+      power_manager_client()->GetLastStatus();
+  ASSERT_TRUE(prop.has_value());
+  prop->set_battery_state(power_manager::PowerSupplyProperties::FULL);
+  power_manager_client()->UpdatePowerProperties(prop.value());
+
+  // Check that Chrome OS power changes are passed to Android.
+  const int prev_call_count = power_instance_->num_power_supply_info();
+  prop->set_battery_state(power_manager::PowerSupplyProperties::DISCHARGING);
+  power_manager_client()->UpdatePowerProperties(prop.value());
+  EXPECT_EQ(1 + prev_call_count, power_instance_->num_power_supply_info());
 }
 
 TEST_F(ArcPowerBridgeTest, DifferentWakeLocks) {

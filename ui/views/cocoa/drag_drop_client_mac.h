@@ -44,7 +44,7 @@ class VIEWS_EXPORT DragDropClientMac : public remote_cocoa::DragDropClient {
   // Initiates a drag and drop session. Returns the drag operation that was
   // applied at the end of the drag drop session.
   void StartDragAndDrop(View* view,
-                        const ui::OSExchangeData& data,
+                        std::unique_ptr<ui::OSExchangeData> data,
                         int operation,
                         ui::DragDropTypes::DragEventSource source);
 

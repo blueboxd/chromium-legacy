@@ -105,7 +105,7 @@ class PLATFORM_EXPORT TimerBase {
 #if DCHECK_IS_ON()
   base::PlatformThreadId thread_;
 #endif
-  base::WeakPtrFactory<TimerBase> weak_ptr_factory_;
+  base::WeakPtrFactory<TimerBase> weak_ptr_factory_{this};
 
   friend class ThreadTimers;
   friend class TimerHeapLessThanFunction;

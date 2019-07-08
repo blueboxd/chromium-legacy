@@ -39,18 +39,19 @@ ThreadGroup::ScopedReenqueueExecutor::ScopedReenqueueExecutor() = default;
 ThreadGroup::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
   if (destination_thread_group_) {
     destination_thread_group_->PushTaskSourceAndWakeUpWorkers(
-        std::move(task_source_and_transaction_.value()));
+        std::move(transaction_with_task_source_.value()));
   }
 }
 
 void ThreadGroup::ScopedReenqueueExecutor::
     SchedulePushTaskSourceAndWakeUpWorkers(
-        RegisteredTaskSourceAndTransaction task_source_and_transaction,
+        TransactionWithRegisteredTaskSource transaction_with_task_source,
         ThreadGroup* destination_thread_group) {
   DCHECK(destination_thread_group);
   DCHECK(!destination_thread_group_);
-  DCHECK(!task_source_and_transaction_);
-  task_source_and_transaction_.emplace(std::move(task_source_and_transaction));
+  DCHECK(!transaction_with_task_source_);
+  transaction_with_task_source_.emplace(
+      std::move(transaction_with_task_source));
   destination_thread_group_ = destination_thread_group;
 }
 
@@ -111,37 +112,37 @@ RegisteredTaskSource ThreadGroup::RemoveTaskSource(
 void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     BaseScopedWorkersExecutor* workers_executor,
     ScopedReenqueueExecutor* reenqueue_executor,
-    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithRegisteredTaskSource transaction_with_task_source) {
   // Decide in which thread group the TaskSource should be reenqueued.
-  ThreadGroup* destination_thread_group = delegate_->GetThreadGroupForTraits(
-      task_source_and_transaction.transaction.traits());
+  ThreadGroup* destination_thread_group =
+      delegate_->GetThreadGroupForTraits(transaction_with_task_source.traits());
 
   if (destination_thread_group == this) {
     // If the TaskSource should be reenqueued in the current thread group,
     // reenqueue it inside the scope of the lock.
-    priority_queue_.Push(std::move(task_source_and_transaction));
+    priority_queue_.Push(std::move(transaction_with_task_source));
     EnsureEnoughWorkersLockRequired(workers_executor);
   } else {
     // Otherwise, schedule a reenqueue after releasing the lock.
     reenqueue_executor->SchedulePushTaskSourceAndWakeUpWorkers(
-        std::move(task_source_and_transaction), destination_thread_group);
+        std::move(transaction_with_task_source), destination_thread_group);
   }
 }
 
 void ThreadGroup::UpdateSortKeyImpl(
     BaseScopedWorkersExecutor* executor,
-    TaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithOwnedTaskSource transaction_with_task_source) {
   CheckedAutoLock auto_lock(lock_);
-  priority_queue_.UpdateSortKey(std::move(task_source_and_transaction));
+  priority_queue_.UpdateSortKey(std::move(transaction_with_task_source));
   EnsureEnoughWorkersLockRequired(executor);
 }
 
 void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
-    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithRegisteredTaskSource transaction_with_task_source) {
   CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_thread_group_);
-  priority_queue_.Push(std::move(task_source_and_transaction));
+  priority_queue_.Push(std::move(transaction_with_task_source));
   EnsureEnoughWorkersLockRequired(executor);
 }
 

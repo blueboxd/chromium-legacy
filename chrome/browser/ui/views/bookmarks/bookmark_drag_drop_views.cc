@@ -176,13 +176,14 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
         source_(params.source),
         start_point_(params.start_point),
         do_drag_callback_(std::move(do_drag_callback)),
+        drag_data_(std::make_unique<ui::OSExchangeData>()),
         observer_(this),
         weak_factory_(this) {
     observer_.Add(model_);
 
     // Set up our OLE machinery.
     bookmarks::BookmarkNodeData bookmark_drag_data(params.nodes);
-    bookmark_drag_data.Write(profile->GetPath(), &drag_data_);
+    bookmark_drag_data.Write(profile->GetPath(), drag_data_.get());
 
     operation_ = ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
     if (bookmarks::CanAllBeEditedByUser(model_->client(), params.nodes))
@@ -225,12 +226,13 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
             count_),
         BookmarkDragImageSource::kBookmarkDragImageSize);
 
-    drag_data_.provider().SetDragImage(
+    drag_data_->provider().SetDragImage(
         drag_image, gfx::Vector2d(BookmarkDragImageSource::kDragImageOffsetX,
                                   BookmarkDragImageSource::kDragImageOffsetY));
 
     std::move(do_drag_callback_)
-        .Run(drag_data_, native_view_, source_, start_point_, operation_);
+        .Run(std::move(drag_data_), native_view_, source_, start_point_,
+             operation_);
 
     delete this;
   }
@@ -266,7 +268,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
 
   DoBookmarkDragCallback do_drag_callback_;
 
-  ui::OSExchangeData drag_data_;
+  std::unique_ptr<ui::OSExchangeData> drag_data_;
 
   ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
       observer_;
@@ -276,7 +278,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkDragHelper);
 };
 
-void DoDragImpl(const ui::OSExchangeData& drag_data,
+void DoDragImpl(std::unique_ptr<ui::OSExchangeData> drag_data,
                 gfx::NativeView native_view,
                 ui::DragDropTypes::DragEventSource source,
                 gfx::Point point,
@@ -286,9 +288,11 @@ void DoDragImpl(const ui::OSExchangeData& drag_data,
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
   if (widget) {
-    widget->RunShellDrag(nullptr, drag_data, gfx::Point(), operation, source);
+    widget->RunShellDrag(nullptr, std::move(drag_data), gfx::Point(), operation,
+                         source);
   } else {
-    views::RunShellDrag(native_view, drag_data, point, operation, source);
+    views::RunShellDrag(native_view, std::move(drag_data), point, operation,
+                        source);
   }
 }
 

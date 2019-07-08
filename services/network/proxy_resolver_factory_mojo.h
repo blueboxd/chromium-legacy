@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
       error_observer_factory_;
   net::NetLog* const net_log_;
 
-  base::WeakPtrFactory<ProxyResolverFactoryMojo> weak_ptr_factory_;
+  base::WeakPtrFactory<ProxyResolverFactoryMojo> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);
 };

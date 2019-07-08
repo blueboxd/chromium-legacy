@@ -98,7 +98,7 @@ class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
   scoped_refptr<IOBuffer> read_buffer_;
   int read_buffer_len_;
 
-  base::WeakPtrFactory<ChunkedUploadDataStream> weak_factory_;
+  base::WeakPtrFactory<ChunkedUploadDataStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChunkedUploadDataStream);
 };

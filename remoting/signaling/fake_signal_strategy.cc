@@ -40,6 +40,16 @@ FakeSignalStrategy::~FakeSignalStrategy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void FakeSignalStrategy::SetError(Error error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  error_ = error;
+}
+
+void FakeSignalStrategy::SetIsSignInError(bool is_sign_in_error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_sign_in_error_ = is_sign_in_error;
+}
+
 void FakeSignalStrategy::SetState(State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state == state_) {
@@ -78,6 +88,11 @@ void FakeSignalStrategy::SimulateMessageReordering() {
   simulate_reorder_ = true;
 }
 
+void FakeSignalStrategy::SimulateTwoStageConnect() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  simulate_two_stage_connect_ = true;
+}
+
 void FakeSignalStrategy::OnIncomingMessage(
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,9 +113,14 @@ void FakeSignalStrategy::OnIncomingMessage(
   }
 }
 
-void FakeSignalStrategy::Connect() {
+void FakeSignalStrategy::ProceedConnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetState(CONNECTED);
+}
+
+void FakeSignalStrategy::Connect() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetState(simulate_two_stage_connect_ ? CONNECTING : CONNECTED);
 }
 
 void FakeSignalStrategy::Disconnect() {
@@ -113,7 +133,7 @@ SignalStrategy::State FakeSignalStrategy::GetState() const {
 }
 
 SignalStrategy::Error FakeSignalStrategy::GetError() const {
-  return OK;
+  return error_;
 }
 
 const SignalingAddress& FakeSignalStrategy::GetLocalAddress() const {
@@ -152,6 +172,10 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> sta
 std::string FakeSignalStrategy::GetNextId() {
   ++last_id_;
   return base::NumberToString(last_id_);
+}
+
+bool FakeSignalStrategy::IsSignInError() const {
+  return is_sign_in_error_;
 }
 
 // static

@@ -162,8 +162,9 @@ class WeakPtrPrinter(SmartPtrPrinter):
   typename = 'base::WeakPtr'
 
   def ptr(self):
-    flag = ScopedRefPtrPrinter(self.val['ref_']['flag_']).ptr()
-    if flag and flag['is_valid_']:
+    if bool(
+        gdb.parse_and_eval(
+            '(*(%s*)(%s)).ref_.IsValid()' % (self.val.type, self.val.address))):
       return self.val['ptr_']
     return gdb.Value(0).cast(self.val['ptr_'].type)
 

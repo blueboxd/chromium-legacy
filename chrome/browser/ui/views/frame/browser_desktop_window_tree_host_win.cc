@@ -199,6 +199,11 @@ void BrowserDesktopWindowTreeHostWin::HandleCreate() {
 }
 
 void BrowserDesktopWindowTreeHostWin::HandleDestroying() {
+  // TODO(crbug/976176): Move all access to |virtual_desktop_manager_| off of
+  // the ui thread to prevent reentrancy bugs due to COM objects pumping
+  // messages. For now, Reset() so COM object destructor is called before
+  // |this| is in the process of being deleted.
+  virtual_desktop_manager_.Reset();
   browser_window_property_manager_.reset();
   DesktopWindowTreeHostWin::HandleDestroying();
 }

@@ -32,9 +32,7 @@ void AssertFallbackLoaderAvailability(const WebURL& url,
 
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
                                    std::unique_ptr<WebURLLoader> default_loader)
-    : factory_(factory),
-      default_loader_(std::move(default_loader)),
-      weak_factory_(this) {}
+    : factory_(factory), default_loader_(std::move(default_loader)) {}
 
 WebURLLoaderMock::~WebURLLoaderMock() {
   Cancel();

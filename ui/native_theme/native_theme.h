@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme_export.h"
+#include "ui/native_theme/native_theme_observer.h"
 
 namespace gfx {
 class Rect;
@@ -24,7 +25,6 @@ class Size;
 
 namespace ui {
 class DarkModeObserver;
-class NativeThemeObserver;
 
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
@@ -433,6 +433,25 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void set_high_contrast(bool is_high_contrast) {
     is_high_contrast_ = is_high_contrast;
   }
+
+  // Allows one native theme to observe changes in another. For example, the
+  // web native theme for Windows observes the corresponding ui native theme in
+  // order to receive changes regarding the state of dark mode/high contrast.
+  class NATIVE_THEME_EXPORT ColorSchemeNativeThemeObserver
+      : public NativeThemeObserver {
+   public:
+    ColorSchemeNativeThemeObserver(NativeTheme* theme_to_update);
+    ~ColorSchemeNativeThemeObserver() override;
+
+   private:
+    // ui::NativeThemeObserver:
+    void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+
+    // The theme that gets updated when OnNativeThemeUpdated() is called.
+    NativeTheme* const theme_to_update_;
+
+    DISALLOW_COPY_AND_ASSIGN(ColorSchemeNativeThemeObserver);
+  };
 
  private:
   // DarkModeObserver callback.

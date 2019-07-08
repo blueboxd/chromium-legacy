@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPBoundSocket
   // Takes ownership of |socket_| if Connect() is called.
   std::unique_ptr<TCPConnectedSocket> connecting_socket_;
 
-  base::WeakPtrFactory<TCPBoundSocket> weak_factory_;
+  base::WeakPtrFactory<TCPBoundSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TCPBoundSocket);
 };

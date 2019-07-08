@@ -18,23 +18,23 @@ namespace gpu {
 
 namespace {
 #if defined(CYGPROFILE_INSTRUMENTATION)
-const int kGpuTimeoutInSec = 30;
+constexpr int64_t kGpuTimeoutInSeconds = 30;
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-const int kGpuTimeoutInSec = 15;
+constexpr int64_t kGpuTimeoutInSeconds = 15;
 #else
-const int kGpuTimeoutInSec = 10;
+constexpr int64_t kGpuTimeoutInSeconds = 10;
 #endif
 }  // namespace
 
-GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
-    : watchdog_timeout_(base::TimeDelta::FromSeconds(kGpuTimeoutInSec)),
+GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
+                                                 bool is_test_mode)
+    : watchdog_timeout_(timeout),
+      is_test_mode_(is_test_mode),
       watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
   weak_ptr_ = weak_factory_.GetWeakPtr();
-  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
   Arm();
-  watchdog_start_time_ = base::TimeTicks::Now();
 }
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
@@ -48,8 +48,11 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 
 // static
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
-    bool start_backgrounded) {
-  auto watchdog_thread = base::WrapUnique(new GpuWatchdogThreadImplV2);
+    bool start_backgrounded,
+    base::TimeDelta timeout,
+    bool is_test_mode) {
+  auto watchdog_thread =
+      base::WrapUnique(new GpuWatchdogThreadImplV2(timeout, is_test_mode));
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   watchdog_thread->StartWithOptions(options);
@@ -58,11 +61,18 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
   return watchdog_thread;
 }
 
+// static
+std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
+    bool start_backgrounded) {
+  return Create(start_backgrounded,
+                base::TimeDelta::FromSeconds(kGpuTimeoutInSeconds), false);
+}
+
 // Do not add power observer during watchdog init, PowerMonitor might not be up
 // running yet.
 void GpuWatchdogThreadImplV2::AddPowerObserver() {
   // Forward it to the watchdog thread. Call PowerMonitor::AddObserver on the
-  // watchdog thread so that  OnSuspend and OnResume will be called on watchdog
+  // watchdog thread so that OnSuspend and OnResume will be called on watchdog
   // thread.
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuWatchdogThreadImplV2::OnAddPowerObserver,
@@ -91,10 +101,13 @@ void GpuWatchdogThreadImplV2::OnInitComplete() {
 }
 
 void GpuWatchdogThreadImplV2::Init() {
+  last_arm_disarm_counter_ = base::subtle::NoBarrier_Load(&arm_disarm_counter_);
   task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
       watchdog_timeout_);
+  watchdog_start_time_ = base::TimeTicks::Now();
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
 void GpuWatchdogThreadImplV2::CleanUp() {
@@ -176,7 +189,7 @@ void GpuWatchdogThreadImplV2::Disarm() {
 }
 
 void GpuWatchdogThreadImplV2::InProgress() {
-  // This is equivalent to Disarm() + Arm().
+  // Increment by 2. This is equivalent to Disarm() + Arm().
   base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
 
   // Now it's an odd number.
@@ -208,6 +221,12 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
 }
 
 void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
+  // If this is for gpu testing, do not terminate the gpu process.
+  if (is_test_mode_) {
+    test_result_timeout_and_gpu_hang_.Set();
+    return;
+  }
+
 #if defined(OS_WIN)
   if (IsDebuggerPresent())
     return;
@@ -235,6 +254,12 @@ void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
     GpuWatchdogThreadEvent thread_event) {
   UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event.V2", thread_event);
   UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
+}
+
+// For gpu testing only. Return whether a GPU hang was detected or not.
+bool GpuWatchdogThreadImplV2::IsGpuHangDetected() {
+  DCHECK(is_test_mode_);
+  return test_result_timeout_and_gpu_hang_.IsSet();
 }
 
 }  // namespace gpu

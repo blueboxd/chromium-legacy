@@ -23,7 +23,6 @@
 #include <memory>
 
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
@@ -256,13 +255,6 @@ ImageFrame* ImageDecoder::DecodeFrameBufferAtIndex(size_t index) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Decode Image",
                  "imageType", FilenameExtension().Ascii());
     Decode(index);
-  }
-
-  if (!has_histogrammed_color_space_) {
-    BitmapImageMetrics::CountImageGammaAndGamut(
-        embedded_color_profile_ ? embedded_color_profile_->GetProfile()
-                                : nullptr);
-    has_histogrammed_color_space_ = true;
   }
 
   frame->NotifyBitmapIfPixelsChanged();
@@ -644,7 +636,6 @@ const skcms_ICCProfile* ColorProfileTransform::DstProfile() const {
 void ImageDecoder::SetEmbeddedColorProfile(
     std::unique_ptr<ColorProfile> profile) {
   DCHECK(!IgnoresColorSpace());
-  DCHECK(!has_histogrammed_color_space_);
 
   embedded_color_profile_ = std::move(profile);
   source_to_target_color_transform_needs_update_ = true;

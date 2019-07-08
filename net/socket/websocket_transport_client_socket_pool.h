@@ -211,7 +211,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   int handed_out_socket_count_;
   bool flushing_;
 
-  base::WeakPtrFactory<WebSocketTransportClientSocketPool> weak_factory_;
+  base::WeakPtrFactory<WebSocketTransportClientSocketPool> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTransportClientSocketPool);
 };

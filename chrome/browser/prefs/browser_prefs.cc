@@ -1129,4 +1129,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_MACOSX)
   profile_prefs->ClearPref(password_manager::prefs::kKeychainMigrationStatus);
 #endif  // defined(OS_MACOSX)
+
+  // Added 7/2019.
+  syncer::MigrateSyncSuppressedPref(profile_prefs);
 }

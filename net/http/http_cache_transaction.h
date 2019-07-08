@@ -652,7 +652,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // True if the Transaction is currently processing the DoLoop.
   bool in_do_loop_;
 
-  base::WeakPtrFactory<Transaction> weak_factory_;
+  base::WeakPtrFactory<Transaction> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Transaction);
 };

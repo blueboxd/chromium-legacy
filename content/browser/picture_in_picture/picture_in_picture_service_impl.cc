@@ -15,16 +15,26 @@ namespace content {
 // static
 void PictureInPictureServiceImpl::Create(
     RenderFrameHost* render_frame_host,
-    blink::mojom::PictureInPictureServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::PictureInPictureService> receiver) {
   DCHECK(render_frame_host);
-  new PictureInPictureServiceImpl(render_frame_host, std::move(request));
+  new PictureInPictureServiceImpl(render_frame_host, std::move(receiver));
+}
+
+// static
+void PictureInPictureServiceImpl::CreateFromRequest(
+    RenderFrameHost* render_frame_host,
+    blink::mojom::PictureInPictureServiceRequest request) {
+  // Implicit conversion to
+  // mojo::PendingReceiver<blink::mojom::PictureInPictureService>.
+  Create(render_frame_host, std::move(request));
 }
 
 // static
 PictureInPictureServiceImpl* PictureInPictureServiceImpl::CreateForTesting(
     RenderFrameHost* render_frame_host,
-    blink::mojom::PictureInPictureServiceRequest request) {
-  return new PictureInPictureServiceImpl(render_frame_host, std::move(request));
+    mojo::PendingReceiver<blink::mojom::PictureInPictureService> receiver) {
+  return new PictureInPictureServiceImpl(render_frame_host,
+                                         std::move(receiver));
 }
 
 void PictureInPictureServiceImpl::StartSession(
@@ -33,9 +43,8 @@ void PictureInPictureServiceImpl::StartSession(
     const gfx::Size& natural_size,
     bool show_play_pause_button,
     bool show_mute_button,
-    blink::mojom::PictureInPictureSessionObserverPtr observer,
+    mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
     StartSessionCallback callback) {
-  blink::mojom::PictureInPictureSessionPtr session_ptr;
   gfx::Size window_size;
 
   WebContentsImpl* web_contents_impl =
@@ -44,22 +53,25 @@ void PictureInPictureServiceImpl::StartSession(
   auto result = web_contents_impl->EnterPictureInPicture(surface_id.value(),
                                                          natural_size);
 
+  mojo::PendingRemote<blink::mojom::PictureInPictureSession> session_remote;
+
   // Picture-in-Picture may not be supported by all embedders, so we should only
   // create the session if the EnterPictureInPicture request was successful.
   if (result == PictureInPictureResult::kSuccess) {
     active_session_ = std::make_unique<PictureInPictureSession>(
         this, MediaPlayerId(render_frame_host_, player_id), surface_id,
         natural_size, show_play_pause_button, show_mute_button,
-        mojo::MakeRequest(&session_ptr), std::move(observer), &window_size);
+        session_remote.InitWithNewPipeAndPassReceiver(), std::move(observer),
+        &window_size);
   }
 
-  std::move(callback).Run(std::move(session_ptr), window_size);
+  std::move(callback).Run(std::move(session_remote), window_size);
 }
 
 PictureInPictureServiceImpl::PictureInPictureServiceImpl(
     RenderFrameHost* render_frame_host,
-    blink::mojom::PictureInPictureServiceRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)),
+    mojo::PendingReceiver<blink::mojom::PictureInPictureService> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)),
       render_frame_host_(render_frame_host) {}
 
 PictureInPictureServiceImpl::~PictureInPictureServiceImpl() {

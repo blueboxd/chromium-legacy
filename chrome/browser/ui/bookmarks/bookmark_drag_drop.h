@@ -28,7 +28,7 @@ namespace chrome {
 // Callback for implementing a system drag based on gathered bookmark drag data.
 // Used in testing.
 using DoBookmarkDragCallback =
-    base::OnceCallback<void(const ui::OSExchangeData& drag_data,
+    base::OnceCallback<void(std::unique_ptr<ui::OSExchangeData> drag_data,
                             gfx::NativeView native_view,
                             ui::DragDropTypes::DragEventSource source,
                             gfx::Point start_point,

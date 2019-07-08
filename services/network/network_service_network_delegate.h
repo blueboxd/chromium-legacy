@@ -68,7 +68,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
 
   NetworkContext* network_context_;
 
-  mutable base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_;
+  mutable base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegate);
 };

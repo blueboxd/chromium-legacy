@@ -164,7 +164,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
   int32_t send_bytes_delayed_max_ = 0;
   int32_t send_bytes_delayed_cur_ = 0;
 
-  base::WeakPtrFactory<P2PSocket> weak_ptr_factory_;
+  base::WeakPtrFactory<P2PSocket> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocket);
 };

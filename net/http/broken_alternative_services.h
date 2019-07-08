@@ -165,7 +165,7 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   // services.
   base::OneShotTimer expiration_timer_;
 
-  base::WeakPtrFactory<BrokenAlternativeServices> weak_ptr_factory_;
+  base::WeakPtrFactory<BrokenAlternativeServices> weak_ptr_factory_{this};
 };
 
 }  // namespace net

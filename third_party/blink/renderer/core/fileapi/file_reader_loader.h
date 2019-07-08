@@ -185,7 +185,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<FileReaderLoader> weak_factory_;
+  base::WeakPtrFactory<FileReaderLoader> weak_factory_{this};
 };
 
 }  // namespace blink

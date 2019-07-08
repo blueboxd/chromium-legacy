@@ -36,7 +36,7 @@ class PLATFORM_EXPORT InterfaceInvalidator {
   void NotifyInvalidate();
 
   base::ObserverList<Observer>::Unchecked observers_;
-  base::WeakPtrFactory<InterfaceInvalidator> weak_factory_;
+  base::WeakPtrFactory<InterfaceInvalidator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceInvalidator);
 };

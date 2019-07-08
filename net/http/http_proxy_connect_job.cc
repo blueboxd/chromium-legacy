@@ -188,8 +188,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                     common_connect_job_params->http_auth_cache,
                     common_connect_job_params->http_auth_handler_factory,
                     host_resolver())
-              : nullptr),
-      weak_ptr_factory_(this) {}
+              : nullptr) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}
 

@@ -1022,7 +1022,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
   cc::PlaybackImageProvider playback_image_provider_n32_;
   base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
 
-  base::WeakPtrFactory<CanvasImageProvider> weak_factory_;
+  base::WeakPtrFactory<CanvasImageProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CanvasImageProvider);
 };
@@ -1036,8 +1036,7 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     : is_hardware_decode_cache_(is_hardware_decode_cache),
       playback_image_provider_n32_(cache_n32,
                                    target_color_space,
-                                   cc::PlaybackImageProvider::Settings()),
-      weak_factory_(this) {
+                                   cc::PlaybackImageProvider::Settings()) {
   // If the image provider may require to decode to half float instead of
   // uint8, create a f16 PlaybackImageProvider with the passed cache.
   if (canvas_color_type == kRGBA_F16_SkColorType) {
@@ -1124,8 +1123,7 @@ CanvasResourceProvider::CanvasResourceProvider(
       resource_dispatcher_(resource_dispatcher),
       size_(size),
       color_params_(color_params),
-      snapshot_paint_image_id_(cc::PaintImage::GetNextId()),
-      weak_ptr_factory_(this) {
+      snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);
 }

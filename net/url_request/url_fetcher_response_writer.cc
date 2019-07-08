@@ -56,8 +56,7 @@ URLFetcherFileWriter::URLFetcherFileWriter(
     const base::FilePath& file_path)
     : file_task_runner_(file_task_runner),
       file_path_(file_path),
-      owns_file_(false),
-      weak_factory_(this) {
+      owns_file_(false) {
   DCHECK(file_task_runner_.get());
 }
 

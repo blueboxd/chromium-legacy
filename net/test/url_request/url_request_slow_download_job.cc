@@ -115,9 +115,7 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(
       bytes_already_sent_(0),
       should_error_download_(false),
       should_finish_download_(false),
-      buffer_size_(0),
-      weak_factory_(this) {
-}
+      buffer_size_(0) {}
 
 void URLRequestSlowDownloadJob::StartAsync() {
   if (base::LowerCaseEqualsASCII(kFinishDownloadUrl,

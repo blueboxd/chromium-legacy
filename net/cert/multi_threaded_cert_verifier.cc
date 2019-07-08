@@ -221,8 +221,7 @@ class CertVerifierJob {
         net_log_(NetLogWithSource::Make(net_log,
                                         NetLogSourceType::CERT_VERIFIER_JOB)),
         cert_verifier_(cert_verifier),
-        is_first_job_(false),
-        weak_ptr_factory_(this) {
+        is_first_job_(false) {
     net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_JOB,
                         base::Bind(&NetLogX509CertificateCallback,
                                    base::Unretained(key.certificate().get())));
@@ -345,7 +344,7 @@ class CertVerifierJob {
   MultiThreadedCertVerifier* cert_verifier_;  // Non-owned.
 
   bool is_first_job_;
-  base::WeakPtrFactory<CertVerifierJob> weak_ptr_factory_;
+  base::WeakPtrFactory<CertVerifierJob> weak_ptr_factory_{this};
 };
 
 MultiThreadedCertVerifier::MultiThreadedCertVerifier(

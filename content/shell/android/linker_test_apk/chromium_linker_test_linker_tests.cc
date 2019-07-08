@@ -41,7 +41,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
       in_browser_process ? "BROWSER_LINKER_TEST: " : "RENDERER_LINKER_TEST: ";
 
   // The RELRO section(s) will appear in /proc/self/maps as a mapped memory
-  // region for a file with a recognizable name. For the Chromium Linker the
+  // region for a file with a recognizable name. For the LegacyLinker the
   // full name will be something like:
   //
   //   "/dev/ashmem/RELRO:<libname> (deleted)"

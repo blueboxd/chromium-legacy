@@ -47,8 +47,7 @@ QuicSimpleClient::QuicSimpleClient(
           quic::QuicWrapUnique(
               new QuicClientMessageLooplNetworkHelper(&clock_, this)),
           std::move(proof_verifier)),
-      initialized_(false),
-      weak_factory_(this) {
+      initialized_(false) {
   set_server_address(server_address);
 }
 

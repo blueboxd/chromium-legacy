@@ -297,16 +297,6 @@ void HostContextFactoryPrivate::AddVSyncParameterObserver(
   }
 }
 
-viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {
-  // When running with viz there is no FrameSinkManagerImpl in the browser
-  // process. FrameSinkManagerImpl runs in the GPU process instead. Anything in
-  // the browser process that relies FrameSinkManagerImpl or SurfaceManager
-  // internal state needs to change. See https://crbug.com/787097 and
-  // https://crbug.com/760181 for more context.
-  NOTREACHED();
-  return nullptr;
-}
-
 HostContextFactoryPrivate::CompositorData::CompositorData() = default;
 HostContextFactoryPrivate::CompositorData::CompositorData(
     CompositorData&& other) = default;

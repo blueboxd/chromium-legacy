@@ -6,7 +6,7 @@
 
 namespace blink {
 
-InterfaceInvalidator::InterfaceInvalidator() : weak_factory_(this) {}
+InterfaceInvalidator::InterfaceInvalidator() {}
 
 InterfaceInvalidator::~InterfaceInvalidator() {
   weak_factory_.InvalidateWeakPtrs();

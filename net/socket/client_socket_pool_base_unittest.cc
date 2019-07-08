@@ -334,8 +334,7 @@ class TestConnectJob : public ConnectJob {
         client_socket_factory_(client_socket_factory),
         load_state_(LOAD_STATE_IDLE),
         has_established_connection_(false),
-        store_additional_error_state_(false),
-        weak_factory_(this) {}
+        store_additional_error_state_(false) {}
 
   void Signal() {
     DoConnect(waiting_success_, true /* async */, false /* recoverable */);
@@ -524,7 +523,7 @@ class TestConnectJob : public ConnectJob {
   bool has_established_connection_;
   bool store_additional_error_state_;
 
-  base::WeakPtrFactory<TestConnectJob> weak_factory_;
+  base::WeakPtrFactory<TestConnectJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectJob);
 };

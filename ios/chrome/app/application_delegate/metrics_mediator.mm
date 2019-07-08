@@ -23,9 +23,9 @@
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -142,9 +142,10 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     [startupInformation
         activateFirstUserActionRecorderWithBackgroundTime:interval];
 
-    Tab* currentTab = interfaceProvider.currentInterface.tabModel.currentTab;
-    if (currentTab.webState &&
-        currentTab.webState->GetLastCommittedURL() == kChromeUINewTabURL) {
+    web::WebState* currentWebState = interfaceProvider.currentInterface.tabModel
+                                         .webStateList->GetActiveWebState();
+    if (currentWebState &&
+        currentWebState->GetLastCommittedURL() == kChromeUINewTabURL) {
       startupInformation.firstUserActionRecorder->RecordStartOnNTP();
       [startupInformation resetFirstUserActionRecorder];
     } else {

@@ -132,8 +132,6 @@ JNI_EXPORT void JNI_RequestCoordinatorBridge_SavePageLater(
     const JavaParamRef<jstring>& j_origin,
     jboolean user_requested) {
   DCHECK(j_callback_obj);
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
 
   offline_pages::ClientId client_id;
   client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
@@ -156,7 +154,8 @@ JNI_EXPORT void JNI_RequestCoordinatorBridge_SavePageLater(
   params.request_origin = ConvertJavaStringToUTF8(env, j_origin);
 
   coordinator->SavePageLater(
-      params, base::BindOnce(&SavePageLaterCallback, j_callback_ref));
+      params, base::BindOnce(&SavePageLaterCallback,
+                             ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 JNI_EXPORT void JNI_RequestCoordinatorBridge_GetRequestsInQueue(

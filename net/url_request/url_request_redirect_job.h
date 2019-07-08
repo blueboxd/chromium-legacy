@@ -61,7 +61,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
 
   scoped_refptr<HttpResponseHeaders> fake_headers_;
 
-  base::WeakPtrFactory<URLRequestRedirectJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestRedirectJob> weak_factory_{this};
 };
 
 }  // namespace net

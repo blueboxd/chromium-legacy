@@ -165,7 +165,7 @@ executable("web_engine_exe") {
 fuchsia_package("web_engine") {
   binary = ":web_engine_exe"
   package_name_override = "chromium"
-  sandbox_policy = "sandbox_policy"
+  manifest = "web_engine.cmx"
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
     "lib/libswiftshader_libGLESv2.so",
@@ -241,7 +241,7 @@ test("web_engine_unittests") {
 }
 
 test("web_engine_integration_tests") {
-  sandbox_policy = "integration_tests_sandbox_policy"
+  manifest = "web_engine_integration_tests.cmx"
   sources = [
     "test_debug_listener.cc",
     "test_debug_listener.h",

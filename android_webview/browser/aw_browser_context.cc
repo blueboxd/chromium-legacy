@@ -264,8 +264,8 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
                                auth_pref_callback);
   }
 
-  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager(
-      GetAwURLRequestContext(), user_pref_service_.get());
+  safe_browsing_ui_manager_ =
+      new AwSafeBrowsingUIManager(GetAwURLRequestContext());
   safe_browsing_trigger_manager_ =
       std::make_unique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get(),
@@ -469,6 +469,11 @@ void AwBrowserContext::RebuildTable(
   // can change in the lifetime of this WebView and may not yet be set here.
   // Therefore this initialization path is not used.
   enumerator->OnComplete(true);
+}
+
+void AwBrowserContext::SetExtendedReportingAllowed(bool allowed) {
+  user_pref_service_->SetBoolean(
+      ::prefs::kSafeBrowsingExtendedReportingOptInAllowed, allowed);
 }
 
 }  // namespace android_webview

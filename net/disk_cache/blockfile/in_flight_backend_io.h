@@ -251,7 +251,7 @@ class InFlightBackendIO : public InFlightIO {
   void PostOperation(const base::Location& from_here, BackendIO* operation);
   BackendImpl* backend_;
   scoped_refptr<base::SingleThreadTaskRunner> background_thread_;
-  base::WeakPtrFactory<InFlightBackendIO> ptr_factory_;
+  base::WeakPtrFactory<InFlightBackendIO> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBackendIO);
 };

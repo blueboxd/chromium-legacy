@@ -23,7 +23,7 @@ namespace blink {
 
 namespace {
 const float kTestVolume = 0.25;
-const int kSampleRate = 48000;
+const int kTestSampleRate = 48000;
 }  // namespace
 
 class WebAudioSourceProviderImplTest : public testing::Test,
@@ -32,9 +32,9 @@ class WebAudioSourceProviderImplTest : public testing::Test,
   WebAudioSourceProviderImplTest()
       : params_(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_STEREO,
-                kSampleRate,
+                kTestSampleRate,
                 64),
-        fake_callback_(0.1, kSampleRate),
+        fake_callback_(0.1, kTestSampleRate),
         mock_sink_(new media::MockAudioRendererSink()),
         wasp_impl_(new WebAudioSourceProviderImpl(mock_sink_, &media_log_)) {}
 

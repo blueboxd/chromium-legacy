@@ -263,7 +263,7 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   // are received. Other fields are populated at different stages of the request
   LoadTimingInfo load_timing_info_;
 
-  base::WeakPtrFactory<BidirectionalStream> weak_factory_;
+  base::WeakPtrFactory<BidirectionalStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BidirectionalStream);
 };

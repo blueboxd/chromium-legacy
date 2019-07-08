@@ -132,7 +132,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
 }
 
 ImageCaptureFrameGrabber::ImageCaptureFrameGrabber()
-    : frame_grab_in_progress_(false), weak_factory_(this) {}
+    : frame_grab_in_progress_(false) {}
 
 ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -239,8 +239,7 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
 
 class DnsConfigServicePosix::Watcher {
  public:
-  explicit Watcher(DnsConfigServicePosix* service)
-      : service_(service), weak_factory_(this) {}
+  explicit Watcher(DnsConfigServicePosix* service) : service_(service) {}
   ~Watcher() = default;
 
   bool Watch() {
@@ -294,7 +293,7 @@ class DnsConfigServicePosix::Watcher {
   base::FilePathWatcher hosts_watcher_;
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-  base::WeakPtrFactory<Watcher> weak_factory_;
+  base::WeakPtrFactory<Watcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };

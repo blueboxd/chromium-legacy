@@ -70,7 +70,7 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
   std::string charset_;
   scoped_refptr<base::RefCountedMemory> data_;
   int64_t next_data_offset_;
-  base::WeakPtrFactory<URLRequestSimpleJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestSimpleJob> weak_factory_{this};
 };
 
 }  // namespace net

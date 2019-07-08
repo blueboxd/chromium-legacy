@@ -47,10 +47,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MockPasswordManagerClient() {}
 
-  MOCK_CONST_METHOD3(PasswordWasAutofilled,
-                     void(const std::map<base::string16, const PasswordForm*>&,
-                          const GURL&,
-                          const std::vector<const PasswordForm*>*));
+  MOCK_METHOD3(PasswordWasAutofilled,
+               void(const std::map<base::string16, const PasswordForm*>&,
+                    const GURL&,
+                    const std::vector<const PasswordForm*>*));
 };
 
 }  // namespace
@@ -102,7 +102,7 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-      client_, &driver_, false /* is_blacklisted */, observed_form_,
+      &client_, &driver_, false /* is_blacklisted */, observed_form_,
       best_matches, federated_matches_, nullptr, metrics_recorder_.get());
   EXPECT_EQ(LikelyFormFilling::kNoFilling, likely_form_filling);
 }
@@ -123,7 +123,7 @@ TEST_F(PasswordFormFillingTest, Autofill) {
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        client_, &driver_, is_blacklisted, observed_form_, best_matches,
+        &client_, &driver_, is_blacklisted, observed_form_, best_matches,
         federated_matches_, &saved_match_, metrics_recorder_.get());
     EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
 
@@ -192,7 +192,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        client_, &driver_, false, observed_form, best_matches,
+        &client_, &driver_, false, observed_form, best_matches,
         federated_matches_, &saved_match_, metrics_recorder_.get());
 
     // In all cases where a current password exists, fill on load should be
@@ -216,7 +216,7 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-      client_, &driver_, false /* is_blacklisted */, observed_form_,
+      &client_, &driver_, false /* is_blacklisted */, observed_form_,
       best_matches, federated_matches_, &psl_saved_match_,
       metrics_recorder_.get());
   EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
@@ -245,7 +245,7 @@ TEST_F(PasswordFormFillingTest, FillingOnHttp) {
                                   enable_foas_http);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        client_, &driver_, false /* is_blacklisted */, observed_form_,
+        &client_, &driver_, false /* is_blacklisted */, observed_form_,
         best_matches, federated_matches_, &saved_match_,
         metrics_recorder_.get());
     EXPECT_EQ(enable_foas_http ? LikelyFormFilling::kFillOnAccountSelect
@@ -266,7 +266,7 @@ TEST_F(PasswordFormFillingTest, TouchToFill) {
                                   enable_touch_to_fill);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        client_, &driver_, false /* is_blacklisted */, observed_form_,
+        &client_, &driver_, false /* is_blacklisted */, observed_form_,
         best_matches, federated_matches_, &saved_match_,
         metrics_recorder_.get());
     EXPECT_EQ(enable_touch_to_fill ? LikelyFormFilling::kFillOnAccountSelect

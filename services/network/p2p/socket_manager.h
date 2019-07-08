@@ -139,7 +139,7 @@ class P2PSocketManager
 
   mojom::P2PNetworkNotificationClientPtr network_notification_client_;
 
-  base::WeakPtrFactory<P2PSocketManager> weak_factory_;
+  base::WeakPtrFactory<P2PSocketManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketManager);
 };

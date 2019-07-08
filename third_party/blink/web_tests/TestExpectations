@@ -581,7 +581,6 @@ crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Fail
 crbug.com/955170 external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
 crbug.com/955163 external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/955163 external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
-crbug.com/869296 external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
@@ -606,7 +605,6 @@ crbug.com/882367 virtual/layout_ng_experimental/external/wpt/css/css-contain/con
 crbug.com/955170 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
-crbug.com/869296 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
@@ -2707,11 +2705,6 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
 # Disabled until v8 roll.
-crbug.com/980917 fast/events/window-onerror-03.html [ Skip ]
-crbug.com/980917 fast/js/assign.html [ Skip ]
-crbug.com/980917 fast/js/postfix-syntax.html [ Skip ]
-crbug.com/980917 fast/js/prefix-syntax.html [ Skip ]
-crbug.com/980917 virtual/mouseevent_fractional/fast/events/window-onerror-03.html [ Skip ]
 crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
 crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
 crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
@@ -3201,6 +3194,7 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/pointerevents/pointerevent_touch-action-keyboard.html [ Failure Timeout ]
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -6231,7 +6225,6 @@ crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-implicit.
 crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-negative.html [ Failure ]
 crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-codecs-parameter.html [ Failure ]
 
-crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]
 crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Pass Crash ]
 
 # Sheriff 2019-06-26
@@ -6266,3 +6259,8 @@ crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-sourc
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
+
+# TODO (michaelludwig) - Rebaseline for Skia roll
+crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
+crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
+crbug.com/981879 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]

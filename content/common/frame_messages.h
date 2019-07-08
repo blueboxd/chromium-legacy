@@ -626,17 +626,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
   IPC_STRUCT_TRAITS_MEMBER(routing_id)
 IPC_STRUCT_TRAITS_END()
 
-// This message is used to send hittesting data from the renderer in order
-// to perform hittesting on the browser process.
-IPC_STRUCT_BEGIN(FrameHostMsg_HittestData_Params)
-  // |surface_id| represents the surface used by this remote frame.
-  IPC_STRUCT_MEMBER(viz::SurfaceId, surface_id)
-
-  // If |ignored_for_hittest| then this surface should be ignored during
-  // hittesting.
-  IPC_STRUCT_MEMBER(bool, ignored_for_hittest)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(int32_t, parent_routing_id)
   IPC_STRUCT_MEMBER(blink::WebTreeScopeType, scope)
@@ -1574,9 +1563,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
                     blink::WebFocusType /* type */,
                     int32_t /* source_routing_id */)
-
-// Sends hittesting data needed to perform hittesting on the browser process.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 
 // Request that the host send its overlay routing token for this render frame
 // via SetOverlayRoutingToken.

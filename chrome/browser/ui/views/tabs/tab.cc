@@ -130,13 +130,13 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
 
  private:
   void OnViewFocused(views::View* observed_view) override {
-    controller_->UpdateHoverCard(tab_, /* should_show */ true);
+    controller_->UpdateHoverCard(tab_);
   }
 
   void OnViewBlurred(views::View* observed_view) override {
     // Only hide hover card if not keyboard navigating.
     if (!controller_->IsFocusInTabs())
-      controller_->UpdateHoverCard(nullptr, /* should_show */ false);
+      controller_->UpdateHoverCard(nullptr);
   }
 
   ScopedObserver<views::View, views::ViewObserver> tab_close_button_observer_{
@@ -209,7 +209,7 @@ Tab::Tab(TabController* controller)
 Tab::~Tab() {
   // Observer must be unregistered before child views are destroyed.
   tab_close_button_observer_.reset();
-  controller_->UpdateHoverCard(this, /* should_show */ false);
+  controller_->UpdateHoverCard(nullptr);
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
@@ -436,7 +436,7 @@ bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 }  // namespace
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  controller_->UpdateHoverCard(this, /* should_show */ false);
+  controller_->UpdateHoverCard(nullptr);
   controller_->OnMouseEventInTab(this, event);
 
   // Allow a right click from touch to drag, which corresponds to a long click.
@@ -548,7 +548,7 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
   tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();
   Layout();
-  controller_->UpdateHoverCard(this, /* should_show */ true);
+  controller_->UpdateHoverCard(this);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
@@ -559,7 +559,7 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
-  controller_->UpdateHoverCard(this, /* should_show */ false);
+  controller_->UpdateHoverCard(nullptr);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       // TAP_DOWN is only dispatched for the first touch point.
@@ -655,12 +655,12 @@ void Tab::AddedToWidget() {
 
 void Tab::OnFocus() {
   View::OnFocus();
-  controller_->UpdateHoverCard(this, /* should_show */ true);
+  controller_->UpdateHoverCard(this);
 }
 
 void Tab::OnBlur() {
   View::OnBlur();
-  controller_->UpdateHoverCard(nullptr, /* should_show */ false);
+  controller_->UpdateHoverCard(nullptr);
 }
 
 void Tab::OnThemeChanged() {

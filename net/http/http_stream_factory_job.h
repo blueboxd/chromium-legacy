@@ -477,7 +477,7 @@ class HttpStreamFactory::Job
 
   std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request_;
 
-  base::WeakPtrFactory<Job> ptr_factory_;
+  base::WeakPtrFactory<Job> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };

@@ -556,12 +556,12 @@ void NativeWidgetMac::FlashFrame(bool flash_frame) {
 }
 
 void NativeWidgetMac::RunShellDrag(View* view,
-                                   const ui::OSExchangeData& data,
+                                   std::unique_ptr<ui::OSExchangeData> data,
                                    const gfx::Point& location,
                                    int operation,
                                    ui::DragDropTypes::DragEventSource source) {
-  ns_window_host_->drag_drop_client()->StartDragAndDrop(view, data, operation,
-                                                        source);
+  ns_window_host_->drag_drop_client()->StartDragAndDrop(view, std::move(data),
+                                                        operation, source);
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {

@@ -83,7 +83,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  scoped_task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -124,7 +124,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  scoped_task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -138,7 +138,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
   info.reset();
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  scoped_task_environment_.RunUntilIdle();
 
   service_.reset();
 }
@@ -153,7 +153,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  scoped_task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -167,7 +167,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
   info.reset();
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  scoped_task_environment_.RunUntilIdle();
 
   service_.reset();
 }

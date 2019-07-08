@@ -245,12 +245,12 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
   EXPECT_TRUE(ns_window_host_->IsMouseCaptureActive());
 
   // Create the drop data
-  OSExchangeData data;
+  std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
   const base::string16& text = ASCIIToUTF16("text");
-  data.SetString(text);
-  data.provider().SetDragImage(gfx::test::CreateImageSkia(100, 100),
-                               gfx::Vector2d());
-  SetData(data);
+  data->SetString(text);
+  data->provider().SetDragImage(gfx::test::CreateImageSkia(100, 100),
+                                gfx::Vector2d());
+  SetData(*data.get());
 
   // There's no way to cleanly stop NSDraggingSession inside unit tests, so just
   // don't start it at all.
@@ -265,7 +265,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
 
   // It will call ReleaseCapture().
   drag_drop_client()->StartDragAndDrop(
-      target_, data, 0, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+      target_, std::move(data), 0, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
   // The capture should be released.
   EXPECT_FALSE(ns_window_host_->IsMouseCaptureActive());

@@ -430,7 +430,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   std::unique_ptr<base::RepeatingTimer> timer_;  // Usage timer.
   base::WaitableEvent done_;  // Signals the end of background work.
   scoped_refptr<TraceObject> trace_object_;  // Initializes internal tracing.
-  base::WeakPtrFactory<BackendImpl> ptr_factory_;
+  base::WeakPtrFactory<BackendImpl> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackendImpl);
 };

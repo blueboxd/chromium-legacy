@@ -413,8 +413,7 @@ ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
       mojo_proxy_factory_(std::move(mojo_proxy_factory)),
       host_resolver_(host_resolver),
       error_observer_factory_(error_observer_factory),
-      net_log_(net_log),
-      weak_ptr_factory_(this) {}
+      net_log_(net_log) {}
 
 ProxyResolverFactoryMojo::~ProxyResolverFactoryMojo() = default;
 

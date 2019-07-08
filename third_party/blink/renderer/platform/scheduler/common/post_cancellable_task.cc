@@ -12,8 +12,7 @@ namespace blink {
 
 class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
  public:
-  explicit Runner(base::OnceClosure task)
-      : task_(std::move(task)), weak_ptr_factory_(this) {}
+  explicit Runner(base::OnceClosure task) : task_(std::move(task)) {}
 
   base::WeakPtr<Runner> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
@@ -50,7 +49,7 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
 
  private:
   base::OnceClosure task_;
-  base::WeakPtrFactory<Runner> weak_ptr_factory_;
+  base::WeakPtrFactory<Runner> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Runner);
 };

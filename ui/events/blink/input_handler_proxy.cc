@@ -390,7 +390,7 @@ void InputHandlerProxy::EnsureScrollUpdateLatencyComponent(
       (is_first_gesture_scroll_update_)
           ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
           : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-      original_timestamp, 1);
+      original_timestamp);
 }
 
 void InputHandlerProxy::DispatchQueuedInputEvents() {
@@ -406,7 +406,7 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
     // output latency.
     LatencyInfo* latency_info = event_with_callback->mutable_latency_info();
     latency_info->AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT, now, 1);
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT, now);
 
     DispatchSingleInputEvent(std::move(event_with_callback), now);
   }

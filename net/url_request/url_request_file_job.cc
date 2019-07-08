@@ -64,8 +64,7 @@ URLRequestFileJob::URLRequestFileJob(
       stream_(new FileStream(file_task_runner)),
       file_task_runner_(file_task_runner),
       remaining_bytes_(0),
-      range_parse_result_(OK),
-      weak_ptr_factory_(this) {}
+      range_parse_result_(OK) {}
 
 void URLRequestFileJob::Start() {
   FileMetaInfo* meta_info = new FileMetaInfo();

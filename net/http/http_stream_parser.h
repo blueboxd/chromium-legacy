@@ -303,7 +303,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<HttpStreamParser> weak_ptr_factory_;
+  base::WeakPtrFactory<HttpStreamParser> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamParser);
 };

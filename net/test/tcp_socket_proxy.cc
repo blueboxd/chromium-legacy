@@ -134,13 +134,13 @@ class ConnectionProxy {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<ConnectionProxy> weak_factory_;
+  base::WeakPtrFactory<ConnectionProxy> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionProxy);
 };
 
 ConnectionProxy::ConnectionProxy(std::unique_ptr<StreamSocket> local_socket)
-    : local_socket_(std::move(local_socket)), weak_factory_(this) {}
+    : local_socket_(std::move(local_socket)) {}
 
 ConnectionProxy::~ConnectionProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

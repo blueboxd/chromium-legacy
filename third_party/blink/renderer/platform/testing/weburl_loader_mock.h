@@ -74,7 +74,7 @@ class WebURLLoaderMock : public WebURLLoader {
   bool using_default_loader_ = false;
   bool is_deferred_ = false;
 
-  base::WeakPtrFactory<WebURLLoaderMock> weak_factory_;
+  base::WeakPtrFactory<WebURLLoaderMock> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };

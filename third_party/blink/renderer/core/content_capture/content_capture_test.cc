@@ -441,8 +441,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 0u);
   histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 0u);
-  histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 0u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime, 0u);
@@ -456,8 +454,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   // Verify has one CaptureContentTime record.
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 1u);
-  histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 1u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 0u);
   histograms.ExpectTotalCount(
@@ -475,8 +471,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 1u);
   histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 1u);
-  histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 1u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime, 1u);
@@ -492,8 +486,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 1u);
   histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 1u);
-  histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 2u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime, 1u);
@@ -508,8 +500,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 2u);
   histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 2u);
-  histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 3u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime, 2u);
@@ -520,8 +510,6 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 2u);
-  histograms.ExpectTotalCount(
-      ContentCaptureTaskHistogramReporter::kCaptureOneContentTime, 2u);
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSendContentTime, 3u);
   histograms.ExpectTotalCount(

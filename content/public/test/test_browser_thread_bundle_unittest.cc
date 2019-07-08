@@ -150,7 +150,7 @@ TEST(TestBrowserThreadBundleTest, TraitsConstructor) {
   signaled_on_real_io_thread.TimedWait(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(signaled_on_real_io_thread.IsSignaled());
 
-  // Tasks posted via PostTask don't run in ExecutionMode::QUEUED until
+  // Tasks posted via PostTask don't run in ThreadPoolExecutionMode::QUEUED until
   // RunUntilIdle is called.
   base::AtomicFlag task_ran;
   PostTask(FROM_HERE,

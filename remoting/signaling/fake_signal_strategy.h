@@ -43,6 +43,8 @@ class FakeSignalStrategy : public SignalStrategy {
     send_delay_ = delay;
   }
 
+  void SetError(Error error);
+  void SetIsSignInError(bool is_sign_in_error);
   void SetState(State state);
   void SetPeerCallback(const PeerCallback& peer_callback);
 
@@ -55,8 +57,16 @@ class FakeSignalStrategy : public SignalStrategy {
   // next pair of messages.
   void SimulateMessageReordering();
 
+  // If this is enabled, calling Connect() will transition the signal strategy
+  // state to CONNECTING instead of CONNECTED, and caller needs to call
+  // ProceedConnect() to transition to CONNECTED, or Disconnect() to transition
+  // to DISCONNECTED.
+  void SimulateTwoStageConnect();
+
   // Called by the |peer_|. Takes ownership of |stanza|.
   void OnIncomingMessage(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
+
+  void ProceedConnect();
 
   // SignalStrategy interface.
   void Connect() override;
@@ -68,6 +78,7 @@ class FakeSignalStrategy : public SignalStrategy {
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
+  bool IsSignInError() const override;
 
  private:
   static void DeliverMessageOnThread(
@@ -79,6 +90,8 @@ class FakeSignalStrategy : public SignalStrategy {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
+  Error error_ = OK;
+  bool is_sign_in_error_ = false;
   State state_ = CONNECTED;
 
   SignalingAddress address_;
@@ -90,6 +103,7 @@ class FakeSignalStrategy : public SignalStrategy {
   base::TimeDelta send_delay_;
 
   bool simulate_reorder_ = false;
+  bool simulate_two_stage_connect_ = false;
   std::unique_ptr<jingle_xmpp::XmlElement> pending_stanza_;
 
   // All received messages, includes thouse still in |pending_messages_|.

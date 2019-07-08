@@ -1064,11 +1064,11 @@ void WebContentsViewAura::StartDragging(
       ui::OSExchangeDataProviderFactory::CreateProvider();
   PrepareDragData(drop_data, provider.get(), web_contents_);
 
-  ui::OSExchangeData data(
-      std::move(provider));  // takes ownership of |provider|.
+  auto data(std::make_unique<ui::OSExchangeData>(
+      std::move(provider)));  // takes ownership of |provider|.
 
   if (!image.isNull())
-    data.provider().SetDragImage(image, image_offset);
+    data->provider().SetDragImage(image, image_offset);
 
   std::unique_ptr<WebDragSourceAura> drag_source(
       new WebDragSourceAura(GetNativeView(), web_contents_));
@@ -1080,12 +1080,10 @@ void WebContentsViewAura::StartDragging(
     gfx::NativeView content_native_view = GetContentNativeView();
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     result_op = aura::client::GetDragDropClient(root_window)
-        ->StartDragAndDrop(data,
-                           root_window,
-                           content_native_view,
-                           event_info.event_location,
-                           ConvertFromWeb(operations),
-                           event_info.event_source);
+                    ->StartDragAndDrop(
+                        std::move(data), root_window, content_native_view,
+                        event_info.event_location, ConvertFromWeb(operations),
+                        event_info.event_source);
   }
 
   // Bail out immediately if the contents view window is gone. Note that it is
@@ -1342,7 +1340,9 @@ void WebContentsViewAura::OnDragExited() {
   current_drop_data_.reset();
 }
 
-int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+int WebContentsViewAura::OnPerformDrop(
+    const ui::DropTargetEvent& event,
+    std::unique_ptr<ui::OSExchangeData> data) {
   gfx::PointF transformed_pt;
   RenderWidgetHostImpl* target_rwh =
       web_contents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(

@@ -10,6 +10,7 @@
 // This category wraps the Apple-provided semantic colors because many of them
 // are only available in iOS 13. Only these wrapper functions should be added
 // to this file. Custom dynamic colors should go in ColorSets.
+// TODO (crbug.com/981889): Remove along with iOS 12.
 @interface UIColor (CRSemanticColors)
 
 // System Background Color

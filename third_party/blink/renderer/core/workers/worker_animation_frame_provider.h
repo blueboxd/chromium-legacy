@@ -59,7 +59,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
 
   Member<ExecutionContext> context_;
 
-  base::WeakPtrFactory<WorkerAnimationFrameProvider> weak_factory_;
+  base::WeakPtrFactory<WorkerAnimationFrameProvider> weak_factory_{this};
 };
 
 }  // namespace blink

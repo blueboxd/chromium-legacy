@@ -121,8 +121,7 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       request_body_buf_size_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
-      was_alpn_negotiated_(false),
-      weak_factory_(this) {
+      was_alpn_negotiated_(false) {
   DCHECK(spdy_session_.get());
 }
 

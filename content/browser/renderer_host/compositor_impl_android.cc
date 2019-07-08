@@ -638,8 +638,9 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
       display_->ForceImmediateDrawAndSwapIfPossible();
 
     if (display_) {
-      GetFrameSinkManager()->UnregisterBeginFrameSource(
-          root_window_->GetBeginFrameSource());
+      CompositorDependenciesAndroid::Get()
+          .frame_sink_manager_impl()
+          ->UnregisterBeginFrameSource(root_window_->GetBeginFrameSource());
     }
 
     GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
@@ -830,7 +831,8 @@ void CompositorImpl::InitializeDisplay(
     gpu_capabilities_ = context_provider->ContextCapabilities();
   }
 
-  viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
+  viz::FrameSinkManagerImpl* manager =
+      CompositorDependenciesAndroid::Get().frame_sink_manager_impl();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
@@ -866,8 +868,10 @@ void CompositorImpl::InitializeDisplay(
   display_->Resize(size_);
   display_->SetColorSpace(display_color_space_, display_color_space_);
   if (should_register_begin_frame_source) {
-    GetFrameSinkManager()->RegisterBeginFrameSource(
-        root_window_->GetBeginFrameSource(), frame_sink_id_);
+    CompositorDependenciesAndroid::Get()
+        .frame_sink_manager_impl()
+        ->RegisterBeginFrameSource(root_window_->GetBeginFrameSource(),
+                                   frame_sink_id_);
   }
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }

@@ -10,10 +10,10 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
-#include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;
@@ -102,7 +102,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
     sink->OnPlayoutData(audio_bus, sample_rate, audio_delay_milliseconds);
 }
 
-void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
+void WebRtcAudioDeviceImpl::RemoveAudioRenderer(
+    blink::WebRtcAudioRenderer* renderer) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(renderer, renderer_.get());
@@ -334,7 +335,8 @@ int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   return 0;
 }
 
-bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
+bool WebRtcAudioDeviceImpl::SetAudioRenderer(
+    blink::WebRtcAudioRenderer* renderer) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(renderer);
 

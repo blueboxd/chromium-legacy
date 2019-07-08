@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
@@ -223,10 +224,17 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
-    // TODO(crbug.com/955476): Create network_isolation_key cache key using
-    // worker script's origin.
+    // Get the origin of the frame tree's root to use as top-frame origin.
+    // TODO(cammie): Change this approach when we support shared workers
+    // creating dedicated workers, as there might be no ancestor frame.
+    auto* host =
+        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
+    base::Optional<url::Origin> top_frame_origin(
+        host->frame_tree_node()->frame_tree()->root()->current_origin());
+
     process->CreateURLLoaderFactory(
-        origin_, nullptr /* preferences */, net::NetworkIsolationKey(),
+        origin_, nullptr /* preferences */,
+        net::NetworkIsolationKey(top_frame_origin, origin_),
         std::move(no_header_client), std::move(request));
   }
 

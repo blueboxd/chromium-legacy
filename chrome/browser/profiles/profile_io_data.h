@@ -293,7 +293,7 @@ class ProfileIOData {
       client_cert_store_factory_;
 
   mutable StringPrefMember google_services_user_account_id_;
-  mutable BooleanPrefMember sync_suppress_start_;
+  mutable BooleanPrefMember sync_requested_;
   mutable BooleanPrefMember sync_first_setup_complete_;
   mutable signin::AccountConsistencyMethod account_consistency_;
 

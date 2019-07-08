@@ -16,7 +16,9 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -106,9 +108,9 @@ class PictureInPictureServiceImplTest : public RenderViewHostImplTestHarness {
 
     contents()->SetDelegate(&delegate_);
 
-    blink::mojom::PictureInPictureServiceRequest request;
+    mojo::Remote<blink::mojom::PictureInPictureService> service_remote;
     service_impl_ = PictureInPictureServiceImpl::CreateForTesting(
-        render_frame_host, std::move(request));
+        render_frame_host, service_remote.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
@@ -137,10 +139,11 @@ TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
   const int kPlayerVideoOnlyId = 30;
 
   DummyPictureInPictureSessionObserver observer;
-  mojo::Binding<blink::mojom::PictureInPictureSessionObserver>
-      observer_bindings(&observer);
-  blink::mojom::PictureInPictureSessionObserverPtr observer_ptr;
-  observer_bindings.Bind(mojo::MakeRequest(&observer_ptr));
+  mojo::Receiver<blink::mojom::PictureInPictureSessionObserver>
+      observer_receiver(&observer);
+  mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
+      observer_remote;
+  observer_receiver.Bind(observer_remote.InitWithNewPipeAndPassReceiver());
 
   // If Picture-in-Picture there shouldn't be an active session.
   EXPECT_FALSE(service().active_session_for_testing());
@@ -154,21 +157,23 @@ TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
               EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)))
       .WillRepeatedly(testing::Return(PictureInPictureResult::kSuccess));
 
-  blink::mojom::PictureInPictureSessionPtr session_ptr;
+  mojo::Remote<blink::mojom::PictureInPictureSession> session_remote;
   gfx::Size window_size;
 
   service().StartSession(
       kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
       true /* show_play_pause_button */, true /* show_mute_button */,
-      std::move(observer_ptr),
+      std::move(observer_remote),
       base::BindLambdaForTesting(
-          [&](blink::mojom::PictureInPictureSessionPtr a, const gfx::Size& b) {
-            session_ptr = std::move(a);
+          [&](mojo::PendingRemote<blink::mojom::PictureInPictureSession> remote,
+              const gfx::Size& b) {
+            if (remote.is_valid())
+              session_remote.Bind(std::move(remote));
             window_size = b;
           }));
 
   EXPECT_TRUE(service().active_session_for_testing());
-  EXPECT_TRUE(session_ptr);
+  EXPECT_TRUE(session_remote);
   EXPECT_EQ(gfx::Size(42, 42), window_size);
 
   // Picture-in-Picture media player id should not be reset when the media is
@@ -182,8 +187,8 @@ TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
 
 TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture_NotSupported) {
   const int kPlayerVideoOnlyId = 30;
-
-  blink::mojom::PictureInPictureSessionObserverPtr observer_ptr;
+  mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
+      observer_remote;
   EXPECT_FALSE(service().active_session_for_testing());
 
   viz::SurfaceId surface_id =
@@ -195,21 +200,26 @@ TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture_NotSupported) {
               EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)))
       .WillRepeatedly(testing::Return(PictureInPictureResult::kNotSupported));
 
-  blink::mojom::PictureInPictureSessionPtr session_ptr;
+  mojo::Remote<blink::mojom::PictureInPictureSession> session_remote;
   gfx::Size window_size;
 
   service().StartSession(
       kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
       true /* show_play_pause_button */, true /* show_mute_button */,
-      std::move(observer_ptr),
+      std::move(observer_remote),
       base::BindLambdaForTesting(
-          [&](blink::mojom::PictureInPictureSessionPtr a, const gfx::Size& b) {
-            session_ptr = std::move(a);
+          [&](mojo::PendingRemote<blink::mojom::PictureInPictureSession> remote,
+              const gfx::Size& b) {
+            if (remote.is_valid())
+              session_remote.Bind(std::move(remote));
             window_size = b;
           }));
 
   EXPECT_FALSE(service().active_session_for_testing());
-  EXPECT_FALSE(session_ptr);
+  // The |session_remote| won't be bound because the |pending_remote| received
+  // in the StartSessionCallback will be invalid due to PictureInPictureSession
+  // not ever being created (meaning the the receiver won't be bound either).
+  EXPECT_FALSE(session_remote);
   EXPECT_EQ(gfx::Size(), window_size);
 }
 

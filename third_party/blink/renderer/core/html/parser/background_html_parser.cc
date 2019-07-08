@@ -101,8 +101,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       loading_task_runner_(std::move(loading_task_runner)),
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
-      starting_script_(false),
-      weak_factory_(this) {}
+      starting_script_(false) {}
 
 BackgroundHTMLParser::~BackgroundHTMLParser() = default;
 

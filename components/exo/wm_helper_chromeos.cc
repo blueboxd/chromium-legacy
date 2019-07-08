@@ -118,7 +118,8 @@ void WMHelperChromeOS::OnDragExited() {
     observer.OnDragExited();
 }
 
-int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event) {
+int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event,
+                                    std::unique_ptr<ui::OSExchangeData> data) {
   for (DragDropObserver& observer : drag_drop_observers_)
     observer.OnPerformDrop(event);
   // TODO(hirono): Return the correct result instead of always returning

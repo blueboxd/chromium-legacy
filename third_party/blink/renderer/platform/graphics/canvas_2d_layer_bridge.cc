@@ -69,8 +69,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr),
       random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability),
-      weak_ptr_factory_(this) {
+      bernoulli_distribution_(kRasterMetricProbability) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);

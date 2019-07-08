@@ -299,11 +299,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Types JavaScript into Omnibox and verify that an alert is displayed.
 - (void)testTypeJavaScriptIntoOmnibox {
-  // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
-  }
-
   std::map<GURL, std::string> responses;
   GURL URL = web::test::HttpServer::MakeUrl("http://foo");
   responses[URL] = "bar";
@@ -320,10 +315,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // not displayed. WebUI pages have elevated privileges and should not allow
 // script execution.
 - (void)testTypeJavaScriptIntoOmniboxWithWebUIPage {
-  // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
-  }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 

@@ -49,15 +49,16 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
 
   // ThreadGroup:
   void UpdateSortKey(
-      TaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithOwnedTaskSource transaction_with_task_source) override;
   void PushTaskSourceAndWakeUpWorkers(
-      RegisteredTaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithRegisteredTaskSource transaction_with_task_source)
+      override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the top TaskSource off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
-  RegisteredTaskSource GetWork();
+  RunIntentWithRegisteredTaskSource GetWork();
 
   // Indicates whether the thread group has been started yet.
   bool started_ GUARDED_BY(lock_) = false;

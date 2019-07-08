@@ -119,7 +119,7 @@ class QuicTransportProxy final {
   THREAD_CHECKER(thread_checker_);
 
   // Must be the last member.
-  base::WeakPtrFactory<QuicTransportProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<QuicTransportProxy> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

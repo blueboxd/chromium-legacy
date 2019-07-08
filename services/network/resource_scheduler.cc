@@ -212,8 +212,7 @@ class ResourceScheduler::ScheduledResourceRequestImpl
         priority_(priority),
         fifo_ordering_(0),
         peak_delayable_requests_in_flight_(0u),
-        host_port_pair_(net::HostPortPair::FromURL(request->url())),
-        weak_ptr_factory_(this) {
+        host_port_pair_(net::HostPortPair::FromURL(request->url())) {
     DCHECK(!request_->GetUserData(kUserDataKey));
     request_->SetUserData(kUserDataKey, std::make_unique<UnownedPointer>(this));
   }
@@ -328,7 +327,7 @@ class ResourceScheduler::ScheduledResourceRequestImpl
   const net::HostPortPair host_port_pair_;
 
   base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequestImpl>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequestImpl);
 };
@@ -373,8 +372,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
         num_skipped_scans_due_to_scheduled_start_(0),
         network_quality_estimator_(network_quality_estimator),
         resource_scheduler_(resource_scheduler),
-        tick_clock_(tick_clock),
-        weak_ptr_factory_(this) {
+        tick_clock_(tick_clock) {
     DCHECK(tick_clock_);
 
     UpdateParamsForNetworkQuality();
@@ -1053,7 +1051,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_{this};
 };
 
 ResourceScheduler::ResourceScheduler(bool enabled,

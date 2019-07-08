@@ -646,7 +646,7 @@ spdy::SpdyErrorCode MapNetErrorToGoAwayStatus(Error err) {
   }
 }
 
-SpdyStreamRequest::SpdyStreamRequest() : weak_ptr_factory_(this) {
+SpdyStreamRequest::SpdyStreamRequest() {
   Reset();
 }
 
@@ -953,8 +953,7 @@ SpdySession::SpdySession(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       time_func_(time_func),
-      network_quality_estimator_(network_quality_estimator),
-      weak_factory_(this) {
+      network_quality_estimator_(network_quality_estimator) {
   net_log_.BeginEvent(
       NetLogEventType::HTTP2_SESSION,
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));

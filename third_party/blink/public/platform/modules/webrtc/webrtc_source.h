@@ -13,16 +13,45 @@ class AudioBus;
 
 namespace blink {
 
-// TODO(xians): Move the following interface to webrtc so that
+class WebRtcAudioRenderer;
+
+// TODO(xians): Move the following two interfaces to webrtc so that
 // libjingle can own references to the renderer and capturer.
 //
+// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
+// API when all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT WebRtcAudioRendererSource {
+ public:
+  // Callback to get the rendered data.
+  // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
+  virtual void RenderData(media::AudioBus* audio_bus,
+                          int sample_rate,
+                          int audio_delay_milliseconds,
+                          base::TimeDelta* current_time) = 0;
+
+  // Callback to notify the client that the renderer is going away.
+  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) = 0;
+
+  // Callback to notify the client that the audio renderer thread stopped.
+  // This function must be called only when that thread is actually stopped.
+  // Otherwise a race may occur.
+  virtual void AudioRendererThreadStopped() = 0;
+
+  // Callback to notify the client of the output device the renderer is using.
+  virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
+  // Returns the UnguessableToken used to connect this stream to an input stream
+  // for echo cancellation.
+  virtual base::UnguessableToken GetAudioProcessingId() const = 0;
+
+ protected:
+  virtual ~WebRtcAudioRendererSource() {}
+};
+
 // TODO(xians): Merge this interface with WebRtcAudioRendererSource.
 // The reason why we could not do it today is that WebRtcAudioRendererSource
 // gets the data by pulling, while the data is pushed into
 // WebRtcPlayoutDataSource::Sink.
-//
-// TODO(crbug.com/704136): Move the class below out of the Blink exposed
-// API when all users of it have been Onion souped.
 class BLINK_PLATFORM_EXPORT WebRtcPlayoutDataSource {
  public:
   class Sink {

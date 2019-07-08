@@ -52,6 +52,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
@@ -1138,11 +1139,14 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   DVLOG(2) << __func__ << "() download = " << item->DebugString(false)
            << " verdict = " << static_cast<int>(result);
+  bool is_pending_scanning = false;
+
   // We only mark the content as being dangerous if the download's safety state
   // has not been set to DANGEROUS yet.  We don't want to show two warnings.
   if (item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
       item->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) {
+          download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT ||
+      item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
     download::DownloadDangerType danger_type =
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
     switch (result) {
@@ -1182,6 +1186,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       case safe_browsing::DownloadCheckResult::WHITELISTED_BY_POLICY:
         danger_type = download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
         break;
+      case safe_browsing::DownloadCheckResult::ASYNC_SCANNING:
+        is_pending_scanning = true;
+        danger_type = download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
@@ -1200,9 +1208,11 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     }
   }
 
-  SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetUserData(&kSafeBrowsingUserDataKey));
-  state->CompleteDownload();
+  if (!is_pending_scanning) {
+    SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
+        item->GetUserData(&kSafeBrowsingUserDataKey));
+    state->CompleteDownload();
+  }
 }
 #endif  // FULL_SAFE_BROWSING
 

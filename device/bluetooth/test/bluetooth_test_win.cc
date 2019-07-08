@@ -36,7 +36,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_publisher_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"

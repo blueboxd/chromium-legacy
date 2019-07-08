@@ -37,11 +37,12 @@ namespace blink {
 
 TimerBase::TimerBase(
     scoped_refptr<base::SingleThreadTaskRunner> web_task_runner)
-    : web_task_runner_(std::move(web_task_runner)),
+    : web_task_runner_(std::move(web_task_runner))
 #if DCHECK_IS_ON()
-      thread_(CurrentThread()),
+      ,
+      thread_(CurrentThread())
 #endif
-      weak_ptr_factory_(this) {
+{
 }
 
 TimerBase::~TimerBase() {

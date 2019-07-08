@@ -360,7 +360,7 @@ class HttpStreamFactory::JobController
   RequestPriority priority_;
   const NetLogWithSource net_log_;
 
-  base::WeakPtrFactory<JobController> ptr_factory_;
+  base::WeakPtrFactory<JobController> ptr_factory_{this};
 };
 
 }  // namespace net

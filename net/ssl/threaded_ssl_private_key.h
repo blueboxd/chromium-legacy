@@ -81,7 +81,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
 
   scoped_refptr<Core> core_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<ThreadedSSLPrivateKey> weak_factory_;
+  base::WeakPtrFactory<ThreadedSSLPrivateKey> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThreadedSSLPrivateKey);
 };

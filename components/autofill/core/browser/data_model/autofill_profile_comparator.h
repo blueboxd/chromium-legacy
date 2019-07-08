@@ -44,6 +44,10 @@ class AutofillProfileComparator {
                base::StringPiece16 text2,
                WhitespaceSpec whitespace_spec = DISCARD_WHITESPACE) const;
 
+  // Returns true if |text| is empty or contains only skippable characters. A
+  // character is skippable if it is punctuation or white space.
+  bool HasOnlySkippableCharacters(base::StringPiece16 text) const;
+
   // Returns a copy of |text| with uppercase converted to lowercase and
   // diacritics removed.
   //
@@ -180,14 +184,6 @@ class AutofillProfileComparator {
   // the names.
   bool HaveMergeableNames(const AutofillProfile& p1,
                           const AutofillProfile& p2) const;
-
-  // Returns true if |p1| and |p2| have Chinese, Japanese, or Korean names that
-  // are equivalent for the purpose of merging profiles.
-  //
-  // This method is used internally by |HaveMergeableNames()| when CJK names are
-  // detected.
-  bool HaveMergeableCJKNames(const AutofillProfile& p1,
-                             const AutofillProfile& p2) const;
 
   // Returns true if |p1| and |p2| have email addresses which are equivalent for
   // the purposes of merging the two profiles. This means one of the email

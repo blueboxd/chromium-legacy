@@ -15,11 +15,16 @@
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 
 namespace network {
 class NetworkConnectionTracker;
@@ -125,8 +130,10 @@ class PreviewsProber
   ~PreviewsProber() override;
 
   // Sends a probe now if the prober is currently inactive. If the probe is
-  // active (i.e.: there are probes in flight), this is a no-op.
-  void SendNowIfInactive();
+  // active (i.e.: there are probes in flight), this is a no-op. If
+  // |send_only_in_foreground| is set, the probe will only be sent when the app
+  // is in the foreground (work on Android only).
+  void SendNowIfInactive(bool send_only_in_foreground);
 
   // Returns the successfulness of the last probe, if there was one.
   base::Optional<bool> LastProbeWasSuccessful() const;
@@ -159,6 +166,9 @@ class PreviewsProber
   void ProcessProbeSuccess();
   void AddSelfAsNetworkConnectionObserver(
       network::NetworkConnectionTracker* network_connection_tracker);
+#if defined(OS_ANDROID)
+  void OnApplicationStateChange(base::android::ApplicationState new_state);
+#endif
 
   // Must outlive |this|.
   Delegate* delegate_;
@@ -214,6 +224,13 @@ class PreviewsProber
 
   // The URLLoader used for the probe. Expected to be non-null iff |is_active_|.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+#if defined(OS_ANDROID)
+  // Set if |SendInForegroundIfInactive| is called while app is in the
+  // background and listens until app comes to the foreground, then resets.
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      application_status_listener_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

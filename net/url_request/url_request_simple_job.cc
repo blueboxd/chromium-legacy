@@ -35,10 +35,7 @@ void CopyData(const scoped_refptr<IOBuffer>& buf,
 
 URLRequestSimpleJob::URLRequestSimpleJob(URLRequest* request,
                                          NetworkDelegate* network_delegate)
-    : URLRangeRequestJob(request, network_delegate),
-      next_data_offset_(0),
-      weak_factory_(this) {
-}
+    : URLRangeRequestJob(request, network_delegate), next_data_offset_(0) {}
 
 void URLRequestSimpleJob::Start() {
   // Start reading asynchronously so that all error reporting and data

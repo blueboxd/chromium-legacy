@@ -418,8 +418,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
         content_length_(0),
         leftover_data_len_(0),
         data_provider_(data_provider),
-        response_modifier_(response_modifier),
-        weak_factory_(this) {
+        response_modifier_(response_modifier) {
     data_provider_->Initialize(this);
     MatchQueryData(request, data_provider);
   }
@@ -559,7 +558,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
   IOBuffer* pending_buf_;
   int pending_buf_size_;
 
-  base::WeakPtrFactory<URLRequestMockDohJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestMockDohJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockDohJob);
 };

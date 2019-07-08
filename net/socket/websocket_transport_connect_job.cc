@@ -41,8 +41,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
       next_state_(STATE_NONE),
       race_result_(TransportConnectJob::RACE_UNKNOWN),
       had_ipv4_(false),
-      had_ipv6_(false),
-      weak_ptr_factory_(this) {
+      had_ipv6_(false) {
   DCHECK(common_connect_job_params->websocket_endpoint_lock_manager);
 }
 

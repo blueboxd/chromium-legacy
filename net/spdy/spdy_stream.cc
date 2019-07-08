@@ -111,8 +111,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       raw_sent_bytes_(0),
       recv_bytes_(0),
       write_handler_guard_(false),
-      traffic_annotation_(traffic_annotation),
-      weak_ptr_factory_(this) {
+      traffic_annotation_(traffic_annotation) {
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||
         type_ == SPDY_PUSH_STREAM);

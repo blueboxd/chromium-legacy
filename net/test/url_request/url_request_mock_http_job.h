@@ -77,7 +77,7 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   std::string raw_headers_;
   int64_t total_received_bytes_ = 0;
 
-  base::WeakPtrFactory<URLRequestMockHTTPJob> weak_ptr_factory_;
+  base::WeakPtrFactory<URLRequestMockHTTPJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockHTTPJob);
 };

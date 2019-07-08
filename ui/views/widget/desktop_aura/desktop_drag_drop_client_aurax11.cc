@@ -679,11 +679,11 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(target_window_);
     if (delegate) {
-      ui::OSExchangeData data(
+      auto data(std::make_unique<ui::OSExchangeData>(
           std::make_unique<ui::OSExchangeDataProviderAuraX11>(
-              xwindow_, target_current_context_->fetched_targets()));
+              xwindow_, target_current_context_->fetched_targets())));
 
-      ui::DropTargetEvent event(data,
+      ui::DropTargetEvent event(*data.get(),
                                 gfx::PointF(target_window_location_),
                                 gfx::PointF(target_window_root_location_),
                                 target_current_context_->GetDragOperation());
@@ -698,7 +698,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
         UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
-      drag_operation = delegate->OnPerformDrop(event);
+      drag_operation = delegate->OnPerformDrop(event, std::move(data));
     }
 
     target_window_->RemoveObserver(this);
@@ -729,7 +729,7 @@ void DesktopDragDropClientAuraX11::OnSelectionNotify(
 }
 
 int DesktopDragDropClientAuraX11::StartDragAndDrop(
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& screen_location,
@@ -748,7 +748,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   drag_operation_ = operation;
   negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
 
-  const ui::OSExchangeData::Provider* provider = &data.provider();
+  const ui::OSExchangeData::Provider* provider = &data->provider();
   source_provider_ = static_cast<const ui::OSExchangeDataProviderAuraX11*>(
       provider);
 

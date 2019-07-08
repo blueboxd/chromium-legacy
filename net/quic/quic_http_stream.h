@@ -218,7 +218,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   // Session connect timing info.
   LoadTimingInfo::ConnectTiming connect_timing_;
 
-  base::WeakPtrFactory<QuicHttpStream> weak_factory_;
+  base::WeakPtrFactory<QuicHttpStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicHttpStream);
 };

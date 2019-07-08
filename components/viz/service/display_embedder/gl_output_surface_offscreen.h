@@ -10,6 +10,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/color_space.h"
 
@@ -17,7 +18,7 @@ namespace viz {
 
 // An OutputSurface implementation that draws and swaps to an offscreen GL
 // framebuffer.
-class GLOutputSurfaceOffscreen : public GLOutputSurface {
+class VIZ_SERVICE_EXPORT GLOutputSurfaceOffscreen : public GLOutputSurface {
  public:
   explicit GLOutputSurfaceOffscreen(
       scoped_refptr<VizProcessContextProvider> context_provider);

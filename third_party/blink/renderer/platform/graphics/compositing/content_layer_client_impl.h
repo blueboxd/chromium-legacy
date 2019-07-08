@@ -89,7 +89,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   std::unique_ptr<JSONArray> paint_chunk_debug_data_;
 #endif
 
-  base::WeakPtrFactory<ContentLayerClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ContentLayerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentLayerClientImpl);
 };

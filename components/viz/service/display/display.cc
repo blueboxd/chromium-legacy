@@ -122,6 +122,9 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
 
 }  // namespace
 
+constexpr base::TimeDelta Display::kDrawToSwapMin;
+constexpr base::TimeDelta Display::kDrawToSwapMax;
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -534,7 +537,7 @@ bool Display::DrawAndSwap() {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
-          scheduler_->current_frame_time(), 1);
+          scheduler_->current_frame_time());
     }
 
     std::vector<std::unique_ptr<Surface::PresentationHelper>>
@@ -627,9 +630,8 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
     base::TimeDelta delta =
         timings.swap_start - draw_start_times_pending_swap_ack_.front();
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "Compositing.Display.DrawToSwapUs", delta,
-        base::TimeDelta::FromMicroseconds(100),
-        base::TimeDelta::FromMilliseconds(100), 50);
+        "Compositing.Display.DrawToSwapUs", delta, kDrawToSwapMin,
+        kDrawToSwapMax, kDrawToSwapUsBuckets);
   }
   draw_start_times_pending_swap_ack_.pop_front();
 }

@@ -795,7 +795,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   SSLConfigService* const ssl_config_service_;
 
-  base::WeakPtrFactory<TransportClientSocketPool> weak_factory_;
+  base::WeakPtrFactory<TransportClientSocketPool> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };

@@ -120,7 +120,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
 
   // Bound to Main Render thread.
   THREAD_CHECKER(main_render_thread_checker_);
-  base::WeakPtrFactory<CanvasCaptureHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CanvasCaptureHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandler);
 };

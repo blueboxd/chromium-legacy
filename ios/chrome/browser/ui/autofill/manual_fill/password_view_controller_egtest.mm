@@ -330,7 +330,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is resumed after selecting other
 // password.
-- (void)testPasswordControllerResumes {
+// TODO(crbug.com/981922): Re-enable this test due to failing DB call.
+- (void)DISABLED_testPasswordControllerResumes {
   if (([UIDevice currentDevice].systemVersion.doubleValue < 12)) {
     // TODO(crbug.com/976348): iOS 11 support is being deprecated, disable this
     // failing test for now.

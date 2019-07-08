@@ -260,9 +260,8 @@ GEN('#else');
 // set.
 TEST_F('SyncInternalsWebUITest', 'SyncDisabledByDefault', function() {
   expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
-  // TODO(crbug.com/906034,crbug.com/973770): Sort out the proper default value
-  // for IsSyncRequested() and possibly add the "User choice" disable reason.
-  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'Not signed in'));
+  expectTrue(
+      this.hasInDetails(true, 'Disable Reasons', 'Not signed in, User choice'));
   expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 

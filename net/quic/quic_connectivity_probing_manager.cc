@@ -63,8 +63,7 @@ QuicConnectivityProbingManager::QuicConnectivityProbingManager(
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       retry_count_(0),
       probe_start_time_(base::TimeTicks()),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   retransmit_timer_.SetTaskRunner(task_runner_);
 }
 

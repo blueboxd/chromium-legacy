@@ -21319,8 +21319,26 @@ should be able to be added at any place in this file.
   <owner>dfried@chromium.org</owner>
   <description>
     The user opened a bookmark from the application menu at the top of the
-    screen on, for example, MacOS. Distinguished from launching from the
-    wrench/app menu or the bookmarks bar.
+    screen on macOS. Distinguished from launching from the wrench/app menu or
+    the bookmarks bar.
+  </description>
+</action>
+
+<action name="TopMenu_History_RecentlyClosed">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened a link from the Recently Closed section in the application
+    menu at the top of the screen on macOS. Distinguished from launching from
+    the wrench/app menu.
+  </description>
+</action>
+
+<action name="TopMenu_History_RecentlyVisited">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened a link from the Recently Visited section in the application
+    menu at the top of the screen on macOS. Distinguished from launching from
+    the wrench/app menu.
   </description>
 </action>
 

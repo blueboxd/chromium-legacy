@@ -492,4 +492,13 @@ Additional details:
   <message name="IDS_POLICY_IS_AFFILIATED_NO" desc="Indicates the user is not affiliated.">
     No
   </message>
+  <message name="IDS_POLICY_LABEL_IS_OFFHOURS_ACTIVE" desc="Label to indicate if the off-hours policy is active or not.">
+    Off-Hours Policy:
+  </message>
+  <message name="IDS_POLICY_OFFHOURS_ACTIVE" desc="Indicates the off-hours policy is active.">
+    Active
+  </message>
+  <message name="IDS_POLICY_OFFHOURS_NOT_ACTIVE" desc="Indicates the off-hours policy is not active.">
+    Not active
+  </message>
 </grit-part>

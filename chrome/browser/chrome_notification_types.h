@@ -191,12 +191,6 @@ enum NotificationType {
   // Source is the WebContents that holds the print job.
   NOTIFICATION_PRINT_JOB_RELEASED,
 
-  // Content Settings --------------------------------------------------------
-
-  // Sent when content settings change for a tab. The source is a
-  // content::WebContents object, the details are None.
-  NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-
   // Cookies -----------------------------------------------------------------
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

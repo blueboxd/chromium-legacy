@@ -40,7 +40,7 @@ ACTION_P(RunClosure2, closure) {
 // An almost empty WebMediaPlayer to override paint() method.
 class MockWebMediaPlayer : public WebMediaPlayer {
  public:
-  MockWebMediaPlayer() : weak_factory_(this) {}
+  MockWebMediaPlayer() {}
   ~MockWebMediaPlayer() override = default;
 
   LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override {
@@ -99,7 +99,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
 
   bool is_video_opaque_ = true;
 
-  base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_;
+  base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_{this};
 };
 
 }  // namespace

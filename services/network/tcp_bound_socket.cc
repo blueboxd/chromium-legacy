@@ -30,8 +30,7 @@ TCPBoundSocket::TCPBoundSocket(
           nullptr /*socket_performance_watcher*/,
           net_log,
           net::NetLogSource())),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {}
+      traffic_annotation_(traffic_annotation) {}
 
 TCPBoundSocket::~TCPBoundSocket() = default;
 

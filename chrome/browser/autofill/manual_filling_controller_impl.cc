@@ -10,12 +10,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
 #include "chrome/browser/autofill/credit_card_accessory_controller.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessoryAction;
@@ -150,21 +152,30 @@ void ManualFillingControllerImpl::Hide() {
 void ManualFillingControllerImpl::OnFillingTriggered(
     AccessoryTabType type,
     const autofill::UserInfo::Field& selection) {
-  GetControllerForTab(type)->OnFillingTriggered(selection);
+  AccessoryController* controller = GetControllerForTab(type);
+  if (!controller)
+    return;  // Controller not available anymore.
+  controller->OnFillingTriggered(selection);
 }
 
 void ManualFillingControllerImpl::OnOptionSelected(
     AccessoryAction selected_action) const {
   UMA_HISTOGRAM_ENUMERATION("KeyboardAccessory.AccessoryActionSelected",
                             selected_action, AccessoryAction::COUNT);
-  GetControllerForAction(selected_action)->OnOptionSelected(selected_action);
+  AccessoryController* controller = GetControllerForAction(selected_action);
+  if (!controller)
+    return;  // Controller not available anymore.
+  controller->OnOptionSelected(selected_action);
 }
 
 void ManualFillingControllerImpl::GetFavicon(
     int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {
-  DCHECK(pwd_controller_);
-  pwd_controller_->GetFavicon(desired_size_in_pixel, std::move(icon_callback));
+  // TODO(crbug.com/945300): This should request favicons directly.
+  PasswordAccessoryController* controller = GetPasswordController();
+  if (!controller)
+    return;  // Controller not available anymore.
+  controller->GetFavicon(desired_size_in_pixel, std::move(icon_callback));
 }
 
 gfx::NativeView ManualFillingControllerImpl::container_view() const {
@@ -188,11 +199,6 @@ void ManualFillingControllerImpl::Initialize() {
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  if (PasswordAccessoryController::AllowedForWebContents(web_contents)) {
-    pwd_controller_ =
-        PasswordAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
-    DCHECK(pwd_controller_);
-  }
   if (AddressAccessoryController::AllowedForWebContents(web_contents)) {
     address_controller_ =
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
@@ -217,7 +223,7 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
-      pwd_controller_(std::move(pwd_controller)),
+      pwd_controller_for_testing_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
       cc_controller_(std::move(cc_controller)),
       view_(std::move(view)) {}
@@ -274,7 +280,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
     case AccessoryTabType::ADDRESSES:
       return address_controller_.get();
     case AccessoryTabType::PASSWORDS:
-      return pwd_controller_.get();
+      return GetPasswordController();
     case AccessoryTabType::CREDIT_CARDS:
       return cc_controller_.get();
     case AccessoryTabType::TOUCH_TO_FILL:
@@ -293,7 +299,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::MANAGE_PASSWORDS:
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
-      return pwd_controller_.get();
+      return GetPasswordController();
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
@@ -305,6 +311,17 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
   NOTREACHED() << "Controller not defined for action: "
                << static_cast<int>(action);
   return nullptr;
+}
+
+PasswordAccessoryController*
+ManualFillingControllerImpl::GetPasswordController() const {
+  if (pwd_controller_for_testing_)
+    return pwd_controller_for_testing_.get();
+
+  return PasswordAccessoryController::AllowedForWebContents(web_contents_)
+             ? ChromePasswordManagerClient::FromWebContents(web_contents_)
+                   ->GetOrCreatePasswordAccessory()
+             : nullptr;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ManualFillingControllerImpl)

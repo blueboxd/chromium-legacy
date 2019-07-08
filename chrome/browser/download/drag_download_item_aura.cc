@@ -40,12 +40,12 @@ void DragDownloadItem(const download::DownloadItem* download,
     return;
 
   // Set up our OLE machinery
-  ui::OSExchangeData data;
+  auto data = std::make_unique<ui::OSExchangeData>();
 
   button_drag_utils::SetDragImage(
       GURL(), download->GetFileNameToReportUser().BaseName().LossyDisplayName(),
       icon ? icon->AsImageSkia() : gfx::ImageSkia(), nullptr,
-      *views::Widget::GetTopLevelWidgetForNativeView(view), &data);
+      *views::Widget::GetTopLevelWidgetForNativeView(view), data.get());
 
   base::FilePath full_path = download->GetTargetFilePath();
 #if defined(OS_CHROMEOS)
@@ -61,13 +61,13 @@ void DragDownloadItem(const download::DownloadItem* download,
   std::vector<ui::FileInfo> file_infos;
   file_infos.push_back(
       ui::FileInfo(full_path, download->GetFileNameToReportUser()));
-  data.SetFilenames(file_infos);
+  data->SetFilenames(file_infos);
 
   gfx::Point location = display::Screen::GetScreen()->GetCursorScreenPoint();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   aura::client::GetDragDropClient(root_window)
       ->StartDragAndDrop(
-          data, root_window, view, location,
+          std::move(data), root_window, view, location,
           ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK,
           ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 }

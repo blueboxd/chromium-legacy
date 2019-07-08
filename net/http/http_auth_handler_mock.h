@@ -111,7 +111,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
   bool allows_default_credentials_;
   bool allows_explicit_credentials_;
   GURL request_url_;
-  base::WeakPtrFactory<HttpAuthHandlerMock> weak_factory_;
+  base::WeakPtrFactory<HttpAuthHandlerMock> weak_factory_{this};
 };
 
 void PrintTo(const HttpAuthHandlerMock::State& state, ::std::ostream* os);

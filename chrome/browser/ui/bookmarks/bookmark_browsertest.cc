@@ -231,12 +231,13 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
 
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
       [&run_loop, page_title, page_url, expected_point](
-          const ui::OSExchangeData& drag_data, gfx::NativeView native_view,
+          std::unique_ptr<ui::OSExchangeData> drag_data,
+          gfx::NativeView native_view,
           ui::DragDropTypes::DragEventSource source, gfx::Point point,
           int operation) {
         GURL url;
         base::string16 title;
-        EXPECT_TRUE(drag_data.provider().GetURLAndTitle(
+        EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
             ui::OSExchangeData::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
             &url, &title));
         EXPECT_EQ(page_url, url);
@@ -246,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
         // implementation of OSExchangeData just sets the drag image on the OS
         // API.
         // See https://crbug.com/893388.
-        EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
+        EXPECT_FALSE(drag_data->provider().GetDragImage().isNull());
 #endif
         EXPECT_EQ(expected_point, point);
         run_loop->Quit();
@@ -279,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
   auto run_loop = std::make_unique<base::RunLoop>();
 
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
-      [&run_loop, expected_point](const ui::OSExchangeData& drag_data,
+      [&run_loop, expected_point](std::unique_ptr<ui::OSExchangeData> drag_data,
                                   gfx::NativeView native_view,
                                   ui::DragDropTypes::DragEventSource source,
                                   gfx::Point point, int operation) {
@@ -288,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
         base::string16 title;
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.
         // See https://crbug.com/893432.
-        EXPECT_FALSE(drag_data.provider().GetURLAndTitle(
+        EXPECT_FALSE(drag_data->provider().GetURLAndTitle(
             ui::OSExchangeData::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
             &url, &title));
 #endif
@@ -297,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
         // implementation of OSExchangeData just sets the drag image on the OS
         // API.
         // See https://crbug.com/893388.
-        EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
+        EXPECT_FALSE(drag_data->provider().GetDragImage().isNull());
 #endif
         EXPECT_EQ(expected_point, point);
         run_loop->Quit();

@@ -118,8 +118,7 @@ RestrictedCookieManager::RestrictedCookieManager(
       network_context_client_(network_context_client),
       is_service_worker_(is_service_worker),
       process_id_(process_id),
-      frame_id_(frame_id),
-      weak_ptr_factory_(this) {
+      frame_id_(frame_id) {
   DCHECK(cookie_store);
 }
 

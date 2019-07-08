@@ -22,11 +22,11 @@
 #include "chrome/android/features/keyboard_accessory/jni_headers/UserInfoField_jni.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
-#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -201,17 +201,6 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     const base::android::JavaParamRef<jobjectArray>& j_passwords) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  PasswordAccessoryController* pwd_controller =
-      static_cast<ManualFillingControllerImpl*>(
-          ManualFillingControllerImpl::GetOrCreate(web_contents).get())
-          ->password_controller_for_testing();
-
-  if (!pwd_controller) {
-    // If the controller isn't initialized (e.g. because the flags are not set),
-    // fail silently so tests can use shared setup methods for old and new UI.
-    LOG(ERROR) << "Tried to fill cache of non-existent accessory controller.";
-    return;
-  }
 
   url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
   std::vector<std::string> usernames;
@@ -228,7 +217,9 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
     credentials[password_forms[i].username_value] = &password_forms[i];
   }
-  pwd_controller->SavePasswordsForOrigin(credentials, origin);
+  return ChromePasswordManagerClient::FromWebContents(web_contents)
+      ->GetCredentialCacheForTesting()
+      ->SaveCredentialsForOrigin(credentials, origin);
 }
 
 // static

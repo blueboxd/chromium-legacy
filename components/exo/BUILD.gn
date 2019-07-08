@@ -147,6 +147,7 @@ source_set("test_support") {
     ":exo",
     "//base",
     "//base/test:test_support",
+    "//components/viz/service:service",
     "//gpu",
     "//skia",
     "//testing/gtest",

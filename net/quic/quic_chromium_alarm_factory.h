@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE QuicChromiumAlarmFactory
  private:
   base::TaskRunner* task_runner_;
   const quic::QuicClock* clock_;
-  base::WeakPtrFactory<QuicChromiumAlarmFactory> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumAlarmFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumAlarmFactory);
 };

@@ -282,7 +282,7 @@ class NET_EXPORT NSSCertDatabase {
 
   const scoped_refptr<base::ObserverListThreadSafe<Observer>> observer_list_;
 
-  base::WeakPtrFactory<NSSCertDatabase> weak_factory_;
+  base::WeakPtrFactory<NSSCertDatabase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NSSCertDatabase);
 };

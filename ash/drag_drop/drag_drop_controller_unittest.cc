@@ -145,16 +145,17 @@ class TestDragDropController : public DragDropController {
     drag_string_.clear();
   }
 
-  int StartDragAndDrop(const ui::OSExchangeData& data,
+  int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
                        const gfx::Point& location,
                        int operation,
                        ui::DragDropTypes::DragEventSource source) override {
     drag_start_received_ = true;
-    data.GetString(&drag_string_);
-    return DragDropController::StartDragAndDrop(
-        data, root_window, source_window, location, operation, source);
+    data->GetString(&drag_string_);
+    return DragDropController::StartDragAndDrop(std::move(data), root_window,
+                                                source_window, location,
+                                                operation, source);
   }
 
   void DragUpdate(aura::Window* target,
@@ -247,7 +248,8 @@ class EventTargetTestDelegate : public aura::client::DragDropDelegate {
     return ui::DragDropTypes::DRAG_MOVE;
   }
   void OnDragExited() override { ADD_FAILURE(); }
-  int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override {
     EXPECT_EQ(State::kDragUpdateInvoked, state_);
     EXPECT_EQ(window_, event.target());
     state_ = State::kPerformDropInvoked;
@@ -310,8 +312,10 @@ class DragDropControllerTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  void UpdateDragData(ui::OSExchangeData* data) {
-    drag_drop_controller_->drag_data_ = data;
+  void UpdateDragData() {
+    drag_drop_controller_->drag_data_ = std::make_unique<ui::OSExchangeData>();
+    drag_drop_controller_->drag_data_->SetString(
+        base::UTF8ToUTF16("I am being dragged"));
   }
 
   aura::Window* GetDragWindow() { return drag_drop_controller_->drag_window_; }
@@ -365,8 +369,6 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -376,9 +378,9 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -406,8 +408,6 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -417,13 +417,13 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
   }
 
-  UpdateDragData(&data);
+  UpdateDragData();
 
   generator.ReleaseLeftButton();
 
@@ -447,9 +447,6 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view2);
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
-
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 drag_view1->bounds().CenterPoint());
@@ -460,9 +457,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(1, 0);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -508,9 +505,6 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
                                widget2_bounds.width(),
                                widget2_bounds.height()));
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
-
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget1->GetNativeView());
   generator.PressLeftButton();
@@ -520,9 +514,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(1, 0);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -559,8 +553,6 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   std::unique_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseToCenterOf(widget->GetNativeView());
@@ -571,9 +563,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -584,7 +576,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   // View has been removed. We will not get any of the following drag updates.
   int num_drags_2 = 23;
   for (int i = 0; i < num_drags_2; ++i) {
-    UpdateDragData(&data);
+    UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -625,10 +617,6 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
-  ui::OSExchangeData data;
-  std::string data_str("I am being dragged");
-  data.SetString(base::ASCIIToUTF16(data_str));
-
   generator.PressLeftButton();
   generator.MoveMouseBy(0, drag_view->VerticalDragThreshold() + 1);
 
@@ -652,8 +640,6 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   aura::Window* window = widget->GetNativeView();
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -663,9 +649,9 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -681,7 +667,7 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
   num_drags = 23;
   for (int i = 0; i < num_drags; ++i) {
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
     // We should not crash here.
   }
@@ -696,8 +682,6 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -707,9 +691,9 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // We send a unexpected mouse move event. Note that we cannot use
@@ -746,8 +730,6 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -759,7 +741,7 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -788,8 +770,6 @@ TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
@@ -799,9 +779,9 @@ TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
     // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-    // drag_data_ to a fake drag data object that we created.
+    // drag_data_ to a fake drag data object that we create.
     if (i > 0)
-      UpdateDragData(&data);
+      UpdateDragData();
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.
@@ -847,9 +827,6 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
                                widget2_bounds.width(),
                                widget2_bounds.height()));
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
-
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget1->GetNativeView());
   generator.PressTouch();
@@ -858,8 +835,8 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
   // Because we are not doing a blocking drag and drop, the original
   // OSDragExchangeData object is lost as soon as we return from the drag
   // initiation in DragDropController::StartDragAndDrop(). Hence we set the
-  // drag_data_ to a fake drag data object that we created.
-  UpdateDragData(&data);
+  // drag_data_ to a fake drag data object that we create.
+  UpdateDragData();
   gfx::Point gesture_location = point;
   int num_drags = drag_view1->width();
   for (int i = 0; i < num_drags; ++i) {
@@ -971,13 +948,13 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     aura::client::SetDragDropClient(*iter, drag_drop_controller_.get());
   }
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   {
+    auto data(std::make_unique<ui::OSExchangeData>());
+    data->SetString(base::UTF8ToUTF16("I am being dragged"));
     std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
-        data, window->GetRootWindow(), window, gfx::Point(5, 5),
+        std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
         ui::DragDropTypes::DRAG_MOVE,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
@@ -1005,10 +982,12 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   }
 
   {
+    auto data(std::make_unique<ui::OSExchangeData>());
+    data->SetString(base::UTF8ToUTF16("I am being dragged"));
     std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
-        data, window->GetRootWindow(), window, gfx::Point(405, 405),
+        std::move(data), window->GetRootWindow(), window, gfx::Point(405, 405),
         ui::DragDropTypes::DRAG_MOVE,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
     DragImageWindowObserver observer;
@@ -1046,12 +1025,12 @@ TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
     aura::client::SetDragDropClient(root, drag_drop_controller_.get());
   }
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  auto data(std::make_unique<ui::OSExchangeData>());
+  data->SetString(base::UTF8ToUTF16("I am being dragged"));
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   aura::Window* window = widget->GetNativeWindow();
   drag_drop_controller_->StartDragAndDrop(
-      data, window->GetRootWindow(), window, gfx::Point(5, 5),
+      std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
       ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
   // Start dragging.
@@ -1085,8 +1064,6 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
 
@@ -1101,7 +1078,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   generator.Dispatch(&press);
 
   DispatchGesture(ui::ET_GESTURE_LONG_PRESS, start);
-  UpdateDragData(&data);
+  UpdateDragData();
   timestamp += base::TimeDelta::FromMilliseconds(10);
   ui::TouchEvent move1(
       ui::ET_TOUCH_MOVED, mid, timestamp,
@@ -1136,13 +1113,13 @@ TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
   TestObserver observer;
   drag_drop_controller_->AddObserver(&observer);
 
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
   {
+    auto data(std::make_unique<ui::OSExchangeData>());
+    data->SetString(base::UTF8ToUTF16("I am being dragged"));
     std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
-        data, window->GetRootWindow(), window, gfx::Point(5, 5),
+        std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
         ui::DragDropTypes::DRAG_MOVE,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
@@ -1164,15 +1141,15 @@ TEST_F(DragDropControllerTest, SetEnabled) {
   drag_drop_controller_->AddObserver(&observer);
 
   // Data for the drag.
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  auto data(std::make_unique<ui::OSExchangeData>());
+  data->SetString(base::UTF8ToUTF16("I am being dragged"));
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   aura::Window* window = widget->GetNativeWindow();
 
   // Cannot start a drag when the controller is disabled.
   drag_drop_controller_->set_enabled(false);
   drag_drop_controller_->StartDragAndDrop(
-      data, window->GetRootWindow(), window, gfx::Point(5, 5),
+      std::move(data), window->GetRootWindow(), window, gfx::Point(5, 5),
       ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   EXPECT_EQ(TestObserver::State::kNotInvoked, observer.state());
 
@@ -1203,10 +1180,10 @@ TEST_F(DragDropControllerTest, EventTarget) {
                                 base::Unretained(&generator)));
 
   drag_drop_controller_->set_should_block_during_drag_drop(true);
-  ui::OSExchangeData data;
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  auto data(std::make_unique<ui::OSExchangeData>());
+  data->SetString(base::UTF8ToUTF16("I am being dragged"));
   drag_drop_controller_->StartDragAndDrop(
-      data, window->GetRootWindow(), window.get(), gfx::Point(5, 5),
+      std::move(data), window->GetRootWindow(), window.get(), gfx::Point(5, 5),
       ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
   EXPECT_EQ(EventTargetTestDelegate::State::kPerformDropInvoked,

@@ -296,12 +296,6 @@
       },
     },
   },
-  # TODO(crbug.com/956591): Remove this once the bug is fixed.
-  'check_static_initializers': {
-    'remove_from': [
-      'Linux Tests Code Coverage',
-    ],
-  },
   'checkbins': {
     'remove_from': [
       'linux-archive-dbg',

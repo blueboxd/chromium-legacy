@@ -246,6 +246,17 @@ bool AutofillProfileComparator::Compare(base::StringPiece16 text1,
   return false;
 }
 
+bool AutofillProfileComparator::HasOnlySkippableCharacters(
+    base::StringPiece16 text) const {
+  if (text.empty()) {
+    return true;
+  }
+
+  return NormalizingIterator(text,
+                             AutofillProfileComparator::DISCARD_WHITESPACE)
+      .End();
+}
+
 base::string16 AutofillProfileComparator::NormalizeForComparison(
     base::StringPiece16 text,
     AutofillProfileComparator::WhitespaceSpec whitespace_spec) const {
@@ -337,23 +348,19 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
   const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
 
-  const base::string16& normalized_full_name_1 =
-      NormalizeForComparison(full_name_1);
-  const base::string16& normalized_full_name_2 =
-      NormalizeForComparison(full_name_2);
-
   const base::string16* best_name = nullptr;
-  if (normalized_full_name_1.empty()) {
+  if (HasOnlySkippableCharacters(full_name_1)) {
     // p1 has no name, so use the name from p2.
     best_name = &full_name_2;
-  } else if (normalized_full_name_2.empty()) {
+  } else if (HasOnlySkippableCharacters(full_name_2)) {
     // p2 has no name, so use the name from p1.
     best_name = &full_name_1;
   } else if (data_util::IsCJKName(full_name_1) &&
              data_util::IsCJKName(full_name_2)) {
     // Use a separate logic for CJK names.
     return MergeCJKNames(p1, p2, name_info);
-  } else if (IsNameVariantOf(normalized_full_name_1, normalized_full_name_2)) {
+  } else if (IsNameVariantOf(NormalizeForComparison(full_name_1),
+                             NormalizeForComparison(full_name_2))) {
     // full_name_2 is a variant of full_name_1.
     best_name = &full_name_1;
   } else {
@@ -540,12 +547,16 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   DCHECK(HaveMergeablePhoneNumbers(p1, p2))
       << "Phone numbers are not mergeable: '" << s1 << "' vs '" << s2 << "'";
 
-  if (s1.empty()) {
+  if (HasOnlySkippableCharacters(s1) && HasOnlySkippableCharacters(s2)) {
+    phone_number->SetRawInfo(kWholePhoneNumber, base::string16());
+  }
+
+  if (HasOnlySkippableCharacters(s1)) {
     phone_number->SetRawInfo(kWholePhoneNumber, s2);
     return true;
   }
 
-  if (s2.empty() || s1 == s2) {
+  if (HasOnlySkippableCharacters(s2) || s1 == s2) {
     phone_number->SetRawInfo(kWholePhoneNumber, s1);
     return true;
   }
@@ -617,7 +628,6 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   }
 
   phone_number->SetRawInfo(kWholePhoneNumber, UTF8ToUTF16(new_number));
-
   return true;
 }
 
@@ -906,33 +916,21 @@ std::set<base::string16> AutofillProfileComparator::GetNamePartVariants(
 bool AutofillProfileComparator::HaveMergeableNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  base::string16 full_name_1 =
-      NormalizeForComparison(p1.GetInfo(NAME_FULL, app_locale_));
-  base::string16 full_name_2 =
-      NormalizeForComparison(p2.GetInfo(NAME_FULL, app_locale_));
+  base::string16 full_name_1 = p1.GetInfo(NAME_FULL, app_locale_);
+  base::string16 full_name_2 = p2.GetInfo(NAME_FULL, app_locale_);
 
-  if (full_name_1.empty() || full_name_2.empty() ||
-      full_name_1 == full_name_2) {
+  if (HasOnlySkippableCharacters(full_name_1) ||
+      HasOnlySkippableCharacters(full_name_2) ||
+      Compare(full_name_1, full_name_2)) {
     return true;
   }
 
-  if (data_util::IsCJKName(full_name_1) && data_util::IsCJKName(full_name_2)) {
-    return HaveMergeableCJKNames(p1, p2);
-  }
+  base::string16 canon_full_name_1 = NormalizeForComparison(full_name_1);
+  base::string16 canon_full_name_2 = NormalizeForComparison(full_name_2);
 
   // Is it reasonable to merge the names from p1 and p2.
-  return IsNameVariantOf(full_name_1, full_name_2) ||
-         IsNameVariantOf(full_name_2, full_name_1);
-}
-
-bool AutofillProfileComparator::HaveMergeableCJKNames(
-    const AutofillProfile& p1,
-    const AutofillProfile& p2) const {
-  base::string16 name_1 = NormalizeForComparison(
-      p1.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
-  base::string16 name_2 = NormalizeForComparison(
-      p2.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
-  return name_1 == name_2;
+  return IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
+         IsNameVariantOf(canon_full_name_2, canon_full_name_1);
 }
 
 bool AutofillProfileComparator::HaveMergeableEmailAddresses(
@@ -947,12 +945,13 @@ bool AutofillProfileComparator::HaveMergeableEmailAddresses(
 bool AutofillProfileComparator::HaveMergeableCompanyNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  const base::string16& company_name_1 =
-      NormalizeForComparison(p1.GetInfo(COMPANY_NAME, app_locale_));
-  const base::string16& company_name_2 =
-      NormalizeForComparison(p2.GetInfo(COMPANY_NAME, app_locale_));
-  return company_name_1.empty() || company_name_2.empty() ||
-         CompareTokens(company_name_1, company_name_2) != DIFFERENT_TOKENS;
+  const base::string16& company_name_1 = p1.GetInfo(COMPANY_NAME, app_locale_);
+  const base::string16& company_name_2 = p2.GetInfo(COMPANY_NAME, app_locale_);
+  return HasOnlySkippableCharacters(company_name_1) ||
+         HasOnlySkippableCharacters(company_name_2) ||
+         CompareTokens(NormalizeForComparison(company_name_1),
+                       NormalizeForComparison(company_name_2)) !=
+             DIFFERENT_TOKENS;
 }
 
 bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
@@ -964,8 +963,8 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   const base::string16& raw_phone_2 = p2.GetRawInfo(PHONE_HOME_WHOLE_NUMBER);
 
   // Are the two phone numbers trivially mergeable?
-  if (raw_phone_1.empty() || raw_phone_2.empty() ||
-      raw_phone_1 == raw_phone_2) {
+  if (HasOnlySkippableCharacters(raw_phone_1) ||
+      HasOnlySkippableCharacters(raw_phone_2) || raw_phone_1 == raw_phone_2) {
     return true;
   }
 
@@ -973,13 +972,11 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   // SHORT_NSN_MATCH and just call that instead of accessing the underlying
   // utility library directly?
 
-  // The phone number util library needs the numbers in utf8.
-  const std::string phone_1 = base::UTF16ToUTF8(raw_phone_1);
-  const std::string phone_2 = base::UTF16ToUTF8(raw_phone_2);
-
   // Parse and compare the phone numbers.
+  // The phone number util library needs the numbers in utf8.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
-  switch (phone_util->IsNumberMatchWithTwoStrings(phone_1, phone_2)) {
+  switch (phone_util->IsNumberMatchWithTwoStrings(
+      base::UTF16ToUTF8(raw_phone_1), base::UTF16ToUTF8(raw_phone_2))) {
     case PhoneNumberUtil::SHORT_NSN_MATCH:
     case PhoneNumberUtil::NSN_MATCH:
     case PhoneNumberUtil::EXACT_MATCH:

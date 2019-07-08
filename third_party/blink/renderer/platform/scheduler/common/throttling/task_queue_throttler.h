@@ -240,7 +240,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
 
   std::unordered_map<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
 
-  base::WeakPtrFactory<TaskQueueThrottler> weak_factory_;
+  base::WeakPtrFactory<TaskQueueThrottler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottler);
 };

@@ -14,7 +14,8 @@
 
 namespace page_load_metrics {
 
-// Tracks individual resource loads on the page.
+// Tracks individual resource loads on the page. Only tracks resources loaded
+// by the network stack (including HTTP cache).
 class ResourceTracker {
  public:
   // Maps a request id for a blink resource to the metadata for the resource

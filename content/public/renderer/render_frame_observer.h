@@ -197,6 +197,15 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       const network::URLLoaderCompletionStatus& status) {}
   virtual void DidCancelResponse(int request_id) {}
 
+  // Reports that a resource was loaded from the blink memory cache.
+  // |request_id| uniquely identifies this resource within this render frame.
+  // |from_archive| indicates if the resource originated from a MHTML archive.
+  virtual void DidLoadResourceFromMemoryCache(const GURL& response_url,
+                                              int request_id,
+                                              int64_t encoded_body_length,
+                                              const std::string& mime_type,
+                                              bool from_archive) {}
+
   // Notification when the renderer observes data used during the page load.
   // This is used for page load metrics. |received_data_length| is the received
   // network bytes. |resource_id| uniquely identifies the resource within this

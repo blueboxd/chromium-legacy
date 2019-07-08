@@ -67,6 +67,7 @@ class ArcPowerBridge : public KeyedService,
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
+  void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
   // DisplayConfigurator::Observer overrides.
   void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;

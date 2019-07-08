@@ -63,8 +63,7 @@ MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
       net_log_(net_log),
       memory_pressure_listener_(
           base::BindRepeating(&MemBackendImpl::OnMemoryPressure,
-                              base::Unretained(this))),
-      weak_factory_(this) {}
+                              base::Unretained(this))) {}
 
 MemBackendImpl::~MemBackendImpl() {
   DCHECK(CheckLRUListOrder(lru_list_));

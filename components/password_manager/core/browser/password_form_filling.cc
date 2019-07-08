@@ -45,7 +45,7 @@ bool ShouldShowInitialPasswordAccountSuggestions() {
       password_manager::features::kFillOnAccountSelect);
 }
 
-void Autofill(const PasswordManagerClient& client,
+void Autofill(PasswordManagerClient* client,
               PasswordManagerDriver* driver,
               const PasswordForm& form_for_autofill,
               const std::map<base::string16, const PasswordForm*>& best_matches,
@@ -55,8 +55,9 @@ void Autofill(const PasswordManagerClient& client,
   DCHECK_EQ(PasswordForm::Scheme::kHtml, preferred_match.scheme);
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(&client)) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client.GetLogManager()));
+  if (password_manager_util::IsLoggingActive(client)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client->GetLogManager()));
     logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILL);
   }
 
@@ -71,8 +72,8 @@ void Autofill(const PasswordManagerClient& client,
       PreferredRealmIsFromAndroid(fill_data));
   driver->FillPasswordForm(fill_data);
 
-  client.PasswordWasAutofilled(best_matches, form_for_autofill.origin,
-                               &federated_matches);
+  client->PasswordWasAutofilled(best_matches, form_for_autofill.origin,
+                                &federated_matches);
 }
 
 void ShowInitialPasswordAccountSuggestions(
@@ -101,7 +102,7 @@ void ShowInitialPasswordAccountSuggestions(
 }  // namespace
 
 LikelyFormFilling SendFillInformationToRenderer(
-    const PasswordManagerClient& client,
+    PasswordManagerClient* client,
     PasswordManagerDriver* driver,
     bool is_blacklisted,
     const PasswordForm& observed_form,
@@ -146,7 +147,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   // insecure.
   const bool enable_foas_on_http =
       base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
-      !client.IsMainFrameSecure();
+      !client->IsMainFrameSecure();
 
   // Suppress autofilling on Android in case the Touch To Fill feature is
   // enabled.
@@ -165,7 +166,7 @@ LikelyFormFilling SendFillInformationToRenderer(
       PasswordFormMetricsRecorder::WaitForUsernameReason;
   WaitForUsernameReason wait_for_username_reason =
       WaitForUsernameReason::kDontWait;
-  if (client.IsIncognito()) {
+  if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
   } else if (preferred_match->is_public_suffix_match) {
     wait_for_username_reason = WaitForUsernameReason::kPublicSuffixMatch;
@@ -207,7 +208,7 @@ LikelyFormFilling SendFillInformationToRenderer(
     // found usernames and passwords on load, this instructs the renderer to
     // return with any found password forms so a list of password account
     // suggestions can be drawn.
-    ShowInitialPasswordAccountSuggestions(client, driver, observed_form,
+    ShowInitialPasswordAccountSuggestions(*client, driver, observed_form,
                                           best_matches, *preferred_match,
                                           wait_for_username);
     return LikelyFormFilling::kShowInitialAccountSuggestions;

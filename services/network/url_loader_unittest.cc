@@ -132,8 +132,7 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
       : URLRequestJob(request, network_delegate),
         packets_(std::move(packets)),
         net_error_(net_error),
-        async_reads_(async_reads),
-        weak_factory_(this) {}
+        async_reads_(async_reads) {}
 
   // net::URLRequestJob implementation:
   void Start() override {
@@ -173,7 +172,7 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
   net::Error net_error_;
   bool async_reads_;
 
-  base::WeakPtrFactory<URLRequestMultipleWritesJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestMultipleWritesJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestMultipleWritesJob);
 };
@@ -216,8 +215,7 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
                                 net::NetworkDelegate* network_delegate,
                                 bool fill_entire_buffer)
       : URLRequestJob(request, network_delegate),
-        fill_entire_buffer_(fill_entire_buffer),
-        weak_factory_(this) {}
+        fill_entire_buffer_(fill_entire_buffer) {}
 
   // net::URLRequestJob implementation:
   void Start() override {
@@ -244,7 +242,7 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
 
   const bool fill_entire_buffer_;
 
-  base::WeakPtrFactory<URLRequestEternalSyncReadsJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestEternalSyncReadsJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestEternalSyncReadsJob);
 };
@@ -291,8 +289,7 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
       bool use_text_plain)
       : URLRequestJob(request, network_delegate),
         simulated_cache_dest_(simulated_cache_dest),
-        use_text_plain_(use_text_plain),
-        weak_factory_(this) {}
+        use_text_plain_(use_text_plain) {}
 
   // net::URLRequestJob implementation:
   void Start() override {
@@ -329,7 +326,7 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
 
   scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
   bool use_text_plain_;
-  base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestSimulatedCacheJob);
 };

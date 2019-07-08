@@ -29,8 +29,7 @@ class WrappedObserver {
  public:
   explicit WrappedObserver(SystemDnsConfigChangeNotifier::Observer* observer)
       : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-        observer_(observer),
-        weak_ptr_factory_(this) {}
+        observer_(observer) {}
 
   ~WrappedObserver() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
@@ -53,7 +52,7 @@ class WrappedObserver {
   SystemDnsConfigChangeNotifier::Observer* const observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<WrappedObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<WrappedObserver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WrappedObserver);
 };
@@ -67,8 +66,7 @@ class SystemDnsConfigChangeNotifier::Core {
   Core(scoped_refptr<base::SequencedTaskRunner> task_runner,
        std::unique_ptr<DnsConfigService> dns_config_service)
       : task_runner_(std::move(task_runner)),
-        dns_config_service_(std::move(dns_config_service)),
-        weak_ptr_factory_(this) {
+        dns_config_service_(std::move(dns_config_service)) {
     DCHECK(task_runner_);
     DCHECK(dns_config_service_);
 
@@ -170,7 +168,7 @@ class SystemDnsConfigChangeNotifier::Core {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<DnsConfigService> dns_config_service_;
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

@@ -572,6 +572,7 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   // Don't need this state. It will be refreshed if another error page is
   // loaded.
   available_content_helper_.Reset();
+  page_auto_fetcher_helper_->OnCommitLoad();
 #endif
 
   // Track if an error occurred due to a page button press.

@@ -161,6 +161,7 @@ static_library("secure_channel") {
     "//chromeos/services/secure_channel/public/mojom",
     "//crypto",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]

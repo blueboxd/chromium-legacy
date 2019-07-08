@@ -217,9 +217,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           "FrameScheduler.KeepActive",
           this,
           &tracing_controller_,
-          KeepActiveStateToString),
-      document_bound_weak_factory_(this),
-      weak_factory_(this) {
+          KeepActiveStateToString) {
   frame_task_queue_controller_.reset(
       new FrameTaskQueueController(main_thread_scheduler_, this, this));
 }

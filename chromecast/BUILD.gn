@@ -471,7 +471,7 @@ if (is_fuchsia) {
   fuchsia_package("cast_shell_pkg") {
     binary = ":cast_shell"
     package_name_override = "cast_shell"
-    sandbox_policy = "//chromecast/cast_shell_sandbox_policy"
+    manifest = "//chromecast/cast_shell.cmx"
 
     if (chromecast_branding != "public") {
       deps = [

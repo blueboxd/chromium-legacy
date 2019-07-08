@@ -186,4 +186,10 @@
   [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
 }
 
+// Tests accessibility util converted helper in chrome_earl_grey.h.
+- (void)testAccessibilityUtil {
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+}
+
 @end

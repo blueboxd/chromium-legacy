@@ -109,7 +109,7 @@ class SingleThreadIdleTaskRunner
   Delegate* delegate_;                              // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // Not owned.
   base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
-  base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;
+  base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SingleThreadIdleTaskRunner);
 };
 

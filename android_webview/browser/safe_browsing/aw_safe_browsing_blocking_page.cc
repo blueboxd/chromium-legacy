@@ -78,8 +78,7 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
 // static
 void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     AwSafeBrowsingUIManager* ui_manager,
-    const UnsafeResource& unsafe_resource,
-    PrefService* pref_service) {
+    const UnsafeResource& unsafe_resource) {
   DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
@@ -95,11 +94,14 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
     const UnsafeResourceList unsafe_resources{unsafe_resource};
+    AwBrowserContext* browser_context =
+        AwBrowserContext::FromWebContents(web_contents);
+    PrefService* pref_service = browser_context->GetPrefService();
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
         BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
             IsMainPageLoadBlocked(unsafe_resources),
             safe_browsing::IsExtendedReportingOptInAllowed(*pref_service),
-            false,  // is_off_the_record
+            browser_context->IsOffTheRecord(),
             safe_browsing::IsExtendedReportingEnabled(*pref_service),
             safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
             pref_service->GetBoolean(

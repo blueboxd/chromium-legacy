@@ -780,8 +780,7 @@ TransportClientSocketPool::TransportClientSocketPool(
       connect_job_factory_(std::move(connect_job_factory)),
       connect_backup_jobs_enabled_(connect_backup_jobs_enabled &&
                                    g_connect_backup_jobs_enabled),
-      ssl_config_service_(ssl_config_service),
-      weak_factory_(this) {
+      ssl_config_service_(ssl_config_service) {
   DCHECK_LE(0, max_sockets_per_group);
   DCHECK_LE(max_sockets_per_group, max_sockets);
 

@@ -16,13 +16,10 @@
 #include "chrome/browser/autofill/accessory_controller.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
-
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
 
 // Interface for password-specific keyboard accessory controller between the
 // ManualFillingController and PasswordManagerClient.
@@ -47,7 +44,8 @@ class PasswordAccessoryController
   // function is called. Only valid to be called if
   // |PasswordAccessoryController::AllowedForWebContents(web_contents)|.
   static PasswordAccessoryController* GetOrCreate(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      password_manager::CredentialCache* credential_cache);
 
   // Returns a reference to the unique PasswordAccessoryController associated
   // with |web_contents|. Returns null if no such instance exists.
@@ -57,13 +55,6 @@ class PasswordAccessoryController
   // -----------------------------
   // Methods called by the client:
   // -----------------------------
-
-  // Saves credentials for an origin so that they can be used in the sheet.
-  virtual void SavePasswordsForOrigin(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const url::Origin& origin) = 0;
-
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.

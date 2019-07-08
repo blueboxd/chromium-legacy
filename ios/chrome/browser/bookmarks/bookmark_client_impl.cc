@@ -80,7 +80,7 @@ void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {
   base::RecordAction(action);
 }
 
-bookmarks::LoadExtraCallback BookmarkClientImpl::GetLoadExtraNodesCallback() {
+bookmarks::LoadExtraCallback BookmarkClientImpl::GetLoadExtraNodeCallback() {
   return bookmarks::LoadExtraCallback();
 }
 

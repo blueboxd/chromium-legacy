@@ -113,9 +113,6 @@ _OS_SPECIFIC_FILTER['linux'] = [
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     'MobileEmulationCapabilityTest.testTapElement',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
-    'ChromeDriverTest.testTakeElementScreenshot',
-    'ChromeDriverTest.testTakeElementScreenshotInIframe',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
     'ChromeDriverTest.testWindowFullScreen',
     'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
@@ -1982,8 +1979,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTakeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
+    analysisResult = 'FAIL'
+    i = 0
     redElement = self._driver.FindElement('css selector', '#box')
-    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
+    # In some cases (particularly on Mac),
+    # scrollbars are displayed briefly after scrolling,
+    # causing failures in verifying the screenshot.
+    # Retries until the scrollbars disappear.
+    while analysisResult != 'PASS' and i < 3:
+      analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
+      i += 1
+      if analysisResult != 'PASS':
+        time.sleep(0.5)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeElementScreenshotInIframe(self):
@@ -1991,8 +1998,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       '/chromedriver/page_with_iframe_redbox.html'))
     frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
+    analysisResult = 'FAIL'
+    i = 0
     redElement = self._driver.FindElement('css selector', '#box')
-    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
+    # In some cases (particularly on Mac),
+    # scrollbars are displayed briefly after scrolling,
+    # causing failures in verifying the screenshot.
+    # Retries until the scrollbars disappear.
+    while analysisResult != 'PASS' and i < 3:
+      analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
+      i += 1
+      if analysisResult != 'PASS':
+        time.sleep(0.5)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeLargeElementScreenshot(self):

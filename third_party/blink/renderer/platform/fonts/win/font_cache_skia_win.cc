@@ -151,20 +151,6 @@ void FontCache::SetStatusFontMetrics(const wchar_t* family_name,
   status_font_height_ = EnsureMinimumFontHeightIfNeeded(font_height);
 }
 
-FontCache::FontCache() : purge_prevent_count_(0) {
-  font_manager_ = sk_ref_sp(static_font_manager_);
-  if (!font_manager_) {
-    // This code path is only for unit tests. This SkFontMgr does not work in
-    // sandboxed environments, but injecting this initialization code to all
-    // unit tests isn't easy.
-    font_manager_ = SkFontMgr_New_DirectWrite();
-    // Set |is_test_font_mgr_| to capture if this is not happening in the
-    // production code. crbug.com/561873
-    is_test_font_mgr_ = true;
-  }
-  DCHECK(font_manager_.get());
-}
-
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
 scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(

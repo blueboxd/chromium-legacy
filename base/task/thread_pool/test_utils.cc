@@ -181,8 +181,12 @@ void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
 RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source) {
+  auto registered_task_source =
+      task_tracker->WillQueueTaskSource(std::move(task_source));
+  EXPECT_TRUE(registered_task_source);
+  auto run_intent = registered_task_source->WillRunTask();
   return task_tracker->RunAndPopNextTask(
-      task_tracker->WillQueueTaskSource(std::move(task_source)));
+      {std::move(registered_task_source), std::move(run_intent)});
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

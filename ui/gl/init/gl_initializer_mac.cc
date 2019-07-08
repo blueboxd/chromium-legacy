@@ -175,6 +175,7 @@ bool InitializeGLOneOffPlatform() {
       return true;
 #if BUILDFLAG(USE_EGL_ON_MAC)
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
       if (!GLSurfaceEGL::InitializeOneOff(0)) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
@@ -206,6 +207,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       return InitializeStaticCGLInternal(implementation);
 #if BUILDFLAG(USE_EGL_ON_MAC)
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
       return InitializeStaticEGLInternal(implementation);
 #endif  // BUILDFLAG(USE_EGL_ON_MAC)

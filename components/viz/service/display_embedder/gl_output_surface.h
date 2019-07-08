@@ -57,6 +57,9 @@ class GLOutputSurface : public OutputSurface {
  protected:
   OutputSurfaceClient* client() const { return client_; }
   ui::LatencyTracker* latency_tracker() { return &latency_tracker_; }
+  bool needs_swap_size_notifications() {
+    return needs_swap_size_notifications_;
+  }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
   virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response);

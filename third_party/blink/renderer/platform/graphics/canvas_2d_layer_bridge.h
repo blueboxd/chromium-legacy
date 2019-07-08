@@ -231,7 +231,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   std::bernoulli_distribution bernoulli_distribution_;
   Deque<RasterTimer> pending_raster_timers_;
 
-  base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Canvas2DLayerBridge);
 };

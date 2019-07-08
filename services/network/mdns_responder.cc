@@ -288,8 +288,7 @@ class MdnsResponderManager::SocketHandler {
         socket_(std::move(socket)),
         responder_manager_(responder_manager),
         io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
-            net::dns_protocol::kMaxUDPSize + 1)),
-        weak_factory_(this) {}
+            net::dns_protocol::kMaxUDPSize + 1)) {}
   ~SocketHandler() = default;
 
   int Start() {
@@ -371,7 +370,7 @@ class MdnsResponderManager::SocketHandler {
   net::IPEndPoint recv_addr_;
   net::IPEndPoint multicast_addr_;
 
-  base::WeakPtrFactory<SocketHandler> weak_factory_;
+  base::WeakPtrFactory<SocketHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SocketHandler);
 };
@@ -416,8 +415,7 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
       : handler_(handler),
         tick_clock_(base::DefaultTickClock::GetInstance()),
         dispatch_timer_(std::make_unique<base::OneShotTimer>(tick_clock_)),
-        next_available_time_per_resp_sched_(tick_clock_->NowTicks()),
-        weak_factory_(this) {}
+        next_available_time_per_resp_sched_(tick_clock_->NowTicks()) {}
   ~ResponseScheduler() { dispatch_timer_->Stop(); }
 
   // Implements the rate limit scheme on the underlying interface managed by
@@ -509,7 +507,7 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
   // Packets with earlier ready time have higher priorities.
   std::priority_queue<PendingPacket> send_queue_;
 
-  base::WeakPtrFactory<ResponseScheduler> weak_factory_;
+  base::WeakPtrFactory<ResponseScheduler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResponseScheduler);
 };

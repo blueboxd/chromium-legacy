@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/native_theme/dark_mode_observer.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 namespace ui {
 
@@ -86,4 +85,31 @@ void NativeTheme::OnParentDarkModeChanged(bool is_dark_mode) {
   set_dark_mode(is_dark_mode);
   NotifyObservers();
 }
+
+NativeTheme::ColorSchemeNativeThemeObserver::ColorSchemeNativeThemeObserver(
+    NativeTheme* theme_to_update)
+    : theme_to_update_(theme_to_update) {}
+
+NativeTheme::ColorSchemeNativeThemeObserver::~ColorSchemeNativeThemeObserver() =
+    default;
+
+void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
+    ui::NativeTheme* observed_theme) {
+  bool is_dark_mode = observed_theme->SystemDarkModeEnabled();
+  bool is_high_contrast = observed_theme->UsesHighContrastColors();
+  bool notify_observers = false;
+
+  if (theme_to_update_->SystemDarkModeEnabled() != is_dark_mode) {
+    theme_to_update_->set_dark_mode(is_dark_mode);
+    notify_observers = true;
+  }
+  if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
+    theme_to_update_->set_high_contrast(is_high_contrast);
+    notify_observers = true;
+  }
+
+  if (notify_observers)
+    theme_to_update_->NotifyObservers();
+}
+
 }  // namespace ui

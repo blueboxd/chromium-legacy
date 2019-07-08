@@ -155,16 +155,26 @@ struct ThemeBackgroundInfo;
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
 interface EmbeddedSearchClient {
+  // Update the page sequence number for the page.
   SetPageSequenceNumber(int32 page_seq_no);
 
+  // Focus on the Omnibox has changed, the fakebox focus state may need to
+  // be updated.
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);
 
+  // The data for the NTP shortcuts has changed and shortcuts should be
+  // reloaded.
   MostVisitedInfoChanged(InstantMostVisitedInfo most_visited_info);
 
+  // Input into the Omnibox has started/stopped.
   SetInputInProgress(bool input_in_progress);
 
+  // The browser theme has changed, the NTP should be updated accordingly.
   ThemeChanged(ThemeBackgroundInfo value);
+
+  // A background image was selected from the file upload dialog.
+  LocalBackgroundSelected();
 };
 
 // SearchBouncer tracks the NTP URL specified by the default search provider,

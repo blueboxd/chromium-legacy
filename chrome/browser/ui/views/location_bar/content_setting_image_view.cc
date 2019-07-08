@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
@@ -22,6 +24,44 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+base::Optional<ViewID> GetViewID(
+    ContentSettingImageModel::ImageType image_type) {
+  using ImageType = ContentSettingImageModel::ImageType;
+  switch (image_type) {
+    case ImageType::JAVASCRIPT:
+      return ViewID::VIEW_ID_CONTENT_SETTING_JAVASCRIPT;
+
+    case ImageType::POPUPS:
+      return ViewID::VIEW_ID_CONTENT_SETTING_POPUP;
+
+    case ImageType::COOKIES:
+    case ImageType::IMAGES:
+    case ImageType::PPAPI_BROKER:
+    case ImageType::PLUGINS:
+    case ImageType::GEOLOCATION:
+    case ImageType::MIXEDSCRIPT:
+    case ImageType::PROTOCOL_HANDLERS:
+    case ImageType::MEDIASTREAM:
+    case ImageType::ADS:
+    case ImageType::AUTOMATIC_DOWNLOADS:
+    case ImageType::MIDI_SYSEX:
+    case ImageType::SOUND:
+    case ImageType::FRAMEBUST:
+    case ImageType::CLIPBOARD_READ:
+    case ImageType::SENSORS:
+      return base::nullopt;
+
+    case ImageType::NUM_IMAGE_TYPES:
+      break;
+  }
+  NOTREACHED();
+  return base::nullopt;
+}
+
+}  // namespace
+
 ContentSettingImageView::ContentSettingImageView(
     std::unique_ptr<ContentSettingImageModel> image_model,
     Delegate* delegate,
@@ -33,6 +73,11 @@ ContentSettingImageView::ContentSettingImageView(
   DCHECK(delegate_);
   SetUpForInOutAnimation();
   image()->EnableCanvasFlippingForRTLUI(true);
+
+  base::Optional<ViewID> view_id =
+      GetViewID(content_setting_image_model_->image_type());
+  if (view_id)
+    SetID(*view_id);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {

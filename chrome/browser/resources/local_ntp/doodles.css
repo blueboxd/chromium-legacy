@@ -30,7 +30,8 @@
 }
 
 #logo-doodle-container,
-#logo-doodle-iframe {
+#logo-doodle-iframe,
+#logo-doodle-wrapper {
   display: none;
 }
 
@@ -44,6 +45,18 @@
 
 #logo-doodle-container.show-logo {
   display: inline-block;
+}
+
+.show-logo #logo-doodle-wrapper {
+  display: inline-block;
+}
+
+@media (prefers-color-scheme: dark) {
+  .show-logo #logo-doodle-wrapper {
+    border-radius: 20px;
+    display: inline-block;
+    padding: 16px 24px 16px 24px;
+  }
 }
 
 #logo-doodle-image {

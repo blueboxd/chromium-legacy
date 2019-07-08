@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_image_native_pixmap.h"
 
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/test/gl_image_test_template.h"
 
@@ -33,7 +34,11 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
  public:
   base::Optional<GLImplementation> GetPreferedGLImplementation()
       const override {
+#if defined(OS_WIN)
+    return base::Optional<GLImplementation>(kGLImplementationEGLANGLE);
+#else
     return base::Optional<GLImplementation>(kGLImplementationEGLGLES2);
+#endif
   }
 
   bool SkipTest() const override {

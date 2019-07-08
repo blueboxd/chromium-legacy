@@ -26,17 +26,6 @@ viz::FrameSinkId AllocateFrameSinkId() {
 #endif
 }
 
-viz::FrameSinkManagerImpl* GetFrameSinkManager() {
-#if defined(OS_ANDROID)
-  return CompositorDependenciesAndroid::Get().frame_sink_manager_impl();
-#else
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  if (!factory)
-    return nullptr;
-  return factory->GetContextFactoryPrivate()->GetFrameSinkManager();
-#endif
-}
-
 viz::HostFrameSinkManager* GetHostFrameSinkManager() {
 #if defined(OS_ANDROID)
   return CompositorDependenciesAndroid::Get().host_frame_sink_manager();

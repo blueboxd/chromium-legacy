@@ -29,7 +29,10 @@ IntPoint EmbeddedContentView::Location() const {
     LayoutView* owner_layout_view = owner->View();
     DCHECK(owner_layout_view);
     if (owner_layout_view->HasOverflowClip()) {
-      IntSize scroll_offset(owner_layout_view->ScrolledContentOffset());
+      // Floored because the frame_rect in a content view is an IntRect. We may
+      // want to reevaluate that since scroll offsets/layout can be fractional.
+      IntSize scroll_offset(
+          FlooredIntSize(owner_layout_view->ScrolledContentOffset()));
       location.SaturatedMove(-scroll_offset.Width(), -scroll_offset.Height());
     }
   }

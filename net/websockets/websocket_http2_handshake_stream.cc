@@ -53,8 +53,7 @@ WebSocketHttp2HandshakeStream::WebSocketHttp2HandshakeStream(
       request_info_(nullptr),
       stream_closed_(false),
       stream_error_(OK),
-      response_headers_complete_(false),
-      weak_ptr_factory_(this) {
+      response_headers_complete_(false) {
   DCHECK(connect_delegate);
   DCHECK(request);
 }

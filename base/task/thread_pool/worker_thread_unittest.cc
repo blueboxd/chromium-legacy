@@ -51,10 +51,10 @@ class WorkerThreadDefaultDelegate : public WorkerThread::Delegate {
     return WorkerThread::ThreadLabel::DEDICATED;
   }
   void OnMainEntry(const WorkerThread* worker) override {}
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     return nullptr;
   }
-  void DidRunTask(RegisteredTaskSource task_source) override {
+  void DidProcessTask(RegisteredTaskSource task_source) override {
     ADD_FAILURE() << "Unexpected call to DidRunTask()";
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
@@ -116,7 +116,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     return created_sequences_;
   }
 
-  std::vector<scoped_refptr<TaskSource>> DidRunTaskSequences() {
+  std::vector<scoped_refptr<TaskSource>> DidProcessTaskSequences() {
     CheckedAutoLock auto_lock(lock_);
     return did_run_task_sources_;
   }
@@ -129,14 +129,14 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     TestWorkerThreadDelegate(ThreadPoolWorkerTest* outer) : outer_(outer) {}
 
     ~TestWorkerThreadDelegate() override {
-      EXPECT_FALSE(IsCallToDidRunTaskExpected());
+      EXPECT_FALSE(IsCallToDidProcessTaskExpected());
     }
 
     // WorkerThread::Delegate:
     void OnMainEntry(const WorkerThread* worker) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
-      EXPECT_FALSE(IsCallToDidRunTaskExpected());
+      EXPECT_FALSE(IsCallToDidProcessTaskExpected());
 
       // Without synchronization, OnMainEntry() could be called twice without
       // generating an error.
@@ -145,8 +145,8 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
       outer_->main_entry_called_.Signal();
     }
 
-    RegisteredTaskSource GetWork(WorkerThread* worker) override {
-      EXPECT_FALSE(IsCallToDidRunTaskExpected());
+    RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
+      EXPECT_FALSE(IsCallToDidProcessTaskExpected());
       EXPECT_EQ(outer_->worker_.get(), worker);
 
       {
@@ -183,21 +183,23 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
           outer_->task_tracker_.WillQueueTaskSource(sequence);
       EXPECT_TRUE(registered_task_source);
 
-      ExpectCallToDidRunTask();
+      ExpectCallToDidProcessTask();
 
       {
         // Add the Sequence to the vector of created Sequences.
         CheckedAutoLock auto_lock(outer_->lock_);
         outer_->created_sequences_.push_back(sequence);
       }
-      return registered_task_source;
+      auto run_intent = registered_task_source->WillRunTask();
+      EXPECT_TRUE(run_intent);
+      return {std::move(registered_task_source), std::move(run_intent)};
     }
 
     // This override verifies that |task_source| has the expected number of
     // Tasks and adds it to |did_run_task_sources_|. Unlike a normal
-    // DidRunTask() implementation, it doesn't add |task_source| to a queue for
-    // further execution.
-    void DidRunTask(RegisteredTaskSource registered_task_source) override {
+    // DidProcessTask() implementation, it doesn't add |task_source| to a queue
+    // for further execution.
+    void DidProcessTask(RegisteredTaskSource registered_task_source) override {
       {
         CheckedAutoLock auto_lock(expect_did_run_task_lock_);
         EXPECT_TRUE(expect_did_run_task_);
@@ -215,9 +217,10 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
         // Verify the number of Tasks in |registered_task_source|.
         auto transaction(registered_task_source->BeginTransaction());
         for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
-          EXPECT_TRUE(transaction.TakeTask());
+          EXPECT_TRUE(
+              transaction.TakeTask(registered_task_source->WillRunTask()));
           EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
-                    !transaction.DidRunTask());
+                    !transaction.DidProcessTask(true));
         }
 
         scoped_refptr<TaskSource> task_source =
@@ -233,14 +236,14 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     }
 
    private:
-    // Expect a call to DidRunTask() before the next call to any other method of
-    // this delegate.
-    void ExpectCallToDidRunTask() {
+    // Expect a call to DidProcessTask() before the next call to any other
+    // method of this delegate.
+    void ExpectCallToDidProcessTask() {
       CheckedAutoLock auto_lock(expect_did_run_task_lock_);
       expect_did_run_task_ = true;
     }
 
-    bool IsCallToDidRunTaskExpected() const {
+    bool IsCallToDidProcessTaskExpected() const {
       CheckedAutoLock auto_lock(expect_did_run_task_lock_);
       return expect_did_run_task_;
     }
@@ -250,7 +253,8 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     // Synchronizes access to |expect_did_run_task_|.
     mutable CheckedLock expect_did_run_task_lock_;
 
-    // Whether the next method called on this delegate should be DidRunTask().
+    // Whether the next method called on this delegate should be
+    // DidProcessTask().
     bool expect_did_run_task_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TestWorkerThreadDelegate);
@@ -286,7 +290,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
   // Sequences created by GetWork().
   std::vector<scoped_refptr<TaskSource>> created_sequences_;
 
-  // Sequences passed to DidRunTask().
+  // Sequences passed to DidProcessTask().
   std::vector<scoped_refptr<TaskSource>> did_run_task_sources_;
 
   // Number of times that RunTaskCallback() has been called.
@@ -322,11 +326,11 @@ TEST_P(ThreadPoolWorkerTest, ContinuousWork) {
 
   // If Sequences returned by GetWork() contain more than one Task, they aren't
   // empty after the worker pops Tasks from them and thus should be returned to
-  // DidRunTask().
+  // DidProcessTask().
   if (TasksPerSequence() > 1)
-    EXPECT_EQ(CreatedTaskSources(), DidRunTaskSequences());
+    EXPECT_EQ(CreatedTaskSources(), DidProcessTaskSequences());
   else
-    EXPECT_TRUE(DidRunTaskSequences().empty());
+    EXPECT_TRUE(DidProcessTaskSequences().empty());
 }
 
 // Verify that when GetWork() alternates between returning a Sequence and
@@ -353,11 +357,11 @@ TEST_P(ThreadPoolWorkerTest, IntermittentWork) {
 
     // If Sequences returned by GetWork() contain more than one Task, they
     // aren't empty after the worker pops Tasks from them and thus should be
-    // returned to DidRunTask().
+    // returned to DidProcessTask().
     if (TasksPerSequence() > 1)
-      EXPECT_EQ(CreatedTaskSources(), DidRunTaskSequences());
+      EXPECT_EQ(CreatedTaskSources(), DidProcessTaskSequences());
     else
-      EXPECT_TRUE(DidRunTaskSequences().empty());
+      EXPECT_TRUE(DidProcessTaskSequences().empty());
   }
 }
 
@@ -426,7 +430,7 @@ class ControllableCleanupDelegate : public WorkerThreadDefaultDelegate {
 
   ~ControllableCleanupDelegate() override { controls_->destroyed_.Signal(); }
 
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     EXPECT_TRUE(controls_->expect_get_work_);
 
     // Sends one item of work to signal |work_processed_|. On subsequent calls,
@@ -461,10 +465,11 @@ class ControllableCleanupDelegate : public WorkerThreadDefaultDelegate {
     auto registered_task_source =
         task_tracker_->WillQueueTaskSource(std::move(sequence));
     EXPECT_TRUE(registered_task_source);
-    return registered_task_source;
+    auto run_intent = registered_task_source->WillRunTask();
+    return {std::move(registered_task_source), std::move(run_intent)};
   }
 
-  void DidRunTask(RegisteredTaskSource) override {}
+  void DidProcessTask(RegisteredTaskSource) override {}
 
   void OnMainExit(WorkerThread* worker) override {
     controls_->exited_.Signal();
@@ -707,7 +712,7 @@ class ExpectThreadPriorityDelegate : public WorkerThreadDefaultDelegate {
   void OnMainEntry(const WorkerThread* worker) override {
     VerifyThreadPriority();
   }
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();
     return nullptr;

@@ -38,7 +38,9 @@ class OfflinePageAutoFetcher : public chrome::mojom::OfflinePageAutoFetcher {
   using OfflinePageAutoFetcherScheduleResult =
       chrome::mojom::OfflinePageAutoFetcherScheduleResult;
 
-  content::RenderFrameHost* render_frame_host_;
+  GURL last_committed_url_;
+  int android_tab_id_;
+  OfflinePageAutoFetcherService* auto_fetcher_service_ = nullptr;
 };
 
 }  // namespace offline_pages

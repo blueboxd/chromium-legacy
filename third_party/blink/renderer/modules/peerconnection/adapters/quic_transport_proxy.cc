@@ -25,8 +25,7 @@ QuicTransportProxy::QuicTransportProxy(
     : host_(nullptr,
             base::OnTaskRunnerDeleter(ice_transport_proxy->host_thread())),
       delegate_(delegate),
-      ice_transport_proxy_(ice_transport_proxy),
-      weak_ptr_factory_(this) {
+      ice_transport_proxy_(ice_transport_proxy) {
   DCHECK(delegate_);
   DCHECK(ice_transport_proxy_);
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =

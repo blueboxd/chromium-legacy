@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromecast/media/base/aligned_buffer.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "chromecast/media/cma/backend/post_processor_factory.h"
 #include "chromecast/public/volume_control.h"
@@ -73,6 +74,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   float current_dbfs_ = 0.0;
   int num_output_channels_ = 0;
   float* output_buffer_ = nullptr;
+  AlignedBuffer<float> silence_buffer_;
 
   // factory_ keeps shared libraries open, so it must outlive processors_.
   PostProcessorFactory factory_;

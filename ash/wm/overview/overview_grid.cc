@@ -177,6 +177,9 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   aura::Window* parent = dragged_window->parent();
   gfx::Rect bounds = dragged_window->bounds();
   ::wm::ConvertRectToScreen(parent, &bounds);
+  bounds.Inset(/*left=*/0,
+               /*top=*/dragged_window->GetProperty(aura::client::kTopViewInset),
+               /*right=*/0, /*bottom=*/0);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

@@ -231,7 +231,9 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
     return;
   for (auto const& resource : resources) {
     network_bytes_ += resource->delta_bytes;
-    if (resource->is_complete && resource->was_fetched_via_cache) {
+    if (resource->is_complete &&
+        resource->cache_type !=
+            page_load_metrics::mojom::CacheType::kNotCached) {
       cache_bytes_ += resource->encoded_body_length;
     }
   }
@@ -392,7 +394,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
   // Use a bucket spacing factor of 1.3 for bytes.
-  builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
+  builder.SetNet_CacheBytes2(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
   builder.SetNet_NetworkBytes2(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
 

@@ -21,7 +21,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -817,9 +816,8 @@ public class DownloadManagerService
                 DownloadManagerBridge.queryDownloadResult(downloadId);
         if (mimeType == null) mimeType = queryResult.mimeType;
 
-        Uri contentUri = filePath == null
-                ? queryResult.contentUri
-                : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
+        Uri contentUri = filePath == null ? queryResult.contentUri
+                                          : DownloadUtils.getUriForOtherApps(filePath);
         if (contentUri == null) return null;
 
         Uri fileUri = filePath == null ? contentUri : Uri.fromFile(new File(filePath));

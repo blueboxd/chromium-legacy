@@ -54,7 +54,7 @@ class ConditionalCacheDeletionHelper {
   disk_cache::Entry* current_entry_ = nullptr;
   disk_cache::Entry* previous_entry_ = nullptr;
 
-  base::WeakPtrFactory<ConditionalCacheDeletionHelper> weak_factory_;
+  base::WeakPtrFactory<ConditionalCacheDeletionHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConditionalCacheDeletionHelper);
 };

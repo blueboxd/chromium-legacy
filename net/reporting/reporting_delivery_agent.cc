@@ -55,9 +55,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
                                    public ReportingCacheObserver {
  public:
   ReportingDeliveryAgentImpl(ReportingContext* context)
-      : context_(context),
-        timer_(std::make_unique<base::OneShotTimer>()),
-        weak_factory_(this) {
+      : context_(context), timer_(std::make_unique<base::OneShotTimer>()) {
     context_->AddCacheObserver(this);
   }
 
@@ -278,7 +276,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   // (Would be an unordered_set, but there's no hash on pair.)
   std::set<OriginGroup> pending_origin_groups_;
 
-  base::WeakPtrFactory<ReportingDeliveryAgentImpl> weak_factory_;
+  base::WeakPtrFactory<ReportingDeliveryAgentImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReportingDeliveryAgentImpl);
 };

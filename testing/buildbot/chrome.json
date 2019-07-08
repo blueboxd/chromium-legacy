@@ -136,7 +136,7 @@
             }
           ]
         },
-        "test": "cros_vm_sanity_test"
+        "test": "cros_browser_sanity_test"
       },
       {
         "merge": {

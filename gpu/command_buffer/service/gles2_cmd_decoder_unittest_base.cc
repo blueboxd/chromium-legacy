@@ -2428,7 +2428,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
   context_creation_attribs_.stencil_size = 8;
   context_creation_attribs_.bind_generates_resource = true;
 
-  gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLGLES2,
+  gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLANGLE,
                                              false, false, false, true);
 
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo();

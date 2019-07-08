@@ -1,0 +1,12 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++genericContainer ignored name='span-A1'
+++++++++staticText ignored
+++++++++genericContainer ignored name='span-A2'
+++++++++staticText ignored
+++++++++genericContainer description='span-A4' name='span-A3' descriptionFrom=relatedElement describedbyIds=genericContainer
+++++++++++genericContainer ignored name='span-A4'
+++++++++staticText ignored
+++++++genericContainer description='span-A2' name='span-B' descriptionFrom=relatedElement describedbyIds=genericContainer
+++++++genericContainer name='span-C'

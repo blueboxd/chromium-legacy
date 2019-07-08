@@ -200,6 +200,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     bool has_no_damage = false;
     bool may_contain_video = false;
     viz::BeginFrameAck begin_frame_ack;
+    // The original BeginFrameArgs that triggered the latest update from the
+    // main thread.
+    viz::BeginFrameArgs origin_begin_main_frame_args;
   };
 
   // A struct of data for a single UIResource, including the backing
@@ -323,10 +326,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   virtual void WillSendBeginMainFrame() {}
-  virtual void DidSendBeginMainFrame() {}
+  virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {}
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
-      std::vector<std::unique_ptr<SwapPromise>> swap_promises);
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises,
+      const viz::BeginFrameArgs& args);
   virtual void ReadyToCommit() {}  // For tests.
   virtual void BeginCommit();
   virtual void CommitComplete();

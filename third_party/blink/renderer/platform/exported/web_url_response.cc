@@ -381,6 +381,14 @@ void WebURLResponse::SetEncodedDataLength(int64_t length) {
   resource_response_->SetEncodedDataLength(length);
 }
 
+int64_t WebURLResponse::EncodedBodyLength() const {
+  return resource_response_->EncodedBodyLength();
+}
+
+void WebURLResponse::SetEncodedBodyLength(int64_t length) {
+  resource_response_->SetEncodedBodyLength(length);
+}
+
 void WebURLResponse::SetIsSignedExchangeInnerResponse(
     bool is_signed_exchange_inner_response) {
   resource_response_->SetIsSignedExchangeInnerResponse(
@@ -415,6 +423,10 @@ void WebURLResponse::SetAsyncRevalidationRequested(bool requested) {
 
 void WebURLResponse::SetNetworkAccessed(bool network_accessed) {
   resource_response_->SetNetworkAccessed(network_accessed);
+}
+
+bool WebURLResponse::FromArchive() const {
+  return resource_response_->FromArchive();
 }
 
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}

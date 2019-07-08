@@ -11,7 +11,7 @@ python_version: "2.7"
 
 wheel: <
   name: "infra/celab/celab/windows-amd64"
-  version: "jgh6G7OL6nIJ2-lKS916XK0jDcIP7cCc0FdONt9AwVwC"
+  version: "ewVkoqiGDczXj334qRCQ8uSvGl6dd6XQGAcdbmgwpbsC"
 >
 
 # googleapiclient

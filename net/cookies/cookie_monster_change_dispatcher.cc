@@ -35,8 +35,7 @@ CookieMonsterChangeDispatcher::Subscription::Subscription(
       name_key_(std::move(name_key)),
       url_(std::move(url)),
       callback_(std::move(callback)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(url_.is_valid() || url_.is_empty());
   DCHECK_EQ(url_.is_empty(), domain_key_ == kGlobalDomainKey);
 
@@ -80,8 +79,7 @@ void CookieMonsterChangeDispatcher::Subscription::DoDispatchChange(
   callback_.Run(cookie, change_cause);
 }
 
-CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher()
-    : weak_ptr_factory_(this) {}
+CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher() {}
 
 CookieMonsterChangeDispatcher::~CookieMonsterChangeDispatcher() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

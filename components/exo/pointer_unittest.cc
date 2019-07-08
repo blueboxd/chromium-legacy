@@ -18,24 +18,16 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/env.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
 namespace {
-
-viz::SurfaceManager* GetSurfaceManager() {
-  return aura::Env::GetInstance()
-      ->context_factory_private()
-      ->GetFrameSinkManager()
-      ->surface_manager();
-}
 
 class MockPointerDelegate : public PointerDelegate {
  public:

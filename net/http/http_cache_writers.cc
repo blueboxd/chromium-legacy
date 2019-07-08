@@ -50,7 +50,7 @@ HttpCache::Writers::TransactionInfo::TransactionInfo(const TransactionInfo&) =
     default;
 
 HttpCache::Writers::Writers(HttpCache* cache, HttpCache::ActiveEntry* entry)
-    : cache_(cache), entry_(entry), weak_factory_(this) {}
+    : cache_(cache), entry_(entry) {}
 
 HttpCache::Writers::~Writers() = default;
 

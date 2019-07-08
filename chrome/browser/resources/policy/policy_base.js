@@ -124,6 +124,13 @@ cr.define('policy', function() {
         this.setLabelAndShow_(
             '.directory-api-id', status.directoryApiId || notSpecifiedString);
         this.setLabelAndShow_('.client-id', status.clientId);
+        //For off-hours policy, indicate if it's active or not.
+        if (status.isOffHoursActive != null) {
+          this.setLabelAndShow_(
+              '.is-offhours-active',
+              loadTimeData.getString(
+                  status.isOffHoursActive ? 'offHoursActive' : 'offHoursNotActive'));
+        }
       } else if (scope == 'machine') {
         // For machine policy, set the appropriate title and populate
         // machine enrollment status with the information that applies

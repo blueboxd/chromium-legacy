@@ -24,7 +24,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   static NativeThemeAura* instance();
   static NativeThemeAura* web_instance();
 
-  // Overridden from NativeThemeBase:
+  // NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,

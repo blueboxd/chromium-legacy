@@ -353,6 +353,7 @@ Polymer({
    */
   updateGuestButtonVisibility_: function() {
     let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
+    // TODO(rsorokin): Rename message string to reflect the meaning.
     chrome.send('showGuestInOobe', [showGuestInOobe]);
   },
 

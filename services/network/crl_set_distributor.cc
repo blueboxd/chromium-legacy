@@ -27,7 +27,7 @@ scoped_refptr<net::CRLSet> ParseCRLSet(std::string crl_set) {
 
 }  // namespace
 
-CRLSetDistributor::CRLSetDistributor() : weak_factory_(this) {}
+CRLSetDistributor::CRLSetDistributor() {}
 
 CRLSetDistributor::~CRLSetDistributor() = default;
 

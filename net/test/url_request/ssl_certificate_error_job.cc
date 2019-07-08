@@ -42,8 +42,7 @@ class MockJobInterceptor : public URLRequestInterceptor {
 SSLCertificateErrorJob::SSLCertificateErrorJob(
     URLRequest* request,
     NetworkDelegate* network_delegate)
-    : URLRequestJob(request, network_delegate), weak_factory_(this) {
-}
+    : URLRequestJob(request, network_delegate) {}
 
 void SSLCertificateErrorJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

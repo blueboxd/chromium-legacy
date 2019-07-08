@@ -81,6 +81,12 @@
 #include <windows.h>
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/browser_window.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#endif
+
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
@@ -370,6 +376,23 @@ app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog() {
   AppModalDialogWaiter waiter;
   return waiter.Wait();
 }
+
+#if defined(TOOLKIT_VIEWS)
+void WaitForViewVisibility(Browser* browser, ViewID vid, bool visible) {
+  views::View* view = views::Widget::GetWidgetForNativeWindow(
+                          browser->window()->GetNativeWindow())
+                          ->GetContentsView()
+                          ->GetViewByID(vid);
+  ASSERT_TRUE(view);
+  if (view->GetVisible() == visible)
+    return;
+
+  base::RunLoop run_loop;
+  auto subscription = view->AddVisibleChangedCallback(run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_EQ(visible, view->GetVisible());
+}
+#endif
 
 int FindInPage(WebContents* tab,
                const base::string16& search_string,

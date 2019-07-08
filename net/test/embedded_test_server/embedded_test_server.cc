@@ -50,8 +50,7 @@ EmbeddedTestServer::EmbeddedTestServer(Type type)
     : is_using_ssl_(type == TYPE_HTTPS),
       connection_listener_(nullptr),
       port_(0),
-      cert_(CERT_OK),
-      weak_factory_(this) {
+      cert_(CERT_OK) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!is_using_ssl_)

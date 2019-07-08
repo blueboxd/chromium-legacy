@@ -30,7 +30,7 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
 
   WebGraphicsContext3DProviderWrapper(
       std::unique_ptr<WebGraphicsContext3DProvider> provider)
-      : context_provider_(std::move(provider)), weak_ptr_factory_(this) {
+      : context_provider_(std::move(provider)) {
     DCHECK(context_provider_);
     utils_ = base::WrapUnique(new GraphicsContext3DUtils(GetWeakPtr()));
   }
@@ -52,7 +52,8 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
   std::unique_ptr<GraphicsContext3DUtils> utils_;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
   base::ObserverList<DestructionObserver>::Unchecked observers_;
-  base::WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace blink

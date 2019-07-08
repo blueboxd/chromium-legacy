@@ -326,7 +326,7 @@ class FakeURLFetcher : public TestURLFetcher {
   void RunDelegate();
 
   int64_t response_bytes_;
-  base::WeakPtrFactory<FakeURLFetcher> weak_factory_;
+  base::WeakPtrFactory<FakeURLFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
 };

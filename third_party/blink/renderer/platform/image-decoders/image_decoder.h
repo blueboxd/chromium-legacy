@@ -503,7 +503,6 @@ class PLATFORM_EXPORT ImageDecoder {
   bool size_available_ = false;
   bool is_all_data_received_ = false;
   bool failed_ = false;
-  bool has_histogrammed_color_space_ = false;
 
   std::unique_ptr<ColorProfile> embedded_color_profile_;
   sk_sp<SkColorSpace> color_space_for_sk_images_;

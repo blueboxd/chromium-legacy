@@ -220,11 +220,12 @@ public abstract class ChromeFeatureList {
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String DELEGATE_OVERSCROLL_SWIPES = "DelegateOverscrollSwipes";
     public static final String DIRECT_ACTIONS = "DirectActions";
+    public static final String DOWNLOAD_FILE_PROVIDER = "DownloadFileProvider";
+    public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
+    public static final String DOWNLOAD_HOME_V2 = "DownloadHomeV2";
     public static final String DOWNLOAD_LOCATION_SHOW_IMAGE_IN_GALLERY =
             "DownloadLocationShowImageInGallery";
-    public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
     public static final String DOWNLOAD_PROGRESS_INFOBAR = "DownloadProgressInfoBar";
-    public static final String DOWNLOAD_HOME_V2 = "DownloadHomeV2";
     public static final String DOWNLOAD_RENAME = "DownloadRename";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";
     public static final String DOWNLOADS_AUTO_RESUMPTION_NATIVE = "DownloadsAutoResumptionNative";

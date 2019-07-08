@@ -387,9 +387,9 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks whether syncing is "requested" by the user, i.e. the user has not disabled syncing
-     * in settings. Note that even if this is true, other reasons might prevent Sync from actually
-     * starting up.
+     * Checks whether syncing is requested by the user, i.e. the user has at least started a Sync
+     * setup flow, and has not disabled syncing in settings. Note that even if this is true, other
+     * reasons might prevent Sync from actually starting up.
      *
      * @return true if the user wants to sync, false otherwise.
      */

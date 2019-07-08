@@ -39,6 +39,10 @@
 //    important to be careful with the order in which locks are acquired in
 //    order to avoid potential deadlocks.
 //
+namespace blink {
+class WebRtcAudioRenderer;
+}
+
 namespace media {
 class AudioBus;
 }
@@ -46,44 +50,13 @@ class AudioBus;
 namespace content {
 
 class ProcessedLocalAudioSource;
-class WebRtcAudioRenderer;
-
-// TODO(xians): Move the following two interfaces to webrtc so that
-// libjingle can own references to the renderer and capturer.
-class WebRtcAudioRendererSource {
- public:
-  // Callback to get the rendered data.
-  // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
-  virtual void RenderData(media::AudioBus* audio_bus,
-                          int sample_rate,
-                          int audio_delay_milliseconds,
-                          base::TimeDelta* current_time) = 0;
-
-  // Callback to notify the client that the renderer is going away.
-  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) = 0;
-
-  // Callback to notify the client that the audio renderer thread stopped.
-  // This function must be called only when that thread is actually stopped.
-  // Otherwise a race may occur.
-  virtual void AudioRendererThreadStopped() = 0;
-
-  // Callback to notify the client of the output device the renderer is using.
-  virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
-
-  // Returns the UnguessableToken used to connect this stream to an input stream
-  // for echo cancellation.
-  virtual base::UnguessableToken GetAudioProcessingId() const = 0;
-
- protected:
-  virtual ~WebRtcAudioRendererSource() {}
-};
 
 // Note that this class inherits from webrtc::AudioDeviceModule but due to
 // the high number of non-implemented methods, we move the cruft over to the
 // WebRtcAudioDeviceNotImpl.
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : public WebRtcAudioDeviceNotImpl,
-      public WebRtcAudioRendererSource,
+      public blink::WebRtcAudioRendererSource,
       public blink::WebRtcPlayoutDataSource {
  public:
   // The maximum volume value WebRtc uses.
@@ -134,7 +107,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
  public:
   // Sets the |renderer_|, returns false if |renderer_| already exists.
   // Called on the main renderer thread.
-  bool SetAudioRenderer(WebRtcAudioRenderer* renderer);
+  bool SetAudioRenderer(blink::WebRtcAudioRenderer* renderer);
 
   // Adds/Removes the |capturer| to the ADM.  Does NOT take ownership.
   // Capturers must remain valid until RemoveAudioCapturer() is called.
@@ -150,11 +123,11 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // function will not be able to pick an appropriate device and return 0.
   int GetAuthorizedDeviceSessionIdForAudioRenderer();
 
-  const scoped_refptr<WebRtcAudioRenderer>& renderer() const {
+  const scoped_refptr<blink::WebRtcAudioRenderer>& renderer() const {
     return renderer_;
   }
 
-  // WebRtcAudioRendererSource implementation.
+  // blink::WebRtcAudioRendererSource implementation.
 
   // Called on the AudioOutputDevice worker thread.
   void RenderData(media::AudioBus* audio_bus,
@@ -163,7 +136,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                   base::TimeDelta* current_time) override;
 
   // Called on the main render thread.
-  void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) override;
+  void RemoveAudioRenderer(blink::WebRtcAudioRenderer* renderer) override;
   void AudioRendererThreadStopped() override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
   base::UnguessableToken GetAudioProcessingId() const override;
@@ -194,7 +167,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   CapturerList capturers_;
 
   // Provides access to the audio renderer in the browser process.
-  scoped_refptr<WebRtcAudioRenderer> renderer_ GUARDED_BY(lock_);
+  scoped_refptr<blink::WebRtcAudioRenderer> renderer_ GUARDED_BY(lock_);
 
   // A list of raw pointer of blink::WebRtcPlayoutDataSource::Sink objects which
   // want to get the playout data, the sink need to call RemovePlayoutSink()

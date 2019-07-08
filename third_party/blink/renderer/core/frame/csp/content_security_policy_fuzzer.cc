@@ -23,6 +23,14 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // that Oilpan be initialized to access blink::ThreadState::Current.
   LEAK_SANITIZER_DISABLED_SCOPE;
   g_page_holder = std::make_unique<DummyPageHolder>().release();
+
+  // Set loader sandbox flags and install a new document so the document
+  // has all possible sandbox flags set on the document already when the
+  // CSP is bound.
+  scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
+  g_page_holder->GetFrame().Loader().ForceSandboxFlags(WebSandboxFlags::kAll);
+  g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
+      "text/html", empty_document_data);
   return 0;
 }
 
@@ -44,18 +52,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                         ? kContentSecurityPolicyHeaderSourceMeta
                         : kContentSecurityPolicyHeaderSourceOriginPolicy;
   }
-
-  // Set loader sandbox flags and install a new document so the document
-  // has all possible sandbox flags set on the document already when the
-  // CSP is bound. CSP from Meta tags sources shouldn't have sandbox flags
-  // so we set it to kNone.
-  scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
-  g_page_holder->GetFrame().Loader().ForceSandboxFlags(
-      header_source == kContentSecurityPolicyHeaderSourceMeta
-          ? WebSandboxFlags::kNone
-          : WebSandboxFlags::kAll);
-  g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
-      "text/html", empty_document_data);
 
   // Construct and initialize a policy from the string.
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();

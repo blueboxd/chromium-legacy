@@ -43,7 +43,7 @@ FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::operator=(
   return *this;
 }
 
-FrameOrWorkerScheduler::FrameOrWorkerScheduler() : weak_factory_(this) {}
+FrameOrWorkerScheduler::FrameOrWorkerScheduler() {}
 
 FrameOrWorkerScheduler::~FrameOrWorkerScheduler() {
   weak_factory_.InvalidateWeakPtrs();

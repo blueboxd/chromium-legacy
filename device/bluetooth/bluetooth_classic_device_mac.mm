@@ -15,7 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 // Undocumented API for accessing the Bluetooth transmit power level.
 // Similar to the API defined here [ http://goo.gl/20Q5vE ].

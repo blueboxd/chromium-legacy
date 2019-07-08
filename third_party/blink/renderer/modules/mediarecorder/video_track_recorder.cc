@@ -173,7 +173,7 @@ VideoTrackRecorder::CodecEnumerator::GetSupportedProfiles(CodecId codec) const {
              : profile->value;
 }
 
-VideoTrackRecorder::Counter::Counter() : count_(0u), weak_factory_(this) {}
+VideoTrackRecorder::Counter::Counter() : count_(0u) {}
 
 VideoTrackRecorder::Counter::~Counter() = default;
 
@@ -436,8 +436,7 @@ VideoTrackRecorder::VideoTrackRecorder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : track_(track),
       should_pause_encoder_on_initialization_(false),
-      main_task_runner_(std::move(main_task_runner)),
-      weak_ptr_factory_(this) {
+      main_task_runner_(std::move(main_task_runner)) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(track_);
   DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);

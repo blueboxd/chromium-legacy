@@ -208,8 +208,8 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   // WorkerThread::Delegate:
   WorkerThread::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const WorkerThread* worker) override;
-  RegisteredTaskSource GetWork(WorkerThread* worker) override;
-  void DidRunTask(RegisteredTaskSource task_source) override;
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override;
+  void DidProcessTask(RegisteredTaskSource task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(WorkerThread* worker) override;
 
@@ -270,7 +270,7 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
     size_t num_tasks_since_last_detach = 0;
 
     // Whether the worker is currently running a task (i.e. GetWork() has
-    // returned a non-empty task source and DidRunTask() hasn't been called
+    // returned a non-empty task source and DidProcessTask() hasn't been called
     // yet).
     bool is_running_task = false;
 
@@ -433,16 +433,16 @@ ThreadGroupImpl::~ThreadGroupImpl() {
 }
 
 void ThreadGroupImpl::UpdateSortKey(
-    TaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithOwnedTaskSource transaction_with_task_source) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(task_source_and_transaction));
+  UpdateSortKeyImpl(&executor, std::move(transaction_with_task_source));
 }
 
 void ThreadGroupImpl::PushTaskSourceAndWakeUpWorkers(
-    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithRegisteredTaskSource transaction_with_task_source) {
   ScopedWorkersExecutor executor(this);
   PushTaskSourceAndWakeUpWorkersImpl(&executor,
-                                     std::move(task_source_and_transaction));
+                                     std::move(transaction_with_task_source));
 }
 
 size_t ThreadGroupImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
@@ -581,8 +581,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   SetBlockingObserverForCurrentThread(this);
 }
 
-RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
-    WorkerThread* worker) {
+RunIntentWithRegisteredTaskSource
+ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_only().is_running_task);
   DCHECK(!read_worker().is_running_best_effort_task);
@@ -634,10 +634,13 @@ RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
   }
 
   // Pop the TaskSource from which to run a task from the PriorityQueue.
-  return outer_->priority_queue_.PopTaskSource();
+  RegisteredTaskSource task_source = outer_->priority_queue_.PopTaskSource();
+  auto run_intent = task_source->WillRunTask();
+  DCHECK(run_intent);
+  return {std::move(task_source), std::move(run_intent)};
 }
 
-void ThreadGroupImpl::WorkerThreadDelegateImpl::DidRunTask(
+void ThreadGroupImpl::WorkerThreadDelegateImpl::DidProcessTask(
     RegisteredTaskSource task_source) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
@@ -649,10 +652,10 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidRunTask(
   // A transaction to the TaskSource to reenqueue, if any. Instantiated here as
   // |TaskSource::lock_| is a UniversalPredecessor and must always be acquired
   // prior to acquiring a second lock
-  Optional<RegisteredTaskSourceAndTransaction> task_source_and_transaction;
+  Optional<TransactionWithRegisteredTaskSource> transaction_with_task_source;
   if (task_source) {
-    task_source_and_transaction.emplace(
-        RegisteredTaskSourceAndTransaction::FromTaskSource(
+    transaction_with_task_source.emplace(
+        TransactionWithRegisteredTaskSource::FromTaskSource(
             std::move(task_source)));
   }
 
@@ -674,10 +677,10 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidRunTask(
     write_worker().is_running_best_effort_task = false;
   }
 
-  if (task_source_and_transaction) {
+  if (transaction_with_task_source) {
     outer_->ReEnqueueTaskSourceLockRequired(
         &workers_executor, &reenqueue_executor,
-        std::move(task_source_and_transaction.value()));
+        std::move(transaction_with_task_source.value()));
   }
 }
 

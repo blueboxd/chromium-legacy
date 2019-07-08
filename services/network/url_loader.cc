@@ -374,8 +374,7 @@ URLLoader::URLLoader(
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       custom_proxy_use_alternate_proxy_list_(
           request.custom_proxy_use_alternate_proxy_list),
-      fetch_window_id_(request.fetch_window_id),
-      weak_ptr_factory_(this) {
+      fetch_window_id_(request.fetch_window_id) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
@@ -496,8 +495,7 @@ class URLLoader::FileOpenerForUpload {
         url_loader_(url_loader),
         process_id_(process_id),
         network_service_client_(network_service_client),
-        set_up_upload_callback_(std::move(set_up_upload_callback)),
-        weak_ptr_factory_(this) {
+        set_up_upload_callback_(std::move(set_up_upload_callback)) {
     StartOpeningNextBatch();
   }
 
@@ -578,7 +576,7 @@ class URLLoader::FileOpenerForUpload {
   // The files opened so far.
   std::vector<base::File> opened_files_;
 
-  base::WeakPtrFactory<FileOpenerForUpload> weak_ptr_factory_;
+  base::WeakPtrFactory<FileOpenerForUpload> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileOpenerForUpload);
 };

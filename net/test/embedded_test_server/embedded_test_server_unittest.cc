@@ -412,7 +412,7 @@ class CancelRequestDelegate : public TestDelegate {
 
 class InfiniteResponse : public BasicHttpResponse {
  public:
-  InfiniteResponse() : weak_ptr_factory_(this) {}
+  InfiniteResponse() {}
 
   void SendResponse(const SendBytesCallback& send,
                     const SendCompleteCallback& done) override {
@@ -430,7 +430,7 @@ class InfiniteResponse : public BasicHttpResponse {
                                   weak_ptr_factory_.GetWeakPtr(), send)));
   }
 
-  base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_;
+  base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InfiniteResponse);
 };

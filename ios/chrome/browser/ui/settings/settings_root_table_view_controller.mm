@@ -118,7 +118,6 @@ NSString* const kSettingsToolbarDeleteButtonId =
     self.styler.tableViewBackgroundColor =
         UIColor.cr_systemGroupedBackgroundColor;
   }
-  self.styler.tableViewSectionHeaderBlurEffect = nil;
   [super viewDidLoad];
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;

@@ -21,10 +21,7 @@ namespace net {
 QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
     UDPServerSocket* socket,
     quic::QuicDispatcher* dispatcher)
-    : socket_(socket),
-      dispatcher_(dispatcher),
-      write_blocked_(false),
-      weak_factory_(this) {}
+    : socket_(socket), dispatcher_(dispatcher), write_blocked_(false) {}
 
 QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() = default;
 

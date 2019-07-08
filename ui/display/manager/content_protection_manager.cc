@@ -228,14 +228,25 @@ void ContentProtectionManager::OnDisplayModeChangeFailed(
   KillTasks();
 }
 
-void ContentProtectionManager::ToggleDisplaySecurityPolling() {
-  const bool polling = security_timer_.IsRunning();
+bool ContentProtectionManager::ShouldPollDisplaySecurity() const {
+  const auto displays = layout_manager_->GetDisplayStates();
+  if (std::all_of(displays.begin(), displays.end(),
+                  [](const DisplaySnapshot* display) {
+                    return display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+                  })) {
+    return false;
+  }
 
   const auto protections = AggregateContentProtections();
-  const bool should_poll =
-      std::any_of(protections.begin(), protections.end(), [](const auto& pair) {
-        return pair.second != CONTENT_PROTECTION_METHOD_NONE;
-      });
+  return std::any_of(protections.begin(), protections.end(),
+                     [](const auto& pair) {
+                       return pair.second != CONTENT_PROTECTION_METHOD_NONE;
+                     });
+}
+
+void ContentProtectionManager::ToggleDisplaySecurityPolling() {
+  const bool polling = security_timer_.IsRunning();
+  const bool should_poll = ShouldPollDisplaySecurity();
 
   if (polling && !should_poll) {
     security_timer_.Stop();

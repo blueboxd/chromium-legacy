@@ -38,10 +38,7 @@ class FtlSignalStrategy : public SignalStrategy {
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
-
-  // Returns true if the signal strategy gets into an error state when it tries
-  // to sign in. You can get back the actual error by calling GetError().
-  bool IsSignInError() const;
+  bool IsSignInError() const override;
 
  private:
   friend class FtlSignalStrategyTest;

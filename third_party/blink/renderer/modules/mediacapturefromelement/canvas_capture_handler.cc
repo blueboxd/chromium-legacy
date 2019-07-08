@@ -106,7 +106,7 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
  public:
   explicit CanvasCaptureHandlerDelegate(
       media::VideoCapturerSource::VideoCaptureDeliverFrameCB new_frame_callback)
-      : new_frame_callback_(new_frame_callback), weak_ptr_factory_(this) {
+      : new_frame_callback_(new_frame_callback) {
     DETACH_FROM_THREAD(io_thread_checker_);
   }
   ~CanvasCaptureHandlerDelegate() {
@@ -128,7 +128,7 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
       new_frame_callback_;
   // Bound to IO thread.
   THREAD_CHECKER(io_thread_checker_);
-  base::WeakPtrFactory<CanvasCaptureHandlerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<CanvasCaptureHandlerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandlerDelegate);
 };
@@ -138,9 +138,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
     double frame_rate,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     blink::WebMediaStreamTrack* track)
-    : ask_for_new_frame_(false),
-      io_task_runner_(std::move(io_task_runner)),
-      weak_ptr_factory_(this) {
+    : ask_for_new_frame_(false), io_task_runner_(std::move(io_task_runner)) {
   std::unique_ptr<media::VideoCapturerSource> video_source(
       new VideoCapturerSource(weak_ptr_factory_.GetWeakPtr(), size,
                               frame_rate));

@@ -245,7 +245,7 @@ bool ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Read(
   if (!ReadParam(m, iter, &has_object))
     return false;
   if (has_object)
-    *r = new net::HttpResponseHeaders(iter);
+    *r = base::MakeRefCounted<net::HttpResponseHeaders>(iter);
   return true;
 }
 
@@ -328,7 +328,7 @@ bool ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
-  *r = new net::SSLCertRequestInfo();
+  *r = base::MakeRefCounted<net::SSLCertRequestInfo>();
   return ReadParam(m, iter, &(*r)->host_and_port) &&
          ReadParam(m, iter, &(*r)->is_proxy) &&
          ReadParam(m, iter, &(*r)->cert_authorities) &&

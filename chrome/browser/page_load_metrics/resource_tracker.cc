@@ -28,6 +28,11 @@ void ResourceTracker::UpdateResourceDataUse(
 void ResourceTracker::ProcessResourceUpdate(
     int process_id,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  // Do not store resources loaded from the memory cache as we can receive
+  // duplicate loads of resources across documents.
+  if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
+    return;
+
   content::GlobalRequestID global_id(process_id, resource->request_id);
   auto it = unfinished_resources_.find(global_id);
 

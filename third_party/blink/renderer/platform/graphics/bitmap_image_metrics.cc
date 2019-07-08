@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
-#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 namespace blink {
 
@@ -70,15 +69,6 @@ void BitmapImageMetrics::CountImageJpegDensity(int image_min_side,
   } else {
     // We don't report for images with 0 to 99px on the smallest dimension.
   }
-}
-
-void BitmapImageMetrics::CountImageGammaAndGamut(
-    const skcms_ICCProfile* color_profile) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, gamut_named_histogram,
-      ("Blink.ColorGamut.Source", static_cast<int>(ColorSpaceGamut::kEnd)));
-  gamut_named_histogram.Count(static_cast<int>(
-      color_space_utilities::GetColorSpaceGamut(color_profile)));
 }
 
 void BitmapImageMetrics::CountJpegArea(const IntSize& size) {

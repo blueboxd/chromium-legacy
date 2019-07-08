@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
@@ -38,6 +40,7 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/test/test_utils.h"
 
 namespace chromeos {
 
@@ -756,5 +759,42 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
+
+class OobeGuestButtonPolicy : public testing::WithParamInterface<bool>,
+                              public EnrollmentLocalPolicyServerBase {
+ public:
+  OobeGuestButtonPolicy() = default;
+
+  void SetUpOnMainThread() override {
+    enterprise_management::ChromeDeviceSettingsProto proto;
+    proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(GetParam());
+    policy_server_.UpdateDevicePolicy(proto);
+    EnrollmentLocalPolicyServerBase::SetUpOnMainThread();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OobeGuestButtonPolicy);
+};
+
+IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
+  TriggerEnrollmentAndSignInSuccessfully();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  enrollment_screen()->OnConfirmationClosed();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+
+  ASSERT_EQ(GetParam(),
+            user_manager::UserManager::Get()->IsGuestSessionAllowed());
+  EXPECT_EQ(GetParam(), ash::LoginScreenTestApi::IsGuestButtonShown());
+
+  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [false]);");
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+
+  test::ExecuteOobeJS("chrome.send('showGuestInOobe', [true]);");
+  EXPECT_EQ(GetParam(), ash::LoginScreenTestApi::IsGuestButtonShown());
+}
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         OobeGuestButtonPolicy,
+                         ::testing::Bool());
 
 }  // namespace chromeos

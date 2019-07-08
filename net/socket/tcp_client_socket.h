@@ -207,7 +207,7 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   // Connect() or Disconnect() is called.
   bool was_disconnected_on_suspend_;
 
-  base::WeakPtrFactory<TCPClientSocket> weak_ptr_factory_;
+  base::WeakPtrFactory<TCPClientSocket> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };

@@ -104,14 +104,21 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
     return value;
   }
 
-  int GetScrollTop() {
-    return ExecuteScriptAndExtractInt(
+  double ExecuteScriptAndExtractDouble(const std::string& script) {
+    double value = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+        shell(), "domAutomationController.send(" + script + ")", &value));
+    return value;
+  }
+
+  double GetScrollTop() {
+    return ExecuteScriptAndExtractDouble(
         "document.getElementById(\"scroller\").scrollTop");
   }
 
   // Generate touch events for a synthetic scroll from |point| for |distance|.
   // Returns the distance scrolled.
-  int DoTouchScroll(const gfx::Point& point, const gfx::Vector2d& distance) {
+  double DoTouchScroll(const gfx::Point& point, const gfx::Vector2d& distance) {
     EXPECT_EQ(0, GetScrollTop());
 
     int scroll_height = ExecuteScriptAndExtractInt(
@@ -159,10 +166,10 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(CompositedScrollingBrowserTest,
                        MAYBE_Scroll3DTransformedScroller) {
   LoadURL();
-  int scroll_distance =
+  double scroll_distance =
       DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 100));
   // The scroll distance is increased due to the rotation of the scroller.
-  EXPECT_EQ(std::floor(100 / std::cos(gfx::DegToRad(30.f))), scroll_distance);
+  EXPECT_NEAR(100 / std::cos(gfx::DegToRad(30.f)), scroll_distance, 1.f);
 }
 
 }  // namespace content

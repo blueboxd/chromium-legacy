@@ -28,7 +28,7 @@ const char kClearSiteDataHeader[] = "Clear-Site-Data";
 
 NetworkServiceNetworkDelegate::NetworkServiceNetworkDelegate(
     NetworkContext* network_context)
-    : network_context_(network_context), weak_ptr_factory_(this) {}
+    : network_context_(network_context) {}
 
 NetworkServiceNetworkDelegate::~NetworkServiceNetworkDelegate() = default;
 

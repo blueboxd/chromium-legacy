@@ -35,6 +35,12 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if defined(OS_ANDROID)
+#include "components/password_manager/core/browser/credential_cache.h"
+
+class PasswordAccessoryController;
+#endif
+
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
 class Profile;
@@ -100,10 +106,10 @@ class ChromePasswordManagerClient
           best_matches,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
-      const override;
-  void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
-                        const password_manager::PasswordFormManagerForUI*
-                            form_manager) const override;
+      override;
+  void AutofillHttpAuth(
+      const autofill::PasswordForm& preferred_match,
+      const password_manager::PasswordFormManagerForUI* form_manager) override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;
@@ -187,6 +193,13 @@ class ChromePasswordManagerClient
     return content_credential_manager_.HasBinding();
   }
 #endif
+#if defined(OS_ANDROID)
+  PasswordAccessoryController* GetOrCreatePasswordAccessory();
+
+  password_manager::CredentialCache* GetCredentialCacheForTesting() {
+    return &credential_cache_;
+  }
+#endif
 
  protected:
   // Callable for tests.
@@ -256,6 +269,11 @@ class ChromePasswordManagerClient
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_manager::PasswordReuseDetectionManager
       password_reuse_detection_manager_;
+#endif
+
+#if defined(OS_ANDROID)
+  // Holds and facilitates a credential store for each origin in this tab.
+  password_manager::CredentialCache credential_cache_;
 #endif
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;

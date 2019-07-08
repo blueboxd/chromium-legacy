@@ -78,7 +78,7 @@ class FakeTabController : public TabController {
   }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
-  void UpdateHoverCard(Tab* tab, bool hovered) override {}
+  void UpdateHoverCard(Tab* tab) override {}
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override {
     return true;
   }

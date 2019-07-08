@@ -212,7 +212,7 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
 
   NextProto negotiated_protocol_;
 
-  base::WeakPtrFactory<SocketImpl> weak_factory_;
+  base::WeakPtrFactory<SocketImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SocketImpl);
 };
@@ -228,8 +228,7 @@ SSLServerContextImpl::SocketImpl::SocketImpl(
       transport_socket_(std::move(transport_socket)),
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false),
-      negotiated_protocol_(kProtoUnknown),
-      weak_factory_(this) {
+      negotiated_protocol_(kProtoUnknown) {
   ssl_.reset(SSL_new(context_->ssl_ctx_.get()));
   SSL_set_app_data(ssl_.get(), this);
   SSL_set_shed_handshake_config(ssl_.get(), 1);

@@ -85,6 +85,7 @@
 #include "ash/shell_state.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
@@ -844,6 +845,8 @@ Shell::~Shell() {
   // Destroys the MessageCenter singleton, so must happen late.
   message_center_controller_.reset();
 
+  ash_color_provider_.reset();
+
   shell_delegate_.reset();
 
   // Must be shut down after detachable_base_handler_.
@@ -1137,6 +1140,11 @@ void Shell::Init(
   snap_controller_ = std::make_unique<SnapControllerImpl>();
 
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshColorMode)) {
+    ash_color_provider_ = std::make_unique<AshColorProvider>();
+  }
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

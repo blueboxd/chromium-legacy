@@ -101,8 +101,7 @@ CorsURLLoader::CorsURLLoader(
       factory_bound_origin_(factory_bound_origin),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
-      preflight_controller_(preflight_controller),
-      weak_factory_(this) {
+      preflight_controller_(preflight_controller) {
   binding_.set_connection_error_handler(base::BindOnce(
       &CorsURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);

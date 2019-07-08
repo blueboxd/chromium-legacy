@@ -255,7 +255,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   RequestHeadersCallback request_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
-  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestHttpJob);
 };

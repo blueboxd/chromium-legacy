@@ -192,7 +192,7 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
 
   bool in_dtor_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerTimeoutTimer> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerTimeoutTimer> weak_factory_{this};
 };
 
 }  // namespace blink

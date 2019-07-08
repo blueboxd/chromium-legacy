@@ -142,14 +142,12 @@ ResultCode InterceptionManager::InitializeInterceptions() {
     return SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_CONFIG_BUFFER;
 
   void* remote_buffer;
-  ResultCode rc =
-      CopyDataToChild(local_buffer.get(), buffer_bytes, &remote_buffer);
-
-  if (rc != SBOX_ALL_OK)
-    return rc;
+  if (!CopyToChildMemory(child_->Process(), local_buffer.get(), buffer_bytes,
+                         &remote_buffer))
+    return SBOX_ERROR_CANNOT_COPY_DATA_TO_CHILD;
 
   bool hot_patch_needed = (0 != buffer_bytes);
-  rc = PatchNtdll(hot_patch_needed);
+  ResultCode rc = PatchNtdll(hot_patch_needed);
 
   if (rc != SBOX_ALL_OK)
     return rc;
@@ -331,36 +329,6 @@ bool InterceptionManager::SetupInterceptionInfo(const InterceptionData& data,
   dll_info->record_bytes += required;
 
   return true;
-}
-
-ResultCode InterceptionManager::CopyDataToChild(const void* local_buffer,
-                                                size_t buffer_bytes,
-                                                void** remote_buffer) const {
-  DCHECK(remote_buffer);
-  if (0 == buffer_bytes) {
-    *remote_buffer = nullptr;
-    return SBOX_ALL_OK;
-  }
-
-  HANDLE child = child_->Process();
-
-  // Allocate memory on the target process without specifying the address
-  void* remote_data = ::VirtualAllocEx(child, nullptr, buffer_bytes, MEM_COMMIT,
-                                       PAGE_READWRITE);
-  if (!remote_data)
-    return SBOX_ERROR_NO_SPACE;
-
-  SIZE_T bytes_written;
-  bool success = ::WriteProcessMemory(child, remote_data, local_buffer,
-                                      buffer_bytes, &bytes_written);
-  if (!success || bytes_written != buffer_bytes) {
-    ::VirtualFreeEx(child, remote_data, 0, MEM_RELEASE);
-    return SBOX_ERROR_CANNOT_COPY_DATA_TO_CHILD;
-  }
-
-  *remote_buffer = remote_data;
-
-  return SBOX_ALL_OK;
 }
 
 // Only return true if the child should be able to perform this interception.

@@ -36,8 +36,7 @@ URLRequestFileDirJob::URLRequestFileDirJob(URLRequest* request,
       list_complete_(false),
       wrote_header_(false),
       read_pending_(false),
-      read_buffer_length_(0),
-      weak_factory_(this) {}
+      read_buffer_length_(0) {}
 
 void URLRequestFileDirJob::StartAsync() {
   base::PostTaskWithTraitsAndReplyWithResult(

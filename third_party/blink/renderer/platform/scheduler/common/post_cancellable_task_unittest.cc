@@ -25,7 +25,7 @@ class CancellationTestHelper {
   DISALLOW_NEW();
 
  public:
-  CancellationTestHelper() : weak_ptr_factory_(this) {}
+  CancellationTestHelper() {}
 
   base::WeakPtr<CancellationTestHelper> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -37,7 +37,7 @@ class CancellationTestHelper {
 
  private:
   int counter_ = 0;
-  base::WeakPtrFactory<CancellationTestHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<CancellationTestHelper> weak_ptr_factory_{this};
 };
 
 }  // namespace

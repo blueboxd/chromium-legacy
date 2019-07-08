@@ -373,6 +373,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // by the BVC.
   BrowserViewControllerDependencyFactory* _dependencyFactory;
 
+  // Identifier for each animation of an NTP opening.
+  NSInteger _NTPAnimationIdentifier;
+
   // Backing ivar for the public property, strong even though the property is
   // weak, because things explode otherwise.
   // Do not directly access this ivar outside of object initialization; use the
@@ -4184,9 +4187,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)bookmarkPage {
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController
-      presentBookmarkEditorForTab:self.tabModel.currentTab
-              currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
-                                                   self.currentWebState]];
+      presentBookmarkEditorForWebState:self.currentWebState
+                   currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
+                                                        self.currentWebState]];
 }
 
 - (void)addToReadingList:(ReadingListAddCommand*)command {
@@ -4618,9 +4621,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     newPage.userInteractionEnabled = NO;
   }
 
+  NSInteger currentAnimationIdentifier = ++_NTPAnimationIdentifier;
+
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   UIView* webStateView = [self viewForWebState:webState];
   auto commonCompletion = ^{
+    if (currentAnimationIdentifier != _NTPAnimationIdentifier) {
+      // Prevent the completion block from being executed if a new animation has
+      // started in between. |self.foregroundTabWasAddedCompletionBlock| isn't
+      // called because it is overridden when a new animation is started.
+      // Calling it here would call the block from the lastest animation that
+      // haved started.
+      return;
+    }
+
     webStateView.frame = self.contentArea.bounds;
     newPage.userInteractionEnabled = YES;
     self.inNewTabAnimation = NO;

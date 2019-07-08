@@ -619,7 +619,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
             last_injected_gesture_was_begin_
                 ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
                 : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-            original_timestamp, 1);
+            original_timestamp);
       } else {
         // If we're injecting a GSU in response to a GSU (touch drags of the
         // scrollbar thumb in Blink handles GSUs, and reverses them with

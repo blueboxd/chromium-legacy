@@ -1364,9 +1364,6 @@ void RenderWidget::WillBeginCompositorFrame() {
   // is done.
   UpdateTextInputState();
   UpdateSelectionBounds();
-
-  for (auto& observer : render_frame_proxies_)
-    observer.WillBeginCompositorFrame();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

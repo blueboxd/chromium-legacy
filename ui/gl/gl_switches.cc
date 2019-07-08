@@ -32,6 +32,10 @@ const char kANGLEImplementationOpenGLNULLName[] = "gl-null";
 const char kANGLEImplementationOpenGLESNULLName[] = "gles-null";
 const char kANGLEImplementationVulkanNULLName[] = "vulkan-null";
 
+// The command decoder names that can be passed to --use-cmd-decoder.
+const char kCmdDecoderValidatingName[] = "validating";
+const char kCmdDecoderPassthroughName[] = "passthrough";
+
 }  // namespace gl
 
 namespace switches {
@@ -65,6 +69,12 @@ const char kEnableGPUServiceTracing[]       = "enable-gpu-service-tracing";
 //  gl: Desktop GL renderer, ES2 and ES3.
 //  gles: GLES renderer, ES2 and ES3.
 const char kUseANGLE[]                      = "use-angle";
+
+// Use the Pass-through command decoder, skipping all validation and state
+// tracking. Switch lives in ui/gl because it affects the GL binding
+// initialization on platforms that would otherwise not default to using
+// EGL bindings.
+const char kUseCmdDecoder[] = "use-cmd-decoder";
 
 // ANGLE features are defined per-backend in third_party/angle/include/platform
 // Enables specified comma separated ANGLE features if found.

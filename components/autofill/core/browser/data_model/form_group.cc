@@ -20,18 +20,18 @@ void FormGroup::GetMatchingTypes(const base::string16& text,
   }
 
   AutofillProfileComparator comparator(app_locale);
-  base::string16 canonicalized_text = comparator.NormalizeForComparison(text);
-
-  if (canonicalized_text.empty())
+  if (comparator.HasOnlySkippableCharacters(text)) {
     return;
+  }
 
+  base::string16 canonicalized_text = comparator.NormalizeForComparison(text);
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
   for (const auto& type : types) {
-    base::string16 candidate_text = comparator.NormalizeForComparison(
-        GetInfo(AutofillType(type), app_locale));
-    if (canonicalized_text == candidate_text)
+    if (comparator.Compare(canonicalized_text,
+                           GetInfo(AutofillType(type), app_locale))) {
       matching_types->insert(type);
+    }
   }
 }
 

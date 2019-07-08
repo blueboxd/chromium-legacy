@@ -122,7 +122,7 @@ enum class PresentedState {
     BookmarkTransitioningDelegate* bookmarkTransitioningDelegate;
 
 // Builds a controller and brings it on screen.
-- (void)presentBookmarkEditorForBookmarkedTab:(Tab*)tab;
+- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL;
 
 // Dismisses the bookmark browser.  If |urlsToOpen| is not empty, then the user
 // has selected to navigate to those URLs with specified tab mode.
@@ -181,37 +181,32 @@ enum class PresentedState {
   _bookmarkEditor.delegate = nil;
 }
 
-- (void)presentBookmarkEditorForBookmarkedTab:(Tab*)tab {
-  DCHECK(tab && tab.webState);
-
+- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL {
   const BookmarkNode* bookmark =
-      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
-          tab.webState->GetLastCommittedURL());
+      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(URL);
   if (!bookmark)
     return;
   [self presentEditorForNode:bookmark];
 }
 
-- (void)presentBookmarkEditorForTab:(Tab*)tab
-                currentlyBookmarked:(BOOL)bookmarked {
+- (void)presentBookmarkEditorForWebState:(web::WebState*)webState
+                     currentlyBookmarked:(BOOL)bookmarked {
   if (!self.bookmarkModel->loaded())
     return;
-  if (!tab || !tab.webState)
+  if (!webState)
     return;
 
+  GURL bookmarkedURL = webState->GetLastCommittedURL();
+
   if (bookmarked) {
-    [self presentBookmarkEditorForBookmarkedTab:tab];
+    [self presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
   } else {
     __weak BookmarkInteractionController* weakSelf = self;
-    __weak Tab* weakTab = tab;
     void (^editAction)() = ^{
-      BookmarkInteractionController* strongSelf = weakSelf;
-      if (!strongSelf || !weakTab || !weakTab.webState)
-        return;
-      [strongSelf presentBookmarkEditorForBookmarkedTab:weakTab];
+      [weakSelf presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
     };
-    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(tab.webState)
-                                    URL:tab.webState->GetLastCommittedURL()
+    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(webState)
+                                    URL:bookmarkedURL
                              editAction:editAction];
   }
 }

@@ -88,7 +88,7 @@ void AwContentsClientBridgeTest::SetUp() {
   bridge_.reset(new AwContentsClientBridge(env_, jbridge_));
   selected_cert_ = nullptr;
   cert_selected_callbacks_ = 0;
-  cert_request_info_ = new net::SSLCertRequestInfo;
+  cert_request_info_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
 }
 
 void AwContentsClientBridgeTest::CertSelected(

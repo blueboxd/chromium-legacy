@@ -431,12 +431,11 @@ class BookmarkModelTest : public testing::Test,
   BookmarkPermanentNode* ReloadModelWithExtraNode() {
     model_->RemoveObserver(this);
 
-    BookmarkPermanentNodeList extra_nodes;
-    extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
-    BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+    auto owned_extra_node = std::make_unique<BookmarkPermanentNode>(100);
+    BookmarkPermanentNode* extra_node = owned_extra_node.get();
 
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetExtraNodesToLoad(std::move(extra_nodes));
+    client->SetExtraNodeToLoad(std::move(owned_extra_node));
 
     model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
     model_->AddObserver(this);

@@ -36,8 +36,7 @@ QuicProxyClientSocket::QuicProxyClientSocket(
       endpoint_(endpoint),
       auth_(auth_controller),
       user_agent_(user_agent),
-      net_log_(net_log),
-      weak_factory_(this) {
+      net_log_(net_log) {
   DCHECK(stream_->IsOpen());
 
   request_.method = "CONNECT";

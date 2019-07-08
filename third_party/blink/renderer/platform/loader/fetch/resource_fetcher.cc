@@ -707,6 +707,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     response.SetMimeType(archive_resource->MimeType());
     response.SetExpectedContentLength(data->size());
     response.SetTextEncodingName(archive_resource->TextEncoding());
+    response.SetFromArchive(true);
   }
 
   Resource* resource = factory.Create(

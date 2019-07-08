@@ -66,6 +66,8 @@ class CORE_EXPORT MutationObserver final
       public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);
+  // Using CancelInspectorAsyncTasks as pre-finalizer to cancel async tasks.
+  USING_PRE_FINALIZER(MutationObserver, CancelInspectorAsyncTasks);
 
  public:
   enum ObservationFlags { kSubtree = 1 << 3, kAttributeFilter = 1 << 4 };
@@ -110,8 +112,6 @@ class CORE_EXPORT MutationObserver final
 
   bool HasPendingActivity() const override { return !records_.IsEmpty(); }
 
-  // Eagerly finalized as destructor accesses heap object members.
-  EAGERLY_FINALIZE();
   void Trace(Visitor*) override;
 
   // Methods to be used by MutationObserverNotifier

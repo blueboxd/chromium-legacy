@@ -319,7 +319,7 @@ class EmbeddedTestServer {
   ServerCertificate cert_;
   std::unique_ptr<SSLServerContext> context_;
 
-  base::WeakPtrFactory<EmbeddedTestServer> weak_factory_;
+  base::WeakPtrFactory<EmbeddedTestServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };

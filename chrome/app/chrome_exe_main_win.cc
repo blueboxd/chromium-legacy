@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process/memory.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -176,6 +177,10 @@ int main() {
 #endif
   install_static::InitializeFromPrimaryModule();
   SignalInitializeCrashReporting();
+
+  // Done here to ensure that OOMs that happen early in process initialization
+  // are correctly signaled to the OS.
+  base::EnableTerminationOnOutOfMemory();
 
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);

@@ -443,7 +443,7 @@ class NET_EXPORT ProxyResolutionService
 
   // Flag used by |SetReady()| to check if |this| has been deleted by a
   // synchronous callback.
-  base::WeakPtrFactory<ProxyResolutionService> weak_ptr_factory_;
+  base::WeakPtrFactory<ProxyResolutionService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionService);
 };

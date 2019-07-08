@@ -8,7 +8,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
 #include "base/android/jni_array.h"
-#include "chromecast/browser/jni_headers/CastSysInfoAndroid_jni.h"
+#include "chromecast/browser/jni_headers/CastSysInfoAndroidThings_jni.h"
 #endif
 
 namespace chromecast {

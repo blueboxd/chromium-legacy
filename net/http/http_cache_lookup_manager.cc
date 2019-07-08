@@ -61,7 +61,7 @@ void HttpCacheLookupManager::LookupTransaction::OnLookupComplete(int result) {
 }
 
 HttpCacheLookupManager::HttpCacheLookupManager(HttpCache* http_cache)
-    : http_cache_(http_cache), weak_factory_(this) {}
+    : http_cache_(http_cache) {}
 
 HttpCacheLookupManager::~HttpCacheLookupManager() = default;
 

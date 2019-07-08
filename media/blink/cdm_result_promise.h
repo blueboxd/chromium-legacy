@@ -65,7 +65,7 @@ CdmResultPromise<T...>::~CdmResultPromise() {
 template <>
 inline void CdmResultPromise<>::resolve() {
   MarkPromiseSettled();
-  ReportCdmResultUMA(uma_name_, SUCCESS);
+  ReportCdmResultUMA(uma_name_, 0, SUCCESS);
   web_cdm_result_.Complete();
 }
 
@@ -73,7 +73,7 @@ template <>
 inline void CdmResultPromise<CdmKeyInformation::KeyStatus>::resolve(
     const CdmKeyInformation::KeyStatus& key_status) {
   MarkPromiseSettled();
-  ReportCdmResultUMA(uma_name_, SUCCESS);
+  ReportCdmResultUMA(uma_name_, 0, SUCCESS);
   web_cdm_result_.CompleteWithKeyStatus(ConvertCdmKeyStatus(key_status));
 }
 
@@ -82,7 +82,7 @@ void CdmResultPromise<T...>::reject(CdmPromise::Exception exception_code,
                                     uint32_t system_code,
                                     const std::string& error_message) {
   MarkPromiseSettled();
-  ReportCdmResultUMA(uma_name_,
+  ReportCdmResultUMA(uma_name_, system_code,
                      ConvertCdmExceptionToResultForUMA(exception_code));
   web_cdm_result_.CompleteWithError(ConvertCdmException(exception_code),
                                     system_code,

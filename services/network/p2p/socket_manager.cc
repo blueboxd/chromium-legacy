@@ -157,8 +157,7 @@ P2PSocketManager::P2PSocketManager(
       trusted_socket_manager_binding_(
           this,
           std::move(trusted_socket_manager_request)),
-      socket_manager_binding_(this, std::move(socket_manager_request)),
-      weak_factory_(this) {
+      socket_manager_binding_(this, std::move(socket_manager_request)) {
   trusted_socket_manager_binding_.set_connection_error_handler(
       base::Bind(&P2PSocketManager::OnConnectionError, base::Unretained(this)));
   socket_manager_binding_.set_connection_error_handler(

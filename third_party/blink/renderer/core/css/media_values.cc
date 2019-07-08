@@ -193,7 +193,8 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
 ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
-  return frame->GetSettings()->GetForcedColors();
+  DCHECK(frame->GetDocument());
+  return frame->GetDocument()->GetStyleEngine().GetForcedColors();
 }
 
 bool MediaValues::ComputeLengthImpl(double value,

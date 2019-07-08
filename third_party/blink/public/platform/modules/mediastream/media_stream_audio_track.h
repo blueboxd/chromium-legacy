@@ -112,7 +112,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
   std::unique_ptr<media::AudioBus> silent_bus_;
 
   // Provides weak pointers that are valid until Stop() is called.
-  base::WeakPtrFactory<MediaStreamAudioTrack> weak_factory_;
+  base::WeakPtrFactory<MediaStreamAudioTrack> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioTrack);
 };

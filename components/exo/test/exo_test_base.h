@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
+namespace viz {
+class SurfaceManager;
+}
+
 namespace exo {
 class WMHelper;
 
@@ -25,6 +29,8 @@ class ExoTestBase : public ash::AshTestBase {
   // Overridden from testing::Test:
   void SetUp() override;
   void TearDown() override;
+
+  viz::SurfaceManager* GetSurfaceManager();
 
   ExoTestHelper* exo_test_helper() { return exo_test_helper_.get(); }
 

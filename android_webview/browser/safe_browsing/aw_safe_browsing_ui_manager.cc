@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
-#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
@@ -52,9 +51,7 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
 }  // namespace
 
 AwSafeBrowsingUIManager::AwSafeBrowsingUIManager(
-    AwURLRequestContextGetter* browser_url_request_context_getter,
-    PrefService* pref_service)
-    : pref_service_(pref_service) {
+    AwURLRequestContextGetter* browser_url_request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(timvolodine): verify this is what we want regarding the directory.
@@ -96,12 +93,7 @@ void AwSafeBrowsingUIManager::DisplayBlockingPage(
 
 void AwSafeBrowsingUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
-  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource, pref_service_);
-}
-
-void AwSafeBrowsingUIManager::SetExtendedReportingAllowed(bool allowed) {
-  pref_service_->SetBoolean(::prefs::kSafeBrowsingExtendedReportingOptInAllowed,
-                            allowed);
+  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

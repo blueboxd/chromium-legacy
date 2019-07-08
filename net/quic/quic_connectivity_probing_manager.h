@@ -128,7 +128,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
 
   base::SequencedTaskRunner* task_runner_;
 
-  base::WeakPtrFactory<QuicConnectivityProbingManager> weak_factory_;
+  base::WeakPtrFactory<QuicConnectivityProbingManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(QuicConnectivityProbingManager);
 };
 

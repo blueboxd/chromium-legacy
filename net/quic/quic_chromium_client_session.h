@@ -355,7 +355,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     const NetworkTrafficAnnotationTag traffic_annotation_;
 
-    base::WeakPtrFactory<StreamRequest> weak_factory_;
+    base::WeakPtrFactory<StreamRequest> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(StreamRequest);
   };
@@ -840,7 +840,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool headers_include_h2_stream_dependency_;
   Http2PriorityDependencies priority_dependency_state_;
 
-  base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);
 };

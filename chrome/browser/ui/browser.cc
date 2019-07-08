@@ -448,8 +448,6 @@ Browser::Browser(const CreateParams& params)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
-  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-                 content::NotificationService::AllSources());
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(
@@ -2001,24 +1999,8 @@ void Browser::FileSelectionCanceled(void* params) {
 void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      window()->UserChangedTheme(BrowserThemeChangeType::kBrowserTheme);
-      break;
-
-    case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
-      WebContents* web_contents = content::Source<WebContents>(source).ptr();
-      if (web_contents == tab_strip_model_->GetActiveWebContents()) {
-        LocationBar* location_bar = window()->GetLocationBar();
-        if (location_bar)
-          location_bar->UpdateContentSettingsIcons();
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
+  window()->UserChangedTheme(BrowserThemeChangeType::kBrowserTheme);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -103,6 +103,7 @@ jumbo_source_set("browser") {
     "//crypto",
     "//device/base",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//device/fido",
     "//device/gamepad",
     "//device/vr/public/mojom",
@@ -1319,12 +1320,6 @@ jumbo_source_set("browser") {
     "media/video_decoder_proxy.h",
     "media/webaudio/audio_context_manager_impl.cc",
     "media/webaudio/audio_context_manager_impl.h",
-    "memory/memory_monitor.cc",
-    "memory/memory_monitor.h",
-    "memory/memory_monitor_android.cc",
-    "memory/memory_monitor_android.h",
-    "memory/memory_monitor_win.cc",
-    "memory/memory_monitor_win.h",
     "memory/swap_metrics_driver_impl.cc",
     "memory/swap_metrics_driver_impl.h",
     "memory/swap_metrics_driver_impl_linux.cc",
@@ -2062,19 +2057,12 @@ jumbo_source_set("browser") {
     sources += [
       "media/keyboard_mic_registration.cc",
       "media/keyboard_mic_registration.h",
-      "memory/memory_monitor_chromeos.cc",
-      "memory/memory_monitor_chromeos.h",
       "tracing/cros_tracing_agent.cc",
       "tracing/cros_tracing_agent.h",
     ]
     deps += [
       "//chromeos/resources",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
-    ]
-  } else {
-    sources += [
-      "memory/memory_monitor_linux.cc",
-      "memory/memory_monitor_linux.h",
     ]
   }
 
@@ -2098,10 +2086,7 @@ jumbo_source_set("browser") {
   }
 
   if (is_fuchsia) {
-    sources += [
-      "child_process_launcher_helper_fuchsia.cc",
-      "memory/memory_monitor_fuchsia.cc",
-    ]
+    sources += [ "child_process_launcher_helper_fuchsia.cc" ]
     deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
   } else if (is_posix) {
     sources += [

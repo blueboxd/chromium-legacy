@@ -109,8 +109,7 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
       client_(nullptr),
       sink_(std::move(sink)),
       tee_filter_(new TeeFilter()),
-      media_log_(media_log),
-      weak_factory_(this) {}
+      media_log_(media_log) {}
 
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() = default;
 

@@ -177,9 +177,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   THREAD_CHECKER(thread_checker_);
 
   // Weak factory that's used to cancel empty frame callbacks.
-  base::WeakPtrFactory<VideoFrameSubmitter> empty_frame_weak_ptr_factory_;
+  base::WeakPtrFactory<VideoFrameSubmitter> empty_frame_weak_ptr_factory_{this};
 
-  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameSubmitter);
 };

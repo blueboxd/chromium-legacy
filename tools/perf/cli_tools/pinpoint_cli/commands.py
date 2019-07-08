@@ -4,6 +4,7 @@
 
 import csv
 import json
+import logging
 import ntpath
 import posixpath
 import sys
@@ -48,7 +49,11 @@ def DownloadJobResultsAsCsv(job_ids, only_differences, output_file):
       for change_id, isolate_hash in job_results.IterTestOutputIsolates(
           job, only_differences):
         print '- isolate: %s ...' % isolate_hash
-        histograms = isolate_service.RetrieveFile(isolate_hash, results_file)
+        try:
+          histograms = isolate_service.RetrieveFile(isolate_hash, results_file)
+        except KeyError:
+          logging.warning('Skipping over isolate, results not found.')
+          continue
         for row in histograms_df.IterRows(json.loads(histograms)):
           writer.writerow((job_id, change_id, isolate_hash) + row)
           num_rows += 1

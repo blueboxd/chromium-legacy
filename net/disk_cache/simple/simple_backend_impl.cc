@@ -68,46 +68,6 @@ const int kMaxNativeCodeFileRatio = 2;
 // Overrides the above.
 const int64_t kMinFileSizeLimit = 5 * 1024 * 1024;
 
-bool g_fd_limit_histogram_has_been_populated = false;
-
-void MaybeHistogramFdLimit() {
-  if (g_fd_limit_histogram_has_been_populated)
-    return;
-
-  // Used in histograms; add new entries at end.
-  enum FdLimitStatus {
-    FD_LIMIT_STATUS_UNSUPPORTED = 0,
-    FD_LIMIT_STATUS_FAILED      = 1,
-    FD_LIMIT_STATUS_SUCCEEDED   = 2,
-    FD_LIMIT_STATUS_MAX         = 3
-  };
-  FdLimitStatus fd_limit_status = FD_LIMIT_STATUS_UNSUPPORTED;
-  int soft_fd_limit = 0;
-  int hard_fd_limit = 0;
-
-#if defined(OS_POSIX)
-  struct rlimit nofile;
-  if (!getrlimit(RLIMIT_NOFILE, &nofile)) {
-    soft_fd_limit = nofile.rlim_cur;
-    hard_fd_limit = nofile.rlim_max;
-    fd_limit_status = FD_LIMIT_STATUS_SUCCEEDED;
-  } else {
-    fd_limit_status = FD_LIMIT_STATUS_FAILED;
-  }
-#endif
-
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimitStatus",
-                            fd_limit_status, FD_LIMIT_STATUS_MAX);
-  if (fd_limit_status == FD_LIMIT_STATUS_SUCCEEDED) {
-    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitSoft",
-                             soft_fd_limit);
-    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitHard",
-                             hard_fd_limit);
-  }
-
-  g_fd_limit_histogram_has_been_populated = true;
-}
-
 // Global context of all the files we have open --- this permits some to be
 // closed on demand if too many FDs are being used, to avoid running out.
 base::LazyInstance<SimpleFileTracker>::Leaky g_simple_file_tracker =
@@ -260,7 +220,6 @@ SimpleBackendImpl::SimpleBackendImpl(
   // backends, as default (if first call).
   if (orig_max_size_ < 0)
     orig_max_size_ = 0;
-  MaybeHistogramFdLimit();
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -599,9 +558,7 @@ int64_t SimpleBackendImpl::CalculateSizeOfEntriesBetween(
 class SimpleBackendImpl::SimpleIterator final : public Iterator {
  public:
   explicit SimpleIterator(base::WeakPtr<SimpleBackendImpl> backend)
-      : backend_(backend),
-        weak_factory_(this) {
-  }
+      : backend_(backend) {}
 
   // From Backend::Iterator:
   net::Error OpenNextEntry(Entry** next_entry,
@@ -665,7 +622,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
  private:
   base::WeakPtr<SimpleBackendImpl> backend_;
   std::unique_ptr<std::vector<uint64_t>> hashes_to_enumerate_;
-  base::WeakPtrFactory<SimpleIterator> weak_factory_;
+  base::WeakPtrFactory<SimpleIterator> weak_factory_{this};
 };
 
 std::unique_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {

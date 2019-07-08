@@ -239,7 +239,7 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
   bool is_shutdown_;
 
   base::WeakPtr<IdleHelper> weak_idle_helper_ptr_;
-  base::WeakPtrFactory<IdleHelper> weak_factory_;
+  base::WeakPtrFactory<IdleHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IdleHelper);
 };

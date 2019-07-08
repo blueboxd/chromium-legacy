@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 
 module arc.mojom;
 
@@ -33,7 +33,7 @@ interface PowerHost {
   [MinVersion=3] OnScreenBrightnessUpdateRequest@3(double percent);
 };
 
-// Next method ID: 6
+// Next method ID: 7
 interface PowerInstance {
   // DEPRECATED: Please use Init@5 instead.
   InitDeprecated@0(PowerHost host_ptr);
@@ -54,4 +54,9 @@ interface PowerInstance {
   // Update Android brightness settings.
   // |percent| is of the range [0, 100]
   [MinVersion=3] UpdateScreenBrightnessSettings@4(double percent);
+
+  // Called when the power supply information is updated.
+  // TODO(b/136427446): Rearchitect ARC power info management with more
+  // explicit data / event passing.
+  [MinVersion=5] PowerSupplyInfoChanged@6();
 };

@@ -486,7 +486,9 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   SignIn();
   InitializeForNthSync();
 
-  ASSERT_FALSE(prefs()->GetBoolean(prefs::kSyncSuppressStart));
+  SyncPrefs sync_prefs(prefs());
+
+  ASSERT_TRUE(sync_prefs.IsSyncRequested());
   ASSERT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
@@ -496,7 +498,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   testing::Mock::VerifyAndClearExpectations(component_factory());
 
   service()->GetUserSettings()->SetSyncRequested(false);
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_FALSE(sync_prefs.IsSyncRequested());
   EXPECT_EQ(SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
@@ -505,7 +507,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   service()->GetUserSettings()->SetSyncRequested(true);
-  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_TRUE(sync_prefs.IsSyncRequested());
   EXPECT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
@@ -521,7 +523,6 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
   SignIn();
   InitializeForNthSync();
 
-  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSyncSuppressStart));
   EXPECT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
@@ -999,7 +1000,7 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
   SignIn();
   InitializeForNthSync();
 
-  ASSERT_FALSE(prefs()->GetBoolean(prefs::kSyncSuppressStart));
+  ASSERT_TRUE(prefs()->GetBoolean(prefs::kSyncRequested));
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 

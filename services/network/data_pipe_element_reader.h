@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeElementReader
   net::CompletionOnceCallback init_callback_;
   net::CompletionOnceCallback read_callback_;
 
-  base::WeakPtrFactory<DataPipeElementReader> weak_factory_;
+  base::WeakPtrFactory<DataPipeElementReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataPipeElementReader);
 };

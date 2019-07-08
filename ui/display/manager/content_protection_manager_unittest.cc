@@ -635,5 +635,41 @@ TEST_F(ContentProtectionManagerTest, DisplaySecurityObserver) {
             observer.security_changes());
 }
 
+TEST_F(ContentProtectionManagerTest, NoSecurityPollingIfInternalDisplayOnly) {
+  UpdateDisplays(1);
+  TestObserver observer(&manager_);
+
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}}),
+            observer.security_changes());
+  observer.Reset();
+
+  auto id = manager_.RegisterClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_.set_run_async(true);
+
+  manager_.ApplyContentProtection(
+      id, kDisplayIds[0], CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(
+          &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.security_changes().empty());
+
+  // Timer should not be running unless there are external displays.
+  EXPECT_FALSE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SecurityChanges(), observer.security_changes());
+
+  manager_.UnregisterClient(id);
+
+  EXPECT_FALSE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SecurityChanges(), observer.security_changes());
+}
+
 }  // namespace test
 }  // namespace display

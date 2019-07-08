@@ -474,6 +474,35 @@ bool WriteProtectedChildMemory(HANDLE child_process,
   return ok;
 }
 
+bool CopyToChildMemory(HANDLE child,
+                       const void* local_buffer,
+                       size_t buffer_bytes,
+                       void** remote_buffer) {
+  DCHECK(remote_buffer);
+  if (0 == buffer_bytes) {
+    *remote_buffer = nullptr;
+    return true;
+  }
+
+  // Allocate memory in the target process without specifying the address
+  void* remote_data = ::VirtualAllocEx(child, nullptr, buffer_bytes, MEM_COMMIT,
+                                       PAGE_READWRITE);
+  if (!remote_data)
+    return false;
+
+  SIZE_T bytes_written;
+  bool success = ::WriteProcessMemory(child, remote_data, local_buffer,
+                                      buffer_bytes, &bytes_written);
+  if (!success || bytes_written != buffer_bytes) {
+    ::VirtualFreeEx(child, remote_data, 0, MEM_RELEASE);
+    return false;
+  }
+
+  *remote_buffer = remote_data;
+
+  return true;
+}
+
 DWORD GetLastErrorFromNtStatus(NTSTATUS status) {
   RtlNtStatusToDosErrorFunction NtStatusToDosError = nullptr;
   ResolveNTFunctionPtr("RtlNtStatusToDosError", &NtStatusToDosError);

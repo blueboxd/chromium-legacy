@@ -691,8 +691,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
         dhcp_pac_file_fetcher_(dhcp_pac_file_fetcher),
         last_error_(init_net_error),
         last_script_data_(init_script_data),
-        last_poll_time_(TimeTicks::Now()),
-        weak_factory_(this) {
+        last_poll_time_(TimeTicks::Now()) {
     // Set the initial poll delay.
     next_poll_mode_ = poll_policy()->GetNextDelay(
         last_error_, TimeDelta::FromSeconds(-1), &next_poll_delay_);
@@ -846,7 +845,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
 
   bool quick_check_enabled_;
 
-  base::WeakPtrFactory<PacFileDeciderPoller> weak_factory_;
+  base::WeakPtrFactory<PacFileDeciderPoller> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PacFileDeciderPoller);
 };
@@ -1066,8 +1065,7 @@ ProxyResolutionService::ProxyResolutionService(
       net_log_(net_log),
       stall_proxy_auto_config_delay_(
           TimeDelta::FromMilliseconds(kDelayAfterNetworkChangesMs)),
-      quick_check_enabled_(true),
-      weak_ptr_factory_(this) {
+      quick_check_enabled_(true) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
   config_service_->AddObserver(this);

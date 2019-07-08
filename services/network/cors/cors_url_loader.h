@@ -175,7 +175,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   PreflightController* preflight_controller_;
 
   // Used to run asynchronous class instance bound callbacks safely.
-  base::WeakPtrFactory<CorsURLLoader> weak_factory_;
+  base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CorsURLLoader);
 };

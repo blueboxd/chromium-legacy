@@ -63,7 +63,11 @@ RenderingHelper::RenderedVideo::~RenderedVideo() {}
 // static
 void RenderingHelper::InitializeOneOff(bool use_gl, base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+#if defined(OS_WIN)
+  cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationANGLEName);
+#else
   cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
+#endif
 
   use_gl_ = use_gl;
 

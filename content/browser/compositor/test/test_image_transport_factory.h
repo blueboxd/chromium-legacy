@@ -83,7 +83,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,
       viz::mojom::VSyncParameterObserverPtr observer) override {}
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

@@ -19,7 +19,7 @@ namespace {
 
 class MockEvent {
  public:
-  MockEvent() : weak_factory_(this) {}
+  MockEvent() {}
 
   ServiceWorkerTimeoutTimer::AbortCallback CreateAbortCallback() {
     return WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr());
@@ -40,7 +40,7 @@ class MockEvent {
 
   int event_id_ = 0;
   base::Optional<mojom::blink::ServiceWorkerEventStatus> status_;
-  base::WeakPtrFactory<MockEvent> weak_factory_;
+  base::WeakPtrFactory<MockEvent> weak_factory_{this};
 };
 
 base::RepeatingClosure CreateReceiverWithCalledFlag(bool* out_is_called) {

@@ -534,9 +534,9 @@ class NET_EXPORT HostResolverManager
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<HostResolverManager> weak_ptr_factory_;
+  base::WeakPtrFactory<HostResolverManager> weak_ptr_factory_{this};
 
-  base::WeakPtrFactory<HostResolverManager> probe_weak_ptr_factory_;
+  base::WeakPtrFactory<HostResolverManager> probe_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverManager);
 };

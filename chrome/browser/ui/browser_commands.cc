@@ -479,15 +479,14 @@ void GoForward(Browser* browser, WindowOpenDisposition disposition) {
   }
 }
 
-bool NavigateToIndexWithDisposition(Browser* browser,
+void NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
                                     WindowOpenDisposition disposition) {
   NavigationController* controller =
       &GetTabAndRevertIfNecessary(browser, disposition)->GetController();
-  if (index < 0 || index >= controller->GetEntryCount())
-    return false;
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, controller->GetEntryCount());
   controller->GoToIndex(index);
-  return true;
 }
 
 void Reload(Browser* browser, WindowOpenDisposition disposition) {

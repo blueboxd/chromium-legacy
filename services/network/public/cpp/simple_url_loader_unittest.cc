@@ -1709,8 +1709,7 @@ class MockURLLoader : public network::mojom::URLLoader {
       : scoped_task_environment_(scoped_task_environment),
         binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),
-        test_events_(std::move(test_events)),
-        weak_factory_for_data_pipe_callbacks_(this) {
+        test_events_(std::move(test_events)) {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
             network::mojom::DataElementType::kDataPipe) {
@@ -1955,7 +1954,8 @@ class MockURLLoader : public network::mojom::URLLoader {
 
   std::unique_ptr<base::RunLoop> read_run_loop_;
 
-  base::WeakPtrFactory<MockURLLoader> weak_factory_for_data_pipe_callbacks_;
+  base::WeakPtrFactory<MockURLLoader> weak_factory_for_data_pipe_callbacks_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
 };

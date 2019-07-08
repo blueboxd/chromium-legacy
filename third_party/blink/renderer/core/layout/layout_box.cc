@@ -1155,11 +1155,10 @@ IntPoint LayoutBox::ScrollOrigin() const {
   return GetScrollableArea() ? GetScrollableArea()->ScrollOrigin() : IntPoint();
 }
 
-IntSize LayoutBox::ScrolledContentOffset() const {
+LayoutSize LayoutBox::ScrolledContentOffset() const {
   DCHECK(HasOverflowClip());
   DCHECK(GetScrollableArea());
-  // FIXME: Return DoubleSize here. crbug.com/414283.
-  return GetScrollableArea()->ScrollOffsetInt();
+  return LayoutSize(GetScrollableArea()->GetScrollOffset());
 }
 
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
@@ -1232,7 +1231,7 @@ bool LayoutBox::MapVisualRectToContainer(
   // c) Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
       ToLayoutBox(container_object)->ContainedContentsScroll(*this)) {
-    IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
+    LayoutSize offset(-ToLayoutBox(container_object)->ScrolledContentOffset());
     transform.PostTranslate(offset.Width(), offset.Height());
   }
 

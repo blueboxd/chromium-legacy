@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
 #include "device/bluetooth/bluetooth_common.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"

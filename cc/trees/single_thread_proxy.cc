@@ -611,6 +611,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
     if (raster) {
       LayerTreeHostImpl::FrameData frame;
       frame.begin_frame_ack = viz::BeginFrameAck(begin_frame_args, true);
+      frame.origin_begin_main_frame_args = begin_frame_args;
       DoComposite(&frame);
     }
 
@@ -750,7 +751,7 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SingleThreadProxy::BeginMainFrame,
                                 weak_factory_.GetWeakPtr(), begin_frame_args));
-  host_impl_->DidSendBeginMainFrame();
+  host_impl_->DidSendBeginMainFrame(begin_frame_args);
 }
 
 void SingleThreadProxy::FrameIntervalUpdated(base::TimeDelta interval) {
@@ -829,8 +830,7 @@ void SingleThreadProxy::BeginMainFrame(
   // know we will commit since QueueSwapPromise itself requests a commit.
   ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
   new_latency_info.AddLatencyNumberWithTimestamp(
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT, begin_frame_args.frame_time,
-      1);
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT, begin_frame_args.frame_time);
   layer_tree_host_->QueueSwapPromise(
       std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
 
@@ -869,7 +869,9 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   DCHECK(!host_impl_->pending_tree());
 
   std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
-  host_impl_->BeginMainFrameAborted(reason, std::move(empty_swap_promises));
+  host_impl_->BeginMainFrameAborted(
+      reason, std::move(empty_swap_promises),
+      scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args());
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 
@@ -878,6 +880,8 @@ DrawResult SingleThreadProxy::ScheduledActionDrawIfPossible() {
   LayerTreeHostImpl::FrameData frame;
   frame.begin_frame_ack =
       scheduler_on_impl_thread_->CurrentBeginFrameAckForActiveTree();
+  frame.origin_begin_main_frame_args =
+      scheduler_on_impl_thread_->last_activate_origin_frame_args();
   return DoComposite(&frame);
 }
 

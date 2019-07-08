@@ -22,6 +22,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/process.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -69,6 +70,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/native_theme/dark_mode_observer.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_observer.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/nfc_host.h"
@@ -146,7 +148,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        public blink::mojom::ColorChooserFactory,
                                        public NotificationObserver,
                                        public NavigationControllerDelegate,
-                                       public NavigatorDelegate {
+                                       public NavigatorDelegate,
+                                       public ui::NativeThemeObserver {
  public:
   class FriendWrapper;
 
@@ -1495,9 +1498,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
-  // Called by DarkModeObserver when the dark mode state changes; triggers a
-  // preference update.
-  void OnDarkModeChanged(bool dark_mode);
+  // Overridden from ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // Data for core operation ---------------------------------------------------
 
@@ -1900,12 +1902,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // with OOPIF renderers.
   blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
 
-  // Observe dark mode native theme changes to notify the renderer about
-  // preferred color scheme changes.
-  ui::DarkModeObserver dark_mode_observer_{
-      ui::NativeTheme::GetInstanceForWeb(),
-      base::BindRepeating(&WebContentsImpl::OnDarkModeChanged,
-                          base::Unretained(this))};
+  // Observe native theme for changes to dark mode and high contrast. Used to
+  // notify the renderer of preferred color scheme and forced colors changes.
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observer_;
+
+  bool in_high_contrast_ = false;
+  bool in_dark_mode_ = false;
 
   // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
   // user gesture is properly propagated. This is a temporary fix for history

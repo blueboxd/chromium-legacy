@@ -166,6 +166,13 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
              : form.username_value;
 }
 
+base::string16 GetDisplayUsername(
+    const password_manager::CredentialPair& credential_pair) {
+  return credential_pair.username.empty()
+             ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
+             : credential_pair.username;
+}
+
 base::string16 GetDisplayFederation(const autofill::PasswordForm& form) {
   return url_formatter::FormatOriginForSecurityDisplay(
       form.federation_origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);

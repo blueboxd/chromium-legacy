@@ -200,8 +200,7 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       write_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
       bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
-      experimental_recv_optimization_enabled_(false),
-      weak_factory_(this) {
+      experimental_recv_optimization_enabled_(false) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       source.ToEventParametersCallback());
 }

@@ -87,9 +87,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       expected_content_size_(-1),
       network_delegate_(network_delegate),
       last_notified_total_received_bytes_(0),
-      last_notified_total_sent_bytes_(0),
-      weak_factory_(this) {
-}
+      last_notified_total_sent_bytes_(0) {}
 
 URLRequestJob::~URLRequestJob() {
 }

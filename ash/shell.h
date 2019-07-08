@@ -103,6 +103,7 @@ class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
+class AshColorProvider;
 class CrosDisplayConfig;
 class DesksController;
 class DetachableBaseHandler;
@@ -506,10 +507,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
-
   ToplevelWindowEventHandler* toplevel_window_event_handler() {
     return toplevel_window_event_handler_.get();
   }
+  AshColorProvider* ash_color_provider() { return ash_color_provider_.get(); }
 
   PrefService* local_state() { return local_state_; }
 
@@ -798,6 +799,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Enables spoken feedback accessibility based on a press and hold of both
   // volume keys.
   std::unique_ptr<KeyAccessibilityEnabler> key_accessibility_enabler_;
+
+  // Color provider for ash.
+  std::unique_ptr<AshColorProvider> ash_color_provider_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;

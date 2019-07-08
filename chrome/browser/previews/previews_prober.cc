@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -49,6 +50,20 @@ base::TimeDelta ComputeNextTimeDeltaForBackoff(PreviewsProber::Backoff backoff,
       return base_interval * pow(2, attempts_so_far);
   }
 }
+
+#if defined(OS_ANDROID)
+bool IsInForeground(base::android::ApplicationState state) {
+  switch (state) {
+    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+      return true;
+    case base::android::APPLICATION_STATE_UNKNOWN:
+    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+      return false;
+  }
+}
+#endif
 
 }  // namespace
 
@@ -139,16 +154,44 @@ void PreviewsProber::ResetState() {
   retry_timer_.reset();
   timeout_timer_.reset();
   url_loader_.reset();
+#if defined(OS_ANDROID)
+  application_status_listener_.reset();
+#endif
 }
 
-void PreviewsProber::SendNowIfInactive() {
+void PreviewsProber::SendNowIfInactive(bool send_only_in_foreground) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (is_active_)
     return;
 
+#if defined(OS_ANDROID)
+  if (send_only_in_foreground &&
+      !IsInForeground(base::android::ApplicationStatusListener::GetState())) {
+    // base::Unretained is safe here because the callback is owned by
+    // |application_status_listener_| which is owned by |this|.
+    application_status_listener_ =
+        base::android::ApplicationStatusListener::New(base::BindRepeating(
+            &PreviewsProber::OnApplicationStateChange, base::Unretained(this)));
+    return;
+  }
+#endif
+
   CreateAndStartURLLoader();
 }
+
+#if defined(OS_ANDROID)
+void PreviewsProber::OnApplicationStateChange(
+    base::android::ApplicationState new_state) {
+  DCHECK(application_status_listener_);
+
+  if (!IsInForeground(new_state))
+    return;
+
+  SendNowIfInactive(false);
+  application_status_listener_.reset();
+}
+#endif
 
 void PreviewsProber::OnConnectionChanged(network::mojom::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

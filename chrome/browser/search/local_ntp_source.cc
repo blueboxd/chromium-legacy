@@ -430,14 +430,16 @@ std::unique_ptr<base::DictionaryValue> ConvertSearchSuggestDataToDict(
   return result;
 }
 
-std::string ConvertLogoImageToBase64(const EncodedLogo& logo) {
-  if (!logo.encoded_image)
+std::string ConvertLogoImageToBase64(
+    scoped_refptr<base::RefCountedString> encoded_image,
+    std::string mime_type) {
+  if (!encoded_image)
     return std::string();
 
   std::string base64;
-  base::Base64Encode(logo.encoded_image->data(), &base64);
-  return base::StringPrintf("data:%s;base64,%s",
-                            logo.metadata.mime_type.c_str(), base64.c_str());
+  base::Base64Encode(encoded_image->data(), &base64);
+  return base::StringPrintf("data:%s;base64,%s", mime_type.c_str(),
+                            base64.c_str());
 }
 
 std::string LogoTypeToString(search_provider_logos::LogoType type) {
@@ -460,12 +462,15 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   result->SetString("onClickUrl", meta.on_click_url.spec());
   result->SetString("altText", meta.alt_text);
   result->SetString("mimeType", meta.mime_type);
+  result->SetString("darkMimeType", meta.dark_mime_type);
   result->SetString("animatedUrl", meta.animated_url.spec());
+  result->SetString("darkAnimatedUrl", meta.dark_animated_url.spec());
   result->SetInteger("iframeWidthPx", meta.iframe_width_px);
   result->SetInteger("iframeHeightPx", meta.iframe_height_px);
   result->SetString("logUrl", meta.log_url.spec());
   result->SetString("ctaLogUrl", meta.cta_log_url.spec());
   result->SetString("shortLink", meta.short_link.spec());
+  result->SetString("darkBackgroundColor", meta.dark_background_color);
 
   if (meta.share_button_x >= 0 && meta.share_button_y >= 0 &&
       !meta.share_button_icon.empty() && !meta.share_button_bg.empty()) {
@@ -474,6 +479,16 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
     result->SetDouble("shareButtonOpacity", meta.share_button_opacity);
     result->SetString("shareButtonIcon", meta.share_button_icon);
     result->SetString("shareButtonBg", meta.share_button_bg);
+  }
+
+  if (meta.dark_share_button_x >= 0 && meta.dark_share_button_y >= 0 &&
+      !meta.dark_share_button_icon.empty() &&
+      !meta.dark_share_button_bg.empty()) {
+    result->SetInteger("darkShareButtonX", meta.dark_share_button_x);
+    result->SetInteger("darkShareButtonY", meta.dark_share_button_y);
+    result->SetDouble("darkShareButtonOpacity", meta.dark_share_button_opacity);
+    result->SetString("darkShareButtonIcon", meta.dark_share_button_icon);
+    result->SetString("darkShareButtonBg", meta.dark_share_button_bg);
   }
 
   GURL full_page_url = meta.full_page_url;
@@ -692,10 +707,16 @@ class LocalNtpSource::DesktopLogoObserver {
     if (type == LogoCallbackReason::DETERMINED) {
       ddl->SetBoolean("usable", true);
       if (logo.has_value()) {
-        ddl->SetString("image", ConvertLogoImageToBase64(logo.value()));
+        ddl->SetString("image",
+                       ConvertLogoImageToBase64(logo->encoded_image,
+                                                logo->metadata.mime_type));
+        ddl->SetString("dark_image",
+                       ConvertLogoImageToBase64(logo->dark_encoded_image,
+                                                logo->metadata.dark_mime_type));
         ddl->Set("metadata", ConvertLogoMetadataToDict(logo->metadata));
       } else {
         ddl->SetKey("image", base::Value());
+        ddl->SetKey("dark_image", base::Value());
         ddl->SetKey("metadata", base::Value());
       }
     } else {

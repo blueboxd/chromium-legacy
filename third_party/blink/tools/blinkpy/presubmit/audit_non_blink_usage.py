@@ -649,6 +649,19 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/webrtc/',
+        ],
+        'allowed': [
+            'base::AutoLock',
+            'base::Erase',
+            'base::StringPrintf',
+            'media::.+',
+            'rtc::scoped_refptr',
+            'webrtc::AudioSourceInterface',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/platform/',
         ],
         # Suppress almost all checks on platform since code in this directory is

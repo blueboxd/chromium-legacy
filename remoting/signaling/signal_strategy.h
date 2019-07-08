@@ -116,6 +116,11 @@ class SignalStrategy {
   // request.
   virtual std::string GetNextId() = 0;
 
+  // Returns true if the signal strategy gets into an error state when it tries
+  // to sign in. You can get back the actual error by calling GetError().
+  // The default implementation always returns false.
+  virtual bool IsSignInError() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SignalStrategy);
 };

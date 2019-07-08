@@ -7,6 +7,7 @@
 #ifndef UI_GL_GL_UTILS_H_
 #define UI_GL_GL_UTILS_H_
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 
@@ -20,6 +21,10 @@ GL_EXPORT void Crash();
 #if defined(OS_ANDROID)
 GL_EXPORT base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b);
 #endif
+
+GL_EXPORT bool UsePassthroughCommandDecoder(
+    const base::CommandLine* command_line);
+
 }  // namespace gl
 
 #endif  // UI_GL_GL_UTILS_H_

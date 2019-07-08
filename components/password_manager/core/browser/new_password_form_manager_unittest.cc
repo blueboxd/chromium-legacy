@@ -117,9 +117,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_METHOD0(UpdateFormManagers, void());
 
-  MOCK_CONST_METHOD2(AutofillHttpAuth,
-                     void(const PasswordForm&,
-                          const PasswordFormManagerForUI*));
+  MOCK_METHOD2(AutofillHttpAuth,
+               void(const PasswordForm&, const PasswordFormManagerForUI*));
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,

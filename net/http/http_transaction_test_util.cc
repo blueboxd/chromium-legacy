@@ -263,8 +263,7 @@ MockNetworkTransaction::MockNetworkTransaction(RequestPriority priority,
       sent_bytes_(0),
       socket_log_id_(NetLogSource::kInvalidId),
       done_reading_called_(false),
-      reading_(false),
-      weak_factory_(this) {}
+      reading_(false) {}
 
 MockNetworkTransaction::~MockNetworkTransaction() {
   // Use request_ as in ~HttpNetworkTransaction to make sure its valid and not

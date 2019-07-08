@@ -292,8 +292,7 @@ URLRequestHttpJob::URLRequestHttpJob(
       awaiting_callback_(false),
       http_user_agent_settings_(http_user_agent_settings),
       total_received_bytes_from_previous_transactions_(0),
-      total_sent_bytes_from_previous_transactions_(0),
-      weak_factory_(this) {
+      total_sent_bytes_from_previous_transactions_(0) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)
     throttling_entry_ = manager->RegisterRequestUrl(request->url());

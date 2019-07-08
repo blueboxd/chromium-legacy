@@ -137,8 +137,7 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     : repaint_cb_(repaint_cb),
       video_track_(video_track),
       io_task_runner_(std::move(io_task_runner)),
-      main_render_task_runner_(std::move(main_render_task_runner)),
-      weak_factory_(this) {}
+      main_render_task_runner_(std::move(main_render_task_runner)) {}
 
 MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);

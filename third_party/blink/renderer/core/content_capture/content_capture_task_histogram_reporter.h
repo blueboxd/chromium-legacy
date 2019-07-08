@@ -22,8 +22,6 @@ class CORE_EXPORT ContentCaptureTaskHistogramReporter
       "ContentCapture.CaptureContentDelayTime";
   static constexpr char kCaptureContentTime[] =
       "ContentCapture.CaptureContentTime";
-  static constexpr char kCaptureOneContentTime[] =
-      "ContentCapture.CaptureOneContentTime";
   static constexpr char kSendContentTime[] = "ContentCapture.SendContentTime";
   static constexpr char kSentContentCount[] = "ContentCapture.SentContentCount";
 
@@ -55,10 +53,6 @@ class CORE_EXPORT ContentCaptureTaskHistogramReporter
   // Records time to capture the content, its range is from 0 to 50,000
   // microseconds.
   CustomCountHistogram capture_content_time_histogram_;
-  // Records time to capture one content, this is the average of all captured
-  // content for a specific ContentCapture, its range is from 0 to 50,000
-  // microseconds.
-  CustomCountHistogram capture_one_content_time_histogram_;
   // Records time to send the content, its range is from 0 to 50,000
   // microseconds.
   CustomCountHistogram send_content_time_histogram_;

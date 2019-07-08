@@ -40,7 +40,7 @@ class PLATFORM_EXPORT StaticDataNavigationBodyLoader
   bool received_all_data_ = false;
   bool is_in_continue_ = false;
   int64_t total_encoded_data_length_ = 0;
-  base::WeakPtrFactory<StaticDataNavigationBodyLoader> weak_factory_;
+  base::WeakPtrFactory<StaticDataNavigationBodyLoader> weak_factory_{this};
 };
 
 }  // namespace blink

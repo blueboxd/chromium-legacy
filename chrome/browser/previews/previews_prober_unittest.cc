@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_prober.h"
 
+#include "build/build_config.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -172,7 +173,7 @@ TEST_F(PreviewsProberTest, OK) {
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
 
   MakeResponseAndWait(net::HTTP_OK, net::OK);
@@ -186,9 +187,9 @@ TEST_F(PreviewsProberTest, MultipleStart) {
 
   // Calling |SendNowIfInactive| many times should result in only one url
   // request, which is verified in |VerifyRequest|.
-  prober->SendNowIfInactive();
-  prober->SendNowIfInactive();
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
+  prober->SendNowIfInactive(false);
+  prober->SendNowIfInactive(false);
   VerifyRequest();
 }
 
@@ -204,11 +205,32 @@ TEST_F(PreviewsProberTest, NetworkChangeStartsProber) {
   EXPECT_TRUE(prober->is_active());
 }
 
+#if defined(OS_ANDROID)
+TEST_F(PreviewsProberTest, StartInForeground) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  prober->SendNowIfInactive(true);
+  EXPECT_TRUE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, DoesntCallSendInForegroundIfInactive) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+  EXPECT_FALSE(prober->is_active());
+}
+#endif
+
 TEST_F(PreviewsProberTest, NetError) {
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
 
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
@@ -220,7 +242,7 @@ TEST_F(PreviewsProberTest, HttpError) {
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
 
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK);
@@ -237,7 +259,7 @@ TEST_F(PreviewsProberTest, RandomGUID) {
       NewProberWithRetryPolicy(retry_policy);
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest(true /* expect_random_guid */);
 
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
@@ -255,7 +277,7 @@ TEST_F(PreviewsProberTest, RetryLinear) {
       NewProberWithRetryPolicy(retry_policy);
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
@@ -290,7 +312,7 @@ TEST_F(PreviewsProberTest, RetryExponential) {
       NewProberWithRetryPolicy(retry_policy);
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
@@ -329,7 +351,7 @@ TEST_F(PreviewsProberTest, TimeoutLinear) {
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
   // First attempt.
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
   FastForward(base::TimeDelta::FromMilliseconds(999));
   VerifyRequest();
@@ -365,7 +387,7 @@ TEST_F(PreviewsProberTest, TimeoutExponential) {
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
   // First attempt.
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
   FastForward(base::TimeDelta::FromMilliseconds(999));
   VerifyRequest();
@@ -400,7 +422,7 @@ TEST_F(PreviewsProberTest, DelegateStopsFirstProbe) {
       &delegate, retry_policy, PreviewsProber::TimeoutPolicy());
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
   EXPECT_FALSE(prober->is_active());
   VerifyNoRequests();
@@ -418,7 +440,7 @@ TEST_F(PreviewsProberTest, DelegateStopsRetries) {
       &delegate, retry_policy, PreviewsProber::TimeoutPolicy());
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
-  prober->SendNowIfInactive();
+  prober->SendNowIfInactive(false);
   VerifyRequest();
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());

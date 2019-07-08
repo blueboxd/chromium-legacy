@@ -18,12 +18,12 @@
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/first_run/first_run_metrics.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/first_run/first_run_histograms.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -153,7 +153,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
 }
 
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
-                    Tab* tab,
+                    web::WebState* web_state,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter) {
   [[NSNotificationCenter defaultCenter]
@@ -163,7 +163,7 @@ void FinishFirstRun(ios::ChromeBrowserState* browserState,
                                         config.hasSSOAccount);
 
   // Display the sync errors infobar.
-  DisplaySyncErrors(browserState, tab.webState, presenter);
+  DisplaySyncErrors(browserState, web_state, presenter);
 }
 
 void RecordProductTourTimingMetrics(NSString* timer_name,

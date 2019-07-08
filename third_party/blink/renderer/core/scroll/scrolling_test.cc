@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -21,6 +22,53 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
+
+class FractionalScrollSimTest : public SimTest {
+ public:
+  FractionalScrollSimTest() : fractional_scroll_offsets_for_test_(true) {}
+
+ private:
+  ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets_for_test_;
+};
+
+TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body, html {
+        margin: 0;
+        height: 2000px;
+        width: 2000px;
+      }
+      div {
+        position: absolute;
+        left: 800px;
+        top: 600px;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <body>
+      <div id="target"></div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Scroll on the layout viewport.
+  GetDocument().View()->GetScrollableArea()->SetScrollOffset(
+      FloatSize(700.5f, 500.6f), kProgrammaticScroll, kScrollBehaviorInstant);
+
+  Compositor().BeginFrame();
+
+  Element* target = GetDocument().getElementById("target");
+  DOMRect* rect = target->getBoundingClientRect();
+  const float kOneLayoutUnit = 1.f / kFixedPointDenominator;
+  EXPECT_NEAR(LayoutUnit(800.f - 700.5f), rect->left(), kOneLayoutUnit);
+  EXPECT_NEAR(LayoutUnit(600.f - 500.6f), rect->top(), kOneLayoutUnit);
+}
 
 class ScrollAnimatorSimTest : public SimTest {};
 

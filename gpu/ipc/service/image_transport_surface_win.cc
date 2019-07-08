@@ -31,7 +31,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   scoped_refptr<gl::GLSurface> surface;
   bool override_vsync_for_multi_window_swap = false;
 
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
     auto vsync_provider =
         std::make_unique<gl::VSyncProviderWin>(surface_handle);
 

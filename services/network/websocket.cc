@@ -370,8 +370,7 @@ WebSocket::WebSocket(
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
-      handshake_succeeded_(false),
-      weak_ptr_factory_(this) {
+      handshake_succeeded_(false) {
   DCHECK(handshake_client_);
   DCHECK(client_);
   if (auth_handler_) {

@@ -2582,6 +2582,25 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     FinishLoadingDocument();
 }
 
+void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
+                                         size_t page_index,
+                                         bool reload) {
+  if (!reload) {
+    // The page is marked as not being available even if |doc_complete| is
+    // true because FPDFAvail_IsPageAvail() still has to be called for this
+    // page, which will be done in FinishLoadingDocument().
+    pages_.push_back(
+        std::make_unique<PDFiumPage>(this, page_index, page_rect, false));
+  } else if (page_index < pages_.size()) {
+    pages_[page_index]->set_rect(page_rect);
+  } else {
+    bool available =
+        FPDFAvail_IsPageAvail(fpdf_availability(), page_index, nullptr);
+    pages_.push_back(
+        std::make_unique<PDFiumPage>(this, page_index, page_rect, available));
+  }
+}
+
 void PDFiumEngine::LoadPageInfo(bool reload) {
   if (!doc_loader_)
     return;
@@ -2634,21 +2653,9 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   for (size_t i = 0; i < new_page_count; ++i) {
     // Center pages relative to the entire document.
     page_rects[i].set_x((document_size_.width() - page_rects[i].width()) / 2);
-    pp::Rect page_rect(page_rects[i]);
-    page_rect.Inset(kPageShadowLeft, kPageShadowTop, kPageShadowRight,
-                    kPageShadowBottom);
-    if (!reload) {
-      // The page is marked as not being available even if |doc_complete| is
-      // true because FPDFAvail_IsPageAvail() still has to be called for this
-      // page, which will be done in FinishLoadingDocument().
-      pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, false));
-    } else if (i < pages_.size()) {
-      pages_[i]->set_rect(page_rect);
-    } else {
-      bool available = FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr);
-      pages_.push_back(
-          std::make_unique<PDFiumPage>(this, i, page_rect, available));
-    }
+    page_rects[i].Inset(kPageShadowLeft, kPageShadowTop, kPageShadowRight,
+                        kPageShadowBottom);
+    AppendPageRectToPages(page_rects[i], i, reload);
   }
 
   // Remove pages that do not exist anymore.

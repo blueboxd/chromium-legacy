@@ -111,7 +111,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
 
   Delegate* delegate_;
 
-  base::WeakPtrFactory<MDnsConnection> weak_ptr_factory_;
+  base::WeakPtrFactory<MDnsConnection> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MDnsConnection);
 };

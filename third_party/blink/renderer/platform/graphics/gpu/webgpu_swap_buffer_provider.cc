@@ -26,6 +26,7 @@ WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
   layer_->SetIsDrawable(true);
   layer_->SetBlendBackgroundColor(false);
   layer_->SetNearestNeighbor(true);
+  layer_->SetFlipped(false);
   // TODO(cwallez@chromium.org): These flags aren't taken into account when the
   // layer is promoted to an overlay. Make sure we have fallback / emulation
   // paths to keep the rendering correct in that cases.

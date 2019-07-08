@@ -40,7 +40,7 @@ executable("http_exe") {
 fuchsia_package("http_pkg") {
   binary = ":http_exe"
   package_name_override = "http"
-  sandbox_policy = "sandbox_policy"
+  manifest = "http.cmx"
 }
 
 fuchsia_package_runner("http_pkg_runner") {

@@ -1152,7 +1152,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     rv = callback.GetResult(sock->Connect(callback.callback()));
     EXPECT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
-    scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+    auto request_info = base::MakeRefCounted<SSLCertRequestInfo>();
     sock->GetSSLCertRequestInfo(request_info.get());
     sock->Disconnect();
     EXPECT_FALSE(sock->IsConnected());

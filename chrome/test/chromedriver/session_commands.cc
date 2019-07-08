@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
@@ -369,13 +370,46 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
 // Implementation of "matching capabilities", as defined in W3C spec at
 // https://www.w3.org/TR/webdriver/#dfn-matching-capabilities.
 // It checks some requested capabilities and make sure they are supported.
-// Currently, we only check "browserName", but more can be added as necessary.
+// Currently, we only check "browserName" and "platformName", but more can be
+// added as necessary.
 bool MatchCapabilities(const base::DictionaryValue* capabilities) {
   const base::Value* name;
   if (capabilities->Get("browserName", &name) && !name->is_none()) {
     if (!(name->is_string() && name->GetString() == "chrome"))
       return false;
   }
+
+  const base::Value* platform_name_value;
+  if (capabilities->Get("platformName", &platform_name_value) &&
+      !platform_name_value->is_none()) {
+    if (platform_name_value->is_string()) {
+      std::string requested_platform_name = platform_name_value->GetString();
+      std::string actual_platform_name =
+          base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+      bool is_android =
+          capabilities->HasKey("goog:chromeOptions.androidPackage");
+      bool is_remote =
+          capabilities->HasKey("goog:chromeOptions.debuggerAddress");
+      if (requested_platform_name == "any" || is_remote) {
+        // "any" can be used as a wild card for platformName
+        // and if |is_remote| there is no easy way to know
+        // target platform, so will skip check
+      } else if (is_android && requested_platform_name != "android") {
+        return false;
+      } else if (requested_platform_name == "mac" ||
+                 requested_platform_name == "windows" ||
+                 requested_platform_name == "linux") {
+        if (!base::StartsWith(actual_platform_name, requested_platform_name,
+                              base::CompareCase::SENSITIVE))
+          return false;
+      } else if (requested_platform_name != actual_platform_name) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
   return true;
 }
 

@@ -208,6 +208,16 @@ void ArcPowerBridge::ScreenBrightnessChanged(
   last_brightness_changed_time_ = now;
 }
 
+void ArcPowerBridge::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->power(), PowerSupplyInfoChanged);
+  if (!power_instance)
+    return;
+
+  power_instance->PowerSupplyInfoChanged();
+}
+
 void ArcPowerBridge::OnPowerStateChanged(
     chromeos::DisplayPowerState power_state) {
   mojom::PowerInstance* power_instance =

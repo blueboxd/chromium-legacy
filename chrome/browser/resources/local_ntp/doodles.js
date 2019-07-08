@@ -44,6 +44,7 @@ doodles.IDS = {
   LOGO_DOODLE_CONTAINER: 'logo-doodle-container',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
+  LOGO_DOODLE_WRAPPER: 'logo-doodle-wrapper',
 };
 
 /**
@@ -139,8 +140,12 @@ doodles.init = function() {
       return;
     }
 
+    const darkMode = window.matchMedia('(prefers-color-scheme: dark)');
+    darkMode.addListener(doodles.fadeToLogoOrDoodle);
+
     // Got a (possibly empty) ddl object. Show logo or doodle.
     doodles.targetDoodle.image = ddl.image || null;
+    doodles.targetDoodle.dark_image = ddl.dark_image || null;
     doodles.targetDoodle.metadata = ddl.metadata || null;
     doodles.showLogoOrDoodle(/*fromCache=*/ true);
     // Never hide an interactive doodle if it was already shown.
@@ -152,6 +157,7 @@ doodles.init = function() {
       doodles.loadDoodle(ddl.v, function(ddl2) {
         if (ddl2.usable) {
           doodles.targetDoodle.image = ddl2.image || null;
+          doodles.targetDoodle.dark_image = ddl2.dark_image || null;
           doodles.targetDoodle.metadata = ddl2.metadata || null;
           doodles.fadeToLogoOrDoodle();
         }
@@ -173,6 +179,19 @@ doodles.init = function() {
       $(doodles.IDS.LOGO_DOODLE_BUTTON).focus();
     }
   });
+};
+
+/**
+ * Get the doodle image for the current color scheme, either light or dark.
+ */
+doodles.getImageForColorScheme = function() {
+  // Only use a dark image if the browser is in dark mode and a dark image
+  // actually exists.
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches &&
+      doodles.targetDoodle.dark_image) {
+    return doodles.targetDoodle.dark_image;
+  }
+  return doodles.targetDoodle.image;
 };
 
 /**
@@ -314,7 +333,7 @@ doodles.isDoodleCurrentlyVisible = function() {
   const haveDoodle = ($(doodles.IDS.LOGO_DOODLE)
                           .classList.contains(doodles.CLASSES.SHOW_LOGO));
   const wantDoodle = (doodles.targetDoodle.metadata !== null) &&
-      (doodles.targetDoodle.image !== null ||
+      (doodles.getImageForColorScheme() !== null ||
        doodles.targetDoodle.metadata.type === doodles.LOGO_TYPE.INTERACTIVE);
   if (!haveDoodle || !wantDoodle) {
     return haveDoodle === wantDoodle;
@@ -329,7 +348,7 @@ doodles.isDoodleCurrentlyVisible = function() {
     const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
     const logoDoodleContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
     return logoDoodleContainer.classList.contains(doodles.CLASSES.SHOW_LOGO) &&
-        ((logoDoodleImage.src === doodles.targetDoodle.image) ||
+        ((logoDoodleImage.src === doodles.getImageForColorScheme()) ||
          (logoDoodleImage.src === doodles.targetDoodle.metadata.animatedUrl));
   }
 };
@@ -372,7 +391,14 @@ doodles.showLogoOrDoodle = function(fromCache) {
       $(doodles.IDS.LOGO_DOODLE_IFRAME)
           .classList.add(doodles.CLASSES.SHOW_LOGO);
     } else {
-      $(doodles.IDS.LOGO_DOODLE_IMAGE).src = doodles.targetDoodle.image;
+      const isDarkModeEnabled =
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDarkModeEnabled) {
+        document.body.style.setProperty('--logo-margin-bottom', '34px');
+        $(doodles.IDS.LOGO_DOODLE_WRAPPER).style.backgroundColor =
+            doodles.targetDoodle.metadata.darkBackgroundColor;
+      }
+      $(doodles.IDS.LOGO_DOODLE_IMAGE).src = doodles.getImageForColorScheme();
       $(doodles.IDS.LOGO_DOODLE_CONTAINER)
           .classList.add(doodles.CLASSES.SHOW_LOGO);
       $(doodles.IDS.LOGO_DOODLE_IFRAME)
@@ -557,12 +583,23 @@ doodles.applyDoodleMetadata = function() {
  * dialog upon click.
  */
 doodles.insertShareButton = function() {
-  // Terminates early if share button data are missing or incomplete.
-  if (!doodles.targetDoodle.metadata ||
-      !doodles.targetDoodle.metadata.shareButtonX ||
-      !doodles.targetDoodle.metadata.shareButtonY ||
-      !doodles.targetDoodle.metadata.shareButtonBg ||
-      !doodles.targetDoodle.metadata.shareButtonIcon) {
+  // Terminates early if share button data for the current color scheme is
+  // missing or incomplete.
+  const isDarkModeEnabled =
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const lightShareButtonMissing = !isDarkModeEnabled &&
+      (!doodles.targetDoodle.metadata ||
+       !doodles.targetDoodle.metadata.shareButtonX ||
+       !doodles.targetDoodle.metadata.shareButtonY ||
+       !doodles.targetDoodle.metadata.shareButtonBg ||
+       !doodles.targetDoodle.metadata.shareButtonIcon);
+  const darkShareButtonMissing = isDarkModeEnabled &&
+      (!doodles.targetDoodle.metadata ||
+       !doodles.targetDoodle.metadata.darkShareButtonX ||
+       !doodles.targetDoodle.metadata.darkShareButtonY ||
+       !doodles.targetDoodle.metadata.darkShareButtonBg ||
+       !doodles.targetDoodle.metadata.darkShareButtonIcon);
+  if (lightShareButtonMissing || darkShareButtonMissing) {
     return;
   }
   const shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
@@ -574,27 +611,36 @@ doodles.insertShareButton = function() {
   shareButtonWrapper.appendChild(shareButtonImg);
   shareButtonWrapper.title = configData.translatedStrings.shareDoodle;
 
-  shareButtonWrapper.style.left =
-      doodles.targetDoodle.metadata.shareButtonX + 'px';
-  shareButtonWrapper.style.top =
-      doodles.targetDoodle.metadata.shareButtonY + 'px';
+  const shareButtonX = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonX :
+      doodles.targetDoodle.metadata.shareButtonX;
+  shareButtonWrapper.style.left = shareButtonX + 'px';
+  const shareButtonY = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonY :
+      doodles.targetDoodle.metadata.shareButtonY;
+  shareButtonWrapper.style.top = shareButtonY + 'px';
 
   // Alpha-less background color represented as an RGB HEX string.
   // Share button opacity represented as a double between 0 to 1.
   // Final background color is an RGBA HEX string created by combining
   // both.
-  let backgroundColor = doodles.targetDoodle.metadata.shareButtonBg;
-  if (!!doodles.targetDoodle.metadata.shareButtonOpacity ||
-      doodles.targetDoodle.metadata.shareButtonOpacity == 0) {
+  let backgroundColor = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonBg :
+      doodles.targetDoodle.metadata.shareButtonBg;
+  const shareButtonOpacity = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonOpacity :
+      doodles.targetDoodle.metadata.shareButtonOpacity;
+  if (!!shareButtonOpacity || shareButtonOpacity == 0) {
     const backgroundOpacityHex =
-        parseInt(doodles.targetDoodle.metadata.shareButtonOpacity * 255, 10)
-            .toString(16);
+        parseInt(shareButtonOpacity * 255, 10).toString(16);
     backgroundColor += backgroundOpacityHex;
   }
 
   shareButtonWrapper.style.backgroundColor = backgroundColor;
-  shareButtonImg.src =
-      'data:image/png;base64,' + doodles.targetDoodle.metadata.shareButtonIcon;
+  const shareButtonIcon = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonIcon :
+      doodles.targetDoodle.metadata.shareButtonIcon;
+  shareButtonImg.src = 'data:image/png;base64,' + shareButtonIcon;
   shareButtonWrapper.onclick = function() {
     shareDialog.showModal();
   };

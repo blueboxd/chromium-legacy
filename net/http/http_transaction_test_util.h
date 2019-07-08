@@ -291,8 +291,7 @@ class MockNetworkTransaction
 
   CompletionOnceCallback resume_start_callback_;  // used for pause and restart.
 
-  base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
-
+  base::WeakPtrFactory<MockNetworkTransaction> weak_factory_{this};
 };
 
 class MockNetworkLayer : public HttpTransactionFactory,

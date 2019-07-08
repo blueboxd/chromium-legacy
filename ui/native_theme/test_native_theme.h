@@ -32,9 +32,13 @@ class TestNativeTheme : public NativeTheme {
   bool SystemDarkModeEnabled() const override;
 
   void SetDarkMode(bool dark_mode) { dark_mode_ = dark_mode; }
+  void SetUsesHighContrastColors(bool high_contrast) {
+    high_contrast_ = high_contrast;
+  }
 
  private:
   bool dark_mode_ = false;
+  bool high_contrast_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);
 };

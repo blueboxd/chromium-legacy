@@ -11,6 +11,7 @@ namespace blink {
 enum class ForcedColors {
   kNone,
   kActive,
+  kMaxValue = kActive,
 };
 
 }  // namespace blink

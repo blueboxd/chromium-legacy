@@ -130,14 +130,13 @@ AuditorResult AnnotationInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
     int start_line,
     int end_line) {
-  if (end_line - start_line < 7) {
+  if (end_line - start_line < 6) {
     return AuditorResult(AuditorResult::Type::ERROR_FATAL,
                          "Not enough lines to deserialize annotation.");
   }
 
   // Extract header lines.
   const std::string& file_path = serialized_lines[start_line++];
-  const std::string& function_context = serialized_lines[start_line++];
   int line_number;
   base::StringToInt(serialized_lines[start_line++], &line_number);
   std::string function_type = serialized_lines[start_line++];
@@ -196,7 +195,6 @@ AuditorResult AnnotationInstance::Deserialize(
   traffic_annotation::NetworkTrafficAnnotation_TrafficSource* src =
       proto.mutable_source();
   src->set_file(file_path);
-  src->set_function(function_context);
   src->set_line(line_number);
   proto.set_unique_id(unique_id);
   second_id_hash_code = TrafficAnnotationAuditor::ComputeHashValue(second_id);
@@ -645,7 +643,6 @@ CallInstance::CallInstance() : line_number(0), is_annotated(false) {}
 CallInstance::CallInstance(const CallInstance& other)
     : file_path(other.file_path),
       line_number(other.line_number),
-      function_context(other.function_context),
       function_name(other.function_name),
       is_annotated(other.is_annotated) {}
 
@@ -653,13 +650,12 @@ AuditorResult CallInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
     int start_line,
     int end_line) {
-  if (end_line - start_line != 5) {
+  if (end_line - start_line != 4) {
     return AuditorResult(AuditorResult::Type::ERROR_FATAL,
                          "Not enough lines to deserialize call.");
   }
 
   file_path = serialized_lines[start_line++];
-  function_context = serialized_lines[start_line++];
   int line_number_int;
   base::StringToInt(serialized_lines[start_line++], &line_number_int);
   line_number = static_cast<uint32_t>(line_number_int);
@@ -673,20 +669,17 @@ AuditorResult CallInstance::Deserialize(
 AssignmentInstance::AssignmentInstance() : line_number(0) {}
 
 AssignmentInstance::AssignmentInstance(const AssignmentInstance& other)
-    : file_path(other.file_path),
-      line_number(other.line_number),
-      function_context(other.function_context) {}
+    : file_path(other.file_path), line_number(other.line_number) {}
 
 AuditorResult AssignmentInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
     int start_line,
     int end_line) {
-  if (end_line - start_line != 3) {
+  if (end_line - start_line != 2) {
     return AuditorResult(AuditorResult::Type::ERROR_FATAL,
                          "Not enough lines to deserialize assignment.");
   }
   file_path = serialized_lines[start_line++];
-  function_context = serialized_lines[start_line++];
   int line_number_int;
   base::StringToInt(serialized_lines[start_line++], &line_number_int);
   line_number = static_cast<uint32_t>(line_number_int);

@@ -191,7 +191,9 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   DCHECK(IsImplThread());
   DCHECK(scheduler_->CommitPending());
 
-  host_impl_->BeginMainFrameAborted(reason, std::move(swap_promises));
+  host_impl_->BeginMainFrameAborted(
+      reason, std::move(swap_promises),
+      scheduler_->last_dispatched_begin_main_frame_args());
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
 }
@@ -558,7 +560,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
                      base::Passed(&begin_main_frame_state)));
-  host_impl_->DidSendBeginMainFrame();
+  host_impl_->DidSendBeginMainFrame(args);
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 
@@ -691,6 +693,8 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
 
   LayerTreeHostImpl::FrameData frame;
   frame.begin_frame_ack = scheduler_->CurrentBeginFrameAckForActiveTree();
+  frame.origin_begin_main_frame_args =
+      scheduler_->last_activate_origin_frame_args();
   bool draw_frame = false;
 
   DrawResult result;
@@ -715,7 +719,7 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   bool start_ready_animations = draw_frame;
   host_impl_->UpdateAnimationState(start_ready_animations);
 
-  // Tell the main thread that the the newly-commited frame was drawn.
+  // Tell the main thread that the newly-commited frame was drawn.
   if (next_frame_is_newly_committed_frame_) {
     next_frame_is_newly_committed_frame_ = false;
     MainThreadTaskRunner()->PostTask(

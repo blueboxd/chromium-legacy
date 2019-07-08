@@ -143,6 +143,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   PrefService* GetPrefService() const { return user_pref_service_.get(); }
 
+  void SetExtendedReportingAllowed(bool allowed);
+
  private:
   void OnAuthPrefsChanged();
   void CreateUserPrefService();

@@ -167,6 +167,13 @@ struct PageLoadFeatures {
   array<int32> animated_css_properties;
 };
 
+// Enumeration of distinct cache types.
+enum CacheType {
+  kNotCached, // Resource came from network.
+  kHttp, // Resource was serviced by the http cache.
+  kMemory, // Resource was serviced by the Renderer's MemoryCache.
+};
+
 struct ResourceDataUpdate {
   // The id for the resource request.
   int32 request_id = 0;
@@ -199,8 +206,8 @@ struct ResourceDataUpdate {
   // Whether this resource was loaded in the top-level frame.
   bool is_main_frame_resource;
 
-  // Whether this resource was fetched from the http cache.
-  bool was_fetched_via_cache;
+  // Which cache this resource originated from, if any.
+  CacheType cache_type;
 
   // Whether this resource is the primary resource for a frame.
   bool is_primary_frame_resource;

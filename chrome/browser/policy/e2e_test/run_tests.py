@@ -39,7 +39,7 @@ def ParseArgs():
   parser.add_argument(
       '--test_py',
       dest='test_py',
-      default=os.path.join('test', 'test.py'),
+      default=os.path.join('test.py'),
       help='Path to the script to use to launch a single test')
   parser.add_argument(
       '--test_py_args',

@@ -712,7 +712,7 @@ void NewPasswordFormManager::Fill() {
   // TODO(https://crbug.com/831123): Implement correct treating of federated
   // matches.
   std::vector<const PasswordForm*> federated_matches;
-  SendFillInformationToRenderer(*client_, driver_.get(), IsBlacklisted(),
+  SendFillInformationToRenderer(client_, driver_.get(), IsBlacklisted(),
                                 *observed_password_form.get(), best_matches_,
                                 federated_matches, preferred_match_,
                                 metrics_recorder_.get());

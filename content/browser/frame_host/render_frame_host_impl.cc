@@ -4300,7 +4300,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                                               base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &PictureInPictureServiceImpl::Create, base::Unretained(this)));
+      &PictureInPictureServiceImpl::CreateFromRequest, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(

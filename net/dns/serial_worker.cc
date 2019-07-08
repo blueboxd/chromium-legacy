@@ -15,8 +15,7 @@ namespace net {
 SerialWorker::SerialWorker()
     : base::RefCountedDeleteOnSequence<SerialWorker>(
           base::SequencedTaskRunnerHandle::Get()),
-      state_(IDLE),
-      weak_factory_(this) {}
+      state_(IDLE) {}
 
 SerialWorker::~SerialWorker() = default;
 

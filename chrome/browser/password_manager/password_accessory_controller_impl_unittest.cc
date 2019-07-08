@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,6 +42,7 @@ using autofill::UserInfo;
 using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
+using password_manager::CreateEntry;
 using testing::_;
 using testing::ByMove;
 using testing::Mock;
@@ -75,23 +77,6 @@ void MockPasswordGenerationController::CreateForWebContents(
 MockPasswordGenerationController::MockPasswordGenerationController(
     content::WebContents* web_contents)
     : PasswordGenerationControllerImpl(web_contents) {}
-
-// Creates a new map entry in the |first| element of the returned pair. The
-// |second| element holds the PasswordForm that the |first| element points to.
-// That way, the pointer only points to a valid address in the called scope.
-std::pair<std::pair<base::string16, const PasswordForm*>,
-          std::unique_ptr<const PasswordForm>>
-CreateEntry(const std::string& username, const std::string& password) {
-  PasswordForm form;
-  form.username_value = ASCIIToUTF16(username);
-  form.password_value = ASCIIToUTF16(password);
-  form.origin = GURL(kExampleSite);
-  std::unique_ptr<const PasswordForm> form_ptr(
-      new PasswordForm(std::move(form)));
-  auto username_form_pair =
-      std::make_pair(ASCIIToUTF16(username), form_ptr.get());
-  return {std::move(username_form_pair), std::move(form_ptr)};
-}
 
 base::string16 password_for_str(const base::string16& user) {
   return l10n_util::GetStringFUTF16(
@@ -155,7 +140,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
     MockPasswordGenerationController::CreateForWebContents(web_contents());
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
+        web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr(),
         favicon_service());
     NavigateAndCommit(GURL(kExampleSite));
   }
@@ -168,10 +153,13 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_favicon_service_.get();
   }
 
+  password_manager::CredentialCache* cache() { return &credential_cache_; }
+
  protected:
   StrictMock<MockManualFillingController> mock_manual_filling_controller_;
 
  private:
+  password_manager::CredentialCache credential_cache_;
   std::unique_ptr<StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_;
 };
@@ -180,14 +168,16 @@ TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
   PasswordAccessoryControllerImpl* initial_controller =
       PasswordAccessoryControllerImpl::FromWebContents(web_contents());
   EXPECT_NE(nullptr, initial_controller);
-  PasswordAccessoryControllerImpl::CreateForWebContents(web_contents());
+  PasswordAccessoryControllerImpl::CreateForWebContents(web_contents(),
+                                                        cache());
   EXPECT_EQ(PasswordAccessoryControllerImpl::FromWebContents(web_contents()),
             initial_controller);
 }
 
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestions(
@@ -204,8 +194,9 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
-  controller()->SavePasswordsForOrigin({CreateEntry("", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -222,9 +213,11 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
-  controller()->SavePasswordsForOrigin(
-      {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
-       CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first,
+       CreateEntry("Zebra", "M3h", GURL(kExampleDomain), false).first,
+       CreateEntry("Alf", "PWD", GURL(kExampleDomain), false).first,
+       CreateEntry("Cat", "M1@u", GURL(kExampleDomain), false).first},
       url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
@@ -258,8 +251,9 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
   EXPECT_CALL(
@@ -278,8 +272,8 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
-  controller()->SavePasswordsForOrigin({},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin({},
+                                    url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestions(PasswordAccessorySheetDataBuilder(
@@ -305,8 +299,9 @@ TEST_F(PasswordAccessoryControllerTest, OnFilledIntoFocusedField) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
   EXPECT_CALL(
@@ -341,8 +336,9 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestions(
@@ -357,8 +353,9 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Alf", "M3lm4k", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestions(
@@ -375,8 +372,9 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
   EXPECT_CALL(
@@ -407,8 +405,9 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Set any, non-empty password list and pretend a username field was focused.
   // This should result in non-emtpy suggestions.
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestions(
@@ -601,8 +600,8 @@ TEST_F(PasswordAccessoryControllerTest, OnAutomaticGenerationRequested) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
-  controller()->SavePasswordsForOrigin({},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin({},
+                                    url::Origin::Create(GURL(kExampleSite)));
   AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
                                            passwords_empty_str(kExampleDomain));
   data_builder
@@ -618,8 +617,8 @@ TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, NoGenerationCommandIfNotPasswordField) {
-  controller()->SavePasswordsForOrigin({},
-                                       url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsForOrigin({},
+                                    url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestions(PasswordAccessorySheetDataBuilder(
                                      passwords_empty_str(kExampleDomain))

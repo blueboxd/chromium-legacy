@@ -144,7 +144,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
 
   State next_state_;
 
-  base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;
+  base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingClientSocket);
 };

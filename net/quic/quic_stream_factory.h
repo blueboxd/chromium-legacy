@@ -634,7 +634,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // The initial rtt for handshake.
   const int initial_rtt_for_handshake_milliseconds_;
 
-  base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
+  base::WeakPtrFactory<QuicStreamFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFactory);
 };

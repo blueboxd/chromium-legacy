@@ -350,6 +350,15 @@ class PLATFORM_EXPORT FontCache {
   void PurgePlatformFontDataCache();
   void PurgeFallbackListShaperCache();
 
+  // A maximum float value to which we limit incoming font sizes. This is the
+  // smallest float so that multiplying it by
+  // FontCacheKey::PrecisionMultiplier() is still smaller than
+  // std::numeric_limits<unsigned>::max() - 1 in order to avoid hitting HashMap
+  // sentinel values (placed at std::numeric_limits<unsigned>::max() and
+  // std::numeric_limits<unsigned>::max() - 1) for SizedFontPlatformDataSet and
+  // FontPlatformDataCache.
+  const float font_size_limit_;
+
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
   friend class FontFallbackList;
 

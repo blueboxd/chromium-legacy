@@ -62,10 +62,10 @@ bool FixedBackgroundPaintsInLocalCoordinates(
   return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
 }
 
-IntPoint AccumulatedScrollOffsetForFixedBackground(
+LayoutPoint AccumulatedScrollOffsetForFixedBackground(
     const LayoutBoxModelObject& object,
     const LayoutBoxModelObject* container) {
-  IntPoint result;
+  LayoutPoint result;
   if (&object == container)
     return result;
 
@@ -410,10 +410,12 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       DCHECK_EQ(obj.GetBackgroundPaintLocation(),
                 kBackgroundPaintInScrollingContents);
-      rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+      rect.SetLocation(LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
     } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
-      if (mapping->BackgroundPaintsOntoScrollingContentsLayer())
-        rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+      if (mapping->BackgroundPaintsOntoScrollingContentsLayer()) {
+        rect.SetLocation(
+            LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
+      }
     }
   }
 

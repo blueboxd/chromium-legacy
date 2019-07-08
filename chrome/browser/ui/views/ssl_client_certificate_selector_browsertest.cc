@@ -60,7 +60,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
         certs_dir, "client_2.pem", "client_2.pk8");
     ASSERT_TRUE(cert_identity_2_);
 
-    cert_request_info_ = new net::SSLCertRequestInfo;
+    cert_request_info_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
   }
 
@@ -130,10 +130,10 @@ class SSLClientCertificateSelectorMultiTabTest
   void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
-    cert_request_info_1_ = new net::SSLCertRequestInfo;
+    cert_request_info_1_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_1_->host_and_port = net::HostPortPair("bar", 123);
 
-    cert_request_info_2_ = new net::SSLCertRequestInfo;
+    cert_request_info_2_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_2_->host_and_port = net::HostPortPair("bar", 123);
   }
 
@@ -215,7 +215,7 @@ class SSLClientCertificateSelectorMultiProfileTest
   void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
-    cert_request_info_1_ = new net::SSLCertRequestInfo;
+    cert_request_info_1_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_1_->host_and_port = net::HostPortPair("foo", 123);
   }
 

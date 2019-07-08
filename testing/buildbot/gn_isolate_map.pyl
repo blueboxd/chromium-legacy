@@ -869,11 +869,11 @@
     "label": "//components/cronet/ios:cronet_unittests_ios",
     "type": "raw",
   },
-  "cros_vm_sanity_test": {
+  "cros_browser_sanity_test": {
     "args": [
       "--vm-logs-dir=${ISOLATED_OUTDIR}",
     ],
-    "label": "//chromeos:cros_vm_sanity_test",
+    "label": "//chromeos:cros_browser_sanity_test",
     "type": "raw",
   },
   "crypto_unittests": {

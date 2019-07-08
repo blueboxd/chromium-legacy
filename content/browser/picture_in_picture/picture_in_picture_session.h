@@ -6,7 +6,10 @@
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SESSION_H_
 
 #include "content/public/browser/media_player_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 
 namespace content {
@@ -31,8 +34,9 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
       const gfx::Size& natural_size,
       bool show_play_pause_button,
       bool show_mute_button,
-      mojo::InterfaceRequest<blink::mojom::PictureInPictureSession> request,
-      blink::mojom::PictureInPictureSessionObserverPtr observer,
+      mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
+      mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
+          observer,
       gfx::Size* window_size);
   ~PictureInPictureSession() override;
 
@@ -61,7 +65,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // change of active session and deletes self.
   void StopInternal(StopCallback callback);
 
-  // Called when the |binding_| hits a connection error.
+  // Called when the |receiver_| hits a connection error.
   void OnConnectionError();
 
   // Returns the WebContentsImpl associated with this Picture-in-Picture
@@ -75,7 +79,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // Owns |this|.
   PictureInPictureServiceImpl* service_;
 
-  mojo::Binding<blink::mojom::PictureInPictureSession> binding_;
+  mojo::Receiver<blink::mojom::PictureInPictureSession> receiver_;
 
   base::Optional<MediaPlayerId> player_id_;
 
@@ -84,7 +88,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // the dtor will check that it's stopping.
   bool is_stopping_ = false;
 
-  blink::mojom::PictureInPictureSessionObserverPtr observer_ = nullptr;
+  mojo::Remote<blink::mojom::PictureInPictureSessionObserver> observer_;
 };
 
 }  // namespace content

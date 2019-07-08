@@ -63,6 +63,11 @@ class MetricsRenderFrameObserver
       int request_id,
       const network::URLLoaderCompletionStatus& status) override;
   void DidCancelResponse(int request_id) override;
+  void DidLoadResourceFromMemoryCache(const GURL& response_url,
+                                      int request_id,
+                                      int64_t encoded_body_length,
+                                      const std::string& mime_type,
+                                      bool from_archive) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;

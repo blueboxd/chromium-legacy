@@ -787,8 +787,8 @@ void Scheduler::ProcessScheduledActions() {
             begin_main_frame_args_.on_critical_path,
             begin_main_frame_args_.frame_time);
         state_machine_.WillSendBeginMainFrame();
-        // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
+        last_dispatched_begin_main_frame_args_ = begin_main_frame_args_;
         break;
       case SchedulerStateMachine::Action::
           NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
@@ -806,6 +806,7 @@ void Scheduler::ProcessScheduledActions() {
         state_machine_.WillCommit(commit_has_no_updates);
         compositor_timing_history_->WillCommit();
         client_->ScheduledActionCommit();
+        last_commit_origin_frame_args_ = last_dispatched_begin_main_frame_args_;
         break;
       }
       case SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE:
@@ -813,6 +814,7 @@ void Scheduler::ProcessScheduledActions() {
         state_machine_.WillActivate();
         client_->ScheduledActionActivateSyncTree();
         compositor_timing_history_->DidActivate();
+        last_activate_origin_frame_args_ = last_commit_origin_frame_args_;
         break;
       case SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION:
         state_machine_.WillPerformImplSideInvalidation();

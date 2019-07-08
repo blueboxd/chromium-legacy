@@ -300,7 +300,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return location_;
   }
 
-  IntSize ScrolledContentOffset() const;
+  LayoutSize ScrolledContentOffset() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.

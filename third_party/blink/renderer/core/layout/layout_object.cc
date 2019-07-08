@@ -1572,7 +1572,7 @@ void LayoutObject::InvalidatePaint(
 }
 
 void LayoutObject::AdjustVisualRectForCompositedScrolling(
-    IntRect& rect,
+    LayoutRect& rect,
     const LayoutBoxModelObject& paint_invalidation_container) const {
   if (CompositedScrollsWithRespectTo(paint_invalidation_container)) {
     rect.Move(
@@ -1580,9 +1580,9 @@ void LayoutObject::AdjustVisualRectForCompositedScrolling(
   }
 }
 
-IntRect LayoutObject::VisualRectIncludingCompositedScrolling(
+LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
     const LayoutBoxModelObject& paint_invalidation_container) const {
-  IntRect rect = VisualRect();
+  LayoutRect rect(VisualRect());
   AdjustVisualRectForCompositedScrolling(rect, paint_invalidation_container);
   return rect;
 }

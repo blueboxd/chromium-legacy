@@ -139,6 +139,13 @@ void SearchIPCRouter::SendThemeBackgroundInfo(
   embedded_search_client()->ThemeChanged(theme_info);
 }
 
+void SearchIPCRouter::SendLocalBackgroundSelected() {
+  if (!policy_->ShouldSendLocalBackgroundSelected())
+    return;
+
+  embedded_search_client()->LocalBackgroundSelected();
+}
+
 void SearchIPCRouter::OnTabActivated() {
   is_active_tab_ = true;
 }

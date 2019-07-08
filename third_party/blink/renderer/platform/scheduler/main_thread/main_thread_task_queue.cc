@@ -109,8 +109,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       queue_traits_(params.queue_traits),
       freeze_when_keep_active_(params.freeze_when_keep_active),
       main_thread_scheduler_(main_thread_scheduler),
-      frame_scheduler_(params.frame_scheduler),
-      weak_ptr_factory_(this) {
+      frame_scheduler_(params.frame_scheduler) {
   if (GetTaskQueueImpl() && spec.should_notify_observers) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to

@@ -76,6 +76,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -204,6 +205,13 @@ void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
   if (!user)
     return;
   dict->SetBoolean("isAffiliated", user->IsAffiliated());
+}
+
+void GetOffHoursStatus(base::DictionaryValue* dict) {
+  policy::off_hours::DeviceOffHoursController* off_hours_controller =
+      chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
+  if (off_hours_controller)
+    dict->SetBoolean("isOffHoursActive", off_hours_controller->is_off_hours_mode());
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -566,6 +574,7 @@ void DeviceCloudPolicyStatusProviderChromeOS::GetStatus(
   GetStatusFromCore(core_, dict);
   dict->SetString("enterpriseEnrollmentDomain", enterprise_enrollment_domain_);
   dict->SetString("enterpriseDisplayDomain", enterprise_display_domain_);
+  GetOffHoursStatus(dict);
 }
 
 DeviceLocalAccountPolicyStatusProvider::DeviceLocalAccountPolicyStatusProvider(

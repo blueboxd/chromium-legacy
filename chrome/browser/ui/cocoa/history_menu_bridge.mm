@@ -30,7 +30,7 @@ namespace {
 // Number of days to consider when getting the number of visited items.
 const int kVisitedScope = 90;
 
-// The number of visisted results to get.
+// The number of visited results to get.
 const int kVisitedCount = 15;
 
 // The number of recently closed items to get.

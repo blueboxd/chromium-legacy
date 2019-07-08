@@ -54,8 +54,8 @@ class PinboardToolTests(unittest.TestCase):
     self.assertEqual(state, [{
         'revision': '2a66bac4',
         'timestamp': '2019-03-17T23:50:16-07:00',
-        'jobs': [{'id': '14b4c451f40000', 'status': 'running'},
-                 {'id': '11fae481f40000', 'status': 'running'}]}])
+        'jobs': [{'id': '14b4c451f40000', 'status': 'queued'},
+                 {'id': '11fae481f40000', 'status': 'queued'}]}])
 
   def testCollectPinpointResults(self):
     state = [

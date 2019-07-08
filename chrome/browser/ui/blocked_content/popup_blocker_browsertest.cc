@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -221,12 +222,8 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // Launch the blocked popup.
     PopupBlockerTabHelper* popup_blocker_helper =
         PopupBlockerTabHelper::FromWebContents(web_contents);
-    if (!popup_blocker_helper->GetBlockedPopupsCount()) {
-      content::WindowedNotificationObserver observer(
-          chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-          content::NotificationService::AllSources());
-      observer.Wait();
-    }
+    ui_test_utils::WaitForViewVisibility(browser, VIEW_ID_CONTENT_SETTING_POPUP,
+                                         true);
     EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
     std::map<int32_t, GURL> blocked_requests =
         popup_blocker_helper->GetBlockedPopupRequests();

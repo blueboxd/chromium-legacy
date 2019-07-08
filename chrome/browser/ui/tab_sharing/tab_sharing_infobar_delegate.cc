@@ -21,11 +21,9 @@ infobars::InfoBar* TabSharingInfoBarDelegate::Create(
     bool is_sharing_allowed,
     TabSharingUI* ui) {
   DCHECK(infobar_service);
-  return infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(
-          base::WrapUnique(new TabSharingInfoBarDelegate(
-              shared_tab_name, app_name, is_sharing_allowed, ui))),
-      true /*replace_existing*/);
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      base::WrapUnique(new TabSharingInfoBarDelegate(shared_tab_name, app_name,
+                                                     is_sharing_allowed, ui))));
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
@@ -40,7 +38,7 @@ TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
 
 bool TabSharingInfoBarDelegate::EqualsDelegate(
     InfoBarDelegate* delegate) const {
-  return delegate && delegate->GetIdentifier() == GetIdentifier();
+  return false;
 }
 
 bool TabSharingInfoBarDelegate::ShouldExpire(

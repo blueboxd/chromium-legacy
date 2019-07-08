@@ -128,9 +128,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDelegateOverscrollSwipes,
     &kDirectActions,
     &kDownloadLocationShowImageInGallery,
-    &kDownloadProgressInfoBar,
+    &kDownloadFileProvider,
     &kDownloadHomeV2,
     &kDownloadHomeShowStorageInfo,
+    &kDownloadProgressInfoBar,
     &kDownloadRename,
     &kDownloadTabManagementModule,
     &kDrawVerticallyEdgeToEdge,
@@ -391,6 +392,9 @@ const base::Feature kDownloadLocationShowImageInGallery{
 
 const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDownloadFileProvider{"DownloadFileProvider",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadHomeV2{"DownloadHomeV2",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

@@ -13,8 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
-class PrefService;
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -43,8 +41,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
 
   // Construction needs to happen on the UI thread.
   AwSafeBrowsingUIManager(
-      AwURLRequestContextGetter* browser_url_request_context_getter,
-      PrefService* pref_service);
+      AwURLRequestContextGetter* browser_url_request_context_getter);
 
   // Gets the correct ErrorUiType for the web contents
   int GetErrorUiType(const UnsafeResource& resource) const;
@@ -55,8 +52,6 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // Called on the UI thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
   void SendSerializedThreatDetails(const std::string& serialized) override;
-
-  void SetExtendedReportingAllowed(bool allowed);
 
   // Called on the IO thread to get a SharedURLLoaderFactory that can be used on
   // the IO thread.
@@ -93,9 +88,6 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_on_io_;
-
-  // non-owning
-  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AwSafeBrowsingUIManager);
 };

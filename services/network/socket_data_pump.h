@@ -110,7 +110,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketDataPump {
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<SocketDataPump> weak_factory_;
+  base::WeakPtrFactory<SocketDataPump> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SocketDataPump);
 };

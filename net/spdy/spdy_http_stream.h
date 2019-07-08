@@ -233,7 +233,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   base::debug::StackTrace stack_trace_;
 #endif
 
-  base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
+  base::WeakPtrFactory<SpdyHttpStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpdyHttpStream);
 };

@@ -55,7 +55,7 @@ constexpr char kTestCorsExemptHeader[] = "x-test-cors-exempt";
 
 class TestURLLoaderFactory : public mojom::URLLoaderFactory {
  public:
-  TestURLLoaderFactory() : weak_factory_(this) {}
+  TestURLLoaderFactory() {}
   ~TestURLLoaderFactory() override = default;
 
   base::WeakPtr<TestURLLoaderFactory> GetWeakPtr() {
@@ -132,7 +132,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
   base::RepeatingClosure on_create_loader_and_start_;
 
-  base::WeakPtrFactory<TestURLLoaderFactory> weak_factory_;
+  base::WeakPtrFactory<TestURLLoaderFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };

@@ -61,6 +61,7 @@
 /** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
 
 /* Signin UI state constants. Used to control header bar UI. */
+/* TODO(https://crbug.com/981544): Sync with login_types.h */
 /** @const */ var SIGNIN_UI_STATE = {
   HIDDEN: 0,
   GAIA_SIGNIN: 1,

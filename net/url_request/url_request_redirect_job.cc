@@ -33,8 +33,7 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
     : URLRequestJob(request, network_delegate),
       redirect_destination_(redirect_destination),
       response_code_(response_code),
-      redirect_reason_(redirect_reason),
-      weak_factory_(this) {
+      redirect_reason_(redirect_reason) {
   DCHECK(!redirect_reason_.empty());
 }
 

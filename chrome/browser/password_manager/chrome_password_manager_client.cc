@@ -110,6 +110,7 @@
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/ui/browser_finder.h"
@@ -449,14 +450,13 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const GURL& origin,
-    const std::vector<const PasswordForm*>* federated_matches) const {
+    const std::vector<const PasswordForm*>* federated_matches) {
 #if defined(OS_ANDROID)
   if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
-
-  PasswordAccessoryController::GetOrCreate(web_contents())
-      ->SavePasswordsForOrigin(best_matches, url::Origin::Create(origin));
+  credential_cache_.SaveCredentialsForOrigin(best_matches,
+                                             url::Origin::Create(origin));
 #else  // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
@@ -467,7 +467,7 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
 
 void ChromePasswordManagerClient::AutofillHttpAuth(
     const PasswordForm& preferred_match,
-    const password_manager::PasswordFormManagerForUI* form_manager) const {
+    const password_manager::PasswordFormManagerForUI* form_manager) {
   httpauth_manager_.Autofill(preferred_match, form_manager);
   DCHECK(!form_manager->GetBestMatches().empty());
   PasswordWasAutofilled(form_manager->GetBestMatches(),
@@ -542,6 +542,14 @@ ChromePasswordManagerClient::GetMetricsRecorder() {
   return base::OptionalOrNullptr(metrics_recorder_);
 }
 
+#if defined(OS_ANDROID)
+PasswordAccessoryController*
+ChromePasswordManagerClient::GetOrCreatePasswordAccessory() {
+  return PasswordAccessoryController::GetOrCreate(web_contents(),
+                                                  &credential_cache_);
+}
+#endif  // defined(OS_ANDROID)
+
 void ChromePasswordManagerClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -567,6 +575,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #else   // defined(OS_ANDROID)
+  credential_cache_.ClearCredentials();
   PasswordAccessoryController* accessory =
       PasswordAccessoryController::GetIfExisting(web_contents());
   if (accessory)
@@ -1078,10 +1087,9 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     return;
 
   if (web_contents()->GetFocusedFrame()) {
-    PasswordAccessoryController::GetOrCreate(web_contents())
-        ->RefreshSuggestionsForField(
-            focused_field_type,
-            password_manager_util::ManualPasswordGenerationEnabled(driver));
+    GetOrCreatePasswordAccessory()->RefreshSuggestionsForField(
+        focused_field_type,
+        password_manager_util::ManualPasswordGenerationEnabled(driver));
   }
 
   PasswordGenerationController::GetOrCreate(web_contents())

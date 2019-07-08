@@ -535,6 +535,19 @@ static const char kDispatchThemeChangeEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchLocalBackgroundSelectedScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onthemechange &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage.onthemechange =="
+    "        'function') {"
+    "  "
+    "window.chrome.embeddedSearch.newTabPage."
+    "onlocalbackgroundselected();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
@@ -1330,4 +1343,10 @@ void SearchBoxExtension::DispatchMostVisitedChanged(
 // static
 void SearchBoxExtension::DispatchThemeChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchLocalBackgroundSelected(
+    blink::WebLocalFrame* frame) {
+  Dispatch(frame, kDispatchLocalBackgroundSelectedScript);
 }

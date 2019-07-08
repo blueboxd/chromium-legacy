@@ -888,11 +888,12 @@ void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
 
 void DesktopNativeWidgetAura::RunShellDrag(
     View* view,
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     const gfx::Point& location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  views::RunShellDrag(content_window_, data, location, operation, source);
+  views::RunShellDrag(content_window_, std::move(data), location, operation,
+                      source);
 }
 
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1003,10 +1004,6 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   NativeWidgetAura::SetResizeBehaviorFromDelegate(
       GetWidget()->widget_delegate(), content_window_);
   desktop_window_tree_host_->SizeConstraintsChanged();
-}
-
-void DesktopNativeWidgetAura::OnCanActivateChanged() {
-  desktop_window_tree_host_->OnCanActivateChanged();
 }
 
 std::string DesktopNativeWidgetAura::GetName() const {
@@ -1196,7 +1193,9 @@ void DesktopNativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+int DesktopNativeWidgetAura::OnPerformDrop(
+    const ui::DropTargetEvent& event,
+    std::unique_ptr<ui::OSExchangeData> data) {
   DCHECK(drop_helper_.get() != nullptr);
   if (ShouldActivate())
     Activate();

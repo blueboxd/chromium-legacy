@@ -623,7 +623,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<CookieMonster> weak_ptr_factory_;
+  base::WeakPtrFactory<CookieMonster> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };

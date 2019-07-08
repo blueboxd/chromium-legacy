@@ -101,8 +101,7 @@ TransportConnectJob::TransportConnectJob(
                  NetLogEventType::TRANSPORT_CONNECT_JOB_CONNECT),
       params_(params),
       next_state_(STATE_NONE),
-      resolve_result_(OK),
-      weak_ptr_factory_(this) {
+      resolve_result_(OK) {
   // This is only set for WebSockets.
   DCHECK(!common_connect_job_params->websocket_endpoint_lock_manager);
 }

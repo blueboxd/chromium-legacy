@@ -27,12 +27,10 @@ DragDropClientMac::~DragDropClientMac() {}
 
 void DragDropClientMac::StartDragAndDrop(
     View* view,
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  // TODO(avi): Why must this data be cloned?
-  exchange_data_ =
-      std::make_unique<ui::OSExchangeData>(data.provider().Clone());
+  exchange_data_ = std::move(data);
   source_operation_ = operation;
   is_drag_source_ = true;
 

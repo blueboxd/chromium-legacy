@@ -23,11 +23,7 @@
                                         SendTabToSelfModalPositioner,
                                         SendTabToSelfModalDelegate>
 
-// The presentationController that shows the Send Tab To Self UI.
-@property(nonatomic, strong) SendTabToSelfModalPresentationController*
-    sendTabToSelfModalPresentationController;
-
-// The presentationController that shows the Send Tab To Self UI.
+// The TableViewController that shows the Send Tab To Self UI.
 @property(nonatomic, strong)
     SendTabToSelfTableViewController* sendTabToSelfViewController;
 
@@ -58,7 +54,14 @@
 }
 
 - (void)stop {
-  // TODO(crbug.com/970284) clean up any presented VC here.
+  DCHECK(self.baseViewController);
+  if (self.baseViewController.presentedViewController &&
+      self.baseViewController.presentedViewController ==
+          self.sendTabToSelfViewController) {
+    [self.sendTabToSelfViewController dismissViewControllerAnimated:NO
+                                                         completion:nil];
+  }
+  self.sendTabToSelfViewController = nil;
 }
 
 #pragma mark-- UIViewControllerTransitioningDelegate
@@ -99,14 +102,16 @@
                            completion:(void (^)())completion {
   [self.baseViewController dismissViewControllerAnimated:animated
                                               completion:completion];
+  [self stop];
 }
 
 - (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGUID {
+  // TODO(crbug.com/970284) log histogram of send event.
   SendTabToSelfCommand* command =
       [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID];
 
   [self.dispatcher sendTabToSelf:command];
-  // TODO(crbug.com/970284) log histogram of send event.
+  [self stop];
 }
 
 @end

@@ -133,7 +133,7 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
 
   const bool enable_surface_synchronization_;
 
-  base::WeakPtrFactory<CanvasResourceDispatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CanvasResourceDispatcher> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

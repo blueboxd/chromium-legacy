@@ -1025,7 +1025,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<URLRequest> weak_factory_;
+  base::WeakPtrFactory<URLRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

@@ -361,20 +361,17 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   ~DesktopDragDropClientAuraX11Test() override = default;
 
   int StartDragAndDrop() {
-    ui::OSExchangeData data;
-    data.SetString(base::ASCIIToUTF16("Test"));
+    auto data(std::make_unique<ui::OSExchangeData>());
+    data->SetString(base::ASCIIToUTF16("Test"));
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
     drag_bitmap.eraseARGB(0xFF, 0, 0, 0);
     gfx::ImageSkia drag_image(gfx::ImageSkia::CreateFrom1xBitmap(drag_bitmap));
-    data.provider().SetDragImage(drag_image, gfx::Vector2d());
+    data->provider().SetDragImage(drag_image, gfx::Vector2d());
 
     return client_->StartDragAndDrop(
-        data,
-        widget_->GetNativeWindow()->GetRootWindow(),
-        widget_->GetNativeWindow(),
-        gfx::Point(),
-        ui::DragDropTypes::DRAG_COPY,
+        std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
+        widget_->GetNativeWindow(), gfx::Point(), ui::DragDropTypes::DRAG_COPY,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 
@@ -806,7 +803,8 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
     ++num_exits_;
   }
 
-  int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<OSExchangeData> data) override {
     ++num_drops_;
     last_event_mouse_position_ = event.location();
     last_event_flags_ = event.flags();
@@ -836,15 +834,12 @@ class DesktopDragDropClientAuraX11ChromeSourceTargetTest
   ~DesktopDragDropClientAuraX11ChromeSourceTargetTest() override = default;
 
   int StartDragAndDrop() {
-    ui::OSExchangeData data;
-    data.SetString(base::ASCIIToUTF16("Test"));
+    auto data(std::make_unique<ui::OSExchangeData>());
+    data->SetString(base::ASCIIToUTF16("Test"));
 
     return client_->StartDragAndDrop(
-        data,
-        widget_->GetNativeWindow()->GetRootWindow(),
-        widget_->GetNativeWindow(),
-        gfx::Point(),
-        ui::DragDropTypes::DRAG_COPY,
+        std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
+        widget_->GetNativeWindow(), gfx::Point(), ui::DragDropTypes::DRAG_COPY,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 

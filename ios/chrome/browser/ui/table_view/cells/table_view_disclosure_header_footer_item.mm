@@ -51,6 +51,8 @@ constexpr float kRotationNinetyCW = (90 / 180.0) * M_PI;
   [header setInitialDirection:direction];
   if (styler.headerFooterTitleColor)
     header.titleLabel.textColor = styler.headerFooterTitleColor;
+  if (styler.headerFooterDetailColor)
+    header.subtitleLabel.textColor = styler.headerFooterDetailColor;
   if (styler.cellHighlightColor)
     header.highlightColor = styler.cellHighlightColor;
 }

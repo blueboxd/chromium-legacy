@@ -74,9 +74,9 @@ class BookmarkClient {
   // that ensure that the action is posted from the correct thread.
   virtual void RecordAction(const base::UserMetricsAction& action) = 0;
 
-  // Returns a task that will be used to load any additional root nodes. This
+  // Returns a task that will be used to load an additional root node. This
   // task will be invoked in the Profile's IO task runner.
-  virtual LoadExtraCallback GetLoadExtraNodesCallback() = 0;
+  virtual LoadExtraCallback GetLoadExtraNodeCallback() = 0;
 
   // Returns true if the |permanent_node| can have its title updated.
   virtual bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) = 0;

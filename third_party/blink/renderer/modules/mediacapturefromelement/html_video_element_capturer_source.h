@@ -86,7 +86,7 @@ class MODULES_EXPORT HtmlVideoElementCapturerSource final
   THREAD_CHECKER(thread_checker_);
 
   // Used on main render thread to schedule future capture events.
-  base::WeakPtrFactory<HtmlVideoElementCapturerSource> weak_factory_;
+  base::WeakPtrFactory<HtmlVideoElementCapturerSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HtmlVideoElementCapturerSource);
 };

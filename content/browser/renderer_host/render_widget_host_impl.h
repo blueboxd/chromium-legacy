@@ -75,7 +75,6 @@
 #endif
 
 class SkBitmap;
-struct FrameHostMsg_HittestData_Params;
 struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
@@ -856,7 +855,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
-  void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,

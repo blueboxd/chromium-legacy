@@ -353,7 +353,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 
-  base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLLoader);
 };

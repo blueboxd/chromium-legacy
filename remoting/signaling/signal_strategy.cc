@@ -13,4 +13,8 @@ bool SignalStrategy::Listener::OnSignalStrategyIncomingMessage(
   return false;
 }
 
+bool SignalStrategy::IsSignInError() const {
+  return false;
+}
+
 }  // namespace remoting

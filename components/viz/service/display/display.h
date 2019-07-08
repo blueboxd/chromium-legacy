@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -78,6 +79,12 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
 
   ~Display() override;
+
+  static constexpr base::TimeDelta kDrawToSwapMin =
+      base::TimeDelta::FromMicroseconds(5);
+  static constexpr base::TimeDelta kDrawToSwapMax =
+      base::TimeDelta::FromMilliseconds(50);
+  static constexpr uint32_t kDrawToSwapUsBuckets = 50;
 
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.

@@ -143,6 +143,8 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
   void OnDisplayModeChangeFailed(const DisplayConfigurator::DisplayStateList&,
                                  MultipleDisplayState) override;
 
+  bool ShouldPollDisplaySecurity() const;
+
   // Toggles timer for periodic security queries given latest client requests.
   void ToggleDisplaySecurityPolling();
 

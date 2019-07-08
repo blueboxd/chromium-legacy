@@ -50,8 +50,7 @@ URLRequestFtpJob::URLRequestFtpJob(
           request_->context()->proxy_resolution_service()),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
-      ftp_auth_cache_(ftp_auth_cache),
-      weak_factory_(this) {
+      ftp_auth_cache_(ftp_auth_cache) {
   DCHECK(proxy_resolution_service_);
   DCHECK(ftp_transaction_factory);
   DCHECK(ftp_auth_cache);

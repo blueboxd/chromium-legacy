@@ -129,7 +129,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // True if Init() was called while an async operation was in progress.
   bool init_called_while_operation_pending_;
 
-  base::WeakPtrFactory<UploadFileElementReader> weak_ptr_factory_;
+  base::WeakPtrFactory<UploadFileElementReader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UploadFileElementReader);
 };

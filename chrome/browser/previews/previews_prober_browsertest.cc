@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy);
-  prober.SendNowIfInactive();
+  prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
   EXPECT_TRUE(prober.LastProbeWasSuccessful().value());
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy);
-  prober.SendNowIfInactive();
+  prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
   EXPECT_FALSE(prober.LastProbeWasSuccessful().value());

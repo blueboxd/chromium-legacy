@@ -37,8 +37,7 @@ TCPServerSocket::TCPServerSocket(
     : delegate_(delegate),
       socket_(std::move(server_socket)),
       backlog_(backlog),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {}
+      traffic_annotation_(traffic_annotation) {}
 
 TCPServerSocket::~TCPServerSocket() {}
 

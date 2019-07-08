@@ -42,8 +42,7 @@ ThrottlingNetworkInterceptor::ThrottleRecord::~ThrottleRecord() {}
 ThrottlingNetworkInterceptor::ThrottlingNetworkInterceptor()
     : conditions_(new NetworkConditions()),
       download_last_tick_(0),
-      upload_last_tick_(0),
-      weak_ptr_factory_(this) {}
+      upload_last_tick_(0) {}
 
 ThrottlingNetworkInterceptor::~ThrottlingNetworkInterceptor() {}
 

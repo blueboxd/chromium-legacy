@@ -31,8 +31,7 @@ ChunkedUploadDataStream::ChunkedUploadDataStream(int64_t identifier)
       read_index_(0),
       read_offset_(0),
       all_data_appended_(false),
-      read_buffer_len_(0),
-      weak_factory_(this) {}
+      read_buffer_len_(0) {}
 
 ChunkedUploadDataStream::~ChunkedUploadDataStream() = default;
 

@@ -30,6 +30,8 @@
 
 namespace safe_browsing {
 
+namespace {
+
 // Number of milliseconds to allow data collection to run before sending a
 // report (since this trigger runs in the background).
 const int64_t kAdPopupCollectionPeriodMilliseconds = 5000;
@@ -38,6 +40,12 @@ const int64_t kAdPopupCollectionPeriodMilliseconds = 5000;
 // starting a report. Allows ads which load in the background to finish loading.
 const int64_t kMaxAdPopupCollectionStartDelayMilliseconds = 5000;
 const int64_t kMinAdPopupCollectionStartDelayMilliseconds = 500;
+
+void RecordAdPopupTriggerAction(AdPopupTriggerAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kAdPopupTriggerActionMetricName, action);
+}
+
+}  // namespace
 
 // Metric for tracking what the Ad Popup trigger does on each navigation.
 const char kAdPopupTriggerActionMetricName[] =
@@ -94,12 +102,10 @@ void AdPopupTrigger::CreateAdPopupReport() {
           TriggerType::AD_POPUP, web_contents_, resource, url_loader_factory_,
           history_service_, error_options, &reason)) {
     if (reason == TriggerManagerReason::DAILY_QUOTA_EXCEEDED) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAdPopupTriggerActionMetricName,
+      RecordAdPopupTriggerAction(
           AdPopupTriggerAction::POPUP_DAILY_QUOTA_EXCEEDED);
     } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAdPopupTriggerActionMetricName,
+      RecordAdPopupTriggerAction(
           AdPopupTriggerAction::POPUP_COULD_NOT_START_REPORT);
     }
     return;
@@ -117,16 +123,13 @@ void AdPopupTrigger::CreateAdPopupReport() {
           /*did_proceed=*/false, /*num_visits=*/0, error_options),
       base::TimeDelta::FromMilliseconds(finish_report_delay_ms_));
 
-  UMA_HISTOGRAM_ENUMERATION(kAdPopupTriggerActionMetricName,
-                            AdPopupTriggerAction::POPUP_REPORTED);
+  RecordAdPopupTriggerAction(AdPopupTriggerAction::POPUP_REPORTED);
 }
 
 void AdPopupTrigger::PopupWasBlocked(content::RenderFrameHost* render_frame) {
-  UMA_HISTOGRAM_ENUMERATION(kAdPopupTriggerActionMetricName,
-                            AdPopupTriggerAction::POPUP_CHECK);
+  RecordAdPopupTriggerAction(AdPopupTriggerAction::POPUP_CHECK);
   if (!DetectGoogleAd(render_frame, web_contents_->GetURL())) {
-    UMA_HISTOGRAM_ENUMERATION(kAdPopupTriggerActionMetricName,
-                              AdPopupTriggerAction::POPUP_NO_GOOGLE_AD);
+    RecordAdPopupTriggerAction(AdPopupTriggerAction::POPUP_NO_GOOGLE_AD);
     return;
   }
   // Create a report after a short delay. The delay gives more time for ads to

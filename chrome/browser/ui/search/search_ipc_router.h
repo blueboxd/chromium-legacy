@@ -183,6 +183,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
     virtual bool ShouldSendMostVisitedInfo() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
+    virtual bool ShouldSendLocalBackgroundSelected() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
     virtual bool ShouldProcessBlocklistSearchSuggestion() = 0;
@@ -225,6 +226,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
+
+  // Tells the renderer that "Done" was clicked on the file selection dialog for
+  // uploading a image to use as the NTP background.
+  void SendLocalBackgroundSelected();
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();

@@ -114,7 +114,7 @@ class DragAndDropSimulator {
     active_drag_event_->set_root_location_f(event_root_location);
 
     delegate->OnDragUpdated(*active_drag_event_);
-    delegate->OnPerformDrop(*active_drag_event_);
+    delegate->OnPerformDrop(*active_drag_event_, std::move(os_exchange_data_));
     return true;
   }
 
@@ -242,7 +242,7 @@ class DragStartWaiter : public aura::client::DragDropClient {
   }
 
   // aura::client::DragDropClient overrides:
-  int StartDragAndDrop(const ui::OSExchangeData& data,
+  int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
@@ -254,14 +254,14 @@ class DragStartWaiter : public aura::client::DragDropClient {
       message_loop_runner_->Quit();
 
       base::string16 text;
-      if (data.GetString(&text))
+      if (data->GetString(&text))
         text_ = base::UTF16ToUTF8(text);
       else
         text_ = "<no text>";
 
       GURL base_url;
       base::string16 html;
-      if (data.GetHtml(&html, &base_url))
+      if (data->GetHtml(&html, &base_url))
         html_ = base::UTF16ToUTF8(html);
       else
         html_ = "<no html>";
@@ -285,8 +285,9 @@ class DragStartWaiter : public aura::client::DragDropClient {
       return 0;
 
     // Start a nested drag-and-drop loop (might not return for a long time).
-    return old_client_->StartDragAndDrop(data, root_window, source_window,
-                                         screen_location, operation, source);
+    return old_client_->StartDragAndDrop(std::move(data), root_window,
+                                         source_window, screen_location,
+                                         operation, source);
   }
 
   void DragCancel() override {

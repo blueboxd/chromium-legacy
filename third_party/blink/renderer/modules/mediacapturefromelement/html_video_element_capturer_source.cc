@@ -51,8 +51,7 @@ HtmlVideoElementCapturerSource::HtmlVideoElementCapturerSource(
       io_task_runner_(io_task_runner),
       task_runner_(task_runner),
       is_opaque_(player->IsOpaque()),
-      capture_frame_rate_(0.0),
-      weak_factory_(this) {
+      capture_frame_rate_(0.0) {
   DCHECK(web_media_player_);
 }
 

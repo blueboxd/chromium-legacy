@@ -456,8 +456,9 @@ bool TaskTracker::CanRunPriority(TaskPriority priority) const {
 }
 
 RegisteredTaskSource TaskTracker::RunAndPopNextTask(
-    RegisteredTaskSource task_source) {
-  DCHECK(task_source);
+    RunIntentWithRegisteredTaskSource run_intent_with_task_source) {
+  DCHECK(run_intent_with_task_source);
+  auto task_source = run_intent_with_task_source.take_task_source();
 
   // Run the next task in |task_source|.
   Optional<Task> task;
@@ -465,7 +466,8 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   {
     TaskSource::Transaction task_source_transaction(
         task_source->BeginTransaction());
-    task = task_source_transaction.TakeTask();
+    task = task_source_transaction.TakeTask(
+        std::move(run_intent_with_task_source));
     traits = task_source_transaction.traits();
   }
 
@@ -480,14 +482,14 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
                   can_run_task);
 
     const bool task_source_must_be_queued =
-        task_source->BeginTransaction().DidRunTask();
+        task_source->BeginTransaction().DidProcessTask(can_run_task);
 
     if (can_run_task) {
       IncrementNumTasksRun();
       AfterRunTask(effective_shutdown_behavior);
     }
 
-    // |task_source| should be reenqueued iff requested by DidRunTask().
+    // |task_source| should be reenqueued iff requested by DidProcessTask().
     if (task_source_must_be_queued) {
       return task_source;
     }

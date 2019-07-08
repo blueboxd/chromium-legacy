@@ -329,9 +329,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
                  bool use_post,
                  URLRequestContext* url_request_context,
                  RequestPriority request_priority_)
-      : DnsAttempt(server_index),
-        query_(std::move(query)),
-        weak_factory_(this) {
+      : DnsAttempt(server_index), query_(std::move(query)) {
     GURL url;
     if (use_post) {
       // Set url for a POST request
@@ -531,7 +529,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
   std::unique_ptr<URLRequest> request_;
   NetLogWithSource net_log_;
 
-  base::WeakPtrFactory<DnsHTTPAttempt> weak_factory_;
+  base::WeakPtrFactory<DnsHTTPAttempt> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DnsHTTPAttempt);
 };

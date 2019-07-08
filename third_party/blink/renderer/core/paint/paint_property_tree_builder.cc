@@ -280,7 +280,12 @@ static bool NeedsScrollOrScrollTranslation(
     CompositingReasons direct_compositing_reasons) {
   if (!object.HasOverflowClip())
     return false;
-  IntSize scroll_offset = ToLayoutBox(object).ScrolledContentOffset();
+
+  const LayoutBox& box = ToLayoutBox(object);
+  if (!box.GetScrollableArea())
+    return false;
+
+  ScrollOffset scroll_offset = box.GetScrollableArea()->GetScrollOffset();
   return !scroll_offset.IsZero() ||
          NeedsScrollNode(object, direct_compositing_reasons);
 }
@@ -1893,11 +1898,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
     if (NeedsScrollOrScrollTranslation(
             object_, full_context_.direct_compositing_reasons)) {
       const auto& box = ToLayoutBox(object_);
+      DCHECK(box.GetScrollableArea());
+
       // Bake ScrollOrigin into ScrollTranslation. See comments for
       // ScrollTranslation in object_paint_properties.h for details.
-      auto scroll_position = box.ScrollOrigin() + box.ScrolledContentOffset();
-      TransformPaintPropertyNode::State state{
-          -FloatSize(ToIntSize(scroll_position))};
+      FloatPoint scroll_position = FloatPoint(box.ScrollOrigin()) +
+                                   box.GetScrollableArea()->GetScrollOffset();
+      TransformPaintPropertyNode::State state{-ToFloatSize(scroll_position)};
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       state.direct_compositing_reasons =

@@ -111,6 +111,10 @@ constexpr char kIdentityUrl[] =
 constexpr gpu::SchedulingPriority kStreamPriority =
     content::kGpuStreamPriorityUI;
 
+viz::FrameSinkManagerImpl* GetFrameSinkManager() {
+  return content::BrowserMainLoop::GetInstance()->GetFrameSinkManager();
+}
+
 #if defined(USE_X11)
 class HostDisplayClient : public viz::HostDisplayClient {
  public:
@@ -765,10 +769,6 @@ bool GpuProcessTransportFactory::SyncTokensRequiredForDisplayCompositor() {
   // Display and DirectLayerTreeFrameSink share a GL context, so sync
   // points aren't needed when passing resources between them.
   return false;
-}
-
-viz::FrameSinkManagerImpl* GpuProcessTransportFactory::GetFrameSinkManager() {
-  return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
 
 scoped_refptr<ContextProvider>

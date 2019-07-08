@@ -27,8 +27,6 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
 
-struct FrameHostMsg_HittestData_Params;
-
 namespace blink {
 class WebGestureEvent;
 class WebInputEvent;
@@ -119,8 +117,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     return owner_map_.find(id) != owner_map_.end();
   }
 
-  void OnHittestData(const FrameHostMsg_HittestData_Params& params);
-
   TouchEmulator* GetTouchEmulator();
   // Since GetTouchEmulator will lazily create a touch emulator, the following
   // accessor allows testing for its existence without causing it to be created.
@@ -190,9 +186,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);
-  struct HittestData {
-    bool ignored_for_hittest;
-  };
 
   using FrameSinkIdOwnerMap = std::unordered_map<viz::FrameSinkId,
                                                  RenderWidgetHostViewBase*,
@@ -407,9 +400,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     PinchState state_;
   };
   TouchscreenPinchState touchscreen_pinch_state_;
-
-  std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>
-      hittest_data_;
 
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
   bool events_being_flushed_ = false;

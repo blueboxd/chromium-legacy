@@ -147,9 +147,10 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // ThreadGroup:
   void UpdateSortKey(
-      TaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithOwnedTaskSource transaction_with_task_source) override;
   void PushTaskSourceAndWakeUpWorkers(
-      RegisteredTaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithRegisteredTaskSource transaction_with_task_source)
+      override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 

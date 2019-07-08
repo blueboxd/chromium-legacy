@@ -40,7 +40,7 @@ enum class LikelyFormFilling {
 };
 
 LikelyFormFilling SendFillInformationToRenderer(
-    const PasswordManagerClient& client,
+    PasswordManagerClient* client,
     PasswordManagerDriver* driver,
     bool is_blacklisted,
     const autofill::PasswordForm& observed_form,

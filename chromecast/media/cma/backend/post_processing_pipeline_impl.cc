@@ -4,6 +4,7 @@
 
 #include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
@@ -129,7 +130,16 @@ double PostProcessingPipelineImpl::ProcessFrames(float* data,
 
   if (is_silence) {
     if (!IsRinging()) {
-      return delay_s_;  // Output will be silence.
+      // If the input sample rate differs from the output sample rate, then the
+      // input data will be the incorrect size without any resampling. Output a
+      // zeroed buffer of correct size.
+      if (input_sample_rate_ != output_sample_rate_) {
+        // We cannot guarantee that the consumer of the output buffer will not
+        // mutate it, so set it back to zero.
+        std::fill_n(silence_buffer_.data(), silence_buffer_.size(), 0.0);
+        output_buffer_ = silence_buffer_.data();
+      }
+      return delay_s_;
     }
     silence_frames_processed_ += num_input_frames;
   } else {
@@ -185,6 +195,14 @@ bool PostProcessingPipelineImpl::SetOutputConfig(
   input_sample_rate_ = processor_config.output_sample_rate;
   ringing_time_in_frames_ = GetRingingTimeInFrames();
   silence_frames_processed_ = 0;
+
+  if (input_sample_rate_ != output_sample_rate_) {
+    size_t silence_size = num_output_channels_ *
+                          processors_[0].input_frames_per_write *
+                          output_sample_rate_ / input_sample_rate_;
+    silence_buffer_.resize(silence_size);
+  }
+
   return true;
 }
 

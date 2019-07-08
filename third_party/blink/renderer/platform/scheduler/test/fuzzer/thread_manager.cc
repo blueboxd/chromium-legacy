@@ -408,9 +408,7 @@ ThreadManager::ordered_actions() const {
 }
 
 ThreadManager::Task::Task(ThreadManager* thread_manager)
-    : is_running_(false),
-      thread_manager_(thread_manager),
-      weak_ptr_factory_(this) {
+    : is_running_(false), thread_manager_(thread_manager) {
   DCHECK(thread_manager_);
 }
 

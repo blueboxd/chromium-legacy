@@ -157,8 +157,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       async_buf_(nullptr),
       async_buf_size_(0),
       response_headers_length_(0),
-      async_reads_(false),
-      weak_factory_(this) {}
+      async_reads_(false) {}
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
                                      NetworkDelegate* network_delegate,
@@ -176,8 +175,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       response_headers_(base::MakeRefCounted<net::HttpResponseHeaders>(
           net::HttpUtil::AssembleRawHeaders(response_headers))),
       response_headers_length_(response_headers.size()),
-      async_reads_(false),
-      weak_factory_(this) {}
+      async_reads_(false) {}
 
 URLRequestTestJob::~URLRequestTestJob() {
   base::Erase(g_pending_jobs.Get(), this);

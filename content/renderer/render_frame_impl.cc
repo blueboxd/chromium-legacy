@@ -5399,6 +5399,12 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
   if (request.Url().ProtocolIs(url::kDataScheme))
     return;
 
+  for (auto& observer : observers_) {
+    observer.DidLoadResourceFromMemoryCache(
+        request.Url(), response.RequestId(), response.EncodedBodyLength(),
+        response.MimeType().Utf8(), response.FromArchive());
+  }
+
   // Let the browser know we loaded a resource from the memory cache.  This
   // message is needed to display the correct SSL indicators.
   Send(new FrameHostMsg_DidLoadResourceFromMemoryCache(

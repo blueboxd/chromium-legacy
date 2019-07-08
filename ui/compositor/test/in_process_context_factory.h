@@ -21,10 +21,6 @@
 #include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
-namespace cc {
-class FrameSinkManagerImpl;
-}
-
 namespace viz {
 class HostFrameSinkManager;
 }
@@ -42,6 +38,10 @@ class InProcessContextFactory : public ContextFactory,
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           viz::FrameSinkManagerImpl* frame_sink_manager);
   ~InProcessContextFactory() override;
+
+  viz::FrameSinkManagerImpl* GetFrameSinkManager() {
+    return frame_sink_manager_;
+  }
 
   // If true (the default) an OutputSurface is created that does not display
   // anything. Set to false if you want to see results on the screen.
@@ -96,7 +96,6 @@ class InProcessContextFactory : public ContextFactory,
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   bool SyncTokensRequiredForDisplayCompositor() override;
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
   void ResetOutputColorMatrixToIdentity(ui::Compositor* compositor);

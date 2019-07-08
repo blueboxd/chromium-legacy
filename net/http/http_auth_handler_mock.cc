@@ -49,8 +49,7 @@ HttpAuthHandlerMock::HttpAuthHandlerMock()
       first_round_(true),
       connection_based_(false),
       allows_default_credentials_(false),
-      allows_explicit_credentials_(true),
-      weak_factory_(this) {}
+      allows_explicit_credentials_(true) {}
 
 HttpAuthHandlerMock::~HttpAuthHandlerMock() = default;
 

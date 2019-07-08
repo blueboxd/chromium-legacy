@@ -76,6 +76,10 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 
   if (styler.cellTitleColor)
     cell.titleLabel.textColor = styler.cellTitleColor;
+  if (styler.cellDetailColor) {
+    cell.URLLabel.textColor = styler.cellDetailColor;
+    cell.metadataLabel.textColor = styler.cellDetailColor;
+  }
 
   [cell configureUILayout];
 }

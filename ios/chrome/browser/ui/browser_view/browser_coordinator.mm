@@ -501,6 +501,9 @@
 
 // Uninstalls delegates for each WebState in WebStateList.
 - (void)uninstallDelegatesForAllWebStates {
+  // OpenInMediator is controlled directly monitors the webStateList and should
+  // be deleted.
+  self.openInMediator = nil;
   for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
     web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
     [self uninstallDelegatesForWebState:webState];

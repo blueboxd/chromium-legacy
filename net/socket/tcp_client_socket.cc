@@ -142,8 +142,7 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> socket,
       previously_disconnected_(false),
       total_received_bytes_(0),
       was_ever_used_(false),
-      was_disconnected_on_suspend_(false),
-      weak_ptr_factory_(this) {
+      was_disconnected_on_suspend_(false) {
   DCHECK(socket_);
   if (socket_->IsValid())
     socket_->SetDefaultOptionsForClient();

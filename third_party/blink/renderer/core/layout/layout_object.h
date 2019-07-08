@@ -2026,7 +2026,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // The visual rect, in the the space of the paint invalidation container
   // (*not* the graphics layer that paints this object).
-  IntRect VisualRectIncludingCompositedScrolling(
+  LayoutRect VisualRectIncludingCompositedScrolling(
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
   // Called when the previous visual rect(s) is no longer valid.
@@ -2657,7 +2657,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // the |paint_invalidation_container|, if needed. They can be different only
   // if |paint_invalidation_container| is a composited scroller.
   void AdjustVisualRectForCompositedScrolling(
-      IntRect& visual_rect,
+      LayoutRect& visual_rect,
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
   FloatQuad LocalToAncestorQuadInternal(const FloatQuad&,

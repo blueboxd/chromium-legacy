@@ -149,7 +149,7 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
   // ui::EventTarget:
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (!tab_strip_->IsFocusInTabs())
-      tab_strip_->UpdateHoverCard(nullptr, false);
+      tab_strip_->UpdateHoverCard(nullptr);
   }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -1181,7 +1181,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
   UpdateAccessibleTabIndices();
 
-  UpdateHoverCard(nullptr, /* should_show */ false);
+  UpdateHoverCard(nullptr);
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
@@ -1206,7 +1206,7 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   tab->SetData(std::move(data));
 
   if (HoverCardIsShowingForTab(tab))
-    UpdateHoverCard(tab, /* should_show */ true);
+    UpdateHoverCard(tab);
 
   if (pinned_state_changed) {
     if (touch_layout_) {
@@ -1365,7 +1365,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
 
-  UpdateHoverCard(nullptr, /* should_show */ false);
+  UpdateHoverCard(nullptr);
   // The hover cards seen count is reset when the active tab is changed by any
   // event. Note TabStrip::SelectTab does not capture tab changes triggered by
   // the keyboard.
@@ -1512,7 +1512,7 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
       AddMessageLoopObserver();
   }
 
-  UpdateHoverCard(nullptr, /* should_show */ false);
+  UpdateHoverCard(nullptr);
   controller_->CloseTab(model_index, source);
 }
 
@@ -1612,18 +1612,18 @@ void TabStrip::OnMouseEventInTab(views::View* source,
   UpdateStackedLayoutFromMouseEvent(source, event);
 }
 
-void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
+void TabStrip::UpdateHoverCard(Tab* tab) {
   if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
     return;
   // We don't want to show a hover card for a tab while it is animating.
-  if (bounds_animator_.IsAnimating(tab) && should_show) {
+  if (tab && bounds_animator_.IsAnimating(tab)) {
     return;
   }
 
   if (!hover_card_) {
     // There is nothing to be done if the hover card doesn't exist and we are
     // not trying to show it.
-    if (!should_show)
+    if (!tab)
       return;
     hover_card_ = new TabHoverCardBubbleView(tab);
     hover_card_->views::View::AddObserver(this);
@@ -1632,7 +1632,7 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
           std::make_unique<TabHoverCardEventSniffer>(hover_card_, this);
     }
   }
-  if (should_show)
+  if (tab)
     hover_card_->UpdateAndShow(tab);
   else
     hover_card_->FadeOutToHide();
@@ -2186,7 +2186,7 @@ void TabStrip::StartMoveTabAnimation() {
 }
 
 void TabStrip::AnimateToIdealBounds() {
-  UpdateHoverCard(nullptr, /* should_show */ false);
+  UpdateHoverCard(nullptr);
   // bounds_animator_ and TabStripLayoutHelper::animator_ should not run
   // concurrently. bounds_animator_ takes precedence, and can finish what the
   // other started.
@@ -2350,7 +2350,7 @@ void TabStrip::RemoveTabFromViewModel(int index) {
   Tab* closing_tab = tab_at(index);
   bool closing_tab_was_active = closing_tab->IsActive();
 
-  UpdateHoverCard(closing_tab, /* should_show */ false);
+  UpdateHoverCard(nullptr);
 
   // We still need to paint the tab until we actually remove it. Put it
   // in tabs_closing_map_ so we can find it.
@@ -2999,7 +2999,7 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
   if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
     hover_card_->set_last_mouse_exit_timestamp(base::TimeTicks::Now());
-  UpdateHoverCard(nullptr, /* should_show */ false);
+  UpdateHoverCard(nullptr);
 }
 
 void TabStrip::AddedToWidget() {
@@ -3105,7 +3105,7 @@ void TabStrip::OnViewIsDeleting(views::View* observed_view) {
 
 void TabStrip::OnViewFocused(views::View* observed_view) {
   if (observed_view == new_tab_button_)
-    UpdateHoverCard(nullptr, false);
+    UpdateHoverCard(nullptr);
 }
 
 void TabStrip::OnTouchUiChanged() {

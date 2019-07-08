@@ -76,8 +76,7 @@ FileReaderLoader::FileReaderLoader(
           mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
           task_runner ? task_runner : base::SequencedTaskRunnerHandle::Get()),
       binding_(this),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   // TODO(https://crbug.com/957651): Change this into a DCHECK once we figured
   // out where code is passing in a null task runner,
   CHECK(task_runner_);

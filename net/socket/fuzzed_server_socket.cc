@@ -18,8 +18,7 @@ FuzzedServerSocket::FuzzedServerSocket(FuzzedDataProvider* data_provider,
     : data_provider_(data_provider),
       net_log_(net_log),
       first_accept_(true),
-      listen_called_(false),
-      weak_factory_(this) {}
+      listen_called_(false) {}
 
 FuzzedServerSocket::~FuzzedServerSocket() = default;
 

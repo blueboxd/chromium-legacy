@@ -42,6 +42,11 @@ const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
 const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 #endif  // defined(OS_CHROMEOS)
 
+// Obsolete pref that used to store if sync should be prevented from
+// automatically starting up. This is now replaced by its inverse
+// kSyncRequested.
+const char kSyncSuppressStart[] = "sync.suppress_start";
+
 std::vector<std::string> GetObsoleteUserTypePrefs() {
   return {prefs::kSyncAutofillProfile,
           prefs::kSyncAutofillWallet,
@@ -128,9 +133,9 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
       prefs::kSyncFirstSetupComplete, pref_service_,
       base::BindRepeating(&SyncPrefs::OnFirstSetupCompletePrefChange,
                           base::Unretained(this)));
-  pref_sync_suppressed_.Init(
-      prefs::kSyncSuppressStart, pref_service_,
-      base::BindRepeating(&SyncPrefs::OnSyncSuppressedPrefChange,
+  pref_sync_requested_.Init(
+      prefs::kSyncRequested, pref_service_,
+      base::BindRepeating(&SyncPrefs::OnSyncRequestedPrefChange,
                           base::Unretained(this)));
 
   // Cache the value of the kEnableLocalSyncBackend pref to avoid it flipping
@@ -148,7 +153,7 @@ void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Actual user-controlled preferences.
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
-  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
+  registry->RegisterBooleanPref(prefs::kSyncRequested, false);
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     RegisterTypeSelectedPref(registry, type);
@@ -186,6 +191,7 @@ void SyncPrefs::RegisterProfilePrefs(
 #if defined(OS_CHROMEOS)
   registry->RegisterStringPref(kSyncSpareBootstrapToken, "");
 #endif
+  registry->RegisterBooleanPref(kSyncSuppressStart, false);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -242,15 +248,12 @@ void SyncPrefs::SetFirstSetupComplete() {
 
 bool SyncPrefs::IsSyncRequested() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // IsSyncRequested is the inverse of the old SuppressStart pref.
-  // Since renaming a pref value is hard, here we still use the old one.
-  return !pref_service_->GetBoolean(prefs::kSyncSuppressStart);
+  return pref_service_->GetBoolean(prefs::kSyncRequested);
 }
 
 void SyncPrefs::SetSyncRequested(bool is_requested) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // See IsSyncRequested for why we use this pref and !is_requested.
-  pref_service_->SetBoolean(prefs::kSyncSuppressStart, !is_requested);
+  pref_service_->SetBoolean(prefs::kSyncRequested, is_requested);
 }
 
 void SyncPrefs::SetSyncRequestedIfNotSetExplicitly() {
@@ -258,8 +261,8 @@ void SyncPrefs::SetSyncRequestedIfNotSetExplicitly() {
   // GetUserPrefValue() returns nullptr if there is no user-set value for this
   // pref (there might still be a non-default value, e.g. from a policy, but we
   // explicitly don't care about that here).
-  if (!pref_service_->GetUserPrefValue(prefs::kSyncSuppressStart)) {
-    pref_service_->SetBoolean(prefs::kSyncSuppressStart, false);
+  if (!pref_service_->GetUserPrefValue(prefs::kSyncRequested)) {
+    pref_service_->SetBoolean(prefs::kSyncRequested, true);
   }
 }
 
@@ -380,11 +383,10 @@ void SyncPrefs::OnFirstSetupCompletePrefChange() {
     observer.OnFirstSetupCompletePrefChange(*pref_first_setup_complete_);
 }
 
-void SyncPrefs::OnSyncSuppressedPrefChange() {
+void SyncPrefs::OnSyncRequestedPrefChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Note: The pref is inverted for historic reasons; see IsSyncRequested.
   for (SyncPrefObserver& observer : sync_pref_observers_)
-    observer.OnSyncRequestedPrefChange(!*pref_sync_suppressed_);
+    observer.OnSyncRequestedPrefChange(*pref_sync_requested_);
 }
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {
@@ -539,5 +541,40 @@ void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service) {
   pref_service->ClearPref(kSyncSpareBootstrapToken);
 }
 #endif  // defined(OS_CHROMEOS)
+
+void MigrateSyncSuppressedPref(PrefService* pref_service) {
+  // If the new kSyncRequested already has a value, there's nothing to be
+  // done: Either the migration already happened, or we wrote to the new pref
+  // directly.
+  if (pref_service->GetUserPrefValue(prefs::kSyncRequested)) {
+    return;
+  }
+
+  // If the old kSyncSuppressed has an explicit value, migrate it over.
+  if (pref_service->GetUserPrefValue(kSyncSuppressStart)) {
+    pref_service->SetBoolean(prefs::kSyncRequested,
+                             !pref_service->GetBoolean(kSyncSuppressStart));
+    pref_service->ClearPref(kSyncSuppressStart);
+    DCHECK(pref_service->GetUserPrefValue(prefs::kSyncRequested));
+    return;
+  }
+
+  // Neither old nor new pref have an explicit value. There should be nothing to
+  // migrate, but it turns out some users are in a state that depends on the
+  // implicit default value of the old pref (which was that Sync is NOT
+  // suppressed, i.e. Sync is requested), see crbug.com/973770. To migrate these
+  // users to the new pref correctly, use kSyncFirstSetupComplete as a signal
+  // that Sync should be considered requested.
+  if (pref_service->GetBoolean(prefs::kSyncFirstSetupComplete)) {
+    // CHECK rather than DCHECK to make sure we never accidentally enable Sync
+    // for users which had it previously disabled.
+    CHECK(!pref_service->GetBoolean(kSyncSuppressStart));
+    pref_service->SetBoolean(prefs::kSyncRequested, true);
+    DCHECK(pref_service->GetUserPrefValue(prefs::kSyncRequested));
+    return;
+  }
+  // Otherwise, nothing to be done: Sync was likely never enabled in this
+  // profile.
+}
 
 }  // namespace syncer

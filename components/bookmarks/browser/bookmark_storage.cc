@@ -157,7 +157,7 @@ void LoadBookmarks(const base::FilePath& path,
     }
   }
 
-  if (details->LoadExtraNodes())
+  if (details->LoadExtraNode())
     load_index = true;
 
   // Load any extra root nodes now, after the IDs have been potentially
@@ -199,7 +199,7 @@ void LoadBookmarks(const base::FilePath& path,
 // BookmarkLoadDetails ---------------------------------------------------------
 
 BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
-    : load_extra_callback_(client->GetLoadExtraNodesCallback()),
+    : load_extra_callback_(client->GetLoadExtraNodeCallback()),
       index_(std::make_unique<TitledUrlIndex>()),
       model_sync_transaction_version_(
           BookmarkNode::kInvalidSyncTransactionVersion) {
@@ -219,18 +219,17 @@ BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
 BookmarkLoadDetails::~BookmarkLoadDetails() {
 }
 
-bool BookmarkLoadDetails::LoadExtraNodes() {
+bool BookmarkLoadDetails::LoadExtraNode() {
   if (!load_extra_callback_)
     return false;
 
-  BookmarkPermanentNodeList extra_nodes =
+  std::unique_ptr<BookmarkPermanentNode> extra_node =
       std::move(load_extra_callback_).Run(&max_id_);
-  bool has_non_empty_node = false;
-  for (auto& node : extra_nodes) {
-    has_non_empty_node |= !node->children().empty();
-    root_node_->Add(std::move(node));
-  }
-  return has_non_empty_node;
+  if (!extra_node)
+    return false;
+  bool has_children = !extra_node->children().empty();
+  root_node_->Add(std::move(extra_node));
+  return has_children;
 }
 
 void BookmarkLoadDetails::CreateUrlIndex() {

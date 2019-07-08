@@ -1,0 +1,6 @@
+include_rules = [
+    "+base/sequence_checker.h",
+    "+base/single_thread_task_runner.h",
+    "+base/synchronization/lock.h",
+    "+media/base",
+]

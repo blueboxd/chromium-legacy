@@ -121,7 +121,7 @@ class IceTransportProxy final {
   THREAD_CHECKER(thread_checker_);
 
   // Must be the last member.
-  base::WeakPtrFactory<IceTransportProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<IceTransportProxy> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

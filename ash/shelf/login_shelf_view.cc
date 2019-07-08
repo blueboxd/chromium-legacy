@@ -227,6 +227,16 @@ void StartAddUser() {
       true /*can_close*/, EmptyAccountId() /*prefilled_account*/);
 }
 
+bool DialogStateGuestAllowed(OobeDialogState state) {
+  // Temp solution until https://crbug.com/981544 is fixed.
+  if (state == OobeDialogState::HIDDEN)
+    return true;
+
+  return state == OobeDialogState::NONE ||
+         state == OobeDialogState::GAIA_SIGNIN ||
+         state == OobeDialogState::ERROR;
+}
+
 }  // namespace
 
 class KioskAppsButton : public views::MenuButton,
@@ -651,29 +661,7 @@ void LoginShelfView::UpdateUi() {
   bool dialog_visible = dialog_state_ != OobeDialogState::HIDDEN;
   bool is_oobe = (session_state == SessionState::OOBE);
 
-  bool user_session_started =
-      Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
-
-  // Show guest button if:
-  // 1. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
-  // is manually controlled by the WebUI.
-  // 2. Guest login is allowed.
-  // 3. OOBE UI dialog is not currently showing wrong HWID warning screen, SAML
-  // password confirmation screen or login UI provided by an extension.
-  // 4. OOBE UI dialog is not currently showing gaia signin screen, or if there
-  // are no user views available. If there are no user pods (i.e. Gaia is the
-  // only signin option), the guest button should be shown if allowed.
-  // 5. No users sessions have started. Button is hidden from all post login
-  // screens like sync consent, etc.
-  GetViewByID(kBrowseAsGuest)
-      ->SetVisible((is_login_primary || (is_oobe && allow_guest_in_oobe_)) &&
-                   allow_guest_ &&
-                   dialog_state_ != OobeDialogState::WRONG_HWID_WARNING &&
-                   dialog_state_ != OobeDialogState::SAML_PASSWORD_CONFIRM &&
-                   dialog_state_ != OobeDialogState::EXTENSION_LOGIN &&
-                   (dialog_state_ != OobeDialogState::GAIA_SIGNIN ||
-                    !login_screen_has_users_) &&
-                   !user_session_started);
+  GetViewByID(kBrowseAsGuest)->SetVisible(ShouldShowGuestButton());
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
@@ -728,6 +716,44 @@ void LoginShelfView::UpdateButtonUnionBounds() {
     if (child->GetVisible())
       button_union_bounds_.Union(child->bounds());
   }
+}
+
+// Show guest button if:
+// 1. Guest login is allowed.
+// 2. OOBE UI dialog is currently showing the login UI or error.
+// 3. No users sessions have started. Button is hidden from all post login
+// screens like sync consent, etc.
+// 4. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
+// is manually controlled by the WebUI.
+// 5. OOBE UI dialog is not currently showing gaia signin screen, or if there
+// are no user views available. If there are no user pods (i.e. Gaia is the
+// only signin option), the guest button should be shown if allowed by policy
+// and OOBE.
+bool LoginShelfView::ShouldShowGuestButton() const {
+  if (!allow_guest_)
+    return false;
+
+  if (!DialogStateGuestAllowed(dialog_state_))
+    return false;
+
+  const bool user_session_started =
+      Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
+  if (user_session_started)
+    return false;
+
+  const SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+
+  if (session_state == SessionState::OOBE)
+    return allow_guest_in_oobe_;
+
+  if (session_state != SessionState::LOGIN_PRIMARY)
+    return false;
+
+  if (dialog_state_ == OobeDialogState::GAIA_SIGNIN)
+    return !login_screen_has_users_ && allow_guest_in_oobe_;
+
+  return true;
 }
 
 }  // namespace ash

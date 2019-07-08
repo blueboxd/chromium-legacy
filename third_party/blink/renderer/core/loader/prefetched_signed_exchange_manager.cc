@@ -39,9 +39,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   PrefetchedSignedExchangeLoader(
       const WebURLRequest& request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : request_(request),
-        task_runner_(std::move(task_runner)),
-        weak_ptr_factory_(this) {}
+      : request_(request), task_runner_(std::move(task_runner)) {}
 
   ~PrefetchedSignedExchangeLoader() override {}
 
@@ -119,7 +117,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   std::unique_ptr<WebURLLoader> url_loader_;
   std::queue<base::OnceClosure> pending_method_calls_;
 
-  base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedSignedExchangeLoader);
 };

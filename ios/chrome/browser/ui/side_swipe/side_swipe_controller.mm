@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -80,7 +79,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   SideSwipeGestureRecognizer* panGestureRecognizer_;
 
   // Used in iPad side swipe gesture, tracks the starting tab index.
-  NSUInteger startingTabIndex_;
+  unsigned int startingTabIndex_;
 
   // If the swipe is for a page change or a tab change.
   SwipeType swipeType_;
@@ -309,11 +308,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     if (index == (NSInteger)startingTabIndex_)
       break;
 
-    Tab* tab = [model_ tabAtIndex:index];
-    if (tab && PagePlaceholderTabHelper::FromWebState(tab.webState)
-                   ->will_add_placeholder_for_next_navigation()) {
-      [sessionIDs
-          addObject:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
+    web::WebState* webState = model_.webStateList->GetWebStateAt(index);
+    if (webState && PagePlaceholderTabHelper::FromWebState(webState)
+                        ->will_add_placeholder_for_next_navigation()) {
+      [sessionIDs addObject:TabIdTabHelper::FromWebState(webState)->tab_id()];
     }
     index = index + dx;
   }
@@ -365,7 +363,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         postNotificationName:kSideSwipeWillStartNotification
                       object:nil];
     [self.tabStripDelegate setHighlightsSelectedTab:YES];
-    startingTabIndex_ = [model_ indexOfTab:[model_ currentTab]];
+    startingTabIndex_ = model_.webStateList->active_index();
     [self createGreyCache:gesture.direction];
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     // Side swipe for iPad involves changing the selected tab as the swipe moves
@@ -379,41 +377,43 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       distance -= gesture.startPoint.x;
     }
 
-    NSInteger indexDelta = std::floor(distance / kIpadTabSwipeDistance);
+    int indexDelta = std::floor(distance / kIpadTabSwipeDistance);
     // Don't wrap past the first tab.
     if (indexDelta < count) {
       // Flip delta when swiping forward.
       if (IsSwipingForward(gesture.direction))
         indexDelta = 0 - indexDelta;
 
-      Tab* currentTab = [model_ currentTab];
-      NSInteger currentIndex = [model_ indexOfTab:currentTab];
-
+      web::WebState* currentWebState = self.activeWebState;
+      int currentIndex =
+          model_.webStateList->GetIndexOfWebState(currentWebState);
+      DCHECK_GE(currentIndex, 0);
       // Wrap around edges.
-      NSInteger newIndex = (NSInteger)(startingTabIndex_ + indexDelta) % count;
+      int newIndex = (int)(startingTabIndex_ + indexDelta) % count;
 
       // C99 defines the modulo result as negative if our offset is negative.
       if (newIndex < 0)
         newIndex += count;
 
       if (newIndex != currentIndex) {
-        Tab* tab = [model_ tabAtIndex:newIndex];
+        web::WebState* webState = model_.webStateList->GetWebStateAt(newIndex);
         // Toggle overlay preview mode for selected tab.
-        PagePlaceholderTabHelper::FromWebState(tab.webState)
+        PagePlaceholderTabHelper::FromWebState(webState)
             ->AddPlaceholderForNextNavigation();
-        [model_ setCurrentTab:tab];
+        model_.webStateList->ActivateWebStateAt(newIndex);
 
         // And disable overlay preview mode for last selected tab.
-        PagePlaceholderTabHelper::FromWebState(currentTab.webState)
+        PagePlaceholderTabHelper::FromWebState(currentWebState)
             ->CancelPlaceholderForNextNavigation();
       }
     }
   } else {
     if (gesture.state == UIGestureRecognizerStateCancelled) {
-      Tab* tab = [model_ tabAtIndex:startingTabIndex_];
-      PagePlaceholderTabHelper::FromWebState(tab.webState)
+      web::WebState* webState =
+          model_.webStateList->GetWebStateAt(startingTabIndex_);
+      PagePlaceholderTabHelper::FromWebState(webState)
           ->CancelPlaceholderForNextNavigation();
-      [model_ setCurrentTab:tab];
+      model_.webStateList->ActivateWebStateAt(startingTabIndex_);
     }
     PagePlaceholderTabHelper::FromWebState(self.activeWebState)
         ->CancelPlaceholderForNextNavigation();

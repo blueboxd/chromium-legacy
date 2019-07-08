@@ -384,6 +384,7 @@ source_set("blink_headers") {
     "web/modules/peerconnection/media_stream_remote_video_source.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
+    "web/modules/webrtc/webrtc_audio_renderer.h",
     "web/web_active_fling_parameters.h",
     "web/web_apply_constraints_request.h",
     "web/web_array_buffer.h",

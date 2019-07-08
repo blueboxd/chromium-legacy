@@ -535,6 +535,13 @@ void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
     SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
 }
 
+void SearchBox::LocalBackgroundSelected() {
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchLocalBackgroundSelected(
+        render_frame()->GetWebFrame());
+  }
+}
+
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   InstantMostVisitedItem item;
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();

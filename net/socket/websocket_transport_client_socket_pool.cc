@@ -36,8 +36,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
       common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
-      flushing_(false),
-      weak_factory_(this) {
+      flushing_(false) {
   DCHECK(common_connect_job_params_->websocket_endpoint_lock_manager);
 }
 

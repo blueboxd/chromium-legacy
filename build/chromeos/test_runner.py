@@ -44,7 +44,7 @@ CROS_RUN_TEST_PATH = os.path.abspath(os.path.join(
     CHROMITE_PATH, 'bin', 'cros_run_test'))
 
 # GN target that corresponds to the cros browser sanity test.
-SANITY_TEST_TARGET = 'cros_vm_sanity_test'
+SANITY_TEST_TARGET = 'cros_browser_sanity_test'
 
 # This is a special hostname that resolves to a different DUT in the lab
 # depending on which lab machine you're on.

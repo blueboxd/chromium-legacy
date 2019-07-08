@@ -153,8 +153,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       is_parsing_at_line_number_(false),
       tried_loading_link_headers_(false),
       added_pending_parser_blocking_stylesheet_(false),
-      is_waiting_for_stylesheets_(false),
-      weak_factory_(this) {
+      is_waiting_for_stylesheets_(false) {
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());

@@ -60,6 +60,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
 
   virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
 
+  // Return status for the watchdog tests
+  virtual bool IsGpuHangDetected() = 0;
+
  protected:
   GpuWatchdogThread();
 
@@ -81,6 +84,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnForegrounded() override;
   void OnInitComplete() override {}
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
+  bool IsGpuHangDetected() override;
 
   // gl::ProgressReporter implementation:
   void ReportProgress() override;

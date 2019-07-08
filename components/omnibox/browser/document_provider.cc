@@ -551,7 +551,7 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
   // https://docs.google.com/[a/domain.tld/]document/d/(id)/[...]
   // https://docs.google.com/[a/domain.tld/]spreadsheets/d/(id)/edit#gid=12345
   // https://docs.google.com/[a/domain.tld/]presentation/d/(id)/edit#slide=id.g12345a_0_26
-  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D(id)[&...]
+  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D(id)[%26D...][&...]
   // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
   std::string id;
 
@@ -568,7 +568,7 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
     // Redirect links wrapping a drive.google.com/open?id= link.
     static re2::LazyRE2 redirect_link_regex = {
         "^[^#]*url=https://drive\\.google\\.com/(?:a/[\\w\\.]+/"
-        ")?open\\?id%3D([^#&]*)"};
+        ")?open\\?id%3D(.*?)(?:%26|#|&|$)"};
     RE2::PartialMatch(url.query(), *redirect_link_regex, &id);
   }
 

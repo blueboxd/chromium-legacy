@@ -660,7 +660,7 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
 // 2. Calling either callback may delete the stream altogether.
 class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
  public:
-  ResetOnWriteFakeWebSocketStream() : closed_(false), weak_ptr_factory_(this) {}
+  ResetOnWriteFakeWebSocketStream() : closed_(false) {}
 
   int WriteFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
                   CompletionOnceCallback callback) override {
@@ -697,7 +697,7 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
   bool closed_;
   // An IO error can result in the socket being deleted, so we use weak pointers
   // to ensure correct behaviour in that case.
-  base::WeakPtrFactory<ResetOnWriteFakeWebSocketStream> weak_ptr_factory_;
+  base::WeakPtrFactory<ResetOnWriteFakeWebSocketStream> weak_ptr_factory_{this};
 };
 
 // This mock is for verifying that WebSocket protocol semantics are obeyed (to

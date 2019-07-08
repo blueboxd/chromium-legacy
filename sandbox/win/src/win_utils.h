@@ -119,6 +119,17 @@ bool WriteProtectedChildMemory(HANDLE child_process,
                                const void* buffer,
                                size_t length);
 
+// Allocates |buffer_bytes| in child (PAGE_READWRITE) and copies data
+// from |local_buffer| in this process into |child|. |remote_buffer|
+// contains the address in the chile.  If a zero byte copy is
+// requested |true| is returned and no allocation or copying is
+// attempted.  Returns false if allocation or copying fails. If
+// copying fails, the allocation will be reversed.
+bool CopyToChildMemory(HANDLE child,
+                       const void* local_buffer,
+                       size_t buffer_bytes,
+                       void** remote_buffer);
+
 // Returns true if the provided path points to a pipe.
 bool IsPipe(const base::string16& path);
 

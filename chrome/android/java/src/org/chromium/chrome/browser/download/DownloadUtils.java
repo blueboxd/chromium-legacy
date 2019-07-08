@@ -10,9 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
@@ -569,21 +571,43 @@ public class DownloadUtils {
      * @param filePath File path to get a URI for.
      * @return URI that points at that file, either as a content:// URI or a file:// URI.
      */
+    @MainThread
     public static Uri getUriForItem(String filePath) {
         if (ContentUriUtils.isContentUri(filePath)) return Uri.parse(filePath);
 
+        // It's ok to use blocking calls on main thread here, since the user is waiting to open or
+        // share the file to other apps.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         Uri uri = null;
 
-        // FileUtils.getUriForFile() causes a disk read when it calls into
-        // FileProvider#getUriForFile. Obtaining a content URI is on the critical path for creating
-        // a share intent after the user taps on the share button, so even if we were to run this
-        // method on a background thread we would have to wait. As it depends on user-selected
-        // items, we cannot know/preload which URIs we need until the user presses share.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        uri = FileUtils.getUriForFile(new File(filePath));
-        StrictMode.setThreadPolicy(oldPolicy);
-
+        try {
+            File primaryDir = DownloadDirectoryProvider.getPrimaryDownloadDirectory();
+            boolean isOnSDCard = !TextUtils.isEmpty(filePath)
+                    && !filePath.contains(primaryDir.getAbsolutePath());
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER)
+                    && isOnSDCard) {
+                // Use custom file provider to generate content URI for download on SD card.
+                uri = DownloadFileProvider.createContentUri(filePath);
+            } else {
+                // Use FileProvider to generate content URI or file URI.
+                uri = FileUtils.getUriForFile(new File(filePath));
+            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         return uri;
+    }
+
+    /**
+     * Get the URI when shared or opened by other apps.
+     *
+     * @param filePath Downloaded file path.
+     * @return URI for other apps to use the file via {@link android.content.ContentResolver}.
+     */
+    public static Uri getUriForOtherApps(String filePath) {
+        // Some old Samsung devices with Android M- must use file URI. See https://crbug.com/705748.
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.M ? getUriForItem(filePath)
+                                                             : Uri.fromFile(new File(filePath));
     }
 
     @CalledByNative
@@ -643,12 +667,12 @@ public class DownloadUtils {
         DownloadMetrics.recordDownloadOpen(source, mimeType);
         Context context = ContextUtils.getApplicationContext();
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
-        Uri contentUri = getUriForItem(filePath);
 
         // Check if Chrome should open the file itself.
         if (service.isDownloadOpenableInBrowser(isOffTheRecord, mimeType)) {
             // Share URIs use the content:// scheme when able, which looks bad when displayed
             // in the URL bar.
+            Uri contentUri = getUriForItem(filePath);
             Uri fileUri = contentUri;
             if (!ContentUriUtils.isContentUri(filePath)) {
                 File file = new File(filePath);
@@ -656,8 +680,9 @@ public class DownloadUtils {
             }
             String normalizedMimeType = Intent.normalizeMimeType(mimeType);
 
-            Intent intent = MediaViewerUtils.getMediaViewerIntent(
-                    fileUri, contentUri, normalizedMimeType, true /* allowExternalAppHandlers */);
+            Intent intent = MediaViewerUtils.getMediaViewerIntent(fileUri /*displayUri*/,
+                    contentUri /*contentUri*/, normalizedMimeType,
+                    true /* allowExternalAppHandlers */);
             IntentHandler.startActivityForTrustedIntent(intent);
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
@@ -667,9 +692,8 @@ public class DownloadUtils {
         try {
             // TODO(qinmin): Move this to an AsyncTask so we don't need to temper with strict mode.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            Uri uri = ContentUriUtils.isContentUri(filePath)
-                    ? contentUri
-                    : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
+            Uri uri = ContentUriUtils.isContentUri(filePath) ? Uri.parse(filePath)
+                                                             : getUriForOtherApps(filePath);
             StrictMode.setThreadPolicy(oldPolicy);
             Intent viewIntent =
                     MediaViewerUtils.createViewIntentForUri(uri, mimeType, originalUrl, referrer);

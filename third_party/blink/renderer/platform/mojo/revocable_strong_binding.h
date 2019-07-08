@@ -98,8 +98,7 @@ class RevocableStrongBinding {
                          mojo::InterfaceRequest<Interface> request,
                          InterfaceInvalidator* invalidator)
       : impl_(std::move(impl)),
-        binding_(impl_.get(), std::move(request), invalidator),
-        weak_factory_(this) {
+        binding_(impl_.get(), std::move(request), invalidator) {
     binding_.set_connection_error_handler(base::BindOnce(
         &RevocableStrongBinding::OnConnectionError, base::Unretained(this)));
   }
@@ -116,7 +115,7 @@ class RevocableStrongBinding {
   std::unique_ptr<Interface> impl_;
   base::OnceClosure connection_error_handler_;
   RevocableBinding<Interface> binding_;
-  base::WeakPtrFactory<RevocableStrongBinding> weak_factory_;
+  base::WeakPtrFactory<RevocableStrongBinding> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RevocableStrongBinding);
 };

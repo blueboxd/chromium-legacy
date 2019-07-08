@@ -171,7 +171,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       parent_execution_context_task_runners_;
   const base::UnguessableToken appcache_host_id_;
 
-  base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

@@ -46,9 +46,14 @@ public class OfflinePageBridge {
     public static final String BROWSER_ACTIONS_NAMESPACE = "browser_actions";
     public static final String LIVE_PAGE_SHARING_NAMESPACE = "live_page_sharing";
 
+    private long mNativeOfflinePageBridge;
+    private boolean mIsNativeOfflinePageModelLoaded;
+    private final ObserverList<OfflinePageModelObserver> mObservers = new ObserverList<>();
+
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
-     * getForProfile is called for the profile.  Must be called on the UI thread.
+     * getForProfile or getForProfileKey is called for the profile.  Must be called on the UI
+     * thread.
      *
      * @param profile The profile associated with the OfflinePageBridge to get.
      */
@@ -58,13 +63,21 @@ public class OfflinePageBridge {
         if (profile == null)
             return null;
 
-        return nativeGetOfflinePageBridgeForProfileKey(profile.getProfileKey());
+        return getForProfileKey(profile.getProfileKey());
     }
 
-    private long mNativeOfflinePageBridge;
-    private boolean mIsNativeOfflinePageModelLoaded;
-    private final ObserverList<OfflinePageModelObserver> mObservers =
-            new ObserverList<OfflinePageModelObserver>();
+    /**
+     * Retrieves the OfflinePageBridge for the profile with the given key, creating it the first
+     * time getForProfile or getForProfileKey is called for the profile.  Must be called on the UI
+     * thread.
+     *
+     * @param profileKey Key of the profile associated with the OfflinePageBridge to get.
+     */
+    public static OfflinePageBridge getForProfileKey(ProfileKey profileKey) {
+        ThreadUtils.assertOnUiThread();
+
+        return nativeGetOfflinePageBridgeForProfileKey(profileKey);
+    }
 
     /**
      * Callback used when saving an offline page.

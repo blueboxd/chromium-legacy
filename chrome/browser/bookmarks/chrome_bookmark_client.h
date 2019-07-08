@@ -54,7 +54,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
   bool IsPermanentNodeVisible(
       const bookmarks::BookmarkPermanentNode* node) override;
   void RecordAction(const base::UserMetricsAction& action) override;
-  bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() override;
+  bookmarks::LoadExtraCallback GetLoadExtraNodeCallback() override;
   bool CanSetPermanentNodeTitle(
       const bookmarks::BookmarkNode* permanent_node) override;
   bool CanSyncNode(const bookmarks::BookmarkNode* node) override;

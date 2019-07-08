@@ -36,12 +36,12 @@ class ViewFocusWaiter : public views::ViewObserver {
 
   // views::ViewObserver:
   void OnViewFocused(views::View* observed_view) override {
-    if (target_focused_ && run_loop_.running())
+    if (run_loop_.running() && target_focused_)
       run_loop_.Quit();
   }
 
   void OnViewBlurred(views::View* observed_view) override {
-    if (!target_focused_ && run_loop_.running())
+    if (run_loop_.running() && !target_focused_)
       run_loop_.Quit();
   }
 

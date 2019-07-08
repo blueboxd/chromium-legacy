@@ -30,7 +30,7 @@ const Error kWriteErrors[] = {ERR_FAILED, ERR_ADDRESS_UNREACHABLE,
 
 FuzzedDatagramClientSocket::FuzzedDatagramClientSocket(
     FuzzedDataProvider* data_provider)
-    : data_provider_(data_provider), weak_factory_(this) {}
+    : data_provider_(data_provider) {}
 
 FuzzedDatagramClientSocket::~FuzzedDatagramClientSocket() = default;
 

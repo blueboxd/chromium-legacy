@@ -261,8 +261,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
       compositor->task_runner());
-  GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source.get(),
-                                                  compositor->frame_sink_id());
+  frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
+                                                compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
   data->begin_frame_source = std::move(begin_frame_source);
@@ -270,7 +270,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
-      GetFrameSinkManager(), display, nullptr /* display_client */,
+      frame_sink_manager_, display, nullptr /* display_client */,
       context_provider, shared_worker_context_provider_,
       compositor->task_runner(), &gpu_memory_buffer_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
@@ -323,7 +323,7 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
-  GetFrameSinkManager()->UnregisterBeginFrameSource(
+  frame_sink_manager_->UnregisterBeginFrameSource(
       data->begin_frame_source.get());
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
@@ -387,10 +387,6 @@ void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
 
 void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-viz::FrameSinkManagerImpl* InProcessContextFactory::GetFrameSinkManager() {
-  return frame_sink_manager_;
 }
 
 SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(

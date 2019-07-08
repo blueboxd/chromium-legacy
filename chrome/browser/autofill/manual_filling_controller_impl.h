@@ -67,10 +67,6 @@ class ManualFillingControllerImpl
   // Returns the held view for testing.
   ManualFillingViewInterface* view() const { return view_.get(); }
 #endif  // defined(UNIT_TEST)
-  // Returns the connected password accessory controller for testing.
-  PasswordAccessoryController* password_controller_for_testing() const {
-    return pwd_controller_.get();
-  }
 
  protected:
   friend class ManualFillingController;  // Allow protected access in factories.
@@ -108,6 +104,9 @@ class ManualFillingControllerImpl
   AccessoryController* GetControllerForAction(
       autofill::AccessoryAction action) const;
 
+  // Returns the controller that is responsible for a given |action|.
+  PasswordAccessoryController* GetPasswordController() const;
+
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
@@ -120,11 +119,9 @@ class ManualFillingControllerImpl
 
   // Controllers which handle events relating to a specific tab and the
   // associated data.
-  base::WeakPtr<PasswordAccessoryController> pwd_controller_;
+  base::WeakPtr<PasswordAccessoryController> pwd_controller_for_testing_;
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
   base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller_;
-
-  // The touch to fill controller object to forward view requests to.
   base::WeakPtr<TouchToFillController> touch_to_fill_controller_;
 
   // Hold the native instance of the view. Must be last declared and initialized

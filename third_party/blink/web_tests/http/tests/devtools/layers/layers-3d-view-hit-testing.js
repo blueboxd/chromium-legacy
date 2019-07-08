@@ -5,7 +5,6 @@
 (async function() {
   TestRunner.addResult(`Tests hit testing in Layers3DView\n`);
   await TestRunner.loadModule('layers_test_runner');
-  await TestRunner.showPanel('layers');
 
   await TestRunner.loadHTML(`
       <div id="a" style="transform:translateZ(0px) translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px; border: 1px solid black;">
@@ -19,6 +18,7 @@
   var canvas;
   const ButtonByEventType = {mousemove: -1, mousedown: 0, mouseup: 0};
 
+  TestRunner.showPanel('layers');
   await LayersTestRunner.requestLayers();
   initLayers();
   initSizes();

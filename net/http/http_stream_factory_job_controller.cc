@@ -102,10 +102,9 @@ HttpStreamFactory::JobController::JobController(
       proxy_ssl_config_(proxy_ssl_config),
       num_streams_(0),
       priority_(IDLE),
-      net_log_(
-          NetLogWithSource::Make(session->net_log(),
-                                 NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)),
-      ptr_factory_(this) {
+      net_log_(NetLogWithSource::Make(
+          session->net_log(),
+          NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)) {
   DCHECK(factory);
   net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER,
                       base::Bind(&NetLogJobControllerCallback,

@@ -769,7 +769,8 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             navigation_handle, navigation_interception::SynchronyMode::kSync));
     throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
-        navigation_handle, browser_context_.get()));
+        navigation_handle, AwBrowserContext::FromWebContents(
+                               navigation_handle->GetWebContents())));
   }
   return throttles;
 }

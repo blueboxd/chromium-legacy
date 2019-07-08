@@ -405,7 +405,8 @@ function renderTheme() {
       // should close the customization menu. Closing the menu before the image
       // is selected doesn't look good.
       const localImageFileName = 'background.jpg';
-      if (imageWithOverlay.includes(localImageFileName) &&
+      if (!configData.richerPicker &&
+          imageWithOverlay.includes(localImageFileName) &&
           !$(IDS.CUSTOM_BG)
                .style.backgroundImage.includes(localImageFileName)) {
         customize.closeCustomizationDialog();

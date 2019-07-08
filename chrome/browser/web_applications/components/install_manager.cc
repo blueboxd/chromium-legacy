@@ -54,6 +54,12 @@ InstallManager::InstallManager(Profile* profile) : profile_(profile) {}
 
 InstallManager::~InstallManager() = default;
 
+void InstallManager::SetSubsystems(AppRegistrar* registrar,
+                                   InstallFinalizer* finalizer) {
+  registrar_ = registrar;
+  finalizer_ = finalizer;
+}
+
 void InstallManager::Shutdown() {
   for (InstallManagerObserver& observer : observers_)
     observer.OnInstallManagerShutdown();

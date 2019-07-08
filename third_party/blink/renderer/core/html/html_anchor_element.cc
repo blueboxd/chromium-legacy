@@ -381,7 +381,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementReferrerPolicyAttribute);
-    request.SetReferrerPolicy(policy);
+    request.SetReferrerPolicy(
+        policy, ResourceRequest::SetReferrerPolicyLocation::kAnchorElement);
   }
 
   // Ignore the download attribute if we either can't read the content, or

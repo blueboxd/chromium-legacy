@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_H_
 
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -61,11 +64,10 @@ class SystemWebAppManager {
   static constexpr char kInstallResultHistogramName[] =
       "Webapp.InstallResult.System";
 
-  // Constructs a SystemWebAppManager instance that uses
-  // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
-  // this class.
-  SystemWebAppManager(Profile* profile, PendingAppManager* pending_app_manager);
+  explicit SystemWebAppManager(Profile* profile);
   virtual ~SystemWebAppManager();
+
+  void SetSubsystems(PendingAppManager* pending_app_manager);
 
   void Start(WebAppUiDelegate* ui_delegate);
 
@@ -120,7 +122,7 @@ class SystemWebAppManager {
   PrefService* pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
-  PendingAppManager* pending_app_manager_;
+  PendingAppManager* pending_app_manager_ = nullptr;
 
   WebAppUiDelegate* ui_delegate_ = nullptr;
 

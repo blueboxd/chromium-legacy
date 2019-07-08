@@ -951,10 +951,12 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
   String referrer = referrer_url.IsEmpty()
                         ? GetFrame()->GetDocument()->OutgoingReferrer()
                         : String(referrer_url.GetString());
-  request.ToMutableResourceRequest().SetHttpReferrer(
-      SecurityPolicy::GenerateReferrer(
-          GetFrame()->GetDocument()->GetReferrerPolicy(), request.Url(),
-          referrer));
+  ResourceRequest& resource_request = request.ToMutableResourceRequest();
+  resource_request.SetReferrerPolicy(
+      GetFrame()->GetDocument()->GetReferrerPolicy(),
+      ResourceRequest::SetReferrerPolicyLocation::kWebLocalFrameImpl);
+  resource_request.SetReferrerString(
+      referrer, ResourceRequest::SetReferrerStringLocation::kWebLocalFrameImpl);
 }
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
@@ -2329,7 +2331,7 @@ void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
   if (!node || !(IsHTMLCanvasElement(*node) || IsHTMLImageElement(*node)))
     return;
 
-  String url = ToElement(*node).ImageSourceURL();
+  String url = To<Element>(*node).ImageSourceURL();
   if (!KURL(NullURL(), url).ProtocolIsData())
     return;
 

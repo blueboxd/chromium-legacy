@@ -80,8 +80,8 @@ DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   DawnTextureCopyView dawn_view;
   dawn_view.nextInChain = nullptr;
   dawn_view.texture = webgpu_view->texture()->GetHandle();
-  dawn_view.level = webgpu_view->mipLevel();
-  dawn_view.slice = webgpu_view->arrayLayer();
+  dawn_view.mipLevel = webgpu_view->mipLevel();
+  dawn_view.arrayLayer = webgpu_view->arrayLayer();
   dawn_view.origin = AsDawnType(webgpu_view->origin());
 
   return dawn_view;

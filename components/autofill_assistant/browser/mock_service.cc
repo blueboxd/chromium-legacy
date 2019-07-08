@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/mock_service.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 
 #include "url/gurl.h"
 

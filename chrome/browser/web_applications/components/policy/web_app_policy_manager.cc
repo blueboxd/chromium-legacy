@@ -71,13 +71,15 @@ void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
 
 const char WebAppPolicyManager::kInstallResultHistogramName[];
 
-WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
-                                         PendingAppManager* pending_app_manager)
-    : profile_(profile),
-      pref_service_(profile_->GetPrefs()),
-      pending_app_manager_(pending_app_manager) {}
+WebAppPolicyManager::WebAppPolicyManager(Profile* profile)
+    : profile_(profile), pref_service_(profile_->GetPrefs()) {}
 
 WebAppPolicyManager::~WebAppPolicyManager() = default;
+
+void WebAppPolicyManager::SetSubsystems(
+    PendingAppManager* pending_app_manager) {
+  pending_app_manager_ = pending_app_manager;
+}
 
 void WebAppPolicyManager::Start() {
   base::PostTaskWithTraits(

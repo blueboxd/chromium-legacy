@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/cells/search_engine_item.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -36,37 +35,18 @@ TEST_F(SearchEngineItemTest, BasicProperties) {
   item.accessoryType = UITableViewCellAccessoryCheckmark;
 
   id cell = [[[item cellClass] alloc] init];
-  // TODO(crbug.com/910525): Remove usage of TableViewDetailTextCell after the
-  // feature is launched.
-  if (base::FeatureList::IsEnabled(kDisplaySearchEngineFavicon)) {
-    ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
+  ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
 
-    TableViewURLCell* URLCell =
-        base::mac::ObjCCastStrict<TableViewURLCell>(cell);
-    EXPECT_FALSE(URLCell.titleLabel.text);
-    EXPECT_FALSE(URLCell.URLLabel.text);
-    EXPECT_EQ(item.uniqueIdentifier, URLCell.cellUniqueIdentifier);
-    EXPECT_EQ(UITableViewCellAccessoryNone, URLCell.accessoryType);
+  TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+  EXPECT_FALSE(URLCell.titleLabel.text);
+  EXPECT_FALSE(URLCell.URLLabel.text);
+  EXPECT_EQ(item.uniqueIdentifier, URLCell.cellUniqueIdentifier);
+  EXPECT_EQ(UITableViewCellAccessoryNone, URLCell.accessoryType);
 
-    ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-    [item configureCell:URLCell withStyler:styler];
-    EXPECT_NSEQ(text, URLCell.titleLabel.text);
-    EXPECT_NSEQ(detailText, URLCell.URLLabel.text);
-    EXPECT_EQ(item.uniqueIdentifier, URLCell.cellUniqueIdentifier);
-    EXPECT_EQ(UITableViewCellAccessoryCheckmark, URLCell.accessoryType);
-  } else {
-    ASSERT_TRUE([cell isMemberOfClass:[TableViewDetailTextCell class]]);
-
-    TableViewDetailTextCell* textCell =
-        base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
-    EXPECT_FALSE(textCell.textLabel.text);
-    EXPECT_FALSE(textCell.detailTextLabel.text);
-    EXPECT_EQ(UITableViewCellAccessoryNone, textCell.accessoryType);
-
-    ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-    [item configureCell:textCell withStyler:styler];
-    EXPECT_NSEQ(text, textCell.textLabel.text);
-    EXPECT_NSEQ(detailText, textCell.detailTextLabel.text);
-    EXPECT_EQ(UITableViewCellAccessoryCheckmark, textCell.accessoryType);
-  }
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:URLCell withStyler:styler];
+  EXPECT_NSEQ(text, URLCell.titleLabel.text);
+  EXPECT_NSEQ(detailText, URLCell.URLLabel.text);
+  EXPECT_EQ(item.uniqueIdentifier, URLCell.cellUniqueIdentifier);
+  EXPECT_EQ(UITableViewCellAccessoryCheckmark, URLCell.accessoryType);
 }

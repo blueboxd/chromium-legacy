@@ -318,9 +318,10 @@ void StyleInvalidator::InvalidateSlotDistributedElements(
   for (auto& distributed_node : slot.FlattenedAssignedNodes()) {
     if (distributed_node->NeedsStyleRecalc())
       continue;
-    if (!distributed_node->IsElementNode())
+    auto* element = DynamicTo<Element>(distributed_node.Get());
+    if (!element)
       continue;
-    if (MatchesCurrentInvalidationSetsAsSlotted(ToElement(*distributed_node))) {
+    if (MatchesCurrentInvalidationSetsAsSlotted(*element)) {
       distributed_node->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                  style_change_reason::kStyleInvalidator));

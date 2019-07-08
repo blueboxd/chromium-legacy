@@ -35,8 +35,8 @@ class BookmarkAppInstallManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
-    install_manager_ = std::make_unique<BookmarkAppInstallManager>(
-        profile(), install_finalizer_.get());
+    install_manager_ = std::make_unique<BookmarkAppInstallManager>(profile());
+    install_manager_->SetSubsystems(nullptr, install_finalizer_.get());
 
     extensions::TestExtensionSystem* test_extension_system =
         static_cast<extensions::TestExtensionSystem*>(

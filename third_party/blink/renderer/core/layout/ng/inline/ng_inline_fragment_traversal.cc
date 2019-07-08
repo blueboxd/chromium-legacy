@@ -113,27 +113,6 @@ class DescendantCollector final : public NGPhysicalFragmentCollectorBase {
   DISALLOW_COPY_AND_ASSIGN(DescendantCollector);
 };
 
-// The visitor emitting all visited fragments.
-class InclusiveDescendantCollector final
-    : public NGPhysicalFragmentCollectorBase {
-  STACK_ALLOCATED();
-
- public:
-  InclusiveDescendantCollector() = default;
-
-  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
-    return CollectInclusivelyFrom(fragment);
-  }
-
- private:
-  void Visit() final {
-    Emit();
-    VisitChildren();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(InclusiveDescendantCollector);
-};
-
 // The visitor emitting fragments generated from the given LayoutInline,
 // supporting culled inline.
 // Note: Since we apply culled inline per line, we have a fragment for
@@ -182,66 +161,6 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
   DISALLOW_COPY_AND_ASSIGN(LayoutInlineCollector);
 };
 
-// The visitor emitting ancestors of the given fragment in bottom-up order.
-class AncestorCollector : public NGPhysicalFragmentCollectorBase {
-  STACK_ALLOCATED();
-
- public:
-  explicit AncestorCollector(const NGPhysicalFragment& target)
-      : target_(target) {}
-
-  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
-    // TODO(xiaochengh): Change this into CollectInclusivlyFrom() to include
-    // subtree root to align with NodeTraversal::AncestorsOf().
-    return CollectExclusivelyFrom(fragment);
-  }
-
- private:
-  void Visit() final {
-    if (&GetFragment() == &target_) {
-      SetShouldStopTraversing();
-      return;
-    }
-
-    VisitChildren();
-    if (HasStoppedTraversing())
-      Emit();
-  }
-
-  const NGPhysicalFragment& target_;
-};
-
-// The visitor emitting inclusive ancestors of the given fragment in bottom-up
-// order.
-class InclusiveAncestorCollector : public NGPhysicalFragmentCollectorBase {
-  STACK_ALLOCATED();
-
- public:
-  explicit InclusiveAncestorCollector(const NGPhysicalFragment& target)
-      : target_(target) {}
-
-  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
-    // TODO(xiaochengh): Change this into CollectInclusivlyFrom() to include
-    // subtree root to align with NodeTraversal::InclusiveAncestorsOf().
-    return CollectExclusivelyFrom(fragment);
-  }
-
- private:
-  void Visit() final {
-    if (&GetFragment() == &target_) {
-      SetShouldStopTraversing();
-      Emit();
-      return;
-    }
-
-    VisitChildren();
-    if (HasStoppedTraversing())
-      Emit();
-  }
-
-  const NGPhysicalFragment& target_;
-};
-
 }  // namespace
 
 // static
@@ -269,26 +188,6 @@ Vector<Result> NGInlineFragmentTraversal::SelfFragmentsOf(
 Vector<Result> NGInlineFragmentTraversal::DescendantsOf(
     const NGPhysicalContainerFragment& container) {
   return DescendantCollector().CollectFrom(container);
-}
-
-// static
-Vector<Result> NGInlineFragmentTraversal::InclusiveDescendantsOf(
-    const NGPhysicalFragment& root) {
-  return InclusiveDescendantCollector().CollectFrom(root);
-}
-
-// static
-Vector<Result> NGInlineFragmentTraversal::InclusiveAncestorsOf(
-    const NGPhysicalContainerFragment& container,
-    const NGPhysicalFragment& target) {
-  return InclusiveAncestorCollector(target).CollectFrom(container);
-}
-
-// static
-Vector<Result> NGInlineFragmentTraversal::AncestorsOf(
-    const NGPhysicalContainerFragment& container,
-    const NGPhysicalFragment& target) {
-  return AncestorCollector(target).CollectFrom(container);
 }
 
 }  // namespace blink

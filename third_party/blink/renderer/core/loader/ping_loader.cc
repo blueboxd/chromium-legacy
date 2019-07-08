@@ -228,8 +228,12 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetKeepalive(true);
   // TODO(domfarolino): Add WPTs ensuring that pings do not have a referrer
   // header.
-  request.SetReferrerString(Referrer::NoReferrer());
-  request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
+  request.SetReferrerString(
+      Referrer::NoReferrer(),
+      ResourceRequest::SetReferrerStringLocation::kPingLoader);
+  request.SetReferrerPolicy(
+      network::mojom::ReferrerPolicy::kNever,
+      ResourceRequest::SetReferrerPolicyLocation::kPingLoader);
   request.SetRequestContext(mojom::RequestContextType::PING);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name =

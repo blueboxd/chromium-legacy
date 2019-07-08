@@ -138,11 +138,6 @@ static KURL UrlFromFrame(LocalFrame* frame) {
 
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   int edit_flags = WebContextMenuData::kCanDoNone;
-  if (!selected_document.IsHTMLDocument() &&
-      !selected_document.IsXHTMLDocument())
-    return edit_flags;
-
-  edit_flags |= WebContextMenuData::kCanTranslate;
   if (editor.CanUndo())
     edit_flags |= WebContextMenuData::kCanUndo;
   if (editor.CanRedo())
@@ -157,8 +152,12 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
     edit_flags |= WebContextMenuData::kCanDelete;
   if (editor.CanEditRichly())
     edit_flags |= WebContextMenuData::kCanEditRichly;
-  if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
-    edit_flags |= WebContextMenuData::kCanSelectAll;
+  if (selected_document.IsHTMLDocument() ||
+      selected_document.IsXHTMLDocument()) {
+    edit_flags |= WebContextMenuData::kCanTranslate;
+    if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
+      edit_flags |= WebContextMenuData::kCanSelectAll;
+  }
   return edit_flags;
 }
 

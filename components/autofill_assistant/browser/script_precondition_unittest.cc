@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -63,6 +64,8 @@ class ScriptPreconditionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<1>(false));
 
     SetUrl("http://www.example.com/path");
+
+    trigger_context_ = TriggerContext::CreateEmpty();
   }
 
  protected:
@@ -76,15 +79,15 @@ class ScriptPreconditionTest : public testing::Test {
 
     DirectCallback callback;
     BatchElementChecker batch_checks;
-    precondition->Check(url_, &batch_checks, parameters_, executed_scripts_,
-                        callback.Get());
+    precondition->Check(url_, &batch_checks, *trigger_context_,
+                        executed_scripts_, callback.Get());
     batch_checks.Run(&mock_web_controller_);
     return callback.GetResultOrDie();
   }
 
   GURL url_;
   MockWebController mock_web_controller_;
-  std::map<std::string, std::string> parameters_;
+  std::unique_ptr<TriggerContext> trigger_context_;
   std::map<std::string, ScriptStatusProto> executed_scripts_;
 };
 
@@ -257,7 +260,9 @@ TEST_F(ScriptPreconditionTest, ParameterMustExist) {
 
   EXPECT_FALSE(Check(proto));
 
-  parameters_["param"] = "exists";
+  std::map<std::string, std::string> parameters;
+  parameters["param"] = "exists";
+  trigger_context_ = TriggerContext::Create(parameters, "");
 
   EXPECT_TRUE(Check(proto));
 }
@@ -270,7 +275,9 @@ TEST_F(ScriptPreconditionTest, ParameterMustNotExist) {
 
   EXPECT_TRUE(Check(proto));
 
-  parameters_["param"] = "exists";
+  std::map<std::string, std::string> parameters;
+  parameters["param"] = "exists";
+  trigger_context_ = TriggerContext::Create(parameters, "");
 
   EXPECT_FALSE(Check(proto));
 }
@@ -283,11 +290,15 @@ TEST_F(ScriptPreconditionTest, ParameterMustHaveValue) {
 
   EXPECT_FALSE(Check(proto));
 
-  parameters_["param"] = "another value";
+  std::map<std::string, std::string> parameters;
+  parameters["param"] = "another value";
+  trigger_context_ = TriggerContext::Create(parameters, "");
 
   EXPECT_FALSE(Check(proto));
 
-  parameters_["param"] = "value";
+  parameters["param"] = "value";
+  trigger_context_ = TriggerContext::Create(parameters, "");
+
   EXPECT_TRUE(Check(proto));
 }
 

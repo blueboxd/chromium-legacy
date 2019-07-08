@@ -8,7 +8,9 @@
 
 namespace autofill_assistant {
 
-FakeScriptExecutorDelegate::FakeScriptExecutorDelegate() = default;
+FakeScriptExecutorDelegate::FakeScriptExecutorDelegate()
+    : trigger_context_(TriggerContext::CreateEmpty()) {}
+
 FakeScriptExecutorDelegate::~FakeScriptExecutorDelegate() = default;
 
 const ClientSettings& FakeScriptExecutorDelegate::GetSettings() {
@@ -40,7 +42,7 @@ ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
 }
 
 TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
-  return &trigger_context_;
+  return trigger_context_.get();
 }
 
 autofill::PersonalDataManager*

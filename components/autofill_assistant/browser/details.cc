@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/geo/country_names.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -173,103 +174,106 @@ base::Value Details::GetDebugContext() const {
   return dict;
 }
 
-bool Details::UpdateFromParameters(
-    const std::map<std::string, std::string>& parameters) {
-  const auto iter = parameters.find("DETAILS_SHOW_INITIAL");
-  if (iter != parameters.end() && iter->second.compare("false") == 0) {
+bool Details::UpdateFromParameters(const TriggerContext& context) {
+  base::Optional<std::string> show_initial =
+      context.GetParameter("DETAILS_SHOW_INITIAL");
+  if (show_initial.value_or("true") == "false") {
     return false;
   }
   // Whenever details are updated from parameters we want to animate missing
   // data.
   proto_.set_animate_placeholders(true);
   proto_.set_show_image_placeholder(true);
-  if (MaybeUpdateFromDetailsParameters(parameters)) {
+  if (MaybeUpdateFromDetailsParameters(context)) {
     return true;
   }
 
   // NOTE: The logic below is only needed for backward compatibility.
   // Remove once we always pass detail parameters.
   bool is_updated = false;
-  for (const auto& iter : parameters) {
-    std::string key = iter.first;
-    if (key == "MOVIES_MOVIE_NAME") {
-      proto_.set_title(iter.second);
-      is_updated = true;
-      continue;
-    }
+  base::Optional<std::string> movie_name =
+      context.GetParameter("MOVIES_MOVIE_NAME");
+  if (movie_name) {
+    proto_.set_title(movie_name.value());
+    is_updated = true;
+  }
 
-    if (key == "MOVIES_THEATER_NAME") {
-      proto_.set_description_line_2(iter.second);
-      is_updated = true;
-      continue;
-    }
+  base::Optional<std::string> theater_name =
+      context.GetParameter("MOVIES_THEATER_NAME");
+  if (theater_name) {
+    proto_.set_description_line_2(theater_name.value());
+    is_updated = true;
+  }
 
-    if (iter.first.compare("MOVIES_SCREENING_DATETIME") == 0) {
-      // TODO(crbug.com/806868): Parse the string here and fill
-      // proto.description_line_1, then get rid of datetime_ in Details.
-      datetime_ = iter.second;
-      is_updated = true;
-      continue;
-    }
+  base::Optional<std::string> screening_datetime =
+      context.GetParameter("MOVIES_SCREENING_DATETIME");
+  if (screening_datetime) {
+    datetime_ = screening_datetime.value();
+    is_updated = true;
   }
   return is_updated;
 }
 
-bool Details::MaybeUpdateFromDetailsParameters(
-    const std::map<std::string, std::string>& parameters) {
+bool Details::MaybeUpdateFromDetailsParameters(const TriggerContext& context) {
   bool details_updated = false;
-  for (const auto& iter : parameters) {
-    std::string key = iter.first;
-    if (key == "DETAILS_TITLE") {
-      proto_.set_title(iter.second);
-      details_updated = true;
-      continue;
-    }
 
-    if (key == "DETAILS_DESCRIPTION_LINE_1") {
-      proto_.set_description_line_1(iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_DESCRIPTION_LINE_2") {
-      proto_.set_description_line_2(iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_DESCRIPTION_LINE_3") {
-      proto_.set_description_line_3(iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_IMAGE_URL") {
-      proto_.set_image_url(iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_IMAGE_CLICKTHROUGH_URL") {
-      proto_.mutable_image_clickthrough_data()->set_allow_clickthrough(true);
-      proto_.mutable_image_clickthrough_data()->set_clickthrough_url(
-          iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_TOTAL_PRICE_LABEL") {
-      proto_.set_total_price_label(iter.second);
-      details_updated = true;
-      continue;
-    }
-
-    if (key == "DETAILS_TOTAL_PRICE") {
-      proto_.set_total_price(iter.second);
-      details_updated = true;
-      continue;
-    }
+  base::Optional<std::string> title = context.GetParameter("DETAILS_TITLE");
+  if (title) {
+    proto_.set_title(title.value());
+    details_updated = true;
   }
+
+  base::Optional<std::string> description_line_1 =
+      context.GetParameter("DETAILS_DESCRIPTION_LINE_1");
+  if (description_line_1) {
+    proto_.set_description_line_1(description_line_1.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> description_line_2 =
+      context.GetParameter("DETAILS_DESCRIPTION_LINE_2");
+  if (description_line_2) {
+    proto_.set_description_line_2(description_line_2.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> description_line_3 =
+      context.GetParameter("DETAILS_DESCRIPTION_LINE_3");
+  if (description_line_3) {
+    proto_.set_description_line_3(description_line_3.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> image_url =
+      context.GetParameter("DETAILS_IMAGE_URL");
+  if (image_url) {
+    proto_.set_image_url(image_url.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> image_clickthrough_url =
+      context.GetParameter("DETAILS_IMAGE_CLICKTHROUGH_URL");
+  if (image_clickthrough_url) {
+    proto_.mutable_image_clickthrough_data()->set_allow_clickthrough(true);
+    proto_.mutable_image_clickthrough_data()->set_clickthrough_url(
+        image_clickthrough_url.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> total_price_label =
+      context.GetParameter("DETAILS_TOTAL_PRICE_LABEL");
+  if (total_price_label) {
+    proto_.set_total_price_label(total_price_label.value());
+    details_updated = true;
+  }
+
+  base::Optional<std::string> total_price =
+      context.GetParameter("DETAILS_TOTAL_PRICE");
+  if (total_price) {
+    proto_.set_total_price(total_price.value());
+    details_updated = true;
+  }
+
   return details_updated;
 }
 

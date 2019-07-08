@@ -85,8 +85,12 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
                                          FontResourceClient* client) const {
   if (!fetched_) {
     ResourceRequest resource_request(absolute_resource_);
-    resource_request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
+    resource_request.SetReferrerPolicy(
+        ReferrerPolicyResolveDefault(referrer_.referrer_policy),
+        ResourceRequest::SetReferrerPolicyLocation::kCSSFontFaceSrcValueFetch);
+    resource_request.SetReferrerString(
+        referrer_.referrer,
+        ResourceRequest::SetReferrerStringLocation::kCSSFontFaceSrcValueFetch);
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
     FetchParameters params(resource_request, options);

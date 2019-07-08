@@ -18,8 +18,7 @@ namespace web_app {
 
 class TestSystemWebAppManager : public SystemWebAppManager {
  public:
-  TestSystemWebAppManager(Profile* profile,
-                          PendingAppManager* pending_app_manager);
+  explicit TestSystemWebAppManager(Profile* profile);
   ~TestSystemWebAppManager() override;
 
   void SetSystemApps(base::flat_map<SystemAppType, SystemAppInfo> system_apps);

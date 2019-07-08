@@ -6,12 +6,94 @@
 
 namespace autofill_assistant {
 
-TriggerContext::TriggerContext(std::map<std::string, std::string> params,
-                               std::string exp)
-    : script_parameters(std::move(params)), experiment_ids(std::move(exp)) {}
+// static
+std::unique_ptr<TriggerContext> TriggerContext::CreateEmpty() {
+  return std::make_unique<TriggerContextImpl>();
+}
 
-TriggerContext::TriggerContext() = default;
-TriggerContext::TriggerContext(const TriggerContext& context) = default;
-TriggerContext::~TriggerContext() = default;
+// static
+std::unique_ptr<TriggerContext> TriggerContext::Create(
+    std::map<std::string, std::string> params,
+    const std::string& exp) {
+  return std::make_unique<TriggerContextImpl>(params, exp);
+}
+
+// static
+std::unique_ptr<TriggerContext> TriggerContext::Merge(
+    std::vector<const TriggerContext*> contexts) {
+  return std::make_unique<MergedTriggerContext>(contexts);
+}
+
+TriggerContext::TriggerContext() {}
+TriggerContext::~TriggerContext() {}
+
+TriggerContextImpl::TriggerContextImpl() {}
+
+TriggerContextImpl::TriggerContextImpl(
+    std::map<std::string, std::string> parameters,
+    const std::string& experiment_ids)
+    : parameters_(std::move(parameters)),
+      experiment_ids_(std::move(experiment_ids)) {}
+TriggerContextImpl::~TriggerContextImpl() = default;
+
+void TriggerContextImpl::AddParameters(
+    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
+  for (const auto& param_entry : parameters_) {
+    ScriptParameterProto* parameter = dest->Add();
+    parameter->set_name(param_entry.first);
+    parameter->set_value(param_entry.second);
+  }
+}
+
+base::Optional<std::string> TriggerContextImpl::GetParameter(
+    const std::string& name) const {
+  auto iter = parameters_.find(name);
+  if (iter == parameters_.end())
+    return base::nullopt;
+
+  return iter->second;
+}
+
+std::string TriggerContextImpl::experiment_ids() const {
+  return experiment_ids_;
+}
+
+MergedTriggerContext::MergedTriggerContext(
+    std::vector<const TriggerContext*> contexts)
+    : contexts_(contexts) {}
+
+MergedTriggerContext::~MergedTriggerContext() {}
+
+void MergedTriggerContext::AddParameters(
+    google::protobuf::RepeatedPtrField<ScriptParameterProto>* dest) const {
+  for (const TriggerContext* context : contexts_) {
+    context->AddParameters(dest);
+  }
+}
+
+base::Optional<std::string> MergedTriggerContext::GetParameter(
+    const std::string& name) const {
+  for (const TriggerContext* context : contexts_) {
+    auto opt_value = context->GetParameter(name);
+    if (opt_value)
+      return opt_value;
+  }
+  return base::nullopt;
+}
+
+std::string MergedTriggerContext::experiment_ids() const {
+  std::string experiment_ids;
+  for (const TriggerContext* context : contexts_) {
+    std::string context_experiment_ids = context->experiment_ids();
+    if (context_experiment_ids.empty())
+      continue;
+
+    if (!experiment_ids.empty())
+      experiment_ids.append(1, ',');
+
+    experiment_ids.append(context->experiment_ids());
+  }
+  return experiment_ids;
+}
 
 }  // namespace autofill_assistant

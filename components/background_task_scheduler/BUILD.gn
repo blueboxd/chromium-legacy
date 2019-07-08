@@ -93,6 +93,7 @@ if (is_android) {
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUmaTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/ShadowGcmNetworkManager.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/TaskInfoTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/TestBackgroundTask.java",
     ]
 

@@ -159,27 +159,30 @@ InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
 
 class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebAppPolicyManagerTest()
-      : test_web_app_provider_creator_(
-            base::BindOnce(&WebAppPolicyManagerTest::CreateWebAppProvider,
-                           base::Unretained(this))) {}
+  WebAppPolicyManagerTest() {}
 
   ~WebAppPolicyManagerTest() override = default;
 
-  std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
-    auto provider = std::make_unique<TestWebAppProvider>(profile);
-    provider->Init();
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
 
-    auto test_pending_app_manager = std::make_unique<TestPendingAppManager>();
+    DCHECK(profile()->AsTestingProfile());
+    auto* provider = static_cast<web_app::TestWebAppProvider*>(
+        web_app::WebAppProvider::Get(profile()));
+
+    auto test_app_registrar = std::make_unique<TestAppRegistrar>();
+    test_app_registrar_ = test_app_registrar.get();
+    provider->SetRegistrar(std::move(test_app_registrar));
+
+    auto test_pending_app_manager =
+        std::make_unique<TestPendingAppManager>(test_app_registrar_);
     test_pending_app_manager_ = test_pending_app_manager.get();
     provider->SetPendingAppManager(std::move(test_pending_app_manager));
 
-    auto web_app_policy_manager = std::make_unique<WebAppPolicyManager>(
-        profile, test_pending_app_manager_);
+    auto web_app_policy_manager =
+        std::make_unique<WebAppPolicyManager>(profile());
     web_app_policy_manager_ = web_app_policy_manager.get();
     provider->SetWebAppPolicyManager(std::move(web_app_policy_manager));
-
-    return provider;
   }
 
   void SimulatePreviouslyInstalledApp(
@@ -196,7 +199,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   WebAppPolicyManager* policy_manager() { return web_app_policy_manager_; }
 
  private:
-  TestWebAppProviderCreator test_web_app_provider_creator_;
+  TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   WebAppPolicyManager* web_app_policy_manager_ = nullptr;
 

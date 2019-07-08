@@ -283,7 +283,7 @@ bool DefinitelyNewFormattingContext(const Node& node,
     return true;
   if (node.GetDocument().documentElement() == &node)
     return true;
-  if (const Element* element = ToElementOrNull(&node)) {
+  if (const Element* element = DynamicTo<Element>(&node)) {
     // Replaced elements are considered to create a new formatting context, in
     // the sense that they can't possibly have children that participate in the
     // same formatting context as their parent.
@@ -3776,7 +3776,8 @@ void Element::ForceLegacyLayoutInFormattingContext(
 
   bool found_bfc = false;
   for (Element* ancestor = this; !found_bfc;) {
-    ancestor = ToElementOrNull(LayoutTreeBuilderTraversal::Parent(*ancestor));
+    ancestor =
+        DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*ancestor));
     if (!ancestor || ancestor->ShouldForceLegacyLayout())
       break;
     const ComputedStyle* style = ancestor->GetComputedStyle();
@@ -3800,7 +3801,7 @@ void Element::ForceLegacyLayoutInFragmentationContext(
   // still going to fall back to legacy.
   Element* parent;
   for (Element* walker = this; walker; walker = parent) {
-    parent = ToElementOrNull(LayoutTreeBuilderTraversal::Parent(*walker));
+    parent = DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*walker));
     if (!walker->GetComputedStyle()->SpecifiesColumns())
       continue;
 

@@ -34,6 +34,8 @@ class WithExtendedAttributes(object):
     class can have extended attributes."""
 
     def __init__(self, extended_attributes=None):
+        assert (extended_attributes is None
+                or isinstance(extended_attributes, ExtendedAttributes))
         self._extended_attributes = extended_attributes or ExtendedAttributes()
 
     @property
@@ -53,6 +55,8 @@ class WithCodeGeneratorInfo(object):
     provide some information for code generators."""
 
     def __init__(self, code_generator_info=None):
+        assert (code_generator_info is None
+                or isinstance(code_generator_info, CodeGeneratorInfo))
         self._code_generator_info = code_generator_info or CodeGeneratorInfo()
 
     @property
@@ -88,17 +92,18 @@ Component = str
 
 
 class WithComponent(object):
-    """WithComponent class is an interface to show which components this
-    object belongs to."""
+    """
+    Implements |components| which is a Blink-specific layering concept of
+    components, such as 'core' and 'modules'.
 
-    # The order of |_COMPONENTS| shows the order of their dependencies.
-    # DO NOT change the order.
-    _COMPONENTS = (
-        'core',
-        'modules',
-    )
+    A single IDL definition such as 'interface' may consist from multiple IDL
+    fragments like partial interfaces and mixins, which may exist across
+    Blink components.  |components| is a list of Blink components of IDL
+    fragments that are involved into this object.
+    """
 
     def __init__(self, component):
+        assert isinstance(component, Component)
         self._components = [component]
 
     @property
@@ -107,22 +112,29 @@ class WithComponent(object):
         Returns a list of components' names where this definition is defined
         @return tuple(Component)
         """
-        return self._components
+        return tuple(self._components)
 
 
 class DebugInfo(object):
     """Provides information useful for debugging."""
 
     class Location(object):
-        def __init__(self, filepath, line_number=None):
+        def __init__(self, filepath=None, line_number=None,
+                     column_number=None):
+            assert filepath is None or isinstance(filepath, str)
+            assert line_number is None or isinstance(line_number, int)
+            assert column_number is None or isinstance(column_number, int)
             self._filepath = filepath
             self._line_number = line_number
+            self._column_number = column_number
 
         def __str__(self):
-            location = self.filepath
-            if self.line_number is not None:
-                location += '({})'.format(self.line_number)
-            return location
+            text = '{}'.format(self._filepath or '<<unknown path>>')
+            if self._line_number:
+                text += ':{}'.format(self._line_number)
+                if self._column_number:
+                    text += ':{}'.format(self._column_number)
+            return text
 
         @property
         def filepath(self):
@@ -132,31 +144,43 @@ class DebugInfo(object):
         def line_number(self):
             return self._line_number
 
-    def __init__(self, filepath, line_number=None):
-        self._locations = [DebugInfo.Location(filepath, line_number)]
+        @property
+        def column_number(self):
+            return self._column_number
+
+    def __init__(self, location=None):
+        assert location is None or isinstance(location, DebugInfo.Location)
+        location = location or DebugInfo.Location()
+        # The first entry is the primary location, e.g. location of non-partial
+        # interface.  The rest is secondary locations, e.g. location of partial
+        # interfaces and mixins.
+        self._locations = [location]
 
     @property
-    def filepaths(self):
+    def location(self):
         """
-        Returns a list of filepaths where this IDL definition comes from.
-        @return tuple(FilePath)
+        Returns the primary location, i.e. location of the main definition.
+        @return DebugInfo.Location
         """
-        return tuple(location.filepath for location in self.locations)
+        return self._locations[0]
 
     @property
-    def locations(self):
+    def all_locations(self):
         """
-        Returns a list of locations where this IDL object comes from.
-        @return tuple((FilePath, int))
+        Returns a list of locations of all related IDL definitions, including
+        partial definitions and mixins.
+        @return tuple(DebugInfo.Location)
         """
-        return self._locations
+        return tuple(self._locations)
 
 
 class WithDebugInfo(object):
-    """WithDebugInfo class is an interface that its inheritances can have DebugInfo."""
+    """WithDebugInfo class is an interface that its inheritances can have
+    DebugInfo."""
 
     def __init__(self, debug_info=None):
-        self._debug_info = debug_info or DebugInfo(filepath='<<unspecified>>')
+        assert debug_info is None or isinstance(debug_info, DebugInfo)
+        self._debug_info = debug_info or DebugInfo()
 
     @property
     def debug_info(self):
@@ -171,6 +195,7 @@ class WithOwner(object):
     it points a function like object."""
 
     def __init__(self, owner):
+        assert isinstance(owner, object)  # None is okay
         self._owner = owner
 
     @property

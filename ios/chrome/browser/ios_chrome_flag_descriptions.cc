@@ -148,11 +148,6 @@ const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
     "the time specified by this flag.";
 
-const char kDisplaySearchEngineFaviconName[] =
-    "Display search engine favicons.";
-const char kDisplaySearchEngineFaviconDescription[] =
-    "When enabled, Settings will display search engine favicons";
-
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 

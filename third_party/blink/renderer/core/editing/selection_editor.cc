@@ -173,7 +173,7 @@ static Position ComputePositionForChildrenRemoval(const Position& position,
 #endif
   if (!container.ContainsIncludingHostElements(*node))
     return position;
-  if (auto* element = ToElementOrNull(container)) {
+  if (auto* element = DynamicTo<Element>(container)) {
     if (auto* shadow_root = element->GetShadowRoot()) {
       // Removal of light children does not affect position in the
       // shadow tree.

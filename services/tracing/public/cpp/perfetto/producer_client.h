@@ -97,7 +97,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  private:
   friend class base::NoDestructor<ProducerClient>;
 
-  void CommitDataOnSequence(const perfetto::CommitDataRequest& request);
   void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
                                         mojom::ProducerHostPtrInfo);
 

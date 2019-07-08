@@ -9,8 +9,6 @@ source_set("browser_state") {
     "chrome_browser_state.h",
     "chrome_browser_state.mm",
     "chrome_browser_state_manager.h",
-    "web_data_service_factory.cc",
-    "web_data_service_factory.h",
   ]
 
   public_deps = [
@@ -26,7 +24,6 @@ source_set("browser_state") {
     "//components/prefs",
     "//components/search_engines",
     "//components/signin/core/browser",
-    "//components/signin/core/browser/webdata",
     "//components/sync_preferences",
     "//components/variations/net",
     "//components/webdata_services",
@@ -127,6 +124,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/undo",
     "//ios/chrome/browser/unified_consent",
     "//ios/chrome/browser/web_state_list/web_usage_enabler",
+    "//ios/chrome/browser/webdata_services",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
@@ -200,6 +198,7 @@ source_set("test_support") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/undo",
+    "//ios/chrome/browser/webdata_services",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",

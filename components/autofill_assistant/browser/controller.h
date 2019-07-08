@@ -101,7 +101,6 @@ class Controller : public ScriptExecutorDelegate,
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void EnterState(AutofillAssistantState state) override;
-  bool IsCookieExperimentEnabled() const;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
 
@@ -114,7 +113,9 @@ class Controller : public ScriptExecutorDelegate,
   int GetProgress() const override;
   bool GetProgressVisible() const override;
   const std::vector<UserAction>& GetUserActions() const override;
-  bool PerformUserAction(int index) override;
+  bool PerformUserActionWithContext(
+      int index,
+      std::unique_ptr<TriggerContext> context) override;
   std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   const PaymentInformation* GetPaymentRequestInformation() const override;
@@ -155,6 +156,7 @@ class Controller : public ScriptExecutorDelegate,
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
   // call |on_success|.
   void ExecuteScript(const std::string& script_path,
+                     std::unique_ptr<TriggerContext> context,
                      AutofillAssistantState end_state);
   void OnScriptExecuted(const std::string& script_path,
                         AutofillAssistantState end_state,
@@ -175,19 +177,11 @@ class Controller : public ScriptExecutorDelegate,
 
   void DisableAutostart();
 
-  // Autofill Assistant cookie logic.
-  //
-  // On startup of the controller we set a cookie. If a cookie already existed
-  // for the intial URL, we show a warning that the website has already been
-  // visited and could contain old data. The cookie is cleared (or expires) when
-  // a script terminated with a Stop action.
-  void OnGetCookie(bool has_cookie);
-  void OnSetCookie(bool result);
-  void FinishStart();
   void InitFromParameters();
 
   // Called when a script is selected.
-  void OnScriptSelected(const std::string& script_path);
+  void OnScriptSelected(const std::string& script_path,
+                        std::unique_ptr<TriggerContext> context);
 
   void UpdatePaymentRequestActions();
   void OnPaymentRequestContinueButtonClicked();

@@ -8,6 +8,7 @@
 #include "components/arc/common/video_common.mojom.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mojo {
@@ -50,6 +51,15 @@ struct StructTraits<arc::mojom::SizeDataView, gfx::Size> {
 
   static bool Read(arc::mojom::SizeDataView data, gfx::Size* out);
 };
+
+template <>
+struct EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat> {
+  static arc::mojom::VideoPixelFormat ToMojom(media::VideoPixelFormat input);
+
+  static bool FromMojom(arc::mojom::VideoPixelFormat input,
+                        media::VideoPixelFormat* output);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_

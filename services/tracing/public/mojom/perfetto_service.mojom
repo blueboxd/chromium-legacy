@@ -102,8 +102,9 @@ interface ProducerHost {
   // 2) Patch data (i.e. apply diff) that has been previously copied into the
   //    tracing buffer (if it's not been overwritten).
   // The service is robust in terms of tolerating malformed or malicious
-  // requests.
-  CommitData(CommitDataRequest data_request);
+  // requests. The callback is run after the service has handled the commit
+  // request.
+  CommitData(CommitDataRequest data_request) => ();
 
   // Called by a ProducerClient to let the Host know it can provide a specific
   // datasource.

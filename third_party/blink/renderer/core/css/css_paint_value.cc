@@ -63,6 +63,12 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         GetName(), document, paint_image_generator_observer_);
   }
 
+  // If the generator isn't ready yet, we have nothing to paint. Our
+  // |paint_image_generator_observer_| will cause us to be called again once the
+  // generator is ready.
+  if (!generator_->IsImageGeneratorReady())
+    return nullptr;
+
   if (!ParseInputArguments(document))
     return nullptr;
 
@@ -119,9 +125,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
       !RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled())
     return true;
 
-  if (!generator_->IsImageGeneratorReady())
-    return false;
-
+  DCHECK(generator_->IsImageGeneratorReady());
   const Vector<CSSSyntaxDescriptor>& input_argument_types =
       generator_->InputArgumentTypes();
   if (argument_variable_data_.size() != input_argument_types.size()) {

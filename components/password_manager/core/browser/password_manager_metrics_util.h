@@ -121,26 +121,27 @@ enum AccountChooserUserAction {
   ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
-enum CredentialManagerGetResult {
+// Metrics: "PasswordManager.Mediation{Silent,Optional,Required}"
+enum class CredentialManagerGetResult {
   // The promise is rejected.
-  CREDENTIAL_MANAGER_GET_REJECTED,
+  kRejected,
   // Auto sign-in is not allowed in the current context.
-  CREDENTIAL_MANAGER_GET_NONE_ZERO_CLICK_OFF,
+  kNoneZeroClickOff,
   // No matching credentials found.
-  CREDENTIAL_MANAGER_GET_NONE_EMPTY_STORE,
+  kNoneEmptyStore,
   // User mediation required due to > 1 matching credentials.
-  CREDENTIAL_MANAGER_GET_NONE_MANY_CREDENTIALS,
+  kNoneManyCredentials,
   // User mediation required due to the signed out state.
-  CREDENTIAL_MANAGER_GET_NONE_SIGNED_OUT,
+  kNoneSignedOut,
   // User mediation required due to pending first run experience dialog.
-  CREDENTIAL_MANAGER_GET_NONE_FIRST_RUN,
+  kNoneFirstRun,
   // Return empty credential for whatever reason.
-  CREDENTIAL_MANAGER_GET_NONE,
+  kNone,
   // Return a credential from the account chooser.
-  CREDENTIAL_MANAGER_GET_ACCOUNT_CHOOSER,
+  kAccountChooser,
   // User is auto signed in.
-  CREDENTIAL_MANAGER_GET_AUTOSIGNIN,
-  CREDENTIAL_MANAGER_GET_COUNT
+  kAutoSignIn,
+  kMaxValue = kAutoSignIn,
 };
 
 // Metrics: "PasswordManager.HttpPasswordMigrationMode"

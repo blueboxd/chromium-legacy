@@ -31,14 +31,6 @@ struct EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
 };
 
 template <>
-struct EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat> {
-  static arc::mojom::VideoPixelFormat ToMojom(media::VideoPixelFormat input);
-
-  static bool FromMojom(arc::mojom::VideoPixelFormat input,
-                        media::VideoPixelFormat* output);
-};
-
-template <>
 struct StructTraits<arc::mojom::VideoEncodeProfileDataView,
                     media::VideoEncodeAccelerator::SupportedProfile> {
   static media::VideoCodecProfile profile(

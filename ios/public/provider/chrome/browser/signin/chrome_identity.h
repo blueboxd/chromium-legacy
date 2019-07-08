@@ -28,6 +28,12 @@
 // between apps.
 @property(strong, nonatomic, readonly) NSString* hashedGaiaID;
 
+// Returns the cached hosted domain for the identity (fetched asynchronously).
+// If the value has not been fetched, this property will be nil. Otherwise it
+// will be the hosted domain or an empty string if the account is a consumer
+// account (e.g. gmail.com).
+@property(strong, nonatomic, readonly) NSString* hostedDomain;
+
 @end
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_H_

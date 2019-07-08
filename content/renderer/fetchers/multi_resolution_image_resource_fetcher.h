@@ -24,7 +24,7 @@ class WebURLResponse;
 
 namespace content {
 
-class AssociatedResourceFetcher;
+class AssociatedResourceFetcherImpl;
 
 // A resource fetcher that returns all (differently-sized) frames in
 // an image. Useful for favicons.
@@ -72,7 +72,7 @@ class MultiResolutionImageResourceFetcher {
   const GURL image_url_;
 
   // Does the actual download.
-  std::unique_ptr<AssociatedResourceFetcher> fetcher_;
+  std::unique_ptr<AssociatedResourceFetcherImpl> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiResolutionImageResourceFetcher);
 };

@@ -12,7 +12,7 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
-struct UserAction;  // For SetDefaultChipType
+class UserAction;  // For SetDefaultChipType
 
 // A structure to represent a Chip shown in the carousel.
 //

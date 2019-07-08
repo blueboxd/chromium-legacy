@@ -551,6 +551,11 @@
     "args": ["--enable-features=NetworkService"]
   },
   {
+    "prefix": "sxg-subresource",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedExchangeSubresourcePrefetch"]
+  },
+  {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/inside-worker",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]

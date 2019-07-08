@@ -15,6 +15,7 @@ include_rules = [
   "+components/version_info",
   "+content/public/browser",
   "+media/base/video_codecs.h",
+  "+media/base/video_types.h",
   "+media/video/video_encode_accelerator.h",
   "+mojo",
   "+storage/browser/fileapi",

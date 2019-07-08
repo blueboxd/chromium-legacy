@@ -172,13 +172,6 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
 
-  // Functions to set, get and expire the Autofill Assistant cookie used to
-  // detect when Autofill Assistant has been used on a domain before.
-  virtual void SetCookie(const std::string& domain,
-                         base::OnceCallback<void(bool)> callback);
-  virtual void HasCookie(base::OnceCallback<void(bool)> callback);
-  virtual void ClearCookie();
-
   // Checks whether an element matches the given selector.
   //
   // If strict, there must be exactly one matching element for the check to
@@ -431,11 +424,6 @@ class WebController {
   static DispatchKeyEventParamsPtr CreateKeyEventParamsForCharacter(
       autofill_assistant::input::DispatchKeyEventType type,
       const UChar32 codepoint);
-
-  void OnSetCookie(base::OnceCallback<void(bool)> callback,
-                   std::unique_ptr<network::SetCookieResult> result);
-  void OnHasCookie(base::OnceCallback<void(bool)> callback,
-                   std::unique_ptr<network::GetCookiesResult> result);
 
   // Waits for the document.readyState to be 'interactive' or 'complete'.
   void WaitForDocumentToBecomeInteractive(

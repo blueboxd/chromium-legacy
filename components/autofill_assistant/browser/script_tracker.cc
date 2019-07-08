@@ -32,6 +32,15 @@ void SortScripts(std::vector<Script*>* scripts) {
             });
 }
 
+// Creates a value containing a vector of strings.
+base::Value StringVectorToValue(const std::vector<std::string>& v) {
+  std::vector<base::Value> values;
+  for (const auto& s : v) {
+    values.emplace_back(base::Value(s));
+  }
+  return base::Value(values);
+}
+
 }  // namespace
 
 ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
@@ -78,13 +87,13 @@ void ScriptTracker::CheckScripts() {
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
-    if (script->handle.chip.empty() &&
-        script->handle.direct_action_names.empty() && !script->handle.autostart)
+    if (script->handle.chip.empty() && script->handle.direct_action.empty() &&
+        !script->handle.autostart)
       continue;
 
     script->precondition->Check(
-        url, batch_element_checker_.get(),
-        delegate_->GetTriggerContext()->script_parameters, scripts_state_,
+        url, batch_element_checker_.get(), *delegate_->GetTriggerContext(),
+        scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
@@ -105,6 +114,7 @@ void ScriptTracker::CheckScripts() {
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
+                                  std::unique_ptr<TriggerContext> context,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
     DVLOG(1) << "Do not expect executing the script (" << script_path
@@ -116,7 +126,8 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   }
 
   executor_ = std::make_unique<ScriptExecutor>(
-      script_path, last_global_payload_, last_script_payload_,
+      script_path, std::move(context), last_global_payload_,
+      last_script_payload_,
       /* listener= */ this, &scripts_state_, &interrupts_, delegate_);
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
@@ -161,11 +172,18 @@ base::Value ScriptTracker::GetDebugContext() const {
     script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
     script_js.SetKey("autostart", base::Value(entry.autostart));
     script_js.SetKey("chip_type", base::Value(entry.chip.type));
-    std::vector<base::Value> direct_action_names;
-    for (const auto& name : entry.direct_action_names) {
-      direct_action_names.emplace_back(base::Value(name));
-    }
-    script_js.SetKey("direct_action_names", base::Value(direct_action_names));
+
+    base::Value direct_action_js = base::Value(base::Value::Type::DICTIONARY);
+    direct_action_js.SetKey("names",
+                            StringVectorToValue(entry.direct_action.names));
+    direct_action_js.SetKey(
+        "required_arguments",
+        StringVectorToValue(entry.direct_action.required_arguments));
+    direct_action_js.SetKey(
+        "optional_arguments",
+        StringVectorToValue(entry.direct_action.optional_arguments));
+    script_js.SetKey("direct_action", std::move(direct_action_js));
+
     runnable_scripts_js.push_back(std::move(script_js));
   }
   dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));

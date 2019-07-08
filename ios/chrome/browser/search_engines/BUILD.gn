@@ -39,6 +39,7 @@ source_set("search_engines") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/google",
     "//ios/chrome/browser/history",
+    "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common",
     "//ios/web",
     "//net",

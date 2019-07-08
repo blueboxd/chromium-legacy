@@ -1591,7 +1591,7 @@ Your Google account may have other forms of browsing history like searches and a
         Your bookmarks, history, passwords, and other Chrome data will no longer be synced to your Google Account
       </message>
       <message name="IDS_REMOVE_LOCAL_DATA" desc="Checkbox to delete all existing data in local device storage">
-        Also clear this Chrome data from this device
+        Also clear your Chrome data from this device
       </message>
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
@@ -3904,7 +3904,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 
       <!-- ClickToCall -->
       <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
-        Call <ph name="PHONE_NUMBER">%1$s<ex>+1234567890</ex></ph>
+        Tap to make call
       </message>
 
       <!-- Chrome Duet -->

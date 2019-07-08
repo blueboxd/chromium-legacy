@@ -107,8 +107,9 @@ Node::InsertionNotificationRequest HTMLSourceElement::InsertedInto(
 
 void HTMLSourceElement::RemovedFrom(ContainerNode& removal_root) {
   Element* parent = parentElement();
-  if (!parent && removal_root.IsElementNode())
-    parent = ToElement(&removal_root);
+  auto* element = DynamicTo<Element>(&removal_root);
+  if (element && !parent)
+    parent = element;
   if (auto* media = ToHTMLMediaElementOrNull(parent))
     media->SourceWasRemoved(this);
   if (auto* picture = ToHTMLPictureElementOrNull(parent)) {

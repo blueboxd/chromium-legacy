@@ -75,11 +75,7 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
   // WebApp System must have only one instance in original profile.
   // Exclude secondary off-the-record profiles.
   DCHECK(!profile_->IsOffTheRecord());
-}
 
-WebAppProvider::~WebAppProvider() = default;
-
-void WebAppProvider::Init() {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
@@ -89,9 +85,14 @@ void WebAppProvider::Init() {
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
+
+  ConnectSubsystems();
 }
 
+WebAppProvider::~WebAppProvider() = default;
+
 void WebAppProvider::StartRegistry() {
+  started_ = true;
   registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
@@ -115,6 +116,10 @@ WebAppPolicyManager* WebAppProvider::policy_manager() {
 WebAppUiDelegate& WebAppProvider::ui_delegate() {
   DCHECK(ui_delegate_);
   return *ui_delegate_;
+}
+
+SystemWebAppManager& WebAppProvider::system_web_app_manager() {
+  return *system_web_app_manager_;
 }
 
 void WebAppProvider::Shutdown() {
@@ -142,40 +147,44 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
+  // TODO(crbug.com/973324): Once the WebAppInstallFinalizer can take an
+  // AppRegistrar instead of needing a WebAppRegistrar, move this wiring into
+  // ConnectSubsystems().
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ = std::make_unique<WebAppInstallManager>(
-      profile, web_app_registrar.get(), install_finalizer_.get());
+  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
 
   registrar_ = std::move(web_app_registrar);
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
-  auto bookmark_app_registrar =
-      std::make_unique<extensions::BookmarkAppRegistrar>(profile);
-
   install_finalizer_ =
-      std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile_);
+      std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
-    install_manager_ = std::make_unique<WebAppInstallManager>(
-        profile, bookmark_app_registrar.get(), install_finalizer_.get());
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile);
   } else {
-    install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>(
-        profile, install_finalizer_.get());
+    install_manager_ =
+        std::make_unique<extensions::BookmarkAppInstallManager>(profile);
   }
 
   pending_app_manager_ =
-      std::make_unique<extensions::PendingBookmarkAppManager>(
-          profile, bookmark_app_registrar.get(), install_finalizer_.get());
+      std::make_unique<extensions::PendingBookmarkAppManager>(profile);
 
-  web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
-      profile, pending_app_manager_.get());
+  web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
 
-  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
-      profile, pending_app_manager_.get());
+  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
 
-  registrar_ = std::move(bookmark_app_registrar);
+  registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
+}
+
+void WebAppProvider::ConnectSubsystems() {
+  DCHECK(!started_);
+  pending_app_manager_->SetSubsystems(registrar_.get(),
+                                      install_finalizer_.get());
+  web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
+  system_web_app_manager_->SetSubsystems(pending_app_manager_.get());
+  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
 }
 
 void WebAppProvider::OnRegistryReady() {

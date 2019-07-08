@@ -27,7 +27,7 @@ Element& LayoutTreeRebuildRoot::RootElement() const {
   }
   if (!root_node || root_node->IsDocumentNode())
     return *GetRootNode()->GetDocument().documentElement();
-  return ToElement(*root_node);
+  return To<Element>(*root_node);
 }
 
 #if DCHECK_IS_ON()

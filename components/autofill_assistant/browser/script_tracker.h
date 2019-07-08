@@ -74,7 +74,12 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // Scripts that are already executed won't be considered runnable anymore.
   // Call CheckScripts to refresh the set of runnable script after script
   // execution.
+  //
+  // The given context allows specifying additional parameters and experiments,
+  // on top of what's available in the context returned by
+  // ScriptExecutorDelegate.
   void ExecuteScript(const std::string& path,
+                     std::unique_ptr<TriggerContext> context,
                      ScriptExecutor::RunScriptCallback callback);
 
   // Clears the set of scripts that could be run.

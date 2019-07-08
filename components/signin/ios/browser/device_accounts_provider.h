@@ -45,6 +45,7 @@ class DeviceAccountsProvider {
   struct AccountInfo {
     std::string gaia;
     std::string email;
+    std::string hosted_domain;
   };
 
   using AccessTokenCallback = base::OnceCallback<

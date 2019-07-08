@@ -41,8 +41,8 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     install_finalizer_ = std::make_unique<TestInstallFinalizer>();
 
-    install_manager_ = std::make_unique<WebAppInstallManager>(
-        profile(), registrar_.get(), install_finalizer_.get());
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+    install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
 

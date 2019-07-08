@@ -158,7 +158,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   void Start() { Start("http://initialurl.com"); }
 
   void Start(const std::string& url) {
-    controller_->Start(GURL(url), std::make_unique<TriggerContext>());
+    controller_->Start(GURL(url), TriggerContext::CreateEmpty());
   }
 
   void SetLastCommittedUrl(const GURL& url) {
@@ -261,11 +261,12 @@ TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
             controller_->GetState());
   EXPECT_THAT(
       controller_->GetUserActions(),
-      UnorderedElementsAre(
-          Field(&UserAction::chip, AllOf(Field(&Chip::text, StrEq("script1")),
-                                         Field(&Chip::type, SUGGESTION))),
-          Field(&UserAction::chip, AllOf(Field(&Chip::text, StrEq("script2")),
-                                         Field(&Chip::type, SUGGESTION)))));
+      UnorderedElementsAre(Property(&UserAction::chip,
+                                    AllOf(Field(&Chip::text, StrEq("script1")),
+                                          Field(&Chip::type, SUGGESTION))),
+                           Property(&UserAction::chip,
+                                    AllOf(Field(&Chip::text, StrEq("script2")),
+                                          Field(&Chip::type, SUGGESTION)))));
 
   // Choose script2 and run it successfully.
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script2"), _, _, _, _, _))
@@ -275,8 +276,8 @@ TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
   // Offering the remaining choice: script1 as script2 can only run once.
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
   EXPECT_THAT(controller_->GetUserActions(),
-              ElementsAre(Field(&UserAction::chip,
-                                Field(&Chip::text, StrEq("script1")))));
+              ElementsAre(Property(&UserAction::chip,
+                                   Field(&Chip::text, StrEq("script1")))));
 }
 
 TEST_F(ControllerTest, ReportDirectActions) {
@@ -302,14 +303,65 @@ TEST_F(ControllerTest, ReportDirectActions) {
   // Offering the choices: script1 and script2
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
+  EXPECT_THAT(
+      controller_->GetUserActions(),
+      UnorderedElementsAre(
+          AllOf(Property(&UserAction::chip, Field(&Chip::text, "script1")),
+                Property(&UserAction::direct_action,
+                         Field(&DirectAction::names, ElementsAre("action_1")))),
+          AllOf(
+              Property(&UserAction::chip, Property(&Chip::empty, true)),
+              Property(&UserAction::direct_action,
+                       Field(&DirectAction::names, ElementsAre("action_2"))))));
+}
+
+TEST_F(ControllerTest, RunDirectActionWithArguments) {
+  SupportsScriptResponseProto script_response;
+
+  // script is available as a chip and a direct action.
+  auto* script1 = AddRunnableScript(&script_response, "script");
+  auto* action = script1->mutable_presentation()->mutable_direct_action();
+  action->add_names("action");
+  action->add_required_arguments("required");
+  action->add_optional_arguments("arg0");
+  action->add_optional_arguments("arg1");
+
+  SetNextScriptResponse(script_response);
+
+  testing::InSequence seq;
+
+  Start("http://a.example.com/path");
+
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            controller_->GetState());
   EXPECT_THAT(controller_->GetUserActions(),
-              UnorderedElementsAre(
-                  AllOf(Field(&UserAction::chip, Field(&Chip::text, "script1")),
-                        Field(&UserAction::direct_action_names,
-                              ElementsAre("action_1"))),
-                  AllOf(Field(&UserAction::chip, Property(&Chip::empty, true)),
-                        Field(&UserAction::direct_action_names,
-                              ElementsAre("action_2")))));
+              ElementsAre(Property(
+                  &UserAction::direct_action,
+                  AllOf(Field(&DirectAction::names, ElementsAre("action")),
+                        Field(&DirectAction::required_arguments,
+                              ElementsAre("required")),
+                        Field(&DirectAction::optional_arguments,
+                              ElementsAre("arg0", "arg1"))))));
+
+  EXPECT_CALL(*mock_service_, OnGetActions("script", _, _, _, _, _))
+      .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
+                          const TriggerContext& trigger_context,
+                          const std::string& global_payload,
+                          const std::string& script_payload,
+                          Service::ResponseCallback& callback) {
+        EXPECT_THAT("value",
+                    trigger_context.GetParameter("required").value_or(""));
+        EXPECT_THAT("value0",
+                    trigger_context.GetParameter("arg0").value_or(""));
+
+        std::move(callback).Run(true, "");
+      }));
+
+  std::map<std::string, std::string> parameters;
+  parameters["required"] = "value";
+  parameters["arg0"] = "value0";
+  EXPECT_TRUE(controller_->PerformUserActionWithContext(
+      0, TriggerContext::Create(parameters, "")));
 }
 
 TEST_F(ControllerTest, NoScripts) {
@@ -443,8 +495,8 @@ TEST_F(ControllerTest, Reset) {
 
     Start("http://a.example.com/path");
     EXPECT_THAT(controller_->GetUserActions(),
-                ElementsAre(Field(&UserAction::chip,
-                                  Field(&Chip::text, StrEq("reset")))));
+                ElementsAre(Property(&UserAction::chip,
+                                     Field(&Chip::text, StrEq("reset")))));
 
     // 2. Execute the "reset" script, which contains a reset action.
     ActionsResponseProto actions_response;
@@ -466,8 +518,8 @@ TEST_F(ControllerTest, Reset) {
     // The reset script should be available again, even though it's marked
     // RunOnce, as the script state should have been cleared as well.
     EXPECT_THAT(controller_->GetUserActions(),
-                ElementsAre(Field(&UserAction::chip,
-                                  Field(&Chip::text, StrEq("reset")))));
+                ElementsAre(Property(&UserAction::chip,
+                                     Field(&Chip::text, StrEq("reset")))));
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
@@ -482,20 +534,6 @@ TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path2"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path1"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path2"));
-}
-
-TEST_F(ControllerTest, ForwardParameters) {
-  EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(_,
-                                 Field(&TriggerContext::script_parameters,
-                                       Contains(Pair("a", "b"))),
-                                 _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
-
-  GURL initialUrl("http://example.com/");
-  std::unique_ptr<TriggerContext> context(new TriggerContext);
-  context->script_parameters["a"] = "b";
-  controller_->Start(initialUrl, std::move(context));
 }
 
 TEST_F(ControllerTest, Autostart) {
@@ -534,26 +572,7 @@ TEST_F(ControllerTest, InitialUrlLoads) {
   EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
-  controller_->Start(initialUrl, std::make_unique<TriggerContext>());
-}
-
-TEST_F(ControllerTest, CookieExperimentEnabled) {
-  GURL initialUrl("http://a.example.com/path");
-
-  // TODO(crbug.com/806868): Extend this test once the cookie information is
-  // passed to the initial request. Currently the public controller API does not
-  // yet allow proper testing.
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
-
-  std::unique_ptr<TriggerContext> trigger_context(new TriggerContext);
-  trigger_context->script_parameters.insert(std::make_pair("EXP_COOKIE", "1"));
-  controller_->Start(initialUrl, std::move(trigger_context));
-
-  // TODO(crbug.com): Make IsCookieExperimentEnabled private and remove this
-  // test when we pass the cookie data along in the initial request so that it
-  // can be tested.
-  EXPECT_TRUE(controller_->IsCookieExperimentEnabled());
+  controller_->Start(initialUrl, TriggerContext::CreateEmpty());
 }
 
 TEST_F(ControllerTest, ProgressIncreasesAtStart) {

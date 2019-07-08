@@ -124,7 +124,7 @@ void ClientAndroid::Start(JNIEnv* env,
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   std::map<std::string, std::string> parameters;
   FillParametersFromJava(env, parameterNames, parameterValues, &parameters);
-  controller_->Start(initial_url, std::make_unique<TriggerContext>(
+  controller_->Start(initial_url, TriggerContext::Create(
                                       std::move(parameters),
                                       base::android::ConvertJavaStringToUTF8(
                                           env, jexperiment_ids)));

@@ -70,6 +70,16 @@ GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
   }
 }
 
+// Converts a DeviceAccountsProvider::AccountInfo to an AccountInfo.
+AccountInfo AccountInfoFromDeviceAccount(
+    const DeviceAccountsProvider::AccountInfo& account) {
+  AccountInfo account_info;
+  account_info.email = account.email;
+  account_info.gaia = account.gaia;
+  account_info.hosted_domain = account.hosted_domain;
+  return account_info;
+}
+
 class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
@@ -206,7 +216,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
     // a fetch access token operation when it receives a
     // |OnRefreshTokenAvailable| notification.
     std::string account_id = account_tracker_service_->SeedAccountInfo(
-        new_account.gaia, new_account.email);
+        AccountInfoFromDeviceAccount(new_account));
     new_account_ids.insert(account_id);
   }
 

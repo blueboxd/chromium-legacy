@@ -57,28 +57,32 @@ InstallOptions GetWindowedInstallOptions() {
 
 class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  SystemWebAppManagerTest()
-      : test_web_app_provider_creator_(
-            base::BindOnce(&SystemWebAppManagerTest::CreateWebAppProvider,
-                           base::Unretained(this))) {
+  SystemWebAppManagerTest() {
     scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
   }
 
   ~SystemWebAppManagerTest() override = default;
 
-  std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
-    auto provider = std::make_unique<TestWebAppProvider>(profile);
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
 
-    auto test_pending_app_manager = std::make_unique<TestPendingAppManager>();
+    DCHECK(profile()->AsTestingProfile());
+    auto* provider = static_cast<web_app::TestWebAppProvider*>(
+        web_app::WebAppProvider::Get(profile()));
+
+    auto test_app_registrar = std::make_unique<TestAppRegistrar>();
+    test_app_registrar_ = test_app_registrar.get();
+    provider->SetRegistrar(std::move(test_app_registrar));
+
+    auto test_pending_app_manager =
+        std::make_unique<TestPendingAppManager>(test_app_registrar_);
     test_pending_app_manager_ = test_pending_app_manager.get();
     provider->SetPendingAppManager(std::move(test_pending_app_manager));
 
-    auto system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
-        profile, test_pending_app_manager_);
+    auto system_web_app_manager =
+        std::make_unique<TestSystemWebAppManager>(profile());
     system_web_app_manager_ = system_web_app_manager.get();
     provider->SetSystemWebAppManager(std::move(system_web_app_manager));
-
-    return provider;
   }
 
   void SimulatePreviouslyInstalledApp(
@@ -88,10 +92,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool IsInstalled(const GURL& install_url) {
-    return pending_app_manager()
-        ->registrar()
-        ->LookupExternalAppId(install_url)
-        .has_value();
+    return test_app_registrar_->LookupExternalAppId(install_url).has_value();
   }
 
  protected:
@@ -107,7 +108,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestWebAppProviderCreator test_web_app_provider_creator_;
+  TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   TestSystemWebAppManager* system_web_app_manager_ = nullptr;
   TestWebAppUiDelegate ui_delegate_;

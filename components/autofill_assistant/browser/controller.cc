@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -35,19 +36,9 @@ namespace {
 // message.
 static constexpr int kAutostartInitialProgress = 5;
 
-// Cookie experiment name.
-// TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
-// pass allow passing more than one experiment.
-static const char* const kCookieExperimentName = "EXP_COOKIE";
-// Website visited before parameter.
-// Note: This parameter goes with the previous experiment name. I.e. it is only
-// set when the cookie experiment is active.
-static const char* const kWebsiteVisitedBeforeParameterName =
-    "WEBSITE_VISITED_BEFORE";
 // Parameter that allows setting the color of the overlay.
 static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
 
-static const char* const kTrueValue = "true";
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -234,21 +225,23 @@ void Controller::RemoveListener(ScriptExecutorDelegate::Listener* listener) {
     listeners_.erase(found);
 }
 
-bool Controller::PerformUserAction(int index) {
+bool Controller::PerformUserActionWithContext(
+    int index,
+    std::unique_ptr<TriggerContext> context) {
   if (!user_actions_ || index < 0 ||
       static_cast<size_t>(index) >= user_actions_->size()) {
     NOTREACHED() << "Invalid user action index: " << index;
     return false;
   }
 
-  UserAction* user_action = &(*user_actions_)[index];
-  if (!user_action->enabled || !user_action->callback) {
+  if (!(*user_actions_)[index].enabled()) {
+    NOTREACHED() << "Action at index " << index << " is disabled.";
     return false;
   }
 
-  auto callback = std::move(user_action->callback);
+  UserAction user_action = std::move((*user_actions_)[index]);
   SetUserActions(nullptr);
-  std::move(callback).Run();
+  user_action.Call(std::move(context));
   return true;
 }
 
@@ -445,7 +438,7 @@ void Controller::GetOrCheckScripts() {
     script_domain_ = url.host();
     DVLOG(2) << "GetScripts for " << script_domain_;
     GetService()->GetScriptsForUrl(
-        url, trigger_context_.get(),
+        url, *trigger_context_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
     script_tracker()->CheckScripts();
@@ -488,7 +481,7 @@ void Controller::OnPeriodicScriptCheck() {
     std::string script_path = autostart_timeout_script_path_;
     autostart_timeout_script_path_.clear();
     periodic_script_check_scheduled_ = false;
-    ExecuteScript(script_path, state_);
+    ExecuteScript(script_path, TriggerContext::CreateEmpty(), state_);
     return;
   }
 
@@ -565,6 +558,7 @@ void Controller::OnGetScripts(const GURL& url,
 }
 
 void Controller::ExecuteScript(const std::string& script_path,
+                               std::unique_ptr<TriggerContext> context,
                                AutofillAssistantState end_state) {
   DCHECK(!script_tracker()->running());
   EnterState(AutofillAssistantState::RUNNING);
@@ -579,7 +573,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
-      script_path,
+      script_path, std::move(context),
       base::BindOnce(&Controller::OnScriptExecuted,
                      // script_tracker_ is owned by Controller.
                      base::Unretained(this), script_path, end_state));
@@ -605,7 +599,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       return;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
-      GetWebController()->ClearCookie();
       EnterStoppedState();
       client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
       return;
@@ -650,7 +643,8 @@ bool Controller::MaybeAutostartScript(
   }
   if (autostart_count == 1) {
     DisableAutostart();
-    ExecuteScript(autostart_path, AutofillAssistantState::PROMPT);
+    ExecuteScript(autostart_path, TriggerContext::CreateEmpty(),
+                  AutofillAssistantState::PROMPT);
     return true;
   }
   return false;
@@ -661,49 +655,18 @@ void Controller::DisableAutostart() {
   autostart_timeout_script_path_.clear();
 }
 
-void Controller::OnGetCookie(bool has_cookie) {
-  if (has_cookie) {
-    // This code is only active with the experiment parameter.
-    // TODO(crbug.com/806868): Remove the cookie experiment.
-    trigger_context_->script_parameters.insert(
-        std::make_pair(kWebsiteVisitedBeforeParameterName, kTrueValue));
-    OnSetCookie(has_cookie);
-    return;
-  }
-  GetWebController()->SetCookie(
-      deeplink_url_.host(),
-      base::BindOnce(&Controller::OnSetCookie,
-                     // WebController is owned by Controller.
-                     base::Unretained(this)));
-}
-
-void Controller::OnSetCookie(bool result) {
-  DCHECK(result) << "Setting cookie failed";
-  FinishStart();
-}
-
-void Controller::FinishStart() {
-  started_ = true;
-  if (allow_autostart_) {
-    SetStatusMessage(
-        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16(deeplink_url_.host())));
-    SetProgress(kAutostartInitialProgress);
-  }
-  GetOrCheckScripts();
-}
-
 void Controller::InitFromParameters() {
   auto details = std::make_unique<Details>();
-  if (details->UpdateFromParameters(trigger_context_->script_parameters))
+  if (details->UpdateFromParameters(*trigger_context_))
     SetDetails(std::move(details));
 
-  const auto iter =
-      trigger_context_->script_parameters.find(kOverlayColorParameterName);
-  if (iter != trigger_context_->script_parameters.end()) {
+  const base::Optional<std::string> overlay_color =
+      trigger_context_->GetParameter(kOverlayColorParameterName);
+  if (overlay_color) {
     std::unique_ptr<OverlayColors> colors = std::make_unique<OverlayColors>();
-    std::vector<std::string> color_strings = base::SplitString(
-        iter->second, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> color_strings =
+        base::SplitString(overlay_color.value(), ":", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_ALL);
     if (color_strings.size() > 0) {
       colors->background = color_strings[0];
     }
@@ -733,14 +696,14 @@ void Controller::Start(const GURL& deeplink_url,
   deeplink_url_ = deeplink_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();
-  if (IsCookieExperimentEnabled()) {
-    GetWebController()->HasCookie(
-        base::BindOnce(&Controller::OnGetCookie,
-                       // WebController is owned by Controller.
-                       base::Unretained(this)));
-  } else {
-    FinishStart();
+  started_ = true;
+  if (allow_autostart_) {
+    SetStatusMessage(
+        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
+                                  base::UTF8ToUTF16(deeplink_url_.host())));
+    SetProgress(kAutostartInitialProgress);
   }
+  GetOrCheckScripts();
 }
 
 AutofillAssistantState Controller::GetState() {
@@ -756,9 +719,11 @@ void Controller::WillShutdown(Metrics::DropOutReason reason) {
   }
 }
 
-void Controller::OnScriptSelected(const std::string& script_path) {
+void Controller::OnScriptSelected(const std::string& script_path,
+                                  std::unique_ptr<TriggerContext> context) {
   DCHECK(!script_path.empty());
-  ExecuteScript(script_path, AutofillAssistantState::PROMPT);
+  ExecuteScript(script_path, std::move(context),
+                AutofillAssistantState::PROMPT);
 }
 
 void Controller::UpdateTouchableArea() {
@@ -775,10 +740,13 @@ std::string Controller::GetDebugContext() {
 
   dict.SetKey("status", base::Value(status_message_));
   if (trigger_context_) {
+    google::protobuf::RepeatedPtrField<ScriptParameterProto> parameters_proto;
+    trigger_context_->AddParameters(&parameters_proto);
     std::vector<base::Value> parameters_js;
-    for (const auto& entry : trigger_context_->script_parameters) {
+    for (const auto& parameter_proto : parameters_proto) {
       base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
-      parameter_js.SetKey(entry.first, base::Value(entry.second));
+      parameter_js.SetKey(parameter_proto.name(),
+                          base::Value(parameter_proto.value()));
       parameters_js.push_back(std::move(parameter_js));
     }
     dict.SetKey("parameters", base::Value(parameters_js));
@@ -904,11 +872,11 @@ void Controller::UpdatePaymentRequestActions() {
 
   UserAction confirm(payment_request_options_->confirm_chip,
                      payment_request_options_->confirm_direct_action);
-  confirm.enabled = confirm_button_enabled;
+  confirm.SetEnabled(confirm_button_enabled);
   if (confirm_button_enabled) {
-    confirm.callback =
+    confirm.SetCallback(
         base::BindOnce(&Controller::OnPaymentRequestContinueButtonClicked,
-                       weak_ptr_factory_.GetWeakPtr());
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   auto user_actions = std::make_unique<std::vector<UserAction>>();
@@ -988,14 +956,14 @@ void Controller::OnRunnableScriptsChanged(
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   for (const auto& script : runnable_scripts) {
     UserAction user_action;
-    user_action.chip = script.chip;
-    user_action.direct_action_names = script.direct_action_names;
+    user_action.chip() = script.chip;
+    user_action.direct_action() = script.direct_action;
     if (!user_action.has_triggers())
       continue;
 
-    user_action.callback =
-        base::BindOnce(&Controller::OnScriptSelected,
-                       weak_ptr_factory_.GetWeakPtr(), script.path);
+    user_action.SetCallback(base::BindOnce(&Controller::OnScriptSelected,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           script.path));
     user_actions->emplace_back(std::move(user_action));
   }
 
@@ -1098,12 +1066,6 @@ void Controller::OnWebContentsFocused(
     // This is only enabled when tab-switching is enabled.
     client_->ShowUI();
   }
-}
-
-bool Controller::IsCookieExperimentEnabled() const {
-  auto iter = trigger_context_->script_parameters.find(kCookieExperimentName);
-  return iter != trigger_context_->script_parameters.end() &&
-         iter->second == "1";
 }
 
 void Controller::OnTouchableAreaChanged(

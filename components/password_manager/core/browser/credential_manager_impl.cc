@@ -107,8 +107,8 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
         pending_request_ ? CredentialManagerError::PENDING_REQUEST
                          : CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
         base::nullopt);
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_REJECTED,
-                                  mediation);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kRejected, mediation);
     return;
   }
 
@@ -117,8 +117,8 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
   if (!client_->IsFillingEnabled(GetLastCommittedURL()) ||
       !client_->OnCredentialManagerUsed()) {
     std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
-                                  mediation);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNone, mediation);
     return;
   }
   // Return an empty credential if zero-click is required but disabled.
@@ -127,7 +127,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
     // Callback with empty credential info.
     std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
     LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_NONE_ZERO_CLICK_OFF, mediation);
+        metrics_util::CredentialManagerGetResult::kNoneZeroClickOff, mediation);
     return;
   }
 
@@ -192,12 +192,12 @@ void CredentialManagerImpl::SendPasswordForm(
     base::RecordAction(
         base::UserMetricsAction("CredentialManager_AccountChooser_Accepted"));
     metrics_util::LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_ACCOUNT_CHOOSER, mediation);
+        metrics_util::CredentialManagerGetResult::kAccountChooser, mediation);
   } else {
     base::RecordAction(
         base::UserMetricsAction("CredentialManager_AccountChooser_Dismissed"));
     metrics_util::LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_NONE, mediation);
+        metrics_util::CredentialManagerGetResult::kNone, mediation);
   }
   SendCredential(send_callback, info);
 }

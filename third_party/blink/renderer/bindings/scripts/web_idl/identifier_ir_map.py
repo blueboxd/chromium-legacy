@@ -132,8 +132,8 @@ class IdentifierIRMap(object):
                 # We don't allow to declare a definition of an IDL definition in
                 # multiple places.
                 raise ValueError('{} {} is defined twice.\n  {}\n  {}'.format(
-                    ir.kind, ir.identifier, ir.debug_info.locations[0],
-                    duplicated_ir.debug_info.locations[0]))
+                    ir.kind, ir.identifier, ir.debug_info.location,
+                    duplicated_ir.debug_info.location))
         except KeyError:
             pass
         self.add(ir)
@@ -157,8 +157,8 @@ class IdentifierIRMap(object):
         else:
             assert identifier not in irs_per_kind, (
                 'Duplicated definition: {}\n  {}\n  {}'.format(
-                    identifier, ir.debug_info.filepaths,
-                    irs_per_kind[identifier].debug_info.filepaths))
+                    identifier, ir.debug_info.location,
+                    irs_per_kind[identifier].debug_info.location))
             irs_per_kind[identifier] = ir
 
     def find_by_identifier(self, identifier, skip_current_phase=False):

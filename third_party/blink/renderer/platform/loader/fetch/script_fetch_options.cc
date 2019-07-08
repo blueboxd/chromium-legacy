@@ -55,7 +55,9 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   params.MutableResourceRequest().SetFetchImportanceMode(importance_);
 
   // its referrer policy to options's referrer policy. [spec text]
-  params.MutableResourceRequest().SetReferrerPolicy(referrer_policy_);
+  params.MutableResourceRequest().SetReferrerPolicy(
+      referrer_policy_,
+      ResourceRequest::SetReferrerPolicyLocation::kSFOCreateFetchParameters);
 
   params.SetCharset(encoding);
 

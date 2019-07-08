@@ -1266,12 +1266,12 @@ inline const T* ToElementOrDie(const Node* node) {
 }
 
 inline bool IsDisabledFormControl(const Node* node) {
-  return node->IsElementNode() && ToElement(node)->IsDisabledFormControl();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->IsDisabledFormControl();
 }
 
 inline Element* Node::parentElement() const {
-  ContainerNode* parent = parentNode();
-  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
+  return DynamicTo<Element>(parentNode());
 }
 
 inline bool Element::FastHasAttribute(const QualifiedName& name) const {

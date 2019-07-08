@@ -22,7 +22,7 @@ class ScriptState;
 class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Lock);
-
+  USING_PRE_FINALIZER(Lock, Dispose);
  public:
   static Lock* Create(ScriptState*,
                       const String& name,
@@ -38,7 +38,8 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   ~Lock() override;
 
   void Trace(blink::Visitor*) override;
-  EAGERLY_FINALIZE();
+
+  void Dispose();
 
   // Lock.idl
   String name() const { return name_; }

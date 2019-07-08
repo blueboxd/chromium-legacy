@@ -67,6 +67,51 @@ class PLATFORM_EXPORT ResourceRequest final {
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
+  enum class SetHttpReferrerLocation : uint8_t {
+    kCreateRedirectRequest,
+    kFrameLoaderResourceRequestForReload,
+    kFrameLoadRequest,
+    kInspectorNetworkAgent,
+    kLocalDomWindow,
+    kResourceFetcher,
+    kWebURLRequest,
+  };
+  enum class SetReferrerStringLocation : uint8_t {
+    kCSSFontFaceSrcValueFetch,
+    kCSSImageSetValueCacheImage,
+    kCSSImageValueCacheImage,
+    kHistoryItem,
+    kModuleScriptLoader,
+    kPerformHTTPFetch,
+    kPingLoader,
+    kPreloadRequestStart,
+    kResourceFetcher,
+    kThreadableLoaderCreateAccessControlPreflightRequest,
+    kThreadableLoaderPrepareCrossOriginRequest,
+    kWebLocalFrameImpl,
+  };
+  enum class SetReferrerPolicyLocation : uint8_t {
+    kAnchorElement,
+    kCSSFontFaceSrcValueFetch,
+    kCSSImageSetValueCacheImage,
+    kCSSImageValueCacheImage,
+    kFrameOwnerLoadOrRedirectSubframe,
+    kHistoryItem,
+    kImageLoader,
+    kLinkImport,
+    kLoadStylesheet,
+    kModuleLoader,
+    kPerformHTTPFetch,
+    kPingLoader,
+    kPrefetchIfNeeded,
+    kPreloadIfNeeded,
+    kPreloadRequestStart,
+    kResourceFetcher,
+    kSFOCreateFetchParameters,
+    kThreadableLoaderCreateAccessControlPreflightRequest,
+    kThreadableLoaderPrepareCrossOriginRequest,
+    kWebLocalFrameImpl,
+  };
 
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
@@ -151,21 +196,36 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpReferrer() const {
     return HttpHeaderField(http_names::kReferer);
   }
-  void SetHttpReferrer(const Referrer&);
+  SetHttpReferrerLocation HttpReferrerLocation() const {
+    return set_http_referrer_location_;
+  }
+  void SetHttpReferrer(const Referrer&, SetHttpReferrerLocation);
   bool DidSetHttpReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
+  void SetReferrerPolicy(
+      network::mojom::ReferrerPolicy referrer_policy,
+      SetReferrerPolicyLocation set_referrer_policy_location) {
     referrer_policy_ = referrer_policy;
+    set_referrer_policy_location_ = set_referrer_policy_location;
   }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
   }
+  SetReferrerPolicyLocation ReferrerPolicyLocation() const {
+    return set_referrer_policy_location_;
+  }
 
-  void SetReferrerString(const String& referrer_string) {
+  void SetReferrerString(
+      const String& referrer_string,
+      SetReferrerStringLocation set_referrer_string_location) {
     referrer_string_ = referrer_string;
+    set_referrer_string_location_ = set_referrer_string_location;
   }
   const String& ReferrerString() const { return referrer_string_; }
+  SetReferrerStringLocation ReferrerStringLocation() const {
+    return set_referrer_string_location_;
+  }
 
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(http_names::kOrigin);
@@ -497,6 +557,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
+  // TODO(domfarolino): Remove these after crash debugging is complete.
+  SetHttpReferrerLocation set_http_referrer_location_;
+  SetReferrerStringLocation set_referrer_string_location_;
+  SetReferrerPolicyLocation set_referrer_policy_location_;
+
   base::Optional<String> suggested_filename_;
 
   mutable CacheControlHeader cache_control_header_cache_;

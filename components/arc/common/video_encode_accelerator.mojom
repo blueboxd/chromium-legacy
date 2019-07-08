@@ -11,19 +11,6 @@ import "components/arc/common/video_common.mojom";
 
 // Next MinVersion: 4
 
-[Extensible]
-enum VideoPixelFormat {
-  // The values must match to the values in media::VideoPixelFormat
-  PIXEL_FORMAT_UNKNOWN = 0,
-  PIXEL_FORMAT_I420 = 1,
-  [MinVersion=2] PIXEL_FORMAT_YV12 = 2,
-  [MinVersion=2] PIXEL_FORMAT_NV12 = 6,
-  [MinVersion=2] PIXEL_FORMAT_NV21 = 7,
-  [MinVersion=2] PIXEL_FORMAT_ARGB = 10,
-  [MinVersion=2] PIXEL_FORMAT_ABGR = 27,
-  [MinVersion=2] PIXEL_FORMAT_XBGR = 28,
-};
-
 // Specification of an encoding profile supported by an encoder.
 struct VideoEncodeProfile {
   VideoCodecProfile profile;

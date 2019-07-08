@@ -83,10 +83,10 @@ TEST(ProtocolUtilsTest, InterruptsCannotBeAutostart) {
 }
 
 TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
-  TriggerContext trigger_context;
-  trigger_context.script_parameters["a"] = "b";
-  trigger_context.script_parameters["c"] = "d";
-  trigger_context.experiment_ids = "1,2,3";
+  std::map<std::string, std::string> parameters;
+  parameters["a"] = "b";
+  parameters["c"] = "d";
+  TriggerContextImpl trigger_context(parameters, "1,2,3");
 
   ScriptActionRequestProto request;
   EXPECT_TRUE(
@@ -110,10 +110,10 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
 }
 
 TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
-  TriggerContext trigger_context;
-  trigger_context.script_parameters["a"] = "b";
-  trigger_context.script_parameters["c"] = "d";
-  trigger_context.experiment_ids = "1,2,3";
+  std::map<std::string, std::string> parameters;
+  parameters["a"] = "b";
+  parameters["c"] = "d";
+  TriggerContextImpl trigger_context(parameters, "1,2,3");
 
   ScriptActionRequestProto request;
   std::vector<ProcessedActionProto> processed_actions;
@@ -129,10 +129,10 @@ TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
 }
 
 TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
-  TriggerContext trigger_context;
-  trigger_context.script_parameters["a"] = "b";
-  trigger_context.script_parameters["c"] = "d";
-  trigger_context.experiment_ids = "1,2,3";
+  std::map<std::string, std::string> parameters;
+  parameters["a"] = "b";
+  parameters["c"] = "d";
+  TriggerContextImpl trigger_context(parameters, "1,2,3");
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
@@ -190,7 +190,7 @@ TEST(ProtocolUtilsTest, AddScriptWithDirectAction) {
 
   EXPECT_NE(nullptr, script);
   EXPECT_EQ("path", script->handle.path);
-  EXPECT_THAT(script->handle.direct_action_names, ElementsAre("action_name"));
+  EXPECT_THAT(script->handle.direct_action.names, ElementsAre("action_name"));
   EXPECT_TRUE(script->handle.chip.empty());
   EXPECT_FALSE(script->handle.autostart);
   EXPECT_NE(nullptr, script->precondition);

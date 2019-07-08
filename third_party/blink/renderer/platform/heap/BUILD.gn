@@ -28,6 +28,8 @@ blink_platform_sources("heap") {
     "blink_gc.h",
     "blink_gc_memory_dump_provider.cc",
     "blink_gc_memory_dump_provider.h",
+    "cancelable_task_scheduler.cc",
+    "cancelable_task_scheduler.h",
     "finalizer_traits.h",
     "garbage_collected.h",
     "gc_info.cc",
@@ -104,6 +106,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
   sources = [
     "address_cache_test.cc",
     "blink_gc_memory_dump_provider_test.cc",
+    "cancelable_task_scheduler_test.cc",
     "gc_info_test.cc",
     "heap_compact_test.cc",
     "heap_stats_collector_test.cc",

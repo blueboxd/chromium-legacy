@@ -2483,9 +2483,9 @@ void Document::PropagateStyleToViewport() {
 static void AssertLayoutTreeUpdated(Node& root) {
   Node* node = &root;
   while (node) {
-    if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
-        node->IsElementNode() &&
-        ToElement(node)->StyleRecalcBlockedByDisplayLock(
+    auto* element = DynamicTo<Element>(node);
+    if (element && RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+        element->StyleRecalcBlockedByDisplayLock(
             DisplayLockContext::kChildren)) {
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;
@@ -2795,9 +2795,10 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
         (ancestor->NeedsAdjacentStyleRecalc() && !ignore_adjacent_style)) {
       return true;
     }
-    if (!ancestor->IsElementNode())
+    auto* element = DynamicTo<Element>(ancestor);
+    if (!element)
       continue;
-    if (auto* context = ToElement(ancestor)->GetDisplayLockContext()) {
+    if (auto* context = element->GetDisplayLockContext()) {
       // Even if the ancestor is style-clean, we might've previously
       // blocked a style traversal going to the ancestor or its descendants.
       if (context->StyleTraversalWasBlocked()) {
@@ -5206,8 +5207,8 @@ Element* Document::SequentialFocusNavigationStartingPoint(
     Node* node = sequential_focus_navigation_starting_point_->startContainer();
     DCHECK_EQ(node,
               sequential_focus_navigation_starting_point_->endContainer());
-    if (node->IsElementNode())
-      return ToElement(node);
+    if (auto* element = DynamicTo<Element>(node))
+      return element;
     if (Element* neighbor_element = type == kWebFocusTypeForward
                                         ? ElementTraversal::Previous(*node)
                                         : ElementTraversal::Next(*node))
@@ -5217,13 +5218,11 @@ Element* Document::SequentialFocusNavigationStartingPoint(
 
   // Range::selectNodeContents didn't select contents because the element had
   // no children.
-  if (sequential_focus_navigation_starting_point_->startContainer()
-          ->IsElementNode() &&
-      !sequential_focus_navigation_starting_point_->startContainer()
-           ->hasChildren() &&
+  auto* element = DynamicTo<Element>(
+      sequential_focus_navigation_starting_point_->startContainer());
+  if (element && !element->hasChildren() &&
       sequential_focus_navigation_starting_point_->startOffset() == 0)
-    return ToElement(
-        sequential_focus_navigation_starting_point_->startContainer());
+    return element;
 
   // A node selected by Range::selectNodeContents was removed from the
   // document tree.
@@ -5235,11 +5234,11 @@ Element* Document::SequentialFocusNavigationStartingPoint(
     // FocusController. Ideally we should find backward/forward focusable
     // elements before the starting point is disconnected. crbug.com/606582
     if (type == kWebFocusTypeForward) {
-      Node* previous = next_node;
-      do {
-        previous = FlatTreeTraversal::Previous(*previous);
-      } while (previous && !previous->IsElementNode());
-      return ToElement(previous);
+      Node* previous = FlatTreeTraversal::Previous(*next_node);
+      for (; previous; previous = FlatTreeTraversal::Previous(*previous)) {
+        if (auto* element = DynamicTo<Element>(previous))
+          return element;
+      }
     }
     for (Node* next = next_node; next; next = FlatTreeTraversal::Next(*next)) {
       if (auto* element = DynamicTo<Element>(next))
@@ -6910,7 +6909,7 @@ bool Document::AllowInlineEventHandler(Node* node,
                                        EventListener* listener,
                                        const String& context_url,
                                        const WTF::OrdinalNumber& context_line) {
-  Element* element = node && node->IsElementNode() ? ToElement(node) : nullptr;
+  auto* element = DynamicTo<Element>(node);
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-content-attributes
   // Step 5.1. If the Should element's inline behavior be blocked by Content
@@ -7442,8 +7441,8 @@ void Document::UpdateHoverState(Element* inner_element_in_document) {
       new_hover_element) {
     Node* ancestor = FlatTreeTraversal::CommonAncestor(*old_hover_element,
                                                        *new_hover_element);
-    if (ancestor && ancestor->IsElementNode())
-      ancestor_element = ToElement(ancestor);
+    if (auto* element = DynamicTo<Element>(ancestor))
+      ancestor_element = element;
   }
 
   HeapVector<Member<Element>, 32> elements_to_remove_from_chain;

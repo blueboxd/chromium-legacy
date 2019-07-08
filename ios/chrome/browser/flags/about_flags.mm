@@ -496,10 +496,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
-    {"display-search-engine-favicon",
-     flag_descriptions::kDisplaySearchEngineFaviconName,
-     flag_descriptions::kDisplaySearchEngineFaviconDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDisplaySearchEngineFavicon)},
     {"autofill-no-local-save-on-unmask-success",
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription,

@@ -32,7 +32,7 @@ class UiController;
 class WebController;
 class ClientMemory;
 struct ClientSettings;
-struct TriggerContext;
+class TriggerContext;
 
 class ScriptExecutorDelegate {
  public:

@@ -29,6 +29,7 @@ source_set("page_info") {
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
+    "//ios/chrome/common/colors",
     "//ios/web",
     "//ios/web/public/security",
     "//ui/base",

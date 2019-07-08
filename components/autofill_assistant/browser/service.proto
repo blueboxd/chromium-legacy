@@ -1455,7 +1455,19 @@ message SelectionInputProto {
 // Defines a mapping to an Android Q direct action.
 message DirectActionProto {
   // Map to direct actions with the given names.
-  repeated string names = 12;
+  repeated string names = 1;
+
+  // Arguments to report as required for the direct action.
+  //
+  // This is included into the definition reported to the caller without being
+  // interpreted. Requirement is not enforced.
+  repeated string required_arguments = 2;
+
+  // Arguments to report as optional for the direct action.
+  //
+  // This is included into the definition reported to the caller without being
+  // interpreted.
+  repeated string optional_arguments = 3;
 }
 
 // Action to show a popup bubble on top of the bottom sheet, anchored at the

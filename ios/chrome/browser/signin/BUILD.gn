@@ -77,6 +77,7 @@ source_set("signin") {
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/reading_list:reading_list_remover",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common",
     "//ios/net",
     "//ios/public/provider/chrome/browser",

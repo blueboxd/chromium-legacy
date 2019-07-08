@@ -26,16 +26,12 @@ class WebContents;
 namespace web_app {
 
 enum class InstallResultCode;
-class AppRegistrar;
-class InstallFinalizer;
 class WebAppDataRetriever;
 class WebAppInstallTask;
 
 class WebAppInstallManager final : public InstallManager {
  public:
-  WebAppInstallManager(Profile* profile,
-                       AppRegistrar* app_registrar,
-                       InstallFinalizer* install_finalizer);
+  explicit WebAppInstallManager(Profile* profile);
   ~WebAppInstallManager() override;
 
   // InstallManager:
@@ -107,9 +103,6 @@ class WebAppInstallManager final : public InstallManager {
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
   bool web_contents_ready_ = false;
-
-  AppRegistrar* app_registrar_;
-  InstallFinalizer* install_finalizer_;
 
   bool is_shutting_down_ = false;
 

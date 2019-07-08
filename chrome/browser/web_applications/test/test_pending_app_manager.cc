@@ -19,18 +19,21 @@
 
 namespace web_app {
 
-TestPendingAppManager::TestPendingAppManager()
-    : PendingAppManager(&registrar_),
-      deduped_install_count_(0),
-      deduped_uninstall_count_(0) {}
+TestPendingAppManager::TestPendingAppManager(TestAppRegistrar* registrar)
+    : deduped_install_count_(0),
+      deduped_uninstall_count_(0),
+      registrar_(registrar) {
+  // TODO(crbug.com/973324): Wire this up to a TestInstallFinalizer.
+  SetSubsystems(registrar, nullptr);
+}
 
 TestPendingAppManager::~TestPendingAppManager() = default;
 
 void TestPendingAppManager::SimulatePreviouslyInstalledApp(
     const GURL& url,
     InstallSource install_source) {
-  registrar_.AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
-                            {url, install_source});
+  registrar_->AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
+                             {url, install_source});
 }
 
 void TestPendingAppManager::SetInstallResultCode(
@@ -52,9 +55,10 @@ void TestPendingAppManager::Install(InstallOptions install_options,
         // Use a WeakPtr to be able to simulate the Install callback running
         // after PendingAppManager gets deleted.
         if (weak_ptr) {
-          if (!registrar_.LookupExternalAppId(url)) {
-            registrar_.AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
-                                      {url, install_options.install_source});
+          if (!registrar_->LookupExternalAppId(url)) {
+            registrar_->AddExternalApp(
+                TestInstallFinalizer::GetAppIdForUrl(url),
+                {url, install_options.install_source});
             deduped_install_count_++;
           }
           install_requests_.push_back(install_options);
@@ -78,9 +82,9 @@ void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
         FROM_HERE,
         base::BindLambdaForTesting([this, weak_ptr, url, callback]() {
           if (weak_ptr) {
-            base::Optional<AppId> app_id = registrar_.LookupExternalAppId(url);
+            base::Optional<AppId> app_id = registrar_->LookupExternalAppId(url);
             if (app_id) {
-              registrar_.RemoveExternalApp(*app_id);
+              registrar_->RemoveExternalApp(*app_id);
               deduped_uninstall_count_++;
             }
             uninstall_requests_.push_back(url);

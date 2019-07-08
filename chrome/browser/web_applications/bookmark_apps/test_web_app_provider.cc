@@ -24,11 +24,8 @@ namespace web_app {
 // static
 std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
     content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto provider = std::make_unique<TestWebAppProvider>(profile);
-  provider->Init();
-
-  return provider;
+  return std::make_unique<TestWebAppProvider>(
+      Profile::FromBrowserContext(context));
 }
 
 TestWebAppProvider::TestWebAppProvider(Profile* profile)
@@ -38,31 +35,37 @@ TestWebAppProvider::~TestWebAppProvider() = default;
 
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
   registrar_ = std::move(registrar);
+  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetInstallManager(
     std::unique_ptr<InstallManager> install_manager) {
   install_manager_ = std::move(install_manager);
+  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetInstallFinalizer(
     std::unique_ptr<InstallFinalizer> install_finalizer) {
   install_finalizer_ = std::move(install_finalizer);
+  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetPendingAppManager(
     std::unique_ptr<PendingAppManager> pending_app_manager) {
   pending_app_manager_ = std::move(pending_app_manager);
+  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetSystemWebAppManager(
     std::unique_ptr<SystemWebAppManager> system_web_app_manager) {
   system_web_app_manager_ = std::move(system_web_app_manager);
+  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetWebAppPolicyManager(
     std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
   web_app_policy_manager_ = std::move(web_app_policy_manager);
+  ConnectSubsystems();
 }
 
 TestWebAppProviderCreator::TestWebAppProviderCreator(

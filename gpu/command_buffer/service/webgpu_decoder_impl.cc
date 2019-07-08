@@ -585,8 +585,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   }
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      DAWN_TEXTURE_USAGE_BIT_TRANSFER_SRC |
-      DAWN_TEXTURE_USAGE_BIT_TRANSFER_DST | DAWN_TEXTURE_USAGE_BIT_SAMPLED |
+      DAWN_TEXTURE_USAGE_BIT_COPY_SRC | DAWN_TEXTURE_USAGE_BIT_COPY_DST |
+      DAWN_TEXTURE_USAGE_BIT_SAMPLED |
       DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";

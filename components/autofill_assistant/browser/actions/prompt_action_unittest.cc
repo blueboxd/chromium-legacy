@@ -91,11 +91,11 @@ TEST_F(PromptActionTest, SelectButtons) {
 
   ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
 
-  EXPECT_EQ("Ok", (*user_actions_)[0].chip.text);
-  EXPECT_EQ(HIGHLIGHTED_ACTION, (*user_actions_)[0].chip.type);
+  EXPECT_EQ("Ok", (*user_actions_)[0].chip().text);
+  EXPECT_EQ(HIGHLIGHTED_ACTION, (*user_actions_)[0].chip().type);
 
-  EXPECT_EQ("Cancel", (*user_actions_)[1].chip.text);
-  EXPECT_EQ(NORMAL_ACTION, (*user_actions_)[1].chip.type);
+  EXPECT_EQ("Cancel", (*user_actions_)[1].chip().text);
+  EXPECT_EQ(NORMAL_ACTION, (*user_actions_)[1].chip().type);
 
   EXPECT_CALL(
       callback_,
@@ -103,8 +103,8 @@ TEST_F(PromptActionTest, SelectButtons) {
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
           Property(&ProcessedActionProto::prompt_choice,
                    Property(&PromptProto::Choice::server_payload, "ok"))))));
-  DCHECK((*user_actions_)[0].callback);
-  std::move((*user_actions_)[0].callback).Run();
+  EXPECT_TRUE((*user_actions_)[0].HasCallback());
+  (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
 }
 
 TEST_F(PromptActionTest, ReportDirectAction) {
@@ -125,11 +125,11 @@ TEST_F(PromptActionTest, ReportDirectAction) {
 
   ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
 
-  EXPECT_THAT((*user_actions_)[0].direct_action_names, ElementsAre("ok"));
-  EXPECT_FALSE((*user_actions_)[0].chip.empty());
-  EXPECT_THAT((*user_actions_)[1].direct_action_names,
+  EXPECT_THAT((*user_actions_)[0].direct_action().names, ElementsAre("ok"));
+  EXPECT_FALSE((*user_actions_)[0].chip().empty());
+  EXPECT_THAT((*user_actions_)[1].direct_action().names,
               ElementsAre("maybe", "I_guess"));
-  EXPECT_TRUE((*user_actions_)[1].chip.empty());
+  EXPECT_TRUE((*user_actions_)[1].chip().empty());
 }
 
 TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
@@ -173,14 +173,15 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
       .WillRepeatedly(RunOnceCallback<1>(true));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
-  EXPECT_TRUE((*user_actions_)[0].enabled);
+  EXPECT_TRUE((*user_actions_)[0].enabled());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(false));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
-  EXPECT_FALSE((*user_actions_)[0].enabled);
+  EXPECT_FALSE((*user_actions_)[0].enabled());
+  EXPECT_TRUE((*user_actions_)[0].HasCallback());
 }
 
 TEST_F(PromptActionTest, AutoSelect) {
@@ -247,7 +248,8 @@ TEST_F(PromptActionTest, Terminate) {
 
   // Chips pointing to a deleted action do nothing.
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
-  std::move((*user_actions_)[0].callback).Run();
+  EXPECT_TRUE((*user_actions_)[0].HasCallback());
+  (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
 }
 
 }  // namespace

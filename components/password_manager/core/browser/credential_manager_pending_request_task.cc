@@ -122,8 +122,8 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   using metrics_util::LogCredentialManagerGetResult;
   if (delegate_->GetOrigin() != origin_) {
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
-                                  mediation_);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNone, mediation_);
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
@@ -179,7 +179,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
                                               origin_);
     base::RecordAction(base::UserMetricsAction("CredentialManager_Autosignin"));
     LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_AUTOSIGNIN, mediation_);
+        metrics_util::CredentialManagerGetResult::kAutoSignIn, mediation_);
     delegate_->SendCredential(send_callback_, info);
     return;
   }
@@ -187,13 +187,14 @@ void CredentialManagerPendingRequestTask::ProcessForms(
   if (mediation_ == CredentialMediationRequirement::kSilent) {
     metrics_util::CredentialManagerGetResult get_result;
     if (local_results.empty())
-      get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_EMPTY_STORE;
+      get_result = metrics_util::CredentialManagerGetResult::kNoneEmptyStore;
     else if (!can_use_autosignin)
-      get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_MANY_CREDENTIALS;
+      get_result =
+          metrics_util::CredentialManagerGetResult::kNoneManyCredentials;
     else if (local_results[0]->skip_zero_click)
-      get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_SIGNED_OUT;
+      get_result = metrics_util::CredentialManagerGetResult::kNoneSignedOut;
     else
-      get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_FIRST_RUN;
+      get_result = metrics_util::CredentialManagerGetResult::kNoneFirstRun;
 
     if (can_use_autosignin) {
       // The user had credentials, but either chose not to share them with the
@@ -218,7 +219,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
 
   if (local_results.empty()) {
     LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_NONE_EMPTY_STORE, mediation_);
+        metrics_util::CredentialManagerGetResult::kNoneEmptyStore, mediation_);
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
@@ -228,8 +229,8 @@ void CredentialManagerPendingRequestTask::ProcessForms(
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
               base::Unretained(delegate_), send_callback_, mediation_))) {
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
-                                  mediation_);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNone, mediation_);
     delegate_->SendCredential(send_callback_, CredentialInfo());
   }
 }

@@ -53,6 +53,7 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list:web_state_list",
+    "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/third_party/material_components_ios",

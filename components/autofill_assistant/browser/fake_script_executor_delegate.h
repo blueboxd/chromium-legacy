@@ -76,8 +76,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     web_controller_ = web_controller;
   }
 
-  std::map<std::string, std::string>* GetMutableParameters() {
-    return &trigger_context_.script_parameters;
+  void SetTriggerContext(std::unique_ptr<TriggerContext> trigger_context) {
+    trigger_context_ = std::move(trigger_context);
   }
 
   AutofillAssistantState GetState() { return state_; }
@@ -108,7 +108,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   UiController* ui_controller_ = nullptr;
   WebController* web_controller_ = nullptr;
   ClientMemory memory_;
-  TriggerContext trigger_context_;
+  std::unique_ptr<TriggerContext> trigger_context_;
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
   std::string status_message_;
   std::unique_ptr<Details> details_;

@@ -403,13 +403,13 @@ void UiControllerAndroid::UpdateSuggestions(
   int user_action_count = static_cast<int>(user_actions.size());
   for (int i = 0; i < user_action_count; i++) {
     const auto& user_action = user_actions[i];
-    if (user_action.chip.type != SUGGESTION)
+    if (user_action.chip().type != SUGGESTION)
       continue;
 
     Java_AutofillAssistantUiController_addSuggestion(
         env, java_object_, chips,
-        base::android::ConvertUTF8ToJavaString(env, user_action.chip.text), i,
-        user_action.chip.icon, !user_action.enabled);
+        base::android::ConvertUTF8ToJavaString(env, user_action.chip().text), i,
+        user_action.chip().icon, !user_action.enabled());
   }
   Java_AutofillAssistantUiController_setSuggestions(env, java_object_, chips);
 }
@@ -425,7 +425,7 @@ void UiControllerAndroid::UpdateActions(
   int user_action_count = static_cast<int>(user_actions.size());
   for (int i = 0; i < user_action_count; i++) {
     const auto& action = user_actions[i];
-    const Chip& chip = action.chip;
+    const Chip& chip = action.chip();
     switch (chip.type) {
       default:  // Ignore actions with other chip types or with no chips.
         break;
@@ -434,14 +434,14 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addHighlightedActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled, chip.sticky);
+            !action.enabled(), chip.sticky);
         break;
 
       case NORMAL_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled, chip.sticky);
+            !action.enabled(), chip.sticky);
         break;
 
       case CANCEL_ACTION:
@@ -450,7 +450,7 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addCancelButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled, chip.sticky);
+            !action.enabled(), chip.sticky);
         has_close_or_cancel = true;
         break;
 
@@ -458,7 +458,7 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled, chip.sticky);
+            !action.enabled(), chip.sticky);
         has_close_or_cancel = true;
         break;
 
@@ -466,7 +466,7 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addHighlightedActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled, chip.sticky);
+            !action.enabled(), chip.sticky);
         has_close_or_cancel = true;
         break;
     }

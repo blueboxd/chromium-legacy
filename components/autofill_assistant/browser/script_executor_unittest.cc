@@ -31,6 +31,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
@@ -54,8 +55,11 @@ class ScriptExecutorTest : public testing::Test,
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.SetCurrentURL(GURL("http://example.com/"));
 
+    std::map<std::string, std::string> script_parameters;
+    script_parameters["additional_param"] = "additional_param_value";
     executor_ = std::make_unique<ScriptExecutor>(
         kScriptPath,
+        TriggerContext::Create(script_parameters, "additional_exp"),
         /* global_payload= */ "initial global payload",
         /* script_payload= */ "initial payload",
         /* listener= */ this, &scripts_state_, &ordered_interrupts_,
@@ -177,16 +181,27 @@ TEST_F(ScriptExecutorTest, GetActionsFails) {
 }
 
 TEST_F(ScriptExecutorTest, ForwardParameters) {
-  auto* parameters = delegate_.GetMutableParameters();
-  (*parameters)["param1"] = "value1";
-  (*parameters)["param2"] = "value2";
-  EXPECT_CALL(mock_service_,
-              OnGetActions(StrEq(kScriptPath), _,
-                           Field(&TriggerContext::script_parameters,
-                                 AllOf(Contains(Pair("param1", "value1")),
-                                       Contains(Pair("param2", "value2")))),
-                           _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, ""));
+  std::map<std::string, std::string> parameters;
+  parameters["param"] = "value";
+  delegate_.SetTriggerContext(TriggerContext::Create(parameters, "exp"));
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
+                          const TriggerContext& trigger_context,
+                          const std::string& global_payload,
+                          const std::string& script_payload,
+                          Service::ResponseCallback& callback) {
+        // |trigger_context| includes data passed to
+        // ScriptExecutor constructor as well as data from the
+        // delegate's TriggerContext.
+        EXPECT_THAT("exp,additional_exp", trigger_context.experiment_ids());
+        EXPECT_THAT(
+            "additional_param_value",
+            trigger_context.GetParameter("additional_param").value_or(""));
+        EXPECT_THAT("value",
+                    trigger_context.GetParameter("param").value_or(""));
+
+        std::move(callback).Run(true, "");
+      }));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));

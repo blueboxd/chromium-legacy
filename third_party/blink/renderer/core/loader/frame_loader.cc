@@ -156,9 +156,11 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        frame_->GetDocument()->GetReferrerPolicy(),
-        frame_->GetDocument()->Url(),
-        frame_->GetDocument()->OutgoingReferrer()));
+                                frame_->GetDocument()->GetReferrerPolicy(),
+                                frame_->GetDocument()->Url(),
+                                frame_->GetDocument()->OutgoingReferrer()),
+                            ResourceRequest::SetHttpReferrerLocation::
+                                kFrameLoaderResourceRequestForReload);
   }
 
   request.SetSkipServiceWorker(frame_load_type ==

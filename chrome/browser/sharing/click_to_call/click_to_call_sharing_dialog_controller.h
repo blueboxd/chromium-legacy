@@ -21,10 +21,6 @@ class SharingDeviceInfo;
 
 class ClickToCallSharingDialogController : public SharingDialogController {
  public:
-  // TODO(yasmo): Confirm this value with the team.
-  static constexpr base::TimeDelta kMessageExpiration =
-      base::TimeDelta::FromMinutes(10);
-
   ClickToCallSharingDialogController(content::WebContents* web_contents,
                                      SharingService* sharing_service,
                                      std::string phone_number);

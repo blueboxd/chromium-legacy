@@ -145,13 +145,11 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   DCHECK(SystemWebAppManager::IsEnabled());
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
-  // Create all real subsystems but do not start them:
-  provider->Init();
 
   // Override SystemWebAppManager with TestSystemWebAppManager:
   DCHECK(!test_system_web_app_manager_);
-  auto test_system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
-      profile, &provider->pending_app_manager());
+  auto test_system_web_app_manager =
+      std::make_unique<TestSystemWebAppManager>(profile);
   test_system_web_app_manager_ = test_system_web_app_manager.get();
   provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
 

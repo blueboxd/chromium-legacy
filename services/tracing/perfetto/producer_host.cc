@@ -141,11 +141,16 @@ void ProducerHost::ClearIncrementalState(const perfetto::DataSourceInstanceID*,
 // sanitization here because ProducerEndpoint::CommitData() (And any other
 // ProducerEndpoint methods) are designed to deal with malformed / malicious
 // inputs.
-void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request) {
+void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request,
+                              CommitDataCallback callback) {
   if (on_commit_callback_for_testing_) {
     on_commit_callback_for_testing_.Run(data_request);
   }
-  producer_endpoint_->CommitData(data_request);
+  // This assumes that CommitData() will execute the callback synchronously.
+  producer_endpoint_->CommitData(data_request, [&callback]() {
+    std::move(callback).Run();
+  });
+  DCHECK(!callback);  // Should have been run synchronously above.
 }
 
 void ProducerHost::RegisterDataSource(

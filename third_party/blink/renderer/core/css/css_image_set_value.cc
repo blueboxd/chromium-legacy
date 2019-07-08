@@ -64,9 +64,8 @@ void CSSImageSetValue::FillImageSet() {
 
     ImageWithScale image;
     image.image_url = image_url;
-    image.referrer = SecurityPolicy::GenerateReferrer(
-        image_value.GetReferrer().referrer_policy, KURL(image_url),
-        image_value.GetReferrer().referrer);
+    image.referrer.referrer = image_value.GetReferrer().referrer;
+    image.referrer.referrer_policy = image_value.GetReferrer().referrer_policy;
     image.scale_factor = scale_factor;
     images_in_set_.push_back(image);
     ++i;
@@ -114,7 +113,13 @@ StyleImage* CSSImageSetValue::CacheImage(
     // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));
-    resource_request.SetHttpReferrer(image.referrer);
+    resource_request.SetReferrerPolicy(
+        ReferrerPolicyResolveDefault(image.referrer.referrer_policy),
+        ResourceRequest::SetReferrerPolicyLocation::
+            kCSSImageSetValueCacheImage);
+    resource_request.SetReferrerString(
+        image.referrer.referrer, ResourceRequest::SetReferrerStringLocation::
+                                     kCSSImageSetValueCacheImage);
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss

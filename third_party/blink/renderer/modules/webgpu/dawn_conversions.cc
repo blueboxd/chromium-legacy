@@ -498,7 +498,7 @@ DawnAddressMode AsDawnEnum<DawnAddressMode>(const WTF::String& webgpu_enum) {
     return DAWN_ADDRESS_MODE_REPEAT;
   }
   if (webgpu_enum == "mirror-repeat") {
-    return DAWN_ADDRESS_MODE_MIRRORED_REPEAT;
+    return DAWN_ADDRESS_MODE_MIRROR_REPEAT;
   }
   NOTREACHED();
   return DAWN_ADDRESS_MODE_FORCE32;

@@ -1046,9 +1046,10 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   EXPECT_EQ(kExistingURL1, controller.GetVisibleEntry()->GetURL());
 }
 
-// Tests an ignored navigation when there is a pending new navigation.
-// This will happen if the user enters a URL, but before that commits, the
-// current blank page reloads.  See http://crbug.com/77507.
+// Verify that a direct commit message from the renderer properly cancels a
+// pending new navigation. This will happen if the user enters a URL, but
+// before that commits, the current blank page reloads.
+// Original bug: http://crbug.com/77507.
 TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   NavigationControllerImpl& controller = controller_impl();
 
@@ -1063,8 +1064,9 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");
-  controller.LoadURL(
-      kNewURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kNewURL, contents());
+  navigation->Start();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -1072,10 +1074,8 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
-  // Before that commits, a document.write and location.reload can cause the
-  // renderer to send a FrameNavigate with nav_entry_id 0.
-  // PlzNavigate: this will stop the old navigation and start a new one.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kExistingURL, true);
+  // Certain rare cases can make a direct DidCommitProvisionalLoad call without
+  // going to the browser. Renderer reload of an about:blank is such a case.
   main_test_rfh()->SendNavigate(0, false, kExistingURL);
 
   // This should clear the pending entry and notify of a navigation state

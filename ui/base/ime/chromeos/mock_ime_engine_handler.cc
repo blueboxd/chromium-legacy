@@ -21,8 +21,7 @@ MockIMEEngineHandler::MockIMEEngineHandler()
       last_set_surrounding_cursor_pos_(0),
       last_set_surrounding_anchor_pos_(0) {}
 
-MockIMEEngineHandler::~MockIMEEngineHandler() {
-}
+MockIMEEngineHandler::~MockIMEEngineHandler() = default;
 
 void MockIMEEngineHandler::FocusIn(const InputContext& input_context) {
   last_text_input_context_ = input_context;

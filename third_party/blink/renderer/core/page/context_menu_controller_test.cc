@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -80,12 +81,24 @@ class ContextMenuControllerTest : public testing::Test {
         .ShowContextMenu(GetDocument()->GetFrame(), location, source);
   }
 
+  bool ShowContextMenuForElement(Element* element, WebMenuSourceType source) {
+    const DOMRect* rect = element->getBoundingClientRect();
+    PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                            LayoutUnit((rect->top() + rect->bottom()) / 2));
+    ContextMenuAllowedScope context_menu_allowed_scope;
+    return ShowContextMenu(location, source);
+  }
+
   Document* GetDocument() {
     return static_cast<Document*>(
         web_view_helper_.LocalMainFrame()->GetDocument());
   }
 
   Page* GetPage() { return web_view_helper_.GetWebView()->GetPage(); }
+  WebLocalFrameImpl* LocalMainFrame() {
+    return web_view_helper_.LocalMainFrame();
+  }
+  void LoadAhem() { web_view_helper_.LoadAhem(); }
 
   const TestWebFrameClientImpl& GetWebFrameClient() const {
     return web_frame_client_;
@@ -454,6 +467,80 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
               !!(context_menu_data.media_flags & expected_media_flag.first))
         << "Flag 0x" << std::hex << expected_media_flag.first;
   }
+}
+
+TEST_F(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
+  frame_test_helpers::LoadFrame(LocalMainFrame(), R"SVG(data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg'
+         xmlns:h='http://www.w3.org/1999/xhtml'
+         font-family='Ahem'>
+      <text y='20' id='t'>Copyable text</text>
+      <foreignObject y='30' width='100' height='200'>
+        <h:div id='e' style='width: 100px; height: 50px'
+               contenteditable='true'>
+          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        </h:div>
+      </foreignObject>
+    </svg>
+  )SVG");
+  LoadAhem();
+
+  Document* document = GetDocument();
+  ASSERT_TRUE(document->IsSVGDocument());
+
+  Element* text_element = document->getElementById("t");
+  document->UpdateStyleAndLayout();
+  FrameSelection& selection = document->GetFrame()->Selection();
+
+  // <text> element
+  selection.SelectSubString(*text_element, 4, 8);
+  EXPECT_TRUE(ShowContextMenuForElement(text_element, kMenuSourceMouse));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.selected_text, "able tex");
+
+  // <div contenteditable=true>
+  Element* editable_element = document->getElementById("e");
+  selection.SelectSubString(*editable_element, 0, 42);
+  EXPECT_TRUE(ShowContextMenuForElement(editable_element, kMenuSourceMouse));
+
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags,
+            WebContextMenuData::kCanCut | WebContextMenuData::kCanCopy |
+                WebContextMenuData::kCanPaste | WebContextMenuData::kCanDelete |
+                WebContextMenuData::kCanEditRichly);
+}
+
+TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
+  frame_test_helpers::LoadFrame(LocalMainFrame(), R"XML(data:text/xml,
+    <root>
+      <style xmlns="http://www.w3.org/1999/xhtml">
+        root { color: blue; }
+      </style>
+      <text id="t">Blue text</text>
+    </root>
+  )XML");
+
+  Document* document = GetDocument();
+  ASSERT_TRUE(document->IsXMLDocument());
+  ASSERT_FALSE(document->IsHTMLDocument());
+
+  Element* text_element = document->getElementById("t");
+  document->UpdateStyleAndLayout();
+  FrameSelection& selection = document->GetFrame()->Selection();
+
+  selection.SelectAll();
+  EXPECT_TRUE(ShowContextMenuForElement(text_element, kMenuSourceMouse));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.selected_text, "Blue text");
 }
 
 }  // namespace blink

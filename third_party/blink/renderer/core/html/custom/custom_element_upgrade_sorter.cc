@@ -65,8 +65,9 @@ void CustomElementUpgradeSorter::Visit(HeapVector<Member<Element>>* result,
                                        const ChildSet::iterator& it) {
   if (it == children.end())
     return;
-  if (it->Get()->IsElementNode() && elements_->Contains(ToElement(*it)))
-    result->push_back(ToElement(*it));
+  auto* element = DynamicTo<Element>(it->Get());
+  if (element && elements_->Contains(element))
+    result->push_back(*element);
   Sorted(result, *it);
   children.erase(it);
 }

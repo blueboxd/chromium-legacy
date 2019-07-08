@@ -15,9 +15,9 @@
 #include "ios/chrome/browser/autofill/autofill_profile_validator_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/web_data_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 
 namespace autofill {
 

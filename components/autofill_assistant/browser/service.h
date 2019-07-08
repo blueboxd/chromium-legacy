@@ -25,7 +25,7 @@ class BrowserContext;
 
 namespace autofill_assistant {
 class Client;
-struct TriggerContext;
+class TriggerContext;
 
 // Autofill assistant service to communicate with the server to get scripts and
 // client actions.
@@ -50,13 +50,13 @@ class Service {
       base::OnceCallback<void(bool result, const std::string&)>;
   // Get scripts for a given |url|, which should be a valid URL.
   virtual void GetScriptsForUrl(const GURL& url,
-                                const TriggerContext* trigger_context,
+                                const TriggerContext& trigger_context,
                                 ResponseCallback callback);
 
   // Get actions.
   virtual void GetActions(const std::string& script_path,
                           const GURL& url,
-                          const TriggerContext* trigger_context,
+                          const TriggerContext& trigger_context,
                           const std::string& global_payload,
                           const std::string& script_payload,
                           ResponseCallback callback);
@@ -64,7 +64,7 @@ class Service {
   // Get next sequence of actions according to server payloads in previous
   // response.
   virtual void GetNextActions(
-      const TriggerContext* trigger_context,
+      const TriggerContext& trigger_context,
       const std::string& previous_global_payload,
       const std::string& previous_script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,

@@ -98,11 +98,8 @@ const char kUmaSelectDefaultSearchEngine[] =
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (base::FeatureList::IsEnabled(kDisplaySearchEngineFavicon)) {
-    self.tableView.separatorInset =
-        UIEdgeInsetsMake(0, kTableViewSeparatorLeadingInset, 0,
-                         kTableViewSeparatorTrailingInset);
-  }
+  self.tableView.separatorInset = UIEdgeInsetsMake(
+      0, kTableViewSeparatorLeadingInset, 0, kTableViewSeparatorTrailingInset);
 
   [self loadModel];
 }
@@ -225,33 +222,30 @@ const char kUmaSelectDefaultSearchEngine[] =
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   DCHECK(item.type == ItemTypePrepopulatedEngine ||
          item.type == ItemTypeCustomEngine);
-  if (base::FeatureList::IsEnabled(kDisplaySearchEngineFavicon)) {
-    SearchEngineItem* engineItem =
-        base::mac::ObjCCastStrict<SearchEngineItem>(item);
-    TableViewURLCell* urlCell =
-        base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+  SearchEngineItem* engineItem =
+      base::mac::ObjCCastStrict<SearchEngineItem>(item);
+  TableViewURLCell* urlCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
 
-    if (item.type == ItemTypePrepopulatedEngine) {
-      _faviconLoader->FaviconForPageUrl(
-          engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
-          /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
-            // Only set favicon if the cell hasn't been reused.
-            if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
-              DCHECK(attributes);
-              [urlCell.faviconView configureWithAttributes:attributes];
-            }
-          });
-    } else {
-      _faviconLoader->FaviconForIconUrl(
-          engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
-          ^(FaviconAttributes* attributes) {
-            // Only set favicon if the cell hasn't been reused.
-            if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
-              DCHECK(attributes);
-              [urlCell.faviconView configureWithAttributes:attributes];
-            }
-          });
-    }
+  if (item.type == ItemTypePrepopulatedEngine) {
+    _faviconLoader->FaviconForPageUrl(
+        engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
+        /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
+          // Only set favicon if the cell hasn't been reused.
+          if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
+            DCHECK(attributes);
+            [urlCell.faviconView configureWithAttributes:attributes];
+          }
+        });
+  } else {
+    _faviconLoader->FaviconForIconUrl(
+        engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
+        ^(FaviconAttributes* attributes) {
+          // Only set favicon if the cell hasn't been reused.
+          if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
+            DCHECK(attributes);
+            [urlCell.faviconView configureWithAttributes:attributes];
+          }
+        });
   }
   return cell;
 }

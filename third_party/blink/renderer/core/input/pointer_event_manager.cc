@@ -809,9 +809,9 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         pointer_event->HasEventPath()) {
       for (const auto& context :
            pointer_event->GetEventPath().NodeEventContexts()) {
-        if (context.GetNode().IsElementNode() &&
-            event_handling_util::IsInDocument(&context.GetNode())) {
-          mouse_target = ToElement(&context.GetNode());
+        auto* element = DynamicTo<Element>(&context.GetNode());
+        if (element && event_handling_util::IsInDocument(element)) {
+          mouse_target = element;
           break;
         }
       }

@@ -45,13 +45,8 @@ struct PendingBookmarkAppManager::TaskAndCallback {
   OnceInstallCallback callback;
 };
 
-PendingBookmarkAppManager::PendingBookmarkAppManager(
-    Profile* profile,
-    web_app::AppRegistrar* registrar,
-    web_app::InstallFinalizer* install_finalizer)
-    : PendingAppManager(registrar),
-      profile_(profile),
-      install_finalizer_(install_finalizer),
+PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
+    : profile_(profile),
       externally_installed_app_prefs_(profile->GetPrefs()),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
@@ -69,7 +64,7 @@ void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
     return;
 
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
-      task_factory_.Run(profile_, registrar(), install_finalizer_,
+      task_factory_.Run(profile_, registrar(), finalizer(),
                         std::move(install_options)),
       std::move(callback)));
 
@@ -84,7 +79,7 @@ void PendingBookmarkAppManager::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
-        task_factory_.Run(profile_, registrar(), install_finalizer_,
+        task_factory_.Run(profile_, registrar(), finalizer(),
                           std::move(install_options)),
         callback));
   }
@@ -99,7 +94,7 @@ void PendingBookmarkAppManager::UninstallApps(
     std::vector<GURL> uninstall_urls,
     const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
-    install_finalizer_->UninstallExternalWebApp(
+    finalizer()->UninstallExternalWebApp(
         url, base::BindOnce(
                  [](const UninstallCallback& callback, const GURL& app_url,
                     bool uninstalled) { callback.Run(app_url, uninstalled); },

@@ -25,12 +25,14 @@ public class TaskInfo {
         private final long mWindowStartTimeMs;
         private final long mWindowEndTimeMs;
         private final boolean mHasWindowStartTimeConstraint;
+        private final boolean mExpiresAfterWindowEndTime;
 
         private OneOffInfo(long windowStartTimeMs, long windowEndTimeMs,
-                boolean hasWindowStartTimeConstraint) {
+                boolean hasWindowStartTimeConstraint, boolean expiresAfterWindowEndTime) {
             mWindowStartTimeMs = windowStartTimeMs;
             mWindowEndTimeMs = windowEndTimeMs;
             mHasWindowStartTimeConstraint = hasWindowStartTimeConstraint;
+            mExpiresAfterWindowEndTime = expiresAfterWindowEndTime;
         }
 
         /**
@@ -56,10 +58,19 @@ public class TaskInfo {
             return mHasWindowStartTimeConstraint;
         }
 
+        /**
+         * @return whether this one-off task expires after {@link #getWindowEndTimeMs()}
+         * False by default.
+         */
+        public boolean expiresAfterWindowEndTime() {
+            return mExpiresAfterWindowEndTime;
+        }
+
         @Override
         public String toString() {
-            return "{windowStartTimeMs: " + mWindowStartTimeMs + ", windowEndTimeMs: "
-                    + mWindowEndTimeMs + "}";
+            return "{windowStartTimeMs: " + mWindowStartTimeMs
+                    + ", windowEndTimeMs: " + mWindowEndTimeMs
+                    + "} - expires at window_end_time: " + mExpiresAfterWindowEndTime;
         }
     }
 
@@ -205,7 +216,7 @@ public class TaskInfo {
                     new PeriodicInfo(builder.mIntervalMs, builder.mFlexMs, builder.mHasFlex);
         } else {
             mOneOffInfo = new OneOffInfo(builder.mWindowStartTimeMs, builder.mWindowEndTimeMs,
-                    builder.mHasWindowStartTimeConstraint);
+                    builder.mHasWindowStartTimeConstraint, builder.mExpiresAfterWindowEndTime);
             mPeriodicInfo = null;
         }
     }
@@ -420,6 +431,7 @@ public class TaskInfo {
         private long mWindowStartTimeMs;
         private long mWindowEndTimeMs;
         private boolean mHasWindowStartTimeConstraint;
+        private boolean mExpiresAfterWindowEndTime;
 
         // Data about periodic tasks.
         private long mIntervalMs;
@@ -443,6 +455,19 @@ public class TaskInfo {
         Builder setWindowEndTimeMs(long windowEndTimeMs) {
             assert !mIsPeriodic;
             mWindowEndTimeMs = windowEndTimeMs;
+            return this;
+        }
+
+        /**
+         * Set whether the task should expire if not scheduled until the window end time.
+         * This should be called only for One-Off tasks.
+         *
+         * @param expiresAfterWindowEndTime whether the task expires or not.
+         * @return this {@link Builder}.
+         */
+        Builder setExpiresAfterWindowEndTime(boolean expiresAfterWindowEndTime) {
+            assert !mIsPeriodic;
+            mExpiresAfterWindowEndTime = expiresAfterWindowEndTime;
             return this;
         }
 

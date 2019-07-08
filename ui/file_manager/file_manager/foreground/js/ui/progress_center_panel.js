@@ -17,9 +17,6 @@ class ProgressCenterItemElement {
     /** @private {?function()} */
     this.cancelTransition_ = null;
 
-    /** @private {?function(string)} */
-    this.cancelCallback_ = null;
-
     /** @private {?Element} */
     this.track_ = null;
 
@@ -344,8 +341,11 @@ class ProgressCenterPanel {
             panelItem.setAttribute('secondary-text', item.subMessage);
           }
         }
-        this.cancelCallback_ = item.cancelCallback;
-        panelItem.signalCallback = this.processSignal_.bind(this);
+        panelItem.signalCallback = (signal) => {
+          if (signal === 'cancel' && item.cancelCallback) {
+            item.cancelCallback(item.id);
+          }
+        };
         panelItem.progress = item.progressRateInPercent;
         // Remove the feedback panel when complete, and create
         // an activity complete panel.
@@ -554,21 +554,6 @@ class ProgressCenterPanel {
       if (this.cancelCallback) {
         const id = itemElement.getAttribute('data-progress-id');
         this.cancelCallback(id);
-      }
-    }
-  }
-
-  /**
-   * Handles signal callback from a panel item.
-   * @param {string} signal What signal is being sent from the panel item.
-   * @suppress {missingProperties}
-   * @private
-   */
-  processSignal_(signal) {
-    if (signal == 'cancel') {
-      if (this.cancelCallback_) {
-        const id = this.id;
-        this.cancelCallback_(id);
       }
     }
   }

@@ -71,7 +71,7 @@ void RemoveWhiteSpaceOnlyTextNode(ContainerNode& container) {
     if (auto* text = DynamicTo<Text>(descendant)) {
       if (text->ContainsOnlyWhitespaceOrEmpty())
         text->remove();
-    } else if (Element* element = ToElementOrNull(descendant)) {
+    } else if (auto* element = DynamicTo<Element>(descendant)) {
       if (ShadowRoot* shadow_root = element->OpenShadowRoot())
         RemoveWhiteSpaceOnlyTextNode(*shadow_root);
     }

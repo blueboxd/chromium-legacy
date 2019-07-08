@@ -433,6 +433,12 @@ class FileTable extends cr.ui.Table {
     self.historyLoader_ = historyLoader;
     self.a11y = a11y;
 
+    // Force the list's ending spacer to be tall enough to allow overscroll.
+    let endSpacer = self.querySelector('.spacer:last-child');
+    if (endSpacer) {
+      endSpacer.classList.add('signals-overscroll');
+    }
+
     /** @private {ListThumbnailLoader} */
     self.listThumbnailLoader_ = null;
 

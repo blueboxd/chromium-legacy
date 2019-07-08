@@ -29,16 +29,29 @@ using testing::Values;
 namespace blink {
 namespace {
 
-class CSSPaintValueTest : public RenderingTest,
-                          public ::testing::WithParamInterface<bool> {
- public:
-  CSSPaintValueTest() : scoped_off_main_thread_css_paint_(GetParam()) {}
-
- private:
-  ScopedOffMainThreadCSSPaintForTest scoped_off_main_thread_css_paint_;
+enum {
+  kCSSPaintAPIArguments = 1 << 0,
+  kOffMainThreadCSSPaint = 1 << 1,
 };
 
-INSTANTIATE_TEST_SUITE_P(, CSSPaintValueTest, Values(false, true));
+class CSSPaintValueTest : public RenderingTest,
+                          public ::testing::WithParamInterface<unsigned>,
+                          private ScopedCSSPaintAPIArgumentsForTest,
+                          private ScopedOffMainThreadCSSPaintForTest {
+ public:
+  CSSPaintValueTest()
+      : ScopedCSSPaintAPIArgumentsForTest(GetParam() & kCSSPaintAPIArguments),
+        ScopedOffMainThreadCSSPaintForTest(GetParam() &
+                                           kOffMainThreadCSSPaint) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         CSSPaintValueTest,
+                         Values(0,
+                                kCSSPaintAPIArguments,
+                                kOffMainThreadCSSPaint,
+                                kCSSPaintAPIArguments |
+                                    kOffMainThreadCSSPaint));
 
 class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
  public:
@@ -93,14 +106,6 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
           ProvideOverrideGenerator);
 
   const FloatSize target_size(100, 100);
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    // In off-thread CSS Paint, the actual paint call is deferred.
-    EXPECT_CALL(*mock_generator, Paint(_, _, _)).Times(0);
-  } else {
-    ON_CALL(*mock_generator, Paint(_, _, _))
-        .WillByDefault(
-            Return(PaintGeneratedImage::Create(nullptr, target_size)));
-  }
 
   SetBodyInnerHTML(R"HTML(
     <div id="target"></div>
@@ -111,12 +116,22 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
   auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
   CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
 
-  // Initially the generator is not ready, so GetImage should fail.
+  // Initially the generator is not ready, so GetImage should fail (and no paint
+  // should happen).
+  EXPECT_CALL(*mock_generator, Paint(_, _, _)).Times(0);
   EXPECT_FALSE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 
   // Now mark the generator as ready - GetImage should then succeed.
-  EXPECT_CALL(*mock_generator, IsImageGeneratorReady()).WillOnce(Return(true));
+  ON_CALL(*mock_generator, IsImageGeneratorReady()).WillByDefault(Return(true));
+  // In off-thread CSS Paint, the actual paint call is deferred and so will
+  // never happen.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    EXPECT_CALL(*mock_generator, Paint(_, _, _))
+        .WillRepeatedly(
+            Return(PaintGeneratedImage::Create(nullptr, target_size)));
+  }
+
   EXPECT_TRUE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 }

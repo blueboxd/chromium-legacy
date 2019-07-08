@@ -76,7 +76,8 @@ void LinkImport::Process() {
 
   ResourceRequest resource_request(GetDocument().CompleteURL(url));
   network::mojom::ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
-  resource_request.SetReferrerPolicy(referrer_policy);
+  resource_request.SetReferrerPolicy(
+      referrer_policy, ResourceRequest::SetReferrerPolicyLocation::kLinkImport);
 
   ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();

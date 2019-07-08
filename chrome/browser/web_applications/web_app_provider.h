@@ -51,6 +51,13 @@ class WebAppPolicyManager;
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
 // Profile-linked KeyedService) and their associated PrefService.
+//
+// Lifecycle notes:
+// All subsystems are constructed independently of each other in the
+// WebAppProvider constructor.
+// Subsystem construction should have no side effects and start no tasks.
+// Tests can replace any of the subsystems before Start() is called.
+// Similarly, in destruction, subsystems should not refer to each other.
 class WebAppProvider : public WebAppProviderBase,
                        public content::NotificationObserver {
  public:
@@ -60,9 +67,10 @@ class WebAppProvider : public WebAppProviderBase,
   explicit WebAppProvider(Profile* profile);
   ~WebAppProvider() override;
 
-  // Create subsystems but do not start them (yet).
-  void Init();
-  // Start registry. All subsystems depend on it.
+  // TODO(crbug.com/973324): Wrap StartRegistry() with a Start() method that
+  // calls ConnectSubsystems().
+  // Start registry. All subsystems depend on it. This will run all subsystem
+  // startup tasks.
   void StartRegistry();
 
   // WebAppProviderBase:
@@ -75,9 +83,7 @@ class WebAppProvider : public WebAppProviderBase,
   // KeyedService:
   void Shutdown() override;
 
-  SystemWebAppManager& system_web_app_manager() {
-    return *system_web_app_manager_;
-  }
+  SystemWebAppManager& system_web_app_manager();
 
   void set_ui_delegate(WebAppUiDelegate* ui_delegate) {
     ui_delegate_ = ui_delegate;
@@ -102,6 +108,10 @@ class WebAppProvider : public WebAppProviderBase,
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.
   void CreateBookmarkAppsSubsystems(Profile* profile);
+
+  // Wire together subsystems but do not start them (yet). Can be called
+  // multiple times before StartRegistry().
+  void ConnectSubsystems();
 
   void OnRegistryReady();
 
@@ -133,6 +143,9 @@ class WebAppProvider : public WebAppProviderBase,
   base::OneShotEvent on_registry_ready_;
 
   Profile* profile_;
+
+  // Ensures that ConnectSubsystems() is not called after StartRegistry().
+  bool started_ = false;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 

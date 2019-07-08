@@ -241,6 +241,12 @@ void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto commit_callback =
+      callback ? base::BindOnce([](CommitDataCallback callback) { callback(); },
+                                callback)
+               : mojom::ProducerHost::CommitDataCallback();
+
   // We need to make sure the CommitData IPC is sent off without triggering any
   // trace events, as that could stall waiting for SMB chunks to be freed up
   // which requires the tracing service to receive the IPC.
@@ -248,17 +254,11 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
     AutoThreadLocalBoolean thread_is_in_trace_event(
         TraceEventDataSource::GetThreadIsInTraceEventTLS());
 
-    producer_host_->CommitData(commit);
+    producer_host_->CommitData(commit, std::move(commit_callback));
     return;
   }
 
-  producer_host_->CommitData(commit);
-}
-
-void ProducerClient::CommitDataOnSequence(
-    const perfetto::CommitDataRequest& request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  producer_host_->CommitData(request);
+  producer_host_->CommitData(commit, std::move(commit_callback));
 }
 
 perfetto::SharedMemory* ProducerClient::shared_memory() const {

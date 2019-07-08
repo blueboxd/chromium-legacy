@@ -43,7 +43,6 @@ KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   WebAppProvider* provider = new WebAppProvider(profile);
-  provider->Init();
   provider->StartRegistry();
   return provider;
 }

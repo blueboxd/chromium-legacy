@@ -119,16 +119,15 @@ void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialMediationRequirement mediation) {
   switch (mediation) {
     case CredentialMediationRequirement::kSilent:
-      base::UmaHistogramEnumeration("PasswordManager.MediationSilent", result,
-                                    CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationSilent", result);
       break;
     case CredentialMediationRequirement::kOptional:
-      base::UmaHistogramEnumeration("PasswordManager.MediationOptional", result,
-                                    CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationOptional",
+                                    result);
       break;
     case CredentialMediationRequirement::kRequired:
-      base::UmaHistogramEnumeration("PasswordManager.MediationRequired", result,
-                                    CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationRequired",
+                                    result);
       break;
   }
 }

@@ -2159,6 +2159,10 @@ list.autocomplete-suggestions > [lead] {
   padding-bottom: 8px;
 }
 
+.signals-overscroll {
+  min-height: calc(68px + 24px);
+}
+
 /* Progress center */
 
 @keyframes progress-center-toggle {

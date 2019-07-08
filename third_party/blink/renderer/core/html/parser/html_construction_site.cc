@@ -124,12 +124,10 @@ static inline void ExecuteInsertTask(HTMLConstructionSiteTask& task) {
   DCHECK_EQ(task.operation, HTMLConstructionSiteTask::kInsert);
 
   Insert(task);
-
-  if (task.child->IsElementNode()) {
-    Element& child = ToElement(*task.child);
-    child.BeginParsingChildren();
+  if (auto* child = DynamicTo<Element>(task.child.Get())) {
+    child->BeginParsingChildren();
     if (task.self_closing)
-      child.FinishParsingChildren();
+      child->FinishParsingChildren();
   }
 }
 

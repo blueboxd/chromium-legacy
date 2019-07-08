@@ -22,6 +22,8 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -66,18 +68,6 @@ const CGFloat kImageSpacing = 16;
 const CGFloat kImageSize = 24;
 // The height of the headline label.
 const CGFloat kHeadlineHeight = 19;
-// The hex color for the help button text.
-const int kPageInfoHelpButtonRGB = 0x3b8cfe;
-// The grey scale color for the text within the page info alert.
-const CGFloat kPageInfoTextGreyComponent = 0.2;
-
-inline UIColor* PageInfoTextColor() {
-  return [UIColor colorWithWhite:kPageInfoTextGreyComponent alpha:1];
-}
-
-inline UIColor* PageInfoHelpButtonColor() {
-  return UIColorFromRGB(kPageInfoHelpButtonRGB);
-}
 
 inline UIFont* PageInfoHeadlineFont() {
   return [[MDCTypography fontLoader] mediumFontOfSize:16];
@@ -197,10 +187,6 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
 @implementation PageInfoViewController
 
-@synthesize containerView = containerView_;
-@synthesize popupContainer = popupContainer_;
-@synthesize dispatcher = dispatcher_;
-
 - (id)initWithModel:(PageInfoModel*)model
                   bridge:(PageInfoModelObserver*)bridge
              sourcePoint:(CGPoint)sourcePoint
@@ -221,7 +207,6 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
     innerContainerView_ =
         [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 194, 327)];
-    [innerContainerView_ setBackgroundColor:[UIColor clearColor]];
     [innerContainerView_
         setAccessibilityLabel:@"Page Security Info Scroll Container"];
     [innerContainerView_
@@ -231,7 +216,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     model_.reset(model);
     bridge_.reset(bridge);
     origin_ = sourcePoint;
-    dispatcher_ = dispatcher;
+    _dispatcher = dispatcher;
 
     UIInterfaceOrientation orientation =
         [[UIApplication sharedApplication] statusBarOrientation];
@@ -252,20 +237,20 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     [touchDownRecognizer setMinimumPressDuration:.001];
     [touchDownRecognizer setDelegate:self];
 
-    containerView_ = [[UIView alloc] init];
-    [containerView_ addGestureRecognizer:touchDownRecognizer];
-    [containerView_
-        setBackgroundColor:[UIColor colorWithWhite:0 alpha:kShieldAlpha]];
-    [containerView_ setOpaque:NO];
-    [containerView_ setAlpha:0];
-    [containerView_ setAccessibilityViewIsModal:YES];
-    containerView_.accessibilityIdentifier =
+    _containerView = [[UIView alloc] init];
+    [_containerView addGestureRecognizer:touchDownRecognizer];
+    [_containerView setBackgroundColor:[UIColor colorWithWhite:0
+                                                         alpha:kShieldAlpha]];
+    [_containerView setOpaque:NO];
+    [_containerView setAlpha:0];
+    [_containerView setAccessibilityViewIsModal:YES];
+    _containerView.accessibilityIdentifier =
         kPageInfoViewAccessibilityIdentifier;
 
-    popupContainer_ = [[UIView alloc] initWithFrame:CGRectZero];
-    [popupContainer_ setBackgroundColor:[UIColor whiteColor]];
-    [popupContainer_ setClipsToBounds:YES];
-    [containerView_ addSubview:popupContainer_];
+    _popupContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    [_popupContainer setBackgroundColor:UIColor.cr_systemBackgroundColor];
+    [_popupContainer setClipsToBounds:YES];
+    [_containerView addSubview:_popupContainer];
 
     [self.popupContainer addSubview:scrollView_];
     [scrollView_ addSubview:innerContainerView_];
@@ -275,7 +260,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
     [self animatePageInfoViewIn:sourcePoint];
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    containerView_);
+                                    _containerView);
   }
 
   return self;
@@ -366,7 +351,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     [scrollView_ setScrollEnabled:NO];
   }
 
-  CGRect containerBounds = [containerView_ bounds];
+  CGRect containerBounds = [_containerView bounds];
   CGRect popupFrame = frame;
   popupFrame.origin.x =
       CGRectGetMidX(containerBounds) - CGRectGetWidth(popupFrame) / 2.0;
@@ -383,15 +368,15 @@ void PageInfoModelBubbleBridge::PerformLayout() {
                              curve:ios::material::CurveEaseInOut
                            options:0
                         animations:^{
-                          [popupContainer_ setFrame:popupFrame];
-                          [scrollView_ setFrame:[popupContainer_ bounds]];
+                          [_popupContainer setFrame:popupFrame];
+                          [scrollView_ setFrame:[_popupContainer bounds]];
                           [innerContainerView_ setFrame:innerFrame];
                         }
                         completion:nil];
   } else {
     // Popup hasn't finished animating in yet. Set frames immediately.
-    [popupContainer_ setFrame:popupFrame];
-    [scrollView_ setFrame:[popupContainer_ bounds]];
+    [_popupContainer setFrame:popupFrame];
+    [scrollView_ setFrame:[_popupContainer bounds]];
     [innerContainerView_ setFrame:innerFrame];
   }
 
@@ -420,7 +405,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
                    atOffset:(CGFloat)offset {
   CGRect frame = CGRectMake(kFramePadding, offset, kImageSize, kImageSize);
   UIImageView* imageView = [[UIImageView alloc] initWithFrame:frame];
-  [imageView setImage:model_->GetIconImage(info.icon_id)->ToUIImage()];
+  imageView.tintColor = UIColor.cr_labelColor;
+  UIImage* image = [model_->GetIconImage(info.icon_id)->ToUIImage()
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [imageView setImage:image];
   [subviews addObject:imageView];
 }
 
@@ -431,9 +419,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   UILabel* label = [[UILabel alloc] initWithFrame:frame];
   [label setTextAlignment:NSTextAlignmentNatural];
   [label setText:base::SysUTF16ToNSString(info.headline)];
-  [label setTextColor:PageInfoTextColor()];
+  [label setTextColor:UIColor.cr_labelColor];
   [label setFont:PageInfoHeadlineFont()];
-  [label setBackgroundColor:[UIColor clearColor]];
   [label setFrame:frame];
   [label setLineBreakMode:NSLineBreakByTruncatingHead];
   [subviews addObject:label];
@@ -448,11 +435,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [label setTextAlignment:NSTextAlignmentNatural];
   NSString* description = base::SysUTF16ToNSString(info.description);
   UIFont* font = [MDCTypography captionFont];
-  [label setTextColor:PageInfoTextColor()];
+  [label setTextColor:UIColor.cr_labelColor];
   [label setText:description];
   [label setFont:font];
   [label setNumberOfLines:0];
-  [label setBackgroundColor:[UIColor clearColor]];
 
   // If the text is oversized, resize the text field.
   CGSize constraintSize = CGSizeMake(textWidth_, CGFLOAT_MAX);
@@ -523,11 +509,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
   [button.titleLabel setFont:font];
   [button.titleLabel setTextAlignment:NSTextAlignmentLeft];
-  [button setTitleColor:PageInfoHelpButtonColor()
+  [button setTitleColor:[UIColor colorNamed:kTintColor]
                forState:UIControlStateNormal];
-  [button setTitleColor:PageInfoHelpButtonColor()
+  [button setTitleColor:[UIColor colorNamed:kTintColor]
                forState:UIControlStateSelected];
-  [button setBackgroundColor:[UIColor clearColor]];
 
   [subviews addObject:button];
 
@@ -537,16 +522,16 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 #pragma mark - UIGestureRecognizerDelegate Implemenation
 
 - (void)rootViewTapped:(UIGestureRecognizer*)sender {
-  CGPoint pt = [sender locationInView:containerView_];
-  if (!CGRectContainsPoint([popupContainer_ frame], pt)) {
+  CGPoint pt = [sender locationInView:_containerView];
+  if (!CGRectContainsPoint([_popupContainer frame], pt)) {
     [self.dispatcher hidePageInfo];
   }
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
-  CGPoint pt = [touch locationInView:containerView_];
-  return !CGRectContainsPoint([popupContainer_ frame], pt);
+  CGPoint pt = [touch locationInView:_containerView];
+  return !CGRectContainsPoint([_popupContainer frame], pt);
 }
 
 - (void)animatePageInfoViewIn:(CGPoint)sourcePoint {
@@ -574,8 +559,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [fadeAnimation setFromValue:@0];
   [fadeAnimation setToValue:@1];
 
-  [[popupContainer_ layer] addAnimation:fadeAnimation forKey:@"fade"];
-  [[popupContainer_ layer] addAnimation:sizeAnimation forKey:@"size"];
+  [[_popupContainer layer] addAnimation:fadeAnimation forKey:@"fade"];
+  [[_popupContainer layer] addAnimation:sizeAnimation forKey:@"size"];
 
   // Animation the background grey overlay.
   CABasicAnimation* overlayAnimation =
@@ -586,8 +571,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [overlayAnimation setFromValue:@0];
   [overlayAnimation setToValue:@1];
 
-  [[containerView_ layer] addAnimation:overlayAnimation forKey:@"fade"];
-  [containerView_ setAlpha:1];
+  [[_containerView layer] addAnimation:overlayAnimation forKey:@"fade"];
+  [_containerView setAlpha:1];
 
   // Animate the contents of the info card.
   CALayer* contentsLayer = [innerContainerView_ layer];
@@ -636,10 +621,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [opacityAnimation setDuration:ios::material::kDuration3];
   [opacityAnimation setFromValue:@1];
   [opacityAnimation setToValue:@0];
-  [[containerView_ layer] addAnimation:opacityAnimation forKey:@"animateOut"];
+  [[_containerView layer] addAnimation:opacityAnimation forKey:@"animateOut"];
 
-  [popupContainer_ setAlpha:0];
-  [containerView_ setAlpha:0];
+  [_popupContainer setAlpha:0];
+  [_containerView setAlpha:0];
   [CATransaction commit];
 }
 

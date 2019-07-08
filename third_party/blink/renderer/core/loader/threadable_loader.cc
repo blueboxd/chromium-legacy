@@ -169,8 +169,14 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetRequestContext(request.GetRequestContext());
   preflight_request->SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
   preflight_request->SetSkipServiceWorker(true);
-  preflight_request->SetReferrerString(request.ReferrerString());
-  preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
+  preflight_request->SetReferrerString(
+      request.ReferrerString(),
+      ResourceRequest::SetReferrerStringLocation::
+          kThreadableLoaderCreateAccessControlPreflightRequest);
+  preflight_request->SetReferrerPolicy(
+      request.GetReferrerPolicy(),
+      ResourceRequest::SetReferrerPolicyLocation::
+          kThreadableLoaderCreateAccessControlPreflightRequest);
 
   if (request.IsExternalRequest()) {
     preflight_request->SetHttpHeaderField(
@@ -341,10 +347,14 @@ void ThreadableLoader::PrepareCrossOriginRequest(
   if (GetSecurityOrigin())
     request.SetHTTPOrigin(GetSecurityOrigin());
 
-  // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead use
-  // ResourceRequest::referrer_. See https://crbug.com/850813.
-  if (override_referrer_)
-    request.SetHttpReferrer(referrer_after_redirect_);
+  if (override_referrer_) {
+    request.SetReferrerString(referrer_after_redirect_.referrer,
+                              ResourceRequest::SetReferrerStringLocation::
+                                  kThreadableLoaderPrepareCrossOriginRequest);
+    request.SetReferrerPolicy(referrer_after_redirect_.referrer_policy,
+                              ResourceRequest::SetReferrerPolicyLocation::
+                                  kThreadableLoaderPrepareCrossOriginRequest);
+  }
 }
 
 void ThreadableLoader::LoadPreflightRequest(

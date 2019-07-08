@@ -82,17 +82,6 @@ class MockWebController : public WebController {
                void(const Selector& selector,
                     base::OnceCallback<void(bool, const RectF&)>& callback));
 
-  void HasCookie(base::OnceCallback<void(bool)> callback) override {
-    std::move(callback).Run(false);
-  }
-
-  void SetCookie(const std::string& domain,
-                 base::OnceCallback<void(bool)> callback) override {
-    std::move(callback).Run(true);
-  }
-
-  MOCK_METHOD0(ClearCookie, void());
-
   void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback) {
     OnWaitForWindowHeightChange(callback);

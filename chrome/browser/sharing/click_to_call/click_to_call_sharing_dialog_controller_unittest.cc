@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -86,11 +87,10 @@ TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       kPhoneNumber);
   SharingService::SendMessageCallback callback;
-  EXPECT_CALL(mock_sharing_service_,
-              SendMessageToDevice(
-                  Eq(kReceiverGuid),
-                  Eq(ClickToCallSharingDialogController::kMessageExpiration),
-                  ProtoEquals(sharing_message), _));
+  EXPECT_CALL(
+      mock_sharing_service_,
+      SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingClickToCallMessageTTL),
+                          ProtoEquals(sharing_message), _));
   click_to_call_sharing_dialog_controller_.OnDeviceChosen(sharing_device_info,
                                                           std::move(callback));
 }

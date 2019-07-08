@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -46,10 +47,10 @@ ScriptPrecondition::~ScriptPrecondition() {}
 void ScriptPrecondition::Check(
     const GURL& url,
     BatchElementChecker* batch_checks,
-    const std::map<std::string, std::string>& parameters,
+    const TriggerContext& context,
     const std::map<std::string, ScriptStatusProto>& executed_scripts,
     base::OnceCallback<void(bool)> callback) {
-  if (!MatchDomain(url) || !MatchPath(url) || !MatchParameters(parameters) ||
+  if (!MatchDomain(url) || !MatchPath(url) || !MatchParameters(context) ||
       !MatchScriptStatus(executed_scripts)) {
     std::move(callback).Run(false);
     return;
@@ -100,21 +101,21 @@ bool ScriptPrecondition::MatchPath(const GURL& url) const {
   return false;
 }
 
-bool ScriptPrecondition::MatchParameters(
-    const std::map<std::string, std::string>& parameters) const {
+bool ScriptPrecondition::MatchParameters(const TriggerContext& context) const {
   for (const auto& match : parameter_match_) {
-    auto iter = parameters.find(match.name());
+    auto opt_value = context.GetParameter(match.name());
     if (match.exists()) {
       // parameter must exist and optionally have a specific value
-      if (iter == parameters.end())
+      if (!opt_value)
         return false;
 
-      if (!match.value_equals().empty() && iter->second != match.value_equals())
+      if (!match.value_equals().empty() &&
+          opt_value.value() != match.value_equals())
         return false;
 
     } else {
       // parameter must not exist
-      if (iter != parameters.end())
+      if (opt_value)
         return false;
     }
   }

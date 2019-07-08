@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
+class TriggerContext;
 
 class Details {
  public:
@@ -29,8 +30,7 @@ class Details {
   // made.
   // If one of the generic detail parameter is present then vertical specific
   // parameters are not used for Details creation.
-  bool UpdateFromParameters(
-      const std::map<std::string, std::string>& parameters);
+  bool UpdateFromParameters(const TriggerContext& context);
 
   // Updates the details to show data directly from proto. Returns true if
   // |details| were successfully updated.
@@ -64,8 +64,7 @@ class Details {
  private:
   // Tries updating the details using generic detail parameters. Returns true
   // if at least one generic detail parameter was found and used.
-  bool MaybeUpdateFromDetailsParameters(
-      const std::map<std::string, std::string>& parameters);
+  bool MaybeUpdateFromDetailsParameters(const TriggerContext& context);
 
   DetailsProto proto_;
   DetailsChangesProto change_flags_;

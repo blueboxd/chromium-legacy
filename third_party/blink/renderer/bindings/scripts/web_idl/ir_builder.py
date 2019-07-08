@@ -36,88 +36,71 @@ def _convert_ast(component, ast):
         if node.GetProperty('CALLBACK'):
             return build_callback_interface(node)
 
-        identifier = node.GetName()
-        filepath, line_number = node.GetFileAndLine()
-        is_partial = bool(node.GetProperty('PARTIAL'))
-        is_mixin = bool(node.GetProperty('MIXIN'))
         interface = Interface.IR(
-            identifier=identifier,
-            is_partial=is_partial,
-            is_mixin=is_mixin,
+            identifier=node.GetName(),
+            is_partial=bool(node.GetProperty('PARTIAL')),
+            is_mixin=bool(node.GetProperty('MIXIN')),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         # TODO(peria): Build members and register them in |interface|
         return interface
 
     def build_namespace(node):
-        identifier = node.GetName()
-        filepath, line_number = node.GetFileAndLine()
-        is_partial = bool(node.GetProperty('PARTIAL'))
         namespace = Namespace.IR(
-            identifier=identifier,
-            is_partial=is_partial,
+            identifier=node.GetName(),
+            is_partial=bool(node.GetProperty('PARTIAL')),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         # TODO(peria): Build members and register them in |namespace|
         return namespace
 
     def build_dictionary(node):
-        identifier = node.GetName()
-        filepath, line_number = node.GetFileAndLine()
-        is_partial = bool(node.GetProperty('PARTIAL'))
         dictionary = Dictionary.IR(
-            identifier=identifier,
-            is_partial=is_partial,
+            identifier=node.GetName(),
+            is_partial=bool(node.GetProperty('PARTIAL')),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         # TODO(peria): Build members and register them in |dictionary|
         return dictionary
 
     def build_callback_interface(node):
-        identifier = node.GetName()
-        filepath, line_number = node.GetFileAndLine()
         callback_interface = CallbackInterface.IR(
-            identifier=identifier,
+            identifier=node.GetName(),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_interface|
         return callback_interface
 
     def build_callback_function(node):
-        identifier = node.GetName()
-        filepath, line_number = node.GetFileAndLine()
         callback_function = CallbackFunction.IR(
-            identifier=identifier,
+            identifier=node.GetName(),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_function|
         return callback_function
 
     def build_enumeration(node):
-        filepath, line_number = node.GetFileAndLine()
         enumeration = Enumeration.IR(
             identifier=node.GetName(),
             values=[child.GetName() for child in node.GetChildren()],
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         return enumeration
 
     def build_typedef(node):
-        filepath, line_number = node.GetFileAndLine()
         typedef = Typedef.IR(
             identifier=node.GetName(),
             idl_type=dispatch_to_build_function(node.GetChildren()[0]),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         return typedef
 
     def build_includes(node):
-        filepath, line_number = node.GetFileAndLine()
         includes = Includes.IR(
             interface_identifier=node.GetName(),
             mixin_identifier=node.GetProperty('REFERENCE'),
             component=component,
-            debug_info=DebugInfo(filepath=filepath, line_number=line_number))
+            debug_info=_build_debug_info(node))
         return includes
 
     def dispatch_to_build_function(node):
@@ -140,3 +123,11 @@ def _convert_ast(component, ast):
         'Typedef': build_typedef,
     }
     return dispatch_to_build_function(ast)
+
+
+def _build_debug_info(node):
+    return DebugInfo(
+        location=DebugInfo.Location(
+            filepath=node.GetProperty('FILENAME'),
+            line_number=node.GetProperty('LINENO'),
+            column_number=node.GetProperty('POSITION')))

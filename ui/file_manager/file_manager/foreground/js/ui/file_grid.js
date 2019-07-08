@@ -116,6 +116,12 @@ class FileGrid extends cr.ui.Grid {
     self.historyLoader_ = historyLoader;
     self.a11y = a11y;
 
+    // Force the list's ending spacer to be tall enough to allow overscroll.
+    let endSpacer = self.querySelector('.spacer:last-child');
+    if (endSpacer) {
+      endSpacer.classList.add('signals-overscroll');
+    }
+
     self.listThumbnailLoader_ = null;
     self.beginIndex_ = 0;
     self.endIndex_ = 0;

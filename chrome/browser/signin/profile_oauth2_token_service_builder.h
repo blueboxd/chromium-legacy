@@ -7,20 +7,34 @@
 
 #include <memory>
 
+class AccountTrackerService;
+class IdentityManagerFactory;
+class PrefService;
+class ProfileOAuth2TokenService;
+class SigninClient;
+
+namespace signin {
+enum class AccountConsistencyMethod;
+}
+
 namespace content {
 class BrowserContext;
 }
 
-class AccountTrackerService;
-class ProfileOAuth2TokenService;
-class IdentityManagerFactory;
+namespace network {
+class NetworkConnectionTracker;
+}
 
 class ProfileOAuth2TokenServiceBuilder {
  private:
   // Builds a ProfileOAuth2TokenService instance for use by IdentityManager.
   static std::unique_ptr<ProfileOAuth2TokenService> BuildInstanceFor(
       content::BrowserContext* context,
-      AccountTrackerService* account_tracker_service);
+      PrefService* pref_service,
+      AccountTrackerService* account_tracker_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
+      signin::AccountConsistencyMethod account_consistency,
+      SigninClient* signin_client);
 
   friend IdentityManagerFactory;
 };

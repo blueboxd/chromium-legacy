@@ -579,18 +579,17 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
   HashSet<String> unique_names;
   *class_names = std::make_unique<protocol::Array<String>>();
   Node* parent_node = NodeForId(node_id);
-  if (!parent_node ||
-      (!parent_node->IsElementNode() && !parent_node->IsDocumentNode() &&
-       !parent_node->IsDocumentFragment()))
+  auto* parent_element = DynamicTo<Element>(parent_node);
+  if (!parent_element && !parent_node->IsDocumentNode() &&
+      !parent_node->IsDocumentFragment())
     return Response::Error("No suitable node with given id found");
 
   for (Node* node = parent_node; node;
        node = FlatTreeTraversal::Next(*node, parent_node)) {
-    if (node->IsElementNode()) {
-      const Element& element = ToElement(*node);
-      if (!element.HasClass())
+    if (const auto* element = DynamicTo<Element>(node)) {
+      if (!element->HasClass())
         continue;
-      const SpaceSplitString& class_name_list = element.ClassNames();
+      const SpaceSplitString& class_name_list = element->ClassNames();
       for (unsigned i = 0; i < class_name_list.size(); ++i)
         unique_names.insert(class_name_list[i]);
     }

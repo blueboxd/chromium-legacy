@@ -118,7 +118,7 @@ EditingStyle* EditingStyleUtilities::CreateWrappingStyleForSerialization(
       break;
     if (node.IsStyledElement() && !IsMailHTMLBlockquoteElement(&node)) {
       wrapping_style->MergeInlineAndImplicitStyleOfElement(
-          ToElement(&node), EditingStyle::kDoNotOverrideValues,
+          To<Element>(&node), EditingStyle::kDoNotOverrideValues,
           EditingStyle::kEditingPropertiesInEffect);
     }
   }

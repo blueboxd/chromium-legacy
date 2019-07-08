@@ -33,8 +33,8 @@ favicon_base::FaviconRawBitmapResult GetSyncedFaviconForPageUrl(
 }
 
 bool CanSendHistoryData(syncer::SyncService* sync_service) {
-  return syncer::GetUploadToGoogleState(
-             sync_service, syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+  return syncer::GetUploadToGoogleState(sync_service,
+                                        syncer::ModelType::SESSIONS) ==
          syncer::UploadState::ACTIVE;
 }
 

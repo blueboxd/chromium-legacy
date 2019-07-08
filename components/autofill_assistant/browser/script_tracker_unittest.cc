@@ -254,7 +254,8 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  tracker_.ExecuteScript("script1", execute_callback.Get());
+  tracker_.ExecuteScript("script1", TriggerContext::CreateEmpty(),
+                         execute_callback.Get());
   tracker_.CheckScripts();
 
   // The 2nd time the scripts are checked, automatically after the script runs,
@@ -312,7 +313,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  tracker_.ExecuteScript("runnable name", execute_callback.Get());
+  tracker_.ExecuteScript("runnable name", TriggerContext::CreateEmpty(),
+                         execute_callback.Get());
   tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.
@@ -354,7 +356,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  tracker_.ExecuteScript("runnable name", execute_callback.Get());
+  tracker_.ExecuteScript("runnable name", TriggerContext::CreateEmpty(),
+                         execute_callback.Get());
   tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.

@@ -87,6 +87,10 @@ Lock::Lock(ScriptState* script_state,
 
 Lock::~Lock() = default;
 
+void Lock::Dispose() {
+  handle_.reset();
+}
+
 String Lock::mode() const {
   return ModeToString(mode_);
 }

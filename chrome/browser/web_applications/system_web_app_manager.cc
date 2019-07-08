@@ -74,11 +74,9 @@ InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
 
 const char SystemWebAppManager::kInstallResultHistogramName[];
 
-SystemWebAppManager::SystemWebAppManager(Profile* profile,
-                                         PendingAppManager* pending_app_manager)
+SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
       pref_service_(profile->GetPrefs()),
-      pending_app_manager_(pending_app_manager),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
@@ -99,6 +97,11 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
 }
 
 SystemWebAppManager::~SystemWebAppManager() = default;
+
+void SystemWebAppManager::SetSubsystems(
+    PendingAppManager* pending_app_manager) {
+  pending_app_manager_ = pending_app_manager;
+}
 
 void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;

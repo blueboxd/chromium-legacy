@@ -14,8 +14,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -26,7 +24,8 @@
 namespace content {
 
 // static
-AssociatedResourceFetcher* AssociatedResourceFetcher::Create(const GURL& url) {
+AssociatedResourceFetcherImpl* AssociatedResourceFetcherImpl::Create(
+    const GURL& url) {
   return new AssociatedResourceFetcherImpl(url);
 }
 

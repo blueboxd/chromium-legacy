@@ -16,8 +16,8 @@ constexpr char kYoutubeTVAppId[] = "kiemjbkkegajmpbobdfngbmjccjhnofh";
 constexpr char kShowtimeAppId[] = "eoccpgmpiempcflglfokeengliildkag";
 
 // Generated as
-// web_app::GenerateAppIdFromURL(GURL("https://canvas.apps.chrome/index.html)).
-constexpr char kCanvasAppId[] = "memejfanofdmelnjmboefinndljpifdm";
+// web_app::GenerateAppIdFromURL(GURL("https://canvas.apps.chrome/")).
+constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 
 }  // namespace default_web_apps
 }  // namespace chromeos

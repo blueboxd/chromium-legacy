@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/child/image_decoder.h"
-#include "content/public/renderer/associated_resource_fetcher.h"
+#include "content/renderer/fetchers/associated_resource_fetcher_impl.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
@@ -36,7 +36,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
       id_(id),
       http_status_code_(0),
       image_url_(image_url) {
-  fetcher_.reset(AssociatedResourceFetcher::Create(image_url));
+  fetcher_.reset(AssociatedResourceFetcherImpl::Create(image_url));
 
   WebAssociatedURLLoaderOptions options;
   fetcher_->SetLoaderOptions(options);

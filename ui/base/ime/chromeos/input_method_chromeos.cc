@@ -674,7 +674,7 @@ void InputMethodChromeOS::ExtractCompositionText(
   } while (char_iterator.Advance());
 
   // The text length in Unicode characters.
-  uint32_t char_length = static_cast<uint32_t>(char16_offsets.size());
+  auto char_length = static_cast<uint32_t>(char16_offsets.size());
   // Make sure we can convert the value of |char_length| as well.
   char16_offsets.push_back(length);
 
@@ -685,16 +685,16 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   const ImeTextSpans text_ime_text_spans = text.ime_text_spans;
   if (!text_ime_text_spans.empty()) {
-    for (size_t i = 0; i < text_ime_text_spans.size(); ++i) {
-      const uint32_t start = text_ime_text_spans[i].start_offset;
-      const uint32_t end = text_ime_text_spans[i].end_offset;
+    for (const auto& text_ime_text_span : text_ime_text_spans) {
+      const uint32_t start = text_ime_text_span.start_offset;
+      const uint32_t end = text_ime_text_span.end_offset;
       if (start >= end)
         continue;
       ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
                                 char16_offsets[start], char16_offsets[end],
-                                text_ime_text_spans[i].thickness,
-                                text_ime_text_spans[i].background_color);
-      ime_text_span.underline_color = text_ime_text_spans[i].underline_color;
+                                text_ime_text_span.thickness,
+                                text_ime_text_span.background_color);
+      ime_text_span.underline_color = text_ime_text_span.underline_color;
       out_composition->ime_text_spans.push_back(ime_text_span);
     }
   }

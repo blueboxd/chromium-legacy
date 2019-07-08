@@ -39,24 +39,13 @@ namespace autofill_assistant {
 
 namespace {
 
-// Fills the destination proto field with script parameters from the given
-// parameter map.
-void AddScriptParametersToProto(
-    const std::map<std::string, std::string>& source,
-    ::google::protobuf::RepeatedPtrField<ScriptParameterProto>* destination) {
-  for (const auto& param_entry : source) {
-    ScriptParameterProto* parameter = destination->Add();
-    parameter->set_name(param_entry.first);
-    parameter->set_value(param_entry.second);
-  }
-}
-
 void FillClientContext(const ClientContextProto& client_context,
                        const TriggerContext& trigger_context,
                        ClientContextProto* proto) {
   proto->CopyFrom(client_context);
-  if (!trigger_context.experiment_ids.empty()) {
-    proto->set_experiment_ids(trigger_context.experiment_ids);
+  std::string experiment_ids = trigger_context.experiment_ids();
+  if (!experiment_ids.empty()) {
+    proto->set_experiment_ids(experiment_ids);
   }
 }
 
@@ -73,8 +62,7 @@ std::string ProtocolUtils::CreateGetScriptsRequest(
   script_proto.set_url(url.spec());
   FillClientContext(client_context, trigger_context,
                     script_proto.mutable_client_context());
-  AddScriptParametersToProto(trigger_context.script_parameters,
-                             script_proto.mutable_script_parameters());
+  trigger_context.AddParameters(script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
   DCHECK(success);
@@ -111,9 +99,7 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
     script->handle.initial_prompt = presentation.initial_prompt();
     script->handle.chip = Chip(presentation.chip());
   }
-  for (const auto& name : presentation.direct_action().names()) {
-    script->handle.direct_action_names.emplace_back(name);
-  }
+  script->handle.direct_action = DirectAction(presentation.direct_action());
   scripts->emplace_back(std::move(script));
 }
 
@@ -135,10 +121,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->set_policy(PolicyType::SCRIPT);
   FillClientContext(client_context, trigger_context,
                     request_proto.mutable_client_context());
-  AddScriptParametersToProto(
-      trigger_context.script_parameters,
+  trigger_context.AddParameters(
       initial_request_proto->mutable_script_parameters());
-
   if (!global_payload.empty()) {
     request_proto.set_global_payload(global_payload);
   }

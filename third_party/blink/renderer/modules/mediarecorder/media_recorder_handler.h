@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
@@ -45,7 +44,6 @@ struct WebMediaConfiguration;
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
 class MODULES_EXPORT MediaRecorderHandler
     : public GarbageCollectedFinalized<MediaRecorderHandler> {
-  USING_PRE_FINALIZER(MediaRecorderHandler, Dispose);
 
  public:
   static MediaRecorderHandler* Create(
@@ -81,8 +79,6 @@ class MODULES_EXPORT MediaRecorderHandler
   void EncodingInfo(const WebMediaConfiguration& configuration,
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
-
-   void Dispose();
 
   void Trace(blink::Visitor*);
 
@@ -142,8 +138,6 @@ class MODULES_EXPORT MediaRecorderHandler
   std::unique_ptr<media::WebmMuxer> webm_muxer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::WeakPtrFactory<MediaRecorderHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandler);
 };

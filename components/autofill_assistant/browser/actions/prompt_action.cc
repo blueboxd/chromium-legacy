@@ -113,9 +113,9 @@ void PromptAction::UpdateUserActions() {
     if (!precondition_results_[i] && !choice_proto.allow_disabling())
       continue;
 
-    user_action.enabled = precondition_results_[i];
-    user_action.callback = base::BindOnce(&PromptAction::OnSuggestionChosen,
-                                          weak_ptr_factory_.GetWeakPtr(), i);
+    user_action.SetEnabled(precondition_results_[i]);
+    user_action.SetCallback(base::BindOnce(&PromptAction::OnSuggestionChosen,
+                                           weak_ptr_factory_.GetWeakPtr(), i));
     user_actions->emplace_back(std::move(user_action));
   }
   delegate_->Prompt(std::move(user_actions));

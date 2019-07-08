@@ -443,9 +443,8 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
   digestor.UpdateUtf8(node->nodeName());
   digestor.UpdateUtf8(node->nodeValue());
 
-  if (node->IsElementNode()) {
-    Element& element = ToElement(*node);
-    Node* child = element.firstChild();
+  if (auto* element = DynamicTo<Element>(node)) {
+    Node* child = element->firstChild();
     while (child) {
       Digest* child_info = CreateDigest(child, unused_nodes_map);
       digestor.UpdateUtf8(child_info->sha1_);
@@ -453,7 +452,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
       digest->children_.push_back(child_info);
     }
 
-    AttributeCollection attributes = element.AttributesWithoutUpdate();
+    AttributeCollection attributes = element->AttributesWithoutUpdate();
     if (!attributes.IsEmpty()) {
       Digestor attrs_digestor(kHashAlgorithmSha1);
       for (auto& attribute : attributes) {

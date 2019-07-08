@@ -45,14 +45,14 @@ void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
   // Show "Continue" chip.
   UserAction user_action =
       UserAction(proto_.show_form().chip(), proto_.show_form().direct_action());
-  if (user_action.chip.empty()) {
-    user_action.chip.text =
+  if (user_action.chip().empty()) {
+    user_action.chip().text =
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
-    user_action.chip.type = HIGHLIGHTED_ACTION;
+    user_action.chip().type = HIGHLIGHTED_ACTION;
   }
-  user_action.enabled = IsFormValid(proto_.show_form().form(), *form_result);
-  user_action.callback = base::BindOnce(&ShowFormAction::OnButtonClicked,
-                                        weak_ptr_factory_.GetWeakPtr());
+  user_action.SetEnabled(IsFormValid(proto_.show_form().form(), *form_result));
+  user_action.SetCallback(base::BindOnce(&ShowFormAction::OnButtonClicked,
+                                         weak_ptr_factory_.GetWeakPtr()));
 
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   user_actions->emplace_back(std::move(user_action));

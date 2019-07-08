@@ -229,10 +229,8 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 
 }  // namespace
 
-BookmarkAppInstallManager::BookmarkAppInstallManager(
-    Profile* profile,
-    web_app::InstallFinalizer* finalizer)
-    : InstallManager(profile), finalizer_(finalizer) {
+BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
+    : InstallManager(profile) {
   bookmark_app_helper_factory_ = base::BindRepeating(
       [](Profile* profile, std::unique_ptr<WebApplicationInfo> web_app_info,
          content::WebContents* web_contents,
@@ -359,7 +357,7 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
       ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
-  if (finalizer_->CanSkipAppUpdateForSync(app_id, *web_application_info))
+  if (finalizer()->CanSkipAppUpdateForSync(app_id, *web_application_info))
     return;
 
 #if defined(OS_CHROMEOS)

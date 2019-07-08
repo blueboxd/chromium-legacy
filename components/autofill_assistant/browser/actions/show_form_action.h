@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
+
 // An action to show a form than can be filled by the user.
 class ShowFormAction : public Action {
  public:

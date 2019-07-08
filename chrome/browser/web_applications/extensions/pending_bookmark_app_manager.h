@@ -51,10 +51,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
           web_app::InstallFinalizer*,
           web_app::InstallOptions)>;
 
-  explicit PendingBookmarkAppManager(
-      Profile* profile,
-      web_app::AppRegistrar* registrar,
-      web_app::InstallFinalizer* install_finalizer);
+  explicit PendingBookmarkAppManager(Profile* profile);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager

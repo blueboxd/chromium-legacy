@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
+#include "content/public/browser/network_service_instance.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/web_data_service_factory.h"
@@ -102,10 +103,13 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.account_tracker_service = BuildAccountTrackerService(profile);
   params.image_decoder = std::make_unique<ImageDecoderImpl>();
   params.local_state = g_browser_process->local_state();
+  params.network_connection_tracker = content::GetNetworkConnectionTracker();
   params.pref_service = profile->GetPrefs();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
   params.token_service = ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
-      context, params.account_tracker_service.get());
+      context, params.pref_service, params.account_tracker_service.get(),
+      params.network_connection_tracker, params.account_consistency,
+      params.signin_client);
   std::unique_ptr<identity::IdentityManager> identity_manager =
       identity::BuildIdentityManager(&params);
 

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/signin/core/browser/account_info.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/signin_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -18,13 +19,22 @@
 #endif
 
 namespace {
-// Returns the account info for |identity|.
-// Returns an empty account info if |identity| is nil.
+// Returns the account info for |identity| (which must not be nil).
 DeviceAccountsProvider::AccountInfo GetAccountInfo(ChromeIdentity* identity) {
+  DCHECK(identity);
   DeviceAccountsProvider::AccountInfo account_info;
-  if (identity) {
-    account_info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
-    account_info.email = base::SysNSStringToUTF8([identity userEmail]);
+  account_info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
+  account_info.email = base::SysNSStringToUTF8([identity userEmail]);
+
+  // If hosted domain is nil, then it means the information has not been
+  // fetched from gaia; in that case, set account_info.hosted_domain to
+  // an empty string. Otherwise, set it to the value of the hostedDomain
+  // or kNoHostedDomainFound if the string is empty.
+  NSString* hostedDomain = [identity hostedDomain];
+  if (hostedDomain) {
+    account_info.hosted_domain = [hostedDomain length]
+                                     ? base::SysNSStringToUTF8(hostedDomain)
+                                     : kNoHostedDomainFound;
   }
   return account_info;
 }

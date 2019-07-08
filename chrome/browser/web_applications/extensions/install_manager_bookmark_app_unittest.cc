@@ -105,8 +105,7 @@ class BookmarkAppInstallFinalizerInstallOnly
                          CreateOsShortcutsCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), true /*shortcuts_created*/
-                       ));
+        base::BindOnce(std::move(callback), true /*shortcuts_created*/));
   }
   void PinAppToShelf(const web_app::AppId& app_id) override {}
   void ReparentTab(const web_app::AppId& app_id,
@@ -144,8 +143,8 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
         std::make_unique<BookmarkAppInstallFinalizerInstallOnly>(profile());
     install_finalizer_ = install_finalizer.get();
 
-    auto install_manager = std::make_unique<web_app::WebAppInstallManager>(
-        profile(), registrar.get(), install_finalizer.get());
+    auto install_manager =
+        std::make_unique<web_app::WebAppInstallManager>(profile());
 
     install_manager->SetDataRetrieverFactoryForTesting(
         base::BindLambdaForTesting([this]() {

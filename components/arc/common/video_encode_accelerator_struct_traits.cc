@@ -65,51 +65,6 @@ bool EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
   return false;
 }
 
-// Make sure values in arc::mojom::VideoPixelFormat match to the values in
-// media::VideoPixelFormat. The former is a subset of the later.
-#define CHECK_PIXEL_FORMAT_ENUM(value)                                       \
-  static_assert(                                                             \
-      static_cast<int>(arc::mojom::VideoPixelFormat::value) == media::value, \
-      "enum ##value mismatch")
-
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_I420);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_YV12);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV12);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV21);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ARGB);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ABGR);
-CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_XBGR);
-
-#undef CHECK_PXIEL_FORMAT_ENUM
-
-// static
-arc::mojom::VideoPixelFormat
-EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::ToMojom(
-    media::VideoPixelFormat input) {
-  NOTIMPLEMENTED();
-  return arc::mojom::VideoPixelFormat::PIXEL_FORMAT_I420;
-}
-
-// static
-bool EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::
-    FromMojom(arc::mojom::VideoPixelFormat input,
-              media::VideoPixelFormat* output) {
-  switch (input) {
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_UNKNOWN:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_I420:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_YV12:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV12:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV21:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ARGB:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ABGR:
-    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_XBGR:
-      *output = static_cast<media::VideoPixelFormat>(input);
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
 // static
 bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
                   media::VideoEncodeAccelerator::Config>::

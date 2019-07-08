@@ -412,7 +412,7 @@ bool IsEditableElement(const Node& node) {
       return true;
   }
 
-  if (auto* element = ToElementOrNull(const_cast<Node*>(&node)))
+  if (auto* element = DynamicTo<Element>(&node))
     return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
 
   return false;

@@ -173,7 +173,7 @@ class TestInputMethodManager
     bool is_jp_ime() const { return is_jp_ime_; }
 
    protected:
-    ~TestState() override {}
+    ~TestState() override = default;
 
    private:
     bool is_jp_kbd_ = false;
@@ -217,7 +217,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     ResetFlags();
   }
 
-  ~InputMethodChromeOSTest() override {}
+  ~InputMethodChromeOSTest() override = default;
 
   void SetUp() override {
     IMEBridge::Initialize();
@@ -243,10 +243,10 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
   void TearDown() override {
     if (ime_.get())
-      ime_->SetFocusedTextInputClient(NULL);
+      ime_->SetFocusedTextInputClient(nullptr);
     ime_.reset();
-    IMEBridge::Get()->SetCurrentEngineHandler(NULL);
-    IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+    IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
+    IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
     mock_ime_engine_handler_.reset();
     mock_ime_candidate_window_handler_.reset();
     IMEBridge::Shutdown();
@@ -385,13 +385,13 @@ TEST_F(InputMethodChromeOSTest, CanComposeInline) {
 
 TEST_F(InputMethodChromeOSTest, GetTextInputClient) {
   EXPECT_EQ(this, ime_->GetTextInputClient());
-  ime_->SetFocusedTextInputClient(NULL);
-  EXPECT_EQ(NULL, ime_->GetTextInputClient());
+  ime_->SetFocusedTextInputClient(nullptr);
+  EXPECT_EQ(nullptr, ime_->GetTextInputClient());
 }
 
 TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
-  ime_->SetFocusedTextInputClient(NULL);
+  ime_->SetFocusedTextInputClient(nullptr);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
   // The OnTextInputTypeChanged() call above should be ignored since |this| is
@@ -501,7 +501,7 @@ TEST_F(InputMethodChromeOSTest, Focus_Scenario) {
             mock_ime_engine_handler_->last_text_input_context().mode);
 
   // Confirm that FocusOut is called when set focus to NULL client.
-  ime_->SetFocusedTextInputClient(NULL);
+  ime_->SetFocusedTextInputClient(nullptr);
   EXPECT_EQ(3, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(3, mock_ime_engine_handler_->focus_out_call_count());
   // Confirm that FocusIn is called when set focus to this client.
@@ -900,8 +900,8 @@ TEST_F(InputMethodChromeOSTest, SetCompositionRange_InvalidRange) {
 
 class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {
  public:
-  InputMethodChromeOSKeyEventTest() {}
-  ~InputMethodChromeOSKeyEventTest() override {}
+  InputMethodChromeOSKeyEventTest() = default;
+  ~InputMethodChromeOSKeyEventTest() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSKeyEventTest);
 };

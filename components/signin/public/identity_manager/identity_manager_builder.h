@@ -16,6 +16,10 @@ namespace image_fetcher {
 class ImageDecoder;
 }
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace signin {
 enum class AccountConsistencyMethod;
 }
@@ -31,6 +35,7 @@ struct IdentityManagerBuildParams {
   std::unique_ptr<AccountTrackerService> account_tracker_service;
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder;
   PrefService* local_state;
+  network::NetworkConnectionTracker* network_connection_tracker;
   PrefService* pref_service;
   SigninClient* signin_client;
   std::unique_ptr<ProfileOAuth2TokenService> token_service;

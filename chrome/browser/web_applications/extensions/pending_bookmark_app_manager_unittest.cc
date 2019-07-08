@@ -261,8 +261,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<PendingBookmarkAppManager>
   GetPendingBookmarkAppManagerWithTestMocks() {
-    auto manager = std::make_unique<PendingBookmarkAppManager>(
-        profile(), registrar_.get(), install_finalizer_.get());
+    auto manager = std::make_unique<PendingBookmarkAppManager>(profile());
+    manager->SetSubsystems(registrar_.get(), install_finalizer_.get());
     manager->SetTaskFactoryForTesting(base::BindRepeating(
         &TestBookmarkAppInstallationTaskFactory::CreateInstallationTask,
         base::Unretained(task_factory_.get())));

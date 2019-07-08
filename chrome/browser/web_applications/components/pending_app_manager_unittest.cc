@@ -21,7 +21,7 @@ namespace web_app {
 
 class PendingAppManagerTest : public testing::Test {
  public:
-  PendingAppManagerTest() {}
+  PendingAppManagerTest() : pending_app_manager_(&registrar_) {}
 
  protected:
   void Sync(std::vector<GURL> urls) {
@@ -65,6 +65,7 @@ class PendingAppManagerTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestAppRegistrar registrar_;
   TestPendingAppManager pending_app_manager_;
 };
 
@@ -72,7 +73,9 @@ class PendingAppManagerTest : public testing::Test {
 // installs an app doesn't crash.
 // Regression test for https://crbug.com/962808
 TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+  web_app::TestAppRegistrar registrar;
+  auto pending_app_manager =
+      std::make_unique<TestPendingAppManager>(&registrar);
 
   std::vector<InstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
@@ -95,7 +98,9 @@ TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
 // uninstalls an app doesn't crash.
 // Regression test for https://crbug.com/962808
 TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+  web_app::TestAppRegistrar registrar;
+  auto pending_app_manager =
+      std::make_unique<TestPendingAppManager>(&registrar);
 
   // Install an app that will be uninstalled next.
   {

@@ -31,7 +31,7 @@ Element& StyleRecalcRoot::RootElement() const {
   }
   if (root_node->IsTextNode())
     return *root_node->parentElement();
-  return ToElement(*root_node);
+  return To<Element>(*root_node);
 }
 
 #if DCHECK_IS_ON()

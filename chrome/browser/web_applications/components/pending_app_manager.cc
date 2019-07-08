@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -29,10 +30,15 @@ operator=(PendingAppManager::SynchronizeRequest&&) = default;
 PendingAppManager::SynchronizeRequest::SynchronizeRequest(
     SynchronizeRequest&& other) = default;
 
-PendingAppManager::PendingAppManager(AppRegistrar* registrar)
-    : registrar_(registrar) {}
+PendingAppManager::PendingAppManager() = default;
 
 PendingAppManager::~PendingAppManager() = default;
+
+void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
+                                      InstallFinalizer* finalizer) {
+  registrar_ = registrar;
+  finalizer_ = finalizer;
+}
 
 void PendingAppManager::SynchronizeInstalledApps(
     std::vector<InstallOptions> desired_apps_install_options,

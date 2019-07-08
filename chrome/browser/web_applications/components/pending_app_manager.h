@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -23,6 +24,7 @@ namespace web_app {
 enum class InstallResultCode;
 
 class AppRegistrar;
+class InstallFinalizer;
 
 // PendingAppManager installs, uninstalls, and updates apps.
 //
@@ -43,8 +45,10 @@ class PendingAppManager {
       base::OnceCallback<void(std::map<GURL, InstallResultCode> install_results,
                               std::map<GURL, bool> uninstall_results)>;
 
-  explicit PendingAppManager(AppRegistrar* registrar);
+  PendingAppManager();
   virtual ~PendingAppManager();
+
+  void SetSubsystems(AppRegistrar* registrar, InstallFinalizer* finalizer);
 
   virtual void Shutdown() = 0;
 
@@ -93,7 +97,10 @@ class PendingAppManager {
       InstallSource install_source,
       SynchronizeCallback callback);
 
+  // TODO(crbug.com/973324): Make these protected after removing dependencies on
+  // this method.
   AppRegistrar* registrar() { return registrar_; }
+  InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
   struct SynchronizeRequest {
@@ -120,7 +127,8 @@ class PendingAppManager {
                                        bool succeeded);
   void OnAppSynchronized(InstallSource source, const GURL& app_url);
 
-  AppRegistrar* registrar_;
+  AppRegistrar* registrar_ = nullptr;
+  InstallFinalizer* finalizer_ = nullptr;
 
   base::flat_map<InstallSource, SynchronizeRequest> synchronize_requests_;
 

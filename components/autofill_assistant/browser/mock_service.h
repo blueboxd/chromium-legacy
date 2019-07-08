@@ -20,7 +20,7 @@ class MockService : public Service {
   ~MockService() override;
 
   void GetScriptsForUrl(const GURL& url,
-                        const TriggerContext* trigger_context,
+                        const TriggerContext& trigger_context,
                         ResponseCallback callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
@@ -28,12 +28,12 @@ class MockService : public Service {
   }
   MOCK_METHOD3(OnGetScriptsForUrl,
                void(const GURL& url,
-                    const TriggerContext* trigger_context,
+                    const TriggerContext& trigger_context,
                     ResponseCallback& callback));
 
   void GetActions(const std::string& script_path,
                   const GURL& url,
-                  const TriggerContext* trigger_context,
+                  const TriggerContext& trigger_context,
                   const std::string& global_payload,
                   const std::string& script_payload,
                   ResponseCallback callback) override {
@@ -43,13 +43,13 @@ class MockService : public Service {
   MOCK_METHOD6(OnGetActions,
                void(const std::string& script_path,
                     const GURL& url,
-                    const TriggerContext* trigger_context,
+                    const TriggerContext& trigger_contexts,
                     const std::string& global_payload,
                     const std::string& script_payload,
                     ResponseCallback& callback));
 
   void GetNextActions(
-      const TriggerContext* trigger_context,
+      const TriggerContext& trigger_context,
       const std::string& previous_global_payload,
       const std::string& previous_script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,
@@ -58,7 +58,7 @@ class MockService : public Service {
                      previous_script_payload, processed_actions, callback);
   }
   MOCK_METHOD5(OnGetNextActions,
-               void(const TriggerContext* trigger_context,
+               void(const TriggerContext& trigger_contexts,
                     const std::string& previous_global_payload,
                     const std::string& previous_script_payload,
                     const std::vector<ProcessedActionProto>& processed_actions,

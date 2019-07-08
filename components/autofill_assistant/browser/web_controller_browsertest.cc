@@ -378,35 +378,6 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool HasCookie() {
-    base::RunLoop run_loop;
-    bool result;
-    web_controller_->HasCookie(base::BindOnce(
-        &WebControllerBrowserTest::OnCookieResult, base::Unretained(this),
-        run_loop.QuitClosure(), &result));
-    run_loop.Run();
-    return result;
-  }
-
-  bool SetCookie() {
-    base::RunLoop run_loop;
-    bool result;
-    web_controller_->SetCookie(
-        "http://example.com",
-        base::BindOnce(&WebControllerBrowserTest::OnCookieResult,
-                       base::Unretained(this), run_loop.QuitClosure(),
-                       &result));
-    run_loop.Run();
-    return result;
-  }
-
-  void OnCookieResult(const base::Closure& done_callback,
-                      bool* result_output,
-                      bool result) {
-    *result_output = result;
-    std::move(done_callback).Run();
-  }
-
   // Scroll an element into view that's within a container element. This
   // requires scrolling the container, then the window, to get the element to
   // the desired y position.
@@ -1149,11 +1120,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
   // We only make sure that the element has a non-empty boxShadow style without
   // requiring an exact string match.
   EXPECT_NE("", content::EvalJs(shell(), javascript));
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetCookie) {
-  EXPECT_FALSE(HasCookie());
-  EXPECT_TRUE(SetCookie());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {

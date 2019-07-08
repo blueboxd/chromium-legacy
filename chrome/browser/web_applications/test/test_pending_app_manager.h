@@ -20,7 +20,7 @@ class TestAppRegistrar;
 
 class TestPendingAppManager : public PendingAppManager {
  public:
-  TestPendingAppManager();
+  explicit TestPendingAppManager(TestAppRegistrar* registrar);
   ~TestPendingAppManager() override;
 
   // The foo_requests methods may return duplicates, if the underlying
@@ -67,7 +67,7 @@ class TestPendingAppManager : public PendingAppManager {
 
   InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
 
-  TestAppRegistrar registrar_;
+  TestAppRegistrar* registrar_;
 
   base::WeakPtrFactory<TestPendingAppManager> weak_ptr_factory_{this};
 

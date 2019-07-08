@@ -83,7 +83,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
                                  wtf_size_t depth) {
     if (const Text* text = DynamicTo<Text>(node))
       PrintText(ostream, *text);
-    else if (const Element* element = ToElementOrNull(node))
+    else if (const auto* element = DynamicTo<Element>(node))
       ostream << element->tagName().Utf8();
     else
       ostream << node;

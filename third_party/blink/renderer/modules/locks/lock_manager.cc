@@ -56,7 +56,7 @@ class LockManager::LockRequestImpl final
     : public GarbageCollectedFinalized<LockRequestImpl>,
       public NameClient,
       public mojom::blink::LockRequest {
-  EAGERLY_FINALIZE();
+  USING_PRE_FINALIZER(LockManager::LockRequestImpl, Dispose);
 
  public:
   LockRequestImpl(V8LockGrantedCallback* callback,
@@ -77,6 +77,12 @@ class LockManager::LockRequestImpl final
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;
+
+  void Dispose() {
+    // This Impl might still be bound to a LockRequest, so we close
+    // the binding before destroying the object.
+    binding_.Close();
+  }
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(resolver_);

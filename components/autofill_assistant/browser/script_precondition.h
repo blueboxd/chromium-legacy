@@ -24,6 +24,7 @@ class RE2;
 
 namespace autofill_assistant {
 class BatchElementChecker;
+class TriggerContext;
 
 // Class represents a set of preconditions for a script to be executed.
 class ScriptPrecondition {
@@ -58,15 +59,14 @@ class ScriptPrecondition {
   // running check.
   void Check(const GURL& url,
              BatchElementChecker* batch_checks,
-             const std::map<std::string, std::string>& parameters,
+             const TriggerContext& context,
              const std::map<std::string, ScriptStatusProto>& executed_scripts,
              base::OnceCallback<void(bool)> callback);
 
  private:
   bool MatchDomain(const GURL& url) const;
   bool MatchPath(const GURL& url) const;
-  bool MatchParameters(
-      const std::map<std::string, std::string>& parameters) const;
+  bool MatchParameters(const TriggerContext& context) const;
   bool MatchScriptStatus(
       const std::map<std::string, ScriptStatusProto>& executed_scripts) const;
 

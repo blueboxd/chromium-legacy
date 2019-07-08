@@ -292,8 +292,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
     auto data_retriever = std::make_unique<web_app::TestDataRetriever>();
     data_retriever_ = data_retriever.get();
 
-    auto install_manager = std::make_unique<web_app::WebAppInstallManager>(
-        profile(), registrar.get(), install_finalizer.get());
+    auto install_manager =
+        std::make_unique<web_app::WebAppInstallManager>(profile());
     install_manager->SetDataRetrieverFactoryForTesting(
         GetFactoryForRetriever(std::move(data_retriever)));
 

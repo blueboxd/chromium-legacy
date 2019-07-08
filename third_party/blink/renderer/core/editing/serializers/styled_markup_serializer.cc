@@ -359,7 +359,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
     } else {
       next = Strategy::Next(*n);
       if (IsEnclosingBlock(n) && CanHaveChildrenForEditing(n) &&
-          next == past_end && !ContainsOnlyBRElement(ToElement(*n))) {
+          next == past_end && !ContainsOnlyBRElement(To<Element>(*n))) {
         // Don't write out empty block containers that aren't fully selected
         // unless the block container only contains br element.
         continue;
@@ -375,7 +375,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
 
         // If node has no children, close the tag now.
         if (Strategy::HasChildren(*n)) {
-          if (next == past_end && ContainsOnlyBRElement(ToElement(*n))) {
+          if (next == past_end && ContainsOnlyBRElement(*element)) {
             // node is not fully selected and node contains only one br element
             // as child. Close the br tag now.
             AppendStartMarkup(*next);

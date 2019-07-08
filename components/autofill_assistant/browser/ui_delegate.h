@@ -71,9 +71,22 @@ class UiDelegate {
 
   // Performs an action, from the set of actions returned by GetUserAction().
   //
+  // If non-empty, |context| is added to the global trigger context when
+  // executing scripts. Ignored if no scripts are executed by the action.
+  //
   // Returns true if the action was triggered, false if the index did not
   // correspond to any enabled actions.
-  virtual bool PerformUserAction(int index) = 0;
+  virtual bool PerformUserActionWithContext(
+      int index,
+      std::unique_ptr<TriggerContext> context) = 0;
+
+  // Performs an action with no additional trigger context set.
+  //
+  // Returns true if the action was triggered, false if the index did not
+  // correspond to any enabled actions.
+  bool PerformUserAction(int index) {
+    return PerformUserActionWithContext(index, TriggerContext::CreateEmpty());
+  }
 
   // If the controller is waiting for payment request information, this
   // field contains a non-null options describing the request.

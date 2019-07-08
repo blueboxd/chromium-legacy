@@ -54,6 +54,7 @@ class ScriptExecutor : public ActionDelegate,
   // |delegate|, |listener|, |script_state| and |ordered_interrupts| should
   // outlive this object and should not be nullptr.
   ScriptExecutor(const std::string& script_path,
+                 std::unique_ptr<TriggerContext> additional_context,
                  const std::string& global_payload,
                  const std::string& script_payload,
                  ScriptExecutor::Listener* listener,
@@ -329,9 +330,11 @@ class ScriptExecutor : public ActionDelegate,
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);
   void CleanUpAfterPrompt();
-  void OnChosen(base::OnceClosure callback);
+  void OnChosen(UserAction::Callback callback,
+                std::unique_ptr<TriggerContext> context);
 
   std::string script_path_;
+  std::unique_ptr<TriggerContext> additional_context_;
   std::string last_global_payload_;
   const std::string initial_script_payload_;
   std::string last_script_payload_;

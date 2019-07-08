@@ -6,6 +6,7 @@
 
 #include "base/strings/strcat.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -16,9 +17,6 @@
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
 using App = ClickToCallSharingDialogController::App;
-
-constexpr base::TimeDelta
-    ClickToCallSharingDialogController::kMessageExpiration;
 
 ClickToCallSharingDialogController::ClickToCallSharingDialogController(
     content::WebContents* web_contents,
@@ -62,8 +60,8 @@ void ClickToCallSharingDialogController::OnDeviceChosen(
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       phone_number_);
   sharing_service_->SendMessageToDevice(
-      device.guid(), ClickToCallSharingDialogController::kMessageExpiration,
-      std::move(sharing_message), std::move(callback));
+      device.guid(), kSharingClickToCallMessageTTL, std::move(sharing_message),
+      std::move(callback));
 }
 
 void ClickToCallSharingDialogController::OnAppChosen(App app) {

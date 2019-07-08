@@ -11,8 +11,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/public/renderer/associated_resource_fetcher.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 
 class GURL;
@@ -24,29 +25,53 @@ class WebLocalFrame;
 
 namespace content {
 
-class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
+// Interface to download resources asynchronously.
+class AssociatedResourceFetcherImpl {
  public:
-  // AssociatedResourceFetcher implementation:
-  void SetSkipServiceWorker(bool skip_service_worker) override;
-  void SetCacheMode(blink::mojom::FetchCacheMode mode) override;
-  void SetLoaderOptions(
-      const blink::WebAssociatedURLLoaderOptions& options) override;
+  // This will be called asynchronously after the URL has been fetched,
+  // successfully or not.  If there is a failure, response and data will both be
+  // empty.  |response| and |data| are both valid until the URLFetcher instance
+  // is destroyed.
+  using StartCallback =
+      base::OnceCallback<void(const blink::WebURLResponse& response,
+                              const std::string& data)>;
+
+  // Creates a AssociatedResourceFetcherImpl for the specified resource.
+  // Caller takes ownership of the returned object.
+  // Deleting the AssociatedResourceFetcherImpl will cancel
+  // the request, and the callback will never be run.
+  static AssociatedResourceFetcherImpl* Create(const GURL& url);
+
+  ~AssociatedResourceFetcherImpl();
+
+  void SetSkipServiceWorker(bool skip_service_worker);
+  void SetCacheMode(blink::mojom::FetchCacheMode mode);
+
+  // Associate the corresponding WebURLLoaderOptions to the loader. Must be
+  // called before Start. Used if the LoaderType is FRAME_ASSOCIATED_LOADER.
+  void SetLoaderOptions(const blink::WebAssociatedURLLoaderOptions& options);
+
+  // Starts the request using the specified frame.  Calls |callback| when
+  // done.
+  //
+  // |fetch_request_mode| is the mode to use. See
+  // https://fetch.spec.whatwg.org/#concept-request-mode.
+  //
+  // |fetch_credentials_mode| is the credentials mode to use. See
+  // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
   void Start(blink::WebLocalFrame* frame,
              blink::mojom::RequestContextType request_context,
              network::mojom::RequestMode request_mode,
              network::mojom::CredentialsMode credentials_mode,
-             StartCallback callback) override;
+             StartCallback callback);
+
+  // Manually cancel the request.
+  void Cancel();
 
  private:
-  friend class AssociatedResourceFetcher;
-
   class ClientImpl;
 
   explicit AssociatedResourceFetcherImpl(const GURL& url);
-
-  ~AssociatedResourceFetcherImpl() override;
-
-  void Cancel() override;
 
   std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
   std::unique_ptr<ClientImpl> client_;

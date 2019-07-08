@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller_impl.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -197,8 +198,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     auto test_pwa_delegate =
         std::make_unique<TestPwaDelegate>(fake_cookie_manager_.get());
     test_pwa_delegate_ = test_pwa_delegate.get();
+
     test_pending_app_manager_ =
-        std::make_unique<web_app::TestPendingAppManager>();
+        std::make_unique<web_app::TestPendingAppManager>(&test_app_registrar_);
     setup_controller_ = base::WrapUnique(new AndroidSmsAppSetupControllerImpl(
         &profile_, test_pending_app_manager_.get(),
         host_content_settings_map_));
@@ -430,6 +432,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   TestingProfile profile_;
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<FakeCookieManager> fake_cookie_manager_;
+  web_app::TestAppRegistrar test_app_registrar_;
   std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
   TestPwaDelegate* test_pwa_delegate_;
   std::unique_ptr<AndroidSmsAppSetupController> setup_controller_;

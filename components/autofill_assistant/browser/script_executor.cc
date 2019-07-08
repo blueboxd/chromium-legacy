@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -63,6 +64,7 @@ std::ostream& operator<<(std::ostream& out,
 
 ScriptExecutor::ScriptExecutor(
     const std::string& script_path,
+    std::unique_ptr<TriggerContext> additional_context,
     const std::string& global_payload,
     const std::string& script_payload,
     ScriptExecutor::Listener* listener,
@@ -70,6 +72,7 @@ ScriptExecutor::ScriptExecutor(
     const std::vector<Script*>* ordered_interrupts,
     ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
+      additional_context_(std::move(additional_context)),
       last_global_payload_(global_payload),
       initial_script_payload_(script_payload),
       last_script_payload_(script_payload),
@@ -104,7 +107,9 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 
   DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetDeeplinkURL(), delegate_->GetTriggerContext(),
+      script_path_, delegate_->GetDeeplinkURL(),
+      MergedTriggerContext(
+          {delegate_->GetTriggerContext(), additional_context_.get()}),
       last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -261,12 +266,11 @@ void ScriptExecutor::Prompt(
   // We change the chips callback with a callback that cleans up the state
   // before calling the initial callback.
   for (auto& user_action : *user_actions) {
-    if (!user_action.callback)
+    if (!user_action.HasCallback())
       continue;
 
-    user_action.callback = base::BindOnce(&ScriptExecutor::OnChosen,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          std::move(user_action.callback));
+    user_action.AddInterceptor(base::BindOnce(&ScriptExecutor::OnChosen,
+                                              weak_ptr_factory_.GetWeakPtr()));
   }
 
   delegate_->EnterState(AutofillAssistantState::PROMPT);
@@ -287,9 +291,10 @@ void ScriptExecutor::CleanUpAfterPrompt() {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
 }
 
-void ScriptExecutor::OnChosen(base::OnceClosure callback) {
+void ScriptExecutor::OnChosen(UserAction::Callback callback,
+                              std::unique_ptr<TriggerContext> context) {
   CleanUpAfterPrompt();
-  std::move(callback).Run();
+  std::move(callback).Run(std::move(context));
 }
 
 void ScriptExecutor::FillAddressForm(
@@ -618,8 +623,9 @@ void ScriptExecutor::ProcessAction(Action* action) {
 
 void ScriptExecutor::GetNextActions() {
   delegate_->GetService()->GetNextActions(
-      delegate_->GetTriggerContext(), last_global_payload_,
-      last_script_payload_, processed_actions_,
+      MergedTriggerContext(
+          {delegate_->GetTriggerContext(), additional_context_.get()}),
+      last_global_payload_, last_script_payload_, processed_actions_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -789,8 +795,7 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
 
       interrupt->precondition->Check(
           delegate_->GetCurrentURL(), batch_element_checker_.get(),
-          delegate_->GetTriggerContext()->script_parameters,
-          *main_script_->scripts_state_,
+          *delegate_->GetTriggerContext(), *main_script_->scripts_state_,
           base::BindOnce(&WaitForDomOperation::OnPreconditionCheckDone,
                          weak_ptr_factory_.GetWeakPtr(),
                          base::Unretained(interrupt)));
@@ -838,8 +843,9 @@ void ScriptExecutor::WaitForDomOperation::RunInterrupt(
   SavePreInterruptState();
   ran_interrupts_.insert(interrupt->handle.path);
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
-      interrupt->handle.path, main_script_->last_global_payload_,
-      main_script_->initial_script_payload_,
+      interrupt->handle.path,
+      TriggerContext::Merge({main_script_->additional_context_.get()}),
+      main_script_->last_global_payload_, main_script_->initial_script_payload_,
       /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       delegate_);
   interrupt_executor_->Run(

@@ -97,7 +97,6 @@ int ChromeMain(int argc, const char** argv) {
 #if defined(OS_MACOSX)
   SetUpBundleOverrides();
 #endif
-  command_line->AppendSwitch(service_manager::switches::kNoSandbox);
   // Start the sampling profiler as early as possible - namely, once the command
   // line data is available. Allocated as an object on the stack to ensure that
   // the destructor runs on shutdown, which is important to avoid the profiler

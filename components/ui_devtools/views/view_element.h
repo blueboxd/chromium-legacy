@@ -42,6 +42,7 @@ class ViewElement : public views::ViewObserver, public UIElement {
   std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const override;
   static views::View* From(const UIElement* element);
+  void PaintRect() const override;
 
  private:
   views::View* view_;

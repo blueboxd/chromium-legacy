@@ -1279,6 +1279,15 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Disable visibility sync on the mirrored layer. Changes in |l2|'s visibility
+  // shouldn't affect the visibility of |l2_mirror|.
+  l2_mirror->set_sync_visibility_with_source(false);
+  l2->SetVisible(false);
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
 }
 
 TEST_F(LayerWithDelegateTest, RoundedCorner) {

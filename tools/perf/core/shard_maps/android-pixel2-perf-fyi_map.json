@@ -1,22 +1,33 @@
 {
     "0": {
         "benchmarks": {
-            "jetstream": {},
-            "octane": {},
-            "speedometer2": {},
-            "startup.mobile": {},
+            "jetstream": {
+                "abridged": false
+            },
+            "octane": {
+                "abridged": false
+            },
+            "speedometer2": {
+                "abridged": false
+            },
+            "startup.mobile": {
+                "abridged": false
+            },
             "system_health.common_mobile": {
-                "end": 55
+                "end": 55,
+                "abridged": false
             }
         }
     },
     "1": {
         "benchmarks": {
             "system_health.common_mobile": {
-                "begin": 55
+                "begin": 55,
+                "abridged": false
             },
             "system_health.memory_mobile": {
-                "end": 33
+                "end": 33,
+                "abridged": false
             }
         }
     },
@@ -24,16 +35,20 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 33,
-                "end": 63
+                "end": 63,
+                "abridged": false
             }
         }
     },
     "3": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 63
+                "begin": 63,
+                "abridged": false
             },
-            "v8.browsing_mobile": {}
+            "v8.browsing_mobile": {
+                "abridged": false
+            }
         }
     },
     "extra_infos": {

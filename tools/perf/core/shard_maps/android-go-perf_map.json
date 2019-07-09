@@ -7,15 +7,22 @@
     },
     "2": {
         "benchmarks": {
-            "speedometer": {},
-            "speedometer2": {}
+            "speedometer": {
+                "abridged": false
+            },
+            "speedometer2": {
+                "abridged": false
+            }
         }
     },
     "3": {
         "benchmarks": {
-            "startup.mobile": {},
+            "startup.mobile": {
+                "abridged": false
+            },
             "system_health.common_mobile": {
-                "end": 7
+                "end": 7,
+                "abridged": false
             }
         }
     },
@@ -23,7 +30,8 @@
         "benchmarks": {
             "system_health.common_mobile": {
                 "begin": 7,
-                "end": 20
+                "end": 20,
+                "abridged": false
             }
         }
     },
@@ -31,7 +39,8 @@
         "benchmarks": {
             "system_health.common_mobile": {
                 "begin": 20,
-                "end": 47
+                "end": 47,
+                "abridged": false
             }
         }
     },
@@ -39,17 +48,20 @@
         "benchmarks": {
             "system_health.common_mobile": {
                 "begin": 47,
-                "end": 78
+                "end": 78,
+                "abridged": false
             }
         }
     },
     "7": {
         "benchmarks": {
             "system_health.common_mobile": {
-                "begin": 78
+                "begin": 78,
+                "abridged": false
             },
             "system_health.memory_mobile": {
-                "end": 9
+                "end": 9,
+                "abridged": false
             }
         }
     },
@@ -57,7 +69,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 9,
-                "end": 17
+                "end": 17,
+                "abridged": false
             }
         }
     },
@@ -65,7 +78,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 17,
-                "end": 22
+                "end": 22,
+                "abridged": false
             }
         }
     },
@@ -73,7 +87,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 22,
-                "end": 29
+                "end": 29,
+                "abridged": false
             }
         }
     },
@@ -81,7 +96,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 29,
-                "end": 41
+                "end": 41,
+                "abridged": false
             }
         }
     },
@@ -89,7 +105,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 41,
-                "end": 54
+                "end": 54,
+                "abridged": false
             }
         }
     },
@@ -97,7 +114,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 54,
-                "end": 66
+                "end": 66,
+                "abridged": false
             }
         }
     },
@@ -105,7 +123,8 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 66,
-                "end": 74
+                "end": 74,
+                "abridged": false
             }
         }
     },
@@ -113,18 +132,23 @@
         "benchmarks": {
             "system_health.memory_mobile": {
                 "begin": 74,
-                "end": 81
+                "end": 81,
+                "abridged": false
             }
         }
     },
     "16": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 81
+                "begin": 81,
+                "abridged": false
             },
-            "system_health.webview_startup": {},
+            "system_health.webview_startup": {
+                "abridged": false
+            },
             "v8.browsing_mobile": {
-                "end": 11
+                "end": 11,
+                "abridged": false
             }
         }
     },
@@ -132,14 +156,16 @@
         "benchmarks": {
             "v8.browsing_mobile": {
                 "begin": 11,
-                "end": 22
+                "end": 22,
+                "abridged": false
             }
         }
     },
     "18": {
         "benchmarks": {
             "v8.browsing_mobile": {
-                "begin": 22
+                "begin": 22,
+                "abridged": false
             }
         }
     },

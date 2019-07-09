@@ -15,6 +15,8 @@ _protocol_generated = [
   "Forward.h",
   "Overlay.cpp",
   "Overlay.h",
+  "Page.cpp",
+  "Page.h",
   "Protocol.cpp",
   "Protocol.h",
 ]
@@ -71,6 +73,8 @@ component("ui_devtools") {
     "dom_agent.h",
     "overlay_agent.cc",
     "overlay_agent.h",
+    "page_agent.cc",
+    "page_agent.h",
     "root_element.cc",
     "root_element.h",
     "switches.cc",

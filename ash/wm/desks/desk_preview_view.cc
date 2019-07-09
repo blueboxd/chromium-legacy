@@ -85,6 +85,7 @@ void MirrorLayerTree(ui::Layer* source_layer,
   mirror->SetVisible(true);
   mirror->SetOpacity(1);
   mirror->set_sync_bounds_with_source(true);
+  mirror->set_sync_visibility_with_source(false);
 
   if (layer_data.should_reset_transform)
     mirror->SetTransform(gfx::Transform());

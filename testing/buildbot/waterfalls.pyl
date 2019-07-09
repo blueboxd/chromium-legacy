@@ -3024,21 +3024,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_debug_telemetry_tests',
         },
       },
-      # TODO(crbug.com/952071): make this configuration work, then
-      # replace all the Windows testers with thin Linux VMs and remove
-      # this bot.
-      'Win10 FYI Exp LinuxVM Testing (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
-        },
-      },
       'Win10 FYI Exp Release (Intel HD 630)': {
         'os_type': 'win',
         'browser_config': 'release',

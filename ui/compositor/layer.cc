@@ -1398,9 +1398,12 @@ void Layer::SetOpacityFromAnimation(float opacity,
 
 void Layer::SetVisibilityFromAnimation(bool visible,
                                        PropertyChangeReason reason) {
-  // Sync changes with the mirror layers.
-  for (const auto& mirror : mirrors_)
-    mirror->dest()->SetVisible(visible);
+  // Sync changes with the mirror layers only if they want so.
+  for (const auto& mirror : mirrors_) {
+    Layer* mirror_dest = mirror->dest();
+    if (mirror_dest->sync_visibility_with_source_)
+      mirror_dest->SetVisible(visible);
+  }
 
   if (visible_ == visible)
     return;

@@ -2,7 +2,8 @@
     "0": {
         "benchmarks": {
             "heap_profiling.mobile.disabled": {
-                "end": 1
+                "end": 1,
+                "abridged": false
             }
         }
     },
@@ -10,17 +11,23 @@
         "benchmarks": {
             "heap_profiling.mobile.disabled": {
                 "begin": 1,
-                "end": 2
+                "end": 2,
+                "abridged": false
             }
         }
     },
     "2": {
         "benchmarks": {
             "heap_profiling.mobile.disabled": {
-                "begin": 2
+                "begin": 2,
+                "abridged": false
             },
-            "heap_profiling.mobile.native": {},
-            "heap_profiling.mobile.pseudo": {}
+            "heap_profiling.mobile.native": {
+                "abridged": false
+            },
+            "heap_profiling.mobile.pseudo": {
+                "abridged": false
+            }
         }
     },
     "extra_infos": {

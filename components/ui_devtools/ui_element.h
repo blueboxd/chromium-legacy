@@ -97,6 +97,9 @@ class UI_DEVTOOLS_EXPORT UIElement {
     return T::From(element);
   }
 
+  // Called from PageAgent to repaint Views for Debug Bounds Rectangles
+  virtual void PaintRect() const {}
+
  protected:
   UIElement(const UIElementType type,
             UIElementDelegate* delegate,

@@ -67,8 +67,6 @@ class HomeButtonController : public AppListControllerObserver,
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionConsentStatusUpdated(
-      mojom::ConsentStatus consent_status) override;
 
   void OnAppListShown();
   void OnAppListDismissed();

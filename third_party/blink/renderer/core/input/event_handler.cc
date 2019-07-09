@@ -1119,8 +1119,6 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
           std::move(frame_->LocalFrameRoot()
                         .GetEventHandler()
                         .last_mouse_down_user_gesture_token_));
-    } else {
-      gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
     }
 
     event_result = DispatchMousePointerEvent(

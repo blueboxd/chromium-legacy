@@ -273,6 +273,38 @@ class ScriptsSmokeTest(unittest.TestCase):
     reference_browser_arg_index = command.index('--browser=reference')
     self.assertTrue(reference_browser_arg_index > original_browser_arg_index)
 
+  def testRunPerformanceTestsTelemetryCommandGenerator_StorySelectionConfig_Unabridged(self):
+    options = run_performance_tests.parse_arguments([
+        '../../tools/perf/run_benchmark', '--browser=release_x64',
+        '--run-ref-build',
+        r'--isolated-script-test-output=c:\a\b\c\output.json',
+    ])
+    story_selection_config = {
+        'abridged': False,
+        'begin': 1,
+        'end': 5,
+    }
+    command = run_performance_tests.TelemetryCommandGenerator(
+        'fake_benchmark_name', options, story_selection_config).generate(
+            'fake_output_dir')
+    self.assertIn('--run-full-story-set', command)
+    self.assertIn('--story-shard-begin-index=1', command)
+    self.assertIn('--story-shard-end-index=5', command)
+
+  def testRunPerformanceTestsTelemetryCommandGenerator_StorySelectionConfig_Abridged(self):
+    options = run_performance_tests.parse_arguments([
+        '../../tools/perf/run_benchmark', '--browser=release_x64',
+        '--run-ref-build',
+        r'--isolated-script-test-output=c:\a\b\c\output.json',
+    ])
+    story_selection_config = {
+        'abridged': True,
+    }
+    command = run_performance_tests.TelemetryCommandGenerator(
+        'fake_benchmark_name', options, story_selection_config).generate(
+            'fake_output_dir')
+    self.assertNotIn('--run-full-story-set', command)
+
   def testRunPerformanceTestsGtestArgsParser(self):
      options = run_performance_tests.parse_arguments([
         'media_perftests', '--non-telemetry=true', '--single-process-tests',

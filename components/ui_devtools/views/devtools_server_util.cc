@@ -8,6 +8,7 @@
 
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "components/ui_devtools/page_agent.h"
 #include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/dom_agent_views.h"
 #include "components/ui_devtools/views/overlay_agent_views.h"
@@ -28,6 +29,7 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
   client->AddAgent(std::move(dom_agent_views));
   client->AddAgent(std::make_unique<CSSAgent>(dom_agent_views_ptr));
   client->AddAgent(OverlayAgentViews::Create(dom_agent_views_ptr));
+  client->AddAgent(std::make_unique<PageAgent>(dom_agent_views_ptr));
   server->AttachClient(std::move(client));
   return server;
 }

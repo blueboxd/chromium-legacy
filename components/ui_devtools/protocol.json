@@ -691,6 +691,27 @@
                     ]
                 }
             ]
+        },
+        {
+            "commands" : [
+                {
+                    "name": "disable",
+                    "description": "Disables domain notifications."
+                },
+                {
+                    "name": "enable",
+                    "description": "Enables domain notifications."
+                },
+                {
+                    "name": "reload",
+                    "description": "Using frontend reload command to toggle View debug rectangles"
+                }
+            ],
+            "description": "Actions and events related to the inspected page belong to the page domain.",
+            "domain": "Page",
+            "dependencies": [
+                "DOM"
+            ]
         }
     ],
     "version": {

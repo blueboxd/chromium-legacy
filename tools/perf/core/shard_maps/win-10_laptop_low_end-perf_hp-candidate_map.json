@@ -1,7 +1,9 @@
 {
     "0": {
         "benchmarks": {
-            "v8.browsing_desktop": {}
+            "v8.browsing_desktop": {
+                "abridged": false
+            }
         }
     },
     "extra_infos": {}

@@ -2,7 +2,8 @@
     "0": {
         "benchmarks": {
             "rendering.desktop": {
-                "end": 60
+                "end": 60,
+                "abridged": false
             }
         }
     },
@@ -10,7 +11,8 @@
         "benchmarks": {
             "rendering.desktop": {
                 "begin": 60,
-                "end": 120
+                "end": 120,
+                "abridged": false
             }
         }
     },
@@ -18,14 +20,16 @@
         "benchmarks": {
             "rendering.desktop": {
                 "begin": 120,
-                "end": 180
+                "end": 180,
+                "abridged": false
             }
         }
     },
     "3": {
         "benchmarks": {
             "rendering.desktop": {
-                "begin": 180
+                "begin": 180,
+                "abridged": false
             }
         }
     },

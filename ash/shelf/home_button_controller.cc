@@ -148,13 +148,10 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
 bool HomeButtonController::IsVoiceInteractionAvailable() {
   VoiceInteractionController* controller = VoiceInteractionController::Get();
   bool settings_enabled = controller->settings_enabled().value_or(false);
-  bool consent_given = controller->consent_status() ==
-                       mojom::ConsentStatus::kActivityControlAccepted;
   bool feature_allowed =
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
 
-  return assistant_overlay_ && feature_allowed &&
-         (settings_enabled || !consent_given);
+  return assistant_overlay_ && feature_allowed && settings_enabled;
 }
 
 bool HomeButtonController::IsVoiceInteractionRunning() {
@@ -228,11 +225,6 @@ void HomeButtonController::OnVoiceInteractionStatusChanged(
 }
 
 void HomeButtonController::OnVoiceInteractionSettingsEnabled(bool enabled) {
-  button_->OnVoiceInteractionAvailabilityChanged();
-}
-
-void HomeButtonController::OnVoiceInteractionConsentStatusUpdated(
-    mojom::ConsentStatus consent_status) {
   button_->OnVoiceInteractionAvailabilityChanged();
 }
 

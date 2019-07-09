@@ -168,4 +168,8 @@ int UIElement::FindUIElementIdForBackendElement<views::View>(
   return 0;
 }
 
+void ViewElement::PaintRect() const {
+  view()->SchedulePaint();
+}
+
 }  // namespace ui_devtools

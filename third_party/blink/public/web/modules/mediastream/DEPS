@@ -13,7 +13,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-    "mock_media_stream_video_source.h" : [
+    "mock_media_stream_video_(source|sink).h" : [
         "+testing/gmock/include/gmock/gmock.h",
     ],
 }

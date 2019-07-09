@@ -49,7 +49,7 @@ class HidConnectionLinux : public HidConnection {
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  base::WeakPtrFactory<HidConnectionLinux> weak_factory_;
+  base::WeakPtrFactory<HidConnectionLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionLinux);
 };

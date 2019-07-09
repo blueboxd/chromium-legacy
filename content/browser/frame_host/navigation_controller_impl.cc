@@ -745,7 +745,8 @@ int NavigationControllerImpl::GetLastCommittedEntryIndex() {
 }
 
 int NavigationControllerImpl::GetEntryCount() {
-  DCHECK_LE(entries_.size(), max_entry_count());
+  DCHECK_LE(entries_.size(),
+            max_entry_count() + (transient_entry_index_ == -1 ? 0 : 1));
   return static_cast<int>(entries_.size());
 }
 
@@ -3326,10 +3327,10 @@ NavigationEntryImpl* NavigationControllerImpl::GetTransientEntry() {
 void NavigationControllerImpl::SetTransientEntry(
     std::unique_ptr<NavigationEntry> entry) {
   // Discard any current transient entry, we can only have one at a time.
+  DiscardTransientEntry();
   int index = 0;
   if (last_committed_entry_index_ != -1)
     index = last_committed_entry_index_ + 1;
-  DiscardTransientEntry();
   entries_.insert(entries_.begin() + index,
                   NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
   if (pending_entry_index_ >= index)

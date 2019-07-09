@@ -106,13 +106,11 @@ bool ProducerClient::IsTracingActive() {
 }
 
 void ProducerClient::OnTracingStart(
-    mojo::ScopedSharedBufferHandle shared_memory) {
+    mojo::ScopedSharedBufferHandle shared_memory,
+    uint64_t shared_memory_buffer_page_size_bytes) {
   // If we're using in-process mode, we don't need to set up our
   // own SharedMemoryArbiter.
   DCHECK(!in_process_arbiter_);
-  // TODO(oysteine): In next CLs plumb this through the service.
-  const size_t kShmemBufferPageSize = 4096;
-
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(producer_host_);
   if (!shared_memory_) {
@@ -120,7 +118,7 @@ void ProducerClient::OnTracingStart(
         std::make_unique<MojoSharedMemory>(std::move(shared_memory));
 
     shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateInstance(
-        shared_memory_.get(), kShmemBufferPageSize, this,
+        shared_memory_.get(), shared_memory_buffer_page_size_bytes, this,
         PerfettoTracedProcess::GetTaskRunner());
   } else {
     // TODO(oysteine): This is assuming the SMB is the same, currently. Swapping

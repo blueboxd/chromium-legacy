@@ -103,10 +103,7 @@ DeviceImpl::~DeviceImpl() {
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
                        mojom::UsbDeviceClientPtr client)
-    : device_(std::move(device)),
-      observer_(this),
-      client_(std::move(client)),
-      weak_factory_(this) {
+    : device_(std::move(device)), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 

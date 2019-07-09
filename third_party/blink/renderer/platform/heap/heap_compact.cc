@@ -8,6 +8,7 @@
 
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -359,7 +360,7 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
     return true;
   }
 
-  if (!RuntimeEnabledFeatures::HeapCompactionEnabled()) {
+  if (!base::FeatureList::IsEnabled(blink::features::kBlinkHeapCompaction)) {
     return false;
   }
 
@@ -373,7 +374,8 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
 }
 
 void HeapCompact::Initialize(ThreadState* state) {
-  CHECK(force_for_next_gc_ || RuntimeEnabledFeatures::HeapCompactionEnabled());
+  CHECK(force_for_next_gc_ ||
+        base::FeatureList::IsEnabled(blink::features::kBlinkHeapCompaction));
   CHECK(!do_compact_);
   CHECK(!fixups_);
   LOG_HEAP_COMPACTION() << "Compacting: free=" << free_list_size_;

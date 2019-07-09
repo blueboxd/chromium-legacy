@@ -52,7 +52,7 @@ class HidConnectionImpl : public mojom::HidConnection,
   scoped_refptr<device::HidConnection> hid_connection_;
   mojo::InterfacePtr<mojom::HidConnectionClient> client_;
 
-  base::WeakPtrFactory<HidConnectionImpl> weak_factory_;
+  base::WeakPtrFactory<HidConnectionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionImpl);
 };

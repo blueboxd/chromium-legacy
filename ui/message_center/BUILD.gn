@@ -176,6 +176,7 @@ if (enable_message_center) {
       ":test_support",
       "//base",
       "//base/test:test_support",
+      "//mojo/core/embedder",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",

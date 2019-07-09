@@ -12,7 +12,7 @@ namespace device {
 HidConnectionImpl::HidConnectionImpl(
     scoped_refptr<device::HidConnection> connection,
     mojom::HidConnectionClientPtr connection_client)
-    : hid_connection_(std::move(connection)), weak_factory_(this) {
+    : hid_connection_(std::move(connection)) {
   if (connection_client) {
     hid_connection_->SetClient(this);
     client_ = std::move(connection_client);

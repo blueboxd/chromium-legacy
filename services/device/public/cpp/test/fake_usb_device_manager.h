@@ -92,7 +92,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
 
   DeviceMap devices_;
 
-  base::WeakPtrFactory<FakeUsbDeviceManager> weak_factory_;
+  base::WeakPtrFactory<FakeUsbDeviceManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeUsbDeviceManager);
 };

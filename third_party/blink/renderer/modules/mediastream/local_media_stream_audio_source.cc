@@ -13,27 +13,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 
 namespace blink {
-
-class LocalMediaStreamAudioSource::InternalFrame {
- public:
-  explicit InternalFrame(WebLocalFrame* web_frame)
-      : frame_(web_frame ? static_cast<LocalFrame*>(
-                               WebLocalFrame::ToCoreFrame(*web_frame))
-                         : nullptr) {}
-
-  LocalFrame* frame() { return frame_.Get(); }
-  WebLocalFrame* web_frame() {
-    if (!frame_)
-      return nullptr;
-
-    return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame()));
-  }
-
- private:
-  WeakPersistent<LocalFrame> frame_;
-};
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     WebLocalFrame* web_frame,
@@ -45,7 +27,8 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     : MediaStreamAudioSource(std::move(task_runner),
                              true /* is_local_source */,
                              disable_local_echo),
-      internal_consumer_frame_(std::make_unique<InternalFrame>(web_frame)),
+      internal_consumer_frame_(
+          std::make_unique<MediaStreamInternalFrameWrapper>(web_frame)),
       started_callback_(std::move(started_callback)) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
   SetDevice(device);

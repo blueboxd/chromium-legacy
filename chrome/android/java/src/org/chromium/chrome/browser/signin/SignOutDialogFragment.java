@@ -65,6 +65,10 @@ public class SignOutDialogFragment extends DialogFragment implements
             mGaiaServiceType = getArguments().getInt(
                     SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
+        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
+        if (domain != null) {
+            return createDialogForManagedAccount(domain);
+        }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)) {
             return createDialogForceWipeDataFeatureEnabled();
@@ -73,15 +77,20 @@ public class SignOutDialogFragment extends DialogFragment implements
     }
 
     private Dialog createDialog() {
-        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
-        String message = domain == null
-                ? getString(R.string.signout_message_without_remove_local_data)
-                : getString(R.string.signout_managed_account_message, domain);
         return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.signout_title)
                 .setPositiveButton(R.string.continue_button, this)
                 .setNegativeButton(R.string.cancel, this)
-                .setMessage(message)
+                .setMessage(R.string.signout_message_without_remove_local_data)
+                .create();
+    }
+
+    private Dialog createDialogForManagedAccount(String domain) {
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                .setTitle(R.string.signout_managed_account_title)
+                .setPositiveButton(R.string.continue_button, this)
+                .setNegativeButton(R.string.cancel, this)
+                .setMessage(getString(R.string.signout_managed_account_message, domain))
                 .create();
     }
 
@@ -90,18 +99,9 @@ public class SignOutDialogFragment extends DialogFragment implements
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog);
         LayoutInflater inflater = LayoutInflater.from(builder.getContext());
         View body = inflater.inflate(R.layout.signout_wipe_storage_dialog, null);
-
-        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
-        TextView message = body.findViewById(android.R.id.message);
         mWipeUserData = body.findViewById(R.id.remove_local_data);
 
-        if (domain != null) {
-            message.setText(getString(R.string.signout_managed_account_message, domain));
-            // The account is managed, so data will be wiped anyway.
-            mWipeUserData.setVisibility(View.GONE);
-        } else {
-            message.setText(getString(R.string.signout_message));
-        }
+        ((TextView) body.findViewById(android.R.id.message)).setText(R.string.signout_message);
         return builder.setTitle(R.string.signout_title)
                 .setView(body)
                 .setPositiveButton(R.string.continue_button, this)

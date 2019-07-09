@@ -156,6 +156,7 @@ class H264DecoderTest : public ::testing::Test {
  private:
   base::queue<std::string> input_frame_files_;
   std::string bitstream_;
+  scoped_refptr<DecoderBuffer> decoder_buffer_;
 };
 
 void H264DecoderTest::SetUp() {
@@ -196,9 +197,10 @@ AcceleratedVideoDecoder::DecodeResult H264DecoderTest::Decode() {
     auto input_file = GetTestDataFilePath(input_frame_files_.front());
     input_frame_files_.pop();
     CHECK(base::ReadFileToString(input_file, &bitstream_));
-    decoder_->SetStream(bitstream_id++,
-                        reinterpret_cast<const uint8_t*>(bitstream_.data()),
-                        bitstream_.size());
+    decoder_buffer_ = DecoderBuffer::CopyFrom(
+        reinterpret_cast<const uint8_t*>(bitstream_.data()), bitstream_.size());
+    EXPECT_NE(decoder_buffer_.get(), nullptr);
+    decoder_->SetStream(bitstream_id++, *decoder_buffer_);
   }
 }
 
@@ -445,8 +447,11 @@ TEST_F(H264DecoderTest, SetEncryptedStream) {
               SubmitDecode(DecryptConfigMatches(decrypt_config.get())))
       .WillOnce(Return(H264Decoder::H264Accelerator::Status::kOk));
 
-  decoder_->SetStream(0, reinterpret_cast<const uint8_t*>(bitstream.data()),
-                      bitstream.size(), decrypt_config.get());
+  auto buffer = DecoderBuffer::CopyFrom(
+      reinterpret_cast<const uint8_t*>(bitstream.data()), bitstream.size());
+  ASSERT_NE(buffer.get(), nullptr);
+  buffer->set_decrypt_config(std::move(decrypt_config));
+  decoder_->SetStream(0, *buffer);
   EXPECT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, decoder_->Decode());
   EXPECT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, decoder_->Decode());
   EXPECT_TRUE(decoder_->Flush());

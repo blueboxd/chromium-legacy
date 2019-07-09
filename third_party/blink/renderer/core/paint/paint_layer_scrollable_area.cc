@@ -2912,4 +2912,10 @@ bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
       ->PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
+void PaintLayerScrollableArea::PreFinalize() {
+  if (!HasBeenDisposed())
+    Dispose();
+  rare_data_.reset();
+}
+
 }  // namespace blink

@@ -120,7 +120,8 @@ interface ProducerHost {
 // this interface and use the PerfettoService interface within the tracing
 // service to register itself.
 interface ProducerClient {
-  OnTracingStart(handle<shared_buffer> shared_memory);
+  OnTracingStart(handle<shared_buffer> shared_memory,
+                  uint64 shared_memory_buffer_page_size_bytes);
 
   // Called by Perfetto (via ProducerHost) to request a data source to start
   // logging.

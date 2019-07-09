@@ -29,6 +29,8 @@ blink_modules_sources("mediastream") {
     "media_stream_constraints_util_video_device.cc",
     "media_stream_event.cc",
     "media_stream_event.h",
+    "media_stream_local_frame_wrapper.cc",
+    "media_stream_local_frame_wrapper.h",
     "media_stream_track.cc",
     "media_stream_track.h",
     "media_stream_track_content_hint.h",
@@ -67,6 +69,7 @@ jumbo_source_set("test_support") {
   sources = [
     "mock_constraint_factory.cc",
     "mock_media_stream_registry.cc",
+    "mock_media_stream_video_sink.cc",
     "mock_media_stream_video_source.cc",
   ]
 

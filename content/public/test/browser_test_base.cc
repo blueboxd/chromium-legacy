@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -526,6 +527,31 @@ void BrowserTestBase::WaitUntilJavaIsReady(base::OnceClosure quit_closure) {
 }
 #endif
 
+namespace {
+
+std::string GetDefaultTraceFilaneme() {
+  std::string test_suite_name = ::testing::UnitTest::GetInstance()
+                                    ->current_test_info()
+                                    ->test_suite_name();
+  std::string test_name =
+      ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  // Add random number to the trace file to distinguish traces from different
+  // test runs.
+  // We don't use timestamp here to avoid collisions with parallel runs of the
+  // same test.
+  std::string random_seed = base::NumberToString(base::RandInt(1e7, 1e8 - 1));
+  std::string status = ::testing::UnitTest::GetInstance()
+                               ->current_test_info()
+                               ->result()
+                               ->Passed()
+                           ? "OK"
+                           : "FAIL";
+  return "trace_test_" + test_suite_name + "_" + test_name + "_" + random_seed +
+         "_" + status + ".json";
+}
+
+}  // namespace
+
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   // Install a RunLoop timeout if none is present but do not override tests that
   // set a ScopedRunTimeoutForTest from their fixture's constructor (which
@@ -611,7 +637,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // If there was no file specified, put a hardcoded one in the current
     // working directory.
     if (trace_file.empty())
-      trace_file = base::FilePath().AppendASCII("trace.json");
+      trace_file = base::FilePath().AppendASCII(GetDefaultTraceFilaneme());
 
     // Wait for tracing to collect results from the renderers.
     base::RunLoop run_loop;

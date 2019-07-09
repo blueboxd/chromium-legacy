@@ -11,7 +11,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 class PrefRegistrySimple;
 
@@ -20,15 +24,13 @@ namespace chromeos {
 // DeviceOAuth2TokenService retrieves OAuth2 access tokens for a given
 // set of scopes using the device-level OAuth2 any-api refresh token
 // obtained during enterprise device enrollment.
-//
-// See |OAuth2TokenService| for usage details.
-//
 // When using DeviceOAuth2TokenService, a value of |GetRobotAccountId| should
 // be used in places where API expects |account_id|.
 //
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService
-    : public OAuth2TokenService,
+    : public OAuth2TokenServiceObserver,
+      public OAuth2AccessTokenManager::Delegate,
       public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
@@ -62,14 +64,45 @@ class DeviceOAuth2TokenService
   // If set, this callback will be invoked when a refresh token is revoked.
   void SetRefreshTokenRevokedCallback(RefreshTokenRevokedCallback callback);
 
-  // OAuth2TokenServiceObserver:
-  // NOTE: OAuth2TokenService already adds itself as an observer, so this class
-  // doesn't actually need to add/remove itself as an O2TSObserver.
-  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
-  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
+  // Checks in the cache for a valid access token for a specified |account_id|
+  // and |scopes|, and if not found starts a request for an OAuth2 access token
+  // using the OAuth2 refresh token maintained by this instance for that
+  // |account_id|. The caller owns the returned Request.
+  // |scopes| is the set of scopes to get an access token for, |consumer| is
+  // the object that will be called back with results if the returned request
+  // is not deleted.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartAccessTokenRequest(
+      const CoreAccountId& account_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      OAuth2AccessTokenManager::Consumer* consumer);
 
- protected:
-  // Implementation of OAuth2AccessTokenManager::Delegate
+  // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
+  // invalid. This should be done if the token was received from this class,
+  // but was not accepted by the server (e.g., the server returned
+  // 401 Unauthorized). The token will be removed from the cache for the given
+  // scopes.
+  void InvalidateAccessToken(const CoreAccountId& account_id,
+                             const OAuth2AccessTokenManager::ScopeSet& scopes,
+                             const std::string& access_token);
+
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
+
+  OAuth2AccessTokenManager* GetAccessTokenManager();
+
+ private:
+  friend class DeviceOAuth2TokenServiceFactory;
+  friend class DeviceOAuth2TokenServiceTest;
+  struct PendingRequest;
+
+  // OAuth2AccessTokenManager::Delegate:
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      OAuth2AccessTokenConsumer* consumer) override;
+  bool HasRefreshToken(const CoreAccountId& account_id) const override;
+  bool FixRequestErrorIfPossible() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
   bool HandleAccessTokenFetch(
       OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
@@ -77,11 +110,16 @@ class DeviceOAuth2TokenService
       const std::string& client_id,
       const std::string& client_secret,
       const OAuth2AccessTokenManager::ScopeSet& scopes) override;
+  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                const std::string& client_id,
+                                const std::set<std::string>& scopes,
+                                const std::string& access_token) override;
+  void OnAccessTokenFetched(const CoreAccountId& account_id,
+                            const GoogleServiceAuthError& error) override;
 
- private:
-  friend class DeviceOAuth2TokenServiceFactory;
-  friend class DeviceOAuth2TokenServiceTest;
-  struct PendingRequest;
+  // OAuth2TokenServiceObserver:
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
 
   // Implementation of
   // DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate.
@@ -100,8 +138,10 @@ class DeviceOAuth2TokenService
   void FailRequest(OAuth2AccessTokenManager::RequestImpl* request,
                    GoogleServiceAuthError::State error);
 
-  DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate();
-  const DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate() const;
+  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
+  // into DeviceOAuth2TokenService.
+  std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
+  std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Currently open requests that are waiting while loading the system salt or
   // validating the token.

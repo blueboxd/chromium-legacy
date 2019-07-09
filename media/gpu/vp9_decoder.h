@@ -18,6 +18,7 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vp9_picture.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -98,10 +99,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   ~VP9Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
-  void SetStream(int32_t id,
-                 const uint8_t* ptr,
-                 size_t size,
-                 const DecryptConfig* decrypt_config = nullptr) override;
+  void SetStream(int32_t id, const DecoderBuffer& decoder_buffer) override;
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;

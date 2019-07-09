@@ -542,6 +542,20 @@ UiControllerAndroid::GetOverlayModel() {
 }
 
 void UiControllerAndroid::SetOverlayState(OverlayState state) {
+  desired_overlay_state_ = state;
+
+  // Ensure that we don't set partial state if the touchable area is empty. This
+  // is important because a partial overlay will be hidden if TalkBack is
+  // enabled, and we want to completely prevent TalkBack from accessing the web
+  // page if there is no touchable area.
+  if (state == OverlayState::PARTIAL) {
+    std::vector<RectF> area;
+    ui_delegate_->GetTouchableArea(&area);
+    if (area.empty()) {
+      state = OverlayState::FULL;
+    }
+  }
+
   Java_AssistantOverlayModel_setState(AttachCurrentThread(), GetOverlayModel(),
                                       state);
   Java_AssistantModel_setAllowTalkbackOnWebsite(
@@ -552,6 +566,11 @@ void UiControllerAndroid::OnTouchableAreaChanged(
     const RectF& visual_viewport,
     const std::vector<RectF>& touchable_areas,
     const std::vector<RectF>& restricted_areas) {
+  if (!touchable_areas.empty() &&
+      desired_overlay_state_ == OverlayState::PARTIAL) {
+    SetOverlayState(OverlayState::PARTIAL);
+  }
+
   JNIEnv* env = AttachCurrentThread();
   Java_AssistantOverlayModel_setVisualViewport(
       env, GetOverlayModel(), visual_viewport.left, visual_viewport.top,

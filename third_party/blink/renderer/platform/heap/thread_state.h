@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
@@ -241,8 +242,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void RunTerminationGC();
 
   void PerformIdleLazySweep(base::TimeTicks deadline);
+  void PerformConcurrentSweep();
 
   void ScheduleIdleLazySweep();
+  void ScheduleConcurrentAndLazySweep();
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
@@ -607,6 +610,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  CancelableTaskScheduler sweeper_scheduler_;
 
   // Used to ensure precise GC is only run when we don't need to scan the stack.
   // crbug.com/937117

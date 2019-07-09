@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/insession_confirm_password_change_handler_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
 
 #include <string>
 
@@ -21,30 +21,25 @@
 
 namespace chromeos {
 
-InSessionConfirmPasswordChangeHandler::InSessionConfirmPasswordChangeHandler() =
-    default;
+UrgentPasswordExpiryNotificationHandler::
+    UrgentPasswordExpiryNotificationHandler() = default;
 
-InSessionConfirmPasswordChangeHandler::
-    ~InSessionConfirmPasswordChangeHandler() = default;
+UrgentPasswordExpiryNotificationHandler::
+    ~UrgentPasswordExpiryNotificationHandler() = default;
 
-void InSessionConfirmPasswordChangeHandler::HandleChangePassword(
+void UrgentPasswordExpiryNotificationHandler::HandleContinue(
     const base::ListValue* params) {
-  const std::string old_password = params->GetList()[0].GetString();
-  const std::string new_password = params->GetList()[1].GetString();
   auto* in_session_password_change_manager =
       g_browser_process->platform_part()->in_session_password_change_manager();
   CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->ChangePassword(old_password,
-                                                     new_password);
-  // TODO(olsen): Show a spinner until password change is complete.
+  in_session_password_change_manager->StartInSessionPasswordChange();
 }
 
-void InSessionConfirmPasswordChangeHandler::RegisterMessages() {
+void UrgentPasswordExpiryNotificationHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "changePassword",
-      base::BindRepeating(
-          &InSessionConfirmPasswordChangeHandler::HandleChangePassword,
-          weak_factory_.GetWeakPtr()));
+      "continue", base::BindRepeating(
+                      &UrgentPasswordExpiryNotificationHandler::HandleContinue,
+                      weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

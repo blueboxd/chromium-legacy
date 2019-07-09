@@ -9,8 +9,10 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -19,10 +21,11 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,23 +67,61 @@ class MockInstanceIDDriver : public InstanceIDDriver {
   DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
 };
 
+class MockSharingFCMHandler : public SharingFCMHandler {
+ public:
+  MockSharingFCMHandler() : SharingFCMHandler(nullptr, nullptr) {}
+  ~MockSharingFCMHandler() = default;
+
+  MOCK_METHOD0(StartListening, void());
+};
+
+class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
+ public:
+  FakeSharingDeviceRegistration(
+      SharingSyncPreference* prefs,
+      instance_id::InstanceIDDriver* instance_id_driver,
+      VapidKeyManager* vapid_key_manager,
+      gcm::GCMDriver* gcm_driver,
+      syncer::LocalDeviceInfoProvider* device_info_tracker)
+      : SharingDeviceRegistration(prefs,
+                                  instance_id_driver,
+                                  vapid_key_manager,
+                                  gcm_driver,
+                                  device_info_tracker) {}
+  ~FakeSharingDeviceRegistration() override = default;
+
+  void RegisterDevice(
+      SharingDeviceRegistration::RegistrationCallback callback) override {
+    registration_attempts_++;
+    std::move(callback).Run(result_);
+  }
+
+  void SetResult(SharingDeviceRegistration::Result result) { result_ = result; }
+
+  int registration_attempts() { return registration_attempts_; }
+
+ private:
+  SharingDeviceRegistration::Result result_;
+  int registration_attempts_ = 0;
+};
+
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
-    sharing_device_registration_ = new SharingDeviceRegistration(
+    sharing_device_registration_ = new FakeSharingDeviceRegistration(
         sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
         &mock_gcm_driver_, &fake_local_device_info_provider_);
     vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
     fcm_sender_ = new SharingFCMSender(&mock_gcm_driver_,
                                        &fake_local_device_info_provider_,
                                        sync_prefs_, vapid_key_manager_);
-    fcm_handler_ = new SharingFCMHandler(&mock_gcm_driver_, fcm_sender_);
+    fcm_handler_ = new NiceMock<MockSharingFCMHandler>();
     sharing_service_ = std::make_unique<SharingService>(
         base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
         base::WrapUnique(sharing_device_registration_),
         base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
-        &device_info_tracker_, &fake_sync_service_);
+        &device_info_tracker_, &test_sync_service_);
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
   void OnMessageSent(base::Optional<std::string> message_id) {}
@@ -100,26 +141,25 @@ class SharingServiceTest : public testing::Test {
                                          kNoCapabilities);
   }
 
-  ScopedTaskEnvironment scoped_task_environment_{
+  base::test::ScopedFeatureList scoped_feature_list_;
+  content::TestBrowserThreadBundle scoped_task_environment_{
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;
   FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
-  syncer::FakeSyncService fake_sync_service_;
+  syncer::TestSyncService test_sync_service_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
 
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
   NiceMock<MockGCMDriver> mock_gcm_driver_;
+  NiceMock<MockSharingFCMHandler>* fcm_handler_;
 
   SharingSyncPreference* sync_prefs_;
   VapidKeyManager* vapid_key_manager_;
-  SharingDeviceRegistration* sharing_device_registration_;
+  FakeSharingDeviceRegistration* sharing_device_registration_;
   SharingFCMSender* fcm_sender_;
-  SharingFCMHandler* fcm_handler_;
   std::unique_ptr<SharingService> sharing_service_ = nullptr;
-
- private:
-  sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 
 }  // namespace
@@ -230,4 +270,51 @@ TEST_F(SharingServiceTest, SendMessageToDevice) {
                      base::Unretained(this)));
 }
 
-// TODO(himanshujaju) Add tests for RegisterDevice
+TEST_F(SharingServiceTest, DeviceRegistration) {
+  // Enable the feature.
+  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+
+  // Expect registration to be successful on sync state changed.
+  sharing_device_registration_->SetResult(
+      SharingDeviceRegistration::Result::SUCCESS);
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+
+  // As device is already registered, won't attempt registration anymore.
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+
+  // Registration will be attempeted as VAPID key is cleared.
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
+  prefs_.SetUserPref("sharing.vapid_key",
+                     base::Value::ToUniquePtrValue(
+                         base::Value(base::Value::Type::DICTIONARY)));
+  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+}
+
+TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
+  // Enable the feature.
+  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+
+  // Retry will be scheduled on transient error received.
+  sharing_device_registration_->SetResult(
+      SharingDeviceRegistration::Result::TRANSIENT_ERROR);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+
+  // Retry should be scheduled by now. Next retry after 5 minutes will be
+  // successful.
+  sharing_device_registration_->SetResult(
+      SharingDeviceRegistration::Result::SUCCESS);
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
+  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+}

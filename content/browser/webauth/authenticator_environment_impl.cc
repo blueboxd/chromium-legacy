@@ -80,12 +80,13 @@ VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
   return nullptr;
 }
 
-void AuthenticatorEnvironmentImpl::AddVirtualAuthenticatorBinding(
+void AuthenticatorEnvironmentImpl::AddVirtualAuthenticatorReceiver(
     FrameTreeNode* node,
-    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+        receiver) {
   auto* factory = GetVirtualFactoryFor(node);
   DCHECK(factory);
-  factory->AddBinding(std::move(request));
+  factory->AddReceiver(std::move(receiver));
 }
 
 void AuthenticatorEnvironmentImpl::OnDiscoveryDestroyed(

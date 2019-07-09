@@ -97,8 +97,12 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     if (GetTotalNumFrames_Locked() >= max_num_frames_)
       return nullptr;
 
-    scoped_refptr<VideoFrame> new_frame = create_frame_cb_.Run(
-        format_, coded_size_, visible_rect_, natural_size_, base::TimeDelta());
+    // VideoFrame::WrapVideoFrame() will check whether the updated visible_rect
+    // is sub rect of the original visible_rect. Therefore we set visible_rect
+    // as large as coded_size to guarantee this condition.
+    scoped_refptr<VideoFrame> new_frame =
+        create_frame_cb_.Run(format_, coded_size_, gfx::Rect(coded_size_),
+                             coded_size_, base::TimeDelta());
     if (!new_frame)
       return nullptr;
 
@@ -108,14 +112,17 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   DCHECK(!free_frames_.empty());
   scoped_refptr<VideoFrame> origin_frame = std::move(free_frames_.back().frame);
   free_frames_.pop_back();
+  DCHECK_EQ(origin_frame->format(), format_);
+  DCHECK_EQ(origin_frame->coded_size(), coded_size_);
+
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-      *origin_frame, origin_frame->format(), origin_frame->visible_rect(),
-      origin_frame->natural_size());
+      *origin_frame, format_, visible_rect_, natural_size_);
   DCHECK(wrapped_frame);
   frames_in_use_.emplace(GetDmabufId(*wrapped_frame), origin_frame.get());
   wrapped_frame->AddDestructionObserver(
       base::BindOnce(&PlatformVideoFramePool::OnFrameReleasedThunk, weak_this_,
                      parent_task_runner_, std::move(origin_frame)));
+
   // Clear all metadata before returning to client, in case origin frame has any
   // unrelated metadata.
   wrapped_frame->metadata()->Clear();
@@ -166,16 +173,21 @@ void PlatformVideoFramePool::SetFrameFormat(VideoFrameLayout layout,
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  if (!IsSameFormat_Locked(layout.format(), layout.coded_size(), visible_rect,
-                           natural_size)) {
+  // If the frame layout changed we need to allocate new frames so we will clear
+  // the pool here. If only the visible or natural size changed we don't need to
+  // allocate new frames, but will just update the properties of wrapped frames
+  // returned by GetFrame().
+  if (!IsSameLayout_Locked(layout.format(), layout.coded_size())) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
-
-    format_ = layout.format();
-    coded_size_ = layout.coded_size();
-    visible_rect_ = visible_rect;
-    natural_size_ = natural_size;
   }
+
+  format_ = layout.format();
+  coded_size_ = layout.coded_size();
+  visible_rect_ = visible_rect;
+  natural_size_ = natural_size;
+  DCHECK_LE(visible_rect_.right(), coded_size_.width());
+  DCHECK_LE(visible_rect_.bottom(), coded_size_.height());
 }
 
 bool PlatformVideoFramePool::IsExhausted() {
@@ -237,9 +249,7 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size(),
-                          origin_frame->visible_rect(),
-                          origin_frame->natural_size())) {
+  if (IsSameLayout_Locked(origin_frame->format(), origin_frame->coded_size())) {
     InsertFreeFrame_Locked(std::move(origin_frame));
   }
 
@@ -264,15 +274,12 @@ size_t PlatformVideoFramePool::GetTotalNumFrames_Locked() const {
   return free_frames_.size() + frames_in_use_.size();
 }
 
-bool PlatformVideoFramePool::IsSameFormat_Locked(VideoPixelFormat format,
-                                                 gfx::Size coded_size,
-                                                 gfx::Rect visible_rect,
-                                                 gfx::Size natural_size) const {
+bool PlatformVideoFramePool::IsSameLayout_Locked(VideoPixelFormat format,
+                                                 gfx::Size coded_size) const {
   DVLOGF(4);
   lock_.AssertAcquired();
 
-  return format_ == format && coded_size_ == coded_size &&
-         visible_rect_ == visible_rect && natural_size_ == natural_size;
+  return format_ == format && coded_size_ == coded_size;
 }
 
 size_t PlatformVideoFramePool::GetPoolSizeForTesting() {

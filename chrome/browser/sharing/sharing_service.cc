@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
@@ -23,10 +24,43 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace {
 // TODO(knollr): Should this be configurable or shared between similar features?
 constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
+constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay.  The interpretation of this value depends on
+    // always_use_initial_delay.  It's either how long we wait between
+    // requests before backoff starts, or how much we delay the first request
+    // after backoff starts.
+    5 * 60 * 1000,
+
+    // Factor by which the waiting time will be multiplied.
+    2.0,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.1,
+
+    // Maximum amount of time we are willing to delay our request, -1
+    // for no maximum.
+    -1,
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // If true, we always use a delay of initial_delay_ms, even before
+    // we've seen num_errors_to_ignore errors.  Otherwise, initial_delay_ms
+    // is the first delay once we start exponential backoff.
+    false,
+};
+
 }  // namespace
 
 SharingService::SharingService(
@@ -44,6 +78,7 @@ SharingService::SharingService(
       fcm_handler_(std::move(fcm_handler)),
       device_info_tracker_(device_info_tracker),
       sync_service_(sync_service),
+      backoff_entry_(&kRetryBackoffPolicy),
       weak_ptr_factory_(this) {
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
@@ -102,9 +137,9 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     // Only insert the first occurrence of each device name.
     auto inserted = device_names.insert(device->client_name());
     if (inserted.second) {
-      device_candidates.emplace_back(device->guid(), device->client_name(),
-                                     device->last_updated_timestamp(),
-                                     device_capabilities);
+      device_candidates.emplace_back(
+          device->guid(), device->client_name(), device->device_type(),
+          device->last_updated_timestamp(), device_capabilities);
     }
   }
 
@@ -133,17 +168,52 @@ void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
   sync_service_ = nullptr;
 }
 
-void SharingService::OnSyncCycleCompleted(syncer::SyncService* sync) {
+void SharingService::OnStateChanged(syncer::SyncService* sync) {
   if (IsEnabled()) {
-    sharing_device_registration_->RegisterDevice(base::BindOnce(
-        &SharingService::OnDeviceRegistered, weak_ptr_factory_.GetWeakPtr()));
+    // Trigger registration first time feature is enabled.
+    if (sync_service_->HasObserver(this))
+      sync_service_->RemoveObserver(this);
+    AttemptRegistration();
   }
+}
+
+void SharingService::AttemptRegistration() {
+  sharing_device_registration_->RegisterDevice(base::BindOnce(
+      &SharingService::OnDeviceRegistered, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SharingService::OnDeviceRegistered(
     SharingDeviceRegistration::Result result) {
-  fcm_handler_->StartListening();
-  // TODO(himanshujaju) : Add retry logic and logging
+  switch (result) {
+    case SharingDeviceRegistration::Result::SUCCESS:
+      backoff_entry_.InformOfRequest(true);
+      if (!device_registered_) {
+        device_registered_ = true;
+        fcm_handler_->StartListening();
+
+        // Listen for further VAPID key changes for re-registration.
+        sync_prefs_->SetVapidKeyChangeObserver(
+            base::BindRepeating(&SharingService::AttemptRegistration,
+                                weak_ptr_factory_.GetWeakPtr()));
+      }
+      break;
+    case SharingDeviceRegistration::Result::TRANSIENT_ERROR:
+      backoff_entry_.InformOfRequest(false);
+      // Transient error - try again after a delay.
+      LOG(ERROR) << "Device registration failed with transient error";
+      base::PostDelayedTaskWithTraits(
+          FROM_HERE,
+          {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
+          base::BindOnce(&SharingService::AttemptRegistration,
+                         weak_ptr_factory_.GetWeakPtr()),
+          backoff_entry_.GetTimeUntilRelease());
+      break;
+    case SharingDeviceRegistration::Result::FATAL_ERROR:
+      backoff_entry_.InformOfRequest(false);
+      // No need to bother retrying in the case of one of fatal errors.
+      LOG(ERROR) << "Device registration failed with fatal error";
+      break;
+  }
 }
 
 bool SharingService::IsEnabled() const {

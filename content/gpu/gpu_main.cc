@@ -232,6 +232,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   // COM callbacks.
   base::win::ScopedCOMInitializer com_initializer(
       base::win::ScopedCOMInitializer::kMTA);
+
+  if (base::FeatureList::IsEnabled(features::kGpuProcessHighPriorityWin))
+    ::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);

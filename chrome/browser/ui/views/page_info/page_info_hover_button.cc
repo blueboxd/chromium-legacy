@@ -17,18 +17,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
 
-namespace {
-
-std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
-    int vert_spacing) {
-  const int horz_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
-  return views::CreateEmptyBorder(vert_spacing, horz_spacing, vert_spacing,
-                                  horz_spacing);
-}
-
-}  // namespace
-
 PageInfoHoverButton::PageInfoHoverButton(views::ButtonListener* listener,
                                          const gfx::ImageSkia& image_icon,
                                          int title_resource_id,
@@ -103,7 +91,10 @@ PageInfoHoverButton::PageInfoHoverButton(views::ButtonListener* listener,
   auto insets = layout_provider->GetInsetsMetric(
       views::InsetsMetric::INSETS_LABEL_BUTTON);
   const int vert_spacing = insets.height();
-  SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
+  const int horz_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
+  SetBorder(views::CreateEmptyBorder(vert_spacing, horz_spacing, vert_spacing,
+                                     horz_spacing));
 
   SetID(click_target_id);
   SetTooltipText(tooltip_text);

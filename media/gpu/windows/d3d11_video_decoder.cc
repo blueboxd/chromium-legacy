@@ -463,9 +463,7 @@ void D3D11VideoDecoder::DoDecode() {
     // EOS buffer.
     current_timestamp_ = current_buffer_->timestamp();
 
-    accelerated_video_decoder_->SetStream(-1, current_buffer_->data(),
-                                          current_buffer_->data_size(),
-                                          current_buffer_->decrypt_config());
+    accelerated_video_decoder_->SetStream(-1, *current_buffer_);
   }
 
   while (true) {

@@ -575,8 +575,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   };
 
   // Create a RenderFrameProxyHost owned by this object.
-  RenderFrameProxyHost* CreateRenderFrameProxyHost(SiteInstance* site_instance,
-                                                   RenderViewHostImpl* rvh);
+  RenderFrameProxyHost* CreateRenderFrameProxyHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> rvh);
+
   // Delete a RenderFrameProxyHost owned by this object.
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 

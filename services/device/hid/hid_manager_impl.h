@@ -58,7 +58,7 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   mojo::AssociatedInterfacePtrSet<mojom::HidManagerClient> clients_;
   ScopedObserver<HidService, HidService::Observer> hid_service_observer_;
 
-  base::WeakPtrFactory<HidManagerImpl> weak_factory_;
+  base::WeakPtrFactory<HidManagerImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(HidManagerImpl);
 };
 

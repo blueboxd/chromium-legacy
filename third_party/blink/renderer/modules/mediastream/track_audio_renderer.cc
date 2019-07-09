@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -57,25 +58,6 @@ base::TimeDelta ComputeTotalElapsedRenderTime(
 }
 
 }  // namespace
-
-class TrackAudioRenderer::InternalFrame {
- public:
-  InternalFrame(WebLocalFrame* web_frame)
-      : frame_(web_frame ? static_cast<LocalFrame*>(
-                               WebLocalFrame::ToCoreFrame(*web_frame))
-                         : nullptr) {}
-
-  LocalFrame* frame() { return frame_.Get(); }
-  WebLocalFrame* web_frame() {
-    if (!frame_)
-      return nullptr;
-
-    return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame()));
-  }
-
- private:
-  WeakPersistent<LocalFrame> frame_;
-};
 
 // media::AudioRendererSink::RenderCallback implementation
 int TrackAudioRenderer::Render(base::TimeDelta delay,
@@ -158,7 +140,7 @@ TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                                        const std::string& device_id)
     : audio_track_(audio_track),
       internal_playout_frame_(
-          std::make_unique<InternalFrame>(playout_web_frame)),
+          std::make_unique<MediaStreamInternalFrameWrapper>(playout_web_frame)),
       session_id_(session_id),
       task_runner_(
           playout_web_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),

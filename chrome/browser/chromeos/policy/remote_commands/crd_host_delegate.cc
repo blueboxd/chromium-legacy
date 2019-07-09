@@ -210,7 +210,7 @@ void CRDHostDelegate::FetchOAuthToken(
   oauth_success_callback_ = std::move(success_callback);
   error_callback_ = std::move(error_callback);
 
-  oauth_request_ = oauth_service->StartRequest(
+  oauth_request_ = oauth_service->StartAccessTokenRequest(
       oauth_service->GetRobotAccountId(), scopes, this);
 }
 

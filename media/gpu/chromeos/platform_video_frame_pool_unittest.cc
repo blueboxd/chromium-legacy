@@ -68,15 +68,15 @@ class PlatformVideoFramePoolTest
     layout_ = VideoFrameLayout::Create(format, coded_size);
     DCHECK(layout_);
 
-    pool_->SetFrameFormat(layout_.value(), visible_rect_, natural_size_);
+    pool_->SetFrameFormat(*layout_, visible_rect_, natural_size_);
   }
 
   scoped_refptr<VideoFrame> GetFrame(int timestamp_ms) {
     scoped_refptr<VideoFrame> frame = pool_->GetFrame();
     frame->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
 
-    EXPECT_EQ(layout_.value().format(), frame->format());
-    EXPECT_EQ(layout_.value().coded_size(), frame->coded_size());
+    EXPECT_EQ(layout_->format(), frame->format());
+    EXPECT_EQ(layout_->coded_size(), frame->coded_size());
     EXPECT_EQ(visible_rect_, frame->visible_rect());
     EXPECT_EQ(natural_size_, frame->natural_size());
 

@@ -2999,11 +2999,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   // which most likely happens for smart board, we should ignore these events
   // for now. POINTER_FLAG_INCONTACT indicates this pointer is in contact with
   // the digitizer surface, which means pressing the screen.
-  // POINTER_FLAG_INRANGE indicates the pointer is in the detection range of
-  // the screen.
   if ((message == WM_POINTERUPDATE) &&
-      !(pointer_flags & POINTER_FLAG_INCONTACT) &&
-      (pointer_flags & POINTER_FLAG_INRANGE)) {
+      !(pointer_flags & POINTER_FLAG_INCONTACT)) {
     SetMsgHandled(TRUE);
     return 0;
   }

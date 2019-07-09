@@ -48,8 +48,7 @@ NetworkLocationProvider::NetworkLocationProvider(
           std::move(url_loader_factory),
           api_key,
           base::Bind(&NetworkLocationProvider::OnLocationResponse,
-                     base::Unretained(this)))),
-      weak_factory_(this) {
+                     base::Unretained(this)))) {
   DCHECK(position_cache_);
 }
 

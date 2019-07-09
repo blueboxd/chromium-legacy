@@ -70,7 +70,7 @@ class RenderFrameProxyHost
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
-                       RenderViewHostImpl* render_view_host,
+                       scoped_refptr<RenderViewHostImpl> render_view_host,
                        FrameTreeNode* frame_tree_node);
   ~RenderFrameProxyHost() override;
 
@@ -177,10 +177,14 @@ class RenderFrameProxyHost
   // parent's renderer process.
   std::unique_ptr<CrossProcessFrameConnector> cross_process_frame_connector_;
 
-  // The RenderViewHost that this RenderFrameProxyHost is associated with. It is
-  // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
-  // are associated with it.
-  RenderViewHostImpl* render_view_host_;
+  // The RenderViewHost that this RenderFrameProxyHost is associated with.
+  //
+  // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
+  // are using it.
+  //
+  // TODO(creis): RenderViewHost will eventually go away and be replaced with
+  // some form of page context.
+  scoped_refptr<RenderViewHostImpl> render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

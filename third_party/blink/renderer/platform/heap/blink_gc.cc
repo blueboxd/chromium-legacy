@@ -44,8 +44,8 @@ const char* BlinkGC::ToString(BlinkGC::MarkingType type) {
 
 const char* BlinkGC::ToString(BlinkGC::SweepingType type) {
   switch (type) {
-    case BlinkGC::SweepingType::kLazySweeping:
-      return "LazySweeping";
+    case BlinkGC::SweepingType::kConcurrentAndLazySweeping:
+      return "ConcurrentAndLazySweeping";
     case BlinkGC::SweepingType::kEagerSweeping:
       return "EagerSweeping";
   }

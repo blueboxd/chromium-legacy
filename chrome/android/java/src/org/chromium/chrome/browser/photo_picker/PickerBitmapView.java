@@ -44,7 +44,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     private static final int IMAGE_FADE_IN_DURATION = 200;
 
     // The length of the image frame display (in ms).
-    private static final int IMAGE_FRAME_DISPLAY = 100;
+    private static final int IMAGE_FRAME_DISPLAY = 250;
 
     // Our context.
     private Context mContext;

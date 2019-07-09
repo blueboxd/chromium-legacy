@@ -1122,22 +1122,26 @@ bool ConsumeFont(bool important,
                  const CSSParserContext& context,
                  HeapVector<CSSPropertyValue, 256>& properties) {
   // Optional font-style, font-variant, font-stretch and font-weight.
+  // Each may be normal.
   CSSValue* font_style = nullptr;
   CSSIdentifierValue* font_variant_caps = nullptr;
   CSSValue* font_weight = nullptr;
   CSSValue* font_stretch = nullptr;
-  while (!range.AtEnd()) {
+  const int kNumReorderableFontProperties = 4;
+  for (int i = 0; i < kNumReorderableFontProperties && !range.AtEnd(); ++i) {
     CSSValueID id = range.Peek().Id();
+    if (id == CSSValueID::kNormal) {
+      css_property_parser_helpers::ConsumeIdent(range);
+      continue;
+    }
     if (!font_style &&
-        (id == CSSValueID::kNormal || id == CSSValueID::kItalic ||
-         id == CSSValueID::kOblique)) {
+        (id == CSSValueID::kItalic || id == CSSValueID::kOblique)) {
       font_style = css_parsing_utils::ConsumeFontStyle(range, context.Mode());
       if (!font_style)
         return false;
       continue;
     }
-    if (!font_variant_caps &&
-        (id == CSSValueID::kNormal || id == CSSValueID::kSmallCaps)) {
+    if (!font_variant_caps && id == CSSValueID::kSmallCaps) {
       // Font variant in the shorthand is particular, it only accepts normal or
       // small-caps.
       // See https://drafts.csswg.org/css-fonts/#propdef-font

@@ -56,8 +56,7 @@ PlatformSensorProviderLinux::PlatformSensorProviderLinux()
       blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskRunnerTraits)),
       sensor_device_manager_(nullptr,
-                             base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_ptr_factory_(this) {
+                             base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   sensor_device_manager_.reset(
       new SensorDeviceManager(weak_ptr_factory_.GetWeakPtr()));
 }

@@ -12,5 +12,5 @@ enum BasicCardType {
 
 dictionary BasicCardRequest {
     sequence<DOMString> supportedNetworks;
-    sequence<BasicCardType> supportedTypes;
+    [MeasureAs=BasicCardType] sequence<BasicCardType> supportedTypes;
 };

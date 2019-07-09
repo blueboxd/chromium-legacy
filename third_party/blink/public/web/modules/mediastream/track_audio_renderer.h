@@ -31,6 +31,7 @@ class AudioParameters;
 namespace blink {
 
 class WebLocalFrame;
+class MediaStreamInternalFrameWrapper;
 
 // TrackAudioRenderer is a WebMediaStreamAudioRenderer for plumbing audio
 // data generated from either local or remote (but not
@@ -128,8 +129,7 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
   WebMediaStreamTrack audio_track_;
 
   // The WebLocalFrame in which the audio is rendered into |sink_|.
-  class InternalFrame;
-  std::unique_ptr<InternalFrame> internal_playout_frame_;
+  std::unique_ptr<MediaStreamInternalFrameWrapper> internal_playout_frame_;
   const int session_id_;
 
   // MessageLoop associated with the single thread that performs all control

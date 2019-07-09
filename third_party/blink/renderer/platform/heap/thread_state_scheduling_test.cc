@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -101,7 +103,10 @@ TEST_F(ThreadStateSchedulingTest,
 
 TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileIncrementalMarking) {
   ThreadStateSchedulingTest* test = this;
-  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kBlinkHeapIncrementalMarking);
+
   test->StartIncrementalMarking();
   test->state()->SchedulePreciseGC();
   // Scheduling a precise GC should cancel incremental marking tasks.
@@ -122,7 +127,10 @@ TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileIncrementalMarking) {
 TEST_F(ThreadStateSchedulingTest,
        ScheduleIncrementalV8FollowupGCWhileIncrementalMarking) {
   ThreadStateSchedulingTest* test = this;
-  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kBlinkHeapIncrementalMarking);
+
   test->StartIncrementalMarking();
   test->state()->ScheduleIncrementalGC(
       BlinkGC::GCReason::kIncrementalV8FollowupGC);

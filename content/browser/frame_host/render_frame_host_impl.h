@@ -400,7 +400,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidNavigate(const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
                    bool is_same_document_navigation);
 
-  RenderViewHostImpl* render_view_host() { return render_view_host_; }
+  RenderViewHostImpl* render_view_host() { return render_view_host_.get(); }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
@@ -976,7 +976,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // should be the abstraction needed here, but we need RenderViewHost to pass
   // into WebContentsObserver::FrameDetached for now.
   RenderFrameHostImpl(SiteInstance* site_instance,
-                      RenderViewHostImpl* render_view_host,
+                      scoped_refptr<RenderViewHostImpl> render_view_host,
                       RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
@@ -1432,7 +1432,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;
   void GetVirtualAuthenticatorManager(
-      blink::test::mojom::VirtualAuthenticatorManagerRequest request) override;
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver) override;
   void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
                             blink::mojom::AppCacheFrontendPtr frontend,
                             const base::UnguessableToken& host_id) override;
@@ -1683,13 +1684,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& cookie_url,
       base::circular_deque<size_t>* already_seen_url_hashes);
 
-  // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
-  // refcount that calls Shutdown when it reaches zero.  This allows each
-  // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
-  // we have a RenderViewHost for each RenderFrameHost.
+  // The RenderViewHost that this RenderFrameHost is associated with.
+  //
+  // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
+  // are using it.
+  //
+  // The refcount allows each RenderFrameHostManager to just care about
+  // RenderFrameHosts, while ensuring we have a RenderViewHost for each
+  // RenderFrameHost.
+  //
   // TODO(creis): RenderViewHost will eventually go away and be replaced with
   // some form of page context.
-  RenderViewHostImpl* const render_view_host_;
+  const scoped_refptr<RenderViewHostImpl> render_view_host_;
 
   RenderFrameHostDelegate* const delegate_;
 

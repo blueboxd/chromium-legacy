@@ -740,8 +740,8 @@ void IdentityGetAuthTokenFunction::StartDeviceAccessTokenRequest() {
   // request access token for [any-api] instead of login.
   OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kAnyApiOAuth2Scope);
-  device_access_token_request_ =
-      service->StartRequest(service->GetRobotAccountId(), scopes, this);
+  device_access_token_request_ = service->StartAccessTokenRequest(
+      service->GetRobotAccountId(), scopes, this);
 }
 
 bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {

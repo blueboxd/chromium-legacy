@@ -1207,4 +1207,25 @@ std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
   return value;
 }
 
+void VisualViewport::PreFinalize() {
+  root_transform_layer_.reset();
+  inner_viewport_container_layer_.reset();
+  overscroll_elasticity_layer_.reset();
+  page_scale_layer_.reset();
+  inner_viewport_scroll_layer_.reset();
+  // scrollbar_layer_group_* are referenced from overlay_scrollbar_*, thus
+  // overlay_scrollbar_* must be destroyed before scrollbar_layer_group_*.
+  overlay_scrollbar_horizontal_.reset();
+  overlay_scrollbar_vertical_.reset();
+  scrollbar_layer_group_horizontal_.reset();
+  scrollbar_layer_group_vertical_.reset();
+  device_emulation_transform_node_.reset();
+  overscroll_elasticity_transform_node_.reset();
+  scale_transform_node_.reset();
+  translation_transform_node_.reset();
+  scroll_node_.reset();
+  horizontal_scrollbar_effect_node_.reset();
+  vertical_scrollbar_effect_node_.reset();
+}
+
 }  // namespace blink

@@ -87,7 +87,8 @@ void ProducerHost::OnTracingSetup() {
   mojo::ScopedSharedBufferHandle shm = shared_memory->Clone();
   DCHECK(shm.is_valid());
 
-  producer_client_->OnTracingStart(std::move(shm));
+  producer_client_->OnTracingStart(
+      std::move(shm), producer_endpoint_->shared_buffer_page_size_kb() * 1024);
 }
 
 void ProducerHost::SetupDataSource(perfetto::DataSourceInstanceID,

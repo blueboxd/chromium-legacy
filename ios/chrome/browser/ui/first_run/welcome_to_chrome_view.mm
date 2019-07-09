@@ -14,6 +14,8 @@
 #import "ios/chrome/browser/ui/util/label_observer.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -50,9 +52,6 @@ SizeClassIdiom GetSizeClassIdiom(UIUserInterfaceSizeClass size_class) {
 // Accessibility identifier for the checkbox button.
 NSString* const kUMAMetricsButtonAccessibilityIdentifier =
     @"UMAMetricsButtonAccessibilityIdentifier";
-
-// Color of "Terms of Service" link text.
-const int kLinkColorRGB = 0x5D9AFF;
 
 // The width of the container view for a REGULAR width size class.
 const CGFloat kContainerViewRegularWidth = 510.0;
@@ -166,7 +165,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    self.backgroundColor = [UIColor whiteColor];
+    self.backgroundColor = UIColor.cr_systemBackgroundColor;
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   }
@@ -225,7 +224,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 - (UIView*)containerView {
   if (!_containerView) {
     _containerView = [[UIView alloc] initWithFrame:CGRectZero];
-    [_containerView setBackgroundColor:[UIColor whiteColor]];
+    [_containerView setBackgroundColor:UIColor.cr_systemBackgroundColor];
   }
   return _containerView;
 }
@@ -233,7 +232,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 - (UILabel*)titleLabel {
   if (!_titleLabel) {
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    [_titleLabel setBackgroundColor:[UIColor whiteColor]];
+    [_titleLabel setBackgroundColor:UIColor.cr_systemBackgroundColor];
     [_titleLabel setNumberOfLines:0];
     [_titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
     [_titleLabel setBaselineAdjustment:UIBaselineAdjustmentAlignBaselines];
@@ -247,7 +246,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   if (!_imageView) {
     UIImage* image = [UIImage imageNamed:kAppLogoImageName];
     _imageView = [[UIImageView alloc] initWithImage:image];
-    [_imageView setBackgroundColor:[UIColor whiteColor]];
+    [_imageView setBackgroundColor:UIColor.cr_systemBackgroundColor];
   }
   return _imageView;
 }
@@ -440,7 +439,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
                                         url:GURL(kTermsOfServiceUrl)];
   [_TOSLabelLinkController addLinkWithRange:privacyLinkTextRange
                                         url:GURL(kPrivacyNoticeUrl)];
-  [_TOSLabelLinkController setLinkColor:UIColorFromRGB(kLinkColorRGB)];
+  [_TOSLabelLinkController setLinkColor:[UIColor colorNamed:kTintColor]];
 
   CGSize TOSLabelSize = [self.TOSLabel sizeThatFits:containerSize];
   CGFloat TOSLabelTopPadding = kTOSLabelTopPadding[[self heightSizeClassIdiom]];

@@ -103,6 +103,7 @@ source_set("test_headers") {
     # is done.
     "web/modules/mediastream/mock_constraint_factory.h",
     "web/modules/mediastream/mock_media_stream_registry.h",
+    "web/modules/mediastream/mock_media_stream_video_sink.h",
     "web/modules/mediastream/mock_media_stream_video_source.h",
   ]
   deps = [

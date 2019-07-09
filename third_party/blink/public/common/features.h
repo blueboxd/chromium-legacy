@@ -97,6 +97,15 @@ BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
 
 BLINK_COMMON_EXPORT extern const base::Feature kStreamsNative;
 
+// Blink garbage collection.
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapCompaction;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentMarking;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentSweeping;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlinkHeapIncrementalMarkingStress;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapUnifiedGCScheduling;
+
 }  // namespace features
 }  // namespace blink
 

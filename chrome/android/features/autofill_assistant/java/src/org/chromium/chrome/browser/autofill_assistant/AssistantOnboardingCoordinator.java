@@ -58,7 +58,7 @@ class AssistantOnboardingCoordinator {
                 .setOnClickListener(unusedView -> onClicked(true, callback));
         initView.findViewById(R.id.button_init_not_ok)
                 .setOnClickListener(unusedView -> onClicked(false, callback));
-        initView.announceForAccessibility(
+        initView.setContentDescription(
                 context.getString(R.string.autofill_assistant_first_run_accessibility));
 
         // Hide views that should not be displayed when showing the small onboarding.

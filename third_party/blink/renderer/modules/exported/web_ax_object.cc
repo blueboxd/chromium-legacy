@@ -699,6 +699,11 @@ WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
   return WebAXObject();
 }
 
+WebRect WebAXObject::GetBoundsInFrameCoordinates() const {
+  LayoutRect rect = private_->GetBoundsInFrameCoordinates();
+  return WebRect(EnclosingIntRect(rect));
+}
+
 WebString WebAXObject::KeyboardShortcut() const {
   if (IsDetached())
     return WebString();

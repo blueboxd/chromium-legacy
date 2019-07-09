@@ -76,6 +76,19 @@
 
 #pragma mark - Separator Colors
 
++ (UIColor*)cr_separatorColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.separatorColor;
+  }
+#endif
+  // This is the value for separatorColor in light mode.
+  return [UIColor colorWithRed:0x3C / (CGFloat)0xFF
+                         green:0x3C / (CGFloat)0xFF
+                          blue:0x43 / (CGFloat)0xFF
+                         alpha:0.6];
+}
+
 + (UIColor*)cr_opaqueSeparatorColor {
 #if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {

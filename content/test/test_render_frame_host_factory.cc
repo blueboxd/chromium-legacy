@@ -21,7 +21,7 @@ TestRenderFrameHostFactory::~TestRenderFrameHostFactory() {
 std::unique_ptr<RenderFrameHostImpl>
 TestRenderFrameHostFactory::CreateRenderFrameHost(
     SiteInstance* site_instance,
-    RenderViewHostImpl* render_view_host,
+    scoped_refptr<RenderViewHostImpl> render_view_host,
     RenderFrameHostDelegate* delegate,
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
@@ -30,8 +30,8 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
     bool hidden,
     bool renderer_initiated_creation) {
   return std::make_unique<TestRenderFrameHost>(
-      site_instance, render_view_host, delegate, frame_tree, frame_tree_node,
-      routing_id, widget_routing_id, hidden);
+      site_instance, std::move(render_view_host), delegate, frame_tree,
+      frame_tree_node, routing_id, widget_routing_id, hidden);
 }
 
 }  // namespace content

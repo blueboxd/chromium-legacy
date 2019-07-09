@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,17 +40,6 @@ using bookmarks::BookmarkNode;
 namespace bookmark_utils_ios {
 
 namespace {
-const SkColor colors[] = {
-    0xE64A19, 0xF09300, 0xAFB42B, 0x689F38,
-    0x0B8043, 0x0097A7, 0x7B1FA2, 0xC2185B,
-};
-
-UIColor* ColorFromSkColor(SkColor color) {
-  return [UIColor colorWithRed:SkColorGetR(color) / 255.0f
-                         green:SkColorGetG(color) / 255.0f
-                          blue:SkColorGetB(color) / 255.0f
-                         alpha:1.0];
-}
 
 }  // namespace
 
@@ -86,12 +76,6 @@ NSString* TitleForBookmarkNode(const BookmarkNode* node) {
   return title;
 }
 
-UIColor* DefaultColor(const GURL& url) {
-  uint32_t hash = base::Hash(url.possibly_invalid_spec());
-  SkColor color = colors[hash % base::size(colors)];
-  return ColorFromSkColor(color);
-}
-
 NSString* subtitleForBookmarkNode(const BookmarkNode* node) {
   if (node->is_url())
     return base::SysUTF8ToNSString(node->url().host());
@@ -109,53 +93,6 @@ NSString* subtitleForBookmarkNode(const BookmarkNode* node) {
                                 base::SysNSStringToUTF16(childCountString));
   }
   return subtitle;
-}
-
-UIColor* mainBackgroundColor() {
-  if (IsIPadIdiom()) {
-    return [UIColor whiteColor];
-  } else {
-    return [UIColor colorWithWhite:242 / 255.0 alpha:1.0];
-  }
-}
-
-UIColor* menuBackgroundColor() {
-  if (bookmarkMenuIsInSlideInPanel()) {
-    return [UIColor whiteColor];
-  } else {
-    return [UIColor clearColor];
-  }
-}
-
-UIColor* darkTextColor() {
-  return [UIColor colorWithWhite:33 / 255.0 alpha:1.0];
-}
-
-UIColor* lightTextColor() {
-  return [UIColor colorWithWhite:118 / 255.0 alpha:1.0];
-}
-
-UIColor* highlightedDarkTextColor() {
-  return [UIColor colorWithWhite:102 / 255.0 alpha:1.0];
-}
-
-UIColor* blueColor() {
-  return [UIColor colorWithRed:66 / 255.0
-                         green:129 / 255.0
-                          blue:244 / 255.0
-                         alpha:1];
-}
-
-UIColor* GrayColor() {
-  return [UIColor colorWithWhite:242 / 255.0 alpha:1.0];
-}
-
-UIColor* separatorColor() {
-  return [UIColor colorWithWhite:214 / 255.0 alpha:1.0];
-}
-
-UIColor* FolderLabelColor() {
-  return [UIColor colorWithWhite:38 / 255.0 alpha:0.8];
 }
 
 CGFloat StatusBarHeight() {

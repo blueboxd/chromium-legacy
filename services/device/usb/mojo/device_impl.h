@@ -106,7 +106,7 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
 
   mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
   device::mojom::UsbDeviceClientPtr client_;
-  base::WeakPtrFactory<DeviceImpl> weak_factory_;
+  base::WeakPtrFactory<DeviceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);
 };

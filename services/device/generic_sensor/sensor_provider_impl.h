@@ -38,7 +38,7 @@ class SensorProviderImpl final : public mojom::SensorProvider {
                      scoped_refptr<PlatformSensor> sensor);
 
   PlatformSensorProvider* provider_;
-  base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderImpl);
 };

@@ -85,7 +85,9 @@ SharingSyncPreference::Device::Device(Device&& other) = default;
 SharingSyncPreference::Device::~Device() = default;
 
 SharingSyncPreference::SharingSyncPreference(PrefService* prefs)
-    : prefs_(prefs) {}
+    : prefs_(prefs) {
+  pref_change_registrar_.Init(prefs);
+}
 
 SharingSyncPreference::~SharingSyncPreference() = default;
 
@@ -159,6 +161,13 @@ void SharingSyncPreference::SetVapidKey(
   update->SetString(kVapidECPrivateKey, base64_vapid_key);
   update->SetString(kVapidCreationTimestamp,
                     base::CreateTimeValue(creation_timestamp).GetString());
+}
+
+void SharingSyncPreference::SetVapidKeyChangeObserver(
+    const base::RepeatingClosure& obs) {
+  if (pref_change_registrar_.IsObserved(prefs::kSharingVapidKey))
+    pref_change_registrar_.Remove(prefs::kSharingVapidKey);
+  pref_change_registrar_.Add(prefs::kSharingVapidKey, obs);
 }
 
 std::map<std::string, SharingSyncPreference::Device>

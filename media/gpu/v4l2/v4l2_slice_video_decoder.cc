@@ -607,8 +607,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
         }
 
         avd_->SetStream(current_decode_request_->bitstream_id,
-                        current_decode_request_->buffer->data(),
-                        current_decode_request_->buffer->data_size());
+                        *current_decode_request_->buffer);
         break;
 
       case AcceleratedVideoDecoder::kRanOutOfSurfaces:

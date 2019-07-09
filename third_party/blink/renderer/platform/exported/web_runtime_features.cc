@@ -35,10 +35,6 @@
 
 namespace blink {
 
-void WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(bool enable) {
-  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(bool enable) {
   RuntimeEnabledFeatures::SetBlockingFocusWithoutUserActivationEnabled(enable);
 }
@@ -198,10 +194,6 @@ void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
 
 void WebRuntimeFeatures::EnableGenericSensorExtraClasses(bool enable) {
   RuntimeEnabledFeatures::SetSensorExtraClassesEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableHeapCompaction(bool enable) {
-  RuntimeEnabledFeatures::SetHeapCompactionEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableImplicitRootScroller(bool enable) {

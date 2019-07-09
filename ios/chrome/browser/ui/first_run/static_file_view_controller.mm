@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -73,7 +74,7 @@
                             cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                         timeoutInterval:60.0];
   [_webView loadRequest:request];
-  [_webView setBackgroundColor:[UIColor whiteColor]];
+  [_webView setBackgroundColor:UIColor.cr_systemBackgroundColor];
   _webView.navigationDelegate = self;
   [self.view addSubview:_webView];
 

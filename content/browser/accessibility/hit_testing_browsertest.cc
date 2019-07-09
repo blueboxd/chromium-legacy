@@ -15,6 +15,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,6 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   AccessibilityHitTestingBrowserTest() {}
   ~AccessibilityHitTestingBrowserTest() override {}
 
- protected:
   BrowserAccessibility* HitTestAndWaitForResultWithEvent(
       const gfx::Point& point,
       ax::mojom::Event event_to_fire) {
@@ -101,6 +101,23 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   void SynchronizeThreads() {
     MainThreadFrameObserver observer(GetRenderWidgetHost());
     observer.Wait();
+  }
+};
+
+class AccessibilityHitTestingCrossProcessBrowserTest
+    : public AccessibilityHitTestingBrowserTest {
+ public:
+  AccessibilityHitTestingCrossProcessBrowserTest() {}
+  ~AccessibilityHitTestingCrossProcessBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 };
 
@@ -198,6 +215,151 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                                               ax::mojom::Event::kAlert);
   ASSERT_NE(hit_node, nullptr);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
+                       HitTestingInCrossProcessIframes) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
+  GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/accessibility/hit_testing/hit_testing_b.html"));
+  GURL url_c(embedded_test_server()->GetURL(
+      "c.com", "/accessibility/hit_testing/hit_testing_c.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button A");
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);
+  NavigateFrameToURL(child, url_b);
+  EXPECT_EQ(url_b, child->current_url());
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button B");
+  ASSERT_EQ(1U, child->child_count());
+
+  FrameTreeNode* grand_child = child->child_at(0);
+  NavigateFrameToURL(grand_child, url_c);
+  EXPECT_EQ(url_c, grand_child->current_url());
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button C");
+
+  FrameTreeVisualizer visualizer;
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/",
+      visualizer.DepictFrameTree(root));
+
+  {
+    // (26, 26) -> "Button A"
+    BrowserAccessibility* hit_node;
+    hit_node = HitTestAndWaitForResult(gfx::Point(26, 26));
+    ASSERT_TRUE(hit_node != nullptr);
+    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+    ASSERT_EQ("Button A",
+              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  }
+
+  {
+    // (26, 176) -> "Button B"
+    // 176 = height of div in parent (150), plus button offset (26).
+    BrowserAccessibility* hit_node;
+    hit_node = HitTestAndWaitForResult(gfx::Point(26, 176));
+    ASSERT_TRUE(hit_node != nullptr);
+    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+    ASSERT_EQ("Button B",
+              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  }
+
+  {
+    // (26, 326) -> "Button C"
+    // 326 = 2x height of div in ancestors (300), plus button offset (26).
+    BrowserAccessibility* hit_node;
+    hit_node = HitTestAndWaitForResult(gfx::Point(26, 326));
+    ASSERT_TRUE(hit_node != nullptr);
+    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+    ASSERT_EQ("Button C",
+              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingCrossProcessBrowserTest,
+                       HitTestingInScrolledCrossProcessIframe) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/accessibility/hit_testing/hit_testing_a.html"));
+  GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/accessibility/hit_testing/hit_testing_b_tall.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button A");
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);
+  NavigateFrameToURL(child, url_b);
+  EXPECT_EQ(url_b, child->current_url());
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button B");
+  ASSERT_EQ(1U, child->child_count());
+
+  // Before scrolling.
+  {
+    // (26, 476) -> "Button B"
+    // 476 = height of div in parent (150), plus the placeholder div height
+    // (300), plus button offset (26).
+    BrowserAccessibility* hit_node;
+    hit_node = HitTestAndWaitForResult(gfx::Point(26, 476));
+    ASSERT_TRUE(hit_node != nullptr);
+    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+    ASSERT_EQ("Button B",
+              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  }
+
+  // Scroll div up 100px.
+  int scroll_delta = 100;
+  double actual_scroll_delta = 0;
+  std::string scroll_string = base::StringPrintf(
+      "window.scrollTo(0, %d); "
+      "window.domAutomationController.send(window.scrollY);",
+      scroll_delta);
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(
+      child->current_frame_host(), scroll_string, &actual_scroll_delta));
+  EXPECT_NEAR(static_cast<double>(scroll_delta), actual_scroll_delta, 1.0);
+
+  // After scrolling.
+  {
+    // (26, 376) -> "Button B"
+    // 376 = height of div in parent (150), plus the placeholder div height
+    // (300), plus button offset (26), less the scroll delta.
+    BrowserAccessibility* hit_node;
+    hit_node = HitTestAndWaitForResult(gfx::Point(26, 476 - scroll_delta));
+    ASSERT_TRUE(hit_node != nullptr);
+    ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+    ASSERT_EQ("Button B",
+              hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,

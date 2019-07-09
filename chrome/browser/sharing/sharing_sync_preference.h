@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -76,6 +77,9 @@ class SharingSyncPreference {
   // Adds VAPID key to preferences for syncing across devices.
   void SetVapidKey(const std::vector<uint8_t>& vapid_key) const;
 
+  // Observe for VAPID key changes. Replace previously set observer.
+  void SetVapidKeyChangeObserver(const base::RepeatingClosure& obs);
+
   // Returns the map of guid to device from sharing preferences. Guid is same
   // as sync device guid.
   std::map<std::string, Device> GetSyncedDevices() const;
@@ -96,6 +100,7 @@ class SharingSyncPreference {
   static base::Optional<Device> ValueToDevice(const base::Value& value);
 
   PrefService* prefs_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingSyncPreference);
 };

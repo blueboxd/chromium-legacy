@@ -277,6 +277,7 @@ ios_web_view_deps = [
   "//components/leveldb_proto",
   "//services/network:network_service",
   "//components/password_manager/core/browser",
+  "//components/password_manager/core/browser:affiliation",
   "//components/password_manager/core/common",
   "//components/password_manager/ios",
   "//components/pref_registry",

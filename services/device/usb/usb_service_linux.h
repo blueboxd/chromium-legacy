@@ -62,7 +62,7 @@ class UsbServiceLinux final : public UsbService {
   std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
   DeviceMap devices_by_path_;
 
-  base::WeakPtrFactory<UsbServiceLinux> weak_factory_;
+  base::WeakPtrFactory<UsbServiceLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceLinux);
 };

@@ -46,6 +46,9 @@ const gfx::Size kPictureSize(64, 48);
 constexpr size_t kNewNumPictures = 3;
 const gfx::Size kNewPictureSize(64, 48);
 
+MATCHER_P2(IsExpectedDecoderBuffer, data_size, decrypt_config, "") {
+  return arg.data_size() == data_size && arg.decrypt_config() == decrypt_config;
+}
 }  // namespace
 
 class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
@@ -53,9 +56,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MockAcceleratedVideoDecoder() = default;
   ~MockAcceleratedVideoDecoder() override = default;
 
-  MOCK_METHOD4(
-      SetStream,
-      void(int32_t id, const uint8_t* ptr, size_t size, const DecryptConfig*));
+  MOCK_METHOD2(SetStream, void(int32_t id, const DecoderBuffer&));
   MOCK_METHOD0(Flush, bool());
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Decode, DecodeResult());
@@ -219,7 +220,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     ::testing::InSequence s;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize, nullptr));
+    EXPECT_CALL(*mock_decoder_,
+                SetStream(_, IsExpectedDecoderBuffer(kInputSize, nullptr)))
+        .WillOnce(Return());
     EXPECT_CALL(*mock_decoder_, Decode())
         .WillOnce(Return(AcceleratedVideoDecoder::kAllocateNewSurfaces));
 
@@ -330,7 +333,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   void DecodeOneFrameFast(int32_t bitstream_id) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize, nullptr));
+    EXPECT_CALL(*mock_decoder_,
+                SetStream(_, IsExpectedDecoderBuffer(kInputSize, nullptr)))
+        .WillOnce(Return());
     EXPECT_CALL(*mock_decoder_, Decode())
         .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
     EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(bitstream_id))
@@ -414,7 +419,9 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeError) {
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize, nullptr));
+  EXPECT_CALL(*mock_decoder_,
+              SetStream(_, IsExpectedDecoderBuffer(kInputSize, nullptr)))
+      .WillOnce(Return());
   EXPECT_CALL(*mock_decoder_, Decode())
       .WillOnce(Return(AcceleratedVideoDecoder::kDecodeError));
   EXPECT_CALL(*this, NotifyError(VaapiVideoDecodeAccelerator::PLATFORM_FAILURE))

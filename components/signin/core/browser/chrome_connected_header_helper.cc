@@ -53,7 +53,7 @@ GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
 
 ChromeConnectedHeaderHelper::ChromeConnectedHeaderHelper(
     AccountConsistencyMethod account_consistency)
-    : SigninHeaderHelper("Mirror"), account_consistency_(account_consistency) {}
+    : account_consistency_(account_consistency) {}
 
 // static
 std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(

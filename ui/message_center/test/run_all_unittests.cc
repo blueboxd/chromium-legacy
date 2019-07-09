@@ -10,6 +10,7 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -49,6 +50,8 @@ class MessageCenterTestSuite : public base::TestSuite {
 }  // namespace
 
 int main(int argc, char** argv) {
+  mojo::core::Init();
+
   MessageCenterTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(argc, argv,

@@ -36,8 +36,8 @@ SerialPortImpl::SerialPortImpl(
       io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      out_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      weak_factory_(this) {
+      out_stream_watcher_(FROM_HERE,
+                          mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
   binding_.set_connection_error_handler(base::BindOnce(
       [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   if (watcher_.is_bound()) {

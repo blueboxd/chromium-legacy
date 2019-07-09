@@ -37,8 +37,10 @@ class SharingDeviceRegistration {
   enum class Result {
     // Device registered successfully.
     SUCCESS = 0,
-    // Device registration failed.
-    FAILURE = 1
+    // Device registration failed with transient error.
+    TRANSIENT_ERROR = 1,
+    // Device registration failed with fatal error.
+    FATAL_ERROR = 2,
   };
 
   using RegistrationCallback = base::OnceCallback<void(Result)>;
@@ -49,11 +51,11 @@ class SharingDeviceRegistration {
       VapidKeyManager* vapid_key_manager,
       gcm::GCMDriver* gcm_driver,
       syncer::LocalDeviceInfoProvider* device_info_tracker);
-  ~SharingDeviceRegistration();
+  virtual ~SharingDeviceRegistration();
 
   // Registers device with sharing sync preferences. Takes a |callback| function
   // which receives the result of FCM registration for device.
-  void RegisterDevice(RegistrationCallback callback);
+  virtual void RegisterDevice(RegistrationCallback callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
@@ -64,15 +66,17 @@ class SharingDeviceRegistration {
   // FCM App ID of Sharing. Also responsible for calling |callback| with
   // |result| of GetToken.
   void OnFCMTokenReceived(RegistrationCallback callback,
+                          std::string public_key,
                           const std::string& fcm_registration_token,
                           instance_id::InstanceID::Result result);
 
   // Callback function responsible for saving device registration information in
   // SharingSyncPreference.
   void OnEncryptionInfoReceived(RegistrationCallback callback,
+                                std::string public_key,
                                 const std::string& fcm_registration_token,
                                 const std::string& p256dh,
-                                const std::string& auth_secret) const;
+                                const std::string& auth_secret);
 
   // Computes and returns a bitmask of all capabilities supported by the device.
   int GetDeviceCapabilities() const;
@@ -81,14 +85,11 @@ class SharingDeviceRegistration {
   bool IsTelephonySupported() const;
 
   SharingSyncPreference* sharing_sync_preference_;
-
   instance_id::InstanceIDDriver* instance_id_driver_;
-
   VapidKeyManager* vapid_key_manager_;
-
   gcm::GCMDriver* gcm_driver_;
-
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
+  std::string registered_public_key_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_;
 

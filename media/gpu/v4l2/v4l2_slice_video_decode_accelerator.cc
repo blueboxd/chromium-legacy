@@ -1104,12 +1104,8 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
     return false;
   }
 
-  const uint8_t* const data = decoder_current_bitstream_buffer_->buffer->data();
-  const size_t data_size =
-      decoder_current_bitstream_buffer_->buffer->data_size();
-  decoder_->SetStream(decoder_current_bitstream_buffer_->input_id, data,
-                      data_size);
-
+  decoder_->SetStream(decoder_current_bitstream_buffer_->input_id,
+                      *decoder_current_bitstream_buffer_->buffer);
   return true;
 }
 

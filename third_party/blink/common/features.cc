@@ -321,5 +321,27 @@ const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
 const base::Feature kStreamsNative{"StreamsNative",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Blink garbage collection.
+// Enables compaction of backing stores on Blink's heap.
+const base::Feature kBlinkHeapCompaction{"BlinkHeapCompaction",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables concurrently marking Blink's heap.
+const base::Feature kBlinkHeapConcurrentMarking{
+    "BlinkHeapConcurrentMarking", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables concurrently sweeping Blink's heap.
+const base::Feature kBlinkHeapConcurrentSweeping{
+    "BlinkHeapConcurrentSweeping", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables incrementally marking Blink's heap.
+const base::Feature kBlinkHeapIncrementalMarking{
+    "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables a marking stress mode that schedules more garbage collections and
+// also adds additional verification passes.
+const base::Feature kBlinkHeapIncrementalMarkingStress{
+    "BlinkHeapIncrementalMarkingStress", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables unified heap garbage collection scheduling where scheduling is
+// delegated to V8's heap controller.
+const base::Feature kBlinkHeapUnifiedGCScheduling{
+    "BlinkHeapUnifiedGCScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

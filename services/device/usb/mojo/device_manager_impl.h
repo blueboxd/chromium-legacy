@@ -98,7 +98,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   mojo::BindingSet<mojom::UsbDeviceManager> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
 
-  base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
+  base::WeakPtrFactory<DeviceManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerImpl);
 };

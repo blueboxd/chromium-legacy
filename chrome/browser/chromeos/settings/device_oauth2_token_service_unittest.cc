@@ -90,8 +90,9 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> StartTokenRequest() {
-    return oauth2_service_->StartRequest(oauth2_service_->GetRobotAccountId(),
-                                         std::set<std::string>(), &consumer_);
+    return oauth2_service_->StartAccessTokenRequest(
+        oauth2_service_->GetRobotAccountId(), std::set<std::string>(),
+        &consumer_);
   }
 
   void SetUp() override {
@@ -125,7 +126,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
         scoped_testing_local_state_.Get());
     delegate->max_refresh_token_validation_retries_ = 0;
     oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
-    oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
+    oauth2_service_->GetAccessTokenManager()
+        ->set_max_authorization_token_fetch_retries_for_testing(0);
   }
 
   // Utility method to set a value in Local State for the device refresh token
@@ -141,6 +143,10 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
            "  \"user_id\": \"1234567890\" }";
   }
 
+  DeviceOAuth2TokenServiceDelegate* GetDelegate() {
+    return oauth2_service_->delegate_.get();
+  }
+
   bool RefreshTokenIsAvailable() {
     return oauth2_service_->RefreshTokenIsAvailable(
         oauth2_service_->GetRobotAccountId());
@@ -150,9 +156,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     if (!RefreshTokenIsAvailable())
       return std::string();
 
-    return static_cast<DeviceOAuth2TokenServiceDelegate*>(
-               oauth2_service_->GetDelegate())
-        ->GetRefreshToken();
+    return GetDelegate()->GetRefreshToken();
   }
 
   // A utility method to return fake URL results, for testing the refresh token
@@ -460,7 +464,7 @@ TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
   CreateService();
 
   testing::StrictMock<MockOAuth2TokenServiceObserver> observer;
-  oauth2_service_->AddObserver(&observer);
+  GetDelegate()->AddObserver(&observer);
 
   // Make a token available during enrollment. Verify that the token is not
   // announced yet.
@@ -475,7 +479,7 @@ TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
   SetRobotAccountId("robot@example.com");
   testing::Mock::VerifyAndClearExpectations(&observer);
 
-  oauth2_service_->RemoveObserver(&observer);
+  GetDelegate()->RemoveObserver(&observer);
 }
 
 }  // namespace chromeos

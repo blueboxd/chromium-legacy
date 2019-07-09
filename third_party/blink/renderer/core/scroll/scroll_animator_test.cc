@@ -139,6 +139,10 @@ class MockScrollableAreaForAnimatorTest
     ScrollableArea::Trace(visitor);
   }
 
+  virtual void PreFinalize() {
+      timer_task_runner_.reset();
+  }
+
  private:
   bool scroll_animator_enabled_;
   ScrollOffset min_offset_;

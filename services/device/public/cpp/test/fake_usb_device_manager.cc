@@ -18,7 +18,7 @@
 
 namespace device {
 
-FakeUsbDeviceManager::FakeUsbDeviceManager() : weak_factory_(this) {}
+FakeUsbDeviceManager::FakeUsbDeviceManager() {}
 
 FakeUsbDeviceManager::~FakeUsbDeviceManager() {}
 

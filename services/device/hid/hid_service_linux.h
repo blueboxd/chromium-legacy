@@ -53,7 +53,7 @@ class HidServiceLinux : public HidService {
   // |helper_| lives on the sequence |blocking_task_runner_| posts to and holds
   // a weak reference back to the service that owns it.
   std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
-  base::WeakPtrFactory<HidServiceLinux> weak_factory_;
+  base::WeakPtrFactory<HidServiceLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);
 };

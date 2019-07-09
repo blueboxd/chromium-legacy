@@ -15,7 +15,8 @@
 #include "content/common/content_export.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/virtual_fido_device.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 namespace device {
@@ -55,8 +56,9 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   // authenticator matched the |id|, false otherwise.
   bool RemoveAuthenticator(const std::string& id);
 
-  void AddBinding(
-      blink::test::mojom::VirtualAuthenticatorManagerRequest request);
+  void AddReceiver(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver);
 
   // Notify that a discovery has been destroyed.
   void OnDiscoveryDestroyed(VirtualFidoDiscovery* discovery);
@@ -79,7 +81,7 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   void ClearAuthenticators(ClearAuthenticatorsCallback callback) override;
 
  private:
-  mojo::BindingSet<blink::test::mojom::VirtualAuthenticatorManager> bindings_;
+  mojo::ReceiverSet<blink::test::mojom::VirtualAuthenticatorManager> receivers_;
 
   // The key is the unique_id of the corresponding value (the authenticator).
   std::map<std::string, std::unique_ptr<VirtualAuthenticator>> authenticators_;

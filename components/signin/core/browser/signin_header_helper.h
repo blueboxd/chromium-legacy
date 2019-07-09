@@ -181,7 +181,7 @@ class SigninHeaderHelper {
       const content_settings::CookieSettings* cookie_settings) = 0;
 
  protected:
-  explicit SigninHeaderHelper(const std::string& histogram_suffix);
+  SigninHeaderHelper();
   virtual ~SigninHeaderHelper();
 
   // Dictionary of fields in a account consistency response header.
@@ -195,13 +195,6 @@ class SigninHeaderHelper {
  private:
   // Returns whether the url is eligible for the request header.
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
-
-  // Returns a string that can be used as a histogram name. Its value ios
-  // "|histogram_name|.|histogram_suffix_|".
-  std::string GetSuffixedHistogramName(const std::string& histogram_name);
-
-  // Suffix to be used by the histograms recodered by this SigninHeaderHelper.
-  std::string histogram_suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninHeaderHelper);
 };

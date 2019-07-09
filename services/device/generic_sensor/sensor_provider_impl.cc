@@ -48,7 +48,7 @@ void SensorProviderImpl::Create(
 }
 
 SensorProviderImpl::SensorProviderImpl(PlatformSensorProvider* provider)
-    : provider_(provider), weak_ptr_factory_(this) {
+    : provider_(provider) {
   DCHECK(provider_);
 }
 

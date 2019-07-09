@@ -48,7 +48,7 @@ class PlatformSensorLinux : public PlatformSensor {
   // and IPC can be notified that updates are available.
   SensorReading old_values_;
 
-  base::WeakPtrFactory<PlatformSensorLinux> weak_factory_;
+  base::WeakPtrFactory<PlatformSensorLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorLinux);
 };

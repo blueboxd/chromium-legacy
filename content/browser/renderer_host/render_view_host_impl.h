@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/process/kill.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
@@ -61,11 +62,13 @@ class TimeoutMonitor;
 //
 // For context, please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
-class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
-                                          public RenderWidgetHostOwnerDelegate,
-                                          public RenderProcessHostObserver,
-                                          public ui::GpuSwitchingObserver,
-                                          public IPC::Listener {
+class CONTENT_EXPORT RenderViewHostImpl
+    : public RenderViewHost,
+      public RenderWidgetHostOwnerDelegate,
+      public RenderProcessHostObserver,
+      public ui::GpuSwitchingObserver,
+      public IPC::Listener,
+      public base::RefCounted<RenderViewHostImpl> {
  public:
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int process_id, int routing_id);
@@ -80,7 +83,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                      int32_t main_frame_routing_id,
                      bool swapped_out,
                      bool has_initialized_audio_host);
-  ~RenderViewHostImpl() override;
 
   // RenderViewHost implementation.
   bool Send(IPC::Message* msg) override;
@@ -197,18 +199,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // view is not considered active.
   void SetMainFrameRoutingId(int routing_id);
 
-  // Increases the refcounting on this RVH. This is done by the FrameTree on
-  // creation of a RenderFrameHost or RenderFrameProxyHost.
-  void increment_ref_count() { ++frames_ref_count_; }
-
-  // Decreases the refcounting on this RVH. This is done by the FrameTree on
-  // destruction of a RenderFrameHost or RenderFrameProxyHost.
-  void decrement_ref_count() { --frames_ref_count_; }
-
-  // Returns the refcount on this RVH, that is the number of RenderFrameHosts
-  // and RenderFrameProxyHosts currently using it.
-  int ref_count() { return frames_ref_count_; }
-
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
@@ -222,6 +212,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // to keep them consistent).
 
  protected:
+  friend class RefCounted<RenderViewHostImpl>;
+  ~RenderViewHostImpl() override;
+
   // RenderWidgetHostOwnerDelegate overrides.
   void RenderWidgetDidInit() override;
   void RenderWidgetDidClose() override;
@@ -304,9 +297,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // The RenderWidgetHost.
   std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;
-
-  // The number of RenderFrameHosts which have a reference to this RVH.
-  int frames_ref_count_;
 
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;

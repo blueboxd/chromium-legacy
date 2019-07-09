@@ -79,9 +79,10 @@ class PLATFORM_EXPORT BlinkGC final {
   };
 
   enum SweepingType {
-    // The sweeping task is split into chunks and scheduled lazily.
-    kLazySweeping,
-    // The sweeping task executs synchronously right after marking.
+    // The sweeping task is split into chunks and scheduled lazily and
+    // concurrently.
+    kConcurrentAndLazySweeping,
+    // The sweeping task executes synchronously right after marking.
     kEagerSweeping,
   };
 

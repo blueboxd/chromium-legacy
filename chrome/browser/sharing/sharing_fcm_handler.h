@@ -31,7 +31,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   ~SharingFCMHandler() override;
 
   // Registers itself as app handler for sharing messages.
-  void StartListening();
+  virtual void StartListening();
 
   // Unregisters itself as app handler for sharing messages.
   void StopListening();

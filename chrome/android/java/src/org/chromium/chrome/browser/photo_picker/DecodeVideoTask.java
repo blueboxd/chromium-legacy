@@ -49,7 +49,7 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
     int mFrames;
 
     // The interval between frames (in milliseconds).
-    int mIntervalMs;
+    long mIntervalMs;
 
     // The ContentResolver to use to retrieve image metadata from disk.
     private ContentResolver mContentResolver;
@@ -68,7 +68,7 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
      * @param intervalMs The interval between frames (in milliseconds).
      */
     public DecodeVideoTask(VideoDecodingCallback callback, ContentResolver contentResolver, Uri uri,
-            int size, int frames, int intervalMs) {
+            int size, int frames, long intervalMs) {
         mCallback = callback;
         mContentResolver = contentResolver;
         mUri = uri;
@@ -111,12 +111,24 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
         AssetFileDescriptor afd = null;
         try {
             afd = mContentResolver.openAssetFileDescriptor(mUri, "r");
-            List<Bitmap> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
-                    mRetriever, afd.getFileDescriptor(), mSize, mFrames, mIntervalMs);
+            mRetriever.setDataSource(afd.getFileDescriptor());
             String duration =
                     mRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            return new Pair<List<Bitmap>, String>(bitmaps, formatDuration(duration));
+            if (duration != null) {
+                // Adjust to a shorter video, if the frame requests exceed the length of the video.
+                long durationMs = Long.parseLong(duration);
+                if (mFrames > 1 && mFrames * mIntervalMs > durationMs) {
+                    mIntervalMs = durationMs / mFrames;
+                }
+                duration = formatDuration(duration);
+            }
+            List<Bitmap> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
+                    mRetriever, afd.getFileDescriptor(), mSize, mFrames, mIntervalMs);
+
+            return new Pair<List<Bitmap>, String>(bitmaps, duration);
         } catch (FileNotFoundException exception) {
+            return null;
+        } catch (RuntimeException exception) {
             return null;
         } finally {
             try {

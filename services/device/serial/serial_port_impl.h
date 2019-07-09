@@ -85,7 +85,7 @@ class SerialPortImpl : public mojom::SerialPort {
   mojo::ScopedDataPipeProducerHandle out_stream_;
   mojo::SimpleWatcher out_stream_watcher_;
 
-  base::WeakPtrFactory<SerialPortImpl> weak_factory_;
+  base::WeakPtrFactory<SerialPortImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);
 };
 

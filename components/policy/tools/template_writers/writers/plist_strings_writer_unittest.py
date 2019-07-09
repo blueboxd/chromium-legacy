@@ -26,7 +26,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Chromium preferen"ces',
+            'text': '$1 preferen"ces',
             'desc': 'blah'
           }
         }
@@ -48,7 +48,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Chromium preferen"ces',
+            'text': '$1 preferen"ces',
             'desc': 'blah'
           }
         }
@@ -88,7 +88,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Preferences of Google Chrome',
+            'text': 'Preferences of $1',
             'desc': 'blah'
           }
         }
@@ -131,7 +131,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Preferences of Chromium',
+            'text': 'Preferences of $1',
             'desc': 'blah'
           }
         }
@@ -176,7 +176,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Preferences of Chromium',
+            'text': 'Preferences of $1',
             'desc': 'blah'
           }
         }
@@ -233,7 +233,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Preferences of Chromium',
+            'text': 'Preferences of $1',
             'desc': 'blah'
           }
         }
@@ -286,7 +286,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Google Chrome preferences',
+            'text': '$1 preferences',
             'desc': 'blah'
           }
         }
@@ -340,7 +340,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Google Chrome preferences',
+            'text': '$1 preferences',
             'desc': 'blah'
           }
         }
@@ -383,7 +383,7 @@ With a newline.""",
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
-            'text': 'Google Chrome preferences',
+            'text': '$1 preferences',
             'desc': 'blah'
           }
         }

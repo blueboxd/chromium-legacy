@@ -15,6 +15,7 @@ source_set("alert_view_controller") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
   ]
   libs = [ "UIKit.framework" ]

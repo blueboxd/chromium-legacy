@@ -759,11 +759,11 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
   "WebUIDarkMode",
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
 };
 
 #if defined(OS_WIN)

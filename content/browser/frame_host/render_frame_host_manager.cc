@@ -1038,12 +1038,12 @@ void RenderFrameHostManager::ActiveFrameCountIsZero(
 
 RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
     SiteInstance* site_instance,
-    RenderViewHostImpl* rvh) {
+    scoped_refptr<RenderViewHostImpl> rvh) {
   int site_instance_id = site_instance->GetId();
   CHECK(proxy_hosts_.find(site_instance_id) == proxy_hosts_.end())
       << "A proxy already existed for this SiteInstance.";
   RenderFrameProxyHost* proxy_host =
-      new RenderFrameProxyHost(site_instance, rvh, frame_tree_node_);
+      new RenderFrameProxyHost(site_instance, std::move(rvh), frame_tree_node_);
   proxy_hosts_[site_instance_id] = base::WrapUnique(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->AddObserver(this);
   return proxy_host;
@@ -1914,7 +1914,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
 
   // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
-  RenderViewHostImpl* render_view_host = nullptr;
+  scoped_refptr<RenderViewHostImpl> render_view_host;
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
         site_instance, view_routing_id, frame_routing_id, widget_routing_id,
@@ -2049,24 +2049,25 @@ void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   // At this point we know that we either have to 1) create a new
   // RenderFrameProxyHost or 2) revive an existing, but no longer alive
   // RenderFrameProxyHost.
-  RenderViewHostImpl* render_view_host =
-      frame_tree_node_->frame_tree()->GetRenderViewHost(instance);
   if (!proxy) {
+    // The RenderViewHost creates the page level structure in Blink. The first
+    // object to depend on it is necessarily a main frame one.
+    CHECK(frame_tree_node_->frame_tree()->GetRenderViewHost(instance) ||
+          frame_tree_node_->IsMainFrame());
+
     // Before creating a new RenderFrameProxyHost, ensure a RenderViewHost
     // exists for |instance|, as it creates the page level structure in Blink.
-    if (!render_view_host) {
-      CHECK(frame_tree_node_->IsMainFrame());
-      render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
-          instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true,
-          true);
-    }
+    scoped_refptr<RenderViewHostImpl> render_view_host =
+        frame_tree_node_->frame_tree()->CreateRenderViewHost(
+            instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+            true, true);
 
-    proxy = CreateRenderFrameProxyHost(instance, render_view_host);
+    proxy = CreateRenderFrameProxyHost(instance, std::move(render_view_host));
   }
 
   // Make sure that the RenderFrameProxy is present in the renderer.
-  if (frame_tree_node_->IsMainFrame() && render_view_host) {
-    InitRenderView(render_view_host, proxy);
+  if (frame_tree_node_->IsMainFrame() && proxy->GetRenderViewHost()) {
+    InitRenderView(proxy->GetRenderViewHost(), proxy);
   } else {
     proxy->InitRenderFrameProxy();
   }

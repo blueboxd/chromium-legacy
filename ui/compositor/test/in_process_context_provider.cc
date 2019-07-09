@@ -12,12 +12,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/ipc/gl_in_process_context.h"
-#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -99,10 +99,11 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
 
   context_ = std::make_unique<gpu::GLInProcessContext>();
   bind_result_ = context_->Initialize(
-      gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, /* surface */
-      !window_, /* is_offscreen */
-      window_, attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
-      image_factory_, base::ThreadTaskRunnerHandle::Get());
+      viz::TestGpuServiceHolder::GetInstance()->task_executor(),
+      /*surface=*/nullptr,
+      /*is_offscreen=*/!window_, window_, attribs_, gpu::SharedMemoryLimits(),
+      gpu_memory_buffer_manager_, image_factory_,
+      base::ThreadTaskRunnerHandle::Get());
 
   if (bind_result_ != gpu::ContextResult::kSuccess)
     return bind_result_;

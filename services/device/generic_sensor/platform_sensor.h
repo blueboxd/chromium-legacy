@@ -110,7 +110,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   ConfigMap config_map_;
   PlatformSensorProvider* provider_;
   bool is_active_ = false;
-  base::WeakPtrFactory<PlatformSensor> weak_factory_;
+  base::WeakPtrFactory<PlatformSensor> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PlatformSensor);
 };
 

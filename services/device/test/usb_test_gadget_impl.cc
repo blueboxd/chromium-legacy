@@ -205,7 +205,7 @@ class UsbGadgetFactory : public UsbService::Observer,
  public:
   UsbGadgetFactory(UsbService* usb_service,
                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : usb_service_(usb_service), observer_(this), weak_factory_(this) {
+      : usb_service_(usb_service), observer_(this) {
     // Gadget tests shouldn't be enabled without available |usb_service|.
     DCHECK(usb_service_);
 
@@ -403,7 +403,7 @@ class UsbGadgetFactory : public UsbService::Observer,
   std::string version_;
   base::RunLoop run_loop_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
-  base::WeakPtrFactory<UsbGadgetFactory> weak_factory_;
+  base::WeakPtrFactory<UsbGadgetFactory> weak_factory_{this};
 };
 
 class DeviceAddListener : public UsbService::Observer {
@@ -414,8 +414,7 @@ class DeviceAddListener : public UsbService::Observer {
       : usb_service_(usb_service),
         serial_number_(serial_number),
         product_id_(product_id),
-        observer_(this),
-        weak_factory_(this) {
+        observer_(this) {
     observer_.Add(usb_service_);
   }
   ~DeviceAddListener() override = default;
@@ -470,7 +469,7 @@ class DeviceAddListener : public UsbService::Observer {
   base::RunLoop run_loop_;
   scoped_refptr<UsbDevice> device_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
-  base::WeakPtrFactory<DeviceAddListener> weak_factory_;
+  base::WeakPtrFactory<DeviceAddListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAddListener);
 };
@@ -478,10 +477,7 @@ class DeviceAddListener : public UsbService::Observer {
 class DeviceRemoveListener : public UsbService::Observer {
  public:
   DeviceRemoveListener(UsbService* usb_service, scoped_refptr<UsbDevice> device)
-      : usb_service_(usb_service),
-        device_(device),
-        observer_(this),
-        weak_factory_(this) {
+      : usb_service_(usb_service), device_(device), observer_(this) {
     observer_.Add(usb_service_);
   }
   ~DeviceRemoveListener() override = default;
@@ -517,7 +513,7 @@ class DeviceRemoveListener : public UsbService::Observer {
   base::RunLoop run_loop_;
   scoped_refptr<UsbDevice> device_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
-  base::WeakPtrFactory<DeviceRemoveListener> weak_factory_;
+  base::WeakPtrFactory<DeviceRemoveListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceRemoveListener);
 };

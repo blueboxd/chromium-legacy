@@ -93,6 +93,51 @@ class TickClockBasedClock : public Clock {
 
 }  // namespace
 
+class ScopedTaskEnvironment::TestTaskTracker
+    : public internal::ThreadPoolImpl::TaskTrackerImpl {
+ public:
+  TestTaskTracker();
+
+  // Allow running tasks.
+  void AllowRunTasks();
+
+  // Disallow running tasks. Returns true on success; success requires there to
+  // be no tasks currently running. Returns false if >0 tasks are currently
+  // running. Prior to returning false, it will attempt to block until at least
+  // one task has completed (in an attempt to avoid callers busy-looping
+  // DisallowRunTasks() calls with the same set of slowly ongoing tasks). This
+  // block attempt will also have a short timeout (in an attempt to prevent the
+  // fallout of blocking: if the only task remaining is blocked on the main
+  // thread, waiting for it to complete results in a deadlock...).
+  bool DisallowRunTasks();
+
+ private:
+  friend class ScopedTaskEnvironment;
+
+  // internal::ThreadPoolImpl::TaskTrackerImpl:
+  void RunOrSkipTask(internal::Task task,
+                     internal::TaskSource* sequence,
+                     const TaskTraits& traits,
+                     bool can_run_task) override;
+
+  // Synchronizes accesses to members below.
+  Lock lock_;
+
+  // True if running tasks is allowed.
+  bool can_run_tasks_ GUARDED_BY(lock_) = true;
+
+  // Signaled when |can_run_tasks_| becomes true.
+  ConditionVariable can_run_tasks_cv_ GUARDED_BY(lock_);
+
+  // Signaled when a task is completed.
+  ConditionVariable task_completed_ GUARDED_BY(lock_);
+
+  // Number of tasks that are currently running.
+  int num_tasks_running_ GUARDED_BY(lock_) = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTaskTracker);
+};
+
 class ScopedTaskEnvironment::MockTimeDomain
     : public sequence_manager::TimeDomain,
       public TickClock {
@@ -250,51 +295,6 @@ class ScopedTaskEnvironment::MockTimeDomain
 
 ScopedTaskEnvironment::MockTimeDomain*
     ScopedTaskEnvironment::MockTimeDomain::current_mock_time_domain_ = nullptr;
-
-class ScopedTaskEnvironment::TestTaskTracker
-    : public internal::ThreadPoolImpl::TaskTrackerImpl {
- public:
-  TestTaskTracker();
-
-  // Allow running tasks.
-  void AllowRunTasks();
-
-  // Disallow running tasks. Returns true on success; success requires there to
-  // be no tasks currently running. Returns false if >0 tasks are currently
-  // running. Prior to returning false, it will attempt to block until at least
-  // one task has completed (in an attempt to avoid callers busy-looping
-  // DisallowRunTasks() calls with the same set of slowly ongoing tasks). This
-  // block attempt will also have a short timeout (in an attempt to prevent the
-  // fallout of blocking: if the only task remaining is blocked on the main
-  // thread, waiting for it to complete results in a deadlock...).
-  bool DisallowRunTasks();
-
- private:
-  friend class ScopedTaskEnvironment;
-
-  // internal::ThreadPoolImpl::TaskTrackerImpl:
-  void RunOrSkipTask(internal::Task task,
-                     internal::TaskSource* sequence,
-                     const TaskTraits& traits,
-                     bool can_run_task) override;
-
-  // Synchronizes accesses to members below.
-  Lock lock_;
-
-  // True if running tasks is allowed.
-  bool can_run_tasks_ GUARDED_BY(lock_) = true;
-
-  // Signaled when |can_run_tasks_| becomes true.
-  ConditionVariable can_run_tasks_cv_ GUARDED_BY(lock_);
-
-  // Signaled when a task is completed.
-  ConditionVariable task_completed_ GUARDED_BY(lock_);
-
-  // Number of tasks that are currently running.
-  int num_tasks_running_ GUARDED_BY(lock_) = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTaskTracker);
-};
 
 ScopedTaskEnvironment::ScopedTaskEnvironment(
     MainThreadType main_thread_type,

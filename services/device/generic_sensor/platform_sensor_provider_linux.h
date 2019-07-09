@@ -103,7 +103,7 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
   std::unique_ptr<SensorDeviceManager, base::OnTaskRunnerDeleter>
       sensor_device_manager_;
 
-  base::WeakPtrFactory<PlatformSensorProviderLinux> weak_ptr_factory_;
+  base::WeakPtrFactory<PlatformSensorProviderLinux> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderLinux);
 };

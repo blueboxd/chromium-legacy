@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -30,7 +31,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   // or a regular RenderFrameHostImpl if no factory is registered.
   static std::unique_ptr<RenderFrameHostImpl> Create(
       SiteInstance* site_instance,
-      RenderViewHostImpl* render_view_host,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
       RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
@@ -50,7 +51,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   // function to create an alternate kind of RenderFrameHostImpl for testing.
   virtual std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       SiteInstance* site_instance,
-      RenderViewHostImpl* render_view_host,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
       RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,

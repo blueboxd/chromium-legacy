@@ -389,10 +389,7 @@ bool VaapiVideoDecodeAccelerator::GetCurrInputBuffer_Locked() {
 
   DVLOGF(4) << "New |curr_input_buffer_|, id: " << curr_input_buffer_->id()
             << " size: " << curr_input_buffer_->buffer()->data_size() << "B";
-  decoder_->SetStream(curr_input_buffer_->id(),
-                      curr_input_buffer_->buffer()->data(),
-                      curr_input_buffer_->buffer()->data_size());
-
+  decoder_->SetStream(curr_input_buffer_->id(), *curr_input_buffer_->buffer());
   return true;
 }
 
@@ -512,7 +509,6 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
 
   requested_pic_size_ = size;
   requested_visible_rect_ = visible_rect;
-
   if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
     // Add one to the reference frames for the one being currently egressed.
     requested_num_reference_frames_ = num_reference_frames + 1;

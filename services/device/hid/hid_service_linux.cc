@@ -195,8 +195,7 @@ class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
 HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
-      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_factory_(this) {
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   // We need to properly initialize |blocking_task_helper_| here because we need
   // |weak_factory_| to be created first.
   helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));

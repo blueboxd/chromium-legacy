@@ -31,6 +31,7 @@ using namespace testing;
 namespace {
 const char kAppID[] = "test_app_id";
 const char kFCMToken[] = "test_fcm_token";
+const char kFCMToken2[] = "test_fcm_token_2";
 const char kDevicep256dh[] = "test_p256_dh";
 const char kDeviceAuthSecret[] = "test_auth_secret";
 
@@ -61,7 +62,7 @@ class FakeInstanceID : public InstanceID {
                 const std::map<std::string, std::string>& options,
                 bool is_lazy,
                 GetTokenCallback callback) override {
-    std::move(callback).Run(kFCMToken, result_);
+    std::move(callback).Run(fcm_token_, result_);
   }
 
   void ValidateToken(const std::string& authorized_entity,
@@ -81,8 +82,11 @@ class FakeInstanceID : public InstanceID {
 
   void SetFCMResult(InstanceID::Result result) { result_ = result; }
 
+  void SetFCMToken(std::string fcm_token) { fcm_token_ = std::move(fcm_token); }
+
  private:
   InstanceID::Result result_;
+  std::string fcm_token_;
 };
 
 class FakeEncryptionGCMDriver : public FakeGCMDriver {
@@ -132,6 +136,10 @@ class SharingDeviceRegistrationTest : public testing::Test {
     fake_instance_id_.SetFCMResult(result);
   }
 
+  void SetInstanceIDFCMToken(std::string fcm_token) {
+    fake_instance_id_.SetFCMToken(std::move(fcm_token));
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -154,6 +162,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMToken(kFCMToken);
 
   RegisterDeviceSync();
 
@@ -169,14 +178,55 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_EQ(kFCMToken, device.fcm_token);
   EXPECT_EQ(sharing_device_registration_.GetDeviceCapabilities(),
             device.capabilities);
+
+  // Remove VAPId key to force a re-register, which will return a different FCM
+  // token.
+  prefs_.RemoveUserPref("sharing.vapid_key");
+  SetInstanceIDFCMToken(kFCMToken2);
+
+  RegisterDeviceSync();
+
+  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+
+  // Device should be re-registered with the new FCM token.
+  it = devices_.find(guid);
+  ASSERT_NE(devices_.end(), it);
+  EXPECT_EQ(kFCMToken2, it->second.fcm_token);
 }
 
-TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Fail) {
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
+  SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+
+  RegisterDeviceSync();
+
+  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+
+  // Set instance ID result to error. InstanceID shouldn't be invoked.
+  SetInstanceIDFCMResult(InstanceID::Result::UNKNOWN_ERROR);
+  // Register device again without changing VAPID keys.
+  RegisterDeviceSync();
+
+  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+}
+
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
   SetInstanceIDFCMResult(InstanceID::Result::NETWORK_ERROR);
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::FAILURE, result_);
+  EXPECT_EQ(SharingDeviceRegistration::Result::TRANSIENT_ERROR, result_);
+  std::string guid =
+      fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
+  auto it = devices_.find(guid);
+  EXPECT_EQ(devices_.end(), it);
+}
+
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
+  SetInstanceIDFCMResult(InstanceID::Result::DISABLED);
+
+  RegisterDeviceSync();
+
+  EXPECT_EQ(SharingDeviceRegistration::Result::FATAL_ERROR, result_);
   std::string guid =
       fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
   auto it = devices_.find(guid);

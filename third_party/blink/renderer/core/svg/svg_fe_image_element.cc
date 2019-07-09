@@ -45,7 +45,9 @@ SVGFEImageElement::SVGFEImageElement(Document& document)
   AddToPropertyMap(preserve_aspect_ratio_);
 }
 
-SVGFEImageElement::~SVGFEImageElement() {
+SVGFEImageElement::~SVGFEImageElement() = default;
+
+void SVGFEImageElement::Dispose() {
   ClearImageResource();
 }
 

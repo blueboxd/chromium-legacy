@@ -269,8 +269,8 @@ class ScopedTaskEnvironment {
   void NotifyDestructionObserversAndReleaseSequenceManager();
 
  private:
-  class MockTimeDomain;
   class TestTaskTracker;
+  class MockTimeDomain;
 
   void InitializeThreadPool();
   void DestroyThreadPool();

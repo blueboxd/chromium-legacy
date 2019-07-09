@@ -180,7 +180,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILInterval ResolveInterval(IntervalSelector) const;
   void ResolveFirstInterval();
-  bool ResolveNextInterval();
+  base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
@@ -239,8 +239,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DisconnectSyncBaseConditions();
   void DisconnectEventBaseConditions();
 
-  void NotifyDependentsIntervalChanged();
-  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase);
+  void NotifyDependentsIntervalChanged(const SMILInterval& interval);
+  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase,
+                                       const SMILInterval& interval);
   void AddSyncBaseDependent(SVGSMILElement&);
   void RemoveSyncBaseDependent(SVGSMILElement&);
 

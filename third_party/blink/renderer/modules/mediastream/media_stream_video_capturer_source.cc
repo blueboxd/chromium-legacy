@@ -14,24 +14,22 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class MediaStreamVideoCapturerSource::InternalState {
+class MediaStreamVideoCapturerSource::InternalState
+    : public MediaStreamInternalFrameWrapper {
  public:
   InternalState(WebLocalFrame* web_frame)
-      : frame_(web_frame ? static_cast<LocalFrame*>(
-                               WebLocalFrame::ToCoreFrame(*web_frame))
-                         : nullptr) {}
-
-  LocalFrame* frame() { return frame_.Get(); }
+      : MediaStreamInternalFrameWrapper(web_frame) {}
 
   const mojom::blink::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost() {
-    DCHECK(frame_);
+    DCHECK(frame());
     if (!host_)
-      frame_->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
+      frame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
     return host_;
   }
 
@@ -41,7 +39,6 @@ class MediaStreamVideoCapturerSource::InternalState {
   }
 
  private:
-  WeakPersistent<LocalFrame> frame_;
   mojom::blink::MediaStreamDispatcherHostPtr host_;
 };
 

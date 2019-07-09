@@ -362,6 +362,8 @@ class PLATFORM_EXPORT ThreadHeap {
 
   bool AdvanceLazySweep(base::TimeTicks deadline);
 
+  void ConcurrentSweep();
+
   void PrepareForSweep();
   void RemoveAllPages();
   void CompleteSweep();

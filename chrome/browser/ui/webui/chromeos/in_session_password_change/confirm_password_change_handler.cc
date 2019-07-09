@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/urgent_password_expiry_notification_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
 
 #include <string>
 
@@ -21,25 +21,27 @@
 
 namespace chromeos {
 
-UrgentPasswordExpiryNotificationHandler::
-    UrgentPasswordExpiryNotificationHandler() = default;
+ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() = default;
 
-UrgentPasswordExpiryNotificationHandler::
-    ~UrgentPasswordExpiryNotificationHandler() = default;
+ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() = default;
 
-void UrgentPasswordExpiryNotificationHandler::HandleContinue(
+void ConfirmPasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
+  const std::string old_password = params->GetList()[0].GetString();
+  const std::string new_password = params->GetList()[1].GetString();
   auto* in_session_password_change_manager =
       g_browser_process->platform_part()->in_session_password_change_manager();
   CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->StartInSessionPasswordChange();
+  in_session_password_change_manager->ChangePassword(old_password,
+                                                     new_password);
+  // TODO(olsen): Show a spinner until password change is complete.
 }
 
-void UrgentPasswordExpiryNotificationHandler::RegisterMessages() {
+void ConfirmPasswordChangeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "continue", base::BindRepeating(
-                      &UrgentPasswordExpiryNotificationHandler::HandleContinue,
-                      weak_factory_.GetWeakPtr()));
+      "changePassword",
+      base::BindRepeating(&ConfirmPasswordChangeHandler::HandleChangePassword,
+                          weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

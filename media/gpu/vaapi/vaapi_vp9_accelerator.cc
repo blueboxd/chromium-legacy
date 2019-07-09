@@ -57,7 +57,6 @@ bool VaapiVP9Accelerator::SubmitDecode(
   pic_param.frame_width = base::checked_cast<uint16_t>(frame_hdr->frame_width);
   pic_param.frame_height =
       base::checked_cast<uint16_t>(frame_hdr->frame_height);
-
   CHECK_EQ(kVp9NumRefFrames, base::size(pic_param.reference_frames));
   for (size_t i = 0; i < base::size(pic_param.reference_frames); ++i) {
     auto ref_pic = ref_frames.GetFrame(i);

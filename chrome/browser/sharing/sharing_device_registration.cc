@@ -46,13 +46,19 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
   // Base64PublicKey in library.
   crypto::ECPrivateKey* vapid_key = vapid_key_manager_->GetOrCreateKey();
   if (!vapid_key) {
-    std::move(callback).Run(Result::FAILURE);
+    std::move(callback).Run(Result::FATAL_ERROR);
     return;
   }
 
   std::string public_key;
   if (!gcm::GetRawPublicKey(*vapid_key, &public_key)) {
-    std::move(callback).Run(Result::FAILURE);
+    std::move(callback).Run(Result::FATAL_ERROR);
+    return;
+  }
+
+  if (registered_public_key_ == public_key) {
+    // VAPID key hasn't changed, return success.
+    std::move(callback).Run(Result::SUCCESS);
     return;
   }
 
@@ -61,36 +67,47 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
                         &base64_public_key);
 
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
-      ->GetToken(
-          base64_public_key, kFCMScope,
-          /*options=*/{},
-          /*is_lazy=*/false,
-          base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      ->GetToken(base64_public_key, kFCMScope,
+                 /*options=*/{},
+                 /*is_lazy=*/false,
+                 base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(callback), std::move(public_key)));
 }
 
 void SharingDeviceRegistration::OnFCMTokenReceived(
     RegistrationCallback callback,
+    std::string public_key,
     const std::string& fcm_registration_token,
     instance_id::InstanceID::Result result) {
-  if (result != instance_id::InstanceID::SUCCESS) {
-    std::move(callback).Run(Result::FAILURE);
-    return;
+  switch (result) {
+    case instance_id::InstanceID::SUCCESS:
+      gcm_driver_->GetEncryptionInfo(
+          kSharingFCMAppID,
+          base::AdaptCallbackForRepeating(base::BindOnce(
+              &SharingDeviceRegistration::OnEncryptionInfoReceived,
+              weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+              std::move(public_key), fcm_registration_token)));
+      break;
+    case instance_id::InstanceID::NETWORK_ERROR:
+    case instance_id::InstanceID::SERVER_ERROR:
+    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+      std::move(callback).Run(Result::TRANSIENT_ERROR);
+      break;
+    case instance_id::InstanceID::INVALID_PARAMETER:
+    case instance_id::InstanceID::UNKNOWN_ERROR:
+    case instance_id::InstanceID::DISABLED:
+      std::move(callback).Run(Result::FATAL_ERROR);
+      break;
   }
-
-  gcm_driver_->GetEncryptionInfo(
-      kSharingFCMAppID,
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         fcm_registration_token)));
 }
 
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
     RegistrationCallback callback,
+    std::string public_key,
     const std::string& fcm_registration_token,
     const std::string& p256dh,
-    const std::string& auth_secret) const {
+    const std::string& auth_secret) {
   int device_capabilities = GetDeviceCapabilities();
   std::string device_guid =
       local_device_info_provider_->GetLocalDeviceInfo()->guid();
@@ -98,6 +115,7 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
                                        auth_secret, device_capabilities);
 
   sharing_sync_preference_->SetSyncDevice(device_guid, device);
+  registered_public_key_ = std::move(public_key);
   std::move(callback).Run(Result::SUCCESS);
 }
 

@@ -208,8 +208,6 @@ class TestRenderViewHost
                      int32_t routing_id,
                      int32_t main_frame_routing_id,
                      bool swapped_out);
-  ~TestRenderViewHost() override;
-
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
@@ -256,6 +254,8 @@ class TestRenderViewHost
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
+
+  ~TestRenderViewHost() override;
 
   void SendNavigateWithTransitionAndResponseCode(const GURL& url,
                                                  ui::PageTransition transition,

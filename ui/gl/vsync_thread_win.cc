@@ -54,7 +54,8 @@ VSyncThreadWin::VSyncThreadWin(
   DCHECK(window_);
   DCHECK(callback_);
   base::Thread::Options options;
-  options.priority = base::ThreadPriority::DISPLAY;
+  // Inherit priority from GPU main thread which depends on finch flags.
+  options.priority = base::PlatformThread::GetCurrentThreadPriority();
   vsync_thread_.StartWithOptions(std::move(options));
 }
 

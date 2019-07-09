@@ -110,7 +110,7 @@ class PublicIpAddressLocationNotifier
       network_traffic_annotation_tag_;
 
   // Weak references to |this| for posted tasks.
-  base::WeakPtrFactory<PublicIpAddressLocationNotifier> weak_ptr_factory_;
+  base::WeakPtrFactory<PublicIpAddressLocationNotifier> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PublicIpAddressLocationNotifier);
 };

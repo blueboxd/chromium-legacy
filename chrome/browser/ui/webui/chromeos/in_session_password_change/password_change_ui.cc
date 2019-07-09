@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
 
 #include <memory>
 
@@ -11,9 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/insession_confirm_password_change_handler_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/urgent_password_expiry_notification_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -134,7 +134,7 @@ void PasswordChangeDialog::Dismiss() {
     g_dialog->Close();
 }
 
-InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
+PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   CHECK(profile->GetPrefs()->GetBoolean(
@@ -142,8 +142,8 @@ InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPasswordChangeHost);
 
-  web_ui->AddMessageHandler(std::make_unique<InSessionPasswordChangeHandler>(
-      GetPasswordChangeUrl(profile)));
+  web_ui->AddMessageHandler(
+      std::make_unique<PasswordChangeHandler>(GetPasswordChangeUrl(profile)));
 
   source->SetJsonPath("strings.js");
 
@@ -157,7 +157,7 @@ InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, source);
 }
 
-InSessionPasswordChangeUI::~InSessionPasswordChangeUI() = default;
+PasswordChangeUI::~PasswordChangeUI() = default;
 
 ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
@@ -191,8 +191,7 @@ void ConfirmPasswordChangeDialog::Dismiss() {
     g_confirm_dialog->Close();
 }
 
-InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
-    content::WebUI* web_ui)
+ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   CHECK(profile->GetPrefs()->GetBoolean(
@@ -222,13 +221,12 @@ InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
   source->AddResourcePath("confirm_password_change.js",
                           IDR_CONFIRM_PASSWORD_CHANGE_JS);
 
-  web_ui->AddMessageHandler(
-      std::make_unique<InSessionConfirmPasswordChangeHandler>());
+  web_ui->AddMessageHandler(std::make_unique<ConfirmPasswordChangeHandler>());
 
   content::WebUIDataSource::Add(profile, source);
 }
 
-InSessionConfirmPasswordChangeUI::~InSessionConfirmPasswordChangeUI() = default;
+ConfirmPasswordChangeUI::~ConfirmPasswordChangeUI() = default;
 
 UrgentPasswordExpiryNotificationDialog::UrgentPasswordExpiryNotificationDialog(
     int less_than_n_days)

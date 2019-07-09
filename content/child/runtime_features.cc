@@ -63,9 +63,6 @@ void SetIndividualRuntimeFeatures(
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::EnableWebUsb(false);
 
-  WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
-      base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
-
   if (base::FeatureList::IsEnabled(
           blink::features::kBlockingFocusWithoutUserActivation)) {
     WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(true);
@@ -265,9 +262,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(
       base::FeatureList::IsEnabled(
           features::kExpensiveBackgroundTimerThrottling));
-
-  if (base::FeatureList::IsEnabled(features::kHeapCompaction))
-    WebRuntimeFeatures::EnableHeapCompaction(true);
 
   WebRuntimeFeatures::EnableRenderingPipelineThrottling(
       base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));

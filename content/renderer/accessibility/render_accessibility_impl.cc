@@ -25,6 +25,7 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -879,8 +880,24 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
       data.HasContentIntAttribute(
           AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
+    gfx::Point transformed_point = point;
+    bool is_remote_frame = RenderFrameProxy::FromRoutingID(
+        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID));
+    if (is_remote_frame) {
+      // Remote frames don't have access to the information from the visual
+      // viewport regarding the visual viewport offset, so we adjust the
+      // coordinates before sending them to the remote renderer.
+      WebRect rect = obj.GetBoundsInFrameCoordinates();
+      // The following transformation of the input point is naive, but works
+      // fairly well. It will fail with CSS transforms that rotate or shear.
+      // https://crbug.com/981959.
+      WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+      blink::WebFloatPoint viewport_offset = web_view->VisualViewportOffset();
+      transformed_point += gfx::Vector2d(viewport_offset.x, viewport_offset.y) -
+                           gfx::Rect(rect).OffsetFromOrigin();
+    }
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
-        routing_id(), action_request_id, point,
+        routing_id(), action_request_id, transformed_point,
         data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID),
         data.GetContentIntAttribute(
             AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID),

@@ -816,6 +816,7 @@ jumbo_static_library("extensions") {
     "//components/omnibox/browser",
     "//components/onc",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:affiliation",
     "//components/payments/core",
     "//components/pdf/browser",
     "//components/policy:generated",

@@ -101,8 +101,7 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
                                           WTF::Passed(std::move(stream_host))));
 
   QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
-  stream_proxies_.insert(
-      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  stream_proxies_.insert(stream_proxy_ptr, std::move(stream_proxy));
   return stream_proxy_ptr;
 }
 
@@ -159,8 +158,7 @@ void QuicTransportProxy::OnStream(
   stream_proxy->Initialize(this);
 
   QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
-  stream_proxies_.insert(
-      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  stream_proxies_.insert(stream_proxy_ptr, std::move(stream_proxy));
   delegate_->OnStream(stream_proxy_ptr);
 }
 

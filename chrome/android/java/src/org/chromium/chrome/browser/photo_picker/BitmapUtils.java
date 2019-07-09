@@ -74,6 +74,7 @@ class BitmapUtils {
 
     /**
      * Given a FileDescriptor, decodes the video and returns a bitmap of dimensions |size|x|size|.
+     * @param retriever The MediaMetadataRetriever to use (must have source already set).
      * @param descriptor The FileDescriptor for the file to read.
      * @param size The width and height of the bitmap to return.
      * @param frames The number of frames to extract.
@@ -81,13 +82,7 @@ class BitmapUtils {
      * @return A list of extracted frames.
      */
     public static List<Bitmap> decodeVideoFromFileDescriptor(MediaMetadataRetriever retriever,
-            FileDescriptor descriptor, int size, int frames, int intervalMs) {
-        try {
-            retriever.setDataSource(descriptor);
-        } catch (RuntimeException exception) {
-            return null;
-        }
-
+            FileDescriptor descriptor, int size, int frames, long intervalMs) {
         List<Bitmap> bitmaps = new ArrayList<Bitmap>();
         Bitmap bitmap = null;
         for (int frame = 0; frame < frames; ++frame) {

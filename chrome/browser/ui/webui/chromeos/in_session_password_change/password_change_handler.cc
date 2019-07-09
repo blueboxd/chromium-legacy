@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
 
 #include <string>
 
@@ -22,13 +22,12 @@
 
 namespace chromeos {
 
-InSessionPasswordChangeHandler::InSessionPasswordChangeHandler(
+PasswordChangeHandler::PasswordChangeHandler(
     const std::string& password_change_url)
     : password_change_url_(password_change_url) {}
-InSessionPasswordChangeHandler::~InSessionPasswordChangeHandler() = default;
+PasswordChangeHandler::~PasswordChangeHandler() = default;
 
-void InSessionPasswordChangeHandler::HandleInitialize(
-    const base::ListValue* value) {
+void PasswordChangeHandler::HandleInitialize(const base::ListValue* value) {
   Profile* profile = Profile::FromWebUI(web_ui());
   CHECK(profile->GetPrefs()->GetBoolean(
       prefs::kSamlInSessionPasswordChangeEnabled));
@@ -44,10 +43,10 @@ void InSessionPasswordChangeHandler::HandleInitialize(
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user)
     params.SetKey("userName", base::Value(user->GetDisplayEmail()));
-  CallJavascriptFunction("insession.password.change.loadAuthExtension", params);
+  CallJavascriptFunction(".password.change.loadAuthExtension", params);
 }
 
-void InSessionPasswordChangeHandler::HandleChangePassword(
+void PasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
   const base::Value& old_passwords = params->GetList()[0];
   const base::Value& new_passwords = params->GetList()[1];
@@ -71,14 +70,14 @@ void InSessionPasswordChangeHandler::HandleChangePassword(
   }
 }
 
-void InSessionPasswordChangeHandler::RegisterMessages() {
+void PasswordChangeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "initialize",
-      base::BindRepeating(&InSessionPasswordChangeHandler::HandleInitialize,
+      base::BindRepeating(&PasswordChangeHandler::HandleInitialize,
                           weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "changePassword",
-      base::BindRepeating(&InSessionPasswordChangeHandler::HandleChangePassword,
+      base::BindRepeating(&PasswordChangeHandler::HandleChangePassword,
                           weak_factory_.GetWeakPtr()));
 }
 

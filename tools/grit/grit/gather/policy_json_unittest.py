@@ -272,23 +272,20 @@ with a newline?''',
         "messages": {}
 }"""
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
-    gatherer.SetDefines({'_google_chrome': True})
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
-    expected = json.loads(re.sub('<ph.*ph>', 'Google Chrome', original))
-    result = json.loads(gatherer.Translate('en'))
+    expected = json.loads(re.sub('<ph.*ph>', '$1', original))
     self.failUnless(expected == json.loads(gatherer.Translate('en')))
     self.failUnless(gatherer.GetCliques()[0].translateable)
     msg = gatherer.GetCliques()[0].GetMessage()
     self.failUnless(len(msg.GetPlaceholders()) == 1)
     ph = msg.GetPlaceholders()[0]
-    self.failUnless(ph.GetOriginal() == 'Google Chrome')
+    self.failUnless(ph.GetOriginal() == '$1')
     self.failUnless(ph.GetPresentation() == 'PRODUCT_NAME')
     self.failUnless(ph.GetExample() == 'Google Chrome')
 
   def testGetDescription(self):
     gatherer = policy_json.PolicyJson({})
-    gatherer.SetDefines({'_google_chrome': True})
     self.assertEquals(
         gatherer._GetDescription({'name': 'Policy1'}, 'policy', None, 'desc'),
         'Description of the policy named Policy1')

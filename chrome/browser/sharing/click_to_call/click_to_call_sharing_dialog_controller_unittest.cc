@@ -19,6 +19,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,6 +83,7 @@ MATCHER_P(ProtoEquals, message, "") {
 // Check the call to sharing service when a device is chosen.
 TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
   SharingDeviceInfo sharing_device_info(kReceiverGuid, kReceiverName,
+                                        sync_pb::SyncEnums::TYPE_PHONE,
                                         base::Time::Now(), 1);
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(

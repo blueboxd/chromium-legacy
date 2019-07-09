@@ -23844,6 +23844,7 @@ Called by update_net_error_codes.py.-->
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
+  <int value="2954" label="BasicCardType"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -53159,6 +53160,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninRequestHeaderOperation">
+  <obsolete>
+    Removed 2019-07
+  </obsolete>
   <int value="0" label="Header Added"/>
   <int value="1" label="Header Removed"/>
 </enum>

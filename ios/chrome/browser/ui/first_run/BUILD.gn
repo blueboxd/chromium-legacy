@@ -49,6 +49,7 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/util:terms_util",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
+    "//ios/chrome/common/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/third_party/material_components_ios",

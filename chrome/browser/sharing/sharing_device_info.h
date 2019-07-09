@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/sync/protocol/sync.pb.h"
 
 // Capabilities which a device can perform. These are stored in sync preferences
 // when the device is registered, and the values should never be changed. When
@@ -22,6 +23,7 @@ class SharingDeviceInfo {
  public:
   SharingDeviceInfo(const std::string& guid,
                     const std::string& human_readable_name,
+                    sync_pb::SyncEnums::DeviceType device_type,
                     base::Time last_online_timestamp,
                     int capabilities);
   ~SharingDeviceInfo();
@@ -32,6 +34,9 @@ class SharingDeviceInfo {
 
   // A human readable name of the device.
   const std::string& human_readable_name() const;
+
+  // Type of the device whether it is a phone, tablet or desktop.
+  sync_pb::SyncEnums::DeviceType device_type() const;
 
   // Returns the time at which this device was last online.
   base::Time last_online_timestamp() const;
@@ -44,6 +49,8 @@ class SharingDeviceInfo {
   const std::string guid_;
 
   const std::string human_readable_name_;
+
+  const sync_pb::SyncEnums::DeviceType device_type_;
 
   const base::Time last_online_timestamp_;
 

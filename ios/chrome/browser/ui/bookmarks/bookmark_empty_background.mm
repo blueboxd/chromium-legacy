@@ -42,7 +42,7 @@ const CGFloat kStackViewMargin = 24.0;
 
     // The explanatory text label.
     self.textLabel = [[UILabel alloc] init];
-    self.textLabel.backgroundColor = [UIColor clearColor];
+    self.textLabel.backgroundColor = UIColor.clearColor;
     self.textLabel.accessibilityIdentifier =
         kBookmarkEmptyStateExplanatoryLabelIdentifier;
     self.textLabel.textAlignment = NSTextAlignmentCenter;

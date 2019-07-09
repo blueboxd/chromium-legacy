@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/layout_shift_region.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -44,7 +46,11 @@ class BasicIntervals {
  private:
   Vector<int> endpoints_;
   // Avoid WTF::HashMap as key may be 0 or -1.
-  std::unordered_map<int, unsigned> endpoint_to_index_;
+  HashMap<int,
+          unsigned,
+          WTF::AlreadyHashed,
+          WTF::UnsignedWithZeroKeyHashTraits<int>>
+      endpoint_to_index_;
 
 #if DCHECK_IS_ON()
   bool has_index_ = false;
@@ -61,8 +67,8 @@ inline void BasicIntervals::AddEndpoint(int endpoint) {
   DCHECK_HAS_INDEX(false);
 
   // We can't index yet, but use the map to de-dupe.
-  auto ret = endpoint_to_index_.insert(std::make_pair(endpoint, 0u));
-  if (ret.second)
+  auto ret = endpoint_to_index_.insert(endpoint, 0u);
+  if (ret.is_new_entry)
     endpoints_.push_back(endpoint);
 }
 
@@ -71,7 +77,7 @@ void BasicIntervals::CreateIndex() {
   std::sort(endpoints_.begin(), endpoints_.end());
   unsigned i = 0;
   for (const int& e : endpoints_)
-    endpoint_to_index_[e] = i++;
+    endpoint_to_index_.Set(e, i++);
 
 #if DCHECK_IS_ON()
   has_index_ = true;

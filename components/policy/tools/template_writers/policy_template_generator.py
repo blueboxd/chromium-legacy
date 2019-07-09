@@ -22,8 +22,12 @@ class PolicyTemplateGenerator:
 
   def _ImportMessage(self, msg_txt):
     msg_txt = msg_txt.decode('utf-8')
-    lines = msg_txt.split('\n')
+    # Replace the placeholder of app name.
+    msg_txt = msg_txt.replace('$1', self._config['app_name'])
+    msg_txt = msg_txt.replace('$2', self._config['os_name'])
+    msg_txt = msg_txt.replace('$3', self._config['frame_name'])
 
+    lines = msg_txt.split('\n')
     # Strip any extra leading spaces, but keep useful indentation:
     min_leading_spaces = min(list(self._IterateLeadingSpaces(lines)) or [0])
     if min_leading_spaces > 0:

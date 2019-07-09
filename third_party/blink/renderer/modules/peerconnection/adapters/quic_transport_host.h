@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_HOST_H_
 
-#include <unordered_map>
-
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -14,6 +12,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -82,8 +81,7 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   std::unique_ptr<P2PQuicTransport> quic_transport_;
   base::WeakPtr<QuicTransportProxy> proxy_;
   IceTransportHost* ice_transport_host_ = nullptr;
-  std::unordered_map<QuicStreamHost*, std::unique_ptr<QuicStreamHost>>
-      stream_hosts_;
+  HashMap<QuicStreamHost*, std::unique_ptr<QuicStreamHost>> stream_hosts_;
 
   THREAD_CHECKER(thread_checker_);
 };

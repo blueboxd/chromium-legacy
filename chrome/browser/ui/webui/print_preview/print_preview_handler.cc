@@ -422,7 +422,8 @@ class PrintPreviewHandler::AccessTokenService
         chromeos::DeviceOAuth2TokenServiceFactory::Get();
     std::string account_id = token_service->GetRobotAccountId();
 
-    device_request_ = token_service->StartRequest(account_id, scopes, this);
+    device_request_ =
+        token_service->StartAccessTokenRequest(account_id, scopes, this);
     device_request_callback_ = std::move(callback);
   }
 

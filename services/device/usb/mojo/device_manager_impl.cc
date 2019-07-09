@@ -34,9 +34,7 @@ DeviceManagerImpl::DeviceManagerImpl()
     : DeviceManagerImpl(UsbService::Create()) {}
 
 DeviceManagerImpl::DeviceManagerImpl(std::unique_ptr<UsbService> usb_service)
-    : usb_service_(std::move(usb_service)),
-      observer_(this),
-      weak_factory_(this) {
+    : usb_service_(std::move(usb_service)), observer_(this) {
   if (usb_service_)
     observer_.Add(usb_service_.get());
 }

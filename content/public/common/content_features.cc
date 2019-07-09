@@ -61,11 +61,6 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable incremental marking for Blink's heap managed by the Oilpan garbage
-// collector.
-const base::Feature kBlinkHeapIncrementalMarking{
-    "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {
@@ -171,10 +166,6 @@ const base::Feature kNetworkQualityEstimatorWebHoldback{
 // TODO(533069): Remove once BrowserPlugin is removed.
 const base::Feature kGuestViewCrossProcessFrames{
     "GuestViewCrossProcessFrames", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables BlinkGC heap compaction.
-const base::Feature kHeapCompaction{"HeapCompaction",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If a page does a client side redirect or adds to the history without a user
 // gesture, then skip it on back/forward UI.

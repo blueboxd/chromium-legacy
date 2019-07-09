@@ -123,7 +123,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
     grd_string_io = StringIO.StringIO(grd_text)
 
     # Parse the grit tree and load the policies' JSON with a gatherer.
-    grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name, defines={'_google_chrome': True})
+    grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name)
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
 

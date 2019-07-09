@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -48,12 +49,17 @@ void DeviceOAuth2TokenService::OnValidationCompleted(
 
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)) {
-  GetDeviceDelegate()->InitializeWithValidationStatusDelegate(this);
+    : delegate_(std::move(delegate)) {
+  DCHECK(delegate_);
+  delegate_->AddObserver(this);
+  token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
+      this /* OAuth2AccessTokenManager::Delegate* */);
+  delegate_->InitializeWithValidationStatusDelegate(this);
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
-  GetDeviceDelegate()->ClearValidationStatusDelegate();
+  delegate_->RemoveObserver(this);
+  delegate_->ClearValidationStatusDelegate();
   FlushPendingRequests(false, GoogleServiceAuthError::REQUEST_CANCELED);
 }
 
@@ -66,16 +72,16 @@ void DeviceOAuth2TokenService::RegisterPrefs(PrefRegistrySimple* registry) {
 void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
     const std::string& refresh_token,
     const StatusCallback& result_callback) {
-  GetDeviceDelegate()->SetAndSaveRefreshToken(refresh_token, result_callback);
+  delegate_->SetAndSaveRefreshToken(refresh_token, result_callback);
 }
 
 std::string DeviceOAuth2TokenService::GetRobotAccountId() const {
-  return GetDeviceDelegate()->GetRobotAccountId();
+  return delegate_->GetRobotAccountId();
 }
 
 void DeviceOAuth2TokenService::set_robot_account_id_for_testing(
     const CoreAccountId& account_id) {
-  GetDeviceDelegate()->set_robot_account_id_for_testing(account_id);
+  delegate_->set_robot_account_id_for_testing(account_id);
 }
 
 void DeviceOAuth2TokenService::SetRefreshTokenAvailableCallback(
@@ -88,16 +94,78 @@ void DeviceOAuth2TokenService::SetRefreshTokenRevokedCallback(
   on_refresh_token_revoked_callback_ = std::move(callback);
 }
 
+std::unique_ptr<OAuth2AccessTokenManager::Request>
+DeviceOAuth2TokenService::StartAccessTokenRequest(
+    const CoreAccountId& account_id,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
+    OAuth2AccessTokenManager::Consumer* consumer) {
+  return token_manager_->StartRequest(account_id, scopes, consumer);
+}
+
+void DeviceOAuth2TokenService::InvalidateAccessToken(
+    const CoreAccountId& account_id,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
+    const std::string& access_token) {
+  token_manager_->InvalidateAccessToken(account_id, scopes, access_token);
+}
+
+bool DeviceOAuth2TokenService::RefreshTokenIsAvailable(
+    const CoreAccountId& account_id) const {
+  return delegate_->RefreshTokenIsAvailable(account_id);
+}
+
+OAuth2AccessTokenManager* DeviceOAuth2TokenService::GetAccessTokenManager() {
+  return token_manager_.get();
+}
+
+std::unique_ptr<OAuth2AccessTokenFetcher>
+DeviceOAuth2TokenService::CreateAccessTokenFetcher(
+    const CoreAccountId& account_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    OAuth2AccessTokenConsumer* consumer) {
+  return delegate_->CreateAccessTokenFetcher(account_id, url_loader_factory,
+                                             consumer);
+}
+
+bool DeviceOAuth2TokenService::HasRefreshToken(
+    const CoreAccountId& account_id) const {
+  return RefreshTokenIsAvailable(account_id);
+}
+
+bool DeviceOAuth2TokenService::FixRequestErrorIfPossible() {
+  return delegate_->FixRequestErrorIfPossible();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+DeviceOAuth2TokenService::GetURLLoaderFactory() const {
+  return delegate_->GetURLLoaderFactory();
+}
+
+void DeviceOAuth2TokenService::OnAccessTokenInvalidated(
+    const CoreAccountId& account_id,
+    const std::string& client_id,
+    const std::set<std::string>& scopes,
+    const std::string& access_token) {
+  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
+                                      access_token);
+}
+
+void DeviceOAuth2TokenService::OnAccessTokenFetched(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error) {
+  // Update the auth error state so auth errors are appropriately communicated
+  // to the user.
+  delegate_->UpdateAuthError(account_id, error);
+}
+
 void DeviceOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenAvailable(account_id);
   if (on_refresh_token_available_callback_)
     on_refresh_token_available_callback_.Run(account_id);
 }
 
 void DeviceOAuth2TokenService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenRevoked(account_id);
   if (on_refresh_token_revoked_callback_)
     on_refresh_token_revoked_callback_.Run(account_id);
 }
@@ -109,17 +177,17 @@ bool DeviceOAuth2TokenService::HandleAccessTokenFetch(
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2AccessTokenManager::ScopeSet& scopes) {
-  switch (GetDeviceDelegate()->state_) {
+  switch (delegate_->state_) {
     case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_PENDING:
       // If this is the first request for a token, start validation.
-      GetDeviceDelegate()->StartValidation();
+      delegate_->StartValidation();
       FALLTHROUGH;
     case DeviceOAuth2TokenServiceDelegate::STATE_LOADING:
     case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_STARTED:
       // Add a pending request that will be satisfied once validation completes.
       pending_requests_.push_back(new PendingRequest(
           request->AsWeakPtr(), client_id, client_secret, scopes));
-      GetDeviceDelegate()->RequestValidation();
+      delegate_->RequestValidation();
       return true;
     case DeviceOAuth2TokenServiceDelegate::STATE_NO_TOKEN:
       FailRequest(request, GoogleServiceAuthError::USER_NOT_SIGNED_UP);
@@ -132,7 +200,7 @@ bool DeviceOAuth2TokenService::HandleAccessTokenFetch(
       return false;
   }
 
-  NOTREACHED() << "Unexpected state " << GetDeviceDelegate()->state_;
+  NOTREACHED() << "Unexpected state " << delegate_->state_;
   return false;
 }
 
@@ -149,10 +217,10 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
       continue;
 
     if (token_is_valid) {
-      GetAccessTokenManager()->FetchOAuth2Token(
+      token_manager_->FetchOAuth2Token(
           scoped_request->request.get(),
           scoped_request->request->GetAccountId(),
-          GetDeviceDelegate()->GetURLLoaderFactory(), scoped_request->client_id,
+          delegate_->GetURLLoaderFactory(), scoped_request->client_id,
           scoped_request->client_secret, scoped_request->scopes);
     } else {
       FailRequest(scoped_request->request.get(), error);
@@ -175,15 +243,4 @@ void DeviceOAuth2TokenService::FailRequest(
                      request->AsWeakPtr(), auth_error,
                      OAuth2AccessTokenConsumer::TokenResponse()));
 }
-
-DeviceOAuth2TokenServiceDelegate*
-DeviceOAuth2TokenService::GetDeviceDelegate() {
-  return static_cast<DeviceOAuth2TokenServiceDelegate*>(GetDelegate());
-}
-
-const DeviceOAuth2TokenServiceDelegate*
-DeviceOAuth2TokenService::GetDeviceDelegate() const {
-  return static_cast<const DeviceOAuth2TokenServiceDelegate*>(GetDelegate());
-}
-
 }  // namespace chromeos

@@ -55,24 +55,23 @@ RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
   return it == frames->end() ? NULL : it->second;
 }
 
-RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
-                                           RenderViewHostImpl* render_view_host,
-                                           FrameTreeNode* frame_tree_node)
+RenderFrameProxyHost::RenderFrameProxyHost(
+    SiteInstance* site_instance,
+    scoped_refptr<RenderViewHostImpl> render_view_host,
+    FrameTreeNode* frame_tree_node)
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
-      render_view_host_(render_view_host) {
+      render_view_host_(std::move(render_view_host)) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(g_routing_id_frame_proxy_map.Get().insert(
       std::make_pair(
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
-  CHECK(render_view_host ||
+  CHECK(render_view_host_ ||
         frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate());
-  if (render_view_host)
-    frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
   bool is_proxy_to_parent = !frame_tree_node_->IsMainFrame() &&
                             frame_tree_node_->parent()
@@ -107,8 +106,11 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
       Send(new FrameMsg_DeleteProxy(routing_id_));
   }
 
-  if (render_view_host_)
-    frame_tree_node_->frame_tree()->ReleaseRenderViewHostRef(render_view_host_);
+  // TODO(arthursonzogni): There are no known reason for removing the
+  // RenderViewHostImpl here instead of automatically at the end of the
+  // destructor. This line can be removed.
+  render_view_host_.reset();
+
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
@@ -124,8 +126,9 @@ void RenderFrameProxyHost::SetChildRWHView(
 }
 
 RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
-  return frame_tree_node_->frame_tree()->GetRenderViewHost(
-      site_instance_.get());
+  return frame_tree_node_->frame_tree()
+      ->GetRenderViewHost(site_instance_.get())
+      .get();
 }
 
 RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {

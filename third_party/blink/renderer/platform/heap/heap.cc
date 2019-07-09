@@ -598,17 +598,22 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
 }
 
 bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
+  static const base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
-    base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
-    base::TimeDelta remaining_budget = deadline - slack - CurrentTimeTicks();
+    const base::TimeDelta remaining_budget =
+        deadline - slack - CurrentTimeTicks();
     if (remaining_budget <= base::TimeDelta() ||
         !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;
     }
   }
   return true;
+}
+
+void ThreadHeap::ConcurrentSweep() {
+  // TODO(bikineev): Implement concurrent sweeper.
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

@@ -318,7 +318,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.searchController.searchBar.userInteractionEnabled = NO;
   self.searchController.delegate = self;
   self.searchController.searchResultsUpdater = self;
-  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+  self.searchController.searchBar.backgroundColor = UIColor.clearColor;
   self.searchController.searchBar.accessibilityIdentifier =
       kBookmarkHomeSearchBarIdentifier;
 
@@ -1306,7 +1306,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (!self.spinnerView) {
     self.spinnerView = [[BookmarkHomeWaitingView alloc]
           initWithFrame:self.sharedState.tableView.bounds
-        backgroundColor:[UIColor clearColor]];
+        backgroundColor:UIColor.clearColor];
     [self.spinnerView startWaiting];
   }
   self.tableView.backgroundView = self.spinnerView;
@@ -1510,7 +1510,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(leadingButtonClicked)];
-  self.deleteButton.tintColor = [UIColor redColor];
+  self.deleteButton.tintColor = UIColor.redColor;
   self.deleteButton.enabled = NO;
   self.deleteButton.accessibilityIdentifier =
       kBookmarkHomeLeadingButtonIdentifier;

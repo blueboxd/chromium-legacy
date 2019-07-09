@@ -93,9 +93,15 @@ ScrollableArea::ScrollableArea()
       needs_show_scrollbar_layers_(false),
       uses_composited_scrolling_(false) {}
 
-ScrollableArea::~ScrollableArea() {
+ScrollableArea::~ScrollableArea() = default;
+
+void ScrollableArea::Dispose() {
   RunScrollCompleteCallbacks();
+  fade_overlay_scrollbars_timer_.reset();
+  PreFinalize();
 }
+
+void ScrollableArea::PreFinalize() {}
 
 void ScrollableArea::ClearScrollableArea() {
 #if defined(OS_MACOSX)

@@ -209,8 +209,7 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceChanged(
 UsbServiceLinux::UsbServiceLinux()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
-      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_factory_(this) {
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,

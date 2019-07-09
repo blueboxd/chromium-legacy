@@ -27,10 +27,11 @@ VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
 
 VP9Decoder::~VP9Decoder() = default;
 
-void VP9Decoder::SetStream(int32_t id,
-                           const uint8_t* ptr,
-                           size_t size,
-                           const DecryptConfig* decrypt_config) {
+void VP9Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
+  const uint8_t* ptr = decoder_buffer.data();
+  const size_t size = decoder_buffer.data_size();
+  const DecryptConfig* decrypt_config = decoder_buffer.decrypt_config();
+
   DCHECK(ptr);
   DCHECK(size);
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr

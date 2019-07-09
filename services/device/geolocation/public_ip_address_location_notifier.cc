@@ -26,8 +26,7 @@ PublicIpAddressLocationNotifier::PublicIpAddressLocationNotifier(
       api_key_(api_key),
       url_loader_factory_(url_loader_factory),
       network_connection_tracker_(network_connection_tracker),
-      network_traffic_annotation_tag_(nullptr),
-      weak_ptr_factory_(this) {
+      network_traffic_annotation_tag_(nullptr) {
   // Subscribe to notifications of changes in network configuration.
   network_connection_tracker_->AddNetworkConnectionObserver(this);
 }

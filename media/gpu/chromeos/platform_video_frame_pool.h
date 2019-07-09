@@ -92,10 +92,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   void InsertFreeFrame_Locked(scoped_refptr<VideoFrame> frame)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   size_t GetTotalNumFrames_Locked() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  bool IsSameFormat_Locked(VideoPixelFormat format,
-                           gfx::Size coded_size,
-                           gfx::Rect visible_rect,
-                           gfx::Size natural_size) const
+  bool IsSameLayout_Locked(VideoPixelFormat format, gfx::Size coded_size) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -113,15 +110,16 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // Every public method and OnFrameReleased() should acquire this lock.
   base::Lock lock_;
 
-  // The arguments of current frame.
+  // The arguments of current frame. We allocate new frames only with |format_|
+  // and |coded_size_|. When calling GetFrame(), we update |visible_rect_| and
+  // |natural_size_| of wrapped frames.
   VideoPixelFormat format_ GUARDED_BY(lock_);
   gfx::Size coded_size_ GUARDED_BY(lock_);
   gfx::Rect visible_rect_ GUARDED_BY(lock_);
   gfx::Size natural_size_ GUARDED_BY(lock_);
 
-  // The pool of free frames. The arguments of all the frames in |free_frames_|
-  // should be the same as |format_|, |coded_size_|, |visible_rect_|, and
-  // |natural_size_|.
+  // The pool of free frames. The layout of all the frames in |free_frames_|
+  // should be the same as |format_| and |coded_size_|.
   base::circular_deque<FrameEntry> free_frames_ GUARDED_BY(lock_);
   // Mapping from the unique_id of the wrapped frame to the original frame.
   std::map<DmabufId, VideoFrame*> frames_in_use_ GUARDED_BY(lock_);

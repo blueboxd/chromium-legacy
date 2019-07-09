@@ -294,23 +294,28 @@ public class DecoderServiceHost
         // make sure the code runs on the UI thread, since further down the callchain the code will
         // end up creating UI objects.
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            String filePath = "";
+            List<Bitmap> bitmaps = null;
+            String videoDuration = null;
+            long decodeTime = -1;
             try {
                 // Read the reply back from the service.
-                String filePath = payload.getString(DecoderService.KEY_FILE_PATH);
+                filePath = payload.getString(DecoderService.KEY_FILE_PATH);
                 Boolean success = payload.getBoolean(DecoderService.KEY_SUCCESS);
                 Bitmap bitmap = success
                         ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
                         : null;
-                long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
+                decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
                 mSuccessfulDecodes++;
-                List<Bitmap> bitmaps = new ArrayList<>(1);
+                bitmaps = new ArrayList<>(1);
                 bitmaps.add(bitmap);
-                closeRequest(
-                        filePath, /*isVideo=*/false, bitmaps, /*videoDuration=*/null, decodeTime);
             } catch (RuntimeException e) {
                 mFailedDecodesRuntime++;
             } catch (OutOfMemoryError e) {
                 mFailedDecodesMemory++;
+            } finally {
+                closeRequest(
+                        filePath, /*isVideo=*/false, bitmaps, /*videoDuration=*/null, decodeTime);
             }
         });
     }
@@ -320,6 +325,7 @@ public class DecoderServiceHost
      * decoding process back to the client, and takes care of house-keeping chores regarding
      * the request queue).
      * @param filePath The path to the image that was just decoded.
+     * @param isVideo True if the request was for video decoding.
      * @param bitmaps The resulting decoded bitmaps, or null if decoding fails.
      * @param decodeTime The length of time it took to decode the bitmap.
      */
@@ -334,7 +340,7 @@ public class DecoderServiceHost
             params.mCallback.imagesDecodedCallback(filePath, isVideo, bitmaps, videoDuration);
 
             // TODO(finnur): Add UMA for videos.
-            if (isVideo && decodeTime != -1 && bitmaps.get(0) != null) {
+            if (!isVideo && decodeTime != -1 && bitmaps != null && bitmaps.get(0) != null) {
                 RecordHistogram.recordTimesHistogram(
                         "Android.PhotoPicker.ImageDecodeTime", decodeTime);
 
@@ -358,8 +364,8 @@ public class DecoderServiceHost
         // there's no need to use our custom sandboxed process.
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
 
-        int frames = highPriority ? 1 : 20;
-        int intervalMs = 500;
+        int frames = highPriority ? 1 : 10;
+        int intervalMs = 2000;
         mWorkerTask = new DecodeVideoTask(
                 this, mContentResolver, params.mUri, params.mSize, frames, intervalMs);
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

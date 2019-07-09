@@ -19,6 +19,7 @@
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
@@ -76,8 +77,9 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
  private:
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
-  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
+  void AttemptRegistration();
   void OnDeviceRegistered(SharingDeviceRegistration::Result result);
 
   // Returns true if cross-device Sharing features enabled, false otherwise.
@@ -92,6 +94,8 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   syncer::SyncService* sync_service_;
   AckMessageHandler ack_message_handler_;
   PingMessageHandler ping_message_handler_;
+  net::BackoffEntry backoff_entry_;
+  bool device_registered_ = false;
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;

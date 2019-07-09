@@ -98,7 +98,7 @@ class PollingSensorReader : public SensorReader {
   std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter>
       blocking_task_helper_;
 
-  base::WeakPtrFactory<PollingSensorReader> weak_factory_;
+  base::WeakPtrFactory<PollingSensorReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PollingSensorReader);
 };
@@ -182,8 +182,7 @@ PollingSensorReader::PollingSensorReader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : SensorReader(sensor, std::move(task_runner)),
       blocking_task_helper_(nullptr,
-                            base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_factory_(this) {
+                            base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   // We need to properly initialize |blocking_task_helper_| here because we need
   // |weak_factory_| to be created first.
   blocking_task_helper_.reset(

@@ -67,6 +67,7 @@ enum IncludeScrollbarsInRect {
 
 class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   DISALLOW_COPY_AND_ASSIGN(ScrollableArea);
+  USING_PRE_FINALIZER(ScrollableArea, Dispose);
 
  public:
   using ScrollCallback = base::OnceClosure;
@@ -349,6 +350,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ~ScrollableArea();
 
+  void Dispose();
+  virtual void PreFinalize();
+
   // Called when any of horizontal scrollbar, vertical scrollbar and scroll
   // corner is setNeedsPaintInvalidation.
   virtual void ScrollControlWasSetNeedsPaintInvalidation() = 0;
@@ -389,8 +393,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // for layout movements (bit.ly/scroll-anchoring).
   virtual bool ShouldPerformScrollAnchoring() const { return false; }
 
-  // Need to promptly let go of owned animator objects.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*) override;
 
   virtual void ClearScrollableArea();

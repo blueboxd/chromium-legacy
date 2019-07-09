@@ -74,9 +74,10 @@ bool VirtualFidoDiscoveryFactory::RemoveAuthenticator(const std::string& id) {
   return removed;
 }
 
-void VirtualFidoDiscoveryFactory::AddBinding(
-    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void VirtualFidoDiscoveryFactory::AddReceiver(
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void VirtualFidoDiscoveryFactory::OnDiscoveryDestroyed(
@@ -90,7 +91,7 @@ VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
                                     ::service_manager::Connector* connector) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
 
-  if (bindings_.empty() && authenticators_.empty()) {
+  if (receivers_.empty() && authenticators_.empty()) {
     // If no bindings are active then create a virtual device. This is a
     // stop-gap measure for web-platform tests which assume that they can make
     // webauthn calls until the WebAuthn Testing API is released.

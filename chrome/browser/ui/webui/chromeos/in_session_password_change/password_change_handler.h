@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_PASSWORD_CHANGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_PASSWORD_CHANGE_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -12,11 +12,10 @@
 
 namespace chromeos {
 
-class InSessionPasswordChangeHandler : public content::WebUIMessageHandler {
+class PasswordChangeHandler : public content::WebUIMessageHandler {
  public:
-  explicit InSessionPasswordChangeHandler(
-      const std::string& password_change_url);
-  ~InSessionPasswordChangeHandler() override;
+  explicit PasswordChangeHandler(const std::string& password_change_url);
+  ~PasswordChangeHandler() override;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
@@ -27,10 +26,11 @@ class InSessionPasswordChangeHandler : public content::WebUIMessageHandler {
  private:
   const std::string password_change_url_;
   scoped_refptr<CryptohomeAuthenticator> authenticator_;
-  base::WeakPtrFactory<InSessionPasswordChangeHandler> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeHandler);
+
+  base::WeakPtrFactory<PasswordChangeHandler> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(PasswordChangeHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_PASSWORD_CHANGE_HANDLER_H_

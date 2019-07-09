@@ -3197,7 +3197,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // The corresponding RVH should still be referenced by the proxy and the old
   // frame.
   RenderViewHostImpl* rvh_a = rfh_a->render_view_host();
-  EXPECT_EQ(2, rvh_a->ref_count());
+  EXPECT_FALSE(rvh_a->HasOneRef());
+  EXPECT_TRUE(rvh_a->HasAtLeastOneRef());
 
   // Kill the old process.
   RenderProcessHost* process = rfh_a->GetProcess();
@@ -3209,7 +3210,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // |rfh_a| is now deleted, thanks to the bug fix.
 
   // With |rfh_a| gone, the RVH should only be referenced by the (dead) proxy.
-  EXPECT_EQ(1, rvh_a->ref_count());
+  EXPECT_TRUE(rvh_a->HasOneRef());
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
   EXPECT_FALSE(root->render_manager()
                    ->GetRenderFrameProxyHost(site_instance_a)

@@ -219,7 +219,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     bool swapped_out,
     bool has_initialized_audio_host)
     : render_widget_host_(std::move(widget)),
-      frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       is_swapped_out_(swapped_out),
@@ -297,6 +296,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
+
+  // This can be called inside the FrameTree destructor. When the delegate is
+  // the InterstialPageImpl, the |frame_tree| is set to null before deleting it.
+  if (FrameTree* frame_tree = GetDelegate()->GetFrameTree())
+    frame_tree->RenderViewHostDeleted(this);
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {

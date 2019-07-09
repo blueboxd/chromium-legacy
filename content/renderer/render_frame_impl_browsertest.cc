@@ -760,8 +760,8 @@ class TestSimpleDocumentInterfaceBrokerImpl
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}
   void GetVirtualAuthenticatorManager(
-      blink::test::mojom::VirtualAuthenticatorManagerRequest request) override {
-  }
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver) override {}
   void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
                             blink::mojom::AppCacheFrontendPtr frontend,
                             const base::UnguessableToken& id) override {}

@@ -2848,6 +2848,57 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
   EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), transient_url);
 }
 
+// Ensure that adding a transient entry works when history is full.
+TEST_F(NavigationControllerTest, TransientEntryWithFullHistory) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url0("http://foo/0");
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL transient_url("http://foo/transient");
+
+  // Maximum count should be at least 2 or we will not be able to perform
+  // another navigation, since it would need to prune the last committed entry
+  // which is not safe.
+  controller.set_max_entry_count_for_testing(2);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
+
+  // Add a transient entry beyond entry count limit.
+  auto transient_entry = std::make_unique<NavigationEntryImpl>();
+  transient_entry->SetURL(transient_url);
+  controller.SetTransientEntry(std::move(transient_entry));
+
+  // Check our state.
+  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 3);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+
+  // Go back, removing the transient entry.
+  controller.GoBack();
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+
+  // Initiate a navigation, then add a transient entry with the pending entry
+  // present.
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  navigation->Start();
+  auto another_transient = std::make_unique<NavigationEntryImpl>();
+  another_transient->SetURL(transient_url);
+  controller.SetTransientEntry(std::move(another_transient));
+  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 3);
+  navigation->Commit();
+  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+}
+
 // Ensure that renderer initiated pending entries get replaced, so that we
 // don't show a stale virtual URL when a navigation commits.
 // See http://crbug.com/266922.

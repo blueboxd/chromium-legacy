@@ -193,14 +193,14 @@ void IDBDatabase::OnChanges(
   }
 
   for (const auto& map_entry : observation_index_map) {
-    auto observer_lookup_result = observers_.find(map_entry.first);
+    auto observer_lookup_result = observers_.find(map_entry.key);
     if (observer_lookup_result != observers_.end()) {
       IDBObserver* observer = observer_lookup_result->value;
 
-      auto transactions_lookup_result = transactions.find(map_entry.first);
+      auto transactions_lookup_result = transactions.find(map_entry.key);
       if (transactions_lookup_result != transactions.end()) {
         const std::pair<int64_t, Vector<int64_t>>& obs_txn =
-            transactions_lookup_result->second;
+            transactions_lookup_result->value;
         HashSet<String> stores;
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);
@@ -209,7 +209,7 @@ void IDBDatabase::OnChanges(
 
       observer->Callback()->InvokeAndReportException(
           observer, MakeGarbageCollected<IDBObserverChanges>(
-                        this, nullptr, observations, map_entry.second));
+                        this, nullptr, observations, map_entry.value));
     }
   }
 }

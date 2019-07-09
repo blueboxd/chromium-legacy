@@ -26,12 +26,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 
-#include <unordered_map>
 #include <utility>
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -39,11 +39,10 @@ class IDBObservation;
 
 class WebIDBDatabaseCallbacks {
  public:
-  using ObservationIndexMap = std::unordered_map<int32_t, Vector<int32_t>>;
+  using ObservationIndexMap = HashMap<int32_t, Vector<int32_t>>;
 
   // Maps observer to transaction, which needs an id and a scope.
-  using TransactionMap =
-      std::unordered_map<int32_t, std::pair<int64_t, Vector<int64_t>>>;
+  using TransactionMap = HashMap<int32_t, std::pair<int64_t, Vector<int64_t>>>;
 
   virtual ~WebIDBDatabaseCallbacks() = default;
 

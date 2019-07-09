@@ -263,12 +263,13 @@ void FrameTree::CreateProxiesForSiteInstance(
     SiteInstance* site_instance) {
   // Create the RenderFrameProxyHost for the new SiteInstance.
   if (!source || !source->IsMainFrame()) {
-    RenderViewHostImpl* render_view_host = GetRenderViewHost(site_instance);
-    if (!render_view_host) {
-      root()->render_manager()->CreateRenderFrameProxy(site_instance);
-    } else {
+    RenderViewHostImpl* render_view_host =
+        GetRenderViewHost(site_instance).get();
+    if (render_view_host) {
       root()->render_manager()->EnsureRenderViewInitialized(render_view_host,
                                                             site_instance);
+    } else {
+      root()->render_manager()->CreateRenderFrameProxy(site_instance);
     }
   }
 
@@ -359,14 +360,16 @@ void FrameTree::SetFrameRemoveListener(
   on_frame_removed_ = on_frame_removed;
 }
 
-RenderViewHostImpl* FrameTree::CreateRenderViewHost(
+scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     SiteInstance* site_instance,
     int32_t routing_id,
     int32_t main_frame_routing_id,
     int32_t widget_routing_id,
     bool swapped_out,
     bool hidden) {
-  if (RenderViewHostImpl* existing_rvh = GetRenderViewHost(site_instance))
+  scoped_refptr<RenderViewHostImpl> existing_rvh =
+      GetRenderViewHost(site_instance);
+  if (existing_rvh)
     return existing_rvh;
 
   RenderViewHostImpl* rvh =
@@ -374,38 +377,24 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
           site_instance, render_view_delegate_, render_widget_delegate_,
           routing_id, main_frame_routing_id, widget_routing_id, swapped_out,
           hidden));
-
-  render_view_host_map_[site_instance->GetId()] = base::WrapUnique(rvh);
-  return rvh;
+  render_view_host_map_[site_instance->GetId()] = rvh;
+  return base::WrapRefCounted(rvh);
 }
 
-RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
+scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
+    SiteInstance* site_instance) {
   auto it = render_view_host_map_.find(site_instance->GetId());
   if (it == render_view_host_map_.end())
     return nullptr;
 
-  return it->second.get();
+  return base::WrapRefCounted(it->second);
 }
 
-void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* rvh) {
+void FrameTree::RenderViewHostDeleted(RenderViewHost* rvh) {
   auto it = render_view_host_map_.find(rvh->GetSiteInstance()->GetId());
   CHECK(it != render_view_host_map_.end());
-  CHECK_EQ(it->second.get(), rvh);
-
-  rvh->increment_ref_count();
-}
-
-void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* rvh) {
-  auto it = render_view_host_map_.find(rvh->GetSiteInstance()->GetId());
-  CHECK(it != render_view_host_map_.end());
-  CHECK_EQ(it->second.get(), rvh);
-
-  // Decrement the refcount and delete the RenderViewHost if no one else is
-  // using it.
-  CHECK_GT(rvh->ref_count(), 0);
-  rvh->decrement_ref_count();
-  if (rvh->ref_count() == 0)
-    render_view_host_map_.erase(it);
+  CHECK_EQ(it->second, rvh);
+  render_view_host_map_.erase(it);
 }
 
 void FrameTree::FrameUnloading(FrameTreeNode* frame) {

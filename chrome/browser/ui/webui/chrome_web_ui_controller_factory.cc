@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
-#include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -489,14 +489,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
             prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
-    return &NewWebUI<chromeos::InSessionPasswordChangeUI>;
+    return &NewWebUI<chromeos::PasswordChangeUI>;
   }
   if (url.host_piece() == chrome::kChromeUIConfirmPasswordChangeHost) {
     if (!profile->GetPrefs()->GetBoolean(
             prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
-    return &NewWebUI<chromeos::InSessionConfirmPasswordChangeUI>;
+    return &NewWebUI<chromeos::ConfirmPasswordChangeUI>;
   }
   if (url.host_piece() ==
       chrome::kChromeUIUrgentPasswordExpiryNotificationHost) {

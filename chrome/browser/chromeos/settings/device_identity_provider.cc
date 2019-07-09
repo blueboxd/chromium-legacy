@@ -56,7 +56,7 @@ ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
     : OAuth2AccessTokenManager::Consumer(oauth_consumer_name),
       callback_(std::move(callback)) {
   access_token_request_ =
-      token_service->StartRequest(active_account_id, scopes, this);
+      token_service->StartAccessTokenRequest(active_account_id, scopes, this);
 }
 
 ActiveAccountAccessTokenFetcherImpl::~ActiveAccountAccessTokenFetcherImpl() {}

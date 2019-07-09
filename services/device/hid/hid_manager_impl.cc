@@ -18,8 +18,7 @@ namespace device {
 base::LazyInstance<std::unique_ptr<HidService>>::Leaky g_hid_service =
     LAZY_INSTANCE_INITIALIZER;
 
-HidManagerImpl::HidManagerImpl()
-    : hid_service_observer_(this), weak_factory_(this) {
+HidManagerImpl::HidManagerImpl() : hid_service_observer_(this) {
   if (g_hid_service.Get())
     hid_service_ = std::move(g_hid_service.Get());
   else

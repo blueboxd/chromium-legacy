@@ -35,8 +35,6 @@ jumbo_static_library("browser") {
     "android_affiliation/affiliation_fetcher_delegate.h",
     "android_affiliation/affiliation_service.cc",
     "android_affiliation/affiliation_service.h",
-    "android_affiliation/affiliation_utils.cc",
-    "android_affiliation/affiliation_utils.h",
     "android_affiliation/facet_manager.cc",
     "android_affiliation/facet_manager.h",
     "android_affiliation/facet_manager_host.h",
@@ -216,6 +214,7 @@ jumbo_static_library("browser") {
     "//components/sync",
   ]
   deps = [
+    ":affiliation",
     ":csv",
     ":hash_password_manager",
     ":password_generator",
@@ -400,6 +399,7 @@ jumbo_static_library("test_support") {
     "//url:url",
   ]
   deps = [
+    ":affiliation",
     "//base",
     "//components/autofill/core/common",
     "//net:net",
@@ -457,7 +457,6 @@ source_set("unit_tests") {
     "android_affiliation/affiliation_fetch_throttler_unittest.cc",
     "android_affiliation/affiliation_fetcher_unittest.cc",
     "android_affiliation/affiliation_service_unittest.cc",
-    "android_affiliation/affiliation_utils_unittest.cc",
     "android_affiliation/facet_manager_unittest.cc",
     "blacklisted_credentials_cleaner_unittest.cc",
     "browser_save_password_progress_logger_unittest.cc",
@@ -538,6 +537,8 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":affiliation",
+    ":affiliation_unittests",
     ":csv_unittests",
     ":hash_password_manager",
     ":password_generator",
@@ -623,4 +624,40 @@ if (use_libfuzzer) {
       "//third_party/libprotobuf-mutator",
     ]
   }
+}
+
+# TODO(crbug.com/974822): Ideally, all of the "android_affiliation/"
+# subdirectory would be in a separate BUILD.gn file inside that subdirectory.
+# However, this requires the big "browser" target here to be split in multiple
+# sub-targets to avoid circular dependencies. For now, at least the files from
+# "android_affiliation" which can be easily separated are made so, to limit the
+# growth of this technical debt.
+static_library("affiliation") {
+  sources = [
+    "android_affiliation/affiliation_utils.cc",
+    "android_affiliation/affiliation_utils.h",
+  ]
+  deps = [
+    "//base",
+    "//components/url_formatter",
+    "//components/variations",
+    "//net",
+    "//url",
+  ]
+}
+
+source_set("affiliation_unittests") {
+  testonly = true
+  sources = [
+    "android_affiliation/affiliation_utils_unittest.cc",
+  ]
+  deps = [
+    ":affiliation",
+    "//base",
+    "//components/autofill/core/common",
+    "//components/variations",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
 }

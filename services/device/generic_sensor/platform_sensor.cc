@@ -21,8 +21,7 @@ PlatformSensor::PlatformSensor(mojom::SensorType type,
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reading_buffer_(reading_buffer),
       type_(type),
-      provider_(provider),
-      weak_factory_(this) {}
+      provider_(provider) {}
 
 PlatformSensor::~PlatformSensor() {
   if (provider_)

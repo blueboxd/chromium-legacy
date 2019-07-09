@@ -1861,7 +1861,8 @@ TEST(HeapTest, LazySweepingPages) {
     MakeGarbageCollected<SimpleFinalizedObject>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
+      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   for (int i = 0; i < 10000; i++)
     MakeGarbageCollected<SimpleFinalizedObject>();
@@ -1889,7 +1890,8 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
     MakeGarbageCollected<LargeHeapObject>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
+      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
   for (int i = 0; i < 10; i++) {
     MakeGarbageCollected<LargeHeapObject>();
@@ -1900,7 +1902,8 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
+      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();
   EXPECT_EQ(22, LargeHeapObject::destructor_calls_);
@@ -1963,7 +1966,8 @@ TEST(HeapTest, EagerlySweepingPages) {
     MakeGarbageCollected<SimpleFinalizedObjectInstanceOfTemplate>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
+      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedEagerObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_);
@@ -6078,7 +6082,7 @@ TEST(HeapTest, ShrinkVector) {
     vector.push_back(MakeGarbageCollected<IntWrapper>(i));
   }
 
-  ConservativelyCollectGarbage(BlinkGC::kLazySweeping);
+  ConservativelyCollectGarbage(BlinkGC::kConcurrentAndLazySweeping);
 
   // The following call tries to promptly free the left overs. In the buggy
   // scenario that would create a free HeapObjectHeader that is assumed to be

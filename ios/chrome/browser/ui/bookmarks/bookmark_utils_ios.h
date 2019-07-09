@@ -38,32 +38,8 @@ const bookmarks::BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
 // to display a slighly different wording for the default folders.
 NSString* TitleForBookmarkNode(const bookmarks::BookmarkNode* node);
 
-// Returns the default color for |url| when no image is available.
-UIColor* DefaultColor(const GURL& url);
-
 // Returns the subtitle relevant to the bookmark navigation ui.
 NSString* subtitleForBookmarkNode(const bookmarks::BookmarkNode* node);
-
-// On iPad, background color can be transparent. Wrapper for the light grey
-// background color.
-UIColor* mainBackgroundColor();
-// Returns the menu's background color. White when the menu is in a slide over
-// panel, transparent otherwise.
-UIColor* menuBackgroundColor();
-// Primary title labels use this color.
-UIColor* darkTextColor();
-// Secondary title labels use this color.
-UIColor* lightTextColor();
-// The color to use if the text needs to change color when highlighted.
-UIColor* highlightedDarkTextColor();
-// The color used for the editing bar.
-UIColor* blueColor();
-// The color used for the navigation bar.
-UIColor* GrayColor();
-// The gray color for line separators.
-UIColor* separatorColor();
-// The black color for the folder labels.
-UIColor* FolderLabelColor();
 
 // Returns the current status bar height.
 CGFloat StatusBarHeight();

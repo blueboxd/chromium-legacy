@@ -50,7 +50,7 @@ DiceAction GetDiceActionFromHeader(const std::string& value) {
 }  // namespace
 
 DiceHeaderHelper::DiceHeaderHelper(AccountConsistencyMethod account_consistency)
-    : SigninHeaderHelper("Dice"), account_consistency_(account_consistency) {}
+    : account_consistency_(account_consistency) {}
 
 // static
 DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(

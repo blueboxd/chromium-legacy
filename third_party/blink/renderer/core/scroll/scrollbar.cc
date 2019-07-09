@@ -83,7 +83,9 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   current_pos_ = ScrollableAreaCurrentPos();
 }
 
-Scrollbar::~Scrollbar() {
+Scrollbar::~Scrollbar() =default;
+
+void Scrollbar::Dispose() {
   theme_.UnregisterScrollbar(*this);
 }
 

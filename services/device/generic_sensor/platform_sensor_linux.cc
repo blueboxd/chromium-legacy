@@ -31,8 +31,7 @@ PlatformSensorLinux::PlatformSensorLinux(
     : PlatformSensor(type, reading_buffer, provider),
       default_configuration_(
           PlatformSensorConfiguration(sensor_device->device_frequency)),
-      reporting_mode_(sensor_device->reporting_mode),
-      weak_factory_(this) {
+      reporting_mode_(sensor_device->reporting_mode) {
   sensor_reader_ = SensorReader::Create(
       *sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_CONFIRM_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_CONFIRM_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_CONFIRM_PASSWORD_CHANGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_CONFIRM_PASSWORD_CHANGE_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -11,11 +11,10 @@
 
 namespace chromeos {
 
-class InSessionConfirmPasswordChangeHandler
-    : public content::WebUIMessageHandler {
+class ConfirmPasswordChangeHandler : public content::WebUIMessageHandler {
  public:
-  InSessionConfirmPasswordChangeHandler();
-  ~InSessionConfirmPasswordChangeHandler() override;
+  ConfirmPasswordChangeHandler();
+  ~ConfirmPasswordChangeHandler() override;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
@@ -25,11 +24,10 @@ class InSessionConfirmPasswordChangeHandler
   void HandleChangePassword(const base::ListValue* passwords);
 
  private:
-  base::WeakPtrFactory<InSessionConfirmPasswordChangeHandler> weak_factory_{
-      this};
-  DISALLOW_COPY_AND_ASSIGN(InSessionConfirmPasswordChangeHandler);
+  base::WeakPtrFactory<ConfirmPasswordChangeHandler> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_CONFIRM_PASSWORD_CHANGE_HANDLER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_CONFIRM_PASSWORD_CHANGE_HANDLER_H_

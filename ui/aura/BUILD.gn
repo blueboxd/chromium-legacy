@@ -348,6 +348,7 @@ source_set("aura_interactive_ui_tests") {
       ":aura",
       ":test_support",
       "//base/test:test_support",
+      "//mojo/core/embedder",
       "//testing/gtest",
       "//ui/base/ime/init",
       "//ui/display:display",

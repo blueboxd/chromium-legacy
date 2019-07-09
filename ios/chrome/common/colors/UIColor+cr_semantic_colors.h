@@ -28,6 +28,7 @@
 @property(class, nonatomic, readonly) UIColor* cr_secondaryLabelColor;
 
 // Separator Colors
+@property(class, nonatomic, readonly) UIColor* cr_separatorColor;
 @property(class, nonatomic, readonly) UIColor* cr_opaqueSeparatorColor;
 
 @end

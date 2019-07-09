@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -14,6 +15,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -201,6 +203,8 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_Conflict) {
 }
 
 TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUI) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kGenerationNoOverwrites);
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
@@ -220,6 +224,8 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUI) {
 
 TEST_F(PasswordGenerationStateTest,
        GeneratedPasswordAccepted_UpdateUIDismissed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kGenerationNoOverwrites);
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
@@ -229,6 +235,8 @@ TEST_F(PasswordGenerationStateTest,
 }
 
 TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINope) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kGenerationNoOverwrites);
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
@@ -238,6 +246,8 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINope) {
 }
 
 TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINever) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kGenerationNoOverwrites);
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
@@ -247,6 +257,8 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINever) {
 }
 
 TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUISave) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kGenerationNoOverwrites);
   MockPasswordManagerDriver driver;
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
       SetUpOverwritingUI(driver.AsWeakPtr());

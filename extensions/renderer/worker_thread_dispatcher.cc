@@ -18,13 +18,12 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_interaction.h"
+#include "extensions/renderer/extension_interaction_provider.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
-#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 
 namespace extensions {
 
@@ -160,9 +159,17 @@ void WorkerThreadDispatcher::OnDispatchEvent(
     const base::ListValue& event_args) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK(data);
-  std::unique_ptr<ExtensionInteraction> scoped_extension_interaction;
-  if (params.is_user_gesture)
-    scoped_extension_interaction = ExtensionInteraction::CreateScopeForWorker();
+
+  ScriptContext* script_context = data->context();
+  // Note |scoped_extension_interaction| requires a HandleScope.
+  v8::Isolate* isolate = script_context->isolate();
+  v8::HandleScope handle_scope(isolate);
+  std::unique_ptr<InteractionProvider::Scope> scoped_extension_interaction;
+  if (params.is_user_gesture) {
+    scoped_extension_interaction =
+        ExtensionInteractionProvider::Scope::ForWorker(
+            script_context->v8_context());
+  }
   data->bindings_system()->DispatchEventInContext(
       params.event_name, &event_args, &params.filtering_info, data->context());
   Send(new ExtensionHostMsg_EventAckWorker(data->service_worker_version_id(),
@@ -219,14 +226,12 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
-    blink::WebServiceWorkerContextProxy* context_proxy,
     ScriptContext* script_context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    ServiceWorkerData* new_data =
-        new ServiceWorkerData(service_worker_version_id, context_proxy,
-                              script_context, std::move(bindings_system));
+    ServiceWorkerData* new_data = new ServiceWorkerData(
+        service_worker_version_id, script_context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 

@@ -40,10 +40,7 @@ std::unique_ptr<KeyedService> BuildGoogleURLTracker(
   auto client = std::make_unique<ChromeGoogleURLTrackerClient>(
       Profile::FromBrowserContext(context));
   return std::make_unique<GoogleURLTracker>(
-      std::move(client),
-      base::FeatureList::IsEnabled(GoogleURLTracker::kNoSearchDomainCheck)
-          ? GoogleURLTracker::ALWAYS_DOT_COM_MODE
-          : GoogleURLTracker::NORMAL_MODE,
+      std::move(client), GoogleURLTracker::ALWAYS_DOT_COM_MODE,
       content::GetNetworkConnectionTracker());
 }
 

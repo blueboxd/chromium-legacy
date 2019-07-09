@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 
@@ -57,28 +58,28 @@ class JSChecker {
 
   // Checks test waiter that would await until |js_condition| evaluates
   // to true.
-  std::unique_ptr<TestConditionWaiter> CreateWaiter(
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateWaiter(
       const std::string& js_condition);
 
   // Waiter that waits until specified element is (not) hidden.
-  std::unique_ptr<TestConditionWaiter> CreateVisibilityWaiter(
-      bool visibility,
-      std::initializer_list<base::StringPiece> element_ids);
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateVisibilityWaiter(bool visibility,
+                         std::initializer_list<base::StringPiece> element_ids);
 
   // Waiter that waits until specified element is (not) displayed with non-zero
   // size.
-  std::unique_ptr<TestConditionWaiter> CreateDisplayedWaiter(
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateDisplayedWaiter(
       bool displayed,
       std::initializer_list<base::StringPiece> element_ids);
 
   // Waiter that waits until an element is enabled or disabled.
-  std::unique_ptr<TestConditionWaiter> CreateEnabledWaiter(
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateEnabledWaiter(
       bool enabled,
       std::initializer_list<base::StringPiece> element_ids);
 
   // Waiter that waits until the specified element's class list contains, or
   // doesn't contain the specified class.
-  std::unique_ptr<TestConditionWaiter> CreateHasClassWaiter(
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateHasClassWaiter(
       bool has_class,
       const std::string& css_class,
       std::initializer_list<base::StringPiece> element_ids);
@@ -173,7 +174,7 @@ std::string GetOobeElementPath(
 
 // Creates a waiter that allows to wait until screen with |oobe_screen_id| is
 // shown in webui.
-std::unique_ptr<TestConditionWaiter> CreateOobeScreenWaiter(
+WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateOobeScreenWaiter(
     const std::string& oobe_screen_id);
 
 }  // namespace test

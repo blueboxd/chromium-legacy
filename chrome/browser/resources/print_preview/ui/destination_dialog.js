@@ -309,7 +309,6 @@ Polymer({
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     print_preview.NativeLayer.getInstance().signIn(false);
-    this.$.searchBox.focus();
   },
 
   /** @private */
@@ -418,6 +417,10 @@ Polymer({
     if (this.shouldShowCloudPrintPromo_) {
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
+    } else {
+      // Since the sign in link/dismiss promo button is disappearing, focus the
+      // search box.
+      this.$.searchBox.focus();
     }
   },
 

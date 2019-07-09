@@ -431,7 +431,8 @@ class BookmarkModelTest : public testing::Test,
   BookmarkPermanentNode* ReloadModelWithExtraNode() {
     model_->RemoveObserver(this);
 
-    auto owned_extra_node = std::make_unique<BookmarkPermanentNode>(100);
+    auto owned_extra_node =
+        std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
     BookmarkPermanentNode* extra_node = owned_extra_node.get();
 
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);

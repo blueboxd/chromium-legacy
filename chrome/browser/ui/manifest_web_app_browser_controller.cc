@@ -38,11 +38,9 @@ bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
   if (!content::IsOriginSecure(app_launch_url_))
     return true;
 
-  // Show toolbar if web_contents is not on the same origin as it was originally
-  // launched on.
-  if (!url::IsSameOriginWith(app_launch_url_,
-                             web_contents->GetLastCommittedURL()) ||
-      !url::IsSameOriginWith(app_launch_url_, web_contents->GetVisibleURL())) {
+  // Show toolbar if web_contents is not currently in scope.
+  if (!IsUrlInAppScope(web_contents->GetLastCommittedURL()) ||
+      !IsUrlInAppScope(web_contents->GetVisibleURL())) {
     return true;
   }
 
@@ -86,6 +84,11 @@ base::string16 ManifestWebAppBrowserController::GetFormattedUrlOrigin() const {
 
 GURL ManifestWebAppBrowserController::GetAppLaunchURL() const {
   return app_launch_url_;
+}
+
+bool ManifestWebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+  // TODO(981703): Use the scope in the manifest instead of same origin check.
+  return url::IsSameOriginWith(GetAppLaunchURL(), url);
 }
 
 void ManifestWebAppBrowserController::OnTabInserted(

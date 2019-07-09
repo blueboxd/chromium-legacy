@@ -289,11 +289,9 @@ LayoutObject::LayoutObject(Node* node)
   if (node_)
     GetFrameView()->IncrementLayoutObjectCount();
 
-  if (const Node* node = GetNode()) {
-    if (const Element* element = ToElementOrNull(node)) {
-      if (element->ShouldForceLegacyLayout())
-        SetForceLegacyLayout();
-    }
+  if (const auto* element = DynamicTo<Element>(GetNode())) {
+    if (element->ShouldForceLegacyLayout())
+      SetForceLegacyLayout();
   }
 }
 

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="104962181688258143">Files ઍપ ખોલો</translation>
+<translation id="1098295134904615027">જમણી બાજુના વર્ચ્યુયલ ડેસ્કને સક્રિય કરો</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> માટે <ph name="N" /> શોધ પરિણામો ડિસ્પ્લે કરી રહ્યાં છીએ</translation>
 <translation id="1195667586424773550">ટૅબના ઍડ્રેસ બારમાં લિંકને ખેંચો</translation>
 <translation id="1204450209689312104">છૂપા મોડમાં એક નવી વિંડો ખોલો</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> અથવા <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">રેખાના અંત પર જાઓ</translation>
+<translation id="1499072997694708844">કોઈપણ ખુલ્લી શોધ વિંડોને બંધ કરો અથવા તમારા વર્તમાન પેજને લોડ કરવાનું રોકો</translation>
 <translation id="1510238584712386396">લૉન્ચર</translation>
 <translation id="152892567002884378">વૉલ્યૂમ વધારો</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">ઍડ્રેસ બારમાંના તમારા ઇનપુટમાં www. અને .com ઉમેરો, પછી પેજ ખોલો</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> અથવા <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">ડાબી બાજુના વર્ચ્યુયલ ડેસ્કને સક્રિય કરો</translation>
 <translation id="1996162290124031907">આગળના ટૅબ પર જાઓ</translation>
 <translation id="2010818616644390445">વિંડોમાં છેલ્લા ટૅબ પર જાઓ</translation>
 <translation id="2040706009561734834">લૉન્ચર ખોલો/બંધ કરો</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">સ્ક્રીનશૉટ લો</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
+<translation id="3165428420335997629">નવું વર્ચ્યુયલ ડેસ્ક બનાવો</translation>
 <translation id="3256109297135787951">તમારા શેલ્ફ પર આઇટમમાંથી હાઇલાઇટ કાઢી નાખો</translation>
 <translation id="3288816184963444640">વર્તમાન વિંડો બંધ કરો</translation>
 <translation id="3407560819924487926">કાર્ય મેનેજર લાવો</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">હાલનું પેજ શોધો</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> દબાવો અને લિંક પર ક્લિક કરો</translation>
 <translation id="561814908794220892">વેબપેજ નવા ટૅબમાં ખોલો</translation>
+<translation id="5620219513321115856">વધુ સક્રિય વિંડોને જમણી બાજુએ ડેસ્ક પર ખસેડો</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> અથવા <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">લિંકને ટૅબમાં ખોલો</translation>
 <translation id="5757474750054631686">ડિમ કીબોર્ડ (માત્ર બૅકલિટ કીબોર્ડ માટે)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">સ્ક્રીનને 90 ડિગ્રીએ ફેરવો</translation>
 <translation id="8241665785394195545">જમણો કૌંસ</translation>
 <translation id="8264941229485248811">ડેવલપર સાધનો ઇન્સ્પેક્ટર બતાવો અથવા છુપાવો</translation>
+<translation id="8355937569537581904">વર્તમાન વર્ચ્યુઅલ ડેસ્ક કાઢી નાખો</translation>
 <translation id="836869401750819675">ડાઉનલોડ પેજ ખોલો</translation>
 <translation id="8388247778047144397">લિંકને ટૅબ સ્ટ્રિપ પરના ખાલી વિસ્તારમાં ખેંચો</translation>
 <translation id="8389638407792712197">નવી વિંડો ખોલો</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">પાછલો શબ્દ અથવા અક્ષર પસંદ કરો</translation>
 <translation id="8727232706774971183">તમારા નોટિફિકેશનો જુઓ</translation>
 <translation id="8855885154700222542">પૂર્ણસ્ક્રીન કી</translation>
+<translation id="8881584919399569791">વધુ સક્રિય વિંડોને ડાબી બાજુએ ડેસ્ક પર ખસેડો</translation>
 <translation id="88986195241502842">પૃષ્ઠ નીચે</translation>
 <translation id="8924883688469390268">પાછલા વપરાશકર્તા પર સ્વિચ કરો</translation>
 <translation id="8977648847395357314">ઍડ્રેસ બારમાં કન્ટેન્ટ પસંદ કરો</translation>

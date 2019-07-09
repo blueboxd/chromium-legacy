@@ -1086,8 +1086,8 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
   std::string input = net::HexDecode(params->bytes);
   std::string encoding;
   bool success = base::DetectEncoding(input, &encoding);
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(success ? encoding : std::string())));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      success ? std::move(encoding) : std::string())));
 }
 
 }  // namespace extensions

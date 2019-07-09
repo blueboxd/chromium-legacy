@@ -334,10 +334,7 @@ class MediaCodecBridge {
             }
         }
         try {
-            String codecName = "unknown";
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                codecName = mMediaCodec.getName();
-            }
+            String codecName = mMediaCodec.getName();
             // This logging is to help us identify hung MediaCodecs in crash reports.
             Log.w(TAG, "Releasing: " + codecName);
             mMediaCodec.release();

@@ -949,6 +949,7 @@
         'DeviceNativePrintersWhitelist',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
+        'ExternalPrintServers',
       ]
     },
     {
@@ -16144,6 +16145,50 @@
       This policy when set to False, does not allow the device to trigger powerwash.
       When set to True, it allows the device to trigger powerwash.
       If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      '''
+    },
+    {
+      'name': 'ExternalPrintServers',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'URL to a JSON file with a list of print servers.',
+            'type': 'string',
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the file.',
+            'type': 'string',
+          },
+        },
+      },
+      'id': 572,
+      'supported_on': ['chrome_os:77-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "url": "https://example.com/printserverpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 1048576,
+      'caption': '''External print servers''',
+      'tags': [],
+      'desc': '''Provides configurations of available print servers.
+
+      This policy allows you to provide configuration of external print servers to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices as JSON file.
+
+      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "url" and "display_name".
+
+      The file is downloaded and cached. The cryptographic hash is used to verify the integrity of the download. The file will be re-downloaded whenever the URL or the hash changes.
+
+      When this policy is set to correct value, devices will try to query specified print servers for available printers using IPP protocol.
+
+      If this policy is unset or set to incorrect value, no server printers are visible by users.
+
+      Currently, the number of print servers is limited to 16. Only the first 16 print servers from the list will be queried.
       ''',
     },
   ],
@@ -16935,6 +16980,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 571,
+  'highest_id_currently_used': 572,
   'highest_atomic_group_id_currently_used': 37
 }

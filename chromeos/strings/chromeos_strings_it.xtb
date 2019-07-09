@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Attiva il Bluetooth per trovare dispositivi nelle vicinanze</translation>
 <translation id="2805756323405976993">App</translation>
 <translation id="2872961005593481000">Spegni</translation>
+<translation id="2912823482158781027">AGGIORNA RICHIESTA</translation>
 <translation id="3511655281162215899">Scegli subito una nuova password</translation>
+<translation id="3562817605261346876">Aggiorna la richiesta per <ph name="PRINCIPAL_NAME" /> al più presto</translation>
 <translation id="3838338534323494292">Nuova password</translation>
 <translation id="445059817448385655">Vecchia password</translation>
 <translation id="467510802200863975">Le password non corrispondono</translation>
@@ -22,12 +24,14 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="54609108002486618">Gestito</translation>
 <translation id="5733345267661125295">Scegli una nuova password ora</translation>
+<translation id="5743581760404859096">La tua richiesta di Kerberos sta per scadere</translation>
 <translation id="5832805196449965646">Aggiungi persona</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="6058625436358447366">Per terminare, inserisci la password vecchia e quella nuova</translation>
 <translation id="6106186594183574873">Per terminare, inserisci la vecchia password</translation>
 <translation id="6146993107019042706">Per terminare, inserisci la nuova password</translation>
 <translation id="6574601967010742428">L'amministratore del dispositivo potrebbe essere in grado di monitorare le tue attività.</translation>
+<translation id="7280705187789120111">Richiesta di Kerberos in scadenza</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{La tua attuale password è scaduta.}=1{La tua attuale password scadrà tra meno di un giorno.}other{La tua attuale password scadrà tra meno di # giorni.}}</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7690294790491645610">Conferma nuova password</translation>

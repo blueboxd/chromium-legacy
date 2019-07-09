@@ -38,7 +38,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -1127,8 +1127,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
           return;
         }
         std::vector<ui::AXLanguageSpan> language_annotation =
-            tree->language_info_stats->GetLanguageAnnotationForStringAttribute(
-                *node, attr);
+            tree->language_detection_manager
+                ->GetLanguageAnnotationForStringAttribute(*node, attr);
         const std::string& attribute_value = node->GetStringAttribute(attr);
         // Build array.
         v8::Local<v8::Context> context = isolate->GetCurrentContext();

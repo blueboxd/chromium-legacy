@@ -24,25 +24,6 @@ class MockUsbDevice : public UsbDevice {
                 const std::string& manufacturer_string,
                 const std::string& product_string,
                 const std::string& serial_number);
-  MockUsbDevice(uint16_t vendor_id,
-                uint16_t product_id,
-                const std::string& manufacturer_string,
-                const std::string& product_string,
-                const std::string& serial_number,
-                const GURL& webusb_landing_page);
-  MockUsbDevice(uint16_t vendor_id,
-                uint16_t product_id,
-                const UsbConfigDescriptor& configuration);
-  MockUsbDevice(uint16_t vendor_id,
-                uint16_t product_id,
-                uint8_t device_class,
-                const std::vector<UsbConfigDescriptor>& configurations);
-  MockUsbDevice(uint16_t vendor_id,
-                uint16_t product_id,
-                const std::string& manufacturer_string,
-                const std::string& product_string,
-                const std::string& serial_number,
-                const std::vector<UsbConfigDescriptor>& configurations);
 
   void Open(OpenCallback callback) override { OpenInternal(callback); }
   MOCK_METHOD1(OpenInternal, void(OpenCallback&));

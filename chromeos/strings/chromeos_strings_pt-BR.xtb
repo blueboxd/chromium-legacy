@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Ativar o Bluetooth para descobrir dispositivos nas proximidades</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Desligar</translation>
+<translation id="2912823482158781027">ATUALIZAR TÍQUETE</translation>
 <translation id="3511655281162215899">Escolha uma nova senha imediatamente</translation>
+<translation id="3562817605261346876">Atualize o tíquete para <ph name="PRINCIPAL_NAME" /> assim que possível</translation>
 <translation id="3838338534323494292">Nova senha</translation>
 <translation id="445059817448385655">Senha antiga</translation>
 <translation id="467510802200863975">As senhas não são iguais</translation>
@@ -22,12 +24,14 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5457599981699367932">Navegar como visitante</translation>
 <translation id="54609108002486618">Gerenciado</translation>
 <translation id="5733345267661125295">Escolha uma nova senha agora</translation>
+<translation id="5743581760404859096">Seu tíquete do Kerberos expirará em breve</translation>
 <translation id="5832805196449965646">Adicionar pessoa</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="6058625436358447366">Para concluir, insira a senha antiga e a nova</translation>
 <translation id="6106186594183574873">Para concluir, insira sua senha antiga</translation>
 <translation id="6146993107019042706">Para concluir, insira a nova senha</translation>
 <translation id="6574601967010742428">O administrador do dispositivo pode conseguir monitorar sua atividade.</translation>
+<translation id="7280705187789120111">Tíquete do Kerberos expirará em breve</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Sua senha atual expirou.}=1{Sua senha atual expirará em menos de um dia.}one{Sua senha atual expirará em menos de # dia.}other{Sua senha atual expirará em menos de # dias.}}</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar nova senha</translation>

@@ -1242,6 +1242,7 @@ Mock_glInvalidateSubFramebuffer(GLenum target,
                                 GLint y,
                                 GLint width,
                                 GLint height);
+static void GL_BINDING_CALL Mock_glInvalidateTextureANGLE(GLenum target);
 static GLboolean GL_BINDING_CALL Mock_glIsBuffer(GLuint buffer);
 static GLboolean GL_BINDING_CALL Mock_glIsEnabled(GLenum cap);
 static GLboolean GL_BINDING_CALL Mock_glIsFenceAPPLE(GLuint fence);
@@ -1844,6 +1845,14 @@ static void GL_BINDING_CALL Mock_glTexImage2D(GLenum target,
                                               GLenum format,
                                               GLenum type,
                                               const void* pixels);
+static void GL_BINDING_CALL Mock_glTexImage2DExternalANGLE(GLenum target,
+                                                           GLint level,
+                                                           GLint internalformat,
+                                                           GLsizei width,
+                                                           GLsizei height,
+                                                           GLint border,
+                                                           GLenum format,
+                                                           GLenum type);
 static void GL_BINDING_CALL Mock_glTexImage2DRobustANGLE(GLenum target,
                                                          GLint level,
                                                          GLint internalformat,

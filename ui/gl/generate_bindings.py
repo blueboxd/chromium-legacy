@@ -1266,6 +1266,10 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLsizei numAttachments, const GLenum* attachments, '
       'GLint x, GLint y, GLint width, GLint height', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glInvalidateTextureANGLE',
+                 'extensions': ['GL_ANGLE_texture_external_update'] } ],
+  'arguments': 'GLenum target', },
 { 'return_type': 'GLboolean',
   'names': ['glIsBuffer'],
   'arguments': 'GLuint buffer', },
@@ -1881,6 +1885,12 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLint internalformat, GLsizei width, '
       'GLsizei height, GLint border, GLenum format, GLenum type, '
       'const void* pixels', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glTexImage2DExternalANGLE',
+                 'extensions': ['GL_ANGLE_texture_external_update'] } ],
+  'arguments': 'GLenum target, GLint level, GLint internalformat, '
+               'GLsizei width, GLsizei height, GLint border, GLenum format, '
+               'GLenum type', },
 { 'return_type': 'void',
   'versions': [{'name': 'glTexImage2DRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],

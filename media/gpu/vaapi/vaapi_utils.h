@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/thread_annotations.h"
+#include "ui/gfx/geometry/size.h"
 
 // Forward declarations taken verbatim from <va/va.h>
 typedef unsigned int VABufferID;
@@ -19,10 +21,6 @@ typedef unsigned int VASurfaceID;
 
 namespace base {
 class Lock;
-}
-
-namespace gfx {
-class Size;
 }
 
 namespace media {
@@ -89,6 +87,34 @@ class ScopedVAImage {
   std::unique_ptr<ScopedVABufferMapping> va_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedVAImage);
+};
+
+// A VA-API-specific surface used by video/image codec accelerators to work on.
+// As the name suggests, this class is self-cleaning. It calls
+// vaDestroySurfaces() on the underlying VA surface upon destruction. Thus
+// |va_lock| is acquired for destruction purposes.
+class ScopedVASurface {
+ public:
+  ScopedVASurface(base::Lock* va_lock,
+                  VADisplay va_display,
+                  VASurfaceID va_surface_id,
+                  const gfx::Size& size,
+                  unsigned int va_rt_format);
+  ~ScopedVASurface();
+
+  bool IsValid() const;
+  VASurfaceID id() const { return va_surface_id_; }
+  const gfx::Size& size() const { return size_; }
+  unsigned int format() const { return va_rt_format_; }
+
+ private:
+  base::Lock* const va_lock_;
+  const VADisplay va_display_ GUARDED_BY(va_lock_);
+  const VASurfaceID va_surface_id_;
+  const gfx::Size size_;
+  const unsigned int va_rt_format_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedVASurface);
 };
 
 // Adapts |frame_header| to the Vaapi data types, prepping it for consumption by

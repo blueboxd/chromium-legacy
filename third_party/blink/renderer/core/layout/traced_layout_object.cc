@@ -24,14 +24,13 @@ void DumpToTracedValue(const LayoutObject& object,
   traced_value->SetString("name", object.GetName());
   if (Node* node = object.GetNode()) {
     traced_value->SetString("tag", node->nodeName());
-    if (node->IsElementNode()) {
-      Element& element = ToElement(*node);
-      if (element.HasID())
-        traced_value->SetString("htmlId", element.GetIdAttribute());
-      if (element.HasClass()) {
+    if (auto* element = DynamicTo<Element>(node)) {
+      if (element->HasID())
+        traced_value->SetString("htmlId", element->GetIdAttribute());
+      if (element->HasClass()) {
         traced_value->BeginArray("classNames");
-        for (wtf_size_t i = 0; i < element.ClassNames().size(); ++i)
-          traced_value->PushString(element.ClassNames()[i]);
+        for (wtf_size_t i = 0; i < element->ClassNames().size(); ++i)
+          traced_value->PushString(element->ClassNames()[i]);
         traced_value->EndArray();
       }
     }

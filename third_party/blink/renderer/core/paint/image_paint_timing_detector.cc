@@ -146,8 +146,6 @@ void ImagePaintTimingDetector::OnPaintFinished() {
     need_update_timing_at_frame_end_ = false;
     UpdateCandidate();
   }
-  if (!records_manager_.NeedMeausuringPaintTime())
-    return;
 
   if (!records_manager_.HasUnregisteredRecordsInQueued(
           last_registered_frame_index_))
@@ -163,7 +161,7 @@ void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(DOMNodeId node_id) {
   // Todo: check whether it is visible background image.
   if (!records_manager_.IsRecordedVisibleNode(node_id))
     return;
-  records_manager_.SetNodeDetached(node_id);
+  records_manager_.RemoveVisibleRecord(node_id);
   need_update_timing_at_frame_end_ = true;
 }
 
@@ -175,7 +173,7 @@ void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
   BackgroundImageId background_image_id = std::make_pair(node_id, cached_image);
   if (!records_manager_.IsRecordedVisibleNode(background_image_id))
     return;
-  records_manager_.SetNodeDetached(background_image_id.first);
+  records_manager_.RemoveVisibleRecord(background_image_id);
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
@@ -218,12 +216,16 @@ void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
     const base::TimeTicks& timestamp,
     unsigned last_queued_frame_index) {
   // TODO(crbug.com/971419): should guarantee the queue not empty.
-  while (!images_queued_for_paint_time_.empty()) {
+  while (!images_queued_for_paint_time_.IsEmpty()) {
     base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.front();
+    if (!record) {
+      images_queued_for_paint_time_.pop_front();
+      continue;
+    }
     if (record->frame_index > last_queued_frame_index)
       break;
     record->paint_time = timestamp;
-    images_queued_for_paint_time_.pop();
+    images_queued_for_paint_time_.pop_front();
   }
 }
 
@@ -240,7 +242,6 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
   if (records_manager_.IsRecordedInvisibleNode(node_id))
     return;
 
-  records_manager_.SetNodeReattachedIfNeeded(node_id);
   BackgroundImageId background_image_id =
       std::make_pair(node_id, &cached_image);
   bool is_recored_visible_node =
@@ -301,8 +302,6 @@ void ImagePaintTimingDetector::RecordImage(
 
   if (records_manager_.IsRecordedInvisibleNode(node_id))
     return;
-
-  records_manager_.SetNodeReattachedIfNeeded(node_id);
 
   bool is_loaded = cached_image.IsLoaded();
   bool is_recored_visible_node =
@@ -409,13 +408,9 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
   DCHECK_EQ(visible_node_map_.size() + visible_background_image_map_.size(),
             size_ordered_set_.size());
-  for (auto it = size_ordered_set_.begin(); it != size_ordered_set_.end();
-       ++it) {
-    if (detached_ids_.Contains((*it)->node_id))
-      continue;
-    return (*it).get();
-  }
-  return nullptr;
+  if (size_ordered_set_.size() == 0)
+    return nullptr;
+  return size_ordered_set_.begin()->get();
 }
 
 void ImagePaintTimingDetector::Trace(blink::Visitor* visitor) {

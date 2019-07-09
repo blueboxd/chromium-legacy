@@ -141,6 +141,14 @@ TEST_F(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
 
+
+TEST_F(
+    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBoxOnSignIn',
+    function() {
+      this.runMochaTest(
+          destination_dialog_interactive_test.TestNames.FocusSearchBoxOnSignIn);
+    });
+
 TEST_F(
     'PrintPreviewDestinationDialogInteractiveTest', 'EscapeSearchBox',
     function() {

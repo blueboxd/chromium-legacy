@@ -96,7 +96,9 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   // Creates an outside settings object from the worker shadow page for
   // top-level worker script fetch.
-  FetchClientSettingsObjectSnapshot* CreateFetchClientSettingsObject();
+  FetchClientSettingsObjectSnapshot* CreateFetchClientSettingsObject(
+      const SecurityOrigin*,
+      const HttpsState&);
 
   WebEmbeddedWorkerStartData worker_start_data_;
 

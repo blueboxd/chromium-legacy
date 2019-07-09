@@ -96,6 +96,8 @@ jumbo_static_library("renderer") {
     "prerender/prerender_helper.h",
     "prerender/prerenderer_client.cc",
     "prerender/prerenderer_client.h",
+    "previews/resource_loading_hints_agent.cc",
+    "previews/resource_loading_hints_agent.h",
     "sandbox_status_extension_android.cc",
     "sandbox_status_extension_android.h",
     "security_interstitials/security_interstitial_page_controller.cc",

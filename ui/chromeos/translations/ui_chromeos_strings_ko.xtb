@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">백업되지 않은 파일이 없습니다.</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3644896802912593514">너비</translation>
+<translation id="3645531960514756307">폴더 고정 해제</translation>
 <translation id="3678559383040232393">몰타어 키보드</translation>
 <translation id="3685122418104378273">모바일 데이터를 사용할 때는 Google 드라이브 동기화가 기본적으로 사용 중지됩니다.</translation>
 <translation id="3726463242007121105">파일 시스템이 지원되지 않아 이 기기를 열 수 없습니다.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">어제 <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">아이슬란드어 키보드</translation>
 <translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉터리가 이미 존재합니다.</translation>
+<translation id="8382450452152102026">대상 폴더: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">음역(emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">크기</translation>
 <translation id="8412586565681117057">빠른 입력 방법</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">페이지 수</translation>
 <translation id="9110990317705400362">Google은 더 안전한 인터넷 사용 방법을 끊임없이 모색하고 있습니다. 이전에는 브라우저에 확장 프로그램을 추가하라는 메시지가 어느 웹사이트에서나 표시되었습니다. 하지만 Chrome의 최신 버전에서는 확장 프로그램 페이지를 통해 확장 프로그램을 추가함으로써 설치를 원한다는 사실을 Chrome에 명시적으로 알려야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">코덱</translation>
+<translation id="9129931661813833980">폴더 고정</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' 멤버에게 이 항목에 액세스할 수 있는 권한이 부여됩니다.</translation>
 <translation id="9131598836763251128">파일을 한 개 이상 선택하세요.</translation>
 <translation id="9133055936679483811">압축에 실패했습니다. <ph name="ERROR_MESSAGE" /></translation>

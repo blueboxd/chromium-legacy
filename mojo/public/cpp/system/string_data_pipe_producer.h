@@ -80,7 +80,7 @@ class MOJO_CPP_SYSTEM_EXPORT StringDataPipeProducer {
   base::StringPiece data_view_;
   CompletionCallback callback_;
   SimpleWatcher watcher_;
-  base::WeakPtrFactory<StringDataPipeProducer> weak_factory_;
+  base::WeakPtrFactory<StringDataPipeProducer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StringDataPipeProducer);
 };

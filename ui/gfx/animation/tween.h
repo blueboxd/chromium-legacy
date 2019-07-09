@@ -82,9 +82,13 @@ class ANIMATION_EXPORT Tween {
                                               const gfx::Transform& start,
                                               const gfx::Transform& target);
 
-  static gfx::SizeF SizeValueBetween(double value,
-                                     const gfx::SizeF& start,
-                                     const gfx::SizeF& target);
+  static gfx::Size SizeValueBetween(double value,
+                                    const gfx::Size& start,
+                                    const gfx::Size& target);
+
+  static gfx::SizeF SizeFValueBetween(double value,
+                                      const gfx::SizeF& start,
+                                      const gfx::SizeF& target);
 
  private:
   Tween();

@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Activa el Bluetooth per detectar dispositius propers</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2872961005593481000">Apaga</translation>
+<translation id="2912823482158781027">ACTUALITZA EL TIQUET</translation>
 <translation id="3511655281162215899">Tria una contrasenya nova immediatament</translation>
+<translation id="3562817605261346876">Actualitza aviat el tiquet de: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Contrasenya nova</translation>
 <translation id="445059817448385655">Contrasenya anterior</translation>
 <translation id="467510802200863975">Les contrasenyes no coincideixen</translation>
@@ -22,12 +24,14 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="5733345267661125295">Tria ja una contrasenya nova</translation>
+<translation id="5743581760404859096">El tiquet de Kerberos està a punt de caducar</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="6058625436358447366">Per acabar, introdueix la contrasenya antiga i la nova</translation>
 <translation id="6106186594183574873">Per acabar, introdueix la contrasenya antiga</translation>
 <translation id="6146993107019042706">Per acabar, introdueix la contrasenya nova</translation>
 <translation id="6574601967010742428">Pot ser que l'administrador del dispositiu pugui supervisar la teva activitat.</translation>
+<translation id="7280705187789120111">El tiquet de Kerberos està a punt de caducar</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{La teva contrasenya actual ha caducat.}=1{La teva contrasenya actual caducarà d'aquí a menys d'un dia.}other{La teva contrasenya actual caducarà d'aquí a menys de # dies.}}</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>

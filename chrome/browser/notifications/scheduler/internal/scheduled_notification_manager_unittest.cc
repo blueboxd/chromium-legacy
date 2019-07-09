@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,17 +69,19 @@ class ScheduledNotificationManagerTest : public testing::Test {
     delegate_ = std::make_unique<MockDelegate>();
     auto store = std::make_unique<MockNotificationStore>();
     store_ = store.get();
+    config_.notification_expiration = base::TimeDelta::FromDays(1);
     manager_ = ScheduledNotificationManager::Create(
         std::move(store),
         {SchedulerClientType::kTest1, SchedulerClientType::kTest2,
-         SchedulerClientType::kTest3});
+         SchedulerClientType::kTest3},
+        config_);
   }
 
  protected:
   ScheduledNotificationManager* manager() { return manager_.get(); }
   MockNotificationStore* store() { return store_; }
   MockDelegate* delegate() { return delegate_.get(); }
-
+  const SchedulerConfig& config() const { return config_; }
   // Initializes the manager with predefined data in the store.
   void InitWithData(std::vector<NotificationEntry> data) {
     Entries entries;
@@ -111,6 +114,8 @@ class ScheduledNotificationManagerTest : public testing::Test {
   MockNotificationStore* store_;
   std::vector<SchedulerClientType> clients_;
   std::unique_ptr<ScheduledNotificationManager> manager_;
+  SchedulerConfig config_;
+
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerTest);
 };
 
@@ -283,5 +288,35 @@ TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 0u);
 }
+
+TEST_F(ScheduledNotificationManagerTest, PruneExpiredNotifications) {
+  // Type1: entry0
+  // Type2: entry1, entry2(expired), entry3
+  // Type3: entry4(expired), entry5(expired)
+  auto now = base::Time::Now();
+  auto entry0 = CreateNotificationEntry(SchedulerClientType::kTest1);
+  entry0.create_time = now - base::TimeDelta::FromHours(12);
+  auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest2);
+  entry1.create_time = now - base::TimeDelta::FromHours(14);
+  auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest2);
+  entry2.create_time = now - base::TimeDelta::FromHours(24);
+  auto entry3 = CreateNotificationEntry(SchedulerClientType::kTest2);
+  entry3.create_time = now - base::TimeDelta::FromHours(23);
+  auto entry4 = CreateNotificationEntry(SchedulerClientType::kTest3);
+  entry4.create_time = now - base::TimeDelta::FromHours(25);
+  auto entry5 = CreateNotificationEntry(SchedulerClientType::kTest3);
+  entry5.create_time =
+      now - base::TimeDelta::FromDays(1) - base::TimeDelta::FromMicroseconds(1);
+
+  EXPECT_CALL(*store(), Delete(_, _)).Times(3).RetiresOnSaturation();
+  InitWithData(std::vector<NotificationEntry>(
+      {entry0, entry1, entry2, entry3, entry4, entry5}));
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 2u);
+  EXPECT_EQ(notifications[SchedulerClientType::kTest1].size(), 1u);
+  EXPECT_EQ(notifications[SchedulerClientType::kTest2].size(), 2u);
+}
+
 }  // namespace
 }  // namespace notifications

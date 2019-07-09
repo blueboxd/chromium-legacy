@@ -26,9 +26,6 @@
 
       a[href],
       #advancedButton {
-        --cr-selectable-focus: {
-          outline: auto 5px -webkit-focus-ring-color;
-        };
         align-items: center;
         color: var(--settings-nav-item-color);
         display: flex;
@@ -43,6 +40,11 @@
 
       a[href].iron-selected {
         color: var(--cr-link-color);
+      }
+
+      a[href]:focus {
+        background: transparent;
+        outline: auto 5px -webkit-focus-ring-color;
       }
 
       iron-icon {

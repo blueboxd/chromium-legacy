@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/usb/scoped_libusb_device_handle.h"
 #include "services/device/usb/usb_device_handle.h"
 #include "third_party/libusb/src/libusb/libusb.h"
@@ -30,7 +31,7 @@ namespace device {
 
 struct EndpointMapValue {
   const UsbInterfaceDescriptor* interface;
-  const UsbEndpointDescriptor* endpoint;
+  const mojom::UsbEndpointInfo* endpoint;
 };
 
 class UsbDeviceImpl;

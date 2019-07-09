@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Slå Bluetooth til for at opdage enheder i nærheden</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Sluk</translation>
+<translation id="2912823482158781027">OPDATER TICKET</translation>
 <translation id="3511655281162215899">Vælg straks en ny adgangskode</translation>
+<translation id="3562817605261346876">Opdater snart din ticket for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="445059817448385655">Gammel adgangskode</translation>
 <translation id="467510802200863975">Adgangskoderne stemmer ikke overens</translation>
@@ -21,12 +23,14 @@
 <translation id="5457599981699367932">Anvend som gæst</translation>
 <translation id="54609108002486618">Administreret</translation>
 <translation id="5733345267661125295">Vælg en ny adgangskode nu</translation>
+<translation id="5743581760404859096">Din Kerberos-ticket er ved at udløbe</translation>
 <translation id="5832805196449965646">Tilføj person</translation>
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="6058625436358447366">Angiv din gamle og nye adgangskode for at afslutte</translation>
 <translation id="6106186594183574873">Angiv din gamle adgangskode for at afslutte</translation>
 <translation id="6146993107019042706">Angiv din nye adgangskode for at afslutte</translation>
 <translation id="6574601967010742428">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
+<translation id="7280705187789120111">Din Kerberos-ticket er ved at udløbe</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Din nuværende adgangskode er udløbet.}=1{Der er mindre end én dag til din nuværende adgangskode udløber.}one{Der er mindre end # dag til din nuværende adgangskode udløber.}other{Der er mindre end # dage til din nuværende adgangskode udløber.}}</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>

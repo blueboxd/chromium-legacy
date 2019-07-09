@@ -12,7 +12,7 @@ const kTestNumbers = [0, 1, 1, 2, 3, 5, 8, 13, 21];
 class TargetImpl {
   constructor() {
     this.numPokes = 0;
-    this.target = new liteJsTest.mojom.TestMessageTarget(this);
+    this.target = new liteJsTest.mojom.TestMessageTargetReceiver(this);
   }
 
   poke() { this.numPokes++; }
@@ -25,17 +25,17 @@ class TargetImpl {
 
 promise_test(() => {
   let impl = new TargetImpl;
-  let proxy = impl.target.$.createProxy();
-  proxy.poke();
-  return proxy.ping().then(() => {
+  let remote = impl.target.$.bindNewPipeAndPassRemote();
+  remote.poke();
+  return remote.ping().then(() => {
     assert_equals(impl.numPokes, 1);
   });
 }, 'messages with replies return Promises that resolve on reply received');
 
 promise_test(() => {
   let impl = new TargetImpl;
-  let proxy = impl.target.$.createProxy();
-  return proxy.repeat(kTestMessage, kTestNumbers)
+  let remote = impl.target.$.bindNewPipeAndPassRemote();
+  return remote.repeat(kTestMessage, kTestNumbers)
       .then(reply => {
         assert_equals(reply.message, kTestMessage);
         assert_array_equals(reply.numbers, kTestNumbers);
@@ -44,26 +44,26 @@ promise_test(() => {
 
 promise_test(async (t) => {
   const impl = new TargetImpl;
-  const proxy = impl.target.$.createProxy();
+  const remote = impl.target.$.bindNewPipeAndPassRemote();
 
-  await proxy.ping();
-  proxy.$.close();
+  await remote.ping();
+  remote.$.close();
 
-  await promise_rejects(t, new Error(), proxy.ping());
+  await promise_rejects(t, new Error(), remote.ping());
 }, 'after the pipe is closed all future calls should fail');
 
 promise_test(async (t) => {
   const impl = new TargetImpl;
-  const proxy = impl.target.$.createProxy();
+  const remote = impl.target.$.bindNewPipeAndPassRemote();
 
   // None of these promises should successfully resolve because we are
   // immediately closing the pipe.
   const promises = []
   for (let i = 0; i < 10; i++) {
-    promises.push(proxy.ping());
+    promises.push(remote.ping());
   }
 
-  proxy.$.close();
+  remote.$.close();
 
   for (const promise of promises) {
     await promise_rejects(t, new Error(), promise);
@@ -82,38 +82,38 @@ promise_test(() => {
   }
   interceptor.start();
 
-  let proxy = liteJsTest.mojom.TestMessageTarget.getProxy();
-  proxy.poke();
-  return proxy.ping().then(() => {
+  let remote = liteJsTest.mojom.TestMessageTarget.getRemote();
+  remote.poke();
+  return remote.ping().then(() => {
     assert_equals(impl.numPokes, 1);
   });
-}, 'getProxy() attempts to send requests to the frame host');
+}, 'getRemote() attempts to send requests to the frame host');
 
 promise_test(() => {
   let router = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  let proxy = router.$.createProxy();
+  let remote = router.$.bindNewPipeAndPassRemote();
   return new Promise(resolve => {
     router.poke.addListener(resolve);
-    proxy.poke();
+    remote.poke();
   });
 }, 'basic generated CallbackRouter behavior works as intended');
 
 promise_test(() => {
   let router = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  let proxy = router.$.createProxy();
+  let remote = router.$.bindNewPipeAndPassRemote();
   let numPokes = 0;
   router.poke.addListener(() => ++numPokes);
   router.ping.addListener(() => Promise.resolve());
-  proxy.poke();
-  return proxy.ping().then(() => assert_equals(numPokes, 1));
+  remote.poke();
+  return remote.ping().then(() => assert_equals(numPokes, 1));
 }, 'CallbackRouter listeners can reply to messages');
 
 promise_test(() => {
   let router = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  let proxy = router.$.createProxy();
+  let remote = router.$.bindNewPipeAndPassRemote();
   router.repeat.addListener(
       (message, numbers) => ({message: message, numbers: numbers}));
-  return proxy.repeat(kTestMessage, kTestNumbers)
+  return remote.repeat(kTestMessage, kTestNumbers)
       .then(reply => {
         assert_equals(reply.message, kTestMessage);
         assert_array_equals(reply.numbers, kTestNumbers);
@@ -122,7 +122,7 @@ promise_test(() => {
 
 promise_test(() => {
   let targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  let targetProxy = targetRouter.$.createProxy();
+  let targetRemote = targetRouter.$.bindNewPipeAndPassRemote();
   let subinterfaceRouter = new liteJsTest.mojom.SubinterfaceCallbackRouter;
   targetRouter.requestSubinterface.addListener((request, client) => {
     let values = [];
@@ -135,38 +135,39 @@ promise_test(() => {
   });
 
   let clientRouter = new liteJsTest.mojom.SubinterfaceClientCallbackRouter;
-  let subinterfaceProxy = new liteJsTest.mojom.SubinterfaceProxy;
-  targetProxy.requestSubinterface(
-      subinterfaceProxy.$.createRequest(), clientRouter.$.createProxy());
+  let subinterfaceRemote = new liteJsTest.mojom.SubinterfaceRemote;
+  targetRemote.requestSubinterface(
+    subinterfaceRemote.$.bindNewPipeAndPassReceiver(),
+    clientRouter.$.bindNewPipeAndPassRemote());
   return new Promise(resolve => {
     clientRouter.didFlush.addListener(values => {
       assert_array_equals(values, kTestNumbers);
       resolve();
     });
 
-    kTestNumbers.forEach(n => subinterfaceProxy.push(n));
-    subinterfaceProxy.flush();
+    kTestNumbers.forEach(n => subinterfaceRemote.push(n));
+    subinterfaceRemote.flush();
   });
 }, 'can send and receive interface requests and proxies');
 
 promise_test(() => {
   const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  const targetProxy = targetRouter.$.createProxy();
+  const targetRemote = targetRouter.$.bindNewPipeAndPassRemote();
   targetRouter.flatten.addListener(values => ({values: values.map(v => v.x)}));
-  return targetProxy.flatten([{x: 1}, {x: 2}, {x: 3}]).then(reply => {
+  return targetRemote.flatten([{x: 1}, {x: 2}, {x: 3}]).then(reply => {
     assert_array_equals(reply.values, [1, 2, 3]);
   });
 }, 'regression test for complex array serialization');
 
 promise_test(() => {
   const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  const targetProxy = targetRouter.$.createProxy();
+  const targetRemote = targetRouter.$.bindNewPipeAndPassRemote();
   targetRouter.flattenUnions.addListener(unions => {
     return {x: unions.filter(u => u.x !== undefined).map(u => u.x),
             s: unions.filter(u => u.s !== undefined).map(u => u.s.x)};
   });
 
-  return targetProxy.flattenUnions(
+  return targetRemote.flattenUnions(
       [{x: 1}, {x: 2}, {s: {x: 3}}, {s: {x: 4}}, {x: 5}, {s: {x: 6}}])
       .then(reply => {
     assert_array_equals(reply.x, [1, 2, 5]);
@@ -176,32 +177,32 @@ promise_test(() => {
 
 promise_test(() => {
   let impl = new TargetImpl;
-  let proxy = impl.target.$.createProxy();
+  let remote = impl.target.$.bindNewPipeAndPassRemote();
 
   // Poke a bunch of times. These should never race with the assertion below,
   // because the |flushForTesting| request/response is ordered against other
-  // messages on |proxy|.
+  // messages on |remote|.
   const kNumPokes = 100;
   for (let i = 0; i < kNumPokes; ++i)
-    proxy.poke();
-  return proxy.$.flushForTesting().then(() => {
+    remote.poke();
+  return remote.$.flushForTesting().then(() => {
     assert_equals(impl.numPokes, kNumPokes);
   });
 }, 'can use generated flushForTesting API for synchronization in tests');
 
 promise_test(async(t) => {
   const impl = new TargetImpl;
-  const proxy = impl.target.$.createProxy();
+  const remote = impl.target.$.bindNewPipeAndPassRemote();
   const disconnectPromise = new Promise(resolve => impl.target.onConnectionError.addListener(resolve));
-  proxy.$.close();
+  remote.$.close();
   return disconnectPromise;
 }, 'InterfaceTarget connection error handler runs when set on an Interface object');
 
 promise_test(() => {
   const router = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  const proxy = router.$.createProxy();
+  const remote = router.$.bindNewPipeAndPassRemote();
   const disconnectPromise = new Promise(resolve => router.onConnectionError.addListener(resolve));
-  proxy.$.close();
+  remote.$.close();
   return disconnectPromise;
   }, 'InterfaceTarget connection error handler runs when set on an InterfaceCallbackRouter object');
 

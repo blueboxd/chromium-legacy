@@ -340,13 +340,13 @@ KURL HitTestResult::AbsoluteImageURL() const {
       (IsHTMLInputElement(*inner_node_or_image_map_image) &&
        ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
            input_type_names::kImage))
-    url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
+    url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
            (IsHTMLEmbedElement(*inner_node_or_image_map_image) ||
             IsHTMLObjectElement(*inner_node_or_image_map_image) ||
             IsSVGImageElement(*inner_node_or_image_map_image)))
-    url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
+    url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   if (url_string.IsEmpty())
     return KURL();
 

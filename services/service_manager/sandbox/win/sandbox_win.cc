@@ -754,6 +754,8 @@ sandbox::ResultCode SandboxWin::AddAppContainerProfileToPolicy(
     service_manager::SandboxType sandbox_type,
     const std::string& appcontainer_id,
     sandbox::TargetPolicy* policy) {
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+    return sandbox::SBOX_ALL_OK;
   base::string16 profile_name =
       GetAppContainerProfileName(appcontainer_id, sandbox_type);
   sandbox::ResultCode result =

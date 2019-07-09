@@ -63,7 +63,7 @@
 #include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
-#include "extensions/renderer/extension_interaction.h"
+#include "extensions/renderer/extension_interaction_provider.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
@@ -183,6 +183,19 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
     }
     args.GetReturnValue().Set(chrome);
   }
+};
+
+class HandleScopeHelper {
+ public:
+  HandleScopeHelper(ScriptContext* script_context)
+      : handle_scope_(script_context->isolate()),
+        context_scope_(script_context->v8_context()) {}
+
+ private:
+  v8::HandleScope handle_scope_;
+  v8::Context::Scope context_scope_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleScopeHelper);
 };
 
 base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
@@ -408,8 +421,9 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
             worker_dispatcher, service_worker_version_id);
     worker_dispatcher->AddWorkerData(
-        service_worker_version_id, context_proxy, context,
+        service_worker_version_id, context,
         CreateBindingsSystem(std::move(ipc_sender)));
+    worker_thread_util::SetWorkerContextProxy(context_proxy);
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
@@ -536,6 +550,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     // the associated bindings system.
     g_worker_script_context_set.Get().Remove(v8_context, script_url);
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
+    worker_thread_util::SetWorkerContextProxy(nullptr);
   }
 }
 
@@ -970,7 +985,10 @@ void Dispatcher::OnDispatchEvent(
   content::RenderFrame* background_frame =
       ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
 
-  std::unique_ptr<ExtensionInteraction> web_user_gesture;
+  // Required for |web_user_gesture|.
+  std::unique_ptr<HandleScopeHelper> v8_handle_scope;
+
+  std::unique_ptr<InteractionProvider::Scope> web_user_gesture;
   // Synthesize a user gesture if this was in response to user action; this is
   // necessary if the gesture was e.g. by clicking on the extension toolbar
   // icon, context menu entry, etc.
@@ -985,7 +1003,8 @@ void Dispatcher::OnDispatchEvent(
         ScriptContextSet::GetMainWorldContextForFrame(background_frame);
     if (background_context && bindings_system_->HasEventListenerInContext(
                                   params.event_name, background_context)) {
-      web_user_gesture = ExtensionInteraction::CreateScopeForMainThread(
+      v8_handle_scope = std::make_unique<HandleScopeHelper>(background_context);
+      web_user_gesture = ExtensionInteractionProvider::Scope::ForFrame(
           background_frame->GetWebFrame());
     }
   }

@@ -52,6 +52,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
       const DownloadUrlParameters::RequestHeadersType& request_headers,
       const std::string& request_origin,
       DownloadSource download_source,
+      bool ignore_content_length_mismatch,
       std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
 
@@ -95,7 +96,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   std::string request_origin_;
   DownloadSource download_source_;
   net::CertStatus cert_status_;
-  bool has_strong_validators_;
+  bool ignore_content_length_mismatch_;
   base::Optional<url::Origin> request_initiator_;
   bool is_partial_request_;
   bool completed_;

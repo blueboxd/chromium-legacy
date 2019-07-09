@@ -104,7 +104,7 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataPipeProducer {
   ScopedDataPipeProducerHandle producer_;
   scoped_refptr<FileSequenceState> file_sequence_state_;
   std::unique_ptr<Observer> observer_;
-  base::WeakPtrFactory<FileDataPipeProducer> weak_factory_;
+  base::WeakPtrFactory<FileDataPipeProducer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileDataPipeProducer);
 };

@@ -149,6 +149,9 @@ enum class TaskType : unsigned char {
   // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
   kServiceWorkerClientMessage = 60,
 
+  // https://wicg.github.io/web-locks/#web-locks-tasks-source
+  kWebLocks = 66,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -239,7 +242,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 66,
+  kCount = 67,
 };
 
 }  // namespace blink

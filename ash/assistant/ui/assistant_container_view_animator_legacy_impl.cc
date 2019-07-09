@@ -44,7 +44,8 @@ AssistantContainerViewAnimatorLegacyImpl::
     AssistantContainerViewAnimatorLegacyImpl(
         AssistantViewDelegate* delegate,
         AssistantContainerView* assistant_container_view)
-    : AssistantContainerViewAnimator(delegate, assistant_container_view) {}
+    : AssistantContainerViewAnimator(delegate, assistant_container_view),
+      views::AnimationDelegateViews(assistant_container_view) {}
 
 AssistantContainerViewAnimatorLegacyImpl::
     ~AssistantContainerViewAnimatorLegacyImpl() = default;
@@ -84,8 +85,8 @@ void AssistantContainerViewAnimatorLegacyImpl::OnPreferredSizeChanged() {
     animation_->SetSlideDuration(kAnimationDurationMs);
 
     // Cache start and end animation values.
-    start_size_ = gfx::SizeF(assistant_container_view_->size());
-    end_size_ = gfx::SizeF(assistant_container_view_->GetPreferredSize());
+    start_size_ = assistant_container_view_->size();
+    end_size_ = assistant_container_view_->GetPreferredSize();
     start_radius_ = assistant_container_view_->GetCornerRadius();
 
     // Cache start frame number for measuring animation smoothness.
@@ -155,11 +156,8 @@ void AssistantContainerViewAnimatorLegacyImpl::AnimationProgressed(
   const int center_x = bounds.CenterPoint().x();
 
   // Interpolate size at our current animation value.
-  const gfx::SizeF size = gfx::Tween::SizeValueBetween(
-      animation->GetCurrentValue(), start_size_, end_size_);
-
-  // Use our interpolated size.
-  bounds.set_size(gfx::Size(size.width(), size.height()));
+  bounds.set_size(gfx::Tween::SizeValueBetween(animation->GetCurrentValue(),
+                                               start_size_, end_size_));
 
   // Maintain original |center_x| and |bottom| positions.
   bounds.set_x(std::max(center_x - (bounds.width() / 2), 0));

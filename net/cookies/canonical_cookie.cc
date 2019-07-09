@@ -301,6 +301,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   if (!path.empty() && cookie_path != path)
     return nullptr;
 
+  if (!IsCookiePrefixValid(GetCookiePrefix(name), url, secure, domain,
+                           cookie_path)) {
+    return nullptr;
+  }
+
   if (!last_access_time.is_null() && creation_time.is_null())
     return nullptr;
 
@@ -329,7 +334,6 @@ bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
-
   // A zero length would be unsafe for our trailing '/' checks, and
   // would also make no sense for our prefix match.  The code that
   // creates a CanonicalCookie should make sure the path is never zero length,
@@ -588,11 +592,23 @@ void CanonicalCookie::RecordCookiePrefixMetrics(
 bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
                                           const GURL& url,
                                           const ParsedCookie& parsed_cookie) {
+  return CanonicalCookie::IsCookiePrefixValid(
+      prefix, url, parsed_cookie.IsSecure(),
+      parsed_cookie.HasDomain() ? parsed_cookie.Domain() : "",
+      parsed_cookie.HasPath() ? parsed_cookie.Path() : "");
+}
+
+bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
+                                          const GURL& url,
+                                          bool secure,
+                                          const std::string& domain,
+                                          const std::string& path) {
   if (prefix == CanonicalCookie::COOKIE_PREFIX_SECURE)
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic();
+    return secure && url.SchemeIsCryptographic();
   if (prefix == CanonicalCookie::COOKIE_PREFIX_HOST) {
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic() &&
-           !parsed_cookie.HasDomain() && parsed_cookie.Path() == "/";
+    const bool domain_valid =
+        domain.empty() || (url.HostIsIPAddress() && url.host() == domain);
+    return secure && url.SchemeIsCryptographic() && domain_valid && path == "/";
   }
   return true;
 }

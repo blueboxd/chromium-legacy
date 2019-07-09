@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2872961005593481000">Изключване</translation>
+<translation id="2912823482158781027">ОПРЕСНЯВАНЕ НА ПРОПУСКА</translation>
 <translation id="3511655281162215899">Моля, изберете нова парола незабавно</translation>
+<translation id="3562817605261346876">Моля, скоро опреснете пропуска на <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Нова парола</translation>
 <translation id="445059817448385655">Стара парола</translation>
 <translation id="467510802200863975">Паролите не са идентични</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">Сърфиране като гост</translation>
 <translation id="54609108002486618">Управляван</translation>
 <translation id="5733345267661125295">Моля, изберете нова парола сега</translation>
+<translation id="5743581760404859096">Пропускът ви от Kerberos изтича</translation>
 <translation id="5832805196449965646">Добавяне на човек</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="6058625436358447366">За да завършите процеса, въведете старата и новата си парола</translation>
 <translation id="6106186594183574873">За да завършите процеса, въведете старата си парола</translation>
 <translation id="6146993107019042706">За да завършите процеса, въведете новата си парола</translation>
 <translation id="6574601967010742428">Администраторът на устройството може да е в състояние да наблюдава активността ви.</translation>
+<translation id="7280705187789120111">Пропускът от Kerberos изтича</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Валидността на текущата ви парола изтече!}=1{Валидността на текущата ви парола ще изтече след по-малко от един ден!}other{Валидността на текущата ви парола ще изтече след по-малко от # дни!}}</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7690294790491645610">Потвърдете новата парола</translation>

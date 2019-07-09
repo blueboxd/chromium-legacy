@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+
 class AccountTrackerService;
 class IdentityManagerFactory;
 class PrefService;
@@ -25,6 +27,12 @@ namespace network {
 class NetworkConnectionTracker;
 }
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class AccountManager;
+}
+#endif
+
 class ProfileOAuth2TokenServiceBuilder {
  private:
   // Builds a ProfileOAuth2TokenService instance for use by IdentityManager.
@@ -34,6 +42,10 @@ class ProfileOAuth2TokenServiceBuilder {
       AccountTrackerService* account_tracker_service,
       network::NetworkConnectionTracker* network_connection_tracker,
       signin::AccountConsistencyMethod account_consistency,
+#if defined(OS_CHROMEOS)
+      chromeos::AccountManager* account_manager,
+      bool is_regular_profile,
+#endif
       SigninClient* signin_client);
 
   friend IdentityManagerFactory;

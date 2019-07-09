@@ -100,7 +100,8 @@ LoadExtraCallback ManagedBookmarkService::GetLoadExtraNodeCallback() {
   // Create a BookmarkPermanentNode with a temporary id of 0. It will be
   // populated and assigned a proper id in the LoadExtraNode callback. Until
   // then, it is owned by the returned closure.
-  std::unique_ptr<BookmarkPermanentNode> managed(new BookmarkPermanentNode(0));
+  std::unique_ptr<BookmarkPermanentNode> managed(
+      new BookmarkPermanentNode(0, BookmarkNode::FOLDER));
 
   managed_node_ = managed.get();
 

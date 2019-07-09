@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -2102,7 +2103,7 @@ void RenderThreadImpl::OnNetworkQualityChanged(
     base::TimeDelta http_rtt,
     base::TimeDelta transport_rtt,
     double downlink_throughput_kbps) {
-  UMA_HISTOGRAM_BOOLEAN("NQE.RenderThreadNotified", true);
+  LOCAL_HISTOGRAM_BOOLEAN("NQE.RenderThreadNotified", true);
   WebNetworkStateNotifier::SetNetworkQuality(
       EffectiveConnectionTypeToWebEffectiveConnectionType(type), http_rtt,
       transport_rtt, downlink_throughput_kbps);

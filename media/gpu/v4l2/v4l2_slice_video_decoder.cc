@@ -548,7 +548,9 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK(state_ == State::kDecoding || state_ == State::kPause);
 
   decode_request_queue_.push(std::move(request));
-  PumpDecodeTask();
+  // If we are already decoding, then we don't need to pump again.
+  if (!current_decode_request_)
+    PumpDecodeTask();
 }
 
 void V4L2SliceVideoDecoder::PumpDecodeTask() {

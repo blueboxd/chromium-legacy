@@ -209,6 +209,11 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void SetAndNotifyObserversOfEffectiveConnectionType(
       EffectiveConnectionType type);
 
+  // Updates the count of active P2P connections to |count| and notifies the
+  // registered observers that the active P2P connection counts has changed to
+  // |count|.
+  void SetAndNotifyObserversOfP2PActiveConnectionsCountChange(uint32_t count);
+
   void SetTransportRTTAtastECTSampleCount(size_t count) {
     transport_rtt_observation_count_last_ect_computation_ = count;
   }
@@ -244,6 +249,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // network id and signal strength (instead of invoking platform APIs).
   nqe::internal::NetworkID GetCurrentNetworkID() const override;
   int32_t GetCurrentSignalStrength() const override;
+
+  base::Optional<net::EffectiveConnectionType> GetOverrideECT() const override;
 
   // Net log provided to network quality estimator.
   std::unique_ptr<net::BoundTestNetLog> net_log_;

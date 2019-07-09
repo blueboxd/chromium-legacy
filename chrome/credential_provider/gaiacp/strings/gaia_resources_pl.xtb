@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Nie udało się zweryfikować Twojego hasła do systemu Windows. Spróbuj ponownie.</translation>
 <translation id="3306357053520292004">Inny użytkownik komputera został już dodany za pomocą tego konta. Zaloguj się, używając innego konta.</translation>
 <translation id="369030246015333661">Twoje konto zostało zablokowane. Skontaktuj się z administratorem systemu.</translation>
+<translation id="3968372833844047539">Logować się mogą tylko użytkownicy korzystający z G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Wystąpił błąd wewnętrzny.</translation>
+<translation id="4267670563222825190">Z tym kontem nie jest powiązany żaden użytkownik w domenie. Skontaktuj się z administratorem.</translation>
 <translation id="4300229033992784001">Zmieniło się hasło do Twojego konta. Aby zsynchronizować konto Windows z kontem do pracy, wpisz swoje aktualne hasło do systemu Windows.</translation>
 <translation id="4706454071748629324">Nie udało się dodać nowego użytkownika. Ten komputer zezwala na utworzenie tylko jednego użytkownika za pomocą konta do pracy.</translation>
 <translation id="6292766200512304540">Użytkownik utworzony za pomocą konta do pracy</translation>

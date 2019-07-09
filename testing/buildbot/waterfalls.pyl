@@ -44,7 +44,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -110,7 +110,7 @@
       'linux-archive-rel': {
         'mixins': [
           'linux-archive-rel-args',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -970,7 +970,7 @@
       },
       'UBSanVptr Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
@@ -1297,7 +1297,7 @@
       },
       'Linux Builder Goma Canary': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1308,7 +1308,7 @@
       },
       'Linux Viz': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1319,7 +1319,7 @@
       },
       'Linux x64 Goma Canary (clobber)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1330,7 +1330,7 @@
       },
       'Linux x64 Goma Canary LocalOutputCache': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1407,7 +1407,7 @@
       },
       'Mojo Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
@@ -1434,7 +1434,7 @@
       },
       'VR Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'vr_common_perftests',
@@ -1767,7 +1767,7 @@
       'linux-chromeos-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1779,7 +1779,7 @@
       'linux-chromeos-oobe-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1790,7 +1790,7 @@
       },
       'linux-chromium-tests-staging-builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all'
@@ -1801,7 +1801,7 @@
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -1811,7 +1811,7 @@
       'linux-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
@@ -1824,16 +1824,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_gtests',
-        },
-      },
-      'linux-tcmalloc-rel': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -1977,7 +1967,7 @@
       },
       'Chromium Linux Goma RBE Staging': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1988,7 +1978,7 @@
       },
       'Chromium Linux Goma RBE Staging (clobber)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1999,7 +1989,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -2010,7 +2000,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg) (clobber)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -2021,7 +2011,7 @@
       },
       'Chromium Linux Goma Staging': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -3270,7 +3260,7 @@
     'machines': {
       'Cast Audio Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'cast_shell',
@@ -3318,7 +3308,7 @@
       },
       'Leak Detection Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'leak_detection_isolated_scripts',
@@ -3326,7 +3316,7 @@
       },
       'Linux Builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all'
@@ -3350,7 +3340,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Builder Code Coverage': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
           'code-coverage',
         ],
         'additional_compile_targets': [
@@ -3384,7 +3374,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Tests Code Coverage': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
           'code-coverage',
         ],
         'test_suites': {
@@ -3420,7 +3410,7 @@
       },
       'linux-ozone-rel': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'chrome',
@@ -3670,7 +3660,7 @@
       },
       'Linux CFI': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
@@ -3678,7 +3668,7 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -3748,7 +3738,7 @@
       },
       'WebKit Linux MSAN': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3837,7 +3827,7 @@
       # see crbug.com/790309, crbug.com/790294, crbug.com/790286.
       'WebKit Linux ASAN': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3845,7 +3835,7 @@
       },
       'WebKit Linux Leak': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3904,7 +3894,7 @@
       },
       'WebRTC Chromium Linux Tester': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
@@ -4003,7 +3993,7 @@
       'WebRTC Chromium FYI Linux Tester': {
         'mixins': [
           'x86-64',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
@@ -4166,7 +4156,7 @@
     'machines': {
       'Linux - Future': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
@@ -4175,7 +4165,7 @@
       },
       'Linux - Future (dbg)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
@@ -4332,7 +4322,7 @@
       'linux-coverage-rel': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',

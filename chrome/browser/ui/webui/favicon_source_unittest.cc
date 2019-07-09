@@ -40,6 +40,8 @@ class TestFaviconSource : public FaviconSource {
   ui::NativeTheme* const theme_;
 };
 
+// TODO(victorvianna): Add test coverage regarding usage of new/old format once
+// FaviconRequestHandler is mockable.
 class FaviconSourceTest : public testing::Test {
  public:
   FaviconSourceTest() : source_(&profile_, &theme_) {}

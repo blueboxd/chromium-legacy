@@ -497,6 +497,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
     ContentSuggestionsMostVisitedItem* item =
         ConvertNTPTile(tile, self.mostVisitedSectionInfo);
+    item.commandHandler = self.commandHandler;
     [self.faviconMediator fetchFaviconForMostVisited:item];
     [self.freshMostVisitedItems addObject:item];
   }

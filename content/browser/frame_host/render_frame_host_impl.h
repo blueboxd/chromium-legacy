@@ -1424,9 +1424,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFrameHostTestInterface(
       blink::mojom::FrameHostTestInterfaceRequest request) override;
   void GetAudioContextManager(
-      blink::mojom::AudioContextManagerRequest request) override;
+      mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver)
+      override;
   void GetCredentialManager(
-      blink::mojom::CredentialManagerRequest request) override;
+      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;

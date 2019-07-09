@@ -255,10 +255,8 @@ void MediaSessionImpl::DidUpdateFaviconURL(
 
   images_.insert_or_assign(MediaSessionImageType::kSourceIcon, icons);
 
-  observers_.ForAllPtrs(
-      [this](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionImagesChanged(this->images_);
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionImagesChanged(this->images_);
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
@@ -835,16 +833,17 @@ void MediaSessionImpl::GetMediaSessionInfo(
 }
 
 void MediaSessionImpl::AddObserver(
-    media_session::mojom::MediaSessionObserverPtr observer) {
-  observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
-  observer->MediaSessionMetadataChanged(metadata_);
-  observer->MediaSessionImagesChanged(images_);
+    mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer) {
+  mojo::Remote<media_session::mojom::MediaSessionObserver>
+      media_session_observer(std::move(observer));
+  media_session_observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+  media_session_observer->MediaSessionMetadataChanged(metadata_);
+  media_session_observer->MediaSessionImagesChanged(images_);
 
   std::vector<media_session::mojom::MediaSessionAction> actions(
       actions_.begin(), actions_.end());
-  observer->MediaSessionActionsChanged(actions);
-
-  observers_.AddPtr(std::move(observer));
+  media_session_observer->MediaSessionActionsChanged(actions);
+  observers_.Add(std::move(media_session_observer));
 }
 
 void MediaSessionImpl::FinishSystemAudioFocusRequest(
@@ -967,10 +966,8 @@ void MediaSessionImpl::RebuildAndNotifyMediaSessionInfoChanged() {
   if (current_info == session_info_)
     return;
 
-  observers_.ForAllPtrs(
-      [&current_info](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionInfoChanged(current_info.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionInfoChanged(current_info.Clone());
 
   delegate_->MediaSessionInfoChanged(current_info.Clone());
 
@@ -1186,10 +1183,8 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
 
   std::vector<media_session::mojom::MediaSessionAction> actions_vec(
       actions.begin(), actions.end());
-  observers_.ForAllPtrs(
-      [&actions_vec](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionActionsChanged(actions_vec);
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionActionsChanged(actions_vec);
 }
 
 void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
@@ -1235,16 +1230,13 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
 
   if (!images_changed && !metadata_changed)
     return;
+  for (auto& observer : observers_) {
+    if (metadata_changed)
+      observer->MediaSessionMetadataChanged(this->metadata_);
 
-  observers_.ForAllPtrs(
-      [this, metadata_changed,
-       images_changed](media_session::mojom::MediaSessionObserver* observer) {
-        if (metadata_changed)
-          observer->MediaSessionMetadataChanged(this->metadata_);
-
-        if (images_changed)
-          observer->MediaSessionImagesChanged(this->images_);
-      });
+    if (images_changed)
+      observer->MediaSessionImagesChanged(this->images_);
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)

@@ -263,19 +263,17 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
 
   web_app::AppBrowserController* app_controller =
       chrome::FindBrowserWithWebContents(contents)->app_controller();
-  const bool started_in_scope = extensions::IsSameScope(
-      app_controller->GetAppLaunchURL(), app_controller->initial_url(),
-      contents->GetBrowserContext());
+  const bool started_in_scope =
+      app_controller->IsUrlInAppScope(app_controller->initial_url());
 
-  // Only show the 'X' button if the current URL is not in the application
-  // scope (it doesn't make sense to show a 'back-to-scope' button in scope)
-  // and if the window started in scope (this is important for popup windows
-  // which get opened out of scope).
+  // Only show the 'X' button if:
+  // a) The current url is not in scope (no point showing a back to app button
+  // while in scope).
+  // And b), if the window started in scope (this is
+  // important for popup windows, which may be opened outside the app).
   close_button_->SetVisible(
       started_in_scope &&
-      !extensions::IsSameScope(app_controller->GetAppLaunchURL(),
-                               contents->GetLastCommittedURL(),
-                               contents->GetBrowserContext()));
+      !app_controller->IsUrlInAppScope(contents->GetLastCommittedURL()));
 
   Layout();
 }
@@ -385,24 +383,24 @@ void CustomTabBarView::GoBackToAppForTesting() {
 
 void CustomTabBarView::GoBackToApp() {
   content::WebContents* web_contents = GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  GURL launch_url = browser->app_controller()->GetAppLaunchURL();
+  web_app::AppBrowserController* app_controller =
+      chrome::FindBrowserWithWebContents(web_contents)->app_controller();
   content::NavigationController& controller = web_contents->GetController();
-  content::BrowserContext* context = web_contents->GetBrowserContext();
 
   content::NavigationEntry* entry = nullptr;
   int offset = 0;
 
-  // Go back until we find an in scope url, or run out of urls.
+  // Go back until we find an in scope url or run out of urls.
   while ((entry = controller.GetEntryAtOffset(offset)) &&
-         !extensions::IsSameScope(launch_url, entry->GetURL(), context)) {
+         !app_controller->IsUrlInAppScope(entry->GetURL())) {
     offset--;
   }
 
   // If there are no in scope urls, push the app's launch url and clear
   // the history.
   if (!entry) {
-    content::NavigationController::LoadURLParams load(launch_url);
+    content::NavigationController::LoadURLParams load(
+        app_controller->GetAppLaunchURL());
     load.should_clear_history_list = true;
     controller.LoadURLWithParams(load);
     return;

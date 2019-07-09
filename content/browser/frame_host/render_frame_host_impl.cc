@@ -6140,8 +6140,8 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
 }
 
 void RenderFrameHostImpl::GetAudioContextManager(
-    blink::mojom::AudioContextManagerRequest request) {
-  AudioContextManagerImpl::Create(this, std::move(request));
+    mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
+  AudioContextManagerImpl::Create(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAuthenticator(
@@ -6156,9 +6156,9 @@ void RenderFrameHostImpl::GetAuthenticator(
 }
 
 void RenderFrameHostImpl::GetCredentialManager(
-    blink::mojom::CredentialManagerRequest request) {
-  GetContentClient()->browser()->BindCredentialManagerRequest(
-      this, std::move(request));
+    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
+  GetContentClient()->browser()->BindCredentialManagerReceiver(
+      this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetPushMessaging(

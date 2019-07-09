@@ -23,17 +23,10 @@
 # TODO(crbug.com/977744): Enable this.
 -ProcessMemoryMetricsEmitterTest.RendererBuildId
 
-# TODO(crbug.com/976807): Enable this.
--SiteIsolationFlagHandlingTest.FlagHandlingTest*
-
 # TODO(crbug.com/977170): Enable this.
 -StructSequence/OobeLocalizationTest.LocalizationTest/3
 -StructSequence/OobeLocalizationTest.LocalizationTest/4
 -StructSequence/OobeLocalizationTest.LocalizationTest/8
-
-# TODO(crbug.com/977745): Enable this.
--SupervisionTransitionScreenTest.SuccessfulTransition/0
--SupervisionTransitionScreenTest.TransitionTimeout/0
 
 # TODO(crbug.com/978051): Enable this.
 -TabManagerTestWithTwoTabs.TabProactiveDiscardAndFocusBeforeFreezeCompletes

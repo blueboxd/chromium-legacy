@@ -111,12 +111,12 @@ cca.App.prototype.setupToggles_ = function() {
       element.dispatchEvent(new Event('change')); // Trigger toggling css.
     };
     element.save = () => {
-      return key && chrome.storage.local.set(payload());
+      return key && cca.proxy.browserProxy.localStorageSet(payload());
     };
     if (key) {
       // Restore the previously saved state on startup.
-      chrome.storage.local.get(payload(),
-          (values) => element.toggleChecked(values[key]));
+      cca.proxy.browserProxy.localStorageGet(
+          payload(), (values) => element.toggleChecked(values[key]));
     }
   });
 };

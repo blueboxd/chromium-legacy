@@ -1040,8 +1040,20 @@ AutoclickMenuPosition AccessibilityControllerImpl::GetAutoclickMenuPosition() {
       prefs::kAccessibilityAutoclickMenuPosition));
 }
 
+void AccessibilityControllerImpl::RequestAutoclickScrollableBoundsForPoint(
+    gfx::Point& point_in_screen) {
+  if (client_)
+    client_->RequestAutoclickScrollableBoundsForPoint(point_in_screen);
+}
+
 void AccessibilityControllerImpl::UpdateAutoclickMenuBoundsIfNeeded() {
   Shell::Get()->autoclick_controller()->UpdateAutoclickMenuBoundsIfNeeded();
+}
+
+void AccessibilityControllerImpl::OnAutoclickScrollableBoundsFound(
+    gfx::Rect& bounds_in_screen) {
+  Shell::Get()->autoclick_controller()->OnAutoclickScrollableBoundsFound(
+      bounds_in_screen);
 }
 
 void AccessibilityControllerImpl::UpdateCaretHighlightFromPref() {

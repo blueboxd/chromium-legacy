@@ -61,8 +61,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
                base::WaitableEvent::InitialState::NOT_SIGNALED),
         event_watcher_(&event_,
                        base::BindRepeating(&SequenceLocalState::OnEventSignaled,
-                                           base::Unretained(this))),
-        weak_ptr_factory_(this) {
+                                           base::Unretained(this))) {
     // We always allow this event handler to be awoken during any sync event on
     // the sequence. Individual watchers still must opt into having such
     // wake-ups propagated to them.
@@ -195,7 +194,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
   base::Lock ready_watchers_lock_;
   base::flat_set<const SequenceLocalSyncEventWatcher*> ready_watchers_;
 
-  base::WeakPtrFactory<SequenceLocalState> weak_ptr_factory_;
+  base::WeakPtrFactory<SequenceLocalState> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SequenceLocalState);
 };

@@ -113,7 +113,10 @@ Polymer({
       const icons = this.shadowRoot.querySelectorAll('.website-icon');
 
       for (let i = 0; i < this.tabs.length; i++) {
-        icons[i].style.backgroundImage = cr.icon.getFavicon(this.tabs[i].url);
+        // Entries on this UI are coming strictly from sync, so we can set
+        // |isSyncedUrlForHistoryUi| to true on the getFavicon call below.
+        icons[i].style.backgroundImage =
+            cr.icon.getFavicon(this.tabs[i].url, true);
       }
     });
   },

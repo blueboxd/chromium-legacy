@@ -197,6 +197,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     loading_state_ = kNotLoading;
   } else if (method == "Page.interstitialShown") {
     client_->SendCommand("Page.stopLoading", base::DictionaryValue());
+    return Status(kUnexpectedAlertOpen, "Interstitial popups not supported");
   }
   if (timed_out_)
     loading_state_ = kNotLoading;

@@ -1371,7 +1371,7 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
     return false;
 
   std::vector<pp::Rect> selection_rect_vector;
-  GetAllScreenRectsUnion(&selection_, GetVisibleRect().point(),
+  GetAllScreenRectsUnion(selection_, GetVisibleRect().point(),
                          &selection_rect_vector);
   for (const auto& rect : selection_rect_vector) {
     if (rect.Contains(point.x(), point.y()))
@@ -2047,10 +2047,11 @@ void PDFiumEngine::StopFind() {
   find_factory_.CancelAll();
 }
 
-void PDFiumEngine::GetAllScreenRectsUnion(std::vector<PDFiumRange>* rect_range,
-                                          const pp::Point& offset_point,
-                                          std::vector<pp::Rect>* rect_vector) {
-  for (auto& range : *rect_range) {
+void PDFiumEngine::GetAllScreenRectsUnion(
+    const std::vector<PDFiumRange>& rect_range,
+    const pp::Point& offset_point,
+    std::vector<pp::Rect>* rect_vector) const {
+  for (const auto& range : rect_range) {
     pp::Rect result_rect;
     const std::vector<pp::Rect>& rects =
         range.GetScreenRects(offset_point, current_zoom_, current_rotation_);
@@ -2062,7 +2063,7 @@ void PDFiumEngine::GetAllScreenRectsUnion(std::vector<PDFiumRange>* rect_range,
 
 void PDFiumEngine::UpdateTickMarks() {
   std::vector<pp::Rect> tickmarks;
-  GetAllScreenRectsUnion(&find_results_, pp::Point(0, 0), &tickmarks);
+  GetAllScreenRectsUnion(find_results_, pp::Point(0, 0), &tickmarks);
   client_->UpdateTickMarks(tickmarks);
 }
 
@@ -2913,6 +2914,7 @@ void PDFiumEngine::FinishPaint(int progressive_index,
   PaintPageShadow(progressive_index, image_data);
 
   DrawSelections(progressive_index, image_data);
+  form_highlights_.clear();
 
   FPDF_RenderPage_Close(pages_[page_index]->GetPage());
   progressive_paints_.erase(progressive_paints_.begin() + progressive_index);
@@ -3002,7 +3004,7 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
 }
 
 void PDFiumEngine::DrawSelections(int progressive_index,
-                                  pp::ImageData* image_data) {
+                                  pp::ImageData* image_data) const {
   DCHECK_GE(progressive_index, 0);
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
   DCHECK(image_data);
@@ -3017,7 +3019,7 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
   std::vector<pp::Rect> highlighted_rects;
   pp::Rect visible_rect = GetVisibleRect();
-  for (auto& range : selection_) {
+  for (const auto& range : selection_) {
     if (range.page_index() != page_index)
       continue;
 
@@ -3045,7 +3047,6 @@ void PDFiumEngine::DrawSelections(int progressive_index,
     Highlight(region, stride, visible_selection, kHighlightColorR,
               kHighlightColorG, kHighlightColorB, &highlighted_rects);
   }
-  form_highlights_.clear();
 }
 
 void PDFiumEngine::PaintUnavailablePage(int page_index,
@@ -3151,7 +3152,7 @@ void PDFiumEngine::Highlight(void* buffer,
                              int color_red,
                              int color_green,
                              int color_blue,
-                             std::vector<pp::Rect>* highlighted_rects) {
+                             std::vector<pp::Rect>* highlighted_rects) const {
   if (!buffer)
     return;
 
@@ -3242,7 +3243,7 @@ std::vector<pp::Rect>
 PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
   std::vector<pp::Rect> rects;
   pp::Point visible_point = engine_->GetVisibleRect().point();
-  for (auto& range : engine_->selection_) {
+  for (const auto& range : engine_->selection_) {
     // Exclude selections on pages that's not currently visible.
     if (!engine_->IsPageVisible(range.page_index()))
       continue;
@@ -3413,7 +3414,7 @@ void PDFiumEngine::OnSelectionPositionChanged() {
   pp::Rect left(std::numeric_limits<int32_t>::max(),
                 std::numeric_limits<int32_t>::max(), 0, 0);
   pp::Rect right;
-  for (auto& sel : selection_) {
+  for (const auto& sel : selection_) {
     const std::vector<pp::Rect>& screen_rects = sel.GetScreenRects(
         GetVisibleRect().point(), current_zoom_, current_rotation_);
     for (const auto& rect : screen_rects) {

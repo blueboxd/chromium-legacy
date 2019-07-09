@@ -33,7 +33,7 @@ interface CdmProxy {
                                                    int32 cdm_id);
 
   // Processes and updates the state of the proxy.
-  // |function| specifies what type of function to use.
+  // |func| specifies what type of function to use.
   // |crypto_session_id| is a value returned from Initialize() or
   // CreateMediaCryptoSessions().
   // |input_data| is the input data to be processed.
@@ -41,7 +41,7 @@ interface CdmProxy {
   // require this field in order to determine the size of the output, but some
   // may completely ignore it.
   // The output data is passed back in |output_data|.
-  Process(Function function,
+  Process(Function func,
           uint32 crypto_session_id,
           array<uint8> input_data,
           uint32 output_data_size) => (Status status,

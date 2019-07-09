@@ -54,7 +54,8 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
   void CreateModel() {
     // Simulate the creation of the managed node by the BookmarkClient.
-    auto owned_managed_node = std::make_unique<BookmarkPermanentNode>(100);
+    auto owned_managed_node =
+        std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
     BookmarkPermanentNode* managed_node = owned_managed_node.get();
     ManagedBookmarksTracker::LoadInitial(
         managed_node, prefs_.GetList(prefs::kManagedBookmarks), 101);

@@ -5,7 +5,6 @@
 import exceptions
 from blinkbuild.name_style_converter import NameStyleConverter
 from .common import WithCodeGeneratorInfo
-from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .common import WithIdentifier

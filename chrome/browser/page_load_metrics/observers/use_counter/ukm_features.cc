@@ -108,6 +108,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kLinearAccelerationSensorConstructor,
           WebFeature::kAccelerometerConstructor,
           WebFeature::kGyroscopeConstructor,
+          WebFeature::kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet,
       }));
   return *opt_in_features;
 }

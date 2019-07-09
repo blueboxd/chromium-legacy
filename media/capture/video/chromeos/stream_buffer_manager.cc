@@ -47,20 +47,6 @@ VideoCaptureFormat StreamBufferManager::GetStreamCaptureFormat(
   return stream_context_[stream_type]->capture_format;
 }
 
-void StreamBufferManager::DestroyCurrentStreamsAndBuffers() {
-  for (const auto& iter : stream_context_) {
-    if (iter.second) {
-      for (const auto& buf : iter.second->buffers) {
-        if (buf) {
-          buf->Unmap();
-        }
-      }
-      iter.second->buffers.clear();
-    }
-  }
-  stream_context_.clear();
-}
-
 bool StreamBufferManager::HasFreeBuffers(
     const std::set<StreamType>& stream_types) {
   for (auto stream_type : stream_types) {
@@ -252,6 +238,20 @@ uint64_t StreamBufferManager::GetBufferIpcId(StreamType stream_type,
 // static
 size_t StreamBufferManager::GetBufferIndex(uint64_t buffer_id) {
   return buffer_id & 0xFFFFFFFF;
+}
+
+void StreamBufferManager::DestroyCurrentStreamsAndBuffers() {
+  for (const auto& iter : stream_context_) {
+    if (iter.second) {
+      for (const auto& buf : iter.second->buffers) {
+        if (buf) {
+          buf->Unmap();
+        }
+      }
+      iter.second->buffers.clear();
+    }
+  }
+  stream_context_.clear();
 }
 
 StreamBufferManager::StreamContext::StreamContext() = default;

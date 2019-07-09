@@ -394,7 +394,6 @@
 <translation id="3060227939791841287">C9 (എൻവലപ്പ്)</translation>
 <translation id="3061707000357573562">പാച്ച് സേവനം</translation>
 <translation id="3064966200440839136">ഒരു എക്‌സ്‌റ്റേണൽ അപ്ലിക്കേഷൻ വഴി പണമടയ്‌ക്കാൻ അദൃശ്യ മോഡ് ഒഴിവാക്കുന്നു. തുടരണോ?</translation>
-<translation id="3083099961703215236">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു പാസ്‌വേഡ്}other{# പാസ്‌വേഡുകൾ}}</translation>
 <translation id="3095940652251934233">പ്രസ്‌താവന</translation>
 <translation id="3096100844101284527">പിക്കപ്പ് വിലാസം ചേർക്കുക</translation>
 <translation id="3105172416063519923">അസറ്റ് ഐഡി:</translation>
@@ -943,7 +942,6 @@
 <translation id="6094273045989040137">അനോട്ടേറ്റ് ചെയ്യുക</translation>
 <translation id="610911394827799129">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="6132597952260690497">ഇൻസ്‌റ്റാൾ ചെയ്‌ത വിപുലീകരണങ്ങളെയും പ്ലഗിന്നുകളെയും കുറിച്ചുള്ള വിവരങ്ങൾ</translation>
-<translation id="6144381551823904650">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു പാസ്‌വേഡ് (സമന്വയിപ്പിച്ചത്)}other{# പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}}</translation>
 <translation id="6146055958333702838">എല്ലാ കേബിളുകളും പരിശോധിക്കുക ഒപ്പം ഏതെങ്കിലും റൂട്ടറുകൾ, മോഡങ്ങൾ നിങ്ങൾ ഉപയോഗിക്കാനിടയുള്ള
         മറ്റ് നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ എന്നിവ റീബൂട്ടുചെയ്യുക.</translation>
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>
@@ -1179,7 +1177,6 @@
 <translation id="7451311239929941790">ഈ പ്രശ്‌നത്തെക്കുറിച്ച് <ph name="BEGIN_LINK" />കൂടുതലറിയുന്നു<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">ആഗോള ഡിഫോൾട്ട് ഉപയോഗിക്കുക (ബ്ലോക്ക് ചെയ്യുക)</translation>
 <translation id="7460618730930299168">നിങ്ങൾ തിരഞ്ഞെടുത്തതിൽ നിന്ന് വ്യത്യസ്‌തമാണ് ഈ സ്ക്രീനിംഗ്. തുടരണോ?</translation>
-<translation id="7465410862124366659">ഈ പേജ് <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />] എന്നതിന്റെ ഉടമസ്‌ഥതയിൽ ആണെന്ന് തിരിച്ചറിഞ്ഞിരിക്കുന്നു.</translation>
 <translation id="7473891865547856676">വേണ്ട, നന്ദി</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
 <translation id="7485870689360869515">ഡാറ്റകളൊന്നും കണ്ടെത്തിയില്ല.</translation>

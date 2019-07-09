@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">近くのデバイスを検出するには Bluetooth をオンにしてください</translation>
 <translation id="2805756323405976993">アプリ</translation>
 <translation id="2872961005593481000">終了</translation>
+<translation id="2912823482158781027">チケットを更新</translation>
 <translation id="3511655281162215899">直ちに新しいパスワードを選択してください</translation>
+<translation id="3562817605261346876"><ph name="PRINCIPAL_NAME" /> のチケットを早めに更新してください</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
 <translation id="445059817448385655">古いパスワード</translation>
 <translation id="467510802200863975">パスワードが一致しません</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="54609108002486618">管理</translation>
 <translation id="5733345267661125295">早急に新しいパスワードを選択してください</translation>
+<translation id="5743581760404859096">Kerberos チケットの有効期限が近づいています</translation>
 <translation id="5832805196449965646">ユーザーを追加</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="6058625436358447366">終了するには、古いパスワードと新しいパスワードを入力してください</translation>
 <translation id="6106186594183574873">終了するには、古いパスワードを入力してください</translation>
 <translation id="6146993107019042706">終了するには、新しいパスワードを入力してください</translation>
 <translation id="6574601967010742428">デバイスの管理者によりアクティビティが監視される可能性があります。</translation>
+<translation id="7280705187789120111">Kerberos チケットの有効期限が近づいています</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{現在のパスワードは有効期限が切れています。}=1{現在のパスワードは 1 日以内に有効期限が切れます。}other{現在のパスワードは # 日以内に有効期限が切れます。}}</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7690294790491645610">新しいパスワードの確認入力</translation>

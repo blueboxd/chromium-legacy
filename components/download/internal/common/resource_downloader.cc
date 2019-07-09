@@ -163,6 +163,7 @@ void ResourceDownloader::Start(
       download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
+      download_url_parameters->ignore_content_length_mismatch(),
       std::vector<GURL>(1, resource_request_->url));
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   url_loader_client_binding_ =
@@ -202,7 +203,8 @@ void ResourceDownloader::InterceptResponse(
       true,  /* follow_cross_origin_redirects */
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
-      download::DownloadSource::NAVIGATION, std::move(url_chain));
+      download::DownloadSource::NAVIGATION,
+      false /* ignore_content_length_mismatch */, std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   response_head->head.cert_status = cert_status;

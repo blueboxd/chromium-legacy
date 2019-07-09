@@ -118,11 +118,20 @@ class RemoteSetImpl {
     disconnect_handler_ = std::move(handler);
   }
 
+  void Clear() { storage_.clear(); }
+
   bool empty() const { return storage_.empty(); }
   Iterator begin() { return Iterator(storage_.begin()); }
   Iterator begin() const { return Iterator(storage_.begin()); }
   Iterator end() { return Iterator(storage_.end()); }
   Iterator end() const { return Iterator(storage_.end()); }
+
+  void FlushForTesting() {
+    for (auto& it : storage_) {
+      if (it.second)
+        it.second.FlushForTesting();
+    }
+  }
 
  private:
   RemoteSetElementId GenerateNextElementId() {

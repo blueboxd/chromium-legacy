@@ -85,6 +85,10 @@ class ASH_EXPORT AutoclickController
   // The cursor has exited a scroll (up/down/left/right) button.
   void OnExitedScrollButton();
 
+  // The Autoclick extension has found scrollble bounds at the current scroll
+  // point.
+  void OnAutoclickScrollableBoundsFound(gfx::Rect& bounds_in_screen);
+
   // Update the bubble menu bounds if necessary to avoid system UI.
   void UpdateAutoclickMenuBoundsIfNeeded();
 

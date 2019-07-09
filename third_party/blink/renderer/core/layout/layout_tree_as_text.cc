@@ -305,18 +305,16 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
   }
 
   if (behavior & kLayoutAsTextShowIDAndClass) {
-    Node* node = o.GetNode();
-    if (node && node->IsElementNode()) {
-      Element& element = ToElement(*node);
-      if (element.HasID())
-        ts << " id=\"" + element.GetIdAttribute() + "\"";
+    if (auto* element = DynamicTo<Element>(o.GetNode())) {
+      if (element->HasID())
+        ts << " id=\"" + element->GetIdAttribute() + "\"";
 
-      if (element.HasClass()) {
+      if (element->HasClass()) {
         ts << " class=\"";
-        for (wtf_size_t i = 0; i < element.ClassNames().size(); ++i) {
+        for (wtf_size_t i = 0; i < element->ClassNames().size(); ++i) {
           if (i > 0)
             ts << " ";
-          ts << element.ClassNames()[i];
+          ts << element->ClassNames()[i];
         }
         ts << "\"";
       }

@@ -24,26 +24,7 @@ using UsbTransferType = mojom::UsbTransferType;
 using UsbTransferDirection = mojom::UsbTransferDirection;
 using UsbSynchronizationType = mojom::UsbSynchronizationType;
 using UsbUsageType = mojom::UsbUsageType;
-
-struct UsbEndpointDescriptor {
-  explicit UsbEndpointDescriptor(const uint8_t* data);
-  UsbEndpointDescriptor(uint8_t address,
-                        uint8_t attributes,
-                        uint16_t maximum_packet_size,
-                        uint8_t polling_interval);
-  UsbEndpointDescriptor() = delete;
-  UsbEndpointDescriptor(const UsbEndpointDescriptor& other);
-  ~UsbEndpointDescriptor();
-
-  uint8_t address;
-  UsbTransferDirection direction;
-  uint16_t maximum_packet_size;
-  UsbSynchronizationType synchronization_type;
-  UsbTransferType transfer_type;
-  UsbUsageType usage_type;
-  uint8_t polling_interval;
-  std::vector<uint8_t> extra_data;
-};
+using UsbEndpointInfoPtr = mojom::UsbEndpointInfoPtr;
 
 struct UsbInterfaceDescriptor {
   explicit UsbInterfaceDescriptor(const uint8_t* data);
@@ -54,6 +35,7 @@ struct UsbInterfaceDescriptor {
                          uint8_t interface_protocol);
   UsbInterfaceDescriptor() = delete;
   UsbInterfaceDescriptor(const UsbInterfaceDescriptor& other);
+  UsbInterfaceDescriptor(UsbInterfaceDescriptor&& other);
   ~UsbInterfaceDescriptor();
 
   uint8_t interface_number;
@@ -61,7 +43,7 @@ struct UsbInterfaceDescriptor {
   uint8_t interface_class;
   uint8_t interface_subclass;
   uint8_t interface_protocol;
-  std::vector<UsbEndpointDescriptor> endpoints;
+  std::vector<UsbEndpointInfoPtr> endpoints;
   std::vector<uint8_t> extra_data;
   // First interface of the function to which this interface belongs.
   uint8_t first_interface;
@@ -75,6 +57,7 @@ struct UsbConfigDescriptor {
                       uint8_t maximum_power);
   UsbConfigDescriptor() = delete;
   UsbConfigDescriptor(const UsbConfigDescriptor& other);
+  UsbConfigDescriptor(UsbConfigDescriptor&& other);
   ~UsbConfigDescriptor();
 
   // Scans through |extra_data| for interface association descriptors and
@@ -92,7 +75,10 @@ struct UsbConfigDescriptor {
 struct UsbDeviceDescriptor {
   UsbDeviceDescriptor();
   UsbDeviceDescriptor(const UsbDeviceDescriptor& other);
+  UsbDeviceDescriptor(UsbDeviceDescriptor&& other);
   ~UsbDeviceDescriptor();
+
+  UsbDeviceDescriptor& operator=(UsbDeviceDescriptor&& other);
 
   // Parses |buffer| for USB descriptors. Any configuration descriptors found
   // will be added to |configurations|. If a device descriptor is found it will
@@ -127,6 +113,13 @@ void ReadUsbStringDescriptors(
     std::unique_ptr<std::map<uint8_t, base::string16>> index_map,
     base::OnceCallback<void(std::unique_ptr<std::map<uint8_t, base::string16>>)>
         callback);
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(const uint8_t* data);
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
+                                           uint8_t attributes,
+                                           uint16_t maximum_packet_size,
+                                           uint8_t polling_interval);
 
 }  // namespace device
 

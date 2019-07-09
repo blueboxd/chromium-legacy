@@ -268,6 +268,11 @@ class NET_EXPORT CanonicalCookie {
   static bool IsCookiePrefixValid(CookiePrefix prefix,
                                   const GURL& url,
                                   const ParsedCookie& parsed_cookie);
+  static bool IsCookiePrefixValid(CookiePrefix prefix,
+                                  const GURL& url,
+                                  bool secure,
+                                  const std::string& domain,
+                                  const std::string& path);
 
   // Returns the cookie's domain, with the leading dot removed, if present.
   std::string DomainWithoutDot() const;

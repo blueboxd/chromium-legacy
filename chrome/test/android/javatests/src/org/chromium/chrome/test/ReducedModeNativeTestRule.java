@@ -47,8 +47,7 @@ public class ReducedModeNativeTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                Features.getInstance().enable(ChromeFeatureList.NETWORK_SERVICE,
-                        ChromeFeatureList.ALLOW_STARTING_SERVICE_MANAGER_ONLY);
+                Features.getInstance().enable(ChromeFeatureList.NETWORK_SERVICE);
                 // Unfortunately, Features has already formed the command line at this point. This
                 // forces another redo after we added new flags.
                 Features.ensureCommandLineIsUpToDate();

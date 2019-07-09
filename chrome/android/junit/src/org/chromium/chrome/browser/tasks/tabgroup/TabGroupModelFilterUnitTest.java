@@ -187,25 +187,33 @@ public class TabGroupModelFilterUnitTest {
         return tab;
     }
 
-    private void setupTabGroupModelFilter(boolean isTabRestoreCompleted) {
+    private void setupTabGroupModelFilter(boolean isTabRestoreCompleted, boolean isIncognito) {
+        mTabs.clear();
+        doReturn(isIncognito).when(mTabModel).isIncognito();
         mTabGroupModelFilter = new TabGroupModelFilter(mTabModel);
         mTabGroupModelFilter.addTabGroupObserver(mTabGroupModelFilterObserver);
 
+        doReturn(isIncognito).when(mTab1).isIncognito();
         mTabModel.addTab(mTab1, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab1, TabLaunchType.FROM_CHROME_UI);
 
+        doReturn(isIncognito).when(mTab2).isIncognito();
         mTabModel.addTab(mTab2, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab2, TabLaunchType.FROM_CHROME_UI);
 
+        doReturn(isIncognito).when(mTab3).isIncognito();
         mTabModel.addTab(mTab3, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_CHROME_UI);
 
+        doReturn(isIncognito).when(mTab4).isIncognito();
         mTabModel.addTab(mTab4, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab4, TabLaunchType.FROM_CHROME_UI);
 
+        doReturn(isIncognito).when(mTab5).isIncognito();
         mTabModel.addTab(mTab5, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab5, TabLaunchType.FROM_CHROME_UI);
 
+        doReturn(isIncognito).when(mTab6).isIncognito();
         mTabModel.addTab(mTab6, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab6, TabLaunchType.FROM_CHROME_UI);
 
@@ -226,13 +234,21 @@ public class TabGroupModelFilterUnitTest {
 
         setUpTab();
         setUpTabModel();
-        setupTabGroupModelFilter(true);
+        setupTabGroupModelFilter(true, false);
     }
 
     @After
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
+    }
+
+    @Test
+    public void setIncognito() {
+        setupTabGroupModelFilter(true, false);
+        setupTabGroupModelFilter(false, true);
+        assertThat(mTabGroupModelFilter.isIncognito(), equalTo(true));
+        assertThat(mTabModel.getCount(), equalTo(6));
     }
 
     @Test
@@ -536,7 +552,7 @@ public class TabGroupModelFilterUnitTest {
     @Test
     public void ignoreUnrelatedMoveTab() {
         // Simulate that the tab restoring is not yet finished.
-        setupTabGroupModelFilter(false);
+        setupTabGroupModelFilter(false, false);
 
         mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION1, POSITION6);
         mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION6, POSITION1);
@@ -621,5 +637,21 @@ public class TabGroupModelFilterUnitTest {
 
         // Undo the grouped action.
         mTabGroupModelFilter.undoGroupedTab(mTab6, POSITION1, TAB1_ROOT_ID);
+    }
+
+    @Test
+    public void skipRestoringStageMoveTab_Incognito() {
+        // Simulate tab model is in incognito mode, and thus tab restoring will not happen.
+        // Therefore, we should not ignore didMoveTab calls because we have already skipped the
+        // didMoveTab calls from restoring stage.
+        setupTabGroupModelFilter(false, true);
+
+        // Simulate that tab3 is going to be moved out of group.
+        mTab3.setRootId(TAB3_ID);
+
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab3, POSITION3, POSITION6);
+
+        // Verify that the signal is not ignored.
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab3, POSITION2);
     }
 }

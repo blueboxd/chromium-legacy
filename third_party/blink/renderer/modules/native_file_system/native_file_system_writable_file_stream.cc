@@ -17,7 +17,7 @@
 namespace blink {
 
 NativeFileSystemWritableFileStream::NativeFileSystemWritableFileStream(
-    mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr)
+    RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter> mojo_ptr)
     : mojo_ptr_(std::move(mojo_ptr)) {
   DCHECK(mojo_ptr_);
 }

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="104962181688258143">Rakenduse Failid avamine</translation>
+<translation id="1098295134904615027">Parempoolse virtuaalse töölaua aktiveerimine</translation>
 <translation id="1122869341872663659">Kuvatud on päringu <ph name="QUERY" /> <ph name="N" /> otsingutulemust</translation>
 <translation id="1195667586424773550">Lohistage link vahelehe aadressiribale</translation>
 <translation id="1204450209689312104">Uue akna avamine inkognito režiimis</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT1" /> <ph name="SEPARATOR2" /> <ph name="G" /> või <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Mine rea lõppu</translation>
+<translation id="1499072997694708844">Kõigi avatud akende sulgemine või teie praeguse lehe laadimise peatamine</translation>
 <translation id="1510238584712386396">Käivitaja</translation>
 <translation id="152892567002884378">Helitugevuse suurendamine</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, seejärel <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /> <ph name="SEPARATOR1" /> <ph name="MODIFIER2" /> <ph name="SEPARATOR2" /> <ph name="KEY" /></translation>
 <translation id="1733525068429116555">Laiendite www. ja .com lisamine aadressiribale ning siis lehe avamine</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, seejärel <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="TAB" /> või <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">Vasakpoolse virtuaalse töölaua aktiveerimine</translation>
 <translation id="1996162290124031907">Järgmisele vahelehele liikumine</translation>
 <translation id="2010818616644390445">Aknas viimasele vahelehele liikumine</translation>
 <translation id="2040706009561734834">Avab/suleb käivitusprogrammi</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">Teeb kuvatõmmise</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Keskendub aadressiribale</translation>
+<translation id="3165428420335997629">Uue virtuaalse töölaua loomine</translation>
 <translation id="3256109297135787951">Riiulis oleva üksuse esiletõstu eemaldamine</translation>
 <translation id="3288816184963444640">Praeguse akna sulgemine</translation>
 <translation id="3407560819924487926">Tegumihalduri esiletoomine</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">Aktiivselt lehelt otsimine</translation>
 <translation id="5563050856984839829">Vajutage klahvikombinatsiooni <ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="SHIFT" /> ja klõpsake lingil</translation>
 <translation id="561814908794220892">Veebilehe avamine uuel vahelehel</translation>
+<translation id="5620219513321115856">Aktiivne aken teisaldatakse parempoolsele töölauale</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="L" /> või <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="D" /></translation>
 <translation id="5757111373163288447">Lingi avamine vahelehel</translation>
 <translation id="5757474750054631686">Klaviatuuri hämardamine (ainult taustvalgusega klaviatuuride puhul)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">Ekraani pööramine 90 kraadi</translation>
 <translation id="8241665785394195545">Parem nurksulg</translation>
 <translation id="8264941229485248811">Kuvab või peidab arendajatööriistade inspektori</translation>
+<translation id="8355937569537581904">Praeguse virtuaalse töölaua eemaldamine</translation>
 <translation id="836869401750819675">Allalaadimiste lehe avamine</translation>
 <translation id="8388247778047144397">Lohistage link vahelehtede ribal tühjale alale</translation>
 <translation id="8389638407792712197">Uue akna avamine</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">Eelmise sõna või tähe valimine</translation>
 <translation id="8727232706774971183">Märguannete vaatamine</translation>
 <translation id="8855885154700222542">Täisekraani klahv</translation>
+<translation id="8881584919399569791">Aktiivne aken teisaldatakse vasakpoolsele töölauale</translation>
 <translation id="88986195241502842">Lehe lõppu</translation>
 <translation id="8924883688469390268">Eelmisele kasutajale vahetamine</translation>
 <translation id="8977648847395357314">Aadressiriba sisu valimine</translation>

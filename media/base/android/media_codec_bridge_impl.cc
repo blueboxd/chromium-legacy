@@ -587,9 +587,6 @@ void MediaCodecBridgeImpl::OnBuffersAvailable(
 }
 
 std::string MediaCodecBridgeImpl::GetName() {
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_JELLY_BEAN_MR2)
-    return "";
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_name =
       Java_MediaCodecBridge_getName(env, j_bridge_);

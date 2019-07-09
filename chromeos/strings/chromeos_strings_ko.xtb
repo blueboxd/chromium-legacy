@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="2872961005593481000">종료</translation>
+<translation id="2912823482158781027">티켓 새로고침</translation>
 <translation id="3511655281162215899">즉시 새 비밀번호를 선택해 주세요.</translation>
+<translation id="3562817605261346876"><ph name="PRINCIPAL_NAME" /> 티켓을 곧 새로고침해 주세요.</translation>
 <translation id="3838338534323494292">새 비밀번호</translation>
 <translation id="445059817448385655">이전 비밀번호</translation>
 <translation id="467510802200863975">비밀번호가 일치하지 않습니다.</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">게스트로 로그인</translation>
 <translation id="54609108002486618">관리</translation>
 <translation id="5733345267661125295">지금 새 비밀번호를 선택해 주세요.</translation>
+<translation id="5743581760404859096">Kerberos 티켓이 곧 만료됨</translation>
 <translation id="5832805196449965646">사용자 추가</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="6058625436358447366">완료하려면 이전 및 새 비밀번호를 입력하세요.</translation>
 <translation id="6106186594183574873">완료하려면 이전 비밀번호를 입력하세요.</translation>
 <translation id="6146993107019042706">완료하려면 새 비밀번호를 입력하세요.</translation>
 <translation id="6574601967010742428">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
+<translation id="7280705187789120111">Kerberos 티켓 만료 예정</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{현재 비밀번호가 만료되었습니다.}=1{1일 이내에 현재 비밀번호가 만료됩니다.}other{#일 이내에 현재 비밀번호가 만료됩니다.}}</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7690294790491645610">새 비밀번호 확인</translation>

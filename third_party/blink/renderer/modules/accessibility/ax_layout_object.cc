@@ -2169,7 +2169,7 @@ Element* AXLayoutObject::AnchorElement() const {
     if (IsHTMLAnchorElement(runner) ||
         (runner.GetLayoutObject() &&
          cache.GetOrCreate(runner.GetLayoutObject())->IsAnchor()))
-      return ToElement(&runner);
+      return To<Element>(&runner);
   }
 
   return nullptr;

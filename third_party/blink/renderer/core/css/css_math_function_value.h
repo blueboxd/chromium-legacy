@@ -27,8 +27,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
       const CSSToLengthConversionData& conversion_data) const {
     PixelsAndPercent value(0, 0);
     expression_->AccumulatePixelsAndPercent(conversion_data, value);
-    return CalculationValue::Create(
-        value, non_negative_ ? kValueRangeNonNegative : kValueRangeAll);
+    return CalculationValue::Create(value, PermittedValueRange());
   }
 
   UnitType TypeWithMathFunctionResolved() const;
@@ -37,8 +36,8 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   CalculationCategory Category() const { return expression_->Category(); }
   bool IsInt() const { return expression_->IsInteger(); }
   bool IsNegative() const { return expression_->DoubleValue() < 0; }
-  ValueRange PermittedValueRange() {
-    return non_negative_ ? kValueRangeNonNegative : kValueRangeAll;
+  ValueRange PermittedValueRange() const {
+    return IsNonNegative() ? kValueRangeNonNegative : kValueRangeAll;
   }
 
   // TODO(crbug.com/979895): Make sure these functions are called only when
@@ -60,12 +59,11 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   void TraceAfterDispatch(blink::Visitor* visitor);
 
  private:
+  bool IsNonNegative() const { return is_non_negative_math_function_; }
+
   double ClampToPermittedRange(double) const;
 
   Member<CSSMathExpressionNode> expression_;
-
-  // TODO(crbug.com/979895): Move this flag to CSSValue for better packing.
-  bool non_negative_;
 };
 
 template <>

@@ -736,9 +736,17 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         gl::GetRequestableGLExtensionsFromCurrentContext());
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
-        "GL_ANGLE_memory_size",   "GL_CHROMIUM_bind_uniform_location",
-        "GL_CHROMIUM_sync_query", "GL_EXT_debug_marker",
-        "GL_KHR_debug",           "GL_NV_fence",
+        "GL_ANGLE_memory_size",
+        "GL_ANGLE_native_id",
+        "GL_ANGLE_texture_storage_external",
+        "GL_CHROMIUM_bind_uniform_location",
+        "GL_CHROMIUM_sync_query",
+        "GL_EXT_debug_marker",
+        "GL_KHR_debug",
+        "GL_NV_fence",
+        "GL_OES_EGL_image",
+        "GL_OES_EGL_image_external",
+        "GL_OES_EGL_image_external_essl3",
     };
     RequestExtensions(api(), requestable_extensions,
                       kRequiredFunctionalityExtensions,
@@ -779,9 +787,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_NV_pack_subimage",
           "GL_OES_compressed_ETC1_RGB8_texture",
           "GL_OES_depth32",
-          "GL_OES_EGL_image",
-          "GL_OES_EGL_image_external",
-          "GL_OES_EGL_image_external_essl3",
           "GL_OES_packed_depth_stencil",
           "GL_OES_rgb8_rgba8",
           "GL_OES_vertex_array_object",
@@ -1577,7 +1582,8 @@ GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
   GLuint service_id = 0;
   api()->glGenTexturesFn(1, &service_id);
   scoped_refptr<TexturePassthrough> texture(
-      new TexturePassthrough(service_id, target));
+      new TexturePassthrough(service_id, target, internal_format, width, height,
+                             depth, border, format, type));
 
   // Unretained is safe, because of the destruction cb.
   std::unique_ptr<PassthroughAbstractTextureImpl> abstract_texture =

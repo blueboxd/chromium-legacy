@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Atsarginis kopijavimas baigtas!</translation>
 <translation id="3626281679859535460">Šviesumas</translation>
 <translation id="3644896802912593514">Plotis</translation>
+<translation id="3645531960514756307">Atsegti aplanką</translation>
 <translation id="3678559383040232393">Maltiečių klaviatūra</translation>
 <translation id="3685122418104378273">„Google“ disko sinchronizavimas pagal numatytuosius nustatymus yra išjungtas, kai naudojami mobiliojo ryšio duomenys.</translation>
 <translation id="3726463242007121105">Įrenginio negalima atidaryti, nes nepalaikoma jo failų išdėstymo sistema.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Vakar <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandiška klaviatūra</translation>
 <translation id="8342318071240498787">Failas ar katalogas tokiu pačiu pavadinimu jau yra.</translation>
+<translation id="8382450452152102026">Į „<ph name="FOLDER_NAME" />“</translation>
 <translation id="8391950649760071442">Transliteracija (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Aspektai</translation>
 <translation id="8412586565681117057">Greitasis įvesties metodas</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Puslapių skaičius</translation>
 <translation id="9110990317705400362">Nuolat stengiamės padaryti naršymą saugesnį. Anksčiau bet kurioje svetainėje buvo leidžiama raginti jus pridėti plėtinį prie naršyklės. Naudodami naujausių versijų „Google Chrome“, privalote aiškiai nurodyti „Chrome“, kad norite įdiegti šiuos plėtinius, pridėję juos „Plėtinių“ puslapyje. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodekas</translation>
+<translation id="9129931661813833980">Prisegti aplanką</translation>
 <translation id="9130775360844693113">„<ph name="DESTINATION_NAME" />“ nariai galės pasiekti šiuos elementus.</translation>
 <translation id="9131598836763251128">Pasirinkite bent vieną failą</translation>
 <translation id="9133055936679483811">Archyvuojant įvyko klaida. <ph name="ERROR_MESSAGE" /></translation>

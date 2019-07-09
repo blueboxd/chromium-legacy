@@ -16,13 +16,13 @@ cca.tooltip = cca.tooltip || {};
 
 /**
  * Wrapper element that shows tooltip.
- * @type {HTMLElement}
+ * @private {HTMLElement}
  */
 cca.tooltip.wrapper_ = null;
 
 /**
  * Hovered element whose tooltip to be shown.
- * @type {HTMLElement}
+ * @private {HTMLElement}
  */
 cca.tooltip.hovered_ = null;
 
@@ -32,18 +32,19 @@ cca.tooltip.hovered_ = null;
  * @return {NodeList<Element>} Elements whose tooltips have been set up.
  */
 cca.tooltip.setup = function(elements) {
-  cca.tooltip.wrapper_ = document.querySelector('#tooltip');
+  cca.tooltip.wrapper_ =
+      /** @type {HTMLElement} */ (document.querySelector('#tooltip'));
   elements.forEach((element) => {
+    const el = /** @type {HTMLElement} */ (element);
     var handler = () => {
       // Handler hides tooltip only when it's for the element.
-      if (element == cca.tooltip.hovered_) {
+      if (el == cca.tooltip.hovered_) {
         cca.tooltip.hide();
       }
     };
-    element.addEventListener('mouseout', handler);
-    element.addEventListener('click', handler);
-    element.addEventListener('mouseover',
-        cca.tooltip.show_.bind(undefined, element));
+    el.addEventListener('mouseout', handler);
+    el.addEventListener('click', handler);
+    el.addEventListener('mouseover', cca.tooltip.show_.bind(undefined, el));
   });
   return elements;
 };

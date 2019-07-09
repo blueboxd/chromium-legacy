@@ -2752,6 +2752,8 @@ crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computeds
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
+crbug.com/972227 external/wpt/css/css-flexbox/overflow-auto-001.html [ Failure ]
+
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
@@ -5740,9 +5742,6 @@ crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fir
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 crbug.com/840659 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 
-# Sheriff 2019-01-11
-crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]
-
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
 
@@ -6025,12 +6024,8 @@ crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pa
 # Sheriff 2019-04-03
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Pass Timeout ]
-crbug.com/949440 [ Mac10.13 Debug ] http/tests/devtools/layers/layers-panel-mouse-events.js [ Pass Crash ]
 crbug.com/949442 [ Mac10.13 Debug ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 crbug.com/949442 [ Mac10.13 Debug ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
-crbug.com/949443 [ Mac10.13 Debug ] fast/block/inline-children-root-linebox-crash.html [ Pass Crash ]
-crbug.com/949444 [ Mac10.13 Debug ] fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
-crbug.com/949444 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
 crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ Failure ]
 
 # Sheriff 2019-04-09

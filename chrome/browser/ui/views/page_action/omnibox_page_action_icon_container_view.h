@@ -22,6 +22,7 @@ class IntentPickerView;
 class ManagePasswordsIconViews;
 class NativeFileSystemAccessIconView;
 class PwaInstallView;
+class ReaderModeIconView;
 class TranslateIconView;
 class ZoomView;
 
@@ -90,6 +91,7 @@ class OmniboxPageActionIconContainerView
       nullptr;
   TranslateIconView* translate_icon_ = nullptr;
   NativeFileSystemAccessIconView* native_file_system_icon_ = nullptr;
+  ReaderModeIconView* reader_mode_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

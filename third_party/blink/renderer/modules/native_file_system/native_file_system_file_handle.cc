@@ -21,7 +21,7 @@ using mojom::blink::NativeFileSystemErrorPtr;
 
 NativeFileSystemFileHandle::NativeFileSystemFileHandle(
     const String& name,
-    mojom::blink::NativeFileSystemFileHandlePtr mojo_ptr)
+    RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle> mojo_ptr)
     : NativeFileSystemHandle(name), mojo_ptr_(std::move(mojo_ptr)) {
   DCHECK(mojo_ptr_);
 }
@@ -35,9 +35,14 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
       [](ScriptPromiseResolver* resolver,
          mojom::blink::NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemFileWriterPtr writer) {
+        ExecutionContext* context = resolver->GetExecutionContext();
+        if (!context)
+          return;
         if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(
-              MakeGarbageCollected<NativeFileSystemWriter>(std::move(writer)));
+          resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
+              RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
+                  writer.PassInterface(), context->GetInterfaceInvalidator(),
+                  context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
         } else {
           resolver->Reject(file_error::CreateDOMException(result->error_code));
         }
@@ -56,10 +61,15 @@ ScriptPromise NativeFileSystemFileHandle::createWritable(
       [](ScriptPromiseResolver* resolver,
          mojom::blink::NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemFileWriterPtr writer) {
+        ExecutionContext* context = resolver->GetExecutionContext();
+        if (!context)
+          return;
         if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(
-              MakeGarbageCollected<NativeFileSystemWritableFileStream>(
-                  std::move(writer)));
+          resolver->Resolve(MakeGarbageCollected<
+                            NativeFileSystemWritableFileStream>(
+              RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
+                  writer.PassInterface(), context->GetInterfaceInvalidator(),
+                  context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
         } else {
           resolver->Reject(file_error::CreateDOMException(result->error_code));
         }

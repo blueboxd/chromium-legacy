@@ -12,7 +12,7 @@
 #include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "ash/public/cpp/caption_buttons/snap_controller.h"
 #include "base/macros.h"
-#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/window/frame_caption_button.h"
@@ -34,7 +34,7 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
     : public views::View,
       public views::ButtonListener,
       public FrameSizeButtonDelegate,
-      public gfx::AnimationDelegate {
+      public views::AnimationDelegateViews {
  public:
   static const char kViewClassName[];
 
@@ -107,7 +107,7 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   void ChildPreferredSizeChanged(View* child) override;
   void ChildVisibilityChanged(View* child) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 

@@ -26,7 +26,7 @@
 <translation id="1801827354178857021">Periode</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 bulan}other{# bulan}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/dtk</translation>
-<translation id="1812519734428420144">Skor bintang <ph name="RATING_SCORE" /></translation>
+<translation id="1812519734428420144">Rating bintang <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 jam dan }other{# jam dan }}</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="1859234291848436338">Arah Penulisan</translation>
@@ -53,6 +53,7 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibrasi selesai</translation>
 <translation id="252373100621549798">Tampilan yang Tidak Diketahui</translation>
+<translation id="2545651323591713692">Tunda</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{dalam 1 jam}other{dalam # jam}}</translation>
 <translation id="2583543531130364912">Kalibrasi layar sentuh</translation>
 <translation id="2666092431469916601">Atas</translation>

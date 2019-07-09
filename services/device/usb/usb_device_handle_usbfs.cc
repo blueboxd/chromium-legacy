@@ -22,6 +22,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_device_linux.h"
 
 namespace device {
@@ -877,8 +878,9 @@ void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
     DCHECK(interface_it != config->interfaces.end());
 
     for (const auto& endpoint : interface_it->endpoints) {
-      EndpointInfo& info = endpoints_[endpoint.address];
-      info.type = endpoint.transfer_type;
+      EndpointInfo& info =
+          endpoints_[ConvertEndpointNumberToAddress(*endpoint)];
+      info.type = endpoint->type;
       info.interface = &*interface_it;
     }
   }

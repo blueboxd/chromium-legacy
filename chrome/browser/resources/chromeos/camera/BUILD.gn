@@ -4,6 +4,12 @@
 
 chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
 
+group("closure_compile") {
+  deps = [
+    "src/js:closure_compile",
+  ]
+}
+
 group("chrome_camera_app") {
   # According to crbug.com/855747, we should list all the files we want to copy
   # rather than list only the folders to avoid potential building issue and ease
@@ -17,6 +23,7 @@ group("chrome_camera_app") {
     ":chrome_camera_app_css",
     ":chrome_camera_app_images",
     ":chrome_camera_app_js",
+    ":chrome_camera_app_js_browser_proxy",
     ":chrome_camera_app_js_models",
     ":chrome_camera_app_js_mojo",
     ":chrome_camera_app_js_views",
@@ -120,6 +127,16 @@ copy("chrome_camera_app_js") {
 
   outputs = [
     "$chrome_camera_app_dir/js/{{source_file_part}}",
+  ]
+}
+
+copy("chrome_camera_app_js_browser_proxy") {
+  sources = [
+    "src/js/browser_proxy/browser_proxy.js",
+  ]
+
+  outputs = [
+    "$chrome_camera_app_dir/js/browser_proxy/{{source_file_part}}",
   ]
 }
 

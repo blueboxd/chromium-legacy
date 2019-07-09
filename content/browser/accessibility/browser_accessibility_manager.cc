@@ -16,7 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -430,9 +430,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     // TODO(chrishall): we will want to run this more often for dynamic pages.
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      DetectLanguageForSubtree(tree_->root(), tree_.get());
-      if (!LabelLanguageForSubtree(tree_->root(), tree_.get()))
-        LOG(FATAL) << "Language detection failed at step: Label";
+      tree_->language_detection_manager->DetectLanguageForSubtree(
+          tree_->root());
+      tree_->language_detection_manager->LabelLanguageForSubtree(tree_->root());
     }
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);

@@ -28,6 +28,9 @@ struct ParsedFaviconPath {
   // The index of the first character (relative to the path) where the the URL
   // from which the favicon is being requested is located.
   size_t path_index;
+
+  // Whether we should allow making a request to the favicon server as fallback.
+  bool allow_favicon_server_fallback;
 };
 
 // Enum describing the two possible url formats: the legacy chrome://favicon
@@ -79,6 +82,12 @@ struct ParsedFaviconPath {
 //      Specifies the requested favicon's scale factor. If unspecified, defaults
 //      to 1x.
 //    Example: chrome://favicon2/?scale_factor=1.2x
+//
+//  In case |url_type| == 'page_url', we can specify an additional parameter:
+//  'allow_google_server_fallback' Optional
+//      Values: ['1', '0']
+//      Specifies whether we are allowed to fall back to an external server
+//      request in case the icon is not found locally.
 enum class FaviconUrlFormat {
   // Legacy chrome://favicon format.
   kFaviconLegacy,

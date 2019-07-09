@@ -90,7 +90,7 @@
 <translation id="197560921582345123">可以編輯</translation>
 <translation id="1984603991036629094">亞美尼亞文 (拼音) 鍵盤</translation>
 <translation id="2001796770603320721">在雲端硬碟中管理</translation>
-<translation id="2009067268969781306">格式化硬碟將刪除其中儲存的所有資料。這項操作無法復原。</translation>
+<translation id="2009067268969781306">若將硬碟格式化，其中儲存的所有資料都將遭到刪除。這項操作無法復原。</translation>
 <translation id="2028997212275086731">RAR 封存</translation>
 <translation id="2046702855113914483">拉麵</translation>
 <translation id="2070909990982335904">以點號開頭的名稱僅供系統使用，請選擇其他名稱。</translation>
@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">所有檔案都已備份！</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3644896802912593514">寬度</translation>
+<translation id="3645531960514756307">取消固定資料夾</translation>
 <translation id="3678559383040232393">馬爾他文鍵盤</translation>
 <translation id="3685122418104378273">使用行動數據時，Google 雲端硬碟同步功能預設為停用。</translation>
 <translation id="3726463242007121105">這個裝置所用的檔案系統不受支援，因此系統無法開啟這個裝置。</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">冰島文鍵盤配置</translation>
 <translation id="8342318071240498787">已存在名稱相同的檔案或目錄。</translation>
+<translation id="8382450452152102026">移至：<ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">音譯 (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">尺寸</translation>
 <translation id="8412586565681117057">簡易/速成輸入法</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">頁數</translation>
 <translation id="9110990317705400362">我們不斷努力提升網路瀏覽的安全性。過去，任何網站都可以提示你在瀏覽器中新增擴充功能。在最新版本的 Google Chrome 中，你必須統一透過「擴充功能」頁面新增擴充功能，讓 Chrome 確實瞭解你要安裝的各項擴充功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">轉碼器</translation>
+<translation id="9129931661813833980">固定資料夾</translation>
 <translation id="9130775360844693113">「<ph name="DESTINATION_NAME" />」的成員將可存取這些項目。</translation>
 <translation id="9131598836763251128">選取一或多個檔案</translation>
 <translation id="9133055936679483811">壓縮失敗。<ph name="ERROR_MESSAGE" /></translation>

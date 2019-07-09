@@ -1211,11 +1211,6 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
 
-  // Reject ignored objects
-  if (src.AccessibilityIsIgnored()) {
-    return;
-  }
-
   // Reject images that are explicitly empty, or that have a name already.
   //
   // In the future, we may annotate some images that have a name

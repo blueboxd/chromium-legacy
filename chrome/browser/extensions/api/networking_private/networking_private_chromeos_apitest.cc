@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CreateNetwork) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        CreateNetworkForPolicyControlledNetwork) {
-  const std::string user_policy_blob =
+  constexpr char kUserPolicyBlob[] =
       R"({
            "NetworkConfigurations": [{
              "GUID": "stub_wifi2",
@@ -670,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::Value(user_policy_blob)), nullptr);
+             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, ForgetNetwork) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        ForgetPolicyControlledNetwork) {
-  const std::string user_policy_blob =
+  constexpr char kUserPolicyBlob[] =
       R"({
            "NetworkConfigurations": [{
              "GUID": "stub_wifi2",
@@ -705,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::Value(user_policy_blob)), nullptr);
+             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
@@ -715,14 +715,14 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 // TODO(stevenjb): Find a better way to set this up on Chrome OS.
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
-  const std::string uidata_blob =
-      "{ \"user_settings\": {"
-      "      \"WiFi\": {"
-      "        \"Passphrase\": \"FAKE_CREDENTIAL_VPaJDV9x\" }"
-      "    }"
-      "}";
+  constexpr char kUidataBlob[] =
+      R"({
+        "user_settings": {
+          "WiFi": {"Passphrase": "FAKE_CREDENTIAL_VPaJDV9x"}
+        }
+      })";
   service_test_->SetServiceProperty(kWifi2ServicePath, shill::kUIDataProperty,
-                                    base::Value(uidata_blob));
+                                    base::Value(kUidataBlob));
   service_test_->SetServiceProperty(
       kWifi2ServicePath, shill::kAutoConnectProperty, base::Value(false));
 
@@ -731,27 +731,27 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
 
   content::RunAllPendingInMessageLoop();
 
-  const std::string user_policy_blob =
-      "{ \"NetworkConfigurations\": ["
-      "    { \"GUID\": \"stub_wifi2\","
-      "      \"Type\": \"WiFi\","
-      "      \"Name\": \"My WiFi Network\","
-      "      \"WiFi\": {"
-      "        \"HexSSID\": \"77696669325F50534B\","  // "wifi2_PSK"
-      "        \"Passphrase\": \"passphrase\","
-      "        \"Recommended\": [ \"AutoConnect\", \"Passphrase\" ],"
-      "        \"Security\": \"WPA-PSK\" }"
-      "    }"
-      "  ],"
-      "  \"Certificates\": [],"
-      "  \"Type\": \"UnencryptedConfiguration\""
-      "}";
+  constexpr char kUserPolicyBlob[] = R"({
+      "NetworkConfigurations": [
+          { "GUID": "stub_wifi2",
+            "Type": "WiFi",
+            "Name": "My WiFi Network",
+            "WiFi": {
+              "HexSSID": "77696669325F50534B",
+              "Passphrase": "passphrase",
+              "Recommended": [ "AutoConnect", "Passphrase" ],
+              "Security": "WPA-PSK" }
+          }
+        ],
+        "Certificates": [],
+        "Type": "UnencryptedConfiguration"
+      })";
 
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::Value(user_policy_blob)), nullptr);
+             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();

@@ -96,6 +96,61 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
 }
 
+// Navigate from back and forward repeatedly.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       NavigateBackForwardRepeatedly) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+
+  // 4) Go forward to B.
+  web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_b, current_frame_host());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 5) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+
+  // 6) Go forward to B.
+  web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_b, current_frame_host());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_FALSE(delete_rfh_b.deleted());
+}
+
 // Navigate from A(B) to C and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -422,4 +477,53 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DisallowedFeatureOnPage) {
   // The page with the unsupported feature should be deleted (not cached).
   delete_rfh_a.WaitUntilDeleted();
 }
+
+// Check that unload event handlers are not dispatched when the page goes
+// into BackForwardCache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       ConfirmUnloadEventNotFired) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Set unload handler and check the title.
+  EXPECT_TRUE(ExecJs(rfh_a,
+                     "document.title = 'loaded!';"
+                     "window.addEventListener('unload', () => {"
+                     "  document.title = 'unloaded!';"
+                     "});"));
+  {
+    base::string16 title_when_loaded = base::UTF8ToUTF16("loaded!");
+    TitleWatcher title_watcher(web_contents(), title_when_loaded);
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_loaded);
+  }
+
+  // 3) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 4) Go back to A and check the title again.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_FALSE(delete_rfh_b.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  {
+    base::string16 title_when_loaded = base::UTF8ToUTF16("loaded!");
+    TitleWatcher title_watcher(web_contents(), title_when_loaded);
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_loaded);
+  }
+}
+
 }  // namespace content

@@ -316,6 +316,18 @@ void TestNetworkQualityEstimator::
     observer.OnEffectiveConnectionTypeChanged(type);
 }
 
+base::Optional<net::EffectiveConnectionType>
+TestNetworkQualityEstimator::GetOverrideECT() const {
+  return effective_connection_type_;
+}
+
+void TestNetworkQualityEstimator::
+    SetAndNotifyObserversOfP2PActiveConnectionsCountChange(uint32_t count) {
+  p2p_connections_count_ = count;
+  for (auto& observer : peer_to_peer_type_observer_list_)
+    observer.OnPeerToPeerConnectionsCountChange(count);
+}
+
 void TestNetworkQualityEstimator::RecordSpdyPingLatency(
     const HostPortPair& host_port_pair,
     base::TimeDelta rtt) {

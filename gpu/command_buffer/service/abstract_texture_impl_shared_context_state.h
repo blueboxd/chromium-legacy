@@ -15,6 +15,7 @@ class SharedContextState;
 
 namespace gles2 {
 class Texture;
+class TexturePassthrough;
 
 // Implementation of AbstractTexture which will be used to create
 // AbstractTextures on ShareContextState.
@@ -49,6 +50,36 @@ class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContext
 
  private:
   Texture* texture_;
+  scoped_refptr<SharedContextState> shared_context_state_;
+  CleanupCallback cleanup_cb_;
+};
+
+// Implementation of AbstractTexture which will be used to create
+// AbstractTextures on SharedContextState for the passthrough command decoder.
+class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContextPassthrough
+    : public AbstractTexture,
+      public SharedContextState::ContextLostObserver {
+ public:
+  AbstractTextureImplOnSharedContextPassthrough(
+      GLenum target,
+      scoped_refptr<gpu::SharedContextState> shared_context_state);
+  ~AbstractTextureImplOnSharedContextPassthrough() override;
+
+  // AbstractTexture implementation.
+  TextureBase* GetTextureBase() const override;
+  void SetParameteri(GLenum pname, GLint param) override;
+  void BindStreamTextureImage(GLStreamTextureImage* image,
+                              GLuint service_id) override;
+  void BindImage(gl::GLImage* image, bool client_managed) override;
+  gl::GLImage* GetImage() const override;
+  void SetCleared() override;
+  void SetCleanupCallback(CleanupCallback cb) override;
+
+  // SharedContextState::ContextLostObserver implementation.
+  void OnContextLost() override;
+
+ private:
+  scoped_refptr<TexturePassthrough> texture_;
   scoped_refptr<SharedContextState> shared_context_state_;
   CleanupCallback cleanup_cb_;
 };

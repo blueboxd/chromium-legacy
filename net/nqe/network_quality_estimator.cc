@@ -865,6 +865,11 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   new_throughput_observations_since_last_ect_computation_ = 0;
 }
 
+base::Optional<net::EffectiveConnectionType>
+NetworkQualityEstimator::GetOverrideECT() const {
+  return base::nullopt;
+}
+
 void NetworkQualityEstimator::ClampKbpsBasedOnEct() {
   // No need to clamp when ECT is unknown or if the connection speed is fast.
   if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
@@ -988,6 +993,11 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
 EffectiveConnectionType NetworkQualityEstimator::GetEffectiveConnectionType()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::Optional<net::EffectiveConnectionType> override_ect = GetOverrideECT();
+  if (override_ect) {
+    return override_ect.value();
+  }
   return effective_connection_type_;
 }
 
@@ -1569,10 +1579,12 @@ void NetworkQualityEstimator::
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(EFFECTIVE_CONNECTION_TYPE_LAST, effective_connection_type_);
 
+  base::Optional<net::EffectiveConnectionType> override_ect = GetOverrideECT();
+
   // TODO(tbansal): Add hysteresis in the notification.
   for (auto& observer : effective_connection_type_observer_list_)
-    observer.OnEffectiveConnectionTypeChanged(effective_connection_type_);
-
+    observer.OnEffectiveConnectionTypeChanged(
+        override_ect ? override_ect.value() : effective_connection_type_);
   // Add the estimates of the current network to the cache store.
   network_quality_store_->Add(current_network_id_,
                               nqe::internal::CachedNetworkQuality(
@@ -1597,6 +1609,12 @@ void NetworkQualityEstimator::NotifyEffectiveConnectionTypeObserverIfPresent(
 
   if (!effective_connection_type_observer_list_.HasObserver(observer))
     return;
+
+  base::Optional<net::EffectiveConnectionType> override_ect = GetOverrideECT();
+  if (override_ect) {
+    observer->OnEffectiveConnectionTypeChanged(override_ect.value());
+    return;
+  }
   if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
     return;
   observer->OnEffectiveConnectionTypeChanged(effective_connection_type_);

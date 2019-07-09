@@ -33,227 +33,23 @@ class HeapCompact::MovableObjectFixups final {
   ~MovableObjectFixups() = default;
 
   // For the arenas being compacted, record all pages belonging to them.
-  // This is needed to handle 'interior slots', pointers that themselves
-  // can move (independently from the reference the slot points to.)
-  void AddCompactingPage(BasePage* page) {
-    DCHECK(!page->IsLargeObjectPage());
-    relocatable_pages_.insert(page);
-  }
+  // This is needed to handle interior pointers that reside on areas that are
+  // compacted themselves.
+  void AddCompactingPage(BasePage* page);
 
-  void AddOrFilter(MovableReference* slot, const char* name) {
-    MovableReference value = *slot;
-    CHECK(value);
+  // Adds a slot for compaction. Filters slots in dead objects.
+  void AddOrFilter(MovableReference* slot);
 
-    // All slots and values are part of Oilpan's heap.
-    // - Slots may be contained within dead objects if e.g. the write barrier
-    //   registered the slot while the out backing itself has not been marked
-    //   live in time. Slots in dead objects are filtered below.
-    // - Values may only be contained in or point to live objects.
-
-    // Slots handling.
-    BasePage* const slot_page =
-        heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
-    CHECK(slot_page);
-    HeapObjectHeader* const header =
-        slot_page->IsLargeObjectPage()
-            ? static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()
-            : static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
-                  reinterpret_cast<Address>(slot));
-    CHECK(header);
-    // Filter the slot since the object that contains the slot is dead.
-    if (!header->IsMarked())
-      return;
-
-    // Value handling.
-    BasePage* const value_page =
-        heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
-    CHECK(value_page);
-
-    // The following cases are not compacted and do not require recording:
-    // - Backings in large pages.
-    // - Inline backings that are part of a non-backing arena.
-    if (value_page->IsLargeObjectPage() ||
-        !HeapCompact::IsCompactableArena(value_page->Arena()->ArenaIndex()))
-      return;
-
-    // Slots must reside in and values must point to live objects at this
-    // point, with the exception of slots in eagerly swept arenas where objects
-    // have already been processed. |value| usually points to a separate
-    // backing store but can also point to inlined storage which is why the
-    // dynamic header lookup is required.
-    HeapObjectHeader* const value_header =
-        static_cast<NormalPage*>(value_page)
-            ->FindHeaderFromAddress(reinterpret_cast<Address>(value));
-    CHECK(value_header);
-    CHECK(value_header->IsMarked());
-
-    // Slots may have been recorded already but must point to the same
-    // value. Example: Ephemeron iterations may register slots multiple
-    // times.
-    auto fixup_it = fixups_.find(value);
-    if (UNLIKELY(fixup_it != fixups_.end())) {
-      CHECK_EQ(slot, fixup_it->second);
-      return;
-    }
-
-    // Add regular fixup.
-    fixups_.insert({value, slot});
-    fixup_names_.insert({slot, name});
-
-    // Check whether the slot itself resides on a page that is compacted.
-    if (LIKELY(!relocatable_pages_.Contains(slot_page)))
-      return;
-
-    auto interior_it = interior_fixups_.find(slot);
-    CHECK(interior_fixups_.end() == interior_it);
-    interior_fixups_.insert({slot, nullptr});
-#if DCHECK_IS_ON()
-    interior_slot_to_object_.insert(slot, header->Payload());
-#endif  // DCHECK_IS_ON()
-    LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
-  }
-
+  // Adds a callback that is invoked when a given slot is compacted.
   void AddFixupCallback(MovableReference* slot,
                         MovingObjectCallback callback,
-                        void* callback_data) {
-    DCHECK(!fixup_callbacks_.Contains(slot));
-    fixup_callbacks_.insert(
-        slot, std::pair<void*, MovingObjectCallback>(callback_data, callback));
-  }
+                        void* callback_data);
 
-  void RelocateInteriorFixups(Address from, Address to, size_t size) {
-    // |from| is a valid address for a slot.
-    auto interior_it =
-        interior_fixups_.lower_bound(reinterpret_cast<MovableReference*>(from));
-    if (interior_it == interior_fixups_.end())
-      return;
+  // Relocates a backing store |from| -> |to|.
+  void Relocate(Address from, Address to);
 
-    CHECK_GE(reinterpret_cast<Address>(interior_it->first), from);
-    size_t offset = reinterpret_cast<Address>(interior_it->first) - from;
-    while (offset < size) {
-      if (!interior_it->second) {
-        // Update the interior fixup value, so that when the object the slot is
-        // pointing to is moved, it can re-use this value.
-        Address fixup = to + offset;
-        interior_it->second = fixup;
-
-        // If the |slot|'s content is pointing into the region [from, from +
-        // size) we are dealing with an interior pointer that does not point to
-        // a valid HeapObjectHeader. Such references need to be fixed up
-        // immediately.
-        Address fixup_contents = *reinterpret_cast<Address*>(fixup);
-        if (fixup_contents > from && fixup_contents < (from + size)) {
-          *reinterpret_cast<Address*>(fixup) = fixup_contents - from + to;
-        }
-      }
-
-      interior_it++;
-      if (interior_it == interior_fixups_.end())
-        return;
-      offset = reinterpret_cast<Address>(interior_it->first) - from;
-    }
-  }
-
-  void Relocate(Address from, Address to) {
-#if DCHECK_IS_ON()
-    moved_objects_.insert(from);
-#endif  // DCHECK_IS_ON()
-
-    // Interior slots always need to be processed for moved objects.
-    // Consider an object A with slot A.x pointing to value B where A is
-    // allocated on a movable page itself. When B is finally moved, it needs to
-    // find the corresponding slot A.x. Object A may be moved already and the
-    // memory may have been freed, which would result in a crash.
-    if (!interior_fixups_.empty()) {
-      RelocateInteriorFixups(from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
-    }
-
-    auto it = fixups_.find(from);
-    // This means that there is no corresponding slot for a live backing store.
-    // This may happen because a mutator may change the slot to point to a
-    // different backing store because e.g.:
-    // - Incremental marking marked a backing store as live that was later on
-    //   replaced.
-    // - Backings were changed when being processed in
-    //   EagerSweep/PreFinalizer/WeakProcessing.
-    if (it == fixups_.end())
-      return;
-
-#if DCHECK_IS_ON()
-    BasePage* from_page = PageFromObject(from);
-    DCHECK(relocatable_pages_.Contains(from_page));
-#endif
-
-    // TODO(keishi): Code to determine if crash is related to interior fixups.
-    // Remove when finished. crbug.com/918064
-    enum DebugSlotType {
-      kNormalSlot,
-      kInteriorSlotPreMove,
-      kInteriorSlotPostMove,
-    };
-    DebugSlotType slot_type = kNormalSlot;
-    base::debug::Alias(&slot_type);
-
-    // TODO(918064): Remove this after getting the type of the object that
-    // crashes compaction.
-    constexpr size_t kMaxNameLen = 256;
-    char slot_container_name[kMaxNameLen];
-    base::debug::Alias(slot_container_name);
-
-    // If the object is referenced by a slot that is contained on a compacted
-    // area itself, check whether it can be updated already.
-    MovableReference* slot = reinterpret_cast<MovableReference*>(it->second);
-    auto interior_it = interior_fixups_.find(slot);
-    if (interior_it != interior_fixups_.end()) {
-      MovableReference* slot_location =
-          reinterpret_cast<MovableReference*>(interior_it->second);
-      if (!slot_location) {
-        interior_it->second = to;
-        slot_type = kInteriorSlotPreMove;
-        const char* name = fixup_names_.find(slot)->second;
-        size_t len = strlen(name);
-        if (len > kMaxNameLen)
-          len = kMaxNameLen;
-        strncpy(slot_container_name, name, len);
-        slot_container_name[len - 1] = 0;
-#if DCHECK_IS_ON()
-        // Check that the containing object has not been moved yet.
-        auto reverse_it = interior_slot_to_object_.find(slot);
-        DCHECK(interior_slot_to_object_.end() != reverse_it);
-        DCHECK(moved_objects_.end() == moved_objects_.find(reverse_it->value));
-#endif  // DCHECK_IS_ON()
-      } else {
-        LOG_HEAP_COMPACTION()
-            << "Redirected slot: " << slot << " => " << slot_location;
-        slot = slot_location;
-        slot_type = kInteriorSlotPostMove;
-      }
-    }
-
-    // If the slot has subsequently been updated, e.g. a destructor having
-    // mutated and expanded/shrunk the collection, do not update and relocate
-    // the slot -- |from| is no longer valid and referenced.
-    if (UNLIKELY(*slot != from)) {
-      LOG_HEAP_COMPACTION()
-          << "No relocation: slot = " << slot << ", *slot = " << *slot
-          << ", from = " << from << ", to = " << to;
-      VerifyUpdatedSlot(slot);
-      return;
-    }
-
-    // Update the slots new value.
-    *slot = to;
-
-    // Execute potential fixup callbacks.
-    MovableReference* callback_slot =
-        reinterpret_cast<MovableReference*>(it->second);
-    auto callback = fixup_callbacks_.find(callback_slot);
-    if (UNLIKELY(callback != fixup_callbacks_.end())) {
-      callback->value.second(callback->value.first, from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
-    }
-  }
+  // Relocates interior slots in a backing store that is moved |from| -> |to|.
+  void RelocateInteriorFixups(Address from, Address to, size_t size);
 
 #if DEBUG_HEAP_COMPACTION
   void dumpDebugStats() {
@@ -265,50 +61,14 @@ class HeapCompact::MovableObjectFixups final {
   }
 #endif
 
-  void VerifySlots() {
-    // TODO(918064): Remove this after investigation.
-    constexpr size_t kMaxNameLen = 256;
-    char slot_container_name[kMaxNameLen];
-    base::debug::Alias(slot_container_name);
-
-    for (auto it : fixups_) {
-      MovableReference object = it.first;
-      MovableReference* slot = it.second;
-      // Record name on stack.
-      auto name_it = fixup_names_.find(slot);
-      CHECK(fixup_names_.end() != name_it);
-      const char* name = name_it->second;
-      size_t len = strlen(name);
-      if (len > kMaxNameLen)
-        len = kMaxNameLen;
-      strncpy(slot_container_name, name, len);
-      slot_container_name[len - 1] = 0;
-      // Verify that slot either
-      // - points to the original object
-      // - points to null
-      // - points to a cleared hashtable entry
-      // - or points to a newly allocated object that will not be compacted.
-      MovableReference object_in_slot = *slot;
-      CHECK(object_in_slot == object || !object_in_slot ||
-            object_in_slot == reinterpret_cast<MovableReference>(-1) ||
-            !relocatable_pages_.Contains(heap_->LookupPageForAddress(
-                reinterpret_cast<Address>(object_in_slot))));
-    }
-  }
-
  private:
   void VerifyUpdatedSlot(MovableReference* slot);
 
   ThreadHeap* const heap_;
 
-  // Tracking movable and updatable references. For now, we keep a
-  // map which for each movable object, recording the slot that
-  // points to it. Upon moving the object, that slot needs to be
-  // updated.
-  //
-  // (TODO: consider in-place updating schemes.)
-  std::unordered_map<MovableReference, MovableReference*> fixups_;
-  std::unordered_map<MovableReference*, const char*> fixup_names_;
+  // Map from movable reference (value) to its slots. Upon moving an object its
+  // slot pointing to it requires updating.
+  HashMap<MovableReference, MovableReference*> fixups_;
 
   // Map from movable reference to callbacks that need to be invoked
   // when the object moves.
@@ -336,6 +96,201 @@ class HeapCompact::MovableObjectFixups final {
   HashMap<MovableReference*, MovableReference> interior_slot_to_object_;
 #endif  // DCHECK_IS_ON()
 };
+
+void HeapCompact::MovableObjectFixups::AddCompactingPage(BasePage* page) {
+  DCHECK(!page->IsLargeObjectPage());
+  relocatable_pages_.insert(page);
+}
+
+void HeapCompact::MovableObjectFixups::AddFixupCallback(
+    MovableReference* slot,
+    MovingObjectCallback callback,
+    void* callback_data) {
+  DCHECK(!fixup_callbacks_.Contains(slot));
+  fixup_callbacks_.insert(
+      slot, std::pair<void*, MovingObjectCallback>(callback_data, callback));
+}
+
+void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
+  MovableReference value = *slot;
+  CHECK(value);
+
+  // All slots and values are part of Oilpan's heap.
+  // - Slots may be contained within dead objects if e.g. the write barrier
+  //   registered the slot while the out backing itself has not been marked
+  //   live in time. Slots in dead objects are filtered below.
+  // - Values may only be contained in or point to live objects.
+
+  // Slots handling.
+  BasePage* const slot_page =
+      heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
+  CHECK(slot_page);
+  HeapObjectHeader* const header =
+      slot_page->IsLargeObjectPage()
+          ? static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()
+          : static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
+                reinterpret_cast<Address>(slot));
+  CHECK(header);
+  // Filter the slot since the object that contains the slot is dead.
+  if (!header->IsMarked())
+    return;
+
+  // Value handling.
+  BasePage* const value_page =
+      heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
+  CHECK(value_page);
+
+  // The following cases are not compacted and do not require recording:
+  // - Backings in large pages.
+  // - Inline backings that are part of a non-backing arena.
+  if (value_page->IsLargeObjectPage() ||
+      !HeapCompact::IsCompactableArena(value_page->Arena()->ArenaIndex()))
+    return;
+
+  // Slots must reside in and values must point to live objects at this
+  // point, with the exception of slots in eagerly swept arenas where objects
+  // have already been processed. |value| usually points to a separate
+  // backing store but can also point to inlined storage which is why the
+  // dynamic header lookup is required.
+  HeapObjectHeader* const value_header =
+      static_cast<NormalPage*>(value_page)
+          ->FindHeaderFromAddress(reinterpret_cast<Address>(value));
+  CHECK(value_header);
+  CHECK(value_header->IsMarked());
+
+  // Slots may have been recorded already but must point to the same
+  // value. Example: Ephemeron iterations may register slots multiple
+  // times.
+  auto fixup_it = fixups_.find(value);
+  if (UNLIKELY(fixup_it != fixups_.end())) {
+    CHECK_EQ(slot, fixup_it->value);
+    return;
+  }
+
+  // Add regular fixup.
+  fixups_.insert(value, slot);
+
+  // Check whether the slot itself resides on a page that is compacted.
+  if (LIKELY(!relocatable_pages_.Contains(slot_page)))
+    return;
+
+  auto interior_it = interior_fixups_.find(slot);
+  CHECK(interior_fixups_.end() == interior_it);
+  interior_fixups_.insert({slot, nullptr});
+#if DCHECK_IS_ON()
+  interior_slot_to_object_.insert(slot, header->Payload());
+#endif  // DCHECK_IS_ON()
+  LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
+}
+
+void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
+#if DCHECK_IS_ON()
+    moved_objects_.insert(from);
+#endif  // DCHECK_IS_ON()
+
+    // Interior slots always need to be processed for moved objects.
+    // Consider an object A with slot A.x pointing to value B where A is
+    // allocated on a movable page itself. When B is finally moved, it needs to
+    // find the corresponding slot A.x. Object A may be moved already and the
+    // memory may have been freed, which would result in a crash.
+    if (!interior_fixups_.empty()) {
+      RelocateInteriorFixups(from, to,
+                             HeapObjectHeader::FromPayload(to)->PayloadSize());
+    }
+
+    auto it = fixups_.find(from);
+    // This means that there is no corresponding slot for a live backing store.
+    // This may happen because a mutator may change the slot to point to a
+    // different backing store because e.g. incremental marking marked a backing
+    // store as live that was later on replaced.
+    if (it == fixups_.end())
+      return;
+
+#if DCHECK_IS_ON()
+    BasePage* from_page = PageFromObject(from);
+    DCHECK(relocatable_pages_.Contains(from_page));
+#endif
+
+    // If the object is referenced by a slot that is contained on a compacted
+    // area itself, check whether it can be updated already.
+    MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
+    auto interior_it = interior_fixups_.find(slot);
+    if (interior_it != interior_fixups_.end()) {
+      MovableReference* slot_location =
+          reinterpret_cast<MovableReference*>(interior_it->second);
+      if (!slot_location) {
+        interior_it->second = to;
+#if DCHECK_IS_ON()
+        // Check that the containing object has not been moved yet.
+        auto reverse_it = interior_slot_to_object_.find(slot);
+        DCHECK(interior_slot_to_object_.end() != reverse_it);
+        DCHECK(moved_objects_.end() == moved_objects_.find(reverse_it->value));
+#endif  // DCHECK_IS_ON()
+      } else {
+        LOG_HEAP_COMPACTION()
+            << "Redirected slot: " << slot << " => " << slot_location;
+        slot = slot_location;
+      }
+    }
+
+    // If the slot has subsequently been updated, e.g. a destructor having
+    // mutated and expanded/shrunk the collection, do not update and relocate
+    // the slot -- |from| is no longer valid and referenced.
+    if (UNLIKELY(*slot != from)) {
+      LOG_HEAP_COMPACTION()
+          << "No relocation: slot = " << slot << ", *slot = " << *slot
+          << ", from = " << from << ", to = " << to;
+      VerifyUpdatedSlot(slot);
+      return;
+    }
+
+    // Update the slots new value.
+    *slot = to;
+
+    // Execute potential fixup callbacks.
+    MovableReference* callback_slot =
+        reinterpret_cast<MovableReference*>(it->value);
+    auto callback = fixup_callbacks_.find(callback_slot);
+    if (UNLIKELY(callback != fixup_callbacks_.end())) {
+      callback->value.second(callback->value.first, from, to,
+                             HeapObjectHeader::FromPayload(to)->PayloadSize());
+    }
+}
+
+void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
+                                                              Address to,
+                                                              size_t size) {
+  // |from| is a valid address for a slot.
+  auto interior_it =
+      interior_fixups_.lower_bound(reinterpret_cast<MovableReference*>(from));
+  if (interior_it == interior_fixups_.end())
+    return;
+
+  CHECK_GE(reinterpret_cast<Address>(interior_it->first), from);
+  size_t offset = reinterpret_cast<Address>(interior_it->first) - from;
+  while (offset < size) {
+    if (!interior_it->second) {
+      // Update the interior fixup value, so that when the object the slot is
+      // pointing to is moved, it can re-use this value.
+      Address fixup = to + offset;
+      interior_it->second = fixup;
+
+      // If the |slot|'s content is pointing into the region [from, from +
+      // size) we are dealing with an interior pointer that does not point to
+      // a valid HeapObjectHeader. Such references need to be fixed up
+      // immediately.
+      Address fixup_contents = *reinterpret_cast<Address*>(fixup);
+      if (fixup_contents > from && fixup_contents < (from + size)) {
+        *reinterpret_cast<Address*>(fixup) = fixup_contents - from + to;
+      }
+    }
+
+    interior_it++;
+    if (interior_it == interior_fixups_.end())
+      return;
+    offset = reinterpret_cast<Address>(interior_it->first) - from;
+  }
+}
 
 void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
     MovableReference* slot) {
@@ -427,15 +382,13 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-void HeapCompact::RegisterMovingObjectReference(const char* name,
-                                                MovableReference* slot) {
+void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
   CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
 
   if (!do_compact_)
     return;
 
   traced_slots_.insert(slot);
-  traced_slots_names_.insert(slot, name);
 }
 
 void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
@@ -498,13 +451,6 @@ void HeapCompact::Relocate(Address from, Address to) {
   Fixups().Relocate(from, to);
 }
 
-void HeapCompact::VerifySlots() {
-  if (!do_compact_)
-    return;
-
-  Fixups().VerifySlots();
-}
-
 void HeapCompact::FilterNonLiveSlots() {
   if (!do_compact_)
     return;
@@ -512,12 +458,11 @@ void HeapCompact::FilterNonLiveSlots() {
   last_fixup_count_for_testing_ = 0;
   for (auto** slot : traced_slots_) {
     if (*slot) {
-      Fixups().AddOrFilter(slot, traced_slots_names_.find(slot)->value);
+      Fixups().AddOrFilter(slot);
       last_fixup_count_for_testing_++;
     }
   }
   traced_slots_.clear();
-  traced_slots_names_.clear();
 }
 
 void HeapCompact::Finish() {
@@ -538,7 +483,6 @@ void HeapCompact::Cancel() {
 
   last_fixup_count_for_testing_ = 0;
   traced_slots_.clear();
-  traced_slots_names_.clear();
   fixups_.reset();
   do_compact_ = false;
 }

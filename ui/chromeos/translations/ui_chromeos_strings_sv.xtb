@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Allt har säkerhetskopierats!</translation>
 <translation id="3626281679859535460">Ljusstyrka</translation>
 <translation id="3644896802912593514">Bredd</translation>
+<translation id="3645531960514756307">Lossa mapp</translation>
 <translation id="3678559383040232393">Maltesiskt tangentbord</translation>
 <translation id="3685122418104378273">Google Drive-synkronisering inaktiveras som standard när mobildata används.</translation>
 <translation id="3726463242007121105">Enheten kan inte öppnas eftersom dess filsystem inte stöds.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Igår kl. <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Isländskt tangentbord</translation>
 <translation id="8342318071240498787">Det finns redan en fil eller en katalog med samma namn.</translation>
+<translation id="8382450452152102026">Till <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Translitterering (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensioner</translation>
 <translation id="8412586565681117057">Snabb inmatningsmetod</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Sidantal</translation>
 <translation id="9110990317705400362">Vi strävar hela tiden efter att göra det säkrare för dig att surfa. Tidigare kunde du uppmanas att lägga till ett tillägg i webbläsaren på vilken webbplats som helst. I de senaste versionerna av Google Chrome måste du uttryckligen tala om för Chrome att du vill installera dessa tillägg genom att lägga till dem via sidan Tillägg. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Fäst mapp</translation>
 <translation id="9130775360844693113">De som använder <ph name="DESTINATION_NAME" /> får åtkomst till dessa objekt.</translation>
 <translation id="9131598836763251128">Välj en eller flera filer</translation>
 <translation id="9133055936679483811">Komprimeringen misslyckades. <ph name="ERROR_MESSAGE" /></translation>

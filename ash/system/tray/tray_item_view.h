@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
@@ -45,7 +45,7 @@ class IconizedLabel : public views::Label {
 // correctly when the visibility/size of the tray item changes. It also adds
 // animation when showing/hiding the item in the tray.
 class ASH_EXPORT TrayItemView : public views::View,
-                                public gfx::AnimationDelegate {
+                                public views::AnimationDelegateViews {
  public:
   explicit TrayItemView(Shelf* shelf);
   ~TrayItemView() override;
@@ -58,7 +58,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   IconizedLabel* label() const { return label_; }
   views::ImageView* image_view() const { return image_view_; }
 
-  // Overridden from views::View.
+  // views::View.
   void SetVisible(bool visible) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
@@ -72,10 +72,10 @@ class ASH_EXPORT TrayItemView : public views::View,
   bool IsHorizontalAlignment() const;
 
  private:
-  // Overridden from views::View.
+  // views::View.
   void ChildPreferredSizeChanged(View* child) override;
 
-  // Overridden from gfx::AnimationDelegate.
+  // views::AnimationDelegateViews.
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;

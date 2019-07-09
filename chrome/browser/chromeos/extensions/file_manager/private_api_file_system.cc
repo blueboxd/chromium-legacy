@@ -257,11 +257,12 @@ void StatusCallbackToResponseCallback(
 // Calls a response callback (on the UI thread) with a file content hash
 // computed on the IO thread.
 void ComputeChecksumRespondOnUIThread(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& hash) {
+    base::OnceCallback<void(std::string)> callback,
+    std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), hash));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), std::move(hash)));
 }
 
 // Calls a response callback on the UI thread.
@@ -1061,9 +1062,9 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
 }
 
 void FileManagerPrivateInternalComputeChecksumFunction::RespondWith(
-    const std::string& hash) {
+    std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Respond(OneArgument(std::make_unique<base::Value>(hash)));
+  Respond(OneArgument(std::make_unique<base::Value>(std::move(hash))));
 }
 
 FileManagerPrivateSearchFilesByHashesFunction::
@@ -1232,7 +1233,7 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
     return;
   }
   const std::string fs_name = my_files_virtual_path.value();
-  const auto fs_root = base::StrCat({url.spec(), "/"});
+  const std::string fs_root = base::StrCat({url.spec(), "/"});
 
   auto entries = std::make_unique<base::ListValue>();
   entries->GetList().reserve(results.size());

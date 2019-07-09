@@ -3128,6 +3128,9 @@ class VEATestSuite : public base::TestSuite {
     base::test::ScopedFeatureList scoped_feature_list;
     // TODO(crbug.com/811912): remove once enabled by default.
     scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
+    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+    // default.
+    scoped_feature_list.InitAndEnableFeature(media::kVaapiH264AMDEncoder);
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();

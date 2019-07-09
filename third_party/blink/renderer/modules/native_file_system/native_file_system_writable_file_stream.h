@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
 
@@ -24,7 +25,7 @@ class NativeFileSystemWritableFileStream final : public WritableStream {
 
  public:
   explicit NativeFileSystemWritableFileStream(
-      mojom::blink::NativeFileSystemFileWriterPtr);
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>);
 
   void Trace(Visitor* visitor) override;
 
@@ -52,7 +53,7 @@ class NativeFileSystemWritableFileStream final : public WritableStream {
                      uint64_t bytes_written);
   void TruncateComplete(mojom::blink::NativeFileSystemErrorPtr result);
 
-  mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr_;
+  RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter> mojo_ptr_;
 
   Member<ScriptPromiseResolver> pending_operation_;
 };

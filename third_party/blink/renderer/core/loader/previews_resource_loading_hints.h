@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREVIEWS_RESOURCE_LOADING_HINTS_H_
 
 #include "base/feature_list.h"
+#include "third_party/blink/public/platform/web_loading_hints_provider.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -31,12 +32,16 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
   static PreviewsResourceLoadingHints* Create(
       ExecutionContext& execution_context,
       int64_t ukm_source_id,
-      const Vector<WTF::String>& subresource_patterns_to_block);
+      const WebVector<WebString>& subresource_patterns_to_block);
+
+  static PreviewsResourceLoadingHints* CreateFromLoadingHintsProvider(
+      ExecutionContext& execution_context,
+      std::unique_ptr<WebLoadingHintsProvider> loading_hints_provider);
 
   PreviewsResourceLoadingHints(
       ExecutionContext* execution_context,
       int64_t ukm_source_id,
-      const Vector<WTF::String>& subresource_patterns_to_block);
+      const WebVector<WebString>& subresource_patterns_to_block);
   ~PreviewsResourceLoadingHints();
 
   // Returns true if load of resource with type |type|, URL |resource_url|
@@ -62,10 +67,10 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
 
   // |subresource_patterns_to_block_| is a collection of subresource patterns
   // for resources whose loading should be blocked. Each pattern is a
-  // WTF::String. If a subresource URL contains any of the strings specified in
+  // WebString. If a subresource URL contains any of the strings specified in
   // |subresource_patterns_to_block_|, then that subresource's loading could
   // be blocked.
-  const Vector<WTF::String> subresource_patterns_to_block_;
+  const WebVector<WebString> subresource_patterns_to_block_;
 
   // True if resource blocking hints should apply to resource of a given type.
   bool block_resource_type_[static_cast<int>(ResourceType::kMaxValue) + 1] = {

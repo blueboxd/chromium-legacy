@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Sve je sigurnosno kopirano!</translation>
 <translation id="3626281679859535460">Svjetlina</translation>
 <translation id="3644896802912593514">Širina</translation>
+<translation id="3645531960514756307">Otkvači mapu</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3685122418104378273">Sinkronizacija Google diska onemogućena je prema zadanim postavkama kada se upotrebljavaju mobilni podaci.</translation>
 <translation id="3726463242007121105">Nije moguće otvoriti ovaj uređaj jer nije podržan njegov datotečni sustav.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Jučer u <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandska tipkovnica</translation>
 <translation id="8342318071240498787">Datoteka ili direktorij s istim imenom već postoje.</translation>
+<translation id="8382450452152102026">U mapu <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">transliteracija (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimenzije</translation>
 <translation id="8412586565681117057">brzi način unosa</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Broj stranica</translation>
 <translation id="9110990317705400362">Neprestano nastojimo učiniti pregledavanje interneta sigurnijim. Ranije je bilo koja web-lokacija mogla tražiti da dodate proširenje u preglednik. Najnovije verzije Google Chromea traže da izričito odobrite instalaciju ovih proširenja tako da ih dodate na stranici Proširenja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Prikvači mapu</translation>
 <translation id="9130775360844693113">Članovi grupe "<ph name="DESTINATION_NAME" />" dobit će pristup tim stavkama.</translation>
 <translation id="9131598836763251128">Odaberite jednu ili više datoteka</translation>
 <translation id="9133055936679483811">Komprimiranje nije uspjelo. <ph name="ERROR_MESSAGE" /></translation>

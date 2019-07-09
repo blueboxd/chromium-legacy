@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Направљене су резервне копије свих датотека!</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3644896802912593514">Ширина</translation>
+<translation id="3645531960514756307">Откачи директоријум</translation>
 <translation id="3678559383040232393">Малтешка тастатура</translation>
 <translation id="3685122418104378273">Синхронизација са Google диском је подразумевано онемогућена када се користи мобилна веза за пренос података.</translation>
 <translation id="3726463242007121105">Овај уређај не може да се отвори јер његов систем датотека није подржан.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Јуче у <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Исландска тастатура</translation>
 <translation id="8342318071240498787">Већ постоји датотека или директоријум са истим називом.</translation>
+<translation id="8382450452152102026">У: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Транслитерација (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Димензије</translation>
 <translation id="8412586565681117057">Брзи метод уноса</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Број страница</translation>
 <translation id="9110990317705400362">Стално тражимо нове начине да учинимо прегледање безбеднијим. Раније је сваки веб-сајт могао да вам затражи да додате додатак у прегледач. У најновијим верзијама Google Chrome-а морате експлицитно да кажете Chrome-у да желите да инсталирате те додатке тако што ћете их додати преко странице Додаци. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Кодек</translation>
+<translation id="9129931661813833980">Закачи директоријум</translation>
 <translation id="9130775360844693113">Чланови из „<ph name="DESTINATION_NAME" />“ ће добити приступ овим ставкама.</translation>
 <translation id="9131598836763251128">Избор једне или више датотека</translation>
 <translation id="9133055936679483811">Додавање у zip датотеку није успело. <ph name="ERROR_MESSAGE" /></translation>

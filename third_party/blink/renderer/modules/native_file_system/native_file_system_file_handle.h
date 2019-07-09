@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom-blink.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_handle.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
 
@@ -14,8 +15,9 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  NativeFileSystemFileHandle(const String& name,
-                             mojom::blink::NativeFileSystemFileHandlePtr);
+  NativeFileSystemFileHandle(
+      const String& name,
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>);
 
   bool isFile() const override { return true; }
 
@@ -37,7 +39,7 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
       bool writable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
 
-  mojom::blink::NativeFileSystemFileHandlePtr mojo_ptr_;
+  RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle> mojo_ptr_;
 };
 
 }  // namespace blink

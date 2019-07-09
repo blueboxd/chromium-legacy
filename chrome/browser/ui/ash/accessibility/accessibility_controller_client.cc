@@ -132,3 +132,9 @@ void AccessibilityControllerClient::PlaySpokenFeedbackToggleCountdown(
 void AccessibilityControllerClient::RequestSelectToSpeakStateChange() {
   chromeos::AccessibilityManager::Get()->RequestSelectToSpeakStateChange();
 }
+
+void AccessibilityControllerClient::RequestAutoclickScrollableBoundsForPoint(
+    gfx::Point& point_in_screen) {
+  chromeos::AccessibilityManager::Get()
+      ->RequestAutoclickScrollableBoundsForPoint(point_in_screen);
+}

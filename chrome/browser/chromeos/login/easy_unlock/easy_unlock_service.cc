@@ -119,18 +119,6 @@ class EasyUnlockService::BluetoothDetector
     adapter_ = adapter;
     adapter_->AddObserver(this);
     service_->OnBluetoothAdapterPresentChanged();
-
-    // TODO(tengs): At the moment, there is no way for Bluetooth discoverability
-    // to be turned on except through the Easy Unlock setup. If we step on any
-    // toes in the future then we need to revisit this guard.
-    if (adapter_->IsDiscoverable())
-      TurnOffBluetoothDiscoverability();
-  }
-
-  void TurnOffBluetoothDiscoverability() {
-    if (adapter_) {
-      adapter_->SetDiscoverable(false, base::DoNothing(), base::DoNothing());
-    }
   }
 
   // Owner of this class and should out-live this class.

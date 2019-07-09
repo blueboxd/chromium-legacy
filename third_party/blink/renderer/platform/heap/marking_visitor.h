@@ -62,24 +62,22 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     RegisterWeakCallback(object_slot, callback);
   }
 
-  void VisitBackingStoreStrongly(const char* name,
-                                 void* object,
+  void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {
-    RegisterBackingStoreReference(name, object_slot);
+    RegisterBackingStoreReference(object_slot);
     if (!object)
       return;
     Visit(object, desc);
   }
 
   // All work is registered through RegisterWeakCallback.
-  void VisitBackingStoreWeakly(const char* name,
-                               void* object,
+  void VisitBackingStoreWeakly(void* object,
                                void** object_slot,
                                TraceDescriptor desc,
                                WeakCallback callback,
                                void* parameter) final {
-    RegisterBackingStoreReference(name, object_slot);
+    RegisterBackingStoreReference(object_slot);
     if (!object)
       return;
     RegisterWeakCallback(parameter, callback);
@@ -88,10 +86,8 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // Used to only mark the backing store when it has been registered for weak
   // processing. In this case, the contents are processed separately using
   // the corresponding traits but the backing store requires marking.
-  void VisitBackingStoreOnly(const char* name,
-                             void* object,
-                             void** object_slot) final {
-    RegisterBackingStoreReference(name, object_slot);
+  void VisitBackingStoreOnly(void* object, void** object_slot) final {
+    RegisterBackingStoreReference(object_slot);
     if (!object)
       return;
     MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
@@ -124,7 +120,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // transitioning an object from unmarked to marked state.
   ALWAYS_INLINE void AccountMarkedBytes(HeapObjectHeader*);
 
-  void RegisterBackingStoreReference(const char* name, void** slot);
+  void RegisterBackingStoreReference(void** slot);
 
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;

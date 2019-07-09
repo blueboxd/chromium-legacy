@@ -4,10 +4,8 @@
 
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
 
-#include <memory>
 #include <utility>
 
-#include "build/build_config.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"

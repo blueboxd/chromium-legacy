@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace ui {
@@ -32,7 +31,7 @@ void PostAsyncTask(
 // executing.
 void PostSyncTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::OnceCallback<void(base::WaitableEvent*)> callback);
+    base::OnceClosure callback);
 
 // Creates a RepeatingCallback that will run |callback| on the calling thread.
 // Useful when posting a task on a different thread and expecting a callback

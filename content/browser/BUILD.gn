@@ -1788,6 +1788,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_internals_ui.h",
     "service_worker/service_worker_job_coordinator.cc",
     "service_worker/service_worker_job_coordinator.h",
+    "service_worker/service_worker_loader_helpers.cc",
+    "service_worker/service_worker_loader_helpers.h",
     "service_worker/service_worker_metrics.cc",
     "service_worker/service_worker_metrics.h",
     "service_worker/service_worker_navigation_handle.cc",

@@ -1017,7 +1017,7 @@ TEST(KeyframedAnimationCurveTest, OneSizeKeyFrame) {
 TEST(KeyframedAnimationCurveTest, TwoSizeKeyFrame) {
   gfx::SizeF size_a = gfx::SizeF(100, 100);
   gfx::SizeF size_b = gfx::SizeF(100, 0);
-  gfx::SizeF size_midpoint = gfx::Tween::SizeValueBetween(0.5, size_a, size_b);
+  gfx::SizeF size_midpoint = gfx::Tween::SizeFValueBetween(0.5, size_a, size_b);
   std::unique_ptr<KeyframedSizeAnimationCurve> curve(
       KeyframedSizeAnimationCurve::Create());
   curve->AddKeyframe(SizeKeyframe::Create(base::TimeDelta(), size_a, nullptr));
@@ -1037,8 +1037,10 @@ TEST(KeyframedAnimationCurveTest, ThreeSizeKeyFrame) {
   gfx::SizeF size_a = gfx::SizeF(100, 100);
   gfx::SizeF size_b = gfx::SizeF(100, 0);
   gfx::SizeF size_c = gfx::SizeF(200, 0);
-  gfx::SizeF size_midpoint1 = gfx::Tween::SizeValueBetween(0.5, size_a, size_b);
-  gfx::SizeF size_midpoint2 = gfx::Tween::SizeValueBetween(0.5, size_b, size_c);
+  gfx::SizeF size_midpoint1 =
+      gfx::Tween::SizeFValueBetween(0.5, size_a, size_b);
+  gfx::SizeF size_midpoint2 =
+      gfx::Tween::SizeFValueBetween(0.5, size_b, size_c);
   std::unique_ptr<KeyframedSizeAnimationCurve> curve(
       KeyframedSizeAnimationCurve::Create());
   curve->AddKeyframe(SizeKeyframe::Create(base::TimeDelta(), size_a, nullptr));

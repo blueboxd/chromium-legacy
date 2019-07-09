@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Alt er sikkerhedskopieret.</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3644896802912593514">Bredde</translation>
+<translation id="3645531960514756307">Frigør mappe</translation>
 <translation id="3678559383040232393">Maltesisk tastatur</translation>
 <translation id="3685122418104378273">Synkronisering af Google Drev er som standard deaktiveret, når du bruger mobildata.</translation>
 <translation id="3726463242007121105">Denne enhed kan ikke åbnes, fordi dens filsystem ikke understøttes.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">I går <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandsk tastatur</translation>
 <translation id="8342318071240498787">Der findes allerede en fil eller en mappe med samme navn.</translation>
+<translation id="8382450452152102026">I <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Translitteration (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Mål</translation>
 <translation id="8412586565681117057">Hurtig indtastningsmetode</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Sideantal</translation>
 <translation id="9110990317705400362">Vi leder hele tiden efter nye metoder til at gøre din browsing mere sikker. Før kunne ethvert website anmode dig om at tilføje en udvidelse i din browser. I de nyeste versioner af Google Chrome skal du udtrykkeligt give Chrome besked om, at du vil installere udvidelser, ved at tilføje dem via siden Udvidelser. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Fastgør mappe</translation>
 <translation id="9130775360844693113">Medlemmer af "<ph name="DESTINATION_NAME" />" får adgang til disse elementer.</translation>
 <translation id="9131598836763251128">Vælg en eller flere filer</translation>
 <translation id="9133055936679483811">Komprimering mislykkedes. <ph name="ERROR_MESSAGE" /></translation>

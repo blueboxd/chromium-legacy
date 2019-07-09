@@ -133,44 +133,86 @@ TEST_F(FaviconUrlParserTest, LegacyParsingSizeParamAndUrlModifier) {
 TEST_F(FaviconUrlParserTest, Favicon2ParsingSizeParam) {
   chrome::ParsedFaviconPath parsed;
 
-  std::string path = "?size=32";
-  EXPECT_TRUE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath("?size=32&url=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(32, parsed.size_in_dip);
 
-  path = "?size=abc";
-  EXPECT_FALSE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(chrome::ParseFaviconPath("?size=abc&url=https%3A%2F%2Fg.com",
+                                        chrome::FaviconUrlFormat::kFavicon2,
+                                        &parsed));
 }
 
 TEST_F(FaviconUrlParserTest, Favicon2ParsingScaleFactorParam) {
   chrome::ParsedFaviconPath parsed;
 
-  std::string path = "?scale_factor=2.1x";
-  EXPECT_TRUE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?scale_factor=2.1x&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_EQ(2.1f, parsed.device_scale_factor);
 
-  path = "?scale_factor=-1";
-  EXPECT_FALSE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?scale_factor=-1&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
 }
 
 TEST_F(FaviconUrlParserTest, Favicon2ParsingIconUrlParam) {
   chrome::ParsedFaviconPath parsed;
 
-  std::string path = "?url_type=icon_url";
-  EXPECT_TRUE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?url_type=icon_url&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_TRUE(parsed.is_icon_url);
 
-  path = "?url_type=page_url";
-  EXPECT_TRUE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?url_type=page_url&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
 
-  path = "?url_type=invalid";
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?url_type=invalid&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingUrlParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  // Url parameter is mandatory.
   EXPECT_FALSE(chrome::ParseFaviconPath(
-      path, chrome::FaviconUrlFormat::kFavicon2, &parsed));
+      "?", chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  // Url parameter is mandatory.
+  EXPECT_TRUE(chrome::ParseFaviconPath("?url=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
+  EXPECT_EQ(parsed.url, "https://g.com");
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingAllowFallbackParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  // If request is by icon url, fallback parameter should have no effect.
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=icon_url&allow_google_server_fallback=1&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(parsed.allow_favicon_server_fallback);
+
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=invalid&url=https%"
+      "3A%2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=0&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(parsed.allow_favicon_server_fallback);
+
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=1&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(parsed.allow_favicon_server_fallback);
 }

@@ -80,6 +80,10 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // Starts or stops dictation. Records metrics for toggling via SwitchAccess.
   virtual void ToggleDictationFromSource(DictationToggleSource source) = 0;
 
+  // Called when the Automatic Clicks extension finds scrollable bounds.
+  virtual void OnAutoclickScrollableBoundsFound(
+      gfx::Rect& bounds_in_screen) = 0;
+
   // Tells the Switch Access Event Handler whether to forward all key events to
   // the Switch Access extension.
   virtual void ForwardKeyEventsToSwitchAccess(bool should_forward) = 0;

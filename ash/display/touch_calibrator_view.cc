@@ -124,7 +124,8 @@ void AnimateLayerToPosition(views::View* view,
 // min and max radius. The animation takes |animation_duration| milliseconds
 // to complete. The center of these circles are at the center of the view
 // element.
-class CircularThrobberView : public views::View, public gfx::AnimationDelegate {
+class CircularThrobberView : public views::View,
+                             public views::AnimationDelegateViews {
  public:
   CircularThrobberView(int width,
                        const SkColor& inner_circle_color,
@@ -132,10 +133,10 @@ class CircularThrobberView : public views::View, public gfx::AnimationDelegate {
                        int animation_duration);
   ~CircularThrobberView() override;
 
-  // views::View overrides:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
-  // gfx::AnimationDelegate overrides:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
@@ -166,7 +167,8 @@ CircularThrobberView::CircularThrobberView(int width,
                                            const SkColor& inner_circle_color,
                                            const SkColor& outer_circle_color,
                                            int animation_duration)
-    : inner_radius_(width / 4),
+    : views::AnimationDelegateViews(this),
+      inner_radius_(width / 4),
       outer_radius_(inner_radius_),
       smallest_radius_animated_circle_(width * kThrobberCircleRadiusFactor),
       largest_radius_animated_circle_(width / 2),
@@ -213,7 +215,7 @@ class TouchTargetThrobberView : public CircularThrobberView {
                           int animation_duration);
   ~TouchTargetThrobberView() override;
 
-  // views::View overrides:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
@@ -271,7 +273,7 @@ class HintBox : public views::View {
   HintBox(const gfx::Rect& bounds, int border_radius);
   ~HintBox() override;
 
-  // views::View overrides:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
   void SetLabel(const base::string16& text, const SkColor& color);
@@ -411,7 +413,7 @@ class CompletionMessageView : public views::View {
   CompletionMessageView(const gfx::Rect& bounds, const base::string16& message);
   ~CompletionMessageView() override;
 
-  // views::View overrides:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
@@ -462,7 +464,8 @@ void CompletionMessageView::OnPaint(gfx::Canvas* canvas) {
 
 TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
                                          bool is_primary_view)
-    : display_(target_display),
+    : views::AnimationDelegateViews(this),
+      display_(target_display),
       is_primary_view_(is_primary_view),
       exit_label_(nullptr),
       tap_label_(nullptr),

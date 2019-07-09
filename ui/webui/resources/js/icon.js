@@ -101,15 +101,24 @@ cr.define('cr.icon', function() {
    *
    * @param {string} url Either the URL of the original page or of the favicon
    *     itself.
+   * @param {boolean} isSyncedUrlForHistoryUi Should be set to true only if the
+   *     caller is an UI aimed at displaying user history, and the requested url
+   *     is known to be present in Chrome sync data.
+   *
    * @return {string} -webkit-image-set for the favicon.
    */
-  function getFavicon(url) {
+  function getFavicon(url, isSyncedUrlForHistoryUi) {
+    const isIconUrl = FAVICON_URL_REGEX.test(url);
     // Note: Literal strings used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
-    return getImageSet(
-        'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
-        '&url_type=' + (FAVICON_URL_REGEX.test(url) ? 'icon_url' : 'page_url') +
-        '&url=' + encodeURIComponent(url));
+    let path = 'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
+        '&url_type=' + (isIconUrl ? 'icon_url' : 'page_url') +
+        '&url=' + encodeURIComponent(url);
+    if (!isIconUrl) {
+      path += '&allow_google_server_fallback=' +
+          (isSyncedUrlForHistoryUi ? '1' : '0');
+    }
+    return getImageSet(path);
   }
 
   return {

@@ -59,12 +59,6 @@ const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
     "a blob and the verification process of the signed exchange is skipped for "
     "the succeeding navigation.";
 
-const char kAllowStartingServiceManagerOnlyName[] =
-    "Allow starting service manager only";
-const char kAllowStartingServiceManagerOnlyDescription[] =
-    "Allows running a lightweight service-manager-only mode, in which services "
-    "can run without the browser process.";
-
 const char kAudioWorkletRealtimeThreadName[] =
     "Use realtime priority thread for Audio Worklet";
 const char kAudioWorkletRealtimeThreadDescription[] =

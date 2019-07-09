@@ -251,12 +251,8 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
     base::Base64Decode(sync_metadata_str_base64, sync_metadata_str);
   }
 
-  // Need to reset the type as decoding resets the type to FOLDER. Similarly
-  // we need to reset the title as the title is persisted and restored from
+  // Need to reset the title as the title is persisted and restored from
   // the file.
-  bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
-  other_folder_node->set_type(BookmarkNode::OTHER_NODE);
-  mobile_folder_node->set_type(BookmarkNode::MOBILE);
   bb_node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   other_folder_node->SetTitle(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
@@ -340,7 +336,6 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
 
     if (parent)
       parent->Add(base::WrapUnique(node));
-    node->set_type(BookmarkNode::URL);
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
     std::string last_modified_date;
@@ -361,7 +356,6 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
       node->set_id(id);
     }
 
-    node->set_type(BookmarkNode::FOLDER);
     int64_t internal_time;
     base::StringToInt64(last_modified_date, &internal_time);
     node->set_date_folder_modified(Time::FromInternalValue(internal_time));

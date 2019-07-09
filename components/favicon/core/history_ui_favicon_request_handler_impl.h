@@ -70,6 +70,8 @@ class HistoryUiFaviconRequestHandlerImpl
   // storage. If request succeeded, sends the result. Otherwise attempts to
   // retrieve from sync or the Google favicon server depending whether
   // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
+  // TODO(https://crbug.com/978775): Stop plumbing can_query_google_server once
+  // the feature experiment is no longer being run.
   void OnBitmapLocalDataAvailable(
       const GURL& page_url,
       int desired_size_in_pixel,
@@ -117,9 +119,7 @@ class HistoryUiFaviconRequestHandlerImpl
       const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
 
-  // Verifies that history sync is enabled and |origin| is not unknown.
-  // TODO(victorvianna): Move origin filtering to FaviconSource level.
-  bool CanQueryGoogleServer(FaviconRequestOrigin origin) const;
+  bool CanQueryGoogleServer() const;
 
   FaviconService* const favicon_service_;
 

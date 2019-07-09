@@ -19,18 +19,10 @@
 namespace device {
 struct UsbConfigDescriptor;
 class UsbDevice;
-struct UsbEndpointDescriptor;
 struct UsbInterfaceDescriptor;
 }  // namespace device
 
 namespace mojo {
-
-template <>
-struct TypeConverter<device::mojom::UsbEndpointInfoPtr,
-                     device::UsbEndpointDescriptor> {
-  static device::mojom::UsbEndpointInfoPtr Convert(
-      const device::UsbEndpointDescriptor& endpoint);
-};
 
 template <>
 struct TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,

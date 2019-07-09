@@ -5,7 +5,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -15,16 +14,34 @@
 
 namespace blink {
 
-PerformanceMark::PerformanceMark(ScriptState* script_state,
-                                 const AtomicString& name,
-                                 double start_time,
-                                 const ScriptValue& detail)
-    : PerformanceEntry(name, start_time, start_time) {
-  world_ = WrapRefCounted(&script_state->World());
-  if (detail.IsEmpty() || detail.IsNull() || detail.IsUndefined()) {
-    return;
+PerformanceMark::PerformanceMark(
+    ScriptState* script_state,
+    const AtomicString& name,
+    double start_time,
+    scoped_refptr<SerializedScriptValue> serialized_detail,
+    ExceptionState& exception_state)
+    : PerformanceEntry(name, start_time, start_time),
+      serialized_detail_(std::move(serialized_detail)) {}
+
+// static
+PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
+                                         const AtomicString& name,
+                                         double start_time,
+                                         const ScriptValue& detail,
+                                         ExceptionState& exception_state) {
+  scoped_refptr<SerializedScriptValue> serialized_detail;
+  if (detail.IsEmpty()) {
+    serialized_detail = SerializedScriptValue::NullValue();
+  } else {
+    serialized_detail = SerializedScriptValue::Serialize(
+        script_state->GetIsolate(), detail.V8Value(),
+        SerializedScriptValue::SerializeOptions(), exception_state);
+    if (exception_state.HadException())
+      return nullptr;
   }
-  detail_.Set(detail.GetIsolate(), detail.V8Value());
+  return MakeGarbageCollected<PerformanceMark>(script_state, name, start_time,
+                                               std::move(serialized_detail),
+                                               exception_state);
 }
 
 // static
@@ -51,23 +68,23 @@ PerformanceEntryType PerformanceMark::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kMark;
 }
 
-ScriptValue PerformanceMark::detail(ScriptState* script_state) const {
+ScriptValue PerformanceMark::detail(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  if (detail_.IsEmpty()) {
+  if (!serialized_detail_)
     return ScriptValue(script_state, v8::Null(isolate));
-  }
-  // Return a serialized clone when the world is different.
-  if (!world_ || world_->GetWorldId() != script_state->World().GetWorldId()) {
-    v8::Local<v8::Value> value = detail_.NewLocal(isolate);
-    scoped_refptr<SerializedScriptValue> serialized =
-        SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
-    return ScriptValue(script_state, serialized->Deserialize(isolate));
-  }
-  return ScriptValue(script_state, detail_.NewLocal(isolate));
+  auto result = deserialized_detail_map_.insert(
+      script_state, TraceWrapperV8Reference<v8::Value>());
+  TraceWrapperV8Reference<v8::Value>& relevant_data =
+      result.stored_value->value;
+  if (!result.is_new_entry)
+    return ScriptValue(script_state, relevant_data.NewLocal(isolate));
+  v8::Local<v8::Value> value = serialized_detail_->Deserialize(isolate);
+  relevant_data.Set(isolate, value);
+  return ScriptValue(script_state, value);
 }
 
 void PerformanceMark::Trace(blink::Visitor* visitor) {
-  visitor->Trace(detail_);
+  visitor->Trace(deserialized_detail_map_);
   PerformanceEntry::Trace(visitor);
 }
 

@@ -13,7 +13,6 @@ namespace blink {
 
 struct SameSizeAsCSSMathFunctionValue : CSSPrimitiveValue {
   Member<void*> expression;
-  bool non_negative;
 };
 ASSERT_SIZE(CSSMathFunctionValue, SameSizeAsCSSMathFunctionValue);
 
@@ -25,8 +24,9 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
 CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
                                            ValueRange range)
     : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass),
-      expression_(expression),
-      non_negative_(range == kValueRangeNonNegative) {}
+      expression_(expression) {
+  is_non_negative_math_function_ = range == kValueRangeNonNegative;
+}
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(
@@ -151,7 +151,7 @@ bool CSSMathFunctionValue::Equals(const CSSMathFunctionValue& other) const {
 }
 
 double CSSMathFunctionValue::ClampToPermittedRange(double value) const {
-  return non_negative_ && value < 0 ? 0 : value;
+  return IsNonNegative() && value < 0 ? 0 : value;
 }
 
 }  // namespace blink

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -160,8 +161,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return PaintButton(node, o.GetDocument(), style, paint_info, r);
     case kInnerSpinButtonPart: {
       COUNT_APPEARANCE(doc, InnerSpinButton);
-      auto* element = ToElementOrNull(node);
-      if (!element || !element->IsSpinButtonElement())
+      if (!DynamicTo<SpinButtonElement>(node))
         COUNT_APPEARANCE(doc, InnerSpinButtonForOthers);
       return PaintInnerSpinButton(node, style, paint_info, r);
     }
@@ -226,7 +226,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     }
     case kSearchFieldCancelButtonPart: {
       COUNT_APPEARANCE(doc, SearchCancel);
-      auto* element = ToElementOrNull(node);
+      auto* element = DynamicTo<Element>(node);
       if (!element || !element->OwnerShadowHost()) {
         COUNT_APPEARANCE(doc, SearchCancelForOthers);
         COUNT_APPEARANCE(doc, SearchCancelForOthers2);

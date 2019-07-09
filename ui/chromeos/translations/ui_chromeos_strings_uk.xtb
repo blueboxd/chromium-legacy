@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Усі файли імпортовано!</translation>
 <translation id="3626281679859535460">Яскравість</translation>
 <translation id="3644896802912593514">Ширина</translation>
+<translation id="3645531960514756307">Відкріпити папку</translation>
 <translation id="3678559383040232393">Мальтійська клавіатура</translation>
 <translation id="3685122418104378273">Коли використовується мобільний Інтернет, синхронізацію Google Диска вимкнено за умовчанням.</translation>
 <translation id="3726463242007121105">Не вдається відкрити пристрій, оскільки його файлова система не підтримується.</translation>
@@ -342,7 +343,7 @@
 <translation id="5038625366300922036">Більше…</translation>
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Піца</translation>
-<translation id="5081517858322016911">Буде видалено файли розміром <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="5081517858322016911">Буде видалено файли загальним обсягом <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
 <translation id="5098629044894065541">Іврит</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Учора <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Ісландська клавіатура</translation>
 <translation id="8342318071240498787">Файл або каталог з таким же ім’ям уже існує.</translation>
+<translation id="8382450452152102026">У папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="8391950649760071442">Транслітерація (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Розміри</translation>
 <translation id="8412586565681117057">Спрощений метод введення для стандарту цанцзе</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Кількість сторінок</translation>
 <translation id="9110990317705400362">Ми постійно шукаємо способи зробити перегляд веб-сторінок безпечнішим. Раніше будь-який веб-сайт міг пропонувати вам додати розширення у веб-переглядач. В останніх версіях Google Chrome ви маєте чітко вказати, що хочете встановити ці розширення, додавши їх на сторінці "Розширення". <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Кодек</translation>
+<translation id="9129931661813833980">Закріпити папку</translation>
 <translation id="9130775360844693113">Учасники, які мають доступ до розташування "<ph name="DESTINATION_NAME" />", отримають доступ до цих елементів.</translation>
 <translation id="9131598836763251128">Виберіть один або декілька файлів</translation>
 <translation id="9133055936679483811">Помилка архівування. <ph name="ERROR_MESSAGE" /></translation>

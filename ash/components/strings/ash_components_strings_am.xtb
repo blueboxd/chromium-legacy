@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="104962181688258143">የፋይሎች መተግበሪያን ይክፈቱ</translation>
+<translation id="1098295134904615027">በቀኝ በኩል ምናባዊውን ዴስክ አግብር</translation>
 <translation id="1122869341872663659"><ph name="N" /> ፍለጋ ውጤቶችን ለ<ph name="QUERY" /> በማሳየት ላይ</translation>
 <translation id="1195667586424773550">አገናኙን ወደ የትሩ አድራሻ አሞሌ ይጎትቱት</translation>
 <translation id="1204450209689312104">አዲስ ትር ማንነት በማያሳውቅ ሁነታ ውስጥ ይክፈቱ</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ወይም <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">ወደ የመስመር መጨረሻ ይሂዱ</translation>
+<translation id="1499072997694708844">ማናቸውንም ክፍት አግኝ መስኮት ይዝጉ ወይም የእርስዎን አሁን ያለውን ገጽ መጫን ያስቁሙ</translation>
 <translation id="1510238584712386396">ማስጀመሪያ</translation>
 <translation id="152892567002884378">ድምጽ ጨምር</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">በአድራሻ አሞሌው ላይ ወዳለው ግቤትዎ www. እና .com ያክሉ፣ ከዚያ ገጹን ይክፈቱ</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ወይም <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">በግራ በኩል ምናባዊውን ዴስክ አግብር</translation>
 <translation id="1996162290124031907">ወደ የሚቀጥለው ትር ይሂዱ</translation>
 <translation id="2010818616644390445">በመስኮቱ ውስጥ ያለው የመጨረሻ ትር ይሂዱ</translation>
 <translation id="2040706009561734834">አስጀማሪውን ይክፈቱ/ይዝጉ</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">ቅጽበታዊ ገጽ እይታን ያነሳል</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">የአድራሻ አሞሌ ላይ አተኩር</translation>
+<translation id="3165428420335997629">አዲስ ምናባዊ ዴስክ ፍጠር</translation>
 <translation id="3256109297135787951">በእርስዎ መደርደሪያ ላይ በንጥሉ ላይ ያለውን ማድመቂያ ያስወግዱ</translation>
 <translation id="3288816184963444640">የአሁኑን መስኮት ይዝጉ</translation>
 <translation id="3407560819924487926">የተግባር አስተዳዳሪን ያምጡት</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">የአሁኑን ገጽ ይፈልጉ</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ይጫኑ እና አገናኝ ጠቅ ያድርጉ</translation>
 <translation id="561814908794220892">ድረ-ገጹን በአዲስ ትር ውስጥ ይክፈቱ</translation>
+<translation id="5620219513321115856">ንቁ መስኮትን በቀኝ በኩል ወደ ያለው ዴስክ ያንቀሳቅሱ</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> ወይም <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">አገናኙን በአዲስ ትር ውስጥ ይክፈቱ</translation>
 <translation id="5757474750054631686">ቁልፍ ሰሌዳን ያጨልሙ (የጀርባ ብርሃን ላላቸው ቁልፍ ሰሌዳዎች ብቻ)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">ማያ ገጽን 90 ዲግሪ አሽከርክር</translation>
 <translation id="8241665785394195545">ቅንፍ ቀኝ</translation>
 <translation id="8264941229485248811">የገንቢ መሣሪያዎች መርማሪን አሳይ ወይም ደብቅ</translation>
+<translation id="8355937569537581904">አሁን ያለውን ምናባዊ ዴክክ አስወግድ</translation>
 <translation id="836869401750819675">የውርዶች ገጽን ይክፈቱ</translation>
 <translation id="8388247778047144397">አገናኙን በትሩ ድርድር ላይ ወዳለ ባዶ ቦታ ይጎትቱት</translation>
 <translation id="8389638407792712197">አዲስ መስኮት ይክፈቱ</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">ቀዳሚውን ቃል ወይም ፊደል ይምረጡ</translation>
 <translation id="8727232706774971183">የእርስዎን ማሳወቂያዎች ይመልከቱ</translation>
 <translation id="8855885154700222542">የሙሉ ማያ ገጽ እይታ ቁልፍ</translation>
+<translation id="8881584919399569791">ንቁ መስኮትን በግራ በኩል ወደ ያለው ዴስክ ያንቀሳቅሱ</translation>
 <translation id="88986195241502842">ገጽ ወደ ታች</translation>
 <translation id="8924883688469390268">ወደ ቀደሚው ተጠቃሚ ቀይር</translation>
 <translation id="8977648847395357314">በአድራሻ አሞሌ ውስጥ ይዘቱን ይምረጡ</translation>

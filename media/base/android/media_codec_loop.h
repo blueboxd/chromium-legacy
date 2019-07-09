@@ -294,9 +294,6 @@ class MEDIA_EXPORT MediaCodecLoop {
   // Helper method to change the state.
   void SetState(State new_state);
 
-  // Helper method to tell us if MediaCodecBridge::Flush() doesn't work.
-  bool CodecNeedsFlushWorkaround() const;
-
   // A helper function for logging.
   static const char* AsString(State state);
 

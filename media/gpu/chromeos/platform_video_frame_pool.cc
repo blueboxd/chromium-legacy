@@ -35,6 +35,12 @@ scoped_refptr<VideoFrame> DefaultCreateFrame(VideoPixelFormat format,
                                   gfx::BufferUsage::SCANOUT_VDA_WRITE);
 }
 
+// Get the identifier of |frame|. Calling this method with the frames backed
+// by the same Dmabuf should return the same result.
+PlatformVideoFramePool::DmabufId GetDmabufId(const VideoFrame& frame) {
+  return &(frame.DmabufFds());
+}
+
 }  // namespace
 
 struct PlatformVideoFramePool::FrameEntry {
@@ -105,12 +111,11 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
       *origin_frame, origin_frame->format(), origin_frame->visible_rect(),
       origin_frame->natural_size());
-  frames_in_use_.insert(
-      std::make_pair(wrapped_frame->unique_id(), origin_frame.get()));
+  DCHECK(wrapped_frame);
+  frames_in_use_.emplace(GetDmabufId(*wrapped_frame), origin_frame.get());
   wrapped_frame->AddDestructionObserver(
       base::BindOnce(&PlatformVideoFramePool::OnFrameReleasedThunk, weak_this_,
-                     parent_task_runner_, wrapped_frame->unique_id(),
-                     std::move(origin_frame)));
+                     parent_task_runner_, std::move(origin_frame)));
   // Clear all metadata before returning to client, in case origin frame has any
   // unrelated metadata.
   wrapped_frame->metadata()->Clear();
@@ -192,7 +197,7 @@ VideoFrame* PlatformVideoFramePool::UnwrapFrame(
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  auto it = frames_in_use_.find(wrapped_frame.unique_id());
+  auto it = frames_in_use_.find(GetDmabufId(wrapped_frame));
   return (it == frames_in_use_.end()) ? nullptr : it->second;
 }
 
@@ -212,24 +217,23 @@ void PlatformVideoFramePool::NotifyWhenFrameAvailable(base::OnceClosure cb) {
 void PlatformVideoFramePool::OnFrameReleasedThunk(
     base::Optional<base::WeakPtr<PlatformVideoFramePool>> pool,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    int wrapped_frame_id,
     scoped_refptr<VideoFrame> origin_frame) {
   DCHECK(pool);
   DVLOGF(4);
 
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&PlatformVideoFramePool::OnFrameReleased, *pool,
-                                wrapped_frame_id, std::move(origin_frame)));
+                                std::move(origin_frame)));
 }
 
 void PlatformVideoFramePool::OnFrameReleased(
-    int wrapped_frame_id,
     scoped_refptr<VideoFrame> origin_frame) {
   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  auto it = frames_in_use_.find(wrapped_frame_id);
+  DmabufId frame_id = GetDmabufId(*origin_frame);
+  auto it = frames_in_use_.find(frame_id);
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 

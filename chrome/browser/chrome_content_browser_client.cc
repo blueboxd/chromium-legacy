@@ -466,7 +466,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/badging/badge_service_impl.h"
+#include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
@@ -3911,10 +3911,10 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   }
 }
 
-void ChromeContentBrowserClient::BindCredentialManagerRequest(
+void ChromeContentBrowserClient::BindCredentialManagerReceiver(
     content::RenderFrameHost* render_frame_host,
-    blink::mojom::CredentialManagerRequest request) {
-  ChromePasswordManagerClient::BindCredentialManager(std::move(request),
+    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
+  ChromePasswordManagerClient::BindCredentialManager(std::move(receiver),
                                                      render_frame_host);
 }
 
@@ -4575,7 +4575,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
 #if !defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&BadgeServiceImpl::Create));
+      base::BindRepeating(&badging::BadgeManager::BindRequest));
 #endif
 
   frame_interfaces_parameterized_->AddInterface(

@@ -110,6 +110,9 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
              const ChooseFileSystemEntriesOptions* options,
              mojom::blink::NativeFileSystemErrorPtr file_operation_result,
              Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context)
+              return;
             if (file_operation_result->error_code != base::File::FILE_OK) {
               resolver->Reject(file_error::CreateDOMException(
                   file_operation_result->error_code));
@@ -120,13 +123,13 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
               results.ReserveInitialCapacity(entries.size());
               for (auto& entry : entries) {
                 results.push_back(NativeFileSystemHandle::CreateFromMojoEntry(
-                    std::move(entry)));
+                    std::move(entry), context));
               }
               resolver->Resolve(results);
             } else {
               DCHECK_EQ(1u, entries.size());
               resolver->Resolve(NativeFileSystemHandle::CreateFromMojoEntry(
-                  std::move(entries[0])));
+                  std::move(entries[0]), context));
             }
           },
           WrapPersistent(resolver), std::move(manager),

@@ -17,25 +17,6 @@
 namespace mojo {
 
 // static
-device::mojom::UsbEndpointInfoPtr TypeConverter<
-    device::mojom::UsbEndpointInfoPtr,
-    device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
-                                                endpoint) {
-  auto info = device::mojom::UsbEndpointInfo::New();
-  info->endpoint_number =
-      device::ConvertEndpointAddressToNumber(endpoint.address);
-  info->direction = endpoint.direction;
-  info->type = endpoint.transfer_type;
-  info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);
-  info->synchronization_type = endpoint.synchronization_type;
-  info->usage_type = endpoint.usage_type;
-  info->polling_interval = endpoint.polling_interval;
-  info->extra_data.assign(endpoint.extra_data.begin(),
-                          endpoint.extra_data.end());
-  return info;
-}
-
-// static
 device::mojom::UsbAlternateInterfaceInfoPtr
 TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
               device::UsbInterfaceDescriptor>::
@@ -51,8 +32,8 @@ TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
   // Filter out control endpoints for the public interface.
   info->endpoints.reserve(interface.endpoints.size());
   for (const auto& endpoint : interface.endpoints) {
-    if (endpoint.transfer_type != device::UsbTransferType::CONTROL)
-      info->endpoints.push_back(device::mojom::UsbEndpointInfo::From(endpoint));
+    if (endpoint->type != device::UsbTransferType::CONTROL)
+      info->endpoints.push_back(endpoint->Clone());
   }
 
   return info;

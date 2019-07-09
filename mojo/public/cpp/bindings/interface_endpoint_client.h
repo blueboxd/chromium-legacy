@@ -204,7 +204,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<InterfaceEndpointClient> weak_ptr_factory_;
+  base::WeakPtrFactory<InterfaceEndpointClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpointClient);
 };

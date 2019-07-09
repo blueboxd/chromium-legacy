@@ -254,7 +254,8 @@ cr.define('history', function() {
      * @private
      */
     itemChanged_: function() {
-      this.$.icon.style.backgroundImage = cr.icon.getFavicon(this.item.url);
+      this.$.icon.style.backgroundImage =
+          cr.icon.getFavicon(this.item.url, this.item.isUrlInRemoteUserData);
       this.listen(this.$['time-accessed'], 'mouseover', 'addTimeTitle_');
     },
 

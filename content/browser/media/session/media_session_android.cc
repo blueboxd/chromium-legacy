@@ -41,8 +41,8 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
   if (contents_android)
     contents_android->SetMediaSession(j_media_session);
 
-  media_session::mojom::MediaSessionObserverPtr observer;
-  observer_binding_.Bind(mojo::MakeRequest(&observer));
+  mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer;
+  observer_binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
   session->AddObserver(std::move(observer));
 }
 

@@ -58,6 +58,7 @@ DownloadResponseHandler::DownloadResponseHandler(
     const DownloadUrlParameters::RequestHeadersType& request_headers,
     const std::string& request_origin,
     DownloadSource download_source,
+    bool ignore_content_length_mismatch,
     std::vector<GURL> url_chain)
     : delegate_(delegate),
       started_(false),
@@ -73,7 +74,7 @@ DownloadResponseHandler::DownloadResponseHandler(
       request_headers_(request_headers),
       request_origin_(request_origin),
       download_source_(download_source),
-      has_strong_validators_(false),
+      ignore_content_length_mismatch_(ignore_content_length_mismatch),
       is_partial_request_(save_info_->offset > 0),
       completed_(false),
       abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -95,7 +96,15 @@ void DownloadResponseHandler::OnReceiveResponse(
   // Sets page transition type correctly and call
   // |RecordDownloadSourcePageTransitionType| here.
   if (head.headers) {
-    has_strong_validators_ = head.headers->HasStrongValidators();
+    // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
+    // 1. Server or proxy closes the connection too early.
+    // 2. The content-length header is wrong.
+    // If the download has strong validators, we can interrupt the download
+    // and let it resume automatically. Otherwise, resuming the download will
+    // cause it to restart and the download may never complete if the error was
+    // caused by reason 2. As a result, downloads without strong validators are
+    // treated as completed here.
+    ignore_content_length_mismatch_ |= !head.headers->HasStrongValidators();
     RecordDownloadHttpResponseCode(head.headers->response_code());
     RecordDownloadContentDisposition(create_info_->content_disposition);
   }
@@ -222,8 +231,8 @@ void DownloadResponseHandler::OnComplete(
 
   completed_ = true;
   DownloadInterruptReason reason = HandleRequestCompletionStatus(
-      static_cast<net::Error>(status.error_code), has_strong_validators_,
-      cert_status_, abort_reason_);
+      static_cast<net::Error>(status.error_code),
+      ignore_content_length_mismatch_, cert_status_, abort_reason_);
 
   if (client_ptr_) {
     client_ptr_->OnStreamCompleted(

@@ -2705,11 +2705,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
 
-    {"allow-starting-service-manager-only",
-     flag_descriptions::kAllowStartingServiceManagerOnlyName,
-     flag_descriptions::kAllowStartingServiceManagerOnlyDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kAllowStartingServiceManagerOnly)},
-
     {"out-of-blink-cors", flag_descriptions::kEnableOutOfBlinkCorsName,
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},

@@ -48,7 +48,7 @@ Polymer({
     },
   },
 
-  /** @private {nux.AppProxy} */
+  /** @private {nux.GoogleAppProxy} */
   appProxy_: null,
 
   /** @private {?nux.ModuleMetricsManager} */

@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">सर्व बॅकअप घेतला!</translation>
 <translation id="3626281679859535460">ब्राइटनेस</translation>
 <translation id="3644896802912593514">रूंदी</translation>
+<translation id="3645531960514756307">फोल्डर अनपिन करा</translation>
 <translation id="3678559383040232393">माल्टीज कीबोर्ड</translation>
 <translation id="3685122418104378273">मोबाईल डेटा वापरला जातो, तेव्हा Google ड्राइव्ह सिंक बाय डीफॉल्ट बंद केले जाते.</translation>
 <translation id="3726463242007121105">हे डिव्हाइस उघडले जाऊ शकत नाही कारण त्याचे फाइलसिस्टम समर्थित नाही.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">काल <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">आइसलँडिक कीबोर्ड</translation>
 <translation id="8342318071240498787">समान नावाची एखादी फाइल किंवा डिरेक्टरी आधीपासूनच अस्तित्वात आहे.</translation>
+<translation id="8382450452152102026"><ph name="FOLDER_NAME" /> वर</translation>
 <translation id="8391950649760071442">लिप्यंतरण (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">परिमाण</translation>
 <translation id="8412586565681117057">द्रुत इनपुट पद्धत</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">पेज गणना</translation>
 <translation id="9110990317705400362">आम्ही तुमचे ब्राउझिंग सुरक्षित करण्यासाठी सातत्याने मार्ग शोधत आहोत. मागे, तुमच्या ब्राउझरमध्ये एक्स्टेंशन जोडण्यासाठी कोणतीही वेबसाइट तुम्हाला सूचित करू शकत होती. Google Chrome च्या नवीनतम आवृत्तीमध्ये, एक्स्टेंशन पेजद्वारे ते जोडून हे एक्स्टेंशन तुम्ही इंस्टॉल करू इच्छित आहात हे तुम्ही Chrome ला स्पष्टपणे सांगणे आवश्यक आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">कोडेक</translation>
+<translation id="9129931661813833980">फोल्डर पिन करा</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' चे सदस्य या आयटमचा अॅक्सेस मिळवतील.</translation>
 <translation id="9131598836763251128">एक किंवा अधिक फायली निवडा</translation>
 <translation id="9133055936679483811">झिप करणे अयशस्वी. <ph name="ERROR_MESSAGE" /></translation>

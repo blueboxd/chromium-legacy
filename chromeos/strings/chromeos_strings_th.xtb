@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">เปิดบลูทูธเพื่อค้นหาอุปกรณ์ใกล้เคียง</translation>
 <translation id="2805756323405976993">แอป</translation>
 <translation id="2872961005593481000">ปิด</translation>
+<translation id="2912823482158781027">รีเฟรชตั๋ว</translation>
 <translation id="3511655281162215899">โปรดเลือกรหัสผ่านใหม่ทันที</translation>
+<translation id="3562817605261346876">โปรดรีเฟรชตั๋วของ <ph name="PRINCIPAL_NAME" /> เร็วๆ นี้</translation>
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
 <translation id="445059817448385655">รหัสผ่านเดิม</translation>
 <translation id="467510802200863975">รหัสผ่านไม่ตรงกัน</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="54609108002486618">มีการจัดการ</translation>
 <translation id="5733345267661125295">โปรดเลือกรหัสผ่านใหม่ตอนนี้</translation>
+<translation id="5743581760404859096">ตั๋ว Kerberos ของคุณกำลังจะหมดอายุ</translation>
 <translation id="5832805196449965646">เพิ่มบุคคล</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="6058625436358447366">ป้อนรหัสผ่านเดิมและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6106186594183574873">ป้อนรหัสผ่านเดิมเพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6146993107019042706">ป้อนรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6574601967010742428">ผู้ดูแลระบบของอุปกรณ์อาจมีสิทธิ์ตรวจสอบกิจกรรมของคุณได้</translation>
+<translation id="7280705187789120111">ตั๋ว Kerberos กำลังจะหมดอายุ</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{รหัสผ่านปัจจุบันของคุณหมดอายุแล้ว}=1{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง 1 วัน}other{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง # วัน}}</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7690294790491645610">ยืนยันรหัสผ่านใหม่</translation>

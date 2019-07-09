@@ -151,6 +151,7 @@ void AutoclickController::SetEnabled(bool enabled,
           }));
       disable_dialog_ = dialog->GetWeakPtr();
     } else {
+      HideScrollPosition();
       Shell::Get()->RemovePreTargetHandler(this);
       menu_bubble_controller_ = nullptr;
       enabled_ = enabled;
@@ -262,6 +263,15 @@ void AutoclickController::OnExitedScrollButton() {
   over_scroll_button_ = false;
 }
 
+void AutoclickController::OnAutoclickScrollableBoundsFound(
+    gfx::Rect& bounds_in_screen) {
+  // TODO(katie): Don't call this on the very first time scrollable bounds
+  // are found for each time the type is changed to scroll. We want the
+  // default first position of the scrollbar to be next to the menu bubble.
+  // TODO(katie): Set the scroll bubble position using the bounds.
+  menu_bubble_controller_->SetScrollPoint(scroll_location_);
+}
+
 void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetPosition(menu_position_);
@@ -332,12 +342,9 @@ void AutoclickController::DoAutoclickAction() {
     } else {
       scroll_location_ = gesture_anchor_location_;
       UpdateScrollPosition(scroll_location_);
-      // If the user has requested a new point on the screen as the target of
-      // scrolls, move the scroll bubble close to that point.
-      // TODO(katie): Determine the scrollable region using the automation API
-      // and a component extension, and pass in the region as well as a single
-      // point here, per the spec.
-      menu_bubble_controller_->SetScrollPoint(scroll_location_);
+      Shell::Get()
+          ->accessibility_controller()
+          ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.ChangeScrollPoint"));
     }
@@ -498,6 +505,9 @@ void AutoclickController::InitializeScrollLocation() {
                          ->GetPrimaryRootWindow()
                          ->GetBoundsInScreen()
                          .CenterPoint();
+  Shell::Get()
+      ->accessibility_controller()
+      ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
 }
 
 void AutoclickController::UpdateScrollPosition(
@@ -521,6 +531,8 @@ void AutoclickController::HideScrollPosition() {
     autoclick_scroll_position_handler_.reset();
   if (scroll_position_widget_)
     scroll_position_widget_.reset();
+
+  // TODO(katie): Clear any Autoclick scroll focus rings here.
 }
 
 bool AutoclickController::DragInProgress() const {

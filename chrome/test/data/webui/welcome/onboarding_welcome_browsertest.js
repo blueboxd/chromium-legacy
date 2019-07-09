@@ -42,7 +42,7 @@ var OnboardingWelcomeAppChooserTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       'app_chooser_test.js',
-      'test_nux_app_proxy.js',
+      'test_google_app_proxy.js',
       'test_metrics_proxy.js',
       'test_bookmark_proxy.js',
     ]);

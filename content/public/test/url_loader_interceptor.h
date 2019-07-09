@@ -79,13 +79,25 @@ class URLLoaderInterceptor {
   // forward the request to the original URLLoaderFactory.
   using InterceptCallback = base::Callback<bool(RequestParams* params)>;
 
+  // Function signature for a loading completion method.
+  // This class will listen on loading completion responses from the network,
+  // invoke this callback, and delegate the response to the original client.
+  using URLLoaderCompletionStatusCallback = base::RepeatingCallback<void(
+      const GURL& request_url,
+      const network::URLLoaderCompletionStatus& status)>;
+
   // Create an interceptor which calls |callback|. If |ready_callback| is not
   // provided, a nested RunLoop is used to ensure the interceptor is ready
   // before returning. If |ready_callback| is provided, no RunLoop is called,
   // and instead |ready_callback| is called after the interceptor is installed.
+  // If provided, |completion_status_callback| is called when the load
+  // completes.
   explicit URLLoaderInterceptor(const InterceptCallback& callback);
-  URLLoaderInterceptor(const InterceptCallback& callback,
-                       base::OnceClosure ready_callback);
+  URLLoaderInterceptor(
+      const InterceptCallback& callback,
+      const URLLoaderCompletionStatusCallback& completion_status_callback,
+      base::OnceClosure ready_callback);
+
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.

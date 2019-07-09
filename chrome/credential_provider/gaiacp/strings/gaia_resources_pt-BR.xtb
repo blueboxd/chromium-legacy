@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Não foi possível verificar a senha do Windows. Tente novamente.</translation>
 <translation id="3306357053520292004">Um usuário neste computador já foi registrado com essa conta. Faça login com uma conta diferente.</translation>
 <translation id="369030246015333661">Sua conta foi bloqueada. Entre em contato com um administrador do sistema.</translation>
+<translation id="3968372833844047539">Login permitido apenas para os usuários do G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
+<translation id="4267670563222825190">Nenhum usuário de domínio encontrado para sua conta. Entre em contato com seu administrador.</translation>
 <translation id="4300229033992784001">A senha da sua conta foi alterada. Informe sua senha atual do Windows para sincronizar sua conta do Windows com sua conta de trabalho.</translation>
 <translation id="4706454071748629324">Falha ao adicionar um novo usuário. Este computador só permite que um único usuário seja criado com uma conta de trabalho.</translation>
 <translation id="6292766200512304540">Usuário criado a partir de uma conta de trabalho</translation>

@@ -15,8 +15,9 @@
 namespace blink {
 
 NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
-    NativeFileSystemDirectoryHandle* directory)
-    : directory_(directory) {
+    NativeFileSystemDirectoryHandle* directory,
+    ExecutionContext* execution_context)
+    : ContextLifecycleObserver(execution_context), directory_(directory) {
   directory_->MojoHandle()->GetEntries(
       WTF::Bind(&NativeFileSystemDirectoryIterator::OnGotEntries,
                 WrapWeakPersistent(this)));
@@ -50,6 +51,7 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
 
 void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(entries_);
   visitor->Trace(pending_next_);
   visitor->Trace(directory_);
@@ -58,6 +60,8 @@ void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
 void NativeFileSystemDirectoryIterator::OnGotEntries(
     mojom::blink::NativeFileSystemErrorPtr result,
     Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
+  if (!GetExecutionContext())
+    return;
   if (result->error_code != base::File::FILE_OK) {
     error_ = result->error_code;
     if (pending_next_) {
@@ -67,8 +71,8 @@ void NativeFileSystemDirectoryIterator::OnGotEntries(
     return;
   }
   for (auto& e : entries) {
-    entries_.push_back(
-        NativeFileSystemHandle::CreateFromMojoEntry(std::move(e)));
+    entries_.push_back(NativeFileSystemHandle::CreateFromMojoEntry(
+        std::move(e), GetExecutionContext()));
   }
   waiting_for_more_entries_ = false;
   if (pending_next_) {

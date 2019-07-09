@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="104962181688258143">Abrir la app de Archivos</translation>
+<translation id="1098295134904615027">Activa el escritorio virtual de la derecha</translation>
 <translation id="1122869341872663659">Se muestran <ph name="N" /> resultados de búsqueda para <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Arrastrar el vínculo a la barra de direcciones de la pestaña</translation>
 <translation id="1204450209689312104">Abrir una ventana nueva en modo de navegación incógnito</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Ir al final de la línea</translation>
+<translation id="1499072997694708844">Cierra cualquier ventana de búsqueda abierta o detiene la carga de la página actual</translation>
 <translation id="1510238584712386396">Selector</translation>
 <translation id="152892567002884378">Subir el volumen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, luego <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Agregar www. y .com a la entrada en la barra de direcciones y, luego, abrir la página</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, luego <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">Activa el escritorio virtual de la izquierda</translation>
 <translation id="1996162290124031907">Ir a la pestaña siguiente</translation>
 <translation id="2010818616644390445">Ir a la última pestaña de la ventana</translation>
 <translation id="2040706009561734834">Abrir y cerrar el selector</translation>
@@ -33,7 +36,7 @@
 <translation id="2185166372312820725">Ir a la pestaña anterior</translation>
 <translation id="2194790690264064655">Presiona <ph name="CTRL" /> y, luego, haz clic en un vínculo</translation>
 <translation id="2246352309084894470">Abrir o cerrar el Selector de pantalla completa</translation>
-<translation id="2354531887393764880">tiempo</translation>
+<translation id="2354531887393764880">punto</translation>
 <translation id="2382644247745281995">No es compatible con el diseño del teclado actual</translation>
 <translation id="2397416548179033562">Mostrar el menú de Chrome</translation>
 <translation id="2424073332829844142">Activar y desactivar Bloq Mayús</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">Tomar captura de pantalla</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Enfoque en la barra de direcciones</translation>
+<translation id="3165428420335997629">Crea un nuevo escritorio virtual</translation>
 <translation id="3256109297135787951">Dejar de destacar un elemento en la biblioteca</translation>
 <translation id="3288816184963444640">Cerrar la ventana actual</translation>
 <translation id="3407560819924487926">Mostrar el Administrador de tareas</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">Buscar en la página actual</translation>
 <translation id="5563050856984839829">Presiona <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> y haz clic en un vínculo</translation>
 <translation id="561814908794220892">Abrir la página web en una pestaña nueva</translation>
+<translation id="5620219513321115856">Mueve la ventana activa al escritorio de la derecha</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> o <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">Abrir el vínculo en la pestaña</translation>
 <translation id="5757474750054631686">Atenuar el teclado (solo para teclados retroiluminados)</translation>
@@ -161,7 +166,7 @@
 <translation id="7422707470576323858">Cambiar al siguiente método de entrada disponible</translation>
 <translation id="743754632698445141">Dejar de fijar una app</translation>
 <translation id="7439718573248533901">Borrar la letra siguiente (borrar siguiente)</translation>
-<translation id="7500368597227394048">guion</translation>
+<translation id="7500368597227394048">guión</translation>
 <translation id="7611271430932669992">Mover el foco a ventanas emergentes y diálogos</translation>
 <translation id="766326951329901120">Pegar el contenido del portapapeles como texto sin formato</translation>
 <translation id="7703010453515335249">corchete de apertura</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">Rotar la pantalla 90 grados</translation>
 <translation id="8241665785394195545">corchete de cierre</translation>
 <translation id="8264941229485248811">Mostrar u ocultar el inspector de Herramientas para desarrolladores</translation>
+<translation id="8355937569537581904">Quita el escritorio virtual actual</translation>
 <translation id="836869401750819675">Abrir la página de descargas</translation>
 <translation id="8388247778047144397">Arrastra el vínculo al área en blanco de la barra de pestañas</translation>
 <translation id="8389638407792712197">Abrir una ventana nueva</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">Seleccionar la palabra o letra anterior</translation>
 <translation id="8727232706774971183">Ver tus notificaciones</translation>
 <translation id="8855885154700222542">Tecla de pantalla completa</translation>
+<translation id="8881584919399569791">Mueve la ventana activa al escritorio de la izquierda</translation>
 <translation id="88986195241502842">Avanzar página</translation>
 <translation id="8924883688469390268">Cambiar al usuario anterior</translation>
 <translation id="8977648847395357314">Seleccionar el contenido en la barra de direcciones</translation>

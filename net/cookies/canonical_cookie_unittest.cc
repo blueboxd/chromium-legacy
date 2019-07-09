@@ -861,6 +861,18 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
             status);
 
+  // A __Host- cookie may have a domain if it's an IP address that matches the
+  // URL.
+  EXPECT_TRUE(
+      CanonicalCookie::Create(GURL("https://127.0.0.1"),
+                              "__Host-A=B; Domain=127.0.0.1; Path=/; Secure;",
+                              creation_time, options, &status));
+  // A __Host- cookie with an IP address domain does not need the domain
+  // attribute specified explicitly (just like a normal domain).
+  EXPECT_TRUE(CanonicalCookie::Create(GURL("https://127.0.0.1"),
+                                      "__Host-A=B; Domain=; Path=/; Secure;",
+                                      creation_time, options, &status));
+
   // A __Host- cookie must have a Path of "/".
   EXPECT_FALSE(CanonicalCookie::Create(https_url,
                                        "__Host-A=B; Path=/foo; Secure;",
@@ -1483,6 +1495,78 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       COOKIE_PRIORITY_DEFAULT);
   ASSERT_TRUE(cc);
   EXPECT_EQ("/foo%7F", cc->Path());
+
+  // A __Secure- cookie must be Secure.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Secure-A", "B", ".www.foo.com", "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Secure-A", "B", ".www.foo.com", "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, false, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+
+  // A __Host- cookie must be Secure.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", std::string(), "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", std::string(), "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, false, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+
+  // A __Host- cookie must have path "/".
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", std::string(), "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", std::string(), "/foo",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+
+  // A __Host- cookie must not specify a domain.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", std::string(), "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "__Host-A", "B", ".www.foo.com", "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  // Without __Host- prefix, this is a valid host cookie because it does not
+  // specify a domain.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "A", "B", std::string(), "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  // Without __Host- prefix, this is a valid domain (not host) cookie.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://www.foo.com"), "A", "B", ".www.foo.com", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+
+  // The __Host- prefix should not prevent otherwise-valid host cookies from
+  // being accepted.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://127.0.0.1"), "A", "B", std::string(), "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://127.0.0.1"), "__Host-A", "B", std::string(), "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  // Host cookies should not specify domain unless it is an IP address that
+  // matches the URL.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://127.0.0.1"), "A", "B", "127.0.0.1", "/", two_hours_ago,
+      one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("https://127.0.0.1"), "__Host-A", "B", "127.0.0.1", "/",
+      two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
 }
 
 TEST(CanonicalCookieTest, IsSetPermittedInContext) {

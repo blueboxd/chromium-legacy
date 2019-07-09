@@ -316,10 +316,43 @@ class ProgressCenterPanel {
   }
 
   /**
-   * Updates an item to the progress center panel.
-   * @param {!ProgressCenterItem} item Item including new contents.
+   * Process item updates for feedback panels.
+   * @param {!ProgressCenterItem} item Item being updated.
+   * @param {?ProgressCenterItem} newItem Item updating with new content.
    * @suppress {checkTypes}
    * TODO(crbug.com/947388) Remove the suppress, and fix closure compile.
+   */
+  updateFeedbackPanelItem(item, newItem) {
+    let panelItem = this.feedbackHost_.findPanelItemById(item.id);
+    if (newItem) {
+      if (!panelItem) {
+        panelItem = this.feedbackHost_.addPanelItem(item.id);
+        panelItem.panelType = panelItem.panelTypeProgress;
+        panelItem.setAttribute('primary-text', item.message);
+        panelItem.setAttribute('data-progress-id', item.id);
+        if (item.subMessage) {
+          panelItem.setAttribute('secondary-text', item.subMessage);
+        }
+      }
+      panelItem.signalCallback = (signal) => {
+        if (signal === 'cancel' && item.cancelCallback) {
+          item.cancelCallback();
+        }
+      };
+      panelItem.progress = item.progressRateInPercent.toString();
+      // Remove the feedback panel when complete, and create
+      // an activity complete panel.
+      if (item.state == 'completed') {
+        this.feedbackHost_.removePanelItem(panelItem);
+      }
+    } else if (panelItem) {
+      this.feedbackHost_.removePanelItem(panelItem);
+    }
+  }
+
+  /**
+   * Updates an item to the progress center panel.
+   * @param {!ProgressCenterItem} item Item including new contents.
    */
   updateItem(item) {
     const targetGroup = this.getGroupForItem_(item);
@@ -330,31 +363,7 @@ class ProgressCenterPanel {
     // Update an open view item.
     const newItem = targetGroup.getItem(item.id);
     if (util.isFeedbackPanelEnabled()) {
-      let panelItem = this.feedbackHost_.findPanelItemById(item.id);
-      if (newItem) {
-        if (!panelItem) {
-          panelItem = this.feedbackHost_.addPanelItem(item.id);
-          panelItem.panelType = panelItem.panelTypeProgress;
-          panelItem.setAttribute('primary-text', item.message);
-          panelItem.setAttribute('data-progress-id', item.id);
-          if (item.subMessage) {
-            panelItem.setAttribute('secondary-text', item.subMessage);
-          }
-        }
-        panelItem.signalCallback = (signal) => {
-          if (signal === 'cancel' && item.cancelCallback) {
-            item.cancelCallback(item.id);
-          }
-        };
-        panelItem.progress = item.progressRateInPercent;
-        // Remove the feedback panel when complete, and create
-        // an activity complete panel.
-        if (item.state == 'completed') {
-          this.feedbackHost_.removePanelItem(panelItem);
-        }
-      } else if (panelItem) {
-        this.feedbackHost_.removePanelItem(panelItem);
-      }
+      this.updateFeedbackPanelItem(item, newItem);
     } else {
       let itemElement = this.getItemElement_(item.id);
       if (newItem) {

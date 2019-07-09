@@ -233,7 +233,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // this watcher.
   const char* heap_profiler_tag_ = nullptr;
 
-  base::WeakPtrFactory<SimpleWatcher> weak_factory_;
+  base::WeakPtrFactory<SimpleWatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SimpleWatcher);
 };

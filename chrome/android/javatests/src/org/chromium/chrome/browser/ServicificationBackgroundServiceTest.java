@@ -81,7 +81,7 @@ public final class ServicificationBackgroundServiceTest {
             return;
         }
 
-        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             try {
                 mMappedSpareFile = new RandomAccessFile(mSpareFile, "rw");
 
@@ -100,7 +100,7 @@ public final class ServicificationBackgroundServiceTest {
     private void closeBrowserMetricsSpareFile() {
         if (mMappedSpareFile == null) return;
 
-        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             try {
                 mMappedSpareFile.close();
             } catch (IOException e) {
@@ -119,10 +119,9 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @LargeTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly,"
-            + "WriteBasicSystemProfileToPersistentHistogramsFile"})
-    public void
-    testHistogramsPersistedWithServiceManagerOnlyStart() {
+    @CommandLineFlags.
+    Add({"enable-features=NetworkService,WriteBasicSystemProfileToPersistentHistogramsFile"})
+    public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());
 
@@ -136,7 +135,7 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @MediumTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
+    @CommandLineFlags.Add({"enable-features=NetworkService"})
     public void testFullBrowserStartsAfterServiceManager() {
         startServiceAndWaitForNative(mServicificationBackgroundService);
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();

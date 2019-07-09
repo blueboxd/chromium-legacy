@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">No s'ha pogut verificar la contrasenya de Windows. Torna-ho a provar.</translation>
 <translation id="3306357053520292004">Ja s'ha afegit un usuari a l'ordinador amb aquest compte. Inicia la sessió amb un altre compte.</translation>
 <translation id="369030246015333661">S'ha bloquejat el compte. Contacta amb un administrador del sistema.</translation>
+<translation id="3968372833844047539">Només poden iniciar la sessió els usuaris de G Suite Enterprise.</translation>
 <translation id="4057329986137569701">S'ha produït un error intern.</translation>
+<translation id="4267670563222825190">No s'ha trobat cap usuari del domini per al teu compte. Contacta amb l'administrador.</translation>
 <translation id="4300229033992784001">La contrasenya del compte ha canviat. Introdueix la contrasenya actual de Windows per sincronitzar el compte de Windows amb el de la feina.</translation>
 <translation id="4706454071748629324">No s'ha pogut afegir un usuari nou. En aquest ordinador només es pot crear un usuari amb un compte de la feina.</translation>
 <translation id="6292766200512304540">Usuari creat amb un compte de la feina</translation>

@@ -165,7 +165,9 @@ class Generator(object):
   # files to stdout.
   def __init__(self, module, output_dir=None, typemap=None, variant=None,
                bytecode_path=None, for_blink=False,
-               js_bindings_mode="new", export_attribute=None,
+               js_bindings_mode="new",
+               use_old_js_lite_bindings_names=False,
+               export_attribute=None,
                export_header=None, generate_non_variant_code=False,
                support_lazy_serialization=False, disallow_native_types=False,
                disallow_interfaces=False, generate_message_ids=False,
@@ -177,6 +179,7 @@ class Generator(object):
     self.bytecode_path = bytecode_path
     self.for_blink = for_blink
     self.js_bindings_mode = js_bindings_mode
+    self.use_old_js_lite_bindings_names = use_old_js_lite_bindings_names
     self.export_attribute = export_attribute
     self.export_header = export_header
     self.generate_non_variant_code = generate_non_variant_code

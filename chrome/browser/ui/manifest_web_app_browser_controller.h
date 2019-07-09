@@ -45,6 +45,8 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
 
   GURL GetAppLaunchURL() const override;
 
+  bool IsUrlInAppScope(const GURL& url) const override;
+
  protected:
   void OnTabInserted(content::WebContents* contents) override;
 

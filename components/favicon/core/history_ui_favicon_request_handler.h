@@ -21,6 +21,7 @@ namespace favicon {
 // TODO(victorvianna): Rename enum to mention history UIs.
 enum class FaviconRequestOrigin {
   // Unknown origin.
+  // TODO(victorvianna): Remove this and deprecate the histogram-suffix.
   UNKNOWN,
   // History page.
   HISTORY,
@@ -43,6 +44,7 @@ enum class FaviconRequestPlatform {
 // TODO(victorvianna): Use a more natural order for the parameters in the API.
 // TODO(victorvianna): Remove |icon_url_for_uma| when we have access to the
 // FaviconUrlMapper.
+// TODO(victorvianna): Rename |request_origin| to |origin_for_uma| in the API.
 class HistoryUiFaviconRequestHandler : public KeyedService {
  public:
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.

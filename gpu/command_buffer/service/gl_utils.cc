@@ -1042,5 +1042,29 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
   return true;
 }
 
+GLenum GetTextureBindingQuery(GLenum texture_type) {
+  switch (texture_type) {
+    case GL_TEXTURE_2D:
+      return GL_TEXTURE_BINDING_2D;
+    case GL_TEXTURE_2D_ARRAY:
+      return GL_TEXTURE_BINDING_2D_ARRAY;
+    case GL_TEXTURE_2D_MULTISAMPLE:
+      return GL_TEXTURE_BINDING_2D_MULTISAMPLE;
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+      return GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY;
+    case GL_TEXTURE_3D:
+      return GL_TEXTURE_BINDING_3D;
+    case GL_TEXTURE_EXTERNAL_OES:
+      return GL_TEXTURE_BINDING_EXTERNAL_OES;
+    case GL_TEXTURE_RECTANGLE:
+      return GL_TEXTURE_BINDING_RECTANGLE;
+    case GL_TEXTURE_CUBE_MAP:
+      return GL_TEXTURE_BINDING_CUBE_MAP;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu

@@ -396,7 +396,6 @@
 <translation id="3060227939791841287">C9 (ఎన్వలప్)</translation>
 <translation id="3061707000357573562">ప్యాచ్ సేవ</translation>
 <translation id="3064966200440839136">బాహ్య అప్లికేషన్‌ ద్వారా చెల్లించడానికి అజ్ఞాత మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
-<translation id="3083099961703215236">{COUNT,plural, =0{ఏమీ లేవు}=1{1 పాస్‌వర్డ్}other{# పాస్‌వర్డ్‌లు}}</translation>
 <translation id="3095940652251934233">స్టేట్‌మెంట్</translation>
 <translation id="3096100844101284527">పికప్ చిరునామాను జోడించండి</translation>
 <translation id="3105172416063519923">అసెట్ ID:</translation>
@@ -946,7 +945,6 @@
 <translation id="6094273045989040137">అదనపు గమనికను జోడించండి</translation>
 <translation id="610911394827799129">మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు</translation>
 <translation id="6132597952260690497">ఇన్‌స్టాల్ చేసిన ఎక్స్‌టెన్షన్‌లు, ప్లగ్ఇన్‌ల గురించిన సమాచారం</translation>
-<translation id="6144381551823904650">{COUNT,plural, =0{ఏమీ లేవు}=1{1 పాస్‌వర్డ్ (సమకాలీకరించబడింది)}other{# పాస్‌వర్డ్‌లు (సమకాలీకరించబడ్డాయి)}}</translation>
 <translation id="6146055958333702838">ఏవైనా కేబుల్‌లను తనిఖీ చేయండి మరియు మీరు ఉపయోగించే ఏవైనా రూటర్‌లు, మోడెమ్‌లు
         లేదా ఇతర నెట్‌వర్క్ పరికరాలను రీబూట్ చేయండి.</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
@@ -1184,7 +1182,6 @@
 <translation id="7451311239929941790">ఈ సమస్య గురించి <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (బ్లాక్ చేయి)</translation>
 <translation id="7460618730930299168">మీరు ఎంచుకున్నది మరియు స్క్రీనింగ్ చేస్తున్నది వేరుగా ఉన్నాయి. కొనసాగించాలా?</translation>
-<translation id="7465410862124366659">ఈ పేజీ అన్నది <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]కు చెందినదిగా గుర్తించబడింది.</translation>
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="7485870689360869515">డేటా కనుగొనబడలేదు.</translation>

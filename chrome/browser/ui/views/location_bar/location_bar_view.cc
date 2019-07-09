@@ -65,6 +65,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -241,6 +242,12 @@ void LocationBarView::Init() {
     if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
       params.types_enabled.push_back(
           PageActionIconType::kNativeFileSystemAccess);
+    }
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableDomDistiller) &&
+        !browser_->is_type_popup()) {
+      params.types_enabled.push_back(PageActionIconType::kReaderMode);
     }
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);

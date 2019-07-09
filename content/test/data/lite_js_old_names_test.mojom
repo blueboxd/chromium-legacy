@@ -1,0 +1,47 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module lite_js_old_names_test.mojom;
+
+// Copy of lite_js_test.mojom that can be used in a separate target with a
+// different value for "use_old_js_lite_bindings_names".
+
+struct TestStruct {
+  int32 x;
+  const bool isValid = false;
+};
+
+union TestUnion {
+  int32 x;
+  TestStruct s;
+};
+
+// An interface whose definition covers various types of message signatures in
+// order to exercise the lite JS mojom bindings.
+interface TestMessageTarget {
+  // Zero arguments, no reply.
+  Poke();
+
+  // Zero-argument request, zero-argument reply.
+  Ping() => ();
+
+  // Request and reply both with arguments.
+  Repeat(string? message, array<int32>? numbers)
+      => (string? message, array<int32>? numbers);
+
+  Flatten(array<TestStruct> values) => (array<int32> values);
+  FlattenUnions(array<TestUnion> unions) => (array<int32> x, array<int32> s);
+
+  RequestSubinterface(Subinterface& request, SubinterfaceClient client);
+};
+
+interface Subinterface {
+  Push(int32 value);
+  Flush();
+};
+
+interface SubinterfaceClient {
+  DidFlush(array<int32> values);
+};
+

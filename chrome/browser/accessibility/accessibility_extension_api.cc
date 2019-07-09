@@ -378,8 +378,14 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateOnScrollableBoundsForPointFoundFunction::Run() {
-  // TODO(crbug.com/978163) When this occurs the bounds should be sent to the
-  // autoclick_controller for processing.
+  std::unique_ptr<
+      accessibility_private::OnScrollableBoundsForPointFound::Params>
+      params = accessibility_private::OnScrollableBoundsForPointFound::Params::
+          Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::ScreenRect rect = std::move(params->rect);
+  gfx::Rect bounds(rect.left, rect.top, rect.width, rect.height);
+  ash::AccessibilityController::Get()->OnAutoclickScrollableBoundsFound(bounds);
   return RespondNow(NoArguments());
 }
 

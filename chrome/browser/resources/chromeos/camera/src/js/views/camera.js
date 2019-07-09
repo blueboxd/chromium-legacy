@@ -178,10 +178,11 @@ cca.views.Camera.prototype = {
 cca.views.Camera.prototype.focus = function() {
   (async () => {
     const values = await new Promise((resolve) => {
-      chrome.storage.local.get(['isIntroShown'], resolve);
+      cca.proxy.browserProxy.localStorageGet(['isIntroShown'], resolve);
     });
+    await this.started_;
     if (!values.isIntroShown) {
-      chrome.storage.local.set({isIntroShown: true});
+      cca.proxy.browserProxy.localStorageSet({isIntroShown: true});
       cca.util.animateOnce(this.banner_);
       this.bannerLearnMore_.focus({preventScroll: true});
     } else {

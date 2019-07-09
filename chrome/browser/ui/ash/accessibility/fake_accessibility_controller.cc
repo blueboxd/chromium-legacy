@@ -47,6 +47,9 @@ void FakeAccessibilityController::SetDictationActive(bool is_active) {}
 void FakeAccessibilityController::ToggleDictationFromSource(
     ash::DictationToggleSource source) {}
 
+void FakeAccessibilityController::OnAutoclickScrollableBoundsFound(
+    gfx::Rect& bounds_in_screen) {}
+
 void FakeAccessibilityController::ForwardKeyEventsToSwitchAccess(
     bool should_forward) {}
 

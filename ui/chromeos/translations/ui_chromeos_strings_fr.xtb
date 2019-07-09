@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Tout le contenu a été sauvegardé</translation>
 <translation id="3626281679859535460">Luminosité</translation>
 <translation id="3644896802912593514">Largeur</translation>
+<translation id="3645531960514756307">Retirer le dossier</translation>
 <translation id="3678559383040232393">Clavier maltais</translation>
 <translation id="3685122418104378273">Par défaut, la synchronisation Google Drive est désactivée lors de l'utilisation des données mobiles.</translation>
 <translation id="3726463242007121105">Impossible d'ouvrir ce périphérique, car son système de fichiers n'est pas compatible.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Hier à <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Clavier islandais</translation>
 <translation id="8342318071240498787">Un fichier ou un répertoire du même nom existe déjà.</translation>
+<translation id="8382450452152102026">Destination : <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Translittération (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8412586565681117057">Mode de saisie quick</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Nombre de pages</translation>
 <translation id="9110990317705400362">Nous recherchons constamment à rendre votre navigation plus sûre. Auparavant, vous pouviez être invité à ajouter une extension dans votre navigateur par n'importe quel site Web. Dans les dernières versions de Google Chrome, vous devez explicitement indiquer que vous souhaitez installer une extension en l'ajoutant via la page "Extensions". <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Épingler le dossier</translation>
 <translation id="9130775360844693113">Les membres de "<ph name="DESTINATION_NAME" />" auront accès à ces éléments.</translation>
 <translation id="9131598836763251128">Sélectionnez un ou plusieurs fichiers</translation>
 <translation id="9133055936679483811">Échec de la compression au format .zip. <ph name="ERROR_MESSAGE" /></translation>

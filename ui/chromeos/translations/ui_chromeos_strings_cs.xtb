@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Vše je zálohováno</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3644896802912593514">Šířka</translation>
+<translation id="3645531960514756307">Odepnout složku</translation>
 <translation id="3678559383040232393">Maltská klávesnice</translation>
 <translation id="3685122418104378273">Když používáte mobilní datové připojení, synchronizace s Diskem Google je ve výchozím nastavení vypnutá.</translation>
 <translation id="3726463242007121105">Toto zařízení nelze otevřít, protože jeho systém souborů není podporován.</translation>
@@ -646,6 +647,7 @@
 <translation id="8336153091935557858">Včera <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandská klávesnice</translation>
 <translation id="8342318071240498787">Soubor nebo složka s daným názvem již existuje.</translation>
+<translation id="8382450452152102026">Do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Přepis (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Rozměry</translation>
 <translation id="8412586565681117057">Zrychlená metoda zadávání</translation>
@@ -695,6 +697,7 @@
 <translation id="9099674669267916096">Počet stránek</translation>
 <translation id="9110990317705400362">Neustále hledáme způsoby, jak zvýšit bezpečnost prohlížení. V minulosti vás k přidání rozšíření do prohlížeče mohl vyzvat kterýkoliv web. V nejnovějších verzích Google Chrome musíte Chromu výslovně sdělit, že rozšíření chcete nainstalovat. Učiníte tak tím, že rozšíření přidáte na stránce Rozšíření. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Připnout složku</translation>
 <translation id="9130775360844693113">Členové týmu <ph name="DESTINATION_NAME" /> získají přístup k těmto položkám.</translation>
 <translation id="9131598836763251128">Vyberte jeden nebo více souborů</translation>
 <translation id="9133055936679483811">Komprimace se nezdařila. <ph name="ERROR_MESSAGE" /></translation>

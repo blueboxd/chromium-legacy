@@ -213,9 +213,17 @@ gfx::Transform Tween::TransformValueBetween(double value,
   return to_return;
 }
 
-gfx::SizeF Tween::SizeValueBetween(double value,
-                                   const gfx::SizeF& start,
-                                   const gfx::SizeF& target) {
+gfx::Size Tween::SizeValueBetween(double value,
+                                  const gfx::Size& start,
+                                  const gfx::Size& target) {
+  return gfx::Size(
+      Tween::LinearIntValueBetween(value, start.width(), target.width()),
+      Tween::LinearIntValueBetween(value, start.height(), target.height()));
+}
+
+gfx::SizeF Tween::SizeFValueBetween(double value,
+                                    const gfx::SizeF& start,
+                                    const gfx::SizeF& target) {
   return gfx::SizeF(
       Tween::FloatValueBetween(value, start.width(), target.width()),
       Tween::FloatValueBetween(value, start.height(), target.height()));

@@ -225,6 +225,10 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return oes_texture_half_float_linear_available_;
   }
 
+  bool is_passthrough_cmd_decoder() const {
+    return is_passthrough_cmd_decoder_;
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;

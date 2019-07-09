@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Đã sao lưu tất cả!</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3644896802912593514">Chiều rộng</translation>
+<translation id="3645531960514756307">Bỏ ghim thư mục</translation>
 <translation id="3678559383040232393">Bàn phím tiếng Malta</translation>
 <translation id="3685122418104378273">Tính năng đồng bộ hóa Google Drive được tắt theo mặc định khi sử dụng dữ liệu di động.</translation>
 <translation id="3726463242007121105">Thiết bị này không thể mở được vì hệ thống tệp của thiết bị không được hỗ trợ.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Hôm qua <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Bàn phím Iceland</translation>
 <translation id="8342318071240498787">Tệp hoặc thư mục có cùng tên đã tồn tại.</translation>
+<translation id="8382450452152102026">Đến <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Chuyển ngữ (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Kích thước</translation>
 <translation id="8412586565681117057">Phương thức nhập nhanh</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Số lượng trang</translation>
 <translation id="9110990317705400362">Chúng tôi không ngừng tìm cách để giúp cho quá trình duyệt web của bạn trở nên an toàn hơn. Trước đây, bất kỳ trang web nào cũng có thể nhắc bạn thêm tiện ích vào trình duyệt. Trong các phiên bản mới nhất của Google Chrome, bạn phải cho Chrome biết rõ rằng bạn muốn cài đặt các tiện ích này bằng cách thêm chúng thông qua trang Tiện ích. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Ghim thư mục</translation>
 <translation id="9130775360844693113">Thành viên của '<ph name="DESTINATION_NAME" />' sẽ có quyền truy cập vào các tệp này.</translation>
 <translation id="9131598836763251128">Chọn một hoặc nhiều tệp</translation>
 <translation id="9133055936679483811">Nén không thành công. <ph name="ERROR_MESSAGE" /></translation>

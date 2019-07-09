@@ -95,7 +95,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
 
-  base::WeakPtrFactory<BindingStateBase> weak_ptr_factory_;
+  base::WeakPtrFactory<BindingStateBase> weak_ptr_factory_{this};
 };
 
 template <typename Interface, typename ImplRefTraits>

@@ -294,7 +294,6 @@
 
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'VR Linux': 'vr_release_bot',
-      'linux-tcmalloc-rel': 'tcmalloc_release_bot',
       'Win 10 Fast Ring': 'release_trybot',
       'win-annotator-rel': 'release_bot',
       'win-autofill-captured-sites-rel': 'release_bot',
@@ -1849,10 +1848,6 @@
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
     ],
 
-    'tcmalloc_release_bot': [
-      'tcmalloc', 'release_bot',
-    ],
-
     'tsan_disable_nacl_debug_bot': [
       'tsan', 'disable_nacl', 'debug_bot',
     ],
@@ -2341,10 +2336,6 @@
 
     'win_linker_timing': {
       'gn_args': 'win_linker_timing=true',
-    },
-
-    'tcmalloc': {
-      'gn_args': 'use_new_tcmalloc=true',
     },
 
     'resource_whitelisting': {

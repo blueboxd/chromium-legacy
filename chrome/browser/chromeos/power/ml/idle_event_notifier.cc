@@ -92,16 +92,6 @@ void IdleEventNotifier::SetClockForTesting(
   boot_clock_ = std::move(test_boot_clock);
 }
 
-void IdleEventNotifier::AddObserver(Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void IdleEventNotifier::RemoveObserver(Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 void IdleEventNotifier::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& /* timestamp */) {
@@ -119,15 +109,6 @@ void IdleEventNotifier::PowerChanged(
   }
 }
 
-void IdleEventNotifier::ScreenDimImminent() {
-  // powerd should not dim the screen if video is playing.
-  DCHECK(!video_playing_);
-  const ActivityData data = ConvertActivityData(*internal_data_);
-
-  for (auto& observer : observers_)
-    observer.OnIdleEventObserved(data);
-  ResetTimestampsForRecentActivity();
-}
 
 void IdleEventNotifier::SuspendDone(const base::TimeDelta& sleep_duration) {
   // SuspendDone is triggered by user opening the lid (or other user
@@ -186,6 +167,16 @@ void IdleEventNotifier::OnVideoActivityEnded() {
   }
   video_playing_ = false;
   UpdateActivityData(ActivityType::VIDEO);
+}
+
+IdleEventNotifier::ActivityData IdleEventNotifier::GetActivityDataAndReset() {
+  const ActivityData data = ConvertActivityData(*internal_data_);
+  ResetTimestampsForRecentActivity();
+  return data;
+}
+
+IdleEventNotifier::ActivityData IdleEventNotifier::GetActivityData() const {
+  return ConvertActivityData(*internal_data_);
 }
 
 IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(

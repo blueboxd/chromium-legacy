@@ -264,7 +264,9 @@ class Generator(generator.Generator):
       "unions": self.module.unions,
       "generate_fuzzing": self.generate_fuzzing,
       "generate_closure_exports": for_compile,
-    }
+      "use_old_names": self.use_old_js_lite_bindings_names,
+      "primitives_names": self._GetPrimitivesNames(),
+   }
 
   @staticmethod
   def GetTemplatePrefix():
@@ -339,12 +341,12 @@ class Generator(generator.Generator):
   def _GenerateExterns(self):
     return self._GetParameters()
 
-  @UseJinja("lite/mojom-lite.js.tmpl")
-  def _GenerateLiteBindings(self):
-    return self._GetParameters()
-
   @UseJinja("lite/mojom.html.tmpl")
   def _GenerateLiteHtml(self):
+    return self._GetParameters()
+
+  @UseJinja("lite/mojom-lite.js.tmpl")
+  def _GenerateLiteBindings(self):
     return self._GetParameters()
 
   @UseJinja("lite/mojom-lite.js.tmpl")
@@ -368,7 +370,7 @@ class Generator(generator.Generator):
       self.Write(self._GenerateLiteHtml(), "%s.html" % self.module.path)
       self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
       self.Write(self._GenerateLiteBindingsForCompile(),
-          "%s-lite-for-compile.js" % self.module.path)
+                 "%s-lite-for-compile.js" % self.module.path)
 
   def _SetUniqueNameForImports(self):
     used_names = set()
@@ -464,9 +466,9 @@ class Generator(generator.Generator):
         mojom.IsEnumKind(kind)):
       return name
     if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
-      return name + "Proxy"
+      return name + self._GetPrimitivesNames()["remote"]
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
-      return name + "Request"
+      return name + self._GetPrimitivesNames()["pending_receiver"]
     # TODO(calamity): Support associated interfaces properly.
     if (mojom.IsAssociatedInterfaceKind(kind) or
         mojom.IsPendingAssociatedRemoteKind(kind)):
@@ -561,17 +563,21 @@ class Generator(generator.Generator):
         mojom.IsEnumKind(kind)):
       return "%sSpec.$" % name
     if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
-      return "mojo.internal.InterfaceProxy(%sProxy)" % name
+      remote_name = name + self._GetPrimitivesNames()["remote"]
+      return "mojo.internal.InterfaceProxy(%s)" % remote_name
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
-      return "mojo.internal.InterfaceRequest(%sRequest)" % name
+      request_name = name + self._GetPrimitivesNames()["pending_receiver"]
+      return "mojo.internal.InterfaceRequest(%s)" % request_name
     if (mojom.IsAssociatedInterfaceKind(kind) or
         mojom.IsPendingAssociatedRemoteKind(kind)):
+      remote_name = name + self._GetPrimitivesNames()["remote"]
       # TODO(rockot): Implement associated interfaces.
-      return "mojo.internal.AssociatedInterfaceProxy(%sProxy)" % (
-          name)
+      return "mojo.internal.AssociatedInterfaceProxy(%s)" % (
+          remote_name)
     if (mojom.IsAssociatedInterfaceRequestKind(kind) or
         mojom.IsPendingAssociatedReceiverKind(kind)):
-      return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
+      request_name = name + self._GetPrimitivesNames()["pending_receiver"]
+      return "mojo.internal.AssociatedInterfaceRequest(%s)" % request_name
 
     return name
 
@@ -809,6 +815,20 @@ class Generator(generator.Generator):
       return ".".join(name)
 
     return self._ExpressionToText(token)
+
+  def _GetPrimitivesNames(self):
+    if self.use_old_js_lite_bindings_names:
+      return {
+          "remote": "Proxy",
+          "receiver": "",
+          "pending_receiver": "Request",
+      }
+    else:
+      return {
+          "remote": "Remote",
+          "receiver": "Receiver",
+          "pending_receiver": "PendingReceiver",
+      }
 
   def _GenerateHtmlImports(self):
     result = []

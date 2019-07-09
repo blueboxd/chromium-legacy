@@ -22,7 +22,7 @@ Polymer({
   urlChanged_: function() {
     let url = this.removePatternWildcard_(this.url);
     url = this.ensureUrlHasScheme_(url);
-    this.style.backgroundImage = cr.icon.getFavicon(url || '');
+    this.style.backgroundImage = cr.icon.getFavicon(url || '', false);
   },
 
   /**

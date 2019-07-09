@@ -46,6 +46,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
 
     private RevampedContextMenuHeaderCoordinator mHeaderCoordinator;
 
+    private RevampedContextMenuListView mListView;
     private float mTopContentOffsetPx;
     private ContextMenuDialog mDialog;
     private Runnable mOnShareImageDirectly;
@@ -100,8 +101,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
             }
         };
 
-        RevampedContextMenuListView listView = view.findViewById(R.id.context_menu_list_view);
-        listView.setAdapter(adapter);
+        mListView = view.findViewById(R.id.context_menu_list_view);
+        mListView.setAdapter(adapter);
 
         // Note: clang-format does a bad job formatting lambdas so we turn it off here.
         // clang-format off
@@ -111,17 +112,17 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                 RevampedContextMenuHeaderViewBinder::bind);
         adapter.registerType(
                 ListItemType.DIVIDER,
-                () -> LayoutInflater.from(listView.getContext())
+                () -> LayoutInflater.from(mListView.getContext())
                         .inflate(R.layout.context_menu_divider, null),
                 (m, v, p) -> {});
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_ITEM,
-                () -> LayoutInflater.from(listView.getContext())
+                () -> LayoutInflater.from(mListView.getContext())
                         .inflate(R.layout.revamped_context_menu_row, null),
                 RevampedContextMenuItemViewBinder::bind);
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_SHARE_ITEM,
-                () -> LayoutInflater.from(listView.getContext())
+                () -> LayoutInflater.from(mListView.getContext())
                         .inflate(R.layout.revamped_context_menu_share_row, null),
                 RevampedContextMenuShareItemViewBinder::bind);
         // clang-format on
@@ -130,7 +131,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         List<Pair<Integer, PropertyModel>> itemList = getItemList(activity, items, params);
 
         adapter.updateModels(itemList);
-        listView.setOnItemClickListener((p, v, pos, id) -> {
+        mListView.setOnItemClickListener((p, v, pos, id) -> {
             assert id != INVALID_ITEM_ID;
 
             mDialog.dismiss();
@@ -235,5 +236,9 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     @VisibleForTesting
     void initializeHeaderCoordinatorForTesting(Activity activity, ContextMenuParams params) {
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
+    }
+
+    public void clickListItemForTesting(int id) {
+        mListView.performItemClick(null, -1, id);
     }
 }

@@ -19,12 +19,12 @@
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
 namespace {
 
-constexpr char kArcVmName[] = "arcvm";
 constexpr char kHomeDirectory[] = "/home";
 constexpr char kKernelPath[] = "/opt/google/vms/android/vmlinux";
 constexpr char kRootFsPath[] = "/opt/google/vms/android/system.raw.img";

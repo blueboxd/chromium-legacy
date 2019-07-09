@@ -60,8 +60,7 @@ StringDataPipeProducer::StringDataPipeProducer(
     : producer_(std::move(producer)),
       watcher_(FROM_HERE,
                SimpleWatcher::ArmingPolicy::AUTOMATIC,
-               base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+               base::SequencedTaskRunnerHandle::Get()) {}
 
 StringDataPipeProducer::~StringDataPipeProducer() = default;
 

@@ -19,7 +19,29 @@ cr.define('nux', function() {
     CHROME_WEB_STORE: 5,
   };
 
-  /** @implements {nux.AppProxy} */
+  /** @interface */
+  class GoogleAppProxy {
+    /**
+     * Google app IDs are local to the list of Google apps, so their icon must
+     * be cached by the handler that provided the IDs.
+     * @param {number} appId
+     */
+    cacheBookmarkIcon(appId) {}
+
+    /**
+     * Returns a promise for an array of Google apps.
+     * @return {!Promise<!Array<!nux.BookmarkListItem>>}
+     */
+    getAppList() {}
+
+    /**
+     * @param {number} providerId This should match one of the histogram enum
+     *     value for NuxGoogleAppsSelections.
+     */
+    recordProviderSelected(providerId) {}
+  }
+
+  /** @implements {nux.GoogleAppProxy} */
   class GoogleAppProxyImpl {
     /** @override */
     cacheBookmarkIcon(appId) {
@@ -42,6 +64,7 @@ cr.define('nux', function() {
   cr.addSingletonGetter(GoogleAppProxyImpl);
 
   return {
+    GoogleAppProxy: GoogleAppProxy,
     GoogleAppProxyImpl: GoogleAppProxyImpl,
   };
 });

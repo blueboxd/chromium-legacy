@@ -5,7 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include <vector>
 
+#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -14,15 +19,45 @@
 
 namespace media {
 
+namespace {
+
+base::ScopedFD CreateTmpHandle() {
+  base::FilePath path;
+  DCHECK(CreateTemporaryFile(&path));
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  DCHECK(file.IsValid());
+  return base::ScopedFD(file.TakePlatformFile());
+}
+
+scoped_refptr<VideoFrame> CreateDmabufVideoFrame(VideoPixelFormat format,
+                                                 const gfx::Size& coded_size,
+                                                 const gfx::Rect& visible_rect,
+                                                 const gfx::Size& natural_size,
+                                                 base::TimeDelta timestamp) {
+  base::Optional<VideoFrameLayout> layout =
+      VideoFrameLayout::Create(format, coded_size);
+  DCHECK(layout);
+
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (size_t i = 0; i < VideoFrame::NumPlanes(format); ++i)
+    dmabuf_fds.push_back(CreateTmpHandle());
+
+  return VideoFrame::WrapExternalDmabufs(*layout, visible_rect, natural_size,
+                                         std::move(dmabuf_fds), timestamp);
+}
+
+}  // namespace
+
 class PlatformVideoFramePoolTest
     : public ::testing::TestWithParam<VideoPixelFormat> {
  public:
+  using DmabufId = PlatformVideoFramePool::DmabufId;
+
   PlatformVideoFramePoolTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
     pool_.reset(new PlatformVideoFramePool(
-        base::BindRepeating(&VideoFrame::CreateZeroInitializedFrame),
-        &test_clock_));
+        base::BindRepeating(&CreateDmabufVideoFrame), &test_clock_));
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
   }
 
@@ -52,6 +87,8 @@ class PlatformVideoFramePoolTest
     EXPECT_EQ(size, pool_->GetPoolSizeForTesting());
   }
 
+  DmabufId GetDmabufId(const VideoFrame& frame) { return &(frame.DmabufFds()); }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::SimpleTestTickClock test_clock_;
@@ -64,15 +101,6 @@ class PlatformVideoFramePoolTest
   gfx::Size natural_size_;
 };
 
-TEST_P(PlatformVideoFramePoolTest, FrameInitializedAndZeroed) {
-  SetFrameFormat(GetParam());
-  scoped_refptr<VideoFrame> frame = GetFrame(10);
-
-  // Verify that frame is initialized with zeros.
-  for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
-    EXPECT_EQ(0, frame->data(i)[0]);
-}
-
 INSTANTIATE_TEST_SUITE_P(,
                          PlatformVideoFramePoolTest,
                          testing::Values(PIXEL_FORMAT_I420,
@@ -82,7 +110,7 @@ INSTANTIATE_TEST_SUITE_P(,
 TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame = GetFrame(10);
-  const uint8_t* old_y_data = frame->data(VideoFrame::kYPlane);
+  DmabufId id = GetDmabufId(*frame);
 
   // Clear frame reference to return the frame to the pool.
   frame = nullptr;
@@ -90,25 +118,25 @@ TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
 
   // Verify that the next frame from the pool uses the same memory.
   scoped_refptr<VideoFrame> new_frame = GetFrame(20);
-  EXPECT_EQ(old_y_data, new_frame->data(VideoFrame::kYPlane));
+  EXPECT_EQ(id, GetDmabufId(*new_frame));
 }
 
 TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
-  const uint8_t* old_y_data1 = frame1->data(VideoFrame::kYPlane);
-  const uint8_t* old_y_data2 = frame2->data(VideoFrame::kYPlane);
+  DmabufId id1 = GetDmabufId(*frame1);
+  DmabufId id2 = GetDmabufId(*frame2);
 
   frame1 = nullptr;
   scoped_task_environment_.RunUntilIdle();
   frame1 = GetFrame(30);
-  EXPECT_EQ(old_y_data1, frame1->data(VideoFrame::kYPlane));
+  EXPECT_EQ(id1, GetDmabufId(*frame1));
 
   frame2 = nullptr;
   scoped_task_environment_.RunUntilIdle();
   frame2 = GetFrame(40);
-  EXPECT_EQ(old_y_data2, frame2->data(VideoFrame::kYPlane));
+  EXPECT_EQ(id2, GetDmabufId(*frame2));
 
   frame1 = nullptr;
   frame2 = nullptr;
@@ -136,19 +164,6 @@ TEST_F(PlatformVideoFramePoolTest, FormatChange) {
   CheckPoolSize(0u);
 }
 
-TEST_F(PlatformVideoFramePoolTest, FrameValidAfterPoolDestruction) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
-  scoped_refptr<VideoFrame> frame = GetFrame(10);
-
-  // Destroy the pool.
-  pool_.reset();
-
-  // Write to the Y plane. The memory tools should detect a
-  // use-after-free if the storage was actually removed by pool destruction.
-  memset(frame->data(VideoFrame::kYPlane), 0xff,
-         frame->rows(VideoFrame::kYPlane) * frame->stride(VideoFrame::kYPlane));
-}
-
 TEST_F(PlatformVideoFramePoolTest, StaleFramesAreExpired) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
@@ -169,6 +184,20 @@ TEST_F(PlatformVideoFramePoolTest, StaleFramesAreExpired) {
   frame_2 = nullptr;
   scoped_task_environment_.RunUntilIdle();
   CheckPoolSize(1u);
+}
+
+TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
+  SetFrameFormat(PIXEL_FORMAT_I420);
+  scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
+  scoped_refptr<VideoFrame> frame_2 = VideoFrame::WrapVideoFrame(
+      *frame_1, frame_1->format(), frame_1->visible_rect(),
+      frame_1->natural_size());
+  EXPECT_EQ(pool_->UnwrapFrame(*frame_1), pool_->UnwrapFrame(*frame_2));
+  EXPECT_TRUE(frame_1->IsSameDmaBufsAs(*frame_2));
+
+  scoped_refptr<VideoFrame> frame_3 = GetFrame(20);
+  EXPECT_NE(pool_->UnwrapFrame(*frame_1), pool_->UnwrapFrame(*frame_3));
+  EXPECT_FALSE(frame_1->IsSameDmaBufsAs(*frame_3));
 }
 
 }  // namespace media

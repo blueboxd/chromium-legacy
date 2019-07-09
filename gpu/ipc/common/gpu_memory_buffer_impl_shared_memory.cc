@@ -105,6 +105,46 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     DestructionCallback callback) {
   DCHECK(handle.region.IsValid());
 
+  size_t minimum_stride = 0;
+  if (!gfx::RowSizeForBufferFormatChecked(size.width(), format, 0,
+                                          &minimum_stride)) {
+    return nullptr;
+  }
+
+  size_t min_buffer_size = 0;
+
+  if (gfx::NumberOfPlanesForBufferFormat(format) == 1) {
+    if (static_cast<size_t>(handle.stride) < minimum_stride)
+      return nullptr;
+
+    base::CheckedNumeric<size_t> checked_min_buffer_size =
+        base::MakeCheckedNum(handle.stride) *
+            (base::MakeCheckedNum(size.height()) - 1) +
+        minimum_stride;
+    if (!checked_min_buffer_size.AssignIfValid(&min_buffer_size))
+      return nullptr;
+  } else {
+    // Custom layout (i.e. non-standard stride) is not allowed for multi-plane
+    // formats.
+    if (static_cast<size_t>(handle.stride) != minimum_stride)
+      return nullptr;
+
+    if (!gfx::BufferSizeForBufferFormatChecked(size, format,
+                                               &min_buffer_size)) {
+      return nullptr;
+    }
+  }
+
+  size_t min_buffer_size_with_offset = 0;
+  if (!base::CheckAdd(handle.offset, min_buffer_size)
+           .AssignIfValid(&min_buffer_size_with_offset)) {
+    return nullptr;
+  }
+
+  if (min_buffer_size_with_offset > handle.region.GetSize()) {
+    return nullptr;
+  }
+
   return base::WrapUnique(new GpuMemoryBufferImplSharedMemory(
       handle.id, size, format, usage, std::move(callback),
       std::move(handle.region), base::WritableSharedMemoryMapping(),

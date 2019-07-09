@@ -11,8 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
-#include "base/observer_list_types.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "url/gurl.h"
 
@@ -27,15 +25,6 @@ class CastWebContentsManager;
 
 class CastWebViewFactory : public CastWebView::Observer {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    virtual void OnCastWebViewCreated(CastWebView* web_view) {}
-    virtual void OnCastWebViewDestroyed(CastWebView* web_view) {}
-
-   protected:
-    ~Observer() override {}
-  };
-
   explicit CastWebViewFactory(content::BrowserContext* browser_context);
   ~CastWebViewFactory() override;
 
@@ -45,9 +34,6 @@ class CastWebViewFactory : public CastWebView::Observer {
       scoped_refptr<content::SiteInstance> site_instance,
       const GURL& initial_url);
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   content::BrowserContext* browser_context() const { return browser_context_; }
 
  protected:
@@ -56,7 +42,6 @@ class CastWebViewFactory : public CastWebView::Observer {
 
   content::BrowserContext* const browser_context_;
   base::RepeatingCallback<void(CastWebView*, int)> register_callback_;
-  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewFactory);
 };

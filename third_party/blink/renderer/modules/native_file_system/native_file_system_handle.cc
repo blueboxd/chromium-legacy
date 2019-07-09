@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/file_system_handle_permission_descriptor.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -22,15 +23,22 @@ NativeFileSystemHandle::NativeFileSystemHandle(const String& name)
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
-    mojom::blink::NativeFileSystemEntryPtr e) {
+    mojom::blink::NativeFileSystemEntryPtr e,
+    ExecutionContext* execution_context) {
   if (e->entry_handle->is_file()) {
     return MakeGarbageCollected<NativeFileSystemFileHandle>(
-        e->name, mojom::blink::NativeFileSystemFileHandlePtr(
-                     std::move(e->entry_handle->get_file())));
+        e->name,
+        RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
+            std::move(e->entry_handle->get_file()),
+            execution_context->GetInterfaceInvalidator(),
+            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-      e->name, mojom::blink::NativeFileSystemDirectoryHandlePtr(
-                   std::move(e->entry_handle->get_directory())));
+      e->name,
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>(
+          std::move(e->entry_handle->get_directory()),
+          execution_context->GetInterfaceInvalidator(),
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
 namespace {

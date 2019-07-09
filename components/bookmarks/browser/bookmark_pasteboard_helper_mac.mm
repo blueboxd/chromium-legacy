@@ -77,7 +77,23 @@ void ConvertNSArrayToElements(
     NSArray* input,
     std::vector<BookmarkNodeData::Element>* elements) {
   for (NSDictionary* bookmark_dict in input) {
-    auto new_node = std::make_unique<BookmarkNode>(GURL());
+    NSString* type =
+        base::mac::ObjCCast<NSString>(bookmark_dict[kWebBookmarkTypeKey]);
+    if (!type)
+      continue;
+
+    BOOL is_folder = [type isEqualToString:kWebBookmarkTypeList];
+
+    GURL url = GURL();
+    if (!is_folder) {
+      NSString* url_string =
+          base::mac::ObjCCast<NSString>(bookmark_dict[kURLStringKey]);
+      if (!url_string)
+        continue;
+      url = GURL(base::SysNSStringToUTF8(url_string));
+    }
+
+    auto new_node = std::make_unique<BookmarkNode>(url);
 
     NSNumber* node_id =
         base::mac::ObjCCast<NSNumber>(bookmark_dict[kChromiumBookmarkIdKey]);
@@ -91,23 +107,6 @@ void ConvertNSArrayToElements(
 
     NSString* title = base::mac::ObjCCast<NSString>(bookmark_dict[kTitleKey]);
     new_node->SetTitle(base::SysNSStringToUTF16(title));
-
-    NSString* type =
-        base::mac::ObjCCast<NSString>(bookmark_dict[kWebBookmarkTypeKey]);
-    if (!type)
-      continue;
-
-    BOOL is_folder = [type isEqualToString:kWebBookmarkTypeList];
-    if (is_folder) {
-      new_node->set_type(BookmarkNode::FOLDER);
-    } else {
-      new_node->set_type(BookmarkNode::URL);
-      NSString* url_string =
-          base::mac::ObjCCast<NSString>(bookmark_dict[kURLStringKey]);
-      if (!url_string)
-        continue;
-      new_node->set_url(GURL(base::SysNSStringToUTF8(url_string)));
-    }
 
     BookmarkNodeData::Element e = BookmarkNodeData::Element(new_node.get());
     // BookmarkNodeData::Element::ReadFromPickle explicitly zeroes out the two

@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Sorry, your Windows password couldn't be verified. Please try again.</translation>
 <translation id="3306357053520292004">A user on this computer was already added using this account. Please sign in with a different account.</translation>
 <translation id="369030246015333661">Your account has been locked. Please contact a system administrator.</translation>
+<translation id="3968372833844047539">Only Gsuite Enterprise users are allowed to log in.</translation>
 <translation id="4057329986137569701">An internal error occurred.</translation>
+<translation id="4267670563222825190">No domain user could be found for your account. Please contact your administrator.</translation>
 <translation id="4300229033992784001">Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.</translation>
 <translation id="4706454071748629324">Failed to add a new user. This computer only allows one user to be created using a work account.</translation>
 <translation id="6292766200512304540">User created from a work account</translation>

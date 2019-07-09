@@ -403,7 +403,6 @@
 <translation id="3060227939791841287">C9 (என்வலப்)</translation>
 <translation id="3061707000357573562">பேட்ச் சேவை</translation>
 <translation id="3064966200440839136">வெளிப்புற ஆப்ஸின் மூலம் பணத்தை செலுத்த, மறைநிலையிலிருந்து வெளியேறுகிறீர்கள். தொடரவா?</translation>
-<translation id="3083099961703215236">{COUNT,plural, =0{ஏதுமில்லை}=1{1 கடவுச்சொல்}other{# கடவுச்சொற்கள்}}</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">பிக்அப் முகவரியைச் சேர்</translation>
 <translation id="3105172416063519923">பண்பு ஐடி:</translation>
@@ -949,7 +948,6 @@
 <translation id="6094273045989040137">விரிவுரைப் பயன்முறை</translation>
 <translation id="610911394827799129"><ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற முகவரியில், உங்கள் Google கணக்கிற்கான பிற வகை உலாவல் வரலாறும் இருக்கக்கூடும்</translation>
 <translation id="6132597952260690497">நிறுவப்பட்டுள்ள நீட்டிப்புகளையும் செருகுநிரல்களையும் குறித்த தகவல்கள்</translation>
-<translation id="6144381551823904650">{COUNT,plural, =0{ஏதுமில்லை}=1{1 கடவுச்சொல் (ஒத்திசைத்தது)}other{# கடவுச்சொற்கள் (ஒத்திசைத்தவை)}}</translation>
 <translation id="6146055958333702838">கேபிள்களைச் சரிபார்த்து, நீங்கள் பயன்படுத்தக்கூடிய ரூட்டர்கள், மோடம்கள் அல்லது பிற நெட்வொர்க் சாதனங்களை மறுபடி தொடங்கவும்.</translation>
 <translation id="614940544461990577">இவற்றைச் செய்து பார்க்கவும்:</translation>
 <translation id="6151417162996330722">சேவை சான்றிதழ் நீண்ட செல்லுபடிக் காலத்தைக் கொண்டுள்ளது.</translation>
@@ -1189,7 +1187,6 @@
 <translation id="7451311239929941790">இந்தச் சிக்கல் குறித்து <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">முழுமையான இயல்புநிலையைப் பயன்படுத்து (தடு)</translation>
 <translation id="7460618730930299168">திரையிலுள்ள உள்ளடக்கமும் நீங்கள் தேர்ந்தெடுத்த உள்ளடக்கமும் மாறுபடுகின்றன. தொடரவா?</translation>
-<translation id="7465410862124366659">இந்தப் பக்கம் <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />] நிறுவனத்துக்குச் சொந்தமானது எனக் கண்டறியப்பட்டுள்ளது.</translation>
 <translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="7485870689360869515">தரவு எதுவும் இல்லை.</translation>

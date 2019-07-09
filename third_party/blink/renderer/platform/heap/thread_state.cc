@@ -838,13 +838,6 @@ void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
 
   EagerSweep();
 
-  {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        Heap().stats_collector(),
-        ThreadHeapStatsCollector::kAtomicPhaseCompaction);
-    Heap().Compaction()->VerifySlots();
-  }
-
   // Any sweep compaction must happen after pre-finalizers and eager
   // sweeping, as it will finalize dead objects in compactable arenas
   // (e.g., backing stores for container objects.)

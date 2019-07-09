@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_persistence.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
@@ -276,6 +277,7 @@ bool FontUniqueNameLookup::IsValid() {
 }
 
 bool FontUniqueNameLookup::UpdateTableIfNeeded() {
+  TRACE_EVENT0("fonts", "FontUniqueNameLookup::UpdateTableIfNeeded");
   blink::FontUniqueNameTable font_table;
   bool update_needed =
       !proto_storage_.IsValid() || !proto_storage_.mapping.size() ||
@@ -291,6 +293,8 @@ bool FontUniqueNameLookup::UpdateTableIfNeeded() {
 }
 
 bool FontUniqueNameLookup::UpdateTable() {
+  TRACE_EVENT0("fonts", "FontUniqueNameLookup::UpdateTable");
+
   base::TimeTicks update_table_start_time = base::TimeTicks::Now();
 
   std::vector<std::string> font_files_to_index = GetFontFilePaths();
@@ -303,6 +307,7 @@ bool FontUniqueNameLookup::UpdateTable() {
     int32_t number_of_faces =
         NumberOfFacesInFontFile(ft_library.get(), font_file);
     for (int32_t i = 0; i < number_of_faces; ++i) {
+      TRACE_EVENT0("fonts", "FontUniqueNameLookup::UpdateTable - IndexFile");
       IndexFile(ft_library.get(), &font_table, font_file, i);
     }
   }
@@ -327,6 +332,7 @@ bool FontUniqueNameLookup::UpdateTable() {
 }
 
 bool FontUniqueNameLookup::LoadFromFile() {
+  TRACE_EVENT0("fonts", "FontUniqueNameLookup::LoadFromFile");
   bool load_success = blink::font_table_persistence::LoadFromFile(
       TableCacheFilePath(), &proto_storage_);
   LogUMALoadFromFileSuccess(load_success);
@@ -334,6 +340,7 @@ bool FontUniqueNameLookup::LoadFromFile() {
 }
 
 bool FontUniqueNameLookup::PersistToFile() {
+  TRACE_EVENT0("fonts", "FontUniqueNameLookup::PersistToFile");
   bool persist_success = blink::font_table_persistence::PersistToFile(
       proto_storage_, TableCacheFilePath());
   LogUMAPersistSuccess(persist_success);

@@ -150,6 +150,8 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
                                                 GLenum source_internal_format,
                                                 GLenum dest_internal_format,
                                                 std::string* output_error_msg);
+
+GLenum GetTextureBindingQuery(GLenum texture_type);
 }  // namespace gles2
 }  // namespace gpu
 

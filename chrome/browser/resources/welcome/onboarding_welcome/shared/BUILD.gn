@@ -22,12 +22,6 @@ js_library("bookmark_proxy") {
   ]
 }
 
-js_library("app_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
 js_library("module_metrics_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",

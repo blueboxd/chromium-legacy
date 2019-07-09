@@ -2948,6 +2948,8 @@ jumbo_split_static_library("ui") {
       "views/permission_bubble/permission_prompt_impl_views.cc",
       "views/profiles/avatar_toolbar_button.cc",
       "views/profiles/avatar_toolbar_button.h",
+      "views/reader_mode/reader_mode_icon_view.cc",
+      "views/reader_mode/reader_mode_icon_view.h",
       "views/relaunch_notification/relaunch_notification_controller.cc",
       "views/relaunch_notification/relaunch_notification_controller.h",
       "views/relaunch_notification/relaunch_notification_metrics.cc",

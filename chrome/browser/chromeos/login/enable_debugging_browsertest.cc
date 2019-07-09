@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowSetup) {
   debug_daemon_client_->ResetWait();
   ClickEnableButton();
   debug_daemon_client_->WaitUntilCalled();
-  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"});
+  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"})->Wait();
   EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 1);
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
 }
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, SetupMatchingPasswords) {
   test::OobeJS().TypeIntoPath("test0000", {"enable-debugging-password2"});
   ClickEnableButton();
   debug_daemon_client_->WaitUntilCalled();
-  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"});
+  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"})->Wait();
 
   EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 1);
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
@@ -335,7 +335,9 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, SetupNotMatchingPasswords) {
   test::OobeJS().TypeIntoPath("test0000", {"enable-debugging-password"});
   test::OobeJS().TypeIntoPath("test9999", {"enable-debugging-password2"});
   ClickEnableButton();
-  test::OobeJS().CreateHasClassWaiter(false, "done-view", {"debugging"});
+  test::OobeJS()
+      .CreateHasClassWaiter(false, "done-view", {"debugging"})
+      ->Wait();
 
   EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 0);
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
@@ -343,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, SetupNotMatchingPasswords) {
   test::OobeJS().TypeIntoPath("test0000", {"enable-debugging-password2"});
   ClickEnableButton();
   debug_daemon_client_->WaitUntilCalled();
-  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"});
+  test::OobeJS().CreateHasClassWaiter(true, "done-view", {"debugging"})->Wait();
 
   EXPECT_EQ(debug_daemon_client_->num_enable_debugging_features(), 1);
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
@@ -412,7 +414,9 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingNonDevTest, NoShowInNonDevMode) {
   test::OobeJS().ExpectHidden("debugging");
   InvokeEnableDebuggingScreen();
   test::OobeJS().ExpectVisible("debugging");
-  test::OobeJS().CreateHasClassWaiter(true, "error-view", {"debugging"});
+  test::OobeJS()
+      .CreateHasClassWaiter(true, "error-view", {"debugging"})
+      ->Wait();
   test::OobeJS().ExpectHasNoClass("remove-protection-view", {"debugging"});
   test::OobeJS().ExpectHasNoClass("setup-view", {"debugging"});
   test::OobeJS().ExpectHasNoClass("done-view", {"debugging"});

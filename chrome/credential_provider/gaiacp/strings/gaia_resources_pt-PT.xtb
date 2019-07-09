@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Lamentamos, mas não foi possível validar a sua palavra-passe do Windows. Tente novamente.</translation>
 <translation id="3306357053520292004">Já foi adicionado um utilizador neste computador com esta conta. Inicie sessão com uma conta diferente.</translation>
 <translation id="369030246015333661">A sua conta foi bloqueada. Contacte um administrador do sistema.</translation>
+<translation id="3968372833844047539">Apenas os utilizadores do G Suite Enterprise têm autorização para iniciar sessão.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
+<translation id="4267670563222825190">Não foi possível encontrar qualquer utilizador do domínio para a sua conta. Contacte o seu administrador.</translation>
 <translation id="4300229033992784001">A palavra-passe da sua conta foi alterada. Introduza a sua palavra-passe do Windows atual para sincronizar a conta do Windows com a sua conta profissional.</translation>
 <translation id="4706454071748629324">Falha ao adicionar um novo utilizador. Este computador apenas permite a criação de um utilizador através de uma conta profissional.</translation>
 <translation id="6292766200512304540">O utilizador foi criado a partir de uma conta profissional.</translation>

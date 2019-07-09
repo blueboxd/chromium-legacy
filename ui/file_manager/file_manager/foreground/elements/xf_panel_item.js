@@ -4,6 +4,7 @@
 
 /**
  * A panel to display the status or progress of a file operation.
+ * @extends HTMLElement
  */
 class PanelItem extends HTMLElement {
   constructor() {
@@ -45,14 +46,73 @@ class PanelItem extends HTMLElement {
    * @return {string}
    */
   static get template_() {
-    return `<link rel='stylesheet'
-              href='foreground/elements/files_xf_elements.css'>
-            <style>
+    return `<style>
+              .xf-panel-item {
+                  align-items: center;
+                  background-color: #FFF;
+                  display: flex;
+                  flex-direction: row;
+                  max-width: 400px;
+              }
+
+              .xf-button {
+                  height: 36px;
+                  width: 36px;
+              }
+
+              .xf-panel-text {
+                  font: 13px Roboto;
+                  line-height: 20px;
+                  max-width: 216px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+              }
+
+              .xf-panel-label-text {
+                  color: rgb(32, 33, 36);
+              }
+
+              .xf-panel-secondary-text {
+                  color: rgb(95, 99, 104);
+              }
+
+              .xf-padder-4 {
+                  width: 4px;
+              }
+
+              .xf-padder-16 {
+                  width: 16px;
+              }
+
+              .xf-padder-24 {
+                  flex-grow: 16;
+                  width: 24px;
+              }
+
+              xf-circular-progress {
+                  padding: 16px;
+              }
+
+              xf-activity-complete {
+                  padding: 16px;
+              }
+
+              // TODO(crbug.com/947388) Use '--goog' prefixed CSS varables.
+              .xf-success {
+                  color: rgb(52, 168, 83);
+              }
+
+              .xf-failure {
+                  color: rgb(234, 67, 53);
+              }
+
               :host([panel-type='0']) .xf-panel-item {
                 height: var(--progress-height);
                 padding-top: var(--progress-padding-top);
                 padding-bottom: var(--progress-padding-bottom);
               }
+
               :not(:host([panel-type='0'])) .xf-panel-item {
                 height: 68px;
               }

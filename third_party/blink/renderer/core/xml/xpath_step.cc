@@ -204,31 +204,32 @@ static inline bool NodeMatchesBasicTest(Node* node,
 #if DCHECK_IS_ON()
       DCHECK_EQ(Node::kElementNode, PrimaryNodeType(axis));
 #endif
-      if (!node->IsElementNode())
+      auto* element = DynamicTo<Element>(node);
+      if (!element)
         return false;
-      Element& element = ToElement(*node);
 
-      if (name == g_star_atom)
+      if (name == g_star_atom) {
         return namespace_uri.IsEmpty() ||
-               namespace_uri == element.namespaceURI();
+               namespace_uri == element->namespaceURI();
+      }
 
-      if (element.GetDocument().IsHTMLDocument()) {
-        if (element.IsHTMLElement()) {
+      if (element->GetDocument().IsHTMLDocument()) {
+        if (element->IsHTMLElement()) {
           // Paths without namespaces should match HTML elements in HTML
           // documents despite those having an XHTML namespace. Names are
           // compared case-insensitively.
-          return EqualIgnoringASCIICase(element.localName(), name) &&
+          return EqualIgnoringASCIICase(element->localName(), name) &&
                  (namespace_uri.IsNull() ||
-                  namespace_uri == element.namespaceURI());
+                  namespace_uri == element->namespaceURI());
         }
         // An expression without any prefix shouldn't match no-namespace
         // nodes (because HTML5 says so).
-        return element.HasLocalName(name) &&
-               namespace_uri == element.namespaceURI() &&
+        return element->HasLocalName(name) &&
+               namespace_uri == element->namespaceURI() &&
                !namespace_uri.IsNull();
       }
-      return element.HasLocalName(name) &&
-             namespace_uri == element.namespaceURI();
+      return element->HasLocalName(name) &&
+             namespace_uri == element->namespaceURI();
     }
   }
   NOTREACHED();

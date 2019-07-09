@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/device_id_helper.h"
@@ -28,9 +27,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
@@ -42,29 +39,26 @@
 
 namespace {
 
+#if defined(OS_ANDROID)
+std::unique_ptr<OAuth2TokenServiceDelegateAndroid> CreateAndroidOAuthDelegate(
+    AccountTrackerService* account_tracker_service) {
+  return std::make_unique<OAuth2TokenServiceDelegateAndroid>(
+      account_tracker_service);
+}
+#else  // defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
 std::unique_ptr<signin::ProfileOAuth2TokenServiceDelegateChromeOS>
 CreateCrOsOAuthDelegate(
-    Profile* profile,
     AccountTrackerService* account_tracker_service,
-    network::NetworkConnectionTracker* network_connection_tracker) {
-  chromeos::AccountManagerFactory* factory =
-      g_browser_process->platform_part()->GetAccountManagerFactory();
-  DCHECK(factory);
-  chromeos::AccountManager* account_manager =
-      factory->GetAccountManager(profile->GetPath().value());
+    network::NetworkConnectionTracker* network_connection_tracker,
+    chromeos::AccountManager* account_manager,
+    bool is_regular_profile) {
   DCHECK(account_manager);
-
-  const bool is_regular_profile =
-      !chromeos::ProfileHelper::IsSigninProfile(profile) &&
-      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
   return std::make_unique<signin::ProfileOAuth2TokenServiceDelegateChromeOS>(
       account_tracker_service, network_connection_tracker, account_manager,
       is_regular_profile);
 }
 #endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
 
 // Supervised users cannot revoke credentials.
 bool CanRevokeCredentials(Profile* profile) {
@@ -117,17 +111,19 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency,
     SigninClient* signin_client,
+#if defined(OS_CHROMEOS)
+    chromeos::AccountManager* account_manager,
+    bool is_regular_profile,
+#endif
     network::NetworkConnectionTracker* network_connection_tracker) {
 #if defined(OS_ANDROID)
-  return std::make_unique<OAuth2TokenServiceDelegateAndroid>(
-      account_tracker_service);
-
+  return CreateAndroidOAuthDelegate(account_tracker_service);
 #else  // defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::IsAccountManagerEnabled()) {
-    return CreateCrOsOAuthDelegate(profile, account_tracker_service,
-                                   network_connection_tracker);
+    return CreateCrOsOAuthDelegate(account_tracker_service,
+                                   network_connection_tracker, account_manager,
+                                   is_regular_profile);
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -138,8 +134,7 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
   return CreateMutableProfileOAuthDelegate(profile, account_tracker_service,
                                            account_consistency, signin_client,
                                            network_connection_tracker);
-
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -152,6 +147,10 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
     AccountTrackerService* account_tracker_service,
     network::NetworkConnectionTracker* network_connection_tracker,
     signin::AccountConsistencyMethod account_consistency,
+#if defined(OS_CHROMEOS)
+    chromeos::AccountManager* account_manager,
+    bool is_regular_profile,
+#endif
     SigninClient* signin_client) {
   Profile* profile = static_cast<Profile*>(context);
 
@@ -165,7 +164,11 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
 #endif
 
   return std::make_unique<ProfileOAuth2TokenService>(
-      pref_service, CreateOAuth2TokenServiceDelegate(
-                        profile, account_tracker_service, account_consistency,
-                        signin_client, network_connection_tracker));
+      pref_service,
+      CreateOAuth2TokenServiceDelegate(profile, account_tracker_service,
+                                       account_consistency, signin_client,
+#if defined(OS_CHROMEOS)
+                                       account_manager, is_regular_profile,
+#endif
+                                       network_connection_tracker));
 }

@@ -65,14 +65,14 @@ cca.models.FileSystem.initExternalDir_ = function() {
       resolve([null, null]);
       return;
     }
-    chrome.fileSystem.getVolumeList((volumes) => {
+    cca.proxy.browserProxy.getVolumeList((volumes) => {
       if (volumes) {
         for (var i = 0; i < volumes.length; i++) {
           var volumeId = volumes[i].volumeId;
           if (volumeId.indexOf('downloads:Downloads') !== -1 ||
               volumeId.indexOf('downloads:MyFiles') !== -1) {
-            chrome.fileSystem.requestFileSystem(volumes[i],
-                (fs) => resolve([fs && fs.root, volumeId]));
+            cca.proxy.browserProxy.requestFileSystem(
+                volumes[i], (fs) => resolve([fs && fs.root, volumeId]));
             return;
           }
         }
@@ -101,7 +101,8 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
   var checkAcked = new Promise((resolve) => {
     // ack 0: User has not yet acknowledged to migrate pictures.
     // ack 1: User acknowledges to migrate pictures to Downloads.
-    chrome.storage.local.get({ackMigratePictures: 0},
+    cca.proxy.browserProxy.localStorageGet(
+        {ackMigratePictures: 0},
         (values) => resolve(values.ackMigratePictures >= 1));
   });
   var checkMigrated = new Promise((resolve) => {
@@ -112,7 +113,8 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
       resolve(false);
     }
   });
-  var ackMigrate = () => chrome.storage.local.set({ackMigratePictures: 1});
+  var ackMigrate = () =>
+      cca.proxy.browserProxy.localStorageSet({ackMigratePictures: 1});
   var doneMigrate = () => chrome.chromeosInfoPrivate &&
       chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
 
@@ -256,7 +258,7 @@ cca.models.FileSystem.regulatePictureName = function(entry) {
  * might be different from the given file name if the file already exists.
  * @param {DirectoryEntry} dir Directory to be written into.
  * @param {string} name Name of the file.
- * @param {Blob} blob Data of the file to be saved.
+ * @param {!Blob} blob Data of the file to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  * @private
  */
@@ -274,7 +276,7 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
 
 /**
  * Saves photo blob into predefined default location.
- * @param {Blob} blob Data of the photo to be saved.
+ * @param {!Blob} blob Data of the photo to be saved.
  * @param {string} filename Filename of the photo to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
@@ -286,8 +288,7 @@ cca.models.FileSystem.savePhoto = function(blob, filename) {
 
 /**
  * Creates a file for saving temporary video recording result.
- * @return {FileEntry} Newly created temporary file.
- * @async
+ * @return {Promise<?FileEntry>} Newly created temporary file.
  */
 cca.models.FileSystem.createTempVideoFile = async function() {
   const dir =
@@ -300,17 +301,24 @@ cca.models.FileSystem.createTempVideoFile = async function() {
  * Saves temporary video file to predefined default location.
  * @param {FileEntry} tempfile Temporary video file to be saved.
  * @param {string} filename Filename to be saved.
- * @return {FileEntry} Saved video file.
- * @async
+ * @return {Promise<?FileEntry>} Saved video file.
  */
 cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
   var dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
+  if (!dir) {
+    return await null;
+  }
+
+  // Non-null version for the Closure Compiler.
+  let nonNullDir = dir;
+
   // Assuming content of tempfile contains all recorded chunks appended together
   // and is a well-formed video. The work needed here is just to move the file
   // to the correct directory and rename as the specified filename.
-  return await new Promise(
-      (resolve, reject) => tempfile.moveTo(dir, filename, resolve, reject));
+  return new Promise(
+      (resolve, reject) =>
+          tempfile.moveTo(nonNullDir, filename, resolve, reject));
 };
 
 /**
@@ -383,7 +391,6 @@ cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
  * Checks if the entry's name has the video prefix.
  * @param {FileEntry} entry File entry.
  * @return {boolean} Has the video prefix or not.
- * @private
  */
 cca.models.FileSystem.hasVideoPrefix = function(entry) {
   return entry.name.startsWith(cca.models.Filenamer.VIDEO_PREFIX);

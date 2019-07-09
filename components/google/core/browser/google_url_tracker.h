@@ -49,6 +49,8 @@ class GoogleURLTracker
     // Use current local Google TLD.
     // Defer network requests to update TLD until 5 seconds after
     // creation, to avoid an expensive load during Chrome startup.
+    //
+    // TODO(https://crbug.com/973591): This is unused now. Remove it.
     NORMAL_MODE,
 
     // Always use www.google.com.
@@ -56,12 +58,6 @@ class GoogleURLTracker
   };
 
   static const char kDefaultGoogleHomepage[];
-
-  // Flag to disable /searchdomaincheck lookups in Chrome and instead always use
-  // google.com. The tracker should be used in ALWAYS_DOT_COM_MODE when this
-  // flag is enabled.
-  // For more details, see http://goto.google.com/chrome-no-searchdomaincheck.
-  static const base::Feature kNoSearchDomainCheck;
 
   // Only the GoogleURLTrackerFactory and tests should call this.
   // |network_connection_tracker| should be the global singleton instance and

@@ -216,11 +216,16 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 #elif defined(OS_CHROMEOS)
       std::unique_ptr<VideoDecoder> cros_video_decoder;
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
-        cros_video_decoder = ChromeosVideoDecoderFactory::Create(
-            task_runner, gpu_task_runner_,
+        auto frame_pool = std::make_unique<PlatformVideoFramePool>();
+        auto frame_converter = std::make_unique<MailboxVideoFrameConverter>(
+            base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
+                                base::Unretained(frame_pool.get())),
+            std::move(gpu_task_runner_),
             base::BindOnce(&GetCommandBufferStub, media_gpu_channel_manager_,
                            command_buffer_id->channel_token,
                            command_buffer_id->route_id));
+        cros_video_decoder = ChromeosVideoDecoderFactory::Create(
+            task_runner, std::move(frame_pool), std::move(frame_converter));
       }
 
       if (cros_video_decoder) {

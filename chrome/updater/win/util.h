@@ -5,6 +5,8 @@
 #ifndef CHROME_UPDATER_WIN_UTIL_H_
 #define CHROME_UPDATER_WIN_UTIL_H_
 
+#include <winerror.h>
+
 #include "base/win/windows_types.h"
 
 namespace updater {

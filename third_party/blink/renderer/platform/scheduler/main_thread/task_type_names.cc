@@ -71,6 +71,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "Permission";
     case TaskType::kServiceWorkerClientMessage:
       return "ServiceWorkerClientMessage";
+    case TaskType::kWebLocks:
+      return "WebLocks";
     case TaskType::kInternalDefault:
       return "InternalDefault";
     case TaskType::kInternalLoading:

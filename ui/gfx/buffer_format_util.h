@@ -31,6 +31,11 @@ GFX_EXPORT size_t SubsamplingFactorForBufferFormat(BufferFormat format,
 GFX_EXPORT size_t RowSizeForBufferFormat(size_t width,
                                          BufferFormat format,
                                          size_t plane);
+GFX_EXPORT bool RowSizeForBufferFormatChecked(size_t width,
+                                              BufferFormat format,
+                                              size_t plane,
+                                              size_t* size_in_bytes)
+    WARN_UNUSED_RESULT;
 
 // Returns the number of bytes used to store all the planes of a given |format|.
 GFX_EXPORT size_t BufferSizeForBufferFormat(const Size& size,

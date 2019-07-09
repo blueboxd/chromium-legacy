@@ -4,6 +4,7 @@
 
 /**
  * A panel to display a collection of PanelItem.
+ * @extends HTMLElement
  */
 class DisplayPanel extends HTMLElement {
   constructor() {

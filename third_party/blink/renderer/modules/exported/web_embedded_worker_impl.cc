@@ -370,11 +370,20 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // For now we don't use global scope name for service workers.
   const String global_scope_name = g_empty_string;
 
-  // FIXME: this document's origin is pristine and without any extra privileges.
-  // (crbug.com/254993)
-  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
-  bool starter_secure_context = document->IsSecureContext();
-  const HttpsState starter_https_state = document->GetHttpsState();
+  // TODO(crbug.com/967265,937177): Plumb these starter parameters from an
+  // appropriate Document. See comment in CreateFetchClientSettingsObject() for
+  // details.
+  scoped_refptr<const SecurityOrigin> starter_origin =
+      SecurityOrigin::Create(worker_start_data_.script_url);
+  // This roughly equals to shadow document's IsSecureContext() as a shadow
+  // document have a frame with no parent.
+  // See also Document::InitSecureContextState().
+  bool starter_secure_context =
+      starter_origin->IsPotentiallyTrustworthy() ||
+      SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+          starter_origin->Protocol());
+  const HttpsState starter_https_state =
+      CalculateHttpsState(starter_origin.get());
 
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideIndexedDBClientToWorker(
@@ -443,7 +452,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
-        referrer_policy, starter_origin, starter_secure_context,
+        referrer_policy, starter_origin.get(), starter_secure_context,
         starter_https_state, worker_clients,
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
@@ -462,7 +471,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         off_main_thread_fetch_option, global_scope_name,
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
-        starter_origin, starter_secure_context, starter_https_state,
+        starter_origin.get(), starter_secure_context, starter_https_state,
         worker_clients, base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
@@ -501,7 +510,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         return;
       case mojom::ScriptType::kModule:
         worker_thread_->RunInstalledModuleScript(
-            worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+            worker_start_data_.script_url,
+            *CreateFetchClientSettingsObject(starter_origin.get(),
+                                             starter_https_state),
             network::mojom::CredentialsMode::kOmit);
         return;
     }
@@ -528,7 +539,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
 
   FetchClientSettingsObjectSnapshot* fetch_client_setting_object =
-      CreateFetchClientSettingsObject();
+      CreateFetchClientSettingsObject(starter_origin.get(),
+                                      starter_https_state);
 
   // If this is a new (not installed) service worker, we are in the Update
   // algorithm here:
@@ -558,8 +570,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 }
 
 FetchClientSettingsObjectSnapshot*
-WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
-  DCHECK(shadow_page_->WasInitialized());
+WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject(
+    const SecurityOrigin* security_origin,
+    const HttpsState& https_state) {
   // TODO(crbug.com/967265): Currently we create an incomplete outside settings
   // object from |worker_start_data_| but we should create a proper outside
   // settings objects depending on the situation. For new worker case, this
@@ -571,13 +584,10 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
   // object over mojo IPCs.
 
   const KURL& script_url = worker_start_data_.script_url;
-  scoped_refptr<const SecurityOrigin> security_origin =
-      SecurityOrigin::Create(script_url);
   return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
       script_url /* global_object_url */, script_url /* base_url */,
       security_origin, network::mojom::ReferrerPolicy::kDefault,
-      script_url.GetString() /* outgoing_referrer */,
-      CalculateHttpsState(security_origin.get()),
+      script_url.GetString() /* outgoing_referrer */, https_state,
       AllowedByNosniff::MimeTypeCheck::kLax, worker_start_data_.address_space,
       kBlockAllMixedContent /* insecure_requests_policy */,
       FetchClientSettingsObject::InsecureNavigationsSet(),

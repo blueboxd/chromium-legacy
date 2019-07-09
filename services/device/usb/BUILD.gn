@@ -56,6 +56,7 @@ static_library("usb") {
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
     "//device/base",
+    "//services/device/public/cpp/usb",
     "//services/device/public/mojom:usb",
   ]
 
@@ -74,8 +75,6 @@ static_library("usb") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
-  } else {
-    deps += [ "//services/device/public/cpp/usb" ]
   }
 
   if (is_win || is_mac) {

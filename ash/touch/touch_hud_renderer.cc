@@ -9,11 +9,11 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -30,10 +30,11 @@ constexpr int kFadeoutFrameRate = 60;
 
 // TouchPointView draws a single touch point.
 class TouchPointView : public views::View,
-                       public gfx::AnimationDelegate,
+                       public views::AnimationDelegateViews,
                        public views::WidgetObserver {
  public:
-  explicit TouchPointView(views::Widget* parent_widget) {
+  explicit TouchPointView(views::Widget* parent_widget)
+      : views::AnimationDelegateViews(this) {
     set_owned_by_client();
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -93,7 +94,7 @@ class TouchPointView : public views::View,
     canvas->DrawCircle(center, SkIntToScalar(kPointRadius), stroke_flags);
   }
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override {
     DCHECK_EQ(fadeout_.get(), animation);
     owned_self_reference_.reset();

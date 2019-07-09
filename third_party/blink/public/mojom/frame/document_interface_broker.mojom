@@ -16,20 +16,20 @@ import "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom";
 // An interface through which the renderer may request document-scoped
 // interfaces from the browser.
 interface DocumentInterfaceBroker {
-  // Binds the blink.mojom.AudioContextManager interface request to its remote
+  // Binds the blink.mojom.AudioContextManager pending receiver to its remote
   // implementation in the browser process, to allow sending real-time
   // notifications originated from Blink's AudioContext.
-  GetAudioContextManager(blink.mojom.AudioContextManager& request);
+  GetAudioContextManager(pending_receiver<blink.mojom.AudioContextManager> receiver);
 
   // Binds the blink.mojom.Authenticator interface request to its remote
   // implementation in the browser process, to allow directing authenticators to
   // create or use a public key credential.
   GetAuthenticator(blink.mojom.Authenticator& request);
 
-  // Binds the blink.mojom.CredentialManager interface request to its remote
+  // Binds the blink.mojom.CredentialManager pending receiver to its remote
   // implementation in the browser process, to allow storing, retrieving and
   // handling credentials.
-  GetCredentialManager(blink.mojom.CredentialManager& request);
+  GetCredentialManager(pending_receiver<blink.mojom.CredentialManager> receiver);
 
   // Binds the blink.mojom.FrameHostTestInterface interface request to its
   // remote implementation in the browser process, to allow using this test

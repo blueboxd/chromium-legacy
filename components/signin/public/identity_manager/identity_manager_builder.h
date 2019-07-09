@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+
 class AccountTrackerService;
 class PrefService;
 class ProfileOAuth2TokenService;
@@ -24,6 +26,12 @@ namespace signin {
 enum class AccountConsistencyMethod;
 }
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class AccountManager;
+}
+#endif
+
 namespace identity {
 class IdentityManager;
 
@@ -39,6 +47,11 @@ struct IdentityManagerBuildParams {
   PrefService* pref_service;
   SigninClient* signin_client;
   std::unique_ptr<ProfileOAuth2TokenService> token_service;
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManager* account_manager;
+  bool is_regular_profile;
+#endif
 };
 
 // Builds an IdentityManager instance from the supplied embedder-level

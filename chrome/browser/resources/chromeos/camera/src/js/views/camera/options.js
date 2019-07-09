@@ -194,7 +194,8 @@ cca.views.camera.Options = function(
   chrome.storage.local.get({mirroringToggles: {}},
       (values) => this.mirroringToggles_ = values.mirroringToggles);
   // Remove the deprecated values.
-  chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
+  cca.proxy.browserProxy.localStorageRemove(
+      ['effectIndex', 'toggleMulti', 'toggleMirror']);
 
   this.maybeRefreshVideoDeviceIds_();
   navigator.mediaDevices.addEventListener('devicechange', () => {

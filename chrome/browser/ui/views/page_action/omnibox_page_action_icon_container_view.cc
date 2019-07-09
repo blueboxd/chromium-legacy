@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -56,6 +58,12 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         pwa_install_view_ = new PwaInstallView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(pwa_install_view_);
+        break;
+      case PageActionIconType::kReaderMode:
+        DCHECK(params.command_updater);
+        reader_mode_icon_ = new ReaderModeIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(reader_mode_icon_);
         break;
       case PageActionIconType::kTranslate:
         DCHECK(params.command_updater);
@@ -114,6 +122,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return intent_picker_view_;
     case PageActionIconType::kPwaInstall:
       return pwa_install_view_;
+    case PageActionIconType::kReaderMode:
+      return reader_mode_icon_;
     case PageActionIconType::kTranslate:
       return translate_icon_;
     case PageActionIconType::kZoom:

@@ -41,7 +41,7 @@ void ToggleAccessibilityFeature(const std::string& feature_name,
   js.ExpectVisiblePath({"connect", feature_name, "button"});
   EXPECT_FALSE(js.GetBool(feature_toggle));
   js.TapOnPath({"connect", feature_name, "button"});
-  js.CreateWaiter(feature_toggle);
+  js.CreateWaiter(feature_toggle)->Wait();
 }
 
 }  // namespace

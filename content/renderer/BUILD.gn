@@ -218,8 +218,6 @@ target(link_target_type, "renderer") {
     "media/stream/media_stream_renderer_factory_impl.h",
     "media/stream/processed_local_audio_source.cc",
     "media/stream/processed_local_audio_source.h",
-    "media/stream/track_audio_renderer.cc",
-    "media/stream/track_audio_renderer.h",
     "media/stream/user_media_client_impl.cc",
     "media/stream/user_media_client_impl.h",
     "media/stream/user_media_processor.cc",

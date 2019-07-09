@@ -33,7 +33,10 @@ void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 TrayItemView::TrayItemView(Shelf* shelf)
-    : shelf_(shelf), label_(NULL), image_view_(NULL) {
+    : views::AnimationDelegateViews(this),
+      shelf_(shelf),
+      label_(NULL),
+      image_view_(NULL) {
   DCHECK(shelf_);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);

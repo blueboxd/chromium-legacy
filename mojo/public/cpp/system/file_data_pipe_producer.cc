@@ -236,9 +236,7 @@ class FileDataPipeProducer::FileSequenceState
 FileDataPipeProducer::FileDataPipeProducer(
     ScopedDataPipeProducerHandle producer,
     std::unique_ptr<Observer> observer)
-    : producer_(std::move(producer)),
-      observer_(std::move(observer)),
-      weak_factory_(this) {}
+    : producer_(std::move(producer)), observer_(std::move(observer)) {}
 
 FileDataPipeProducer::~FileDataPipeProducer() {
   if (file_sequence_state_)

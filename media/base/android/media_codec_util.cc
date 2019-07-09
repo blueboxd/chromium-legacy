@@ -28,7 +28,6 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaIntArrayToIntVector;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using base::android::SDK_VERSION_JELLY_BEAN_MR2;
 using base::android::SDK_VERSION_KITKAT;
 using base::android::SDK_VERSION_LOLLIPOP;
 using base::android::SDK_VERSION_LOLLIPOP_MR1;
@@ -178,21 +177,6 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
       {"GT-S7262", SDK_VERSION_KITKAT},
       {"GT-S5282", SDK_VERSION_KITKAT},
       {"GT-I8552", SDK_VERSION_KITKAT},
-
-      // crbug.com/365494, crbug.com/615872
-      {"GT-P3113", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-P5110", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-P5100", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-P5113", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-P3110", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-N5110", SDK_VERSION_JELLY_BEAN_MR2},
-      {"e-tab4", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-I8200Q", SDK_VERSION_JELLY_BEAN_MR2},
-
-      // crbug.com/693216
-      {"GT-I8552B", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-I8262", SDK_VERSION_JELLY_BEAN_MR2},
-      {"GT-I8262B", SDK_VERSION_JELLY_BEAN_MR2},
   };
 
   const BlacklistEntry* iter = std::find(
@@ -390,17 +374,13 @@ bool MediaCodecUtil::IsPassthroughAudioFormat(AudioCodec codec) {
 
 // static
 bool MediaCodecUtil::CodecNeedsFlushWorkaround(MediaCodecBridge* codec) {
-  int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
-  std::string codec_name = codec->GetName();
-  return sdk_int < SDK_VERSION_JELLY_BEAN_MR2 ||
-         (sdk_int == SDK_VERSION_JELLY_BEAN_MR2 &&
-          ("OMX.SEC.avc.dec" == codec_name ||
-           "OMX.SEC.avc.dec.secure" == codec_name)) ||
-         (sdk_int == SDK_VERSION_KITKAT &&
-          base::StartsWith(base::android::BuildInfo::GetInstance()->model(),
-                           "SM-G800", base::CompareCase::INSENSITIVE_ASCII) &&
-          ("OMX.Exynos.avc.dec" == codec_name ||
-           "OMX.Exynos.avc.dec.secure" == codec_name));
+  const auto& codec_name = codec->GetName();
+  return base::android::BuildInfo::GetInstance()->sdk_int() ==
+             SDK_VERSION_KITKAT &&
+         base::StartsWith(base::android::BuildInfo::GetInstance()->model(),
+                          "SM-G800", base::CompareCase::INSENSITIVE_ASCII) &&
+         ("OMX.Exynos.avc.dec" == codec_name ||
+          "OMX.Exynos.avc.dec.secure" == codec_name);
 }
 
 }  // namespace media

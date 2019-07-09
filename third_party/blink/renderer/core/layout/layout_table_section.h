@@ -146,13 +146,16 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   };
 
   TableGridCell& GridCellAt(unsigned row, unsigned effective_column) {
+    SECURITY_DCHECK(!needs_cell_recalc_);
     return grid_[row].grid_cells[effective_column];
   }
   const TableGridCell& GridCellAt(unsigned row,
                                   unsigned effective_column) const {
+    SECURITY_DCHECK(!needs_cell_recalc_);
     return grid_[row].grid_cells[effective_column];
   }
   LayoutTableCell* PrimaryCellAt(unsigned row, unsigned effective_column) {
+    SECURITY_DCHECK(!needs_cell_recalc_);
     auto& grid_cells = grid_[row].grid_cells;
     if (effective_column >= grid_cells.size())
       return nullptr;
@@ -173,12 +176,19 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
         row, effective_column);
   }
 
-  unsigned NumCols(unsigned row) const { return grid_[row].grid_cells.size(); }
+  unsigned NumCols(unsigned row) const {
+    DCHECK(!NeedsCellRecalc());
+    return grid_[row].grid_cells.size();
+  }
 
   // Returns null for cells with a rowspan that exceed the last row. Possibly
   // others.
-  LayoutTableRow* RowLayoutObjectAt(unsigned row) { return grid_[row].row; }
+  LayoutTableRow* RowLayoutObjectAt(unsigned row) {
+    SECURITY_DCHECK(!needs_cell_recalc_);
+    return grid_[row].row;
+  }
   const LayoutTableRow* RowLayoutObjectAt(unsigned row) const {
+    SECURITY_DCHECK(!needs_cell_recalc_);
     return grid_[row].row;
   }
 

@@ -43,16 +43,6 @@ namespace extensions {
 
 namespace {
 
-// Returns true if |app_url| and |page_url| are the same origin. To avoid
-// breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
-// same domain but with "www.", this returns true if |page_url| is secure and in
-// the same origin as |app_url| with "www.".
-bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
-  return (app_url.host_piece() == page_url.host_piece() ||
-          std::string("www.") + app_url.host() == page_url.host_piece()) &&
-         app_url.port() == page_url.port();
-}
-
 // Gets the icon to use if the extension app icon is not available.
 gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
   gfx::ImageSkia page_icon = browser->GetCurrentPageIcon().AsImageSkia();
@@ -67,23 +57,17 @@ gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
-}  // namespace
-
-bool IsSameScope(const GURL& app_url,
-                 const GURL& page_url,
-                 content::BrowserContext* profile) {
-  const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
-      profile, app_url, extensions::LaunchContainer::kLaunchContainerWindow);
-
-  // We don't have a scope, fall back to same origin check.
-  if (!app_for_window)
-    return IsSameHostAndPort(app_url, page_url);
-
-  return app_for_window ==
-         extensions::util::GetInstalledPwaForUrl(
-             profile, page_url,
-             extensions::LaunchContainer::kLaunchContainerWindow);
+// Returns true if |app_url| and |page_url| are the same origin. To avoid
+// breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
+// same domain but with "www.", this returns true if |page_url| is secure and in
+// the same origin as |app_url| with "www.".
+bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
+  return (app_url.host_piece() == page_url.host_piece() ||
+          std::string("www.") + app_url.host() == page_url.host_piece()) &&
+         app_url.port() == page_url.port();
 }
+
+}  // namespace
 
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
@@ -182,8 +166,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
     // Page URLs that are not within scope
     // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
     // corresponding to |launch_url| show the toolbar.
-    bool out_of_scope =
-        !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+    bool out_of_scope = !IsUrlInAppScope(url);
 
     if (url.scheme_piece() != secure_page_scheme) {
       // Some origins are (such as localhost) are considered secure even when
@@ -288,6 +271,18 @@ GURL HostedAppBrowserController::GetAppLaunchURL() const {
     return GURL();
 
   return AppLaunchInfo::GetLaunchWebURL(extension);
+}
+
+bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+  const Extension* extension = GetExtension();
+  const std::vector<UrlHandlerInfo>* url_handlers =
+      UrlHandlers::GetUrlHandlers(extension);
+
+  // We don't have a scope, fall back to same origin check.
+  if (!url_handlers)
+    return IsSameHostAndPort(GetAppLaunchURL(), url);
+
+  return UrlHandlers::CanBookmarkAppHandleUrl(extension, url);
 }
 
 const Extension* HostedAppBrowserController::GetExtension() const {

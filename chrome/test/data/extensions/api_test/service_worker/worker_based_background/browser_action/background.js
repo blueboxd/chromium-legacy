@@ -14,8 +14,15 @@ chrome.browserAction.onClicked.addListener(() => {
   // Call an API so we can check gesture state in the callback.
   chrome.tabs.create({url: chrome.runtime.getURL('page.html')}, () => {
     chrome.test.assertNoLastError();
-    chrome.test.assertFalse(chrome.test.isProcessingUserGesture());
-    chrome.test.notifyPass();
+    chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
+
+    // Call another API from this callback, we shouldn't have any gestures
+    // retained in this API's callback.
+    chrome.tabs.create({url: 'about:blank'}, () => {
+      chrome.test.assertNoLastError();
+      chrome.test.assertFalse(chrome.test.isProcessingUserGesture());
+      chrome.test.notifyPass();
+    });
   });
 });
 

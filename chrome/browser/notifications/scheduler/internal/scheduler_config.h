@@ -30,6 +30,10 @@ struct SchedulerConfig {
   // type.
   int initial_daily_shown_per_type;
 
+  // The time for a notification entry to expire. The
+  // notification entry will be deleted then.
+  base::TimeDelta notification_expiration;
+
   // The time for a notification impression history data to expire. The
   // impression history will be deleted then.
   base::TimeDelta impression_expiration;

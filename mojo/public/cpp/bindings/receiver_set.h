@@ -94,7 +94,7 @@ class ReceiverSetBase {
   using Context = typename ContextTraits::Type;
   using PreDispatchCallback = base::RepeatingCallback<void(const Context&)>;
 
-  ReceiverSetBase() : weak_ptr_factory_(this) {}
+  ReceiverSetBase() = default;
 
   // Sets a callback to be invoked any time a receiver in the set is
   // disconnected. The callback is invoked *after* the receiver in question
@@ -329,7 +329,7 @@ class ReceiverSetBase {
   std::map<ReceiverId, std::unique_ptr<Entry>> receivers_;
   const Context* current_context_ = nullptr;
   ReceiverId current_receiver_;
-  base::WeakPtrFactory<ReceiverSetBase> weak_ptr_factory_;
+  base::WeakPtrFactory<ReceiverSetBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReceiverSetBase);
 };

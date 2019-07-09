@@ -9,6 +9,14 @@ common_namespace_rewrites = [
   # TODO(dpapad): Add more such rewrites as they get discovered.
 ]
 
+common_auto_imports = [
+  "ui/webui/resources/html/polymer.html|Polymer,html",
+  "ui/webui/resources/html/cr/ui/focus_outline_manager.html|FocusOutlineManager",
+  "third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior.html|PaperRippleBehavior",
+
+  # TODO(dpapad): Add more auto-imports here, as needed.
+]
+
 template("polymer_modulizer") {
   action(target_name + "_module") {
     script = "//tools/polymer/polymer.py"
@@ -46,6 +54,11 @@ template("polymer_modulizer") {
     args += [ "--namespace_rewrites" ] + common_namespace_rewrites
     if (defined(invoker.namespace_rewrites)) {
       args += invoker.namespace_rewrites
+    }
+
+    args += [ "--auto_imports" ] + common_auto_imports
+    if (defined(invoker.auto_imports)) {
+      args += invoker.auto_imports
     }
   }
 }

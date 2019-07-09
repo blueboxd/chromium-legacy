@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_handle.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
 class FileSystemGetDirectoryOptions;
@@ -20,7 +21,7 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
  public:
   NativeFileSystemDirectoryHandle(
       const String& name,
-      mojom::blink::NativeFileSystemDirectoryHandlePtr);
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>);
 
   bool isDirectory() const override { return true; }
 
@@ -52,7 +53,8 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
       bool writable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
 
-  mojom::blink::NativeFileSystemDirectoryHandlePtr mojo_ptr_;
+  RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>
+      mojo_ptr_;
 };
 
 }  // namespace blink

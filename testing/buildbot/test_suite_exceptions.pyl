@@ -516,7 +516,7 @@
             {
               'device_os': None,
               'device_type': None,
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
             },
           ],
         },
@@ -1424,13 +1424,6 @@
         },
         'experiment_percentage': 100,
       },
-      # luci.chromium.ci
-      'linux-tcmalloc-rel': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
     },
     'remove_from': [
       # crbug.com/936540
@@ -1868,7 +1861,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
             },
           ],
           'shards': 20,
@@ -1885,7 +1878,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
             },
           ],
           'shards': 10,

@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Aktivera Bluetooth så att det går att upptäcka enheter i närheten</translation>
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2872961005593481000">Stäng av</translation>
+<translation id="2912823482158781027">UPPDATERA BILJETT</translation>
 <translation id="3511655281162215899">Välj ett nytt lösenord genast</translation>
+<translation id="3562817605261346876">Uppdatera biljetten för <ph name="PRINCIPAL_NAME" /> snart</translation>
 <translation id="3838338534323494292">Nytt lösenord</translation>
 <translation id="445059817448385655">Gammalt lösenord</translation>
 <translation id="467510802200863975">Lösenorden matchar inte</translation>
@@ -22,12 +24,14 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5457599981699367932">Använd som gäst</translation>
 <translation id="54609108002486618">Hanterade</translation>
 <translation id="5733345267661125295">Välj ett nytt lösenord nu</translation>
+<translation id="5743581760404859096">Kerberos-biljetten upphör snart att gälla</translation>
 <translation id="5832805196449965646">Lägg till person</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="6058625436358447366">Slutför genom att ange det gamla och det nya lösenordet</translation>
 <translation id="6106186594183574873">Slutför genom att ange det gamla lösenordet</translation>
 <translation id="6146993107019042706">Slutför genom att ange det nya lösenordet</translation>
 <translation id="6574601967010742428">Enhetsadministratören kan ha möjlighet att övervaka det du gör.</translation>
+<translation id="7280705187789120111">Kerberos-biljetten upphör att gälla</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Lösenordet har upphört att gälla.}=1{Lösenordet upphör att gälla om mindre än en dag.}other{Lösenordet upphör att gälla om mindre än # dagar.}}</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7690294790491645610">Bekräfta det nya lösenordet</translation>

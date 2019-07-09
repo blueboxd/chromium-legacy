@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="104962181688258143">開啟「檔案」應用程式</translation>
+<translation id="1098295134904615027">啟用右側的虛擬桌面</translation>
 <translation id="1122869341872663659">目前顯示 <ph name="N" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 鍵或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /> 鍵</translation>
 <translation id="1477442857810932985">移到行尾</translation>
+<translation id="1499072997694708844">關閉所有已開啟的尋找視窗，或停止載入目前的頁面</translation>
 <translation id="1510238584712386396">啟動器</translation>
 <translation id="152892567002884378">調高音量</translation>
 <translation id="1560480564179555003">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="ESC" /> 鍵</translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /> 鍵</translation>
 <translation id="1733525068429116555">為你在網址列中輸入的字串加上 www. 和 .com 並開啟網頁</translation>
 <translation id="1920446759863417809">按下 <ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 鍵或 <ph name="LEFT" /> 鍵</translation>
+<translation id="1929866390202038233">啟用左側的虛擬桌面</translation>
 <translation id="1996162290124031907">前往下一個分頁</translation>
 <translation id="2010818616644390445">前往視窗中的最後一個分頁</translation>
 <translation id="2040706009561734834">開啟/關閉啟動器</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">擷取螢幕畫面</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">將焦點移至網址列</translation>
+<translation id="3165428420335997629">建立新的虛擬桌面</translation>
 <translation id="3256109297135787951">取消檔案櫃項目的醒目顯示狀態</translation>
 <translation id="3288816184963444640">關閉目前的視窗</translation>
 <translation id="3407560819924487926">開啟工作管理員</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">搜尋目前網頁</translation>
 <translation id="5563050856984839829">按住 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 鍵，然後按一下連結</translation>
 <translation id="561814908794220892">在新分頁中開啟網頁</translation>
+<translation id="5620219513321115856">將使用中的視窗移至右側桌面</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> 鍵或 <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /> 鍵</translation>
 <translation id="5757111373163288447">在該分頁開啟連結</translation>
 <translation id="5757474750054631686">鍵盤變暗 (僅適用於背光鍵盤)</translation>
@@ -164,7 +169,7 @@
 <translation id="7500368597227394048">連字號</translation>
 <translation id="7611271430932669992">將焦點移至彈出式視窗和對話方塊</translation>
 <translation id="766326951329901120">以純文字貼上剪貼簿中的內容</translation>
-<translation id="7703010453515335249">左括號</translation>
+<translation id="7703010453515335249">左方括號</translation>
 <translation id="7724603315864178912">剪下</translation>
 <translation id="7730490981846175479">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="SPACE" /> 或 <ph name="ENTER" /> 鍵</translation>
 <translation id="7787242579016742662">在瀏覽器中開啟檔案</translation>
@@ -174,8 +179,9 @@
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 鍵或 <ph name="E" /> 鍵</translation>
 <translation id="8232835244134740473">在以下位置之間切換焦點：狀態區 (你的帳戶相片顯示位置)、啟動器網址列、書籤列 (如有顯示)、開啟的網頁和下載內容列 (如有顯示)。</translation>
 <translation id="8234414138295101081">將畫面旋轉 90 度</translation>
-<translation id="8241665785394195545">右括號</translation>
+<translation id="8241665785394195545">右方括號</translation>
 <translation id="8264941229485248811">顯示或隱藏開發人員工具檢查器</translation>
+<translation id="8355937569537581904">移除目前的虛擬桌面</translation>
 <translation id="836869401750819675">開啟下載內容頁面</translation>
 <translation id="8388247778047144397">將連結拖曳至分頁列中的空白區域</translation>
 <translation id="8389638407792712197">開啟新視窗</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">選取上一個字詞或字母</translation>
 <translation id="8727232706774971183">查看通知</translation>
 <translation id="8855885154700222542">全螢幕鍵</translation>
+<translation id="8881584919399569791">將使用中的視窗移至左側桌面</translation>
 <translation id="88986195241502842">Page Down 鍵</translation>
 <translation id="8924883688469390268">切換至上一個使用者</translation>
 <translation id="8977648847395357314">選取網址列中的內容</translation>

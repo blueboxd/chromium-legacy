@@ -25,6 +25,9 @@ std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
 
 uint8_t ConvertEndpointAddressToNumber(uint8_t address);
 
+uint8_t ConvertEndpointNumberToAddress(uint8_t endpoint_number,
+                                       mojom::UsbTransferDirection direction);
+
 uint8_t ConvertEndpointNumberToAddress(
     const mojom::UsbEndpointInfo& mojo_endpoint);
 

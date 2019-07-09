@@ -664,14 +664,15 @@ void AudioContext::EnsureAudioContextManagerService() {
   GetDocument()
       ->GetFrame()
       ->GetDocumentInterfaceBroker()
-      .GetAudioContextManager(mojo::MakeRequest(&audio_context_manager_));
-  audio_context_manager_.set_connection_error_handler(
+      .GetAudioContextManager(
+          audio_context_manager_.BindNewPipeAndPassReceiver());
+  audio_context_manager_.set_disconnect_handler(
       WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
                 WrapWeakPersistent(this)));
 }
 
 void AudioContext::OnAudioContextManagerServiceConnectionError() {
-  audio_context_manager_ = nullptr;
+  audio_context_manager_.reset();
 }
 
 AudioCallbackMetric AudioContext::GetCallbackMetric() const {

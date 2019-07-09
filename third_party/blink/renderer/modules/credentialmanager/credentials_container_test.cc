@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
@@ -43,18 +44,19 @@ namespace {
 
 class MockCredentialManager : public mojom::blink::CredentialManager {
  public:
-  MockCredentialManager() : binding_(this) {}
+  MockCredentialManager() {}
   ~MockCredentialManager() override {}
 
-  void Bind(::blink::mojom::blink::CredentialManagerRequest request) {
-    binding_.Bind(std::move(request));
+  void Bind(mojo::PendingReceiver<::blink::mojom::blink::CredentialManager>
+                receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   void WaitForConnectionError() {
-    if (!binding_.is_bound())
+    if (!receiver_.is_bound())
       return;
 
-    binding_.set_connection_error_handler(WTF::Bind(&test::ExitRunLoop));
+    receiver_.set_disconnect_handler(WTF::Bind(&test::ExitRunLoop));
     test::EnterRunLoop();
   }
 
@@ -66,7 +68,7 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   }
 
   void InvokeGetCallback() {
-    EXPECT_TRUE(binding_.is_bound());
+    EXPECT_TRUE(receiver_.is_bound());
 
     auto info = blink::mojom::blink::CredentialInfo::New();
     info->type = blink::mojom::blink::CredentialType::EMPTY;
@@ -89,7 +91,7 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   }
 
  private:
-  mojo::Binding<::blink::mojom::blink::CredentialManager> binding_;
+  mojo::Receiver<::blink::mojom::blink::CredentialManager> receiver_{this};
 
   GetCallback get_callback_;
 
@@ -108,8 +110,9 @@ class MockCredentialManagerDocumentInterfaceBroker
         mock_credential_manager_(mock_credential_manager) {}
 
   void GetCredentialManager(
-      mojom::blink::CredentialManagerRequest request) override {
-    mock_credential_manager_->Bind(std::move(request));
+      mojo::PendingReceiver<::blink::mojom::blink::CredentialManager> receiver)
+      override {
+    mock_credential_manager_->Bind(std::move(receiver));
   }
 
   void GetAuthenticator(mojom::blink::AuthenticatorRequest request) override {}

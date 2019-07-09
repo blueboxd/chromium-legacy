@@ -38,8 +38,9 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(SetDuckingVolumeMultiplier, void(double));
   MOCK_METHOD1(DidReceiveAction,
                void(media_session::mojom::MediaSessionAction));
-  MOCK_METHOD1(AddObserver,
-               void(media_session::mojom::MediaSessionObserverPtr));
+  MOCK_METHOD1(
+      AddObserver,
+      void(mojo::PendingRemote<media_session::mojom::MediaSessionObserver>));
   MOCK_METHOD1(GetMediaSessionInfo, void(GetMediaSessionInfoCallback));
   MOCK_METHOD1(GetDebugInfo, void(GetDebugInfoCallback));
   MOCK_METHOD0(PreviousTrack, void());

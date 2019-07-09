@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Aktifkan Bluetooth untuk menemukan perangkat di sekitar</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2872961005593481000">Matikan</translation>
+<translation id="2912823482158781027">PERBARUI TIKET</translation>
 <translation id="3511655281162215899">Harap segera pilih sandi baru</translation>
+<translation id="3562817605261346876">Harap segera perbarui tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Sandi baru</translation>
 <translation id="445059817448385655">Sandi lama</translation>
 <translation id="467510802200863975">Sandi tidak cocok</translation>
@@ -22,12 +24,14 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5457599981699367932">Login sebagai Tamu</translation>
 <translation id="54609108002486618">Terkelola</translation>
 <translation id="5733345267661125295">Harap pilih sandi baru sekarang</translation>
+<translation id="5743581760404859096">Masa berlaku tiket Kerberos Anda sudah berakhir</translation>
 <translation id="5832805196449965646">Tambahkan Pengguna</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
 <translation id="6058625436358447366">Untuk menyelesaikan, masukkan sandi yang lama dan baru</translation>
 <translation id="6106186594183574873">Untuk menyelesaikan, masukkan sandi yang lama</translation>
 <translation id="6146993107019042706">Untuk menyelesaikan, masukkan sandi yang baru</translation>
 <translation id="6574601967010742428">Administrator perangkat mungkin dapat memantau aktivitas Anda.</translation>
+<translation id="7280705187789120111">Masa berlaku tiket Kerberos berakhir</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Sandi Anda saat ini sudah tidak berlaku.}=1{Masa berlaku sandi Anda saat ini akan berakhir dalam waktu kurang dari sehari.}other{Masa berlaku sandi Anda akan berakhir dalam # hari.}}</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7690294790491645610">Konfirmasi sandi baru</translation>

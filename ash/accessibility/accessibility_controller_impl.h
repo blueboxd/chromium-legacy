@@ -26,6 +26,10 @@ enum class Gesture;
 }  // namespace mojom
 }  // namespace ax
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace ash {
 
 class AccessibilityHighlightController;
@@ -75,6 +79,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   AutoclickEventType GetAutoclickEventType();
   void SetAutoclickMenuPosition(AutoclickMenuPosition position);
   AutoclickMenuPosition GetAutoclickMenuPosition();
+  void RequestAutoclickScrollableBoundsForPoint(gfx::Point& point_in_screen);
 
   // Update the autoclick menu bounds if necessary. This may need to happen when
   // the display work area changes, or if system ui regions change (like the
@@ -182,6 +187,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       SwitchAccessEventHandlerDelegate* delegate) override;
   void SetDictationActive(bool is_active) override;
   void ToggleDictationFromSource(DictationToggleSource source) override;
+  void OnAutoclickScrollableBoundsFound(gfx::Rect& bounds_in_screen) override;
   void ForwardKeyEventsToSwitchAccess(bool should_forward) override;
   base::string16 GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;

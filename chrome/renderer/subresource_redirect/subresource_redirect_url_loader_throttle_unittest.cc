@@ -5,6 +5,7 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
+#include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_redirect {

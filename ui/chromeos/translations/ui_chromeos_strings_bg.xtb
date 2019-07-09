@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">На всичко бе създадено резервно копие!</translation>
 <translation id="3626281679859535460">Яркост</translation>
 <translation id="3644896802912593514">Ширина</translation>
+<translation id="3645531960514756307">Освобождаване на папката</translation>
 <translation id="3678559383040232393">Малтийска клавиатура</translation>
 <translation id="3685122418104378273">Синхронизирането на Google Диск е деактивирано по подразбиране, когато се използват мобилни данни.</translation>
 <translation id="3726463242007121105">Това устройство не може да бъде отворено, защото файловата му система не се поддържа.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Вчера, <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Исландска клавиатура</translation>
 <translation id="8342318071240498787">Вече съществува файл или директория със същото име.</translation>
+<translation id="8382450452152102026">До <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Транслитерация (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Размери</translation>
 <translation id="8412586565681117057">Бърз метод на въвеждане</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Брой страници</translation>
 <translation id="9110990317705400362">Непрекъснато търсим начини да правим сърфирането ви по-безопасно. По-рано всеки уебсайт можеше да ви подкани да добавите разширение в браузъра си. В най-новите версии на Google Chrome трябва изрично да укажете на браузъра, че искате да инсталирате съответния софтуер, като го добавите чрез страницата „Разширения“. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Кодек</translation>
+<translation id="9129931661813833980">Фиксиране на папката</translation>
 <translation id="9130775360844693113">Членовете на „<ph name="DESTINATION_NAME" />“ ще получат достъп до тези елементи.</translation>
 <translation id="9131598836763251128">Изберете един или повече файлове</translation>
 <translation id="9133055936679483811">Компресирането не бе успешно. <ph name="ERROR_MESSAGE" /></translation>

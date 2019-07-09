@@ -22,6 +22,12 @@ class ImageSkia;
 
 namespace web_app {
 
+// Returns true if |app_url| and |page_url| are the same origin. To avoid
+// breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
+// same domain but with "www.", this returns true if |page_url| is secure and in
+// the same origin as |app_url| with "www.".
+bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url);
+
 // Class to encapsulate logic to control the browser UI for web apps.
 class AppBrowserController : public TabStripModelObserver,
                              public content::WebContentsObserver {
@@ -73,6 +79,9 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Gets the launch url for the app.
   virtual GURL GetAppLaunchURL() const = 0;
+
+  // Determines whether the specified url is 'inside' the app |this| controls.
+  virtual bool IsUrlInAppScope(const GURL& url) const = 0;
 
   virtual bool CanUninstall() const;
 

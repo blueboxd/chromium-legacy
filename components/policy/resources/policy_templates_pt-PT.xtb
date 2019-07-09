@@ -1602,15 +1602,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se não definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o respetivo diretório predefinido habitual (específico da plataforma).
 
       Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista das variáveis que é possível utilizar.</translation>
-<translation id="3904459740090265495">Esta política controla o comportamento de início de sessão do navegador. Permite-lhe especificar se o utilizador pode iniciar sessão no <ph name="PRODUCT_NAME" /> com a respetiva conta e utilizar serviços relacionados com a conta, como a Sincronização do Chrome.
-
-      Se a política estiver definida como "Desativar o início de sessão no navegador", o utilizador não pode iniciar sessão no navegador nem utilizar os serviços baseados na conta. Neste caso, as funcionalidades ao nível do navegador, como a Sincronização do Chrome, não podem ser utilizadas e estão indisponíveis. Se o utilizador tiver sessão iniciada e a política for definida como "Desativada", a sessão do utilizador é terminada da próxima vez que este executar o Chrome, mas os respetivos dados locais do perfil, como marcadores, palavras-passe etc., mantêm-se guardados. O utilizador ainda poderá iniciar sessão e utilizar os serviços Web Google como o Gmail.
-
-      Se a política estiver definida como "Ativar o início de sessão no navegador", o utilizador tem autorização para iniciar sessão no navegador e a respetiva sessão é iniciada automaticamente no navegador quando tem sessão iniciada nos serviços Web Google como o Gmail. Ter a sessão iniciada no navegador significa que as informações da conta do utilizador são guardadas pelo navegador. Contudo, tal não significa que a Sincronização do Chrome estará ativada por predefinição; o utilizador tem de ativar separadamente a utilização desta funcionalidade. A ativação desta política impede que o utilizador desative a definição que permite o início de sessão no navegador. Para controlar a disponibilidade da Sincronização do Chrome, utilize a política "SyncDisabled".
-
-      Se esta política estiver definida como "Forçar início de sessão no navegador", é apresentada ao utilizador uma caixa de diálogo de seleção de conta e este tem de optar e iniciar sessão para utilizar o navegador. Isto garante que, para as contas geridas, as políticas associadas à conta sejam aplicadas e implementadas. Por predefinição, esta opção ativa a Sincronização do Chrome para a conta, exceto no caso em que a sincronização tenha sido desativada pelo administrador do domínio ou através da política "SyncDisabled". O valor predefinido de BrowserGuestModeEnabled vai ser definido como falso. Tenha em atenção que os perfis não assinados existentes serão bloqueados e estarão inacessíveis após a ativação desta política. Para mais informações, consulte o artigo do Centro de Ajuda: https://support.google.com/chrome/a/answer/7572556.
-
-      Se esta política não for definida, o utilizador pode decidir se pretende ativar a opção de início de sessão no navegador e utilizá-la conforme entender.</translation>
 <translation id="3911737181201537215">Esta política não tem qualquer efeito nos registos realizados pelo Android.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> quando definida como verdadeira. Nesse caso, os dados não são carregados para o Google Drive.
 
@@ -2043,8 +2034,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4777805166623621364">
       Esta definição, SitePerProcess, pode ser utilizada para não permitir que os utilizadores recusem o comportamento predefinido de isolamento de todos os sites. Tenha em atenção que a política IsolateOrigins também pode ser útil para isolar origens adicionais mais detalhadas.
       Se a política estiver ativada, os utilizadores não poderão recusar o comportamento predefinido, que prevê que cada site seja executado no seu próprio processo.
-      Se a política não for configurada ou estiver desativada, o utilizador poderá recusar o isolamento de sites
-      (por exemplo, ao utilizar a entrada "Desativar isolamento de sites" em chrome://flags).  Definir a política como desativada e/ou não configurar a política não desativa o Isolamento de sites.
+      Se a política não for configurada ou estiver desativada, o utilizador poderá recusar o isolamento de site
+      (por exemplo, ao utilizar a entrada "Desativar isolamento de site" em chrome://flags).  Definir a política como desativada e/ou não configurar a política não desativa o isolamento de site.
       Na versão 76 e anteriores do <ph name="PRODUCT_OS_NAME" />, recomenda-se também a definição da política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, poderá ocorrer um atraso ao iniciar uma sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
 
       NOTA: esta política não se aplica ao Android. Para ativar a política SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.

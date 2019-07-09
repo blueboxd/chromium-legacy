@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Tümü yedeklendi!</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
 <translation id="3644896802912593514">Genişlik</translation>
+<translation id="3645531960514756307">Klasörün sabitlemesini kaldır</translation>
 <translation id="3678559383040232393">Malta diline özgü klavye</translation>
 <translation id="3685122418104378273">Mobil veriler kullanılırken Google Drive senkronizasyonu varsayılan olarak devre dışıdır.</translation>
 <translation id="3726463242007121105">Bu cihaz, dosya sistemi desteklenmediğinden açılamıyor.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Dün <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">İzlanda klavyesi</translation>
 <translation id="8342318071240498787">Aynı adda bir dosya veya dizin zaten var.</translation>
+<translation id="8382450452152102026">Alıcı: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Harf çevirisi (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Boyutlar</translation>
 <translation id="8412586565681117057">Hızlı giriş yöntemi</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Sayfa sayısı</translation>
 <translation id="9110990317705400362">Sürekli olarak, web'e daha güvenli göz atabilmenizi sağlamanın yollarını aramaktayız. Önceden, herhangi bir web sitesi, tarayıcınıza uzantı eklemeniz için istekte bulunabiliyordu. Google Chrome'un son sürümlerinde bu uzantıları yüklemek istediğinizi Chrome'a açıkça söylemelisiniz. Bunu yapmak için uzantıları Uzantılar sayfası üzerinden eklemeniz gerekiyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Klasörü sabitle</translation>
 <translation id="9130775360844693113">"<ph name="DESTINATION_NAME" />" hedefinin üyeleri, bu öğelere erişim hakkı kazanacaktır.</translation>
 <translation id="9131598836763251128">Bir veya daha fazla dosya seçin</translation>
 <translation id="9133055936679483811">Sıkıştırma başarısız oldu. <ph name="ERROR_MESSAGE" /></translation>

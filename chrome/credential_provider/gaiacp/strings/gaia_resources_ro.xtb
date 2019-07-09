@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Parola pentru Windows nu a putut fi confirmată. Încearcă din nou.</translation>
 <translation id="3306357053520292004">Un utilizator de pe acest computer a fost deja adăugat cu acest cont. Conectați-vă cu un alt cont.</translation>
 <translation id="369030246015333661">Contul tău a fost blocat. Contactează un administrator de sistem.</translation>
+<translation id="3968372833844047539">Doar utilizatorii G Suite Enterprise au permisiunea de a se conecta.</translation>
 <translation id="4057329986137569701">A apărut o eroare internă.</translation>
+<translation id="4267670563222825190">Nu s-a găsit niciun utilizator de domeniu pentru contul tău. Contactează administratorul.</translation>
 <translation id="4300229033992784001">Parola contului a fost schimbată. Introdu parola Windows curentă pentru a sincroniza parola Windows cu contul de serviciu.</translation>
 <translation id="4706454071748629324">Nu s-a reușit adăugarea unui utilizator nou. Computerul permite crearea unui singur utilizator folosind un cont de serviciu.</translation>
 <translation id="6292766200512304540">Utilizatorul a fost creat dintr-un cont de serviciu</translation>

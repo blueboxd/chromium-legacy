@@ -598,8 +598,9 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
-        // Ignore didMoveTab calls in tab restoring stage.
-        if (!mTabRestoreCompleted) return;
+        // Ignore didMoveTab calls in tab restoring stage. For incognito mode, bypass this check
+        // since there is no restoring stage.
+        if (!mTabRestoreCompleted && !isIncognito()) return;
         // Need to cache the flags before resetting the internal data map.
         boolean isMergeTabToGroup = isMergeTabToGroup(tab);
         boolean isMoveTabOutOfGroup = isMoveTabOutOfGroup(tab);

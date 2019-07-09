@@ -416,6 +416,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
 
+  # crbug.com/p/chromedriver/issues/detail?id=2995 exposed that some libraries
+  # introduce circular function references. Functions should not be serialized
+  # or treated as an object - this test checks that circular function
+  # definitions are allowed (despite how they are not spec-compliant.
+  def testExecuteScriptWithSameFunctionReference(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript("""function copyMe() { return 1; }
+                               Function.prototype.foo = copyMe;
+                               const obj = {};
+                               obj['buzz'] = copyMe;
+                               return obj;""")
+
   def _newWindowDoesNotFocus(self, window_type='window'):
     current_handles = self._driver.GetWindowHandles()
     self._driver.Load(self.GetHttpUrlForFile(

@@ -41,14 +41,13 @@ void MarkingVisitorBase::RegisterWeakCallback(void* object,
   weak_callback_worklist_.Push({object, callback});
 }
 
-void MarkingVisitorBase::RegisterBackingStoreReference(const char* name,
-                                                       void** slot) {
+void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
   // as temporary storage.
   Heap().RegisterMovingObjectReference(
-      name, reinterpret_cast<MovableReference*>(slot));
+      reinterpret_cast<MovableReference*>(slot));
 }
 
 void MarkingVisitorBase::RegisterBackingStoreCallback(

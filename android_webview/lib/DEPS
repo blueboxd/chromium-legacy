@@ -1,6 +1,10 @@
 include_rules = [
   "+cc/base/switches.h",
-  "+components",  # For jni registers.
+  "+components/autofill/core",
+  "+components/crash/core",
+  "+components/safe_browsing/android",
+  "+components/spellcheck/common",
+  "+components/viz/common",
   "+content/public",
   "+gin/public",
   "+gin/v8_initializer.h",

@@ -67,6 +67,7 @@ config("compiler") {
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
     "/utf-8",  # Assume UTF-8 by default to avoid code page dependencies.
+    "/Zc:twoPhase",
   ]
 
   # Force C/C++ mode for the given GN detected file type. This is necessary

@@ -237,6 +237,8 @@ bool FrameRendererThumbnail::ValidateThumbnail() {
   std::string md5_string = base::MD5String(
       base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
   bool is_valid_thumbnail = base::Contains(thumbnail_checksums_, md5_string);
+  if (!is_valid_thumbnail)
+    SaveThumbnail();
 
   return is_valid_thumbnail;
 }
@@ -244,7 +246,6 @@ bool FrameRendererThumbnail::ValidateThumbnail() {
 void FrameRendererThumbnail::SaveThumbnail() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  base::AutoLock auto_lock(renderer_lock_);
   const std::vector<uint8_t> rgba = ConvertThumbnailToRGBA();
 
   // Convert raw RGBA into PNG for export.

@@ -142,6 +142,25 @@ void FaviconSource::StartDataRequest(
         }
       }
     }
+
+    if (!parsed.allow_favicon_server_fallback) {
+      // Request from local storage only.
+      // TODO(victorvianna): Expose fallback_to_host in FaviconRequestHandler
+      // API and move the explanatory comment for |fallback_to_host| here.
+      const bool fallback_to_host = true;
+      favicon_service->GetRawFaviconForPageURL(
+          url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
+          fallback_to_host,
+          base::Bind(&FaviconSource::OnFaviconDataAvailable,
+                     base::Unretained(this),
+                     IconRequest(callback, url, parsed.size_in_dip,
+                                 parsed.device_scale_factor)),
+          &cancelable_task_tracker_);
+      return;
+    }
+
+    // Request from both local storage and favicon server using
+    // HistoryUiFaviconRequestHandler.
     favicon::HistoryUiFaviconRequestHandler*
         history_ui_favicon_request_handler =
             HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(

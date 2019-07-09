@@ -50,6 +50,9 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
   parsed->size_in_dip = gfx::kFaviconSize;
   parsed->device_scale_factor = 1.0f;
   parsed->path_index = std::string::npos;
+  // Use of the favicon server is never exposed for the legacy format (only used
+  // by extensions).
+  parsed->allow_favicon_server_fallback = false;
 
   if (path.empty())
     return false;
@@ -111,6 +114,7 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
   const std::string kScaleParameter = "scale_factor";
   const std::string kUrlTypeParameter = "url_type";
   const std::string kUrlParameter = "url";
+  const std::string kAllowFallbackParameter = "allow_google_server_fallback";
 
   if (path.empty())
     return false;
@@ -135,10 +139,31 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
   else if (!ParseIsIconUrl(url_type, &parsed->is_icon_url))
     return false;
 
-  net::GetValueForKeyInQuery(query_url, kUrlParameter, &parsed->url);
+  std::string url;
+  if (!net::GetValueForKeyInQuery(query_url, kUrlParameter, &url))
+    return false;
+  parsed->url = url;
+
+  if (parsed->is_icon_url) {
+    // Fallback is never allowed for icon urls, since the server is queried by
+    // page url.
+    parsed->allow_favicon_server_fallback = false;
+    return true;
+  }
+
+  // Check optional |kAllowFallbackParameter|.
+  std::string allow_favicon_server_fallback;
+  if (!net::GetValueForKeyInQuery(query_url, kAllowFallbackParameter,
+                                  &allow_favicon_server_fallback)) {
+    parsed->allow_favicon_server_fallback = false;
+  } else if (!base::StringToInt(allow_favicon_server_fallback,
+                                (int*)&parsed->allow_favicon_server_fallback)) {
+    return false;
+  }
 
   return true;
 }
+
 }  // namespace
 
 bool ParseFaviconPath(const std::string& path,

@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">All backed up!</translation>
 <translation id="3626281679859535460">Brightness</translation>
 <translation id="3644896802912593514">Width</translation>
+<translation id="3645531960514756307">Unpin folder</translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
 <translation id="3685122418104378273">Google Drive sync is disabled by default, when using mobile data.</translation>
 <translation id="3726463242007121105">This device cannot be opened because its file system is not supported.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Yesterday <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Icelandic keyboard</translation>
 <translation id="8342318071240498787">A file or a directory with the same name already exists.</translation>
+<translation id="8382450452152102026">To <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Transliteration (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8412586565681117057">Quick input method</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Page count</translation>
 <translation id="9110990317705400362">We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Pin folder</translation>
 <translation id="9130775360844693113">Members of '<ph name="DESTINATION_NAME" />' will gain access to these items.</translation>
 <translation id="9131598836763251128">Select one or more files</translation>
 <translation id="9133055936679483811">Zipping failed. <ph name="ERROR_MESSAGE" /></translation>

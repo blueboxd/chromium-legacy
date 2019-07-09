@@ -24,7 +24,6 @@
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"

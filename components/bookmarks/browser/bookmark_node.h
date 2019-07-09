@@ -76,7 +76,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   const GURL* icon_url() const { return icon_url_ ? icon_url_.get() : nullptr; }
 
   Type type() const { return type_; }
-  void set_type(Type type) { type_ = type; }
 
   // Returns the time the node was added.
   const base::Time& date_added() const { return date_added_; }
@@ -128,7 +127,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   // HistoryContentsProvider.
 
  protected:
-  BookmarkNode(int64_t id, const GURL& url, bool is_permanent_node);
+  BookmarkNode(int64_t id, const GURL& url, Type type, bool is_permanent_node);
 
  private:
   friend class BookmarkModel;
@@ -168,7 +167,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   GURL url_;
 
   // The type of this node. See enum above.
-  Type type_;
+  const Type type_;
 
   // Date of when this node was created.
   base::Time date_added_;
@@ -210,7 +209,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 // Node used for the permanent folders (excluding the root).
 class BookmarkPermanentNode : public BookmarkNode {
  public:
-  explicit BookmarkPermanentNode(int64_t id);
+  BookmarkPermanentNode(int64_t id, Type type);
   ~BookmarkPermanentNode() override;
 
   // WARNING: this code is used for other projects. Contact noyau@ for details.

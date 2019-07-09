@@ -15,8 +15,8 @@ namespace test {
 MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
     mojom::MediaSession& media_session)
     : binding_(this) {
-  mojom::MediaSessionObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+  mojo::PendingRemote<mojom::MediaSessionObserver> observer;
+  binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
   media_session.AddObserver(std::move(observer));
 }
 
@@ -184,17 +184,20 @@ void MockMediaSession::GetMediaSessionInfo(
   std::move(callback).Run(GetMediaSessionInfoSync());
 }
 
-void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
+void MockMediaSession::AddObserver(
+    mojo::PendingRemote<mojom::MediaSessionObserver> observer) {
   ++add_observer_count_;
+  mojo::Remote<mojom::MediaSessionObserver> media_session_observer(
+      std::move(observer));
 
-  observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+  media_session_observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
 
   std::vector<mojom::MediaSessionAction> actions(actions_.begin(),
                                                  actions_.end());
-  observer->MediaSessionActionsChanged(actions);
-  observer->MediaSessionImagesChanged(images_);
+  media_session_observer->MediaSessionActionsChanged(actions);
+  media_session_observer->MediaSessionImagesChanged(images_);
 
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(media_session_observer));
 }
 
 void MockMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
@@ -326,26 +329,26 @@ void MockMediaSession::FlushForTesting() {
 
 void MockMediaSession::SimulateMetadataChanged(
     const base::Optional<MediaMetadata>& metadata) {
-  observers_.ForAllPtrs([&metadata](mojom::MediaSessionObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionMetadataChanged(metadata);
-  });
+  }
 }
 
 void MockMediaSession::ClearAllImages() {
   images_.clear();
 
-  observers_.ForAllPtrs([this](mojom::MediaSessionObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionImagesChanged(this->images_);
-  });
+  }
 }
 
 void MockMediaSession::SetImagesOfType(mojom::MediaSessionImageType type,
                                        const std::vector<MediaImage>& images) {
   images_.insert_or_assign(type, images);
 
-  observers_.ForAllPtrs([this](mojom::MediaSessionObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionImagesChanged(this->images_);
-  });
+  }
 }
 
 void MockMediaSession::EnableAction(mojom::MediaSessionAction action) {
@@ -375,9 +378,9 @@ void MockMediaSession::NotifyObservers() {
   if (afr_client_.is_bound())
     afr_client_->MediaSessionInfoChanged(session_info.Clone());
 
-  observers_.ForAllPtrs([&session_info](mojom::MediaSessionObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionInfoChanged(session_info.Clone());
-  });
+  }
 }
 
 mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {
@@ -401,9 +404,9 @@ void MockMediaSession::NotifyActionObservers() {
   std::vector<mojom::MediaSessionAction> actions(actions_.begin(),
                                                  actions_.end());
 
-  observers_.ForAllPtrs([&actions](mojom::MediaSessionObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionActionsChanged(actions);
-  });
+  }
 }
 
 void MockMediaSession::RequestAudioFocusFromClient(

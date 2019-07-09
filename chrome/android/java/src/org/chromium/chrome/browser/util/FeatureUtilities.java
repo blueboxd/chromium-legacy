@@ -90,7 +90,6 @@ public class FeatureUtilities {
     private static Boolean sIsImmersiveUiModeEnabled;
     private static Boolean sIsTabPersistentStoreTaskRunnerEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
-    private static Boolean sAllowStartingServiceManagerOnly;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -188,7 +187,6 @@ public class FeatureUtilities {
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
         cacheNetworkService();
-        cacheAllowStartingServiceManagerOnly();
         cacheServiceManagerForDownloadResumption();
         cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
@@ -248,15 +246,6 @@ public class FeatureUtilities {
         sIsHomePageButtonForceEnabled = null;
     }
 
-    private static void cacheAllowStartingServiceManagerOnly() {
-        boolean allowStartingServiceManagerOnly =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_STARTING_SERVICE_MANAGER_ONLY);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY,
-                allowStartingServiceManagerOnly);
-    }
-
     private static void cacheNetworkService() {
         boolean networkService = ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
 
@@ -272,19 +261,6 @@ public class FeatureUtilities {
                     prefManager.readBoolean(ChromePreferenceManager.NETWORK_SERVICE_KEY, false);
         }
         return sIsNetworkServiceEnabled;
-    }
-
-    /**
-     * @return if allowing to start service manager only mode.
-     */
-    private static boolean isAllowStartingServiceManagerOnlyEnabled() {
-        if (sAllowStartingServiceManagerOnly == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sAllowStartingServiceManagerOnly = prefManager.readBoolean(
-                    ChromePreferenceManager.ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY, false);
-        }
-        return sAllowStartingServiceManagerOnly && isNetworkServiceEnabled();
     }
 
     private static void cacheServiceManagerForDownloadResumption() {
@@ -306,7 +282,7 @@ public class FeatureUtilities {
             sServiceManagerForDownloadResumption = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY, false);
         }
-        return sServiceManagerForDownloadResumption && isAllowStartingServiceManagerOnlyEnabled();
+        return sServiceManagerForDownloadResumption && isNetworkServiceEnabled();
     }
 
     private static void cacheServiceManagerForBackgroundPrefetch() {
@@ -328,8 +304,7 @@ public class FeatureUtilities {
             sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
         }
-        return sServiceManagerForBackgroundPrefetch && isFeedEnabled()
-                && isAllowStartingServiceManagerOnlyEnabled();
+        return sServiceManagerForBackgroundPrefetch && isFeedEnabled() && isNetworkServiceEnabled();
     }
 
     /**

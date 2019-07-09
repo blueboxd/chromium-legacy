@@ -70,7 +70,7 @@ class BindingSetBase {
   using RequestType = typename Traits::RequestType;
   using ImplPointerType = typename Traits::ImplPointerType;
 
-  BindingSetBase() : weak_ptr_factory_(this) {}
+  BindingSetBase() {}
 
   void set_connection_error_handler(base::RepeatingClosure error_handler) {
     error_handler_ = std::move(error_handler);
@@ -309,7 +309,7 @@ class BindingSetBase {
   bool is_flushing_ = false;
   const Context* dispatch_context_ = nullptr;
   BindingId dispatch_binding_;
-  base::WeakPtrFactory<BindingSetBase> weak_ptr_factory_;
+  base::WeakPtrFactory<BindingSetBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BindingSetBase);
 };

@@ -1580,15 +1580,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du ikke angiver denne politik, bruger <ph name="PRODUCT_NAME" /> den sædvanlige standardmappe (platformspecifikt).
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler, der kan bruges.</translation>
-<translation id="3904459740090265495">Denne politik styrer loginadfærd i browseren. Den giver dig mulighed for at angive, om brugeren kan logge ind i <ph name="PRODUCT_NAME" /> med sin konto og benytte kontorelaterede tjenester såsom Chrome-synkronisering.
-
-      Hvis "Deaktiver browserlogin" er angivet for politikken, kan brugeren ikke logge ind i browseren og benytte kontobaserede tjenester. Det betyder, at browserfunktioner såsom Chrome-synkronisering ikke kan anvendes. Hvis brugeren allerede er logget ind, og "Deaktiveret" er angivet for politikken, logges brugeren ud, næste gang vedkommende starter Chrome. Brugerens lokale profildata som f.eks. bogmærker og adgangskoder bevares dog. Brugeren kan stadig logge ind på og benytte Google-webtjenester såsom Gmail.
-
-      Hvis "Aktivér browserlogin" er angivet for politikken, har brugeren tilladelse til at logge ind i browseren, og brugeren logges automatisk ind i browseren, når vedkommende er logget ind i Google-webtjenester såsom Gmail. Når brugeren er logget ind i browseren, gemmes vedkommendes kontooplysninger i browseren. Det betyder dog ikke, at Chrome-synkronisering som standard aktiveres. Brugeren skal selv tilvælge denne funktion. Aktivering af denne politik forhindrer brugeren i at deaktivere den indstilling, der tillader browserlogin. Brug politikken "SyncDisabled" til at styre tilgængeligheden af Chrome-synkronisering.
-
-      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til mangerstyrede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
-
-      Hvis politikken ikke konfigureres, kan brugeren selv bestemme, om muligheden for browserlogin skal aktiveres, og anvende den efter eget behov.</translation>
 <translation id="3911737181201537215">Denne politik påvirker ikke logføring udført af Android.</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 

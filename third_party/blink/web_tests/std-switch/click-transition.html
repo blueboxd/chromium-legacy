@@ -24,9 +24,9 @@ promise_test(async () => {
   thumb.addEventListener('transitionend', e => { ++transitionEndCounter; });
 
   await test_driver.click(switchElement);
-  assert_true(switchElement.on);
+  assert_true(switchElement.on, 'click');
   await singleFrame();
-  assert_true(transitionStartCounter > 0);
+  assert_true(transitionStartCounter > 0, 'A transition starts');
   if (transitionStartCounter > transitionEndCounter) {
     await new Promise((resolve, reject) => {
       thumb.addEventListener('transitionend', () => {
@@ -39,7 +39,7 @@ promise_test(async () => {
   assert_equals(thumb.runningTransitions, 0);
   // The track element doesn't animate by default.
   let trackElement = internals.shadowRoot(switchElement).getElementById('track');
-  assert_equals(trackElement.runningTransitions, undefined);
+  assert_equals(trackElement.runningTransitions, 0);
 
   // Changing the state with an IDL attribute should not animate.
   transitionStartCounter = 0;

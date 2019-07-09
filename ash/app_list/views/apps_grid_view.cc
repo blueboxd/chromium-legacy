@@ -120,18 +120,19 @@ gfx::Size GetTileViewSize() {
 // the original position, then the item is moved to just before its target
 // position and opacity set to 0. When the animation runs, this delegate moves
 // the layer and fades it out while fading in the item at the same time.
-class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
+class RowMoveAnimationDelegate : public views::AnimationDelegateViews {
  public:
   RowMoveAnimationDelegate(views::View* view,
                            ui::Layer* layer,
                            const gfx::Rect& layer_target)
-      : view_(view),
+      : views::AnimationDelegateViews(view),
+        view_(view),
         layer_(layer),
         layer_start_(layer ? layer->bounds() : gfx::Rect()),
         layer_target_(layer_target) {}
   ~RowMoveAnimationDelegate() override {}
 
-  // gfx::AnimationDelegate overrides:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
@@ -166,13 +167,14 @@ class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
 // ItemRemoveAnimationDelegate is used to show animation for removing an item.
 // This happens when user drags an item into a folder. The dragged item will
 // be removed from the original list after it is dropped into the folder.
-class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
+class ItemRemoveAnimationDelegate : public views::AnimationDelegateViews {
  public:
-  explicit ItemRemoveAnimationDelegate(views::View* view) : view_(view) {}
+  explicit ItemRemoveAnimationDelegate(views::View* view)
+      : views::AnimationDelegateViews(view), view_(view) {}
 
   ~ItemRemoveAnimationDelegate() override {}
 
-  // gfx::AnimationDelegate overrides:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(1 - animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
@@ -187,15 +189,18 @@ class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
 // ItemMoveAnimationDelegate observes when an item finishes animating when it is
 // not moving between rows. This is to ensure an item is repainted for the
 // "zoom out" case when releasing an item being dragged.
-class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
+class ItemMoveAnimationDelegate : public views::AnimationDelegateViews {
  public:
   explicit ItemMoveAnimationDelegate(AppListItemView* view,
                                      bool is_released_drag_view)
-      : view_(view), is_released_drag_view_(is_released_drag_view) {
+      : views::AnimationDelegateViews(view),
+        view_(view),
+        is_released_drag_view_(is_released_drag_view) {
     if (is_released_drag_view_)
       view_->title()->SetVisible(false);
   }
 
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override {
     if (is_released_drag_view_)
       view_->title()->SetVisible(true);
@@ -280,7 +285,7 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
   ui::Layer* layer() { return &layer_; }
 
  private:
-  // ui::LayerDelegate overrides:
+  // ui::LayerDelegate:
   // TODO(warx): using a mask is expensive. It would be more efficient to avoid
   // the mask for the central area and only use it for top/bottom areas.
   void OnPaintLayer(const ui::PaintContext& context) override {

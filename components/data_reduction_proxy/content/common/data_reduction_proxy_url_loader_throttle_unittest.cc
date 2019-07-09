@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"

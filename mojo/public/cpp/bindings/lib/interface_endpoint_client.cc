@@ -151,8 +151,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
       task_runner_(std::move(runner)),
       control_message_proxy_(this),
       control_message_handler_(interface_version),
-      interface_name_(interface_name),
-      weak_ptr_factory_(this) {
+      interface_name_(interface_name) {
   DCHECK(handle_.is_valid());
 
   // TODO(yzshen): the way to use validator (or message filter in general)

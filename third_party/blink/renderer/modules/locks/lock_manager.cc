@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_granted_callback.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -69,11 +70,10 @@ class LockManager::LockRequestImpl final
         resolver_(resolver),
         name_(name),
         mode_(mode),
-        // See https://bit.ly/2S0zRAS for task types.
-        binding_(this,
-                 std::move(request),
-                 manager->GetExecutionContext()->GetTaskRunner(
-                     TaskType::kMiscPlatformAPI)),
+        binding_(
+            this,
+            std::move(request),
+            manager->GetExecutionContext()->GetTaskRunner(TaskType::kWebLocks)),
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;

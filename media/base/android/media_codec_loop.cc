@@ -81,9 +81,6 @@ bool MediaCodecLoop::TryFlush() {
   if (state_ == STATE_ERROR || state_ == STATE_DRAINED)
     return false;
 
-  if (CodecNeedsFlushWorkaround())
-    return false;
-
   // Actually try to flush!
   io_timer_.Stop();
 
@@ -352,15 +349,6 @@ void MediaCodecLoop::SetState(State new_state) {
 
 MediaCodecBridge* MediaCodecLoop::GetCodec() const {
   return media_codec_.get();
-}
-
-bool MediaCodecLoop::CodecNeedsFlushWorkaround() const {
-  // Return true if and only if Flush() isn't supported / doesn't work.
-  // Prior to JellyBean-MR2, flush() had several bugs (b/8125974, b/8347958) so
-  // we have to completely destroy and recreate the codec there.
-  // TODO(liberato): MediaCodecUtil implements the same function.  We should
-  // call that one, except that it doesn't compile outside of android right now.
-  return sdk_int_ < base::android::SDK_VERSION_JELLY_BEAN_MR2;
 }
 
 // static

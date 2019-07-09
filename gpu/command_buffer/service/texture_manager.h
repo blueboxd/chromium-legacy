@@ -73,6 +73,15 @@ class GPU_GLES2_EXPORT TexturePassthrough final
       public base::SupportsWeakPtr<TexturePassthrough> {
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
+  TexturePassthrough(GLuint service_id,
+                     GLenum target,
+                     GLenum internal_format,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLint border,
+                     GLenum format,
+                     GLenum type);
 
   // TextureBase implementation:
   TextureBase::Type GetType() const override;
@@ -129,9 +138,19 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     LevelInfo(const LevelInfo& rhs);
     ~LevelInfo();
 
+    GLenum internal_format = 0;
+    GLsizei width = 0;
+    GLsizei height = 0;
+    GLsizei depth = 0;
+    GLint border = 0;
+    GLenum format = 0;
+    GLenum type = 0;
+
     scoped_refptr<gl::GLImage> image;
     scoped_refptr<GLStreamTextureImage> stream_texture_image;
   };
+
+  LevelInfo* GetLevelInfo(GLenum target, GLint level);
 
   std::vector<std::vector<LevelInfo>> level_images_;
 

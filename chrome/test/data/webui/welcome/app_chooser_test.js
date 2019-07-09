@@ -50,7 +50,7 @@ cr.define('onboarding_welcome_app_chooser', function() {
     let testElement;
 
     setup(async function() {
-      testAppBrowserProxy = new TestNuxAppProxy();
+      testAppBrowserProxy = new TestGoogleAppProxy();
       testAppMetricsProxy = new TestMetricsProxy();
       testBookmarkBrowserProxy = new TestBookmarkProxy();
 

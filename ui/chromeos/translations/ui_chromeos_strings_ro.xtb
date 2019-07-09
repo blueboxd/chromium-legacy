@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">S-a făcut backup pentru tot!</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="3644896802912593514">Lățime</translation>
+<translation id="3645531960514756307">Anulează fixarea dosarului</translation>
 <translation id="3678559383040232393">Tastatură malteză</translation>
 <translation id="3685122418104378273">Sincronizarea cu Google Drive este dezactivată în mod prestabilit la folosirea datelor mobile.</translation>
 <translation id="3726463242007121105">Acest dispozitiv nu poate fi deschis, deoarece sistemul său de fișiere nu este acceptat.</translation>
@@ -456,7 +457,7 @@
 <translation id="6189412234224385711">Deschide cu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Se așteaptă informațiile despre spațiu...</translation>
 <translation id="6205710420833115353">Unele operațiuni durează mai mult decât ar trebui. Dorești să le anulezi?</translation>
-<translation id="6224253798271602650">Formatați <ph name="DRIVE_NAME" /></translation>
+<translation id="6224253798271602650">Formatează <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Acest fișier nu a putut fi redat.</translation>
 <translation id="6248400709929739064">Activează subtitrările</translation>
 <translation id="6264347891387618177">Transliterație (selam → ሰላም)</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Ieri, la <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Tastatură islandeză</translation>
 <translation id="8342318071240498787">Un fișier sau un director cu același nume există deja.</translation>
+<translation id="8382450452152102026">În <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Transliterație (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensiuni</translation>
 <translation id="8412586565681117057">Metoda de introducere rapidă a textului</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Numărul de pagini</translation>
 <translation id="9110990317705400362">Google caută mereu modalități de a face navigarea mai sigură. Înainte, orice site îți putea solicita să adaugi o extensie în browser. În ultimele versiuni Google Chrome, trebuie să indici explicit că dorești să instalezi aceste extensii, adăugându-le în pagina Extensii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Fixează dosarul</translation>
 <translation id="9130775360844693113">Membrii „<ph name="DESTINATION_NAME" />” vor obține acces la aceste articole.</translation>
 <translation id="9131598836763251128">Selectează un fișier sau mai multe</translation>
 <translation id="9133055936679483811">Arhivarea nu a reușit. <ph name="ERROR_MESSAGE" /></translation>

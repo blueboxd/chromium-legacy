@@ -27,6 +27,8 @@ class AccessibilityControllerClient
   bool ShouldToggleSpokenFeedbackViaTouch() const override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
   void RequestSelectToSpeakStateChange() override;
+  void RequestAutoclickScrollableBoundsForPoint(
+      gfx::Point& point_in_screen) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClient);

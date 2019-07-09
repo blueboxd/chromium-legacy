@@ -1966,9 +1966,8 @@ void LayoutBox::SizeChanged() {
   if (!NeedsLayout())
     SetShouldCheckForPaintInvalidation();
 
-  if (GetNode() && GetNode()->IsElementNode()) {
-    Element& element = ToElement(*GetNode());
-    element.SetNeedsResizeObserverUpdate();
+  if (auto* element = DynamicTo<Element>(GetNode())) {
+    element->SetNeedsResizeObserverUpdate();
   }
 }
 

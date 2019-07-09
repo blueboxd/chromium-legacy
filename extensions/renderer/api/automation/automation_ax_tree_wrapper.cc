@@ -5,7 +5,7 @@
 #include "base/no_destructor.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 
 namespace extensions {
@@ -319,10 +319,8 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& targeted_event : event_generator_) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      DetectLanguageForSubtree(tree_.root(), &tree_);
-      if (!LabelLanguageForSubtree(tree_.root(), &tree_))
-        LOG(FATAL) << "Language detection failed at step: Label";
-
+      tree_.language_detection_manager->DetectLanguageForSubtree(tree_.root());
+      tree_.language_detection_manager->LabelLanguageForSubtree(tree_.root());
       break;
     }
   }

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -34,22 +35,40 @@ String GetConsoleLogStringForBlockedLoad(const KURL& url) {
 PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
     ExecutionContext& execution_context,
     int64_t ukm_source_id,
-    const Vector<WTF::String>& subresource_patterns_to_block) {
+    const WebVector<WebString>& subresource_patterns_to_block) {
   return MakeGarbageCollected<PreviewsResourceLoadingHints>(
       &execution_context, ukm_source_id, subresource_patterns_to_block);
+}
+
+// static
+PreviewsResourceLoadingHints*
+PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
+    ExecutionContext& execution_context,
+    std::unique_ptr<WebLoadingHintsProvider> loading_hints_provider) {
+  WebVector<WebString> subresource_patterns_to_block;
+  for (const auto& pattern :
+       loading_hints_provider->subresource_patterns_to_block) {
+    // |pattern| is guaranteed to be ascii.
+    subresource_patterns_to_block.emplace_back(pattern);
+  }
+
+  return MakeGarbageCollected<PreviewsResourceLoadingHints>(
+      &execution_context, loading_hints_provider->ukm_source_id,
+      subresource_patterns_to_block);
 }
 
 PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     ExecutionContext* execution_context,
     int64_t ukm_source_id,
-    const Vector<WTF::String>& subresource_patterns_to_block)
+    const WebVector<WebString>& subresource_patterns_to_block)
     : execution_context_(execution_context),
       ukm_source_id_(ukm_source_id),
       subresource_patterns_to_block_(subresource_patterns_to_block) {
   DCHECK_NE(ukm::kInvalidSourceId, ukm_source_id_);
 
   subresource_patterns_to_block_usage_.Fill(
-      false, subresource_patterns_to_block.size());
+      false,
+      static_cast<WTF::wtf_size_t>(subresource_patterns_to_block.size()));
   blocked_resource_load_priority_counts_.Fill(
       0, static_cast<int>(ResourceLoadPriority::kHighest) + 1);
 

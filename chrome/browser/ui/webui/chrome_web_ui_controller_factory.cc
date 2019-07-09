@@ -87,7 +87,6 @@
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/urls.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"

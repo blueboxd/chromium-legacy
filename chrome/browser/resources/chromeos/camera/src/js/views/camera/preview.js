@@ -120,9 +120,9 @@ cca.views.camera.Preview.prototype.setSource_ = function(stream) {
     };
     this.video_.parentElement.replaceChild(video, this.video_).cleanup();
     this.video_ = video;
-    this.onIntrinsicSizeChanged_();
     video.addEventListener('resize', () => this.onIntrinsicSizeChanged_());
     video.addEventListener('click', (event) => this.onFocusClicked_(event));
+    return this.onIntrinsicSizeChanged_();
   });
 };
 
@@ -189,8 +189,34 @@ cca.views.camera.Preview.prototype.toImage = function() {
 };
 
 /**
+ * Sets CCA window inner bound to specified size.
+ * @param {number} width Width and min width of new window inner bound.
+ * @param {number} height Height and min height of new window inner bound.
+ * @return {Promise} Promise which is resolved when size change actually happen.
+ * @private
+ */
+cca.views.camera.Preview.prototype.setWindowSize_ = function(width, height) {
+  return new Promise((resolve) => {
+    const listener = () => {
+      chrome.app.window.current().onBoundsChanged.removeListener(listener);
+      resolve();
+    };
+    chrome.app.window.current().onBoundsChanged.addListener(listener);
+    const inner = chrome.app.window.current().innerBounds;
+    const prevW = inner.width;
+    const prevH = inner.height;
+    inner.minWidth = inner.width = width;
+    inner.minHeight = inner.height = height;
+    if (prevW == width && prevH == height) {
+      listener();
+    }
+  });
+};
+
+/**
  * Handles resizing the window for preview's aspect ratio changes.
  * @param {number=} aspectRatio Aspect ratio changed.
+ * @return {Promise}
  * @private
  */
 cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
@@ -198,45 +224,42 @@ cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
     clearTimeout(this.resizeWindowTimeout_);
     this.resizeWindowTimeout_ = null;
   }
+  cca.nav.onWindowResized();
+
   // Resize window for changed preview's aspect ratio or restore window size by
   // the last known window's aspect ratio.
-  new Promise((resolve) => {
-    if (aspectRatio) {
-      this.aspectRatio_ = aspectRatio;
-      resolve();
-    } else {
-      this.resizeWindowTimeout_ = setTimeout(() => {
-        this.resizeWindowTimeout_ = null;
-        resolve();
-      }, 500);  // Delay further resizing for smooth UX.
-    }
-  }).then(() => {
-    // Resize window by aspect ratio only if it's not maximized or fullscreen.
-    if (cca.util.isWindowFullSize()) {
-      return;
-    }
-    // Keep the width fixed and calculate the height by the aspect ratio.
-    // TODO(yuli): Update min-width for resizing at portrait orientation.
-    var inner = chrome.app.window.current().innerBounds;
-    var innerW = inner.minWidth;
-    var innerH = Math.round(innerW * 9 / 16);
-
-    // Limit window resizing capability by setting min-height. Don't limit
-    // max-height here as it may disable maximize/fullscreen capabilities.
-    inner.minHeight = innerH;
-    inner.width = innerW;
-    inner.height = innerH;
-  });
-  cca.nav.onWindowResized();
+  return new Promise((resolve) => {
+           if (aspectRatio) {
+             this.aspectRatio_ = aspectRatio;
+             resolve();
+           } else {
+             this.resizeWindowTimeout_ = setTimeout(() => {
+               this.resizeWindowTimeout_ = null;
+               resolve();
+             }, 500);  // Delay further resizing for smooth UX.
+           }
+         })
+      .then(() => {
+        // Resize window by aspect ratio only if it's not maximized or
+        // fullscreen.
+        if (cca.util.isWindowFullSize()) {
+          return;
+        }
+        const width = chrome.app.window.current().innerBounds.minWidth;
+        const height = Math.round(width * 9 / 16);
+        return this.setWindowSize_(width, height);
+      });
 };
 
 /**
  * Handles changed intrinsic size (first loaded or orientation changes).
+ * @async
  * @private
  */
-cca.views.camera.Preview.prototype.onIntrinsicSizeChanged_ = function() {
+cca.views.camera.Preview.prototype.onIntrinsicSizeChanged_ = async function() {
   if (this.video_.videoWidth && this.video_.videoHeight) {
-    this.onWindowResize_(this.video_.videoWidth / this.video_.videoHeight);
+    await this.onWindowResize_(
+        this.video_.videoWidth / this.video_.videoHeight);
   }
   this.cancelFocus_();
 };

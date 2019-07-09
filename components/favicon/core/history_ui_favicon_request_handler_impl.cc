@@ -128,8 +128,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
           &HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable,
           weak_ptr_factory_.GetWeakPtr(), page_url, desired_size_in_pixel,
           /*response_callback=*/std::move(callback), request_origin,
-          request_platform, icon_url_for_uma,
-          CanQueryGoogleServer(request_origin), tracker),
+          request_platform, icon_url_for_uma, CanQueryGoogleServer(), tracker),
       tracker);
 }
 
@@ -146,7 +145,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
           &HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable,
           weak_ptr_factory_.GetWeakPtr(), page_url,
           /*response_callback=*/std::move(callback), request_origin,
-          icon_url_for_uma, CanQueryGoogleServer(request_origin), tracker),
+          icon_url_for_uma, CanQueryGoogleServer(), tracker),
       tracker);
 }
 
@@ -361,12 +360,8 @@ void HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable(
   }
 }
 
-bool HistoryUiFaviconRequestHandlerImpl::CanQueryGoogleServer(
-    FaviconRequestOrigin origin) const {
-  // TODO(victorvianna): Remove origin check once extensions don't talk to this
-  // layer anymore.
-  return origin != FaviconRequestOrigin::UNKNOWN &&
-         can_send_history_data_getter_.Run() &&
+bool HistoryUiFaviconRequestHandlerImpl::CanQueryGoogleServer() const {
+  return can_send_history_data_getter_.Run() &&
          base::FeatureList::IsEnabled(kEnableHistoryFaviconsGoogleServerQuery);
 }
 

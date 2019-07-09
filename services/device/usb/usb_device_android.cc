@@ -206,7 +206,7 @@ void UsbDeviceAndroid::OnReadDescriptors(
     return;
   }
 
-  descriptor_ = *descriptor;
+  descriptor_ = std::move(*descriptor);
 
   if (usb_version() >= 0x0210) {
     ReadWebUsbDescriptors(

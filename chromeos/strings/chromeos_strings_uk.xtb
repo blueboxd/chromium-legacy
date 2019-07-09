@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Щоб знайти пристрої поблизу, увімкніть Bluetooth</translation>
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
+<translation id="2912823482158781027">ОНОВИТИ МАНДАТ</translation>
 <translation id="3511655281162215899">Негайно виберіть новий пароль</translation>
+<translation id="3562817605261346876">Якнайшвидше оновіть мандат для <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Новий пароль</translation>
 <translation id="445059817448385655">Старий пароль</translation>
 <translation id="467510802200863975">Паролі не збігаються</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">Переглядати в режимі гостя</translation>
 <translation id="54609108002486618">Керований</translation>
 <translation id="5733345267661125295">Виберіть новий пароль</translation>
+<translation id="5743581760404859096">Термін дії вашого мандата Kerberos минає</translation>
 <translation id="5832805196449965646">Додати користувача</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="6058625436358447366">Щоб завершити, введіть старий і новий паролі</translation>
 <translation id="6106186594183574873">Щоб завершити, введіть старий пароль</translation>
 <translation id="6146993107019042706">Щоб завершити, введіть новий пароль</translation>
 <translation id="6574601967010742428">Адміністратор пристрою може відстежувати вашу активність.</translation>
+<translation id="7280705187789120111">Термін дії мандата Kerberos минає</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Термін дії поточного пароля закінчився.}=1{Термін дії поточного пароля закінчиться менше ніж за один день.}one{Термін дії поточного пароля закінчиться менше ніж за # день.}few{Термін дії поточного пароля закінчиться менше ніж за # дні.}many{Термін дії поточного пароля закінчиться менше ніж за # днів.}other{Термін дії поточного пароля закінчиться менше ніж за # дня.}}</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>

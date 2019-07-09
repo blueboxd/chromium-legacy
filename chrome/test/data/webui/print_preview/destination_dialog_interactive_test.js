@@ -6,6 +6,7 @@ cr.define('destination_dialog_interactive_test', function() {
   /** @enum {string} */
   const TestNames = {
     FocusSearchBox: 'focus search box',
+    FocusSearchBoxOnSignIn: 'focus search box on sign in',
     EscapeSearchBox: 'escape search box',
   };
 
@@ -63,6 +64,36 @@ cr.define('destination_dialog_interactive_test', function() {
       destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone;
+    });
+
+    // Tests that the search input text field is automatically focused when the
+    // user signs in successfully after clicking the sign in link. See
+    // https://crbug.com/924921
+    test(assert(TestNames.FocusSearchBoxOnSignIn), function() {
+      const searchInput = dialog.$.searchBox.getSearchInput();
+      assertTrue(!!searchInput);
+      const signInLink = dialog.$$('.sign-in');
+      assertTrue(!!signInLink);
+      const whenFocusDone = test_util.eventToPromise('focus', searchInput);
+      destinationStore.startLoadAllDestinations();
+      dialog.show();
+      return whenFocusDone
+          .then(() => {
+            signInLink.focus();
+            nativeLayer.setSignIn([]);
+            signInLink.click();
+            return nativeLayer.whenCalled('signIn');
+          })
+          .then(() => {
+            // Link stays focused until successful signin.
+            // See https://crbug.com/979603.
+            assertEquals(signInLink, dialog.shadowRoot.activeElement);
+            nativeLayer.setSignIn(['foo@chromium.org']);
+            const whenSearchFocused =
+                test_util.eventToPromise('focus', searchInput);
+            signInLink.click();
+            return whenSearchFocused;
+          });
     });
 
     // Tests that pressing the escape key while the search box is focused

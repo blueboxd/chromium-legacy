@@ -272,8 +272,10 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
   test::OobeJS().ExpectVisiblePath(
       {"oobe-eula-md", "installationSettingsDialog"});
 
-  test::OobeJS().CreateWaiter(
-      "$('oobe-eula-md').$$('#eula-password').textContent.trim() !== ''");
+  test::OobeJS()
+      .CreateWaiter(
+          "$('oobe-eula-md').$$('#eula-password').textContent.trim() !== ''")
+      ->Wait();
   test::OobeJS().ExpectEQ(
       "$('oobe-eula-md').$$('#eula-password').textContent.trim()",
       std::string(FakeCryptohomeClient::kStubTpmPassword));

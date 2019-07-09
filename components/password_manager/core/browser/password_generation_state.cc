@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 namespace password_manager {
 namespace {
@@ -201,6 +202,11 @@ void PasswordGenerationState::GeneratedPasswordAccepted(
     PasswordForm generated,
     const FormFetcher& fetcher,
     base::WeakPtr<PasswordManagerDriver> driver) {
+  if (!base::FeatureList::IsEnabled(features::kGenerationNoOverwrites)) {
+    // If the feature not enabled, just proceed with the generation.
+    driver->GeneratedPasswordAccepted(generated.password_value);
+    return;
+  }
   // Clear the username value if there are already saved credentials with
   // the same username in order to prevent overwriting.
   std::vector<const PasswordForm*> matches = fetcher.GetNonFederatedMatches();

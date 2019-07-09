@@ -20,5 +20,16 @@ self.onnotificationclick = function(e) {
   chrome.test.log('onnotificationclick');
   // We should be running with a user gesture w.r.t. extension APIs.
   chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
-  chrome.test.notifyPass();
+  chrome.tabs.create({url: 'about:blank'}, () => {
+    chrome.test.assertNoLastError();
+    chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
+
+    // Call another API, this API's callback should not be running
+    // with a gesture.
+    chrome.tabs.create({url: 'about:blank'}, () => {
+      chrome.test.assertNoLastError();
+      chrome.test.assertFalse(chrome.test.isProcessingUserGesture());
+      chrome.test.notifyPass();
+    });
+  });
 };

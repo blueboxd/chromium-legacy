@@ -182,6 +182,9 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalInspector:
     case TaskType::kInternalTest:
     case TaskType::kInternalNavigationAssociated:
+      // kWebLocks can be frozen if for entire page, but not for individual
+      // frames. See https://crrev.com/c/1687716
+    case TaskType::kWebLocks:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in

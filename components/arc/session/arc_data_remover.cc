@@ -18,8 +18,6 @@
 namespace arc {
 namespace {
 
-constexpr char kArcVmName[] = "arcvm";
-
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }

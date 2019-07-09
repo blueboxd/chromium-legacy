@@ -19,13 +19,10 @@
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/testing/nserror_util.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/js_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -262,28 +259,20 @@
 // selector passed in. The target element is passed in to the JS function
 // by the name "target", so example JS code is like:
 // return target.value
-- (id)executeJavascript:(std::string)function
+- (id)executeJavaScript:(std::string)function
                onTarget:(ElementSelector*)selector {
-  NSError* error;
+  NSString* javaScript = [NSString
+      stringWithFormat:@"    (function() {"
+                        "      try {"
+                        "        return function(target){%@}(%@);"
+                        "      } catch (ex) {return 'Exception encountered "
+                        "' + ex.message;}"
+                        "     "
+                        "    })();",
+                       base::SysUTF8ToNSString(function),
+                       selector.selectorScript];
 
-  id result = chrome_test_util::ExecuteJavaScript(
-      [NSString
-          stringWithFormat:@"    (function() {"
-                            "      try {"
-                            "        return function(target){%@}(%@);"
-                            "      } catch (ex) {return 'Exception encountered "
-                            "' + ex.message;}"
-                            "     "
-                            "    })();",
-                           base::SysUTF8ToNSString(function),
-                           selector.selectorScript],
-      &error);
-
-  if (error) {
-    GREYAssert(NO, @"Javascript execution error: %@", result);
-    return nil;
-  }
-  return result;
+  return [ChromeEarlGrey executeJavaScript:javaScript];
 }
 
 @end
@@ -323,36 +312,39 @@
     state_assertions.push_back(assertionString);
   }
 
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForActionTimeout,
-                 ^{
-                   return [self CheckForJsAssertionFailures:state_assertions] ==
-                          nil;
-                 }),
-             @"waitFor State change hasn't completed within timeout.");
+  NSString* conditionDescription =
+      @"waitFor State change hasn't completed within timeout.";
+  GREYCondition* waitForElement = [GREYCondition
+      conditionWithName:conditionDescription
+                  block:^{
+                    return
+                        [self checkForJsAssertionFailures:state_assertions] ==
+                        nil;
+                  }];
+  bool waitForCompleted =
+      [waitForElement waitWithTimeout:base::test::ios::kWaitForActionTimeout];
+  GREYAssertTrue(waitForCompleted, conditionDescription);
 }
 
 // Executes a vector of Javascript assertions on the webpage, returning the
 // first assertion that fails to be true, or nil if all assertions are true.
-- (NSString*)CheckForJsAssertionFailures:
+- (NSString*)checkForJsAssertionFailures:
     (const std::vector<std::string>&)assertions {
   for (std::string const& assertion : assertions) {
-    NSError* error;
     NSString* assertionString = base::SysUTF8ToNSString(assertion);
+    NSString* javascript = [NSString stringWithFormat:@""
+                                                       "    (function() {"
+                                                       "      try {"
+                                                       "        %@"
+                                                       "      } catch (ex) {}"
+                                                       "      return false;"
+                                                       "    })();",
+                                                      assertionString];
 
-    NSNumber* result =
-        base::mac::ObjCCastStrict<NSNumber>(chrome_test_util::ExecuteJavaScript(
-            [NSString stringWithFormat:@""
-                                        "    (function() {"
-                                        "      try {"
-                                        "        %@"
-                                        "      } catch (ex) {}"
-                                        "      return false;"
-                                        "    })();",
-                                       assertionString],
-            &error));
+    NSNumber* result = base::mac::ObjCCastStrict<NSNumber>(
+        [ChromeEarlGrey executeJavaScript:javascript]);
 
-    if (![result boolValue] || error) {
+    if (![result boolValue]) {
       return assertionString;
     }
   }
@@ -393,11 +385,11 @@
       [self getStringFromDictionaryWithKey:"expectedValue"]);
 
   NSString* predictionType = base::mac::ObjCCastStrict<NSString>([self
-      executeJavascript:"return target.placeholder;"
+      executeJavaScript:"return target.placeholder;"
                onTarget:[self selectorForTarget]]);
 
   NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>(
-      [self executeJavascript:"return target.value;" onTarget:selector]);
+      [self executeJavaScript:"return target.value;" onTarget:selector]);
 
   GREYAssertEqualObjects(predictionType, expectedType,
                          @"Expected prediction type %@ but got %@",
@@ -418,7 +410,7 @@
   [ChromeEarlGrey waitForWebStateContainingElement:selector];
 
   int selectedIndex = [self getIntFromDictionaryWithKey:"index"];
-  [self executeJavascript:
+  [self executeJavaScript:
             base::SysNSStringToUTF8([NSString
                 stringWithFormat:@"target.options.selectedIndex = %d; "
                                  @"triggerOnChangeEventOnElement(target);",
@@ -445,7 +437,7 @@
 - (void)execute {
   ElementSelector* selector = [self selectorForTarget];
   std::string value = [self getStringFromDictionaryWithKey:"value"];
-  [self executeJavascript:
+  [self executeJavaScript:
             base::SysNSStringToUTF8([NSString
                 stringWithFormat:
                     @"__gCrWeb.fill.setInputElementValue(\"%s\", target);",

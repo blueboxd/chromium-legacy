@@ -250,7 +250,7 @@ def get_shards_to_retry(bad_profiles):
   for profile in bad_profiles:
     # E.g. /b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw
     _base_path, task_id, _profraw, _filename = os.path.normpath(profile).rsplit(
-        os.path.sep, maxsplit=3)
+        os.path.sep, 3)
     # Since we are getting a task_id from a file path, which is less than ideal,
     # do some checking to at least verify that the snippet looks like a valid
     # task id.

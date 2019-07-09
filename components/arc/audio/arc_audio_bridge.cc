@@ -90,7 +90,8 @@ void ArcAudioBridge::OnAudioNodesChanged() {
       (output_device &&
        (output_device->type ==
         chromeos::AudioDeviceType::AUDIO_TYPE_HEADPHONE ||
-        output_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_USB));
+        output_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_USB ||
+        output_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_LINEOUT));
 
   uint64_t input_id = cras_audio_handler_->GetPrimaryActiveInputNode();
   const chromeos::AudioDevice* input_device =

@@ -41,6 +41,36 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   virtual void DecreaseAllocatedObjectSize(size_t) = 0;
 };
 
+#define FOR_ALL_SCOPES(V)                  \
+  V(AtomicPhase)                           \
+  V(AtomicPhaseCompaction)                 \
+  V(AtomicPhaseMarking)                    \
+  V(AtomicSweepAndCompact)                 \
+  V(CompleteSweep)                         \
+  V(EagerSweep)                            \
+  V(IncrementalMarkingFinalize)            \
+  V(IncrementalMarkingStartMarking)        \
+  V(IncrementalMarkingStep)                \
+  V(InvokePreFinalizers)                   \
+  V(LazySweepInIdle)                       \
+  V(LazySweepOnAllocation)                 \
+  V(MarkInvokeEphemeronCallbacks)          \
+  V(MarkProcessWorklist)                   \
+  V(MarkNotFullyConstructedObjects)        \
+  V(MarkWeakProcessing)                    \
+  V(StandAloneAtomicMarking)               \
+  V(UnifiedAtomicMarkingEpilogue)          \
+  V(UnifiedAtomicMarkingPrologue)          \
+  V(UnifiedAtomicMarkingTransitiveClosure) \
+  V(UnifiedMarkingStep)                    \
+  V(VisitCrossThreadPersistents)           \
+  V(VisitDOMWrappers)                      \
+  V(VisitPersistentRoots)                  \
+  V(VisitPersistents)                      \
+  V(VisitStackRoots)
+
+#define FOR_ALL_CONCURRENT_SCOPES(V) V(ConcurrentSweep)
+
 // Manages counters and statistics across garbage collection cycles.
 //
 // Usage:
@@ -55,101 +85,41 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
  public:
   // These ids will form human readable names when used in Scopes.
   enum Id {
-    kAtomicPhase,
-    kAtomicPhaseCompaction,
-    kAtomicPhaseMarking,
-    kAtomicSweepAndCompact,
-    kCompleteSweep,
-    kEagerSweep,
-    kIncrementalMarkingFinalize,
-    kIncrementalMarkingStartMarking,
-    kIncrementalMarkingStep,
-    kInvokePreFinalizers,
-    kLazySweepInIdle,
-    kLazySweepOnAllocation,
-    kMarkInvokeEphemeronCallbacks,
-    kMarkProcessWorklist,
-    kMarkNotFullyConstructedObjects,
-    kMarkWeakProcessing,
-    kStandAloneAtomicMarking,
-    kUnifiedAtomicMarkingEpilogue,
-    kUnifiedAtomicMarkingPrologue,
-    kUnifiedAtomicMarkingTransitiveClosure,
-    kUnifiedMarkingStep,
-    kVisitCrossThreadPersistents,
-    kVisitDOMWrappers,
-    kVisitPersistentRoots,
-    kVisitPersistents,
-    kVisitStackRoots,
-    kNumScopeIds,
+#define DECLARE_ENUM(name) k##name,
+    FOR_ALL_SCOPES(DECLARE_ENUM)
+#undef DECLARE_ENUM
+        kNumScopeIds,
   };
 
-  enum ConcurrentId { kConcurrentSweep, kNumConcurrentScopeIds };
+  enum ConcurrentId {
+#define DECLARE_ENUM(name) k##name,
+    FOR_ALL_CONCURRENT_SCOPES(DECLARE_ENUM)
+#undef DECLARE_ENUM
+        kNumConcurrentScopeIds
+  };
 
-  static const char* ToString(Id id) {
+  constexpr static const char* ToString(Id id) {
     switch (id) {
-      case kAtomicPhase:
-        return "BlinkGC.AtomicPhase";
-      case kAtomicPhaseCompaction:
-        return "BlinkGC.AtomicPhaseCompaction";
-      case kAtomicPhaseMarking:
-        return "BlinkGC.AtomicPhaseMarking";
-      case kAtomicSweepAndCompact:
-        return "BlinkGC.AtomicSweepAndCompact";
-      case kCompleteSweep:
-        return "BlinkGC.CompleteSweep";
-      case kEagerSweep:
-        return "BlinkGC.EagerSweep";
-      case kIncrementalMarkingFinalize:
-        return "BlinkGC.IncrementalMarkingFinalize";
-      case kIncrementalMarkingStartMarking:
-        return "BlinkGC.IncrementalMarkingStartMarking";
-      case kIncrementalMarkingStep:
-        return "BlinkGC.IncrementalMarkingStep";
-      case kInvokePreFinalizers:
-        return "BlinkGC.InvokePreFinalizers";
-      case kLazySweepInIdle:
-        return "BlinkGC.LazySweepInIdle";
-      case kLazySweepOnAllocation:
-        return "BlinkGC.LazySweepOnAllocation";
-      case kMarkInvokeEphemeronCallbacks:
-        return "BlinkGC.MarkInvokeEphemeronCallbacks";
-      case kMarkNotFullyConstructedObjects:
-        return "BlinkGC.MarkNotFullyConstructedObjects";
-      case kMarkProcessWorklist:
-        return "BlinkGC.MarkProcessWorklist";
-      case kMarkWeakProcessing:
-        return "BlinkGC.MarkWeakProcessing";
-      case kStandAloneAtomicMarking:
-        return "BlinkGC.StandAloneAtomicMarking";
-      case kUnifiedAtomicMarkingEpilogue:
-        return "BlinkGC.UnifiedMarkingAtomicEpilogue";
-      case kUnifiedAtomicMarkingPrologue:
-        return "BlinkGC.UnifiedMarkingAtomicPrologue";
-      case kUnifiedAtomicMarkingTransitiveClosure:
-        return "BlinkGC.UnifiedMarkingAtomicTransitiveClosure";
-      case kUnifiedMarkingStep:
-        return "BlinkGC.UnifiedMarkingStep";
-      case kVisitCrossThreadPersistents:
-        return "BlinkGC.VisitCrossThreadPersistents";
-      case kVisitDOMWrappers:
-        return "BlinkGC.VisitDOMWrappers";
-      case kVisitPersistentRoots:
-        return "BlinkGC.VisitPersistentRoots";
-      case kVisitPersistents:
-        return "BlinkGC.VisitPersistents";
-      case kVisitStackRoots:
-        return "BlinkGC.VisitStackRoots";
-      case kNumScopeIds:
+#define CASE(name) \
+  case k##name:    \
+    return "BlinkGC." #name;
+
+      FOR_ALL_SCOPES(CASE)
+#undef CASE
+      default:
         NOTREACHED();
     }
     return nullptr;
   }
 
-  static const char* ToString(ConcurrentId id) {
+  constexpr static const char* ToString(ConcurrentId id) {
     switch (id) {
-      case kConcurrentSweep:
-        return "BlinkGC.ConcurrentSweep";
+#define CASE(name) \
+  case k##name:    \
+    return "BlinkGC." #name;
+
+      FOR_ALL_CONCURRENT_SCOPES(CASE)
+#undef CASE
       default:
         NOTREACHED();
     }
@@ -422,6 +392,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, IncreaseScopeTime);
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, StopResetsCurrent);
 };
+
+#undef FOR_ALL_SCOPES
+#undef FOR_ALL_CONCURRENT_SCOPES
 
 }  // namespace blink
 

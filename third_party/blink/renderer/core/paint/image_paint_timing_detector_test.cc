@@ -111,6 +111,21 @@ class ImagePaintTimingDetectorTest
         ->records_manager_.visible_background_image_map_.size();
   }
 
+  size_t ContainerTotalSize() {
+    return GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.visible_background_image_map_.size() +
+           GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.visible_node_map_.size() +
+           GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.size_ordered_set_.size() +
+           GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.images_queued_for_paint_time_.size();
+  }
+
   size_t CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
@@ -557,7 +572,63 @@ TEST_F(ImagePaintTimingDetectorTest,
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
-       LargestImagePaint_ReattachedNodeUseFirstPaint) {
+       RemoveRecordFromAllContainersAfterImageRemoval) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target"></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("target"));
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       RemoveRecordFromAllContainersAfterBackgroundImageRemoval) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
+      }
+    </style>
+    <div id="parent">
+      <div id="target">
+        place-holder
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("target"));
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       RemoveRecordFromAllContainersAfterImageRemovedAndCallbackInvoked) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target"></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(ContainerTotalSize(), 3u);
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("target"));
+  EXPECT_EQ(ContainerTotalSize(), 1u);
+  InvokeCallback();
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       LargestImagePaint_ReattachedNodeTreatedAsNew) {
   SetBodyInnerHTML(R"HTML(
     <div id="parent">
     </div>
@@ -591,9 +662,9 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_TRUE(record);
   // UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() moves time forward
   // kQuantumOfTime so we should take that into account.
-  EXPECT_EQ(
-      record->paint_time,
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(1) + kQuantumOfTime);
+  EXPECT_EQ(record->paint_time, base::TimeTicks() +
+                                    base::TimeDelta::FromSecondsD(3) +
+                                    3 * kQuantumOfTime);
 }
 
 // This is to prove that a swap time is assigned only to nodes of the frame who

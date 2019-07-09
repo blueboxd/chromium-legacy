@@ -28,6 +28,10 @@ class BadgeManagerDelegate {
   // Called when a app's badge has been cleared.
   virtual void OnBadgeCleared(const std::string& app_id) = 0;
 
+  // Called when a page attempts to set or clear a badge but the badge service
+  // determines that the page should not able to change the badge.
+  virtual void OnBadgeChangeIgnoredForTesting() {}
+
  protected:
   // The profile the badge manager delegate is associated with.
   Profile* profile_;

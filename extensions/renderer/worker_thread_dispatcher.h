@@ -19,10 +19,6 @@ namespace base {
 class ListValue;
 }
 
-namespace blink {
-class WebServiceWorkerContextProxy;
-}
-
 namespace content {
 class RenderThread;
 }
@@ -66,7 +62,6 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   void AddWorkerData(
       int64_t service_worker_version_id,
-      blink::WebServiceWorkerContextProxy* context_proxy,
       ScriptContext* script_context,
       std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);

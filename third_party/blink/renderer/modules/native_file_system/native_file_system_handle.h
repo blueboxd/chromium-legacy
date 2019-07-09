@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+class ExecutionContext;
 class FileSystemHandlePermissionDescriptor;
 
 class NativeFileSystemHandle : public ScriptWrappable {
@@ -24,7 +25,8 @@ class NativeFileSystemHandle : public ScriptWrappable {
  public:
   explicit NativeFileSystemHandle(const String& name);
   static NativeFileSystemHandle* CreateFromMojoEntry(
-      mojom::blink::NativeFileSystemEntryPtr);
+      mojom::blink::NativeFileSystemEntryPtr,
+      ExecutionContext* execution_context);
 
   virtual bool isFile() const { return false; }
   virtual bool isDirectory() const { return false; }

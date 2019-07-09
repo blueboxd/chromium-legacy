@@ -12,6 +12,7 @@
  * chrome/browser/ui/webui/browsing_history_handler.cc:
  *     BrowsingHistoryHandler::HistoryEntry::ToValue()
  * @typedef {{allTimestamps: Array<number>,
+ *            isUrlInRemoteUserData: boolean,
  *            blockedVisit: boolean,
  *            dateRelativeDay: string,
  *            dateShort: string,

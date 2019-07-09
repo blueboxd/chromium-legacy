@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Beklager, men Windows-passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="3306357053520292004">En bruker på denne datamaskinen er allerede lagt til med denne kontoen. Logg på med en annen konto.</translation>
 <translation id="369030246015333661">Kontoen din er låst. Kontakt en systemadministrator.</translation>
+<translation id="3968372833844047539">Kun Gsuite Enterprise-brukere har lov til å logge på.</translation>
 <translation id="4057329986137569701">Det oppsto en intern feil.</translation>
+<translation id="4267670563222825190">Fant ingen domenebruker for kontoen din. Kontakt administratoren din.</translation>
 <translation id="4300229033992784001">Passordet for kontoen din er endret. Skriv inn Windows-passordet ditt for å synkronisere Windows-kontoen og jobbkontoen din.</translation>
 <translation id="4706454071748629324">Kunne ikke legge til den nye brukeren. Denne datamaskinen tillater bare oppretting av én bruker per jobbkonto.</translation>
 <translation id="6292766200512304540">Bruker som er opprettet fra en jobbkonto</translation>

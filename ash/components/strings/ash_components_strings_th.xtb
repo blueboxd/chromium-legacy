@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="104962181688258143">เปิดแอปไฟล์</translation>
+<translation id="1098295134904615027">เปิดใช้งานพื้นที่ทำงานเสมือนทางด้านขวา</translation>
 <translation id="1122869341872663659">กำลังแสดงผลการค้นหา <ph name="QUERY" /> <ph name="N" /> รายการ</translation>
 <translation id="1195667586424773550">ลากลิงก์ไปยังแถบที่อยู่ของแท็บ</translation>
 <translation id="1204450209689312104">เปิดหน้าต่างใหม่ในโหมดไม่ระบุตัวตน</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> หรือ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">ไปที่ท้ายบรรทัด</translation>
+<translation id="1499072997694708844">ปิดหน้าต่างการค้นหาที่เปิดอยู่หรือหยุดการโหลดหน้าปัจจุบัน</translation>
 <translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
 <translation id="152892567002884378">เพิ่มระดับเสียง</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">เพิ่ม www. และ .com ในข้อมูลที่คุณป้อนลงในแถบที่อยู่ แล้วเปิดหน้าเว็บนั้น</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> หรือ <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">เปิดใช้งานพื้นที่ทำงานเสมือนทางด้านซ้าย</translation>
 <translation id="1996162290124031907">ไปที่แท็บถัดไป</translation>
 <translation id="2010818616644390445">ไปที่แท็บสุดท้ายในหน้าต่าง</translation>
 <translation id="2040706009561734834">เปิด/ปิด Launcher</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">จับภาพหน้าจอ</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
+<translation id="3165428420335997629">สร้างพื้นที่ทำงานเสมือนใหม่</translation>
 <translation id="3256109297135787951">นำไฮไลต์ออกจากรายการบนชั้นวาง</translation>
 <translation id="3288816184963444640">ปิดหน้าต่างปัจจุบัน</translation>
 <translation id="3407560819924487926">เรียกใช้ตัวจัดการงาน</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">ค้นหาในหน้าปัจจุบัน</translation>
 <translation id="5563050856984839829">กด <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> และคลิกลิงก์</translation>
 <translation id="561814908794220892">เปิดหน้าเว็บในแท็บใหม่</translation>
+<translation id="5620219513321115856">ย้ายหน้าต่างที่เปิดใช้งานอยู่ไปยังพื้นที่ทำงานทางด้านขวา</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> หรือ <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">เปิดลิงก์ในแท็บใหม่</translation>
 <translation id="5757474750054631686">หรี่แสงแป้นพิมพ์ (เฉพาะแป้นพิมพ์เรืองแสง)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">หมุนหน้าจอ 90 องศา</translation>
 <translation id="8241665785394195545">วงเล็บปิด</translation>
 <translation id="8264941229485248811">แสดงหรือซ่อนตัวตรวจสอบเครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
+<translation id="8355937569537581904">นำพื้นที่ทำงานเสมือนที่ใช้อยู่ออก</translation>
 <translation id="836869401750819675">เปิดหน้าดาวน์โหลด</translation>
 <translation id="8388247778047144397">ลากลิงก์ไปยังพื้นที่ว่างบนแนวแท็บ</translation>
 <translation id="8389638407792712197">เปิดหน้าต่างใหม่</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">เลือกคำหรืออักษรก่อนหน้า</translation>
 <translation id="8727232706774971183">ดูการแจ้งเตือน</translation>
 <translation id="8855885154700222542">แป้นแสดงเต็มหน้าจอ</translation>
+<translation id="8881584919399569791">ย้ายหน้าต่างที่เปิดใช้งานอยู่ไปยังพื้นที่ทำงานทางด้านซ้าย</translation>
 <translation id="88986195241502842">เลื่อนหน้าลง</translation>
 <translation id="8924883688469390268">เปลี่ยนเป็นผู้ใช้ก่อนหน้า</translation>
 <translation id="8977648847395357314">เลือกเนื้อหาในแถบที่อยู่</translation>

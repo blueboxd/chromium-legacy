@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Backup di tutti i contenuti completato.</translation>
 <translation id="3626281679859535460">Luminosità</translation>
 <translation id="3644896802912593514">Larghezza</translation>
+<translation id="3645531960514756307">Sblocca cartella</translation>
 <translation id="3678559383040232393">Tastiera Maltese</translation>
 <translation id="3685122418104378273">La sincronizzazione con Google Drive è disattivata per impostazione predefinita quando vengono utilizzati i dati mobili.</translation>
 <translation id="3726463242007121105">Impossibile aprire il dispositivo perché il suo filesystem non è supportato.</translation>
@@ -646,6 +647,7 @@
 <translation id="8336153091935557858">Ieri alle <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Tastiera islandese</translation>
 <translation id="8342318071240498787">Esiste già un file o una directory con lo stesso nome.</translation>
+<translation id="8382450452152102026">A <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Traslitterazione (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensioni</translation>
 <translation id="8412586565681117057">Metodo di immissione rapido</translation>
@@ -695,6 +697,7 @@
 <translation id="9099674669267916096">Numero di pagine</translation>
 <translation id="9110990317705400362">Cerchiamo costantemente nuovi modi per rendere più sicura la navigazione. In passato, qualsiasi sito web poteva chiederti di aggiungere un'estensione nel browser. Nelle ultime versioni di Google Chrome, devi indicare esplicitamente a Chrome di voler installare le estensioni aggiungendole tramite la pagina Estensioni. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Blocca cartella</translation>
 <translation id="9130775360844693113">I membri di "<ph name="DESTINATION_NAME" />" avranno accesso a questi elementi.</translation>
 <translation id="9131598836763251128">Seleziona uno o più file</translation>
 <translation id="9133055936679483811">Compressione non riuscita. <ph name="ERROR_MESSAGE" /></translation>

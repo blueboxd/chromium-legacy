@@ -393,6 +393,16 @@
     ]
   },
 
+  "ExternalPrintServers": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "ExternalPrintServers": {
+        "url": "https://example.com/policyfile",
+        "hash": "deadbeefdeadbeefdeadbeef"
+      }
+    }
+  },
+
   "NativePrinters": {
     "os": ["chromeos"],
     "test_policy": {

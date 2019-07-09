@@ -142,8 +142,7 @@ SimpleWatcher::SimpleWatcher(const base::Location& from_here,
       is_default_task_runner_(base::ThreadTaskRunnerHandle::IsSet() &&
                               task_runner_ ==
                                   base::ThreadTaskRunnerHandle::Get()),
-      heap_profiler_tag_(from_here.file_name()),
-      weak_factory_(this) {
+      heap_profiler_tag_(from_here.file_name()) {
   MojoResult rv = CreateTrap(&Context::CallNotify, &trap_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

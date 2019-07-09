@@ -11,6 +11,7 @@
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -47,7 +48,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   void GetMediaSessionInfo(GetMediaSessionInfoCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
   void AddObserver(
-      media_session::mojom::MediaSessionObserverPtr observer) override;
+      mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer)
+      override;
   void PreviousTrack() override {}
   void NextTrack() override {}
   void NotifyMediaSessionMetadataChanged(
@@ -101,7 +103,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
 
   assistant_client::TrackType current_track_;
 
-  mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver> observers_;
+  mojo::RemoteSet<media_session::mojom::MediaSessionObserver> observers_;
 
   // Holds a pointer to the MediaSessionService.
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;

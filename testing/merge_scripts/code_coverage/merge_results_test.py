@@ -225,6 +225,15 @@ class MergeProfilesTest(unittest.TestCase):
     self.assertIn('missing_shards', written)
     self.assertEqual(written['missing_shards'], [0])
 
+  def test_get_shards_to_retry(self):
+    bad_profiles = [
+        '/b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw',
+        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-1.profraw',
+        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-2.profraw',
+    ]
+    self.assertEqual(set(['44b643576cf39f10', '44b1234567890123']),
+                     merger.get_shards_to_retry(bad_profiles))
+
   def test_merge_java_exec_files(self):
     mock_input_dir_walk = [
         ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),

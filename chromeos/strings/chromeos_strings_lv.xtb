@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Ieslēdziet Bluetooth, lai atklātu tuvumā esošas ierīces</translation>
 <translation id="2805756323405976993">Lietotnes</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
+<translation id="2912823482158781027">ATSVAIDZINĀT BIĻETI</translation>
 <translation id="3511655281162215899">Lūdzu, nekavējoties izvēlieties jaunu paroli.</translation>
+<translation id="3562817605261346876">Lūdzu, drīzumā atsvaidziniet lietotāja <ph name="PRINCIPAL_NAME" /> biļeti</translation>
 <translation id="3838338534323494292">Jaunā parole</translation>
 <translation id="445059817448385655">Iepriekšējā parole</translation>
 <translation id="467510802200863975">Paroles nav vienādas</translation>
@@ -22,12 +24,14 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5457599981699367932">Pārlūkot kā viesim</translation>
 <translation id="54609108002486618">Pārvaldītais</translation>
 <translation id="5733345267661125295">Lūdzu, izvēlieties jaunu paroli jau tagad.</translation>
+<translation id="5743581760404859096">Jūsu Kerberos biļetes termiņš drīz beigsies</translation>
 <translation id="5832805196449965646">Pievienot personu</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="6058625436358447366">Lai pabeigtu, ievadiet savu iepriekšējo un jauno paroli</translation>
 <translation id="6106186594183574873">Lai pabeigtu, ievadiet savu iepriekšējo paroli</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
 <translation id="6574601967010742428">Jūsu darbības var pārraudzīt ierīces pārvaldnieks.</translation>
+<translation id="7280705187789120111">Kerberos biļetes termiņš drīz beigsies</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jūsu pašreizējai parolei ir beidzies derīguma termiņš.}=1{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā vienas dienas.}zero{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}one{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienas.}other{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}}</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7690294790491645610">Apstipriniet jauno paroli</translation>

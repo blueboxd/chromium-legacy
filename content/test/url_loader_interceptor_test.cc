@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
             params->client->OnComplete(status);
             return true;
           }),
-      run_loop.QuitClosure());
+      /*completion_status_callback=*/{}, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
   EXPECT_TRUE(seen);
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
               params->client->OnComplete(status);
               return true;
             }),
-        run_loop.QuitClosure());
+        /*completion_status_callback=*/{}, run_loop.QuitClosure());
     run_loop.Run();
 
     ASSERT_FALSE(NavigateToURL(shell(), url));

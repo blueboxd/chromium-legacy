@@ -367,7 +367,7 @@
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
 <translation id="1561967320164410511">Sambungan U2F tambah untuk pembuktian individu</translation>
 <translation id="1566329065312331399">
-      Dasar ini apabila ditetapkan kepada Palsu, tidak membenarkan peranti mencetuskan powerwash.
+      Apabila ditetapkan kepada Palsu, dasar ini tidak membenarkan peranti mencetuskan powerwash.
       Apabila ditetapkan kepada Benar, dasar ini membenarkan peranti mencetuskan powerwash.
       Jika dibiarkan tidak ditetapkan, dasar ini akan ditetapkan kepada Palsu secara lalai, yang bermakna dasar ini tidak membenarkan peranti mencetuskan powerwash.
       </translation>
@@ -1627,15 +1627,6 @@
       Jika anda tidak menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori lalainya yang biasa (khusus platform).
 
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.</translation>
-<translation id="3904459740090265495">Dasar ini mengawal gelagat log masuk penyemak imbas. Dasar ini membolehkan anda menentukan sama ada pengguna boleh log masuk ke <ph name="PRODUCT_NAME" /> dengan akaun mereka dan menggunakan perkhidmatan yang berkaitan dengan akaun, seperti penyegerakan Chrome.
-
-      Jika dasar ini ditetapkan kepada "Lumpuhkan log masuk penyemak imbas", maka pengguna tidak boleh log masuk ke penyemak imbas dan menggunakan perkhidmatan yang berkaitan dengan akaun. Dalam keadaan ini, ciri tahap penyemak imbas, seperti penyegerakan Chrome, tidak boleh digunakan dan tidak akan tersedia. Jika pengguna telah log masuk dan dasar ini ditetapkan kepada "Dilumpuhkan", mereka akan dilog keluar apabila mereka menjalankan Chrome selepas ini tetapi data profil setempat mereka, seperti penanda halaman, kata laluan dan sebagainya, tidak akan berubah. Pengguna masih boleh log masuk dan menggunakan perkhidmatan web Google, seperti Gmail.
-
-      Jika dasar ini ditetapkan kepada "Dayakan log masuk penyemak imbas", maka pengguna dibenarkan untuk log masuk ke penyemak imbas dan dilog masuk ke penyemak imbas secara automatik apabila mengelog masuk ke perkhidmatan web Google, seperti Gmail. Tindakan log masuk ke penyemak imbas bermakna maklumat akaun pengguna akan disimpan oleh penyemak imbas. Walau bagaimanapun, ini tidak bermakna penyegerakan Chrome akan dihidupkan secara lalai; pengguna mesti ikut serta menggunakan ciri ini secara berasingan. Tindakan mendayakan dasar ini akan menghalang pengguna daripada mematikan tetapan yang membenarkan log masuk penyemak imbas. Untuk mengawal ketersediaan penyegerakan Chrome, gunakan dasar "SyncDisabled".
-
-      Jika dasar ini ditetapkan kepada "Paksa log masuk penyemak imbas", pengguna akan melihat dialog pemilihan akaun dan perlu memilih serta log masuk ke akaun untuk menggunakan penyemak imbas. Langkah ini memastikan bahawa bagi akaun terurus, dasar yang dikaitkan dengan akaun tersebut akan diterapkan dan dikuatkuasakan. Secara lalai, dasar ini menghidupkan penyegerakan Chrome untuk akaun tersebut, kecuali dalam keadaan apabila penyegerakan dilumpuhkan oleh pentadbir domain atau melalui dasar "SyncDisabled". Nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Sila ambil perhatian bahawa profil tidak bertandatangan yang sedia ada akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556.
-
-      Jika dasar ini tidak ditetapkan, maka pengguna boleh menentukan sama ada mereka mahu mendayakan pilihan log masuk penyemak imbas dan menggunakannya mengikut kesesuaian mereka.</translation>
 <translation id="3911737181201537215">Dasar ini tidak memberi kesan kepada pengelogan yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> apabila ditetapkan kepada Benar. Jika ini berlaku, tiada data akan dimuat naik ke Google Drive.
 
@@ -2076,7 +2067,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 
       Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4777805166623621364">
-      Tetapan ini, SitePerProcess, boleh digunakan untuk melarang pengguna menarik diri daripada gelagat lalai yang mengasingkan semua tapak Sila ambil perhatian bahawa dasar IsolateOrigins juga mungkin berguna untuk mengasingkan asalan tambahan yang lebih terperinci.
+      Tetapan ini, SitePerProcess, boleh digunakan untuk melarang pengguna menarik diri daripada gelagat lalai yang mengasingkan semua tapak. Sila ambil perhatian bahawa dasar IsolateOrigins juga mungkin berguna untuk mengasingkan asalan tambahan yang lebih terperinci.
       Jika dasar ini didayakan, pengguna tidak akan dapat menarik diri daripada gelagat lalai, iaitu setiap tapak berjalan dalam prosesnya sendiri.
       Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menarik diri daripada pengasingan tapak
       (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).  Tindakan menetapkan dasar ini kepada dilumpuhkan dan/atau tidak mengkonfigurasikan dasar ini tidak akan mematikan Pengasingan Tapak.
@@ -2232,7 +2223,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME" /> melancarkan <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini tidak ditetapkan, baris perintah lalai akan digunakan.</translation>
-<translation id="5152787786897382519">Kedua-dua Chromium dan Google Chrome mempunyai beberapa kumpulan dasar yang bergantung pada satu sama lain untuk memberikan kawalan terhadap ciri. Set ini diwakili oleh kumpulan dasar berikut. Memandangkan dasar boleh mempunyai pelbagai sumber, hanya nilai yang berasal daripada sumber berkeutamaan tertinggi akan digunakan. Nilai yang berasal daripada sumber berkeutamaan lebih rendah dalam kumpulan yang sama akan diabaikan. Urutan keutamaan ditakrifkan dalam <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
+<translation id="5152787786897382519">Chromium dan Google Chrome mempunyai beberapa kumpulan dasar yang bergantung pada satu sama lain untuk memberikan kawalan terhadap ciri. Set ini diwakili oleh kumpulan dasar berikut. Memandangkan dasar boleh mempunyai pelbagai sumber, hanya nilai yang berasal daripada sumber berkeutamaan tertinggi akan digunakan. Nilai yang berasal daripada sumber berkeutamaan lebih rendah dalam kumpulan yang sama akan diabaikan. Urutan keutamaan ditakrifkan dalam <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Kekerapan bingkisan rangkaian pemantauan dihantar dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, selang masa lalai ialah 3 minit.. Selang masa      minimum ialah 30 saat dan selang masa maksimum ialah 24 jam - nilai
@@ -4081,13 +4072,13 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lumpuhkan penyimpanan sejarah penyemakan imbas</translation>
 <translation id="8499172469244085141">Tetapan lalai (pengguna boleh mengatasi)</translation>
-<translation id="849962487677588458">Dasar ini ditamatkan dan dirancang untuk dialih keluar dalam Chrome 78, tanpa pengganti.
+<translation id="849962487677588458">Dasar ini telah ditamatkan dan akan dialih keluar dalam Chrome 78, tanpa pengganti.
 
       Dasar ini mendayakan HTTP/0.9 pada port selain 80 untuk HTTP dan 443 untuk HTTPS.
 
       Dasar ini dilumpuhkan secara lalai dan jika didayakan akan menyebabkan pengguna terdedah kepada isu keselamatan https://crbug.com/600352.
 
-      Dasar ini bertujuan untuk memberi pihak syarikat peluang menghijrahkan pelayan sedia ada yang menggunakan HTTP/0.9 dan akan dialih keluar pada masa hadapan.
+      Dasar ini bertujuan untuk memberi pihak syarikat peluang menghijrahkan pelayan sedia ada yang menggunakan HTTP/0.9, dan akan dialih keluar pada masa hadapan.
 
       Jika dasar ini tidak ditetapkan, HTTP/0.9 akan dilumpuhkan pada port bukan lalai.</translation>
 <translation id="8507835864888987300">Menetapkan versi sasaran untuk Autokemas Kini.

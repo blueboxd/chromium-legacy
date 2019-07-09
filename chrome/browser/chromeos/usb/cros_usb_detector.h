@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -44,11 +45,23 @@ struct SharedUsbDeviceInfo {
   SharedUsbDeviceInfo(const SharedUsbDeviceInfo&);
   ~SharedUsbDeviceInfo();
 
-  std::string vm_name;
+  struct VmSharingInfo {
+    VmSharingInfo();
+    VmSharingInfo(const VmSharingInfo&);
+    ~VmSharingInfo();
+
+    // Whether the device is shared with the VM. Note that the device may be
+    // shared but not attached (yet) in which case |guest_port| below would be
+    // unset.
+    bool shared = false;
+    base::Optional<uint8_t> guest_port;
+  };
+
+  // Maps a VM name to the sharing/attach information of the device in the VM
+  // identified by that name.
+  base::flat_map<std::string, VmSharingInfo> vm_sharing_info;
   std::string guid;
   base::string16 label;
-  bool shared = false;
-  base::Optional<uint8_t> guest_port;
   // TODO(nverne): Add current state and errors etc.
 };
 
@@ -88,9 +101,16 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device) override;
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device) override;
 
+  // Attaches the device identified by |guid| into the VM identified by
+  // |vm_name|. Note that this may detach the device from the default VM
+  // (=ARCVM) beforehand.
   void AttachUsbDeviceToVm(const std::string& vm_name,
                            const std::string& guid,
                            base::OnceCallback<void(bool success)> callback);
+
+  // Detaches the device identified by |guid| from the VM identified by
+  // |vm_name|. Note that this may attach the device (back) into the default VM
+  // (=ARCVM) as a result.
   void DetachUsbDeviceFromVm(const std::string& vm_name,
                              const std::string& guid,
                              base::OnceCallback<void(bool success)> callback);
@@ -102,6 +122,16 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<SharedUsbDeviceInfo> GetSharedUsbDevices();
 
  private:
+  void AttachUsbDeviceToVmInternal(
+      const std::string& vm_name,
+      const std::string& guid,
+      base::OnceCallback<void(bool success)> callback);
+
+  void DetachUsbDeviceFromVmInternal(
+      const std::string& vm_name,
+      const std::string& guid,
+      base::OnceCallback<void(bool success)> callback);
+
   // Called after USB device access has been checked.
   void OnDeviceChecked(device::mojom::UsbDeviceInfoPtr device,
                        bool hide_notification,
@@ -134,7 +164,6 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
       const std::string& vm_name,
       const std::string& guid,
       base::OnceCallback<void(bool success)> callback,
-      uint8_t guest_port,
       bool success);
 
   // Returns true when a device should show a notification when attached.

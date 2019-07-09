@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
   test::OobeJS().ExpectVisible("reset");
 
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
@@ -331,22 +331,22 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
   InvokeResetScreen();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"reset"})->Wait();
   test::OobeJS().ExpectHidden("overlay-reset");
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
 
   // Go to confirmation phase, cancel from there in 2 steps.
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
   ClickToConfirmButton();
-  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"})->Wait();
   ClickDismissConfirmationButton();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
-  test::OobeJS().CreateVisibilityWaiter(true, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, {"reset"})->Wait();
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
 
   // Rollback available. Show and cancel from confirmation screen.
   update_engine_client_->set_can_rollback_check_result(true);
@@ -355,12 +355,12 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
   InvokeRollbackOption();
   test::OobeJS().ExpectHidden("overlay-reset");
   ClickToConfirmButton();
-  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"})->Wait();
   ClickDismissConfirmationButton();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
   test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {

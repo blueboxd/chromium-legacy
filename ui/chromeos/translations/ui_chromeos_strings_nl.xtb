@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Er is een back-up van alles gemaakt</translation>
 <translation id="3626281679859535460">Helderheid</translation>
 <translation id="3644896802912593514">Breedte</translation>
+<translation id="3645531960514756307">Map losmaken</translation>
 <translation id="3678559383040232393">Maltees toetsenbord</translation>
 <translation id="3685122418104378273">De synchronisatie van Google Drive is bij het gebruik van mobiele data standaard uitgeschakeld.</translation>
 <translation id="3726463242007121105">Dit apparaat kan niet worden geopend omdat het bijbehorende bestandssysteem niet wordt ondersteund.</translation>
@@ -648,6 +649,7 @@
 <translation id="8336153091935557858">Gisteren <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">IJslands toetsenbord</translation>
 <translation id="8342318071240498787">Er bestaat al een bestand of map met dezelfde naam.</translation>
+<translation id="8382450452152102026">Naar <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Transliteratie (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Afmetingen</translation>
 <translation id="8412586565681117057">Snelle invoermethode</translation>
@@ -697,6 +699,7 @@
 <translation id="9099674669267916096">Aantal pagina's</translation>
 <translation id="9110990317705400362">We zijn altijd op zoek naar manieren om het surfen veiliger te maken. Vroeger kon elke website je vragen een extensie toe te voegen aan je browser. In de nieuwste versies van Google Chrome moet je Chrome expliciet toestemming geven om deze extensies te installeren door ze toe te voegen via de pagina 'Extensies'. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9129931661813833980">Map vastzetten</translation>
 <translation id="9130775360844693113">Leden van '<ph name="DESTINATION_NAME" />' krijgen toegang tot deze items.</translation>
 <translation id="9131598836763251128">Selecteer een of meer bestanden</translation>
 <translation id="9133055936679483811">Inpakken mislukt. <ph name="ERROR_MESSAGE" /></translation>

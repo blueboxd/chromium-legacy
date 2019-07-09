@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -17,12 +18,15 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class NativeFileSystemDirectoryIterator final : public ScriptWrappable {
+class NativeFileSystemDirectoryIterator final
+    : public ScriptWrappable,
+      public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemDirectoryIterator);
 
  public:
-  explicit NativeFileSystemDirectoryIterator(
-      NativeFileSystemDirectoryHandle* directory);
+  NativeFileSystemDirectoryIterator(NativeFileSystemDirectoryHandle* directory,
+                                    ExecutionContext* execution_context);
 
   ScriptPromise next(ScriptState*);
   // TODO(mek): This return method should cancel the backend directory iteration

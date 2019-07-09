@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="104962181688258143">Otvaranje aplikacije Datoteke</translation>
+<translation id="1098295134904615027">Aktiviranje virtualne radne površine zdesna</translation>
 <translation id="1122869341872663659">Prikazuju se rezultati pretraživanja (<ph name="N" />) za upit <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Povlačenje veze na adresnu traku kartice</translation>
 <translation id="1204450209689312104">Otvaranje novog prozora u anonimnom načinu</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ili <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Prelazak na kraj retka</translation>
+<translation id="1499072997694708844">Zatvaranje svih otvorenih prozora za traženje ili zaustavljanje učitavanja trenutačne stranice</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="152892567002884378">Pojačavanje glasnoće</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a zatim <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Dodavanje elementa www. ili .com unosu u adresnoj traci i otvaranje stranice</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a zatim <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ili <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">Aktiviranje virtualne radne površine slijeva</translation>
 <translation id="1996162290124031907">Prelazak na sljedeću karticu</translation>
 <translation id="2010818616644390445">Prelazak na zadnju karticu u prozoru</translation>
 <translation id="2040706009561734834">Otvori/zatvori pokretač</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">Snimi zaslon</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusiraj adresnu traku</translation>
+<translation id="3165428420335997629">Izrada nove virtualne radne površine</translation>
 <translation id="3256109297135787951">Poništavanje isticanja neke stavke na polici</translation>
 <translation id="3288816184963444640">Zatvaranje trenutačnog prozora</translation>
 <translation id="3407560819924487926">Prikazivanje upravitelja zadataka</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">Pretraživanje trenutačne stranice</translation>
 <translation id="5563050856984839829">Pritisnite <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> i kliknite vezu</translation>
 <translation id="561814908794220892">Otvaranje web-stranice u novoj kartici</translation>
+<translation id="5620219513321115856">Premještanje aktivnog prozora na radnu površinu zdesna</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> ili <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">Otvaranje veze u kartici</translation>
 <translation id="5757474750054631686">Zatamnjivanje tipkovnice (samo za tipkovnice s pozadinskim osvjetljenjem)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">Zakretanje zaslona za 90 stupnjeva</translation>
 <translation id="8241665785394195545">desna zagrada</translation>
 <translation id="8264941229485248811">Prikaz ili sakrivanje inspektora Alata za razvojne programere</translation>
+<translation id="8355937569537581904">Uklanjanje trenutačne virtualne radne površine</translation>
 <translation id="836869401750819675">Otvaranje stranice preuzimanja</translation>
 <translation id="8388247778047144397">Povucite vezu na prazno područje na vrpci kartica</translation>
 <translation id="8389638407792712197">Otvaranje novog prozora</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">Odabir prethodne riječi ili slova</translation>
 <translation id="8727232706774971183">Pregled obavijesti</translation>
 <translation id="8855885154700222542">tipka cijelog zaslona</translation>
+<translation id="8881584919399569791">Premještanje aktivnog prozora na radnu površinu slijeva</translation>
 <translation id="88986195241502842">Stranica prema dolje</translation>
 <translation id="8924883688469390268">Prelazak na prethodnog korisnika</translation>
 <translation id="8977648847395357314">Odabir sadržaja u adresnoj traci</translation>

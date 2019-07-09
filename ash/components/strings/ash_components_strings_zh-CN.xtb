@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="104962181688258143">打开“文件”应用</translation>
+<translation id="1098295134904615027">启用右侧的虚拟桌面</translation>
 <translation id="1122869341872663659">目前显示的是与“<ph name="QUERY" />”相符的 <ph name="N" /> 条搜索结果</translation>
 <translation id="1195667586424773550">将链接拖到标签页的地址栏中</translation>
 <translation id="1204450209689312104">在无痕模式下打开新窗口</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">转至行末</translation>
+<translation id="1499072997694708844">关闭所有已打开的查找窗口，或停止加载当前网页</translation>
 <translation id="1510238584712386396">启动器</translation>
 <translation id="152892567002884378">调高音量</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="ESC" /> 键</translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">将 www. 和 .com 添加到您在搜索栏内输入的内容中，然后打开相应网页</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 或<ph name="LEFT" />键</translation>
+<translation id="1929866390202038233">启用左侧的虚拟桌面</translation>
 <translation id="1996162290124031907">转到下一个标签页</translation>
 <translation id="2010818616644390445">转到窗口中的最后一个标签页</translation>
 <translation id="2040706009561734834">打开/关闭启动器</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">生成屏幕截图</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
+<translation id="3165428420335997629">创建新的虚拟桌面</translation>
 <translation id="3256109297135787951">取消任务栏中某项内容的突出显示状态</translation>
 <translation id="3288816184963444640">关闭当前窗口</translation>
 <translation id="3407560819924487926">启动任务管理器</translation>
@@ -79,7 +83,7 @@
 <translation id="3792178297143798024">打开任务栏中突出显示的内容</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 至 8</translation>
 <translation id="3837047332182291558">调亮键盘（仅适用于背光键盘）</translation>
-<translation id="3949671998904569433">英文逗号</translation>
+<translation id="3949671998904569433">逗号</translation>
 <translation id="3976863468609830880">点击任务栏中的最后一个图标</translation>
 <translation id="3994783594793697310">重置显示内容的缩放级别</translation>
 <translation id="4026843240379844265">在各个显示屏之间移动活动窗口</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">在当前网页中搜索</translation>
 <translation id="5563050856984839829">在按 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 的同时点击链接</translation>
 <translation id="561814908794220892">在新标签页中打开网页</translation>
+<translation id="5620219513321115856">将活动窗口移至右侧的桌面</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> 或 <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">在标签页中打开链接</translation>
 <translation id="5757474750054631686">调暗键盘（仅适用于背光键盘）</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">将屏幕旋转 90 度</translation>
 <translation id="8241665785394195545">右中括号</translation>
 <translation id="8264941229485248811">显示或隐藏开发者工具检查器</translation>
+<translation id="8355937569537581904">移除当前的虚拟桌面</translation>
 <translation id="836869401750819675">打开“下载内容”页面</translation>
 <translation id="8388247778047144397">将链接拖到标签栏的空白区域中</translation>
 <translation id="8389638407792712197">打开新窗口</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">选择上一个字词或字母</translation>
 <translation id="8727232706774971183">查看通知</translation>
 <translation id="8855885154700222542">全屏键</translation>
+<translation id="8881584919399569791">将活动窗口移至左侧的桌面</translation>
 <translation id="88986195241502842">向下翻页</translation>
 <translation id="8924883688469390268">切换回上一位用户</translation>
 <translation id="8977648847395357314">选择地址栏中的内容</translation>

@@ -69,7 +69,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1385214448885562192">Nõustumiseks vajutage sisestusklahvi Enter, tühistamiseks paoklahvi Escape, järgmise juurde liikumiseks vajutage alla ja eelmise juurde liikumiseks üles.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Rikasteksti atribuutide määramine</translation>
+<translation id="139902759009894363">Loe rikasteksti atribuudid ette</translation>
 <translation id="1405567553485452995">Heleroheline</translation>
 <translation id="1417889266572670458">Meresinine</translation>
 <translation id="1431911867058218151">Ploomililla</translation>
@@ -320,6 +320,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="3232388865800379423">Hüpiknupp</translation>
 <translation id="3241052487511142956">Eelmine külastatud link</translation>
 <translation id="3241638166094654466">Igal real olevad lahtrid:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">vertikaalpaigutus</translation>
 <translation id="3286390186030710347">Liugur</translation>
 <translation id="3299925995433437805">Järgmist külastatud linki pole.</translation>

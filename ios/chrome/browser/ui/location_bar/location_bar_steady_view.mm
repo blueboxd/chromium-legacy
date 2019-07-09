@@ -60,9 +60,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 #pragma mark - LocationBarSteadyViewColorScheme
 
 @implementation LocationBarSteadyViewColorScheme
-@synthesize fontColor = _fontColor;
-@synthesize placeholderColor = _placeholderColor;
-@synthesize trailingButtonColor = _trailingButtonColor;
 
 + (instancetype)standardScheme {
   LocationBarSteadyViewColorScheme* scheme =
@@ -123,16 +120,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 #pragma mark - LocationBarSteadyView
 
 @implementation LocationBarSteadyView
-@synthesize locationButton = _locationButton;
-@synthesize locationLabel = _locationLabel;
-@synthesize locationIconImageView = _locationIconImageView;
-@synthesize trailingButton = _trailingButton;
-@synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
-@synthesize showLocationImageConstraints = _showLocationImageConstraints;
-@synthesize locationContainerView = _locationContainerView;
-@synthesize securityLevelAccessibilityString =
-    _securityLevelAccessibilityString;
-@synthesize accessibleElements = _accessibleElements;
 
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
@@ -276,9 +263,13 @@ const CGFloat kButtonTrailingSpacing = 10;
 }
 
 - (void)setColorScheme:(LocationBarSteadyViewColorScheme*)colorScheme {
-  self.trailingButton.tintColor = colorScheme.trailingButtonColor;
-  self.locationLabel.textColor = colorScheme.fontColor;
-  self.locationIconImageView.tintColor = colorScheme.fontColor;
+  _colorScheme = colorScheme;
+  self.trailingButton.tintColor = self.colorScheme.trailingButtonColor;
+  // The text color is set in -setLocationLabelText: and
+  // -setLocationLabelPlaceholderText: because the two text styles have
+  // different colors. The icon should be the same color as the text, but it
+  // only appears with the regular label, so its color can be set here.
+  self.locationIconImageView.tintColor = self.colorScheme.fontColor;
 }
 
 - (void)setLocationImage:(UIImage*)locationImage {
@@ -306,8 +297,14 @@ const CGFloat kButtonTrailingSpacing = 10;
   if ([self.locationLabel.text isEqualToString:string]) {
     return;
   }
+  self.locationLabel.textColor = self.colorScheme.fontColor;
   self.locationLabel.text = string;
   [self updateAccessibility];
+}
+
+- (void)setLocationLabelPlaceholderText:(NSString*)string {
+  self.locationLabel.textColor = self.colorScheme.placeholderColor;
+  self.locationLabel.text = string;
 }
 
 - (void)setSecurityLevelAccessibilityString:(NSString*)string {

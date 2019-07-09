@@ -259,17 +259,6 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // An image can be null for many reasons, like being blocked, no image
     // data received from server yet.
     data.has_image_contents = result.GetImage() && !result.GetImage()->IsNull();
-    data.is_placeholder_image =
-        result.GetImage() && result.GetImage()->IsPlaceholderImage();
-    if (data.has_image_contents &&
-        IsHTMLImageElement(result.InnerNodeOrImageMapImage())) {
-      HTMLImageElement* image_element =
-          ToHTMLImageElement(result.InnerNodeOrImageMapImage());
-      if (image_element && image_element->CachedImage()) {
-        data.image_response = WrappedResourceResponse(
-            image_element->CachedImage()->GetResponse());
-      }
-    }
   } else if (!result.AbsoluteMediaURL().IsEmpty() ||
              result.GetMediaStreamDescriptor()) {
     if (!result.AbsoluteMediaURL().IsEmpty())

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -15,7 +16,10 @@ PreviewsResourceLoadingHintsReceiverImpl::
     PreviewsResourceLoadingHintsReceiverImpl(
         mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request,
         Document* document)
-    : binding_(this, std::move(request)), document_(document) {}
+    : binding_(this, std::move(request)), document_(document) {
+  DCHECK(!base::FeatureList::IsEnabled(
+      blink::features::kSendPreviewsLoadingHintsBeforeCommit));
+}
 
 PreviewsResourceLoadingHintsReceiverImpl::
     ~PreviewsResourceLoadingHintsReceiverImpl() {}

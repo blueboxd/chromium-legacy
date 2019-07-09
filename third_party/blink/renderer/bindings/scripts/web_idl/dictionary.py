@@ -7,9 +7,12 @@ from .common import WithCodeGeneratorInfo
 from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
+from .common import WithIdentifier
 from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
+from .idl_types import IdlType
 from .user_defined_type import UserDefinedType
+from .values import DefaultValue
 
 
 class Dictionary(UserDefinedType, WithExtendedAttributes,
@@ -21,10 +24,16 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         def __init__(self,
                      identifier,
                      is_partial,
+                     own_members=None,
                      extended_attributes=None,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
+            assert isinstance(is_partial, bool)
+            assert isinstance(own_members, (list, tuple)) and all(
+                isinstance(member, DictionaryMember.IR)
+                for member in own_members)
+
             kind = (IdentifierIRMap.IR.Kind.PARTIAL_DICTIONARY
                     if is_partial else IdentifierIRMap.IR.Kind.DICTIONARY)
             IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
@@ -32,6 +41,8 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
+
+            self.own_members = own_members
 
     @property
     def inherited_dictionary(self):
@@ -65,6 +76,32 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
 
 class DictionaryMember(IdlMember):
+    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithComponent, WithDebugInfo):
+        def __init__(self,
+                     identifier,
+                     idl_type=None,
+                     is_required=False,
+                     default_value=None,
+                     extended_attributes=None,
+                     code_generator_info=None,
+                     component=None,
+                     debug_info=None):
+            assert isinstance(idl_type, IdlType)
+            assert isinstance(is_required, bool)
+            assert default_value is None or isinstance(default_value,
+                                                       DefaultValue)
+
+            WithIdentifier.__init__(self, identifier)
+            WithExtendedAttributes.__init__(self, extended_attributes)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithComponent.__init__(self, component)
+            WithDebugInfo.__init__(self, debug_info)
+
+            self.idl_type = idl_type
+            self.is_required = is_required
+            self.default_value = default_value
+
     @property
     def idl_type(self):
         """

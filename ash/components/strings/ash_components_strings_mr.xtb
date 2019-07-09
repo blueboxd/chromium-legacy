@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="104962181688258143">फायली अ‍ॅप उघडा</translation>
+<translation id="1098295134904615027">व्हर्च्युअल डेस्क उजवीकडे सुरू करा</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> साठी <ph name="N" /> शोध परिणाम दाखवत आहे</translation>
 <translation id="1195667586424773550">लिंक ड्रॅग करून टॅबच्या अ‍ॅड्रेस बारवर आणा</translation>
 <translation id="1204450209689312104">एक नवीन विंडो गुप्त मोडमध्ये उघडा</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> किंवा <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">ओळीच्या शेवटी जा</translation>
+<translation id="1499072997694708844">कोणतीही उघडी असलेली शोध विंडो बंद करा किंवा तुमचे सध्याचे पेज लोड करणे थांबवा</translation>
 <translation id="1510238584712386396">लाँचर</translation>
 <translation id="152892567002884378">आवाज मोठा करा</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, नंतर <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">अ‍ॅड्रेस बारमधील तुमच्या इनपुटमध्ये www. आणि .com जोडा, त्यानंतर पेज उघडा</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> किंवा <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">व्हर्च्युअल डेस्क डावीकडे सुरू करा</translation>
 <translation id="1996162290124031907">पुढील टॅबवर जा</translation>
 <translation id="2010818616644390445">विंडोमधील अंतिम टॅबवर जा</translation>
 <translation id="2040706009561734834">लाँचर उघडा/बंद करा</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">स्क्रीनशॉट घ्या</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">अ‍ॅड्रेस बारवर फोकस करा</translation>
+<translation id="3165428420335997629">नवीन व्हर्च्युअल डेस्क तयार करा</translation>
 <translation id="3256109297135787951">तुमच्या शेल्फवरील आयटमवरील हायलाइट काढून टाका</translation>
 <translation id="3288816184963444640">ही विंडो बंद करा</translation>
 <translation id="3407560819924487926">टास्क मॅनेजर वर आणा</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">सध्याचे पेज शोधा</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> दाबा आणि एखाद्या लिंकवर क्लिक करा</translation>
 <translation id="561814908794220892">वेबपेज एखाद्या नवीन टॅबमध्ये उघडा</translation>
+<translation id="5620219513321115856">सुरू असलेली विंडो डेस्कच्या उजव्या बाजूला हलवा</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> किंवा <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">लिंक टॅबमध्ये उघडा</translation>
 <translation id="5757474750054631686">कीबोर्डचा प्रकाश मंद करा (फक्त बॅकलिट कीबोर्डसाठी)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">स्क्रीन ९० अंशात फिरवा</translation>
 <translation id="8241665785394195545">उजवा कंस</translation>
 <translation id="8264941229485248811">डेव्हलपर टूल परीक्षक दाखवा किंवा लपवा</translation>
+<translation id="8355937569537581904">सध्याचा व्हर्च्युअल डेस्क काढून टाका</translation>
 <translation id="836869401750819675">डाउनलोड पेज उघडा</translation>
 <translation id="8388247778047144397">टॅब स्ट्रिपवरील एका रिक्त भागावर एखादी लिंक ड्रॅग करा</translation>
 <translation id="8389638407792712197">नवीन विंडो उघडा</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">आधीचा शब्द किंवा अक्षर निवडा</translation>
 <translation id="8727232706774971183">तुमच्या सूचना पाहा</translation>
 <translation id="8855885154700222542">क्षेत्रे की</translation>
+<translation id="8881584919399569791">सुरू असलेली विंडो डेस्कच्या डाव्या बाजूला हलवा</translation>
 <translation id="88986195241502842">पृष्ठ खाली</translation>
 <translation id="8924883688469390268">मागील वापरकर्त्यावर स्विच करा</translation>
 <translation id="8977648847395357314">अॅड्रेस बारमध्ये आशय निवडा</translation>

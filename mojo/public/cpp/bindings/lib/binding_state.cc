@@ -13,7 +13,7 @@
 namespace mojo {
 namespace internal {
 
-BindingStateBase::BindingStateBase() : weak_ptr_factory_(this) {}
+BindingStateBase::BindingStateBase() = default;
 
 BindingStateBase::~BindingStateBase() = default;
 

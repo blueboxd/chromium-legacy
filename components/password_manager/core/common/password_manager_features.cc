@@ -72,6 +72,11 @@ const base::Feature kRecoverPasswordsForSyncUsers = {
 const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces password generation to ask user to update the password instead of
+// overwriting silently.
+const base::Feature kGenerationNoOverwrites = {
+    "GenerationNoOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =
     "PasswordGenerationRequirements";

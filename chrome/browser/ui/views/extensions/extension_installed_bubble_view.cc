@@ -35,7 +35,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "extensions/common/extension.h"
 #include "ui/base/buildflags.h"

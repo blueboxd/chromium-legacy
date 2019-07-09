@@ -74,10 +74,6 @@ class FindTaskController::IdleFindTask
                                  PositionInFlatTree(), 0 /* match_count */);
     }
 
-    const base::TimeDelta time_available =
-        base::TimeDelta::FromMillisecondsD(deadline->timeRemaining());
-    const base::TimeTicks start_time = CurrentTimeTicks();
-
     Document& document = *controller_->GetLocalFrame()->GetDocument();
     PositionInFlatTree search_start =
         PositionInFlatTree::FirstPositionInNode(document);
@@ -147,10 +143,6 @@ class FindTaskController::IdleFindTask
       if (deadline->timeRemaining() <= 0)
         break;
     }
-
-    const base::TimeDelta time_spent = CurrentTimeTicks() - start_time;
-    UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",
-                        time_spent - time_available);
 
     controller_->DidFinishTask(identifier_, search_text_, *options_,
                                full_range_searched, next_task_start_position,

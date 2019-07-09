@@ -39,6 +39,7 @@
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_document_interface_broker.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -752,9 +753,9 @@ class TestSimpleDocumentInterfaceBrokerImpl
     binder_callback_.Run(std::move(request));
   }
   void GetAudioContextManager(
-      blink::mojom::AudioContextManagerRequest) override {}
+      mojo::PendingReceiver<blink::mojom::AudioContextManager>) override {}
   void GetCredentialManager(
-      blink::mojom::CredentialManagerRequest request) override {}
+      mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override {}
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_usage_bubble_view.h"
 
 #include "base/i18n/message_formatter.h"
+#include "base/i18n/unicodestring.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,10 +17,38 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/listformatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+
+namespace {
+
+// Wrapper around icu::ListFormatter to format a list of strings.
+base::string16 FormatList(base::span<base::string16> items) {
+  std::vector<icu::UnicodeString> strings;
+  strings.reserve(items.size());
+  for (const auto& item : items)
+    strings.emplace_back(item.data(), item.size());
+  UErrorCode error = U_ZERO_ERROR;
+  auto formatter = base::WrapUnique(icu::ListFormatter::createInstance(error));
+  if (U_FAILURE(error) || !formatter) {
+    LOG(ERROR) << "ListFormatter failed with " << u_errorName(error);
+    return base::string16();
+  }
+  icu::UnicodeString formatted;
+  formatter->format(strings.data(), strings.size(), formatted, error);
+  if (U_FAILURE(error)) {
+    LOG(ERROR) << "ListFormatter failed with " << u_errorName(error);
+    return base::string16();
+  }
+  return base::i18n::UnicodeStringToString16(formatted);
+}
+
+}  // namespace
 
 NativeFileSystemUsageBubbleView::Usage::Usage() = default;
 NativeFileSystemUsageBubbleView::Usage::~Usage() = default;
@@ -184,14 +213,10 @@ void NativeFileSystemUsageBubbleView::AddPathList(
 
   AddChildView(std::move(label));
 
-  // TODO(https://crbug.com/980269): Properly localize this list.
-  base::string16 path_list;
-  for (const auto& f : paths) {
-    path_list.append(f.BaseName().LossyDisplayName());
-    path_list.append(base::ASCIIToUTF16(", "));
-  }
-  DCHECK_GE(path_list.size(), 2u);
-  path_list.resize(path_list.size() - 2);
+  std::vector<base::string16> base_names;
+  for (const auto& path : paths)
+    base_names.push_back(path.BaseName().LossyDisplayName());
+  base::string16 path_list = FormatList(base_names);
   auto paths_label = std::make_unique<views::Label>(
       base::i18n::MessageFormatter::FormatWithNumberedArgs(
           l10n_util::GetStringUTF16(details_message_id), int64_t{paths.size()},

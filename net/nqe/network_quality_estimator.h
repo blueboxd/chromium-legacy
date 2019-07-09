@@ -403,6 +403,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
 
+  // Returns a non-null value if the value of the effective connection type has
+  // been overridden for testing.
+  virtual base::Optional<net::EffectiveConnectionType> GetOverrideECT() const;
+
   // Observer list for RTT or throughput estimates. Protected for testing.
   base::ObserverList<RTTAndThroughputEstimatesObserver>::Unchecked
       rtt_and_throughput_estimates_observer_list_;
@@ -420,6 +424,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Number of end to end RTT samples available when the ECT was last computed.
   size_t end_to_end_rtt_observation_count_at_last_ect_computation_;
+
+  // Current count of active peer to peer connections.
+  uint32_t p2p_connections_count_ = 0u;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
@@ -568,9 +575,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Clamps the throughput estimate based on the current effective connection
   // type.
   void ClampKbpsBasedOnEct();
-
-  // Current count of active peer to peer connections.
-  uint32_t p2p_connections_count_ = 0u;
 
   // Earliest timestamp since when there is at least one active peer to peer
   // connection count. Set to current timestamp when |p2p_connections_count_|

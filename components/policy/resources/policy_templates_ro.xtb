@@ -1589,15 +1589,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă nu setezi această politică, <ph name="PRODUCT_NAME" /> va utiliza directorul prestabilit obișnuit (specific platformei).
 
       Pentru o listă a variabilelor care pot fi utilizate, accesează https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
-<translation id="3904459740090265495">Această politică stabilește comportamentul de conectare al browserului. Îți permite să specifici dacă utilizatorul poate să se conecteze la <ph name="PRODUCT_NAME" /> cu contul său și să folosească servicii conexe contului, cum ar fi Sincronizarea Chrome.
-
-      Dacă politica este setată la „Dezactivează conectarea la browser”, utilizatorul nu poate să se conecteze la browser și să folosească serviciile bazate pe cont. În acest caz, funcțiile la nivel de browser, cum ar fi Sincronizarea Chrome, nu pot fi folosite și vor fi indisponibile. Dacă utilizatorul era conectat, iar politica este setată ca „Dezactivată”, acesta va fi deconectat data viitoare când folosește Chrome, însă datele profilului său local, cum ar fi marcajele, parolele etc., se vor păstra. Utilizatorul va putea să se conecteze și să folosească serviciile web Google, cum ar fi Gmail.
-
-      Dacă politica este setată la „Activează conectarea la browser”, utilizatorul are permisiunea de a se conecta la browser și este conectat automat când este conectat la serviciile web Google, cum ar fi Gmail. Conectarea la browser înseamnă că informațiile contului utilizatorului vor fi păstrate de browser. Cu toate acestea, Sincronizarea Chrome nu va fi activată automat. Utilizatorul trebuie să activeze separat această funcție. Activând această politică, utilizatorul nu va dezactiva setarea care permite conectarea la browser. Pentru a controla disponibilitatea Sincronizării Chrome, folosiți politica „SyncDisabled”.
-
-      Dacă politica este setată la „Conectare obligatorie la browser”, utilizatorul va vedea un dialog de selectare a contului și trebuie să aleagă și să se conecteze la un cont pentru a folosi browserul. Astfel, se vor aplica politicile asociate contului pentru conturile gestionate. În mod prestabilit, Sincronizarea Chrome se va activa pentru acel cont, cu excepția cazului în care sincronizarea a fost dezactivată de administratorul domeniului sau prin politica „SyncDisabled”. Valoarea prestabilită pentru BrowserGuestModeEnabled va fi dezactivată. Reține că profilurile neconectate existente vor fi blocate și inaccesibile după activarea acestei politici. Pentru mai multe informații, consultă articolul din centrul de ajutor: https://support.google.com/chrome/a/answer/7572556.
-
-      Dacă această politică nu este setată, utilizatorul poate decide dacă să activeze opțiunea de conectare la browser și să o folosească după cum dorește.</translation>
 <translation id="3911737181201537215">Această politică nu afectează înregistrările în jurnal din Android.</translation>
 <translation id="391531815696899618">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" />. În acest caz, datele nu sunt încărcate în Google Drive.
 
@@ -3441,7 +3432,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7359307926583593395">
-      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica de utilizator.
+      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica privind utilizatorii.
       </translation>
 <translation id="737655323154569539">Restricționează dimensiunea paginii de printare. Politica nesetată și setul gol sunt tratate ca lipsa oricărei restricții.</translation>
 <translation id="7389872682701720082">Dacă activezi setarea, pluginurile care nu sunt învechite rulează întotdeauna.

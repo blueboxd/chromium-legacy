@@ -179,8 +179,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
 
   if (decoder_client_config_.use_vd) {
 #if defined(OS_CHROMEOS)
-    decoder_ = ChromeosVideoDecoderFactory::CreateForTesting(
-        base::ThreadTaskRunnerHandle::Get());
+    decoder_ = ChromeosVideoDecoderFactory::Create(
+        base::ThreadTaskRunnerHandle::Get(),
+        std::make_unique<PlatformVideoFramePool>(),
+        std::make_unique<VideoFrameConverter>());
 #endif  // defined(OS_CHROMEOS)
     LOG_ASSERT(decoder_) << "Failed to create decoder.";
   } else {

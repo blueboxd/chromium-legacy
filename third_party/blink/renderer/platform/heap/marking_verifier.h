@@ -23,20 +23,16 @@ class MarkingVerifier final : public Visitor {
                  TraceDescriptor desc,
                  WeakCallback callback) final;
 
-  void VisitBackingStoreStrongly(const char*,
-                                 void*,
-                                 void**,
-                                 TraceDescriptor) final;
+  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final;
 
-  void VisitBackingStoreWeakly(const char*,
-                               void*,
+  void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
                                WeakCallback,
                                void*) final;
 
   // Unused overrides.
-  void VisitBackingStoreOnly(const char*, void*, void**) final {}
+  void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
   }
   void RegisterWeakCallback(void*, WeakCallback) final {}

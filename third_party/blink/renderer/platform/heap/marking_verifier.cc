@@ -39,8 +39,7 @@ void MarkingVerifier::VisitWeak(void* object,
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitBackingStoreStrongly(const char*,
-                                                void* object,
+void MarkingVerifier::VisitBackingStoreStrongly(void* object,
                                                 void**,
                                                 TraceDescriptor desc) {
   if (!object)
@@ -52,8 +51,7 @@ void MarkingVerifier::VisitBackingStoreStrongly(const char*,
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitBackingStoreWeakly(const char*,
-                                              void* object,
+void MarkingVerifier::VisitBackingStoreWeakly(void* object,
                                               void**,
                                               TraceDescriptor desc,
                                               WeakCallback,

@@ -4,7 +4,6 @@
 
 package org.chromium.midi;
 
-import android.annotation.TargetApi;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -12,7 +11,6 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
-import android.os.Build;
 import android.os.Handler;
 import android.util.SparseArray;
 
@@ -215,7 +213,6 @@ class UsbMidiDeviceAndroid {
      * @param endpointNumber The endpoint number of the destination endpoint.
      * @param bs The data to be sent.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     void send(int endpointNumber, byte[] bs) {
         if (mIsClosed) {

@@ -17,12 +17,14 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -220,7 +222,7 @@ class SiteIsolationFlagHandlingTest
 
   void SetUpOnMainThread() override {
     fake_gaia_.SetupFakeGaiaForLogin(kTestUserAccountId, kTestUserGaiaId,
-                                     "fake-refresh-token");
+                                     FakeGaiaMixin::kFakeRefreshToken);
 
     OobeBaseTest::SetUpOnMainThread();
 
@@ -278,11 +280,16 @@ class SiteIsolationFlagHandlingTest
       &mixin_host_,
       AccountId::FromUserEmailGaiaId(kTestUserAccountId, kTestUserGaiaId)};
 
-  chromeos::FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  LoginManagerMixin::TestUserInfo user_{
+      AccountId::FromUserEmailGaiaId(kTestUserAccountId, kTestUserGaiaId)};
+  LoginManagerMixin login_manager_{&mixin_host_, {user_}};
+
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>
       user_session_started_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationFlagHandlingTest);
 };
 

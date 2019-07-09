@@ -699,6 +699,24 @@ void AccessibilityManager::OnAutoclickChanged() {
   }
 }
 
+void AccessibilityManager::RequestAutoclickScrollableBoundsForPoint(
+    gfx::Point& point_in_screen) {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+  std::unique_ptr<base::ListValue> event_args =
+      extensions::api::accessibility_private::FindScrollableBoundsForPoint::
+          Create(point_in_screen.x(), point_in_screen.y());
+  std::unique_ptr<extensions::Event> event =
+      std::make_unique<extensions::Event>(
+          extensions::events::
+              ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT,
+          extensions::api::accessibility_private::FindScrollableBoundsForPoint::
+              kEventName,
+          std::move(event_args));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kAutoclickExtensionId, std::move(event));
+}
+
 void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
   if (!profile_)
     return;

@@ -970,11 +970,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-  // Content was unable to bind a CredentialManager request, so the embedder
-  // should try.
-  virtual void BindCredentialManagerRequest(
+  // Content was unable to bind a CredentialManager pending receiver, so the
+  // embedder should try.
+  virtual void BindCredentialManagerReceiver(
       RenderFrameHost* render_frame_host,
-      blink::mojom::CredentialManagerRequest request) {}
+      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {}
 
   // Content was unable to bind a request for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and

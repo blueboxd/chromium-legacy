@@ -80,9 +80,13 @@ class SupervisionTransitionScreenTest
     if (user.user_type == user_manager::USER_TYPE_CHILD) {
       fake_gaia_.SetupFakeGaiaForChildUser(
           user.account_id.GetUserEmail(), user.account_id.GetGaiaId(),
-          "refresh-token", false /*issue_any_scope_token*/);
-      user_context.SetRefreshToken("refresh-token");
+          FakeGaiaMixin::kFakeRefreshToken, false /*issue_any_scope_token*/);
+    } else {
+      fake_gaia_.SetupFakeGaiaForLogin(user.account_id.GetUserEmail(),
+                                       user.account_id.GetGaiaId(),
+                                       FakeGaiaMixin::kFakeRefreshToken);
     }
+    user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
     login_manager_.AttemptLoginUsingAuthenticator(
         user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
   }

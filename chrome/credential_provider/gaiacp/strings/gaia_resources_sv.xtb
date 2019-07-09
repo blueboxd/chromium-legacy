@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">Det gick inte att verifiera Windows-lösenordet. Försök igen.</translation>
 <translation id="3306357053520292004">En användare på den här datorn har redan lagts till med det här kontot. Logga in med ett annat konto.</translation>
 <translation id="369030246015333661">Ditt konto har låsts. Kontakta systemadministratören.</translation>
+<translation id="3968372833844047539">Endast G Suite Enterprise-användare får logga in.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
+<translation id="4267670563222825190">Ingen domänanvändare hittades för kontot. Kontakta administratören.</translation>
 <translation id="4300229033992784001">Kontots lösenord har ändrats Ange ditt nuvarande lösenord för Windows för att synkronisera Windows-kontot med jobbkontot.</translation>
 <translation id="4706454071748629324">Det gick inte att lägga till en ny användare. Datorn tillåter bara att en användare skapas med ett jobbkonto.</translation>
 <translation id="6292766200512304540">Användare skapad från ett jobbkonto</translation>

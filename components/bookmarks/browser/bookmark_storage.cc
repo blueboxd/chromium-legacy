@@ -242,8 +242,7 @@ BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE || type == BookmarkNode::MOBILE);
   std::unique_ptr<BookmarkPermanentNode> node =
-      std::make_unique<BookmarkPermanentNode>(max_id_++);
-  node->set_type(type);
+      std::make_unique<BookmarkPermanentNode>(max_id_++, type);
   node->set_visible(client->IsPermanentNodeVisible(node.get()));
 
   int title_id;

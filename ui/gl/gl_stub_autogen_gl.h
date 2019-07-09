@@ -883,6 +883,7 @@ void glInvalidateSubFramebufferFn(GLenum target,
                                   GLint y,
                                   GLint width,
                                   GLint height) override {}
+void glInvalidateTextureANGLEFn(GLenum target) override {}
 GLboolean glIsBufferFn(GLuint buffer) override;
 GLboolean glIsEnabledFn(GLenum cap) override;
 GLboolean glIsFenceAPPLEFn(GLuint fence) override;
@@ -1296,6 +1297,14 @@ void glTexImage2DFn(GLenum target,
                     GLenum format,
                     GLenum type,
                     const void* pixels) override {}
+void glTexImage2DExternalANGLEFn(GLenum target,
+                                 GLint level,
+                                 GLint internalformat,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLint border,
+                                 GLenum format,
+                                 GLenum type) override {}
 void glTexImage2DRobustANGLEFn(GLenum target,
                                GLint level,
                                GLint internalformat,

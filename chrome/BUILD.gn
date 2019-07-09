@@ -260,7 +260,12 @@ if (!is_android && !is_mac) {
           "/DELAYLOAD:wintrust.dll",
         ]
 
-        if (current_cpu == "x64") {
+        if (current_cpu == "x86") {
+          # Increase the initial stack size. The default is 1MB, this is 1.5MB.
+          # To mitigate address space pressure, |CreateThreadInternal| sets the
+          # default back to 1MB for non-main threads.
+          ldflags += [ "/STACK:1572864" ]
+        } else {
           # Increase the initial stack size. The default is 1MB, this is 8MB.
           ldflags += [ "/STACK:8388608" ]
         }
@@ -330,6 +335,7 @@ if (!is_android && !is_mac) {
       if (is_chromeos) {
         data_deps += [ "//mojo/core:shared_libraries_for_arc" ]
         configs += [ "//build/config/chromeos:print_orderfile" ]
+        configs += [ "//build/config/compiler:chrome_orderfile_config" ]
       }
 
       # These files are used by the installer so we need a public dep.
@@ -509,21 +515,7 @@ if (is_win) {
       ]
     }
 
-    if (is_clang && is_official_build) {
-      orderfile = "build/chrome.$target_cpu.orderfile"
-      rebased_orderfile = rebase_path(orderfile, root_build_dir)
-      inputs = [
-        orderfile,
-      ]
-      ldflags += [
-        "/order:@$rebased_orderfile",
-
-        # Ignore warnings about missing functions or functions not in their
-        # own section.
-        "/ignore:4037",
-        "/ignore:4065",
-      ]
-    }
+    configs += [ "//build/config/compiler:chrome_orderfile_config" ]
   }
 
   if (is_multi_dll_chrome) {

@@ -76,6 +76,16 @@ static bool VerifyCustomHandlerURL(const Document& document,
     return false;
   }
 
+  // Although not enforced in the spec the spec gives freedom to do additional
+  // security checks. Bugs have arisen from allowing non-http/https URLs, e.g.
+  // https://crbug.com/971917 and it doesn't make a lot of sense to support
+  // them.
+  if (!kurl.ProtocolIsInHTTPFamily()) {
+    exception_state.ThrowSecurityError(
+        "The scheme of the url provided must be the 'http' or 'https'.");
+    return false;
+  }
+
   // The specification says that the API throws SecurityError exception if the
   // URL's origin differs from the document's origin.
   if (!document.GetSecurityOrigin()->CanRequest(kurl)) {

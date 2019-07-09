@@ -149,6 +149,71 @@ void RequestManager::TakePhoto(cros::mojom::CameraMetadataPtr settings,
   take_photo_settings_queue_.push(std::move(settings));
 }
 
+base::WeakPtr<RequestManager> RequestManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void RequestManager::AddResultMetadataObserver(
+    ResultMetadataObserver* observer) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  DCHECK(!result_metadata_observers_.count(observer));
+
+  result_metadata_observers_.insert(observer);
+}
+
+void RequestManager::RemoveResultMetadataObserver(
+    ResultMetadataObserver* observer) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  DCHECK(result_metadata_observers_.count(observer));
+
+  result_metadata_observers_.erase(observer);
+}
+
+void RequestManager::SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
+                                        cros::mojom::EntryType type,
+                                        size_t count,
+                                        std::vector<uint8_t> value) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  cros::mojom::CameraMetadataEntryPtr setting =
+      cros::mojom::CameraMetadataEntry::New();
+
+  setting->tag = tag;
+  setting->type = type;
+  setting->count = count;
+  setting->data = std::move(value);
+
+  capture_settings_override_.push_back(std::move(setting));
+}
+
+void RequestManager::SetRepeatingCaptureMetadata(
+    cros::mojom::CameraMetadataTag tag,
+    cros::mojom::EntryType type,
+    size_t count,
+    std::vector<uint8_t> value) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  cros::mojom::CameraMetadataEntryPtr setting =
+      cros::mojom::CameraMetadataEntry::New();
+
+  setting->tag = tag;
+  setting->type = type;
+  setting->count = count;
+  setting->data = std::move(value);
+
+  capture_settings_repeating_override_[tag] = std::move(setting);
+}
+
+void RequestManager::UnsetRepeatingCaptureMetadata(
+    cros::mojom::CameraMetadataTag tag) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  auto it = capture_settings_repeating_override_.find(tag);
+  if (it == capture_settings_repeating_override_.end()) {
+    LOG(ERROR) << "Unset a non-existent metadata: " << tag;
+    return;
+  }
+  capture_settings_repeating_override_.erase(it);
+}
+
 void RequestManager::SetJpegOrientation(
     cros::mojom::CameraMetadataPtr* settings) {
   std::vector<uint8_t> frame_orientation(sizeof(int32_t));
@@ -750,71 +815,6 @@ void RequestManager::SubmitCaptureResult(
   // Every time a buffer is released, try to prepare another capture request
   // again.
   PrepareCaptureRequest();
-}
-
-base::WeakPtr<RequestManager> RequestManager::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
-void RequestManager::AddResultMetadataObserver(
-    ResultMetadataObserver* observer) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  DCHECK(!result_metadata_observers_.count(observer));
-
-  result_metadata_observers_.insert(observer);
-}
-
-void RequestManager::RemoveResultMetadataObserver(
-    ResultMetadataObserver* observer) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  DCHECK(result_metadata_observers_.count(observer));
-
-  result_metadata_observers_.erase(observer);
-}
-
-void RequestManager::SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
-                                        cros::mojom::EntryType type,
-                                        size_t count,
-                                        std::vector<uint8_t> value) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-
-  cros::mojom::CameraMetadataEntryPtr setting =
-      cros::mojom::CameraMetadataEntry::New();
-
-  setting->tag = tag;
-  setting->type = type;
-  setting->count = count;
-  setting->data = std::move(value);
-
-  capture_settings_override_.push_back(std::move(setting));
-}
-
-void RequestManager::SetRepeatingCaptureMetadata(
-    cros::mojom::CameraMetadataTag tag,
-    cros::mojom::EntryType type,
-    size_t count,
-    std::vector<uint8_t> value) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  cros::mojom::CameraMetadataEntryPtr setting =
-      cros::mojom::CameraMetadataEntry::New();
-
-  setting->tag = tag;
-  setting->type = type;
-  setting->count = count;
-  setting->data = std::move(value);
-
-  capture_settings_repeating_override_[tag] = std::move(setting);
-}
-
-void RequestManager::UnsetRepeatingCaptureMetadata(
-    cros::mojom::CameraMetadataTag tag) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  auto it = capture_settings_repeating_override_.find(tag);
-  if (it == capture_settings_repeating_override_.end()) {
-    LOG(ERROR) << "Unset a non-existent metadata: " << tag;
-    return;
-  }
-  capture_settings_repeating_override_.erase(it);
 }
 
 void RequestManager::UpdateCaptureSettings(

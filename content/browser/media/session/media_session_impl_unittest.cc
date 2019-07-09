@@ -125,7 +125,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   }
 
   void ClearObservers(MediaSessionImpl* session) {
-    session->observers_.CloseAll();
+    session->observers_.Clear();
   }
 
   bool HasObservers(MediaSessionImpl* session) {

@@ -30,7 +30,7 @@ class GoogleURLTrackerFactoryTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(GoogleURLTrackerFactoryTest, UsesDotComByDefault) {
+TEST_F(GoogleURLTrackerFactoryTest, AlwaysUsesDotCom) {
   profile_.GetPrefs()->SetString(prefs::kLastKnownGoogleURL,
                                  "https://www.google.co.uk/");
   GoogleURLTracker* tracker =
@@ -38,16 +38,4 @@ TEST_F(GoogleURLTrackerFactoryTest, UsesDotComByDefault) {
 
   ASSERT_NE(nullptr, tracker);
   EXPECT_EQ(GURL("https://www.google.com/"), tracker->google_url());
-}
-
-TEST_F(GoogleURLTrackerFactoryTest, UsesLocalDomainWithSearchDomainCheck) {
-  profile_.GetPrefs()->SetString(prefs::kLastKnownGoogleURL,
-                                 "https://www.google.co.uk/");
-  scoped_feature_list_.InitAndDisableFeature(
-      GoogleURLTracker::kNoSearchDomainCheck);
-  GoogleURLTracker* tracker =
-      GoogleURLTrackerFactory::GetInstance()->GetForProfile(&profile_);
-
-  ASSERT_NE(nullptr, tracker);
-  EXPECT_EQ(GURL("https://www.google.co.uk/"), tracker->google_url());
 }

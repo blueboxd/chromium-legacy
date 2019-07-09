@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2872961005593481000">Éteindre</translation>
+<translation id="2912823482158781027">ACTUALISER LE TICKET</translation>
 <translation id="3511655281162215899">Veuillez choisir un nouveau mot de passe immédiatement</translation>
+<translation id="3562817605261346876">Veuillez actualiser au plus vite le ticket concernant <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Nouveau mot de passe</translation>
 <translation id="445059817448385655">Ancien mot de passe</translation>
 <translation id="467510802200863975">Les mots de passe sont différents</translation>
@@ -22,12 +24,14 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5733345267661125295">Veuillez choisir bientôt un nouveau mot de passe</translation>
+<translation id="5743581760404859096">Votre ticket Kerberos arrive bientôt à expiration</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
-<translation id="6058625436358447366">Pour terminer, saisissez vos ancien et nouveau mots de passe</translation>
+<translation id="6058625436358447366">Pour terminer, saisissez votre ancien mot de passe et le nouveau</translation>
 <translation id="6106186594183574873">Pour terminer, saisissez votre ancien mot de passe</translation>
 <translation id="6146993107019042706">Pour terminer, saisissez votre nouveau mot de passe</translation>
 <translation id="6574601967010742428">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
+<translation id="7280705187789120111">Expiration du ticket Kerberos</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Votre mot de passe actuel est arrivé à expiration !}=1{Votre mot de passe actuel arrive à expiration dans moins d'un jour !}one{Votre mot de passe actuel arrive à expiration dans moins de # jour !}other{Votre mot de passe actuel arrive à expiration dans moins de # jours !}}</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7690294790491645610">Confirmer le nouveau mot de passe</translation>

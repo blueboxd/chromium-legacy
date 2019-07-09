@@ -42,10 +42,13 @@ void AssistantMediaSession::GetMediaSessionInfo(
 }
 
 void AssistantMediaSession::AddObserver(
-    media_session::mojom::MediaSessionObserverPtr observer) {
-  observer->MediaSessionInfoChanged(GetMediaSessionInfoInternal());
-  observer->MediaSessionMetadataChanged(metadata_);
-  observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer) {
+  mojo::Remote<media_session::mojom::MediaSessionObserver>
+      media_session_observer(std::move(observer));
+  media_session_observer->MediaSessionInfoChanged(
+      GetMediaSessionInfoInternal());
+  media_session_observer->MediaSessionMetadataChanged(metadata_);
+  observers_.Add(std::move(media_session_observer));
 }
 
 void AssistantMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
@@ -178,10 +181,9 @@ void AssistantMediaSession::NotifyMediaSessionMetadataChanged(
   metadata_ = metadata;
 
   current_track_ = status.track_type;
-  observers_.ForAllPtrs(
-      [this](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionMetadataChanged(this->metadata_);
-      });
+
+  for (auto& observer : observers_)
+    observer->MediaSessionMetadataChanged(this->metadata_);
 }
 
 media_session::mojom::MediaSessionInfoPtr
@@ -216,10 +218,8 @@ void AssistantMediaSession::NotifyMediaSessionInfoChanged() {
   if (request_client_ptr_.is_bound())
     request_client_ptr_->MediaSessionInfoChanged(current_info.Clone());
 
-  observers_.ForAllPtrs(
-      [&current_info](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionInfoChanged(current_info.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionInfoChanged(current_info.Clone());
 
   session_info_ = std::move(current_info);
 }

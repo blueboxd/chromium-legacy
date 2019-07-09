@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -414,6 +416,22 @@ void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
     app->show_in_launcher = show;
     app->show_in_search = show;
     app->show_in_management = show;
+
+    if (show == apps::mojom::OptionalBool::kFalse) {
+      return;
+    }
+
+    auto* web_app_provider = web_app::WebAppProvider::Get(profile);
+
+    // WebAppProvider is null for SignInProfile
+    if (!web_app_provider) {
+      return;
+    }
+
+    if (web_app_provider->system_web_app_manager().IsSystemWebApp(
+            extension->id())) {
+      app->show_in_management = apps::mojom::OptionalBool::kFalse;
+    }
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;

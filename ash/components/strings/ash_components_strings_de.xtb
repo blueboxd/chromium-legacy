@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="104962181688258143">App "Dateien" öffnen</translation>
+<translation id="1098295134904615027">Rechten virtuellen Arbeitsbereich aktivieren</translation>
 <translation id="1122869341872663659"><ph name="N" /> Suchergebnisse für <ph name="QUERY" /> werden angezeigt</translation>
 <translation id="1195667586424773550">Link in Adressleiste des Tabs ziehen</translation>
 <translation id="1204450209689312104">Neues Fenster im Inkognitomodus öffnen</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1454364489140280055">"<ph name="CTRL" />" <ph name="SEPARATOR1" /> "<ph name="SHIFT1" />" <ph name="SEPARATOR2" /> "<ph name="G" />" oder "<ph name="SHIFT2" />" <ph name="SEPARATOR3" /> "<ph name="ENTER" />"</translation>
 <translation id="1477442857810932985">Zum Zeilenende springen</translation>
+<translation id="1499072997694708844">Schließen Sie alle geöffneten Fenster oder beenden Sie das Laden der aktuellen Seite</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="152892567002884378">Lauter</translation>
 <translation id="1560480564179555003">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="ESC" />"</translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435">"<ph name="MODIFIER1" />" <ph name="SEPARATOR1" /> "<ph name="MODIFIER2" />" <ph name="SEPARATOR2" /> "<ph name="KEY" />"</translation>
 <translation id="1733525068429116555">"www." und ".com" zur Eingabe in der Adressleiste hinzufügen und die Seite dann öffnen</translation>
 <translation id="1920446759863417809">"<ph name="SHIFT1" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="SHIFT2" />" <ph name="SEPARATOR3" /> "<ph name="TAB" />" oder "<ph name="LEFT" />"</translation>
+<translation id="1929866390202038233">Linken virtuellen Arbeitsbereich aktivieren</translation>
 <translation id="1996162290124031907">Auf den nächsten Tab klicken</translation>
 <translation id="2010818616644390445">Auf den letzten Tab im Fenster klicken</translation>
 <translation id="2040706009561734834">Launcher öffnen/schließen</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">Screenshot aufnehmen</translation>
 <translation id="3126026824346185272">Strg</translation>
 <translation id="3140353188828248647">Adressleiste fokussieren</translation>
+<translation id="3165428420335997629">Neuen virtuellen Arbeitsbereich erstellen</translation>
 <translation id="3256109297135787951">Markierung eines Elements in der Ablage entfernen</translation>
 <translation id="3288816184963444640">Aktuelles Fenster schließen</translation>
 <translation id="3407560819924487926">Task-Manager aufrufen</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">Auf der aktuellen Seite suchen</translation>
 <translation id="5563050856984839829">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="SHIFT" />" gedrückt halten und auf einen Link klicken</translation>
 <translation id="561814908794220892">Webseite in einem neuen Tab öffnen</translation>
+<translation id="5620219513321115856">Aktives Fenster in den rechten Arbeitsbereich verschieben</translation>
 <translation id="5710621673935162997">"<ph name="CTRL" />" <ph name="SEPARATOR1" /> "<ph name="L" />" oder "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="D" />"</translation>
 <translation id="5757111373163288447">Link in dem Tab öffnen</translation>
 <translation id="5757474750054631686">Tastatur dimmen (nur für beleuchtete Tastaturen)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">Bildschirm um 90 Grad drehen</translation>
 <translation id="8241665785394195545">schließende eckige Klammer</translation>
 <translation id="8264941229485248811">Entwicklertools-Inspector ein- oder ausblenden</translation>
+<translation id="8355937569537581904">Aktuellen virtuellen Arbeitsbereich entfernen</translation>
 <translation id="836869401750819675">Seite "Downloads" öffnen</translation>
 <translation id="8388247778047144397">Link in einen leeren Bereich auf der Tableiste ziehen</translation>
 <translation id="8389638407792712197">Neues Fenster öffnen</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">Vorheriges Wort oder vorherigen Buchstaben markieren</translation>
 <translation id="8727232706774971183">Benachrichtigungen ansehen</translation>
 <translation id="8855885154700222542">Taste für Vollbildmodus</translation>
+<translation id="8881584919399569791">Aktives Fenster in den linken Arbeitsbereich verschieben</translation>
 <translation id="88986195241502842">Bildlauf nach unten</translation>
 <translation id="8924883688469390268">Zum vorherigen Nutzer wechseln</translation>
 <translation id="8977648847395357314">Inhalt der Adressleiste auswählen</translation>

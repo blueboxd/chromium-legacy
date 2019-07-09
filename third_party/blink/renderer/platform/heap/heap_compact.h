@@ -63,10 +63,10 @@ class PLATFORM_EXPORT HeapCompact final {
     return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
   }
 
-  // See |Heap::registerMovingObjectReference()| documentation.
-  void RegisterMovingObjectReference(const char* name, MovableReference* slot);
+  // See |Heap::RegisterMovingObjectReference()| documentation.
+  void RegisterMovingObjectReference(MovableReference* slot);
 
-  // See |Heap::registerMovingObjectCallback()| documentation.
+  // See |Heap::RegisterMovingObjectCallback()| documentation.
   void RegisterMovingObjectCallback(MovableReference*,
                                     MovingObjectCallback,
                                     void* callback_data);
@@ -76,10 +76,6 @@ class PLATFORM_EXPORT HeapCompact final {
   // backing store does not survive the marking phase because all its referents
   // die before being reached by the marker.
   void FilterNonLiveSlots();
-
-  // Verifies that all recorded slots are in consistent state, i.e., either
-  // point to valid objects that can be compacted or are cleared.
-  void VerifySlots();
 
   // Finishes compaction and clears internal state.
   void Finish();
@@ -142,7 +138,6 @@ class PLATFORM_EXPORT HeapCompact final {
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   HashSet<MovableReference*> traced_slots_;
-  HashMap<MovableReference*, const char*> traced_slots_names_;
 
   // Set to |true| when a compacting sweep will go ahead.
   bool do_compact_ = false;

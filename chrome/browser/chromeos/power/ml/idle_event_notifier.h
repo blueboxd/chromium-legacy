@@ -95,15 +95,6 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     int touch_events_in_last_hour = 0;
   };
 
-  class Observer {
-   public:
-    // Called when an idle event is observed.
-    virtual void OnIdleEventObserved(const ActivityData& activity_data) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   IdleEventNotifier(PowerManagerClient* power_client,
                     ui::UserActivityDetector* detector,
                     viz::mojom::VideoDetectorObserverRequest request);
@@ -114,15 +105,10 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
                           base::Clock* test_clock,
                           std::unique_ptr<BootClock> test_boot_clock);
 
-  // Adds or removes an observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // chromeos::PowerManagerClient::Observer overrides:
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
-  void ScreenDimImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ui::UserActivityObserver overrides:
@@ -131,6 +117,14 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   // viz::mojom::VideoDetectorObserver overrides:
   void OnVideoActivityStarted() override;
   void OnVideoActivityEnded() override;
+
+  // Called in UserActivityController::ShouldDeferScreenDim to prepare activity
+  // data for making Smart Dim decision.
+  ActivityData GetActivityDataAndReset();
+
+  // Get activity data only, do not mutate the class, may be used by machine
+  // learning internal page.
+  ActivityData GetActivityData() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IdleEventNotifierTest, CheckInitialValues);

@@ -144,6 +144,9 @@ void PartnerBookmarksReader::Reset(JNIEnv* env,
   wip_next_available_id_ = 0;
 }
 
+// TODO (crbug.com/980464): This method could theoretically accept contradicting
+// parameters for type (is_folder) and URL validity (jurl) and should therefore
+// be changed.
 jlong PartnerBookmarksReader::AddPartnerBookmark(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -158,8 +161,10 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     const JavaParamRef<jobject>& j_callback) {
   base::string16 url;
   base::string16 title;
-  if (jurl)
+  if (jurl) {
+    DCHECK(!is_folder);
     url = ConvertJavaStringToUTF16(env, jurl);
+  }
   if (jtitle)
     title = ConvertJavaStringToUTF16(env, jtitle);
 
@@ -167,7 +172,6 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
   if (wip_partner_bookmarks_root_.get()) {
     std::unique_ptr<BookmarkNode> node =
         std::make_unique<BookmarkNode>(wip_next_available_id_++, GURL(url));
-    node->set_type(is_folder ? BookmarkNode::FOLDER : BookmarkNode::URL);
     node->SetTitle(title);
 
     // Handle favicon and touchicon
@@ -207,7 +211,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     const_cast<BookmarkNode*>(parent)->Add(std::move(node));
   } else {
     std::unique_ptr<BookmarkPermanentNode> node =
-        std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++);
+        std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++,
+                                                BookmarkNode::FOLDER);
     node_id = node->id();
     node->SetTitle(title);
     wip_partner_bookmarks_root_ = std::move(node);

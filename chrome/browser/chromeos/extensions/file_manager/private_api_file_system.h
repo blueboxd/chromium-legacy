@@ -328,7 +328,7 @@ class FileManagerPrivateInternalComputeChecksumFunction
  private:
   std::unique_ptr<drive::util::FileStreamMd5Digester> digester_;
 
-  void RespondWith(const std::string& hash);
+  void RespondWith(std::string hash);
 };
 
 // Implements the chrome.fileManagerPrivate.searchFilesByHashes method.

@@ -90,7 +90,7 @@ class BadgeManagerUnittest : public ::testing::Test {
 };
 
 TEST_F(BadgeManagerUnittest, SetFlagBadgeForApp) {
-  badge_manager()->UpdateBadge(kExtensionId, base::nullopt);
+  badge_manager()->UpdateAppBadge(kExtensionId, base::nullopt);
 
   EXPECT_EQ(1UL, delegate()->set_badges().size());
   EXPECT_EQ(kExtensionId, delegate()->set_badges().front().first);
@@ -98,7 +98,7 @@ TEST_F(BadgeManagerUnittest, SetFlagBadgeForApp) {
 }
 
 TEST_F(BadgeManagerUnittest, SetBadgeForApp) {
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
+  badge_manager()->UpdateAppBadge(kExtensionId, kBadgeContents);
 
   EXPECT_EQ(1UL, delegate()->set_badges().size());
   EXPECT_EQ(kExtensionId, delegate()->set_badges().front().first);
@@ -109,8 +109,8 @@ TEST_F(BadgeManagerUnittest, SetBadgeForMultipleApps) {
   const extensions::ExtensionId otherId("other");
   int otherContents = 2;
 
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
-  badge_manager()->UpdateBadge(otherId, otherContents);
+  badge_manager()->UpdateAppBadge(kExtensionId, kBadgeContents);
+  badge_manager()->UpdateAppBadge(otherId, otherContents);
 
   EXPECT_EQ(2UL, delegate()->set_badges().size());
 
@@ -122,9 +122,9 @@ TEST_F(BadgeManagerUnittest, SetBadgeForMultipleApps) {
 }
 
 TEST_F(BadgeManagerUnittest, SetBadgeForAppAfterClear) {
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
-  badge_manager()->ClearBadge(kExtensionId);
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
+  badge_manager()->UpdateAppBadge(kExtensionId, kBadgeContents);
+  badge_manager()->ClearAppBadge(kExtensionId);
+  badge_manager()->UpdateAppBadge(kExtensionId, kBadgeContents);
 
   EXPECT_EQ(2UL, delegate()->set_badges().size());
 
@@ -136,9 +136,9 @@ TEST_F(BadgeManagerUnittest, SetBadgeForAppAfterClear) {
 }
 
 TEST_F(BadgeManagerUnittest, ClearBadgeForBadgedApp) {
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
+  badge_manager()->UpdateAppBadge(kExtensionId, kBadgeContents);
 
-  badge_manager()->ClearBadge(kExtensionId);
+  badge_manager()->ClearAppBadge(kExtensionId);
 
   EXPECT_EQ(1UL, delegate()->cleared_badges().size());
   EXPECT_EQ(kExtensionId, delegate()->cleared_badges().front());
@@ -153,12 +153,12 @@ TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   auto* other_delegate = owned_other_delegate.get();
   other_badge_manager->SetDelegate(std::move(owned_other_delegate));
 
-  other_badge_manager->UpdateBadge(kExtensionId, base::nullopt);
-  other_badge_manager->UpdateBadge(kExtensionId, kBadgeContents);
-  other_badge_manager->UpdateBadge(kExtensionId, base::nullopt);
-  other_badge_manager->ClearBadge(kExtensionId);
+  other_badge_manager->UpdateAppBadge(kExtensionId, base::nullopt);
+  other_badge_manager->UpdateAppBadge(kExtensionId, kBadgeContents);
+  other_badge_manager->UpdateAppBadge(kExtensionId, base::nullopt);
+  other_badge_manager->ClearAppBadge(kExtensionId);
 
-  badge_manager()->ClearBadge(kExtensionId);
+  badge_manager()->ClearAppBadge(kExtensionId);
 
   EXPECT_EQ(3UL, other_delegate->set_badges().size());
   EXPECT_EQ(0UL, delegate()->set_badges().size());

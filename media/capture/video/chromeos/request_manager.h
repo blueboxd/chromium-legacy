@@ -236,16 +236,16 @@ class CAPTURE_EXPORT RequestManager final
   // Callback for ProcessCaptureRequest().
   void OnProcessedCaptureRequest(int32_t result);
 
-  // If there are some metadata set by SetCaptureMetadata() or
-  // SetRepeatingCaptureMetadata(), update them onto |capture_settings|.
-  void UpdateCaptureSettings(cros::mojom::CameraMetadataPtr* capture_settings);
-
   // ProcessCaptureResult receives the result metadata as well as the filled
   // buffer from camera HAL.  The result metadata may be divided and delivered
   // in several stages.  Before all the result metadata is received the
   // partial results are kept in |pending_results_|.
   void ProcessCaptureResult(
       cros::mojom::Camera3CaptureResultPtr result) override;
+
+  // Checks if the pending buffers are ready to submit. Trigger
+  // SubmitCaptureResult() if the buffers are ready to submit.
+  void TrySubmitPendingBuffers(uint32_t frame_number);
 
   // Notify receives the shutter time of capture requests and various errors
   // from camera HAL.  The shutter time is used as the timestamp in the video
@@ -264,9 +264,9 @@ class CAPTURE_EXPORT RequestManager final
                            StreamType stream_type,
                            cros::mojom::Camera3StreamBufferPtr stream_buffer);
 
-  // Checks if the pending buffers are ready to submit. Trigger
-  // SubmitCaptureResult() if the buffers are ready to submit.
-  void TrySubmitPendingBuffers(uint32_t frame_number);
+  // If there are some metadata set by SetCaptureMetadata() or
+  // SetRepeatingCaptureMetadata(), update them onto |capture_settings|.
+  void UpdateCaptureSettings(cros::mojom::CameraMetadataPtr* capture_settings);
 
   mojo::Binding<cros::mojom::Camera3CallbackOps> callback_ops_;
 

@@ -26,6 +26,9 @@ class User;
 
 namespace arc {
 
+// Name of the crosvm instance when ARCVM is enabled.
+constexpr char kArcVmName[] = "arcvm";
+
 // Returns true if ARC is installed and the current device is officially
 // supported to run ARC.
 // Note that, to run ARC practically, it is necessary to meet more conditions,

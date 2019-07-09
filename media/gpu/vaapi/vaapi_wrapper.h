@@ -40,8 +40,10 @@ class NativePixmap;
 }
 
 namespace media {
+constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 class ScopedVAImage;
+class ScopedVASurface;
 class VideoFrame;
 
 // This class handles VA-API calls and ensures proper locking of VA-API calls
@@ -160,9 +162,17 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Creates a VA Context of |va_format| and |size|, and sets |va_context_id_|.
   // The client is responsible for releasing it via DestroyContext() or
   // DestroyContextAndSurfaces(), or it will be released on dtor.
+  // TODO(crbug.com/981080): |va_format| is not used within the function
+  // definition and should be removed.
   virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
   // Destroys the context identified by |va_context_id_|.
   void DestroyContext();
+
+  // Tries to allocate a VA surface of size |size| and |va_rt_format|.
+  // Returns a self-cleaning ScopedVASurface or nullptr if creation failed.
+  std::unique_ptr<ScopedVASurface> CreateScopedVASurface(
+      unsigned int va_rt_format,
+      const gfx::Size& size);
 
   // Creates a self-releasing VASurface from |pixmap|. The ownership of the
   // surface is transferred to the caller.

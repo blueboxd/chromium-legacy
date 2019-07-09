@@ -191,7 +191,9 @@ void FrameHeader::AnimationProgressed(const gfx::Animation* animation) {
 // FrameHeader, protected:
 
 FrameHeader::FrameHeader(views::Widget* target_widget, views::View* view)
-    : target_widget_(target_widget), view_(view) {
+    : views::AnimationDelegateViews(view),
+      target_widget_(target_widget),
+      view_(view) {
   DCHECK(target_widget);
   DCHECK(view);
 }

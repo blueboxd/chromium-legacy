@@ -927,11 +927,6 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostTaskSchedulerStart();
 
-    if (!base::FeatureList::IsEnabled(
-            features::kAllowStartingServiceManagerOnly)) {
-      should_start_service_manager_only = false;
-    }
-
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       bool force_in_process = false;
       if (should_start_service_manager_only) {

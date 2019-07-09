@@ -9,11 +9,11 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
-#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -23,7 +23,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
@@ -281,67 +280,22 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
-  // We don't have complete info here, but fill in what we have now.
-  // At least we need headers and SSL info.
-  auto response_info = std::make_unique<net::HttpResponseInfo>();
-  response_info->headers = response_head.headers;
-  if (response_head.ssl_info.has_value())
-    response_info->ssl_info = *response_head.ssl_info;
-  response_info->was_fetched_via_spdy = response_head.was_fetched_via_spdy;
-  response_info->was_alpn_negotiated = response_head.was_alpn_negotiated;
-  response_info->alpn_negotiated_protocol =
-      response_head.alpn_negotiated_protocol;
-  response_info->connection_info = response_head.connection_info;
-  response_info->remote_endpoint = response_head.remote_endpoint;
-  response_info->response_time = response_head.response_time;
-
-  // The following sequence is equivalent to
-  // ServiceWorkerWriteToCacheJob::OnResponseStarted.
-  // TODO(falken): Make these steps be in the same order as the spec. Right now
-  // there are slight differences, like we only bump last update check time on
-  // OK status.
-
-  if (response_head.headers->response_code() / 100 != 2) {
-    // Non-2XX HTTP status code is handled as an error.
-    std::string error_message =
-        base::StringPrintf(kServiceWorkerBadHTTPResponseError,
-                           response_head.headers->response_code());
-    CommitCompleted(
-        network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE),
-        error_message);
-    return;
-  }
-
-  // Check the certificate error.
-  if (net::IsCertStatusError(response_head.cert_status) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreCertificateErrors)) {
-    CommitCompleted(
-        network::URLLoaderCompletionStatus(
-            net::MapCertStatusToNetError(response_head.cert_status)),
-        kServiceWorkerSSLError);
+  network::URLLoaderCompletionStatus completion_status;
+  std::string error_message;
+  std::unique_ptr<net::HttpResponseInfo> response_info =
+      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
+          response_head, &completion_status, &error_message);
+  if (completion_status.error_code != net::OK) {
+    CommitCompleted(completion_status, error_message);
     return;
   }
 
   if (resource_type_ == ResourceType::kServiceWorker) {
-    if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
-      std::string error_message =
-          response_head.mime_type.empty()
-              ? kServiceWorkerNoMIMEError
-              : base::StringPrintf(kServiceWorkerBadMIMEError,
-                                   response_head.mime_type.c_str());
-      CommitCompleted(
-          network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE),
-          error_message);
-      return;
-    }
-
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
     bool has_header = response_head.headers->EnumerateHeader(
         nullptr, kServiceWorkerAllowed, &service_worker_allowed);
-    std::string error_message;
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
             version_->scope(), request_url_,
             has_header ? &service_worker_allowed : nullptr, &error_message)) {

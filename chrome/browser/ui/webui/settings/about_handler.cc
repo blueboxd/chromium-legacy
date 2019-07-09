@@ -142,28 +142,20 @@ bool IsEnterpriseManaged() {
 
 // Returns true if current user can change channel, false otherwise.
 bool CanChangeChannel(Profile* profile) {
-  // On a managed machine we delegate this setting to the users of the same
-  // domain only if the policy value is "domain".
   if (IsEnterpriseManaged()) {
     bool value = false;
+    // On a managed machine we delegate this setting to the affiliated users
+    // only if the policy value is true.
     chromeos::CrosSettings::Get()->GetBoolean(
         chromeos::kReleaseChannelDelegated, &value);
     if (!value)
       return false;
 
-    // Get the currently logged-in user and strip the domain part only.
-    std::string domain = "";
+    // Get the currently logged-in user and check if it is affiliated.
     const user_manager::User* user =
         profile ? chromeos::ProfileHelper::Get()->GetUserByProfile(profile)
                 : nullptr;
-    std::string email =
-        user ? user->GetAccountId().GetUserEmail() : std::string();
-    size_t at_pos = email.find('@');
-    if (at_pos != std::string::npos && at_pos + 1 < email.length())
-      domain = email.substr(email.find('@') + 1);
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    return domain == connector->GetEnterpriseEnrollmentDomain();
+    return user && user->IsAffiliated();
   }
 
   // On non-managed machines, only the local owner can change the channel.

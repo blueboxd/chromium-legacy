@@ -59,7 +59,7 @@ public class VideoCaptureCamera
         COLOR_TEMPERATURES_MAP.append(7000, android.hardware.Camera.Parameters.WHITE_BALANCE_SHADE);
     };
 
-    // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
+    // Some devices don't support YV12 format correctly, even with KITKAT or
     // newer OS. To work around the issues on those devices, we have to request
     // NV21. This is supposed to be a temporary hack.
     private static class BuggyDeviceHack {

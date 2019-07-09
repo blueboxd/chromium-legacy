@@ -2847,6 +2847,12 @@ MockGLInterface::Mock_glInvalidateSubFramebuffer(GLenum target,
                                        y, width, height);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glInvalidateTextureANGLE(GLenum target) {
+  MakeGlMockFunctionUnique("glInvalidateTextureANGLE");
+  interface_->InvalidateTextureANGLE(target);
+}
+
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsBuffer(GLuint buffer) {
   MakeGlMockFunctionUnique("glIsBuffer");
   return interface_->IsBuffer(buffer);
@@ -4226,6 +4232,20 @@ void GL_BINDING_CALL MockGLInterface::Mock_glTexImage2D(GLenum target,
   MakeGlMockFunctionUnique("glTexImage2D");
   interface_->TexImage2D(target, level, internalformat, width, height, border,
                          format, type, pixels);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glTexImage2DExternalANGLE(GLenum target,
+                                                GLint level,
+                                                GLint internalformat,
+                                                GLsizei width,
+                                                GLsizei height,
+                                                GLint border,
+                                                GLenum format,
+                                                GLenum type) {
+  MakeGlMockFunctionUnique("glTexImage2DExternalANGLE");
+  interface_->TexImage2DExternalANGLE(target, level, internalformat, width,
+                                      height, border, format, type);
 }
 
 void GL_BINDING_CALL
@@ -5793,6 +5813,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glInvalidateSubFramebuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glInvalidateSubFramebuffer);
+  if (strcmp(name, "glInvalidateTextureANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glInvalidateTextureANGLE);
   if (strcmp(name, "glIsBuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsBuffer);
   if (strcmp(name, "glIsEnabled") == 0)
@@ -6179,6 +6202,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glTexBufferRangeOES);
   if (strcmp(name, "glTexImage2D") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glTexImage2D);
+  if (strcmp(name, "glTexImage2DExternalANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexImage2DExternalANGLE);
   if (strcmp(name, "glTexImage2DRobustANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glTexImage2DRobustANGLE);

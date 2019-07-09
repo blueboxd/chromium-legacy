@@ -42,6 +42,12 @@
 #     with explicitly imported dependencies in the generated JS module.
 #     For example "cr.foo.Bar|Bar" will replace all occurrences of "cr.foo.Bar"
 #     with "Bar".
+#
+#   auto_imports:
+#     A list of of auto-imports, to inform the script on which variables to
+#     import from a JS module. For example "ui/webui/foo/bar/baz.html|Foo,Bar"
+#     will result in something like "import {Foo, Bar} from ...;" when
+#     encountering any dependency to that file.
 
 import argparse
 import os
@@ -49,10 +55,110 @@ import re
 import sys
 
 _CWD = os.getcwd()
+_ROOT = os.path.normpath(os.path.join(_CWD, '..', '..'))
 
-# Rewrite rules for removing unnecessary namespaces for example "cr.ui.Foo", to
+POLYMER_V1_DIR = 'third_party/polymer/v1_0/components-chromium/'
+POLYMER_V3_DIR = 'third_party/polymer/v3_0/components-chromium/'
+
+# Rewrite rules for replacing global namespace references like "cr.ui.Foo", to
 # "Foo" within a generated JS module. Populated from command line arguments.
 _namespace_rewrites = {}
+
+# Auto-imports map, populated from command line arguments. Specifies which
+# variables to import from a given dependency. For example this is used to
+# import |FocusOutlineManager| whenever a dependency to
+# ui/webui/resources/html/cr/ui/focus_outline_manager.html is encountered.
+_auto_imports = {}
+
+_chrome_redirects = {
+  'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
+  'chrome://resources/html/': 'ui/webui/resources/html/',
+}
+
+_chrome_reverse_redirects = {
+  POLYMER_V3_DIR: 'chrome://resources/polymer/v3_0/',
+  'ui/webui/resources/': 'chrome://resources/',
+}
+
+
+# Helper class for converting dependencies expressed in HTML imports, to JS
+# imports. |to_js_import()| is the only public method exposed by this class.
+# Internally an HTML import path is
+#
+# 1) normalized, meaning converted from a chrome or relative URL to to an
+#    absolute path starting at the repo's root
+# 2) converted to an equivalent JS normalized path
+# 3) de-normalized, meaning converted back to a relative or chrome URL
+# 4) converted to a JS import statement
+class Dependency:
+  def __init__(self, src, dst):
+    self.html_file = src
+    self.html_path = dst
+
+    self.input_format = (
+        'chrome' if self.html_path.startswith('chrome://') else 'relative')
+    self.output_format = self.input_format
+
+    self.html_path_normalized = self._to_html_normalized()
+    self.js_path_normalized = self._to_js_normalized()
+    self.js_path = self._to_js()
+
+  def _to_html_normalized(self):
+    if self.input_format == 'chrome':
+      self.html_path_normalized = self.html_path
+      for r in _chrome_redirects:
+        if self.html_path.startswith(r):
+          self.html_path_normalized = (
+              self.html_path.replace(r, _chrome_redirects[r]))
+          break
+      return self.html_path_normalized
+
+    input_dir = os.path.relpath(os.path.dirname(self.html_file), _ROOT)
+    return os.path.normpath(os.path.join(input_dir, self.html_path))
+
+  def _to_js_normalized(self):
+    if re.match(POLYMER_V1_DIR, self.html_path_normalized):
+      return (self.html_path_normalized
+          .replace(POLYMER_V1_DIR, POLYMER_V3_DIR)
+          .replace(r'.html', '.js'))
+
+    if self.html_path_normalized == 'ui/webui/resources/html/polymer.html':
+      self.output_format = 'chrome'
+      return POLYMER_V3_DIR + 'polymer/polymer_bundled.min.js'
+
+    if re.match(r'ui/webui/resources/html/', self.html_path_normalized):
+      return (self.html_path_normalized
+          .replace(r'ui/webui/resources/html/', 'ui/webui/resources/js/')
+          .replace(r'.html', '.m.js'))
+
+    return self.html_path_normalized.replace(r'.html', '.m.js')
+
+  def _to_js(self):
+    js_path = self.js_path_normalized
+
+    if self.output_format == 'chrome':
+      for r in _chrome_reverse_redirects:
+        if self.js_path_normalized.startswith(r):
+          js_path = self.js_path_normalized.replace(
+              r, _chrome_reverse_redirects[r])
+          break
+      return js_path
+
+    input_dir = os.path.relpath(os.path.dirname(self.html_file), _ROOT)
+    relpath = os.path.relpath(self.js_path_normalized, input_dir)
+    # Prepend "./" if |relpath| refers to a relative subpath, that is not "../".
+    # This prefix is required for JS Modules paths.
+    if not relpath.startswith('.'):
+      relpath = './' + relpath
+
+    return relpath
+
+  def to_js_import(self, auto_imports):
+    if self.html_path_normalized in auto_imports:
+      imports = auto_imports[self.html_path_normalized]
+      return 'import {%s} from \'%s\';' % (', '.join(imports), self.js_path)
+
+    return 'import \'%s\';' % self.js_path
 
 
 def _extract_dependencies(html_file):
@@ -66,43 +172,10 @@ def _extract_dependencies(html_file):
   return deps;
 
 
-def _rewrite_dependency_path(dep):
-  if re.match(r'chrome://resources/polymer/v1_0/', dep):
-    dep = dep.replace(r'/v1_0/', '/v3_0/')
-    dep = dep.replace(r'.html', '.js')
-
-  if dep.endswith('/html/polymer.html'):
-    dep = "chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js"
-
-  if re.match(r'chrome://resources/html/', dep):
-    dep = dep.replace(r'/resources/html/', 'resources/js/')
-
-  dep = dep.replace(r'.html', '.m.js')
-
-  # Prepend "./" if |dep| refers to the same folder as the processed file. This
-  # prefix is necessary for JS modules paths.
-  if not re.match('chrome://', dep) and os.path.dirname(dep) == '':
-    dep = './' + dep
-
-  return dep
-
-
-def _construct_js_import(dep):
-  if dep.endswith('polymer_bundled.min.js'):
-    return 'import {%s, %s} from \'%s\';' % ('Polymer', 'html', dep)
-  # TODO(dpapad): Figure out how to pass these from the command line, such that
-  # users of this script can pass their own default imports.
-  if dep.endswith('paper-ripple-behavior.js'):
-    return 'import {%s} from \'%s\';' % ('PaperRippleBehavior', dep)
-  if dep.endswith('focus_outline_manager.m.js'):
-    return 'import {%s} from \'%s\';' % ('FocusOutlineManager', dep)
-  else:
-    return 'import \'%s\';' % dep
-
-
 def _generate_js_imports(html_file):
-  return map(_construct_js_import,
-      map(_rewrite_dependency_path, _extract_dependencies(html_file)))
+  return map(
+      lambda dep: Dependency(html_file, dep).to_js_import(_auto_imports),
+      _extract_dependencies(html_file))
 
 
 def _extract_dom_module_id(html_file):
@@ -304,6 +377,7 @@ def main(argv):
   parser.add_argument('--js_file', required=True)
   parser.add_argument('--html_file', required=True)
   parser.add_argument('--namespace_rewrites', required=False, nargs="*")
+  parser.add_argument('--auto_imports', required=False, nargs="*")
   parser.add_argument(
       '--html_type', choices=['dom-module', 'style-module', 'custom-style',
       'iron-iconset', 'v3-ready'],
@@ -315,6 +389,13 @@ def main(argv):
     for r in args.namespace_rewrites:
       before, after = r.split('|')
       _namespace_rewrites[before] = after
+
+  # Extract automatic imports from arguments.
+  if args.auto_imports:
+    for entry in args.auto_imports:
+      path, imports = entry.split('|')
+      _auto_imports[path] = imports.split(',')
+
 
   in_folder = os.path.normpath(os.path.join(_CWD, args.in_folder))
   out_folder = os.path.normpath(os.path.join(_CWD, args.out_folder))

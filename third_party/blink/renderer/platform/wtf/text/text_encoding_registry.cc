@@ -97,10 +97,7 @@ typedef HashMap<const char*, const char*, TextEncodingNameHash>
 typedef HashMap<const char*, TextCodecFactory> TextCodecMap;
 
 static Mutex& EncodingRegistryMutex() {
-  // We don't have to use AtomicallyInitializedStatic here because
-  // this function is called on the main thread for any page before
-  // it is used in worker threads.
-  DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 
@@ -179,10 +176,11 @@ static void AddToTextCodecMap(const char* name,
                            TextCodecFactory(function, additional_data));
 }
 
+// Note that this can be called both the main thread and worker threads.
 static void BuildBaseTextCodecMaps() {
-  DCHECK(IsMainThread());
   DCHECK(!g_text_codec_map);
   DCHECK(!g_text_encoding_name_map);
+  EncodingRegistryMutex().AssertAcquired();
 
   g_text_codec_map = new TextCodecMap;
   g_text_encoding_name_map = new TextEncodingNameMap;
@@ -220,10 +218,10 @@ std::unique_ptr<TextCodec> NewTextCodec(const TextEncoding& encoding) {
 const char* AtomicCanonicalTextEncodingName(const char* name) {
   if (!name || !name[0])
     return nullptr;
+  MutexLocker lock(EncodingRegistryMutex());
+
   if (!g_text_encoding_name_map)
     BuildBaseTextCodecMaps();
-
-  MutexLocker lock(EncodingRegistryMutex());
 
   if (const char* atomic_name = g_text_encoding_name_map->at(name))
     return atomic_name;

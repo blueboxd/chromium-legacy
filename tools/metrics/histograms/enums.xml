@@ -17369,6 +17369,7 @@ Called by update_net_error_codes.py.-->
   <int value="569" label="DeviceWebUsbAllowDevicesForUrls"/>
   <int value="570" label="UserFeedbackAllowed"/>
   <int value="571" label="DevicePowerwashAllowed"/>
+  <int value="572" label="ExternalPrintServers"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -49918,7 +49919,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="61" label="InternalContentCapture"/>
   <int value="62" label="MainThreadTaskQueueMemoryPurge"/>
   <int value="63" label="InternalNavigation"/>
-  <int value="64" label="InternalContinueScriptLoading"/>
+  <int value="64" label="InternalFreezableIPC"/>
+  <int value="65" label="InternalContinueScriptLoading"/>
+  <int value="66" label="kWebLocks"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

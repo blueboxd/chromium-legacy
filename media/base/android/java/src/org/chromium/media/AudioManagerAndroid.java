@@ -434,17 +434,12 @@ class AudioManagerAndroid {
         return array;
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @CalledByNative
     private int getNativeOutputSampleRate() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            String sampleRateString = mAudioManager.getProperty(
-                    AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-            return sampleRateString == null
-                    ? DEFAULT_SAMPLING_RATE : Integer.parseInt(sampleRateString);
-        } else {
-            return DEFAULT_SAMPLING_RATE;
-        }
+        String sampleRateString =
+                mAudioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+        return sampleRateString == null ? DEFAULT_SAMPLING_RATE
+                                        : Integer.parseInt(sampleRateString);
     }
 
   /**
@@ -493,12 +488,8 @@ class AudioManagerAndroid {
                 PackageManager.FEATURE_AUDIO_LOW_LATENCY);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @CalledByNative
     private int getAudioLowLatencyOutputFrameSize() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return DEFAULT_FRAME_PER_BUFFER;
-        }
         String framesPerBuffer =
                 mAudioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
         return framesPerBuffer == null
@@ -609,31 +600,16 @@ class AudioManagerAndroid {
      * android.bluetooth.BluetoothAdapter.getProfileConnectionState() requires
      * the BLUETOOTH permission.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private boolean hasBluetoothHeadset() {
         if (!mHasBluetoothPermission) {
             Log.w(TAG, "hasBluetoothHeadset() requires BLUETOOTH permission");
             return false;
         }
 
-        // To get a BluetoothAdapter representing the local Bluetooth adapter,
-        // when running on JELLY_BEAN_MR1 (4.2) and below, call the static
-        // getDefaultAdapter() method; when running on JELLY_BEAN_MR2 (4.3) and
-        // higher, retrieve it through getSystemService(String) with
-        // BLUETOOTH_SERVICE.
-        BluetoothAdapter btAdapter = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            // Use BluetoothManager to get the BluetoothAdapter for
-            // Android 4.3 and above.
-            BluetoothManager btManager =
-                    (BluetoothManager) ContextUtils.getApplicationContext().getSystemService(
-                            Context.BLUETOOTH_SERVICE);
-            btAdapter = btManager.getAdapter();
-        } else {
-            // Use static method for Android 4.2 and below to get the
-            // BluetoothAdapter.
-            btAdapter = BluetoothAdapter.getDefaultAdapter();
-        }
+        BluetoothManager btManager =
+                (BluetoothManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter btAdapter = btManager.getAdapter();
 
         if (btAdapter == null) {
             // Bluetooth not supported on this platform.
@@ -657,6 +633,7 @@ class AudioManagerAndroid {
      * peripheral and automatically routes audio playback and capture appropriately on Android5.0
      * and higher in the order of wired headset first, then USB audio device and earpiece at last.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private boolean hasUsbAudio() {
         // Android 5.0 (API level 21) and above supports USB audio class 1 (UAC1) features for
         // audio functions, capture and playback, in host mode.

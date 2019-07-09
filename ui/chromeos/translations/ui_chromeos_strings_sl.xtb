@@ -220,6 +220,7 @@
 <translation id="3620292326130836921">Vse je varnostno kopirano!</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="3644896802912593514">Širina</translation>
+<translation id="3645531960514756307">Odpni mapo</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3685122418104378273">Sinhronizacija z Googlom Drive je ob uporabi prenosa podatkov v mobilnih omrežjih privzeto onemogočena.</translation>
 <translation id="3726463242007121105">Naprave ni mogoče odpreti, ker njen datotečni sistem ni podprt.</translation>
@@ -647,6 +648,7 @@
 <translation id="8336153091935557858">Včeraj <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandska tipkovnica</translation>
 <translation id="8342318071240498787">Datoteka ali imenik s tem imenom že obstaja.</translation>
+<translation id="8382450452152102026">V <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Prečrkovanje (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Mere</translation>
 <translation id="8412586565681117057">Hitri način vnosa</translation>
@@ -696,6 +698,7 @@
 <translation id="9099674669267916096">Število strani</translation>
 <translation id="9110990317705400362">Stalno si prizadevamo zagotoviti, da bi bilo brskanje varnejše. Prej vas je lahko vsako spletno mesto pozvalo, da dodate razširitev v brskalnik. V zadnjih različicah Google Chroma pa morate Chromu izrecno povedati, da želite te razširitve namestiti, tako da jih dodate na strani »Razširitve«. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Pripni mapo</translation>
 <translation id="9130775360844693113">Člani skupine »<ph name="DESTINATION_NAME" />« bodo imeli dostop do teh elementov.</translation>
 <translation id="9131598836763251128">Izberite eno ali več datotek</translation>
 <translation id="9133055936679483811">Ustvarjanje datoteke zip ni uspelo. <ph name="ERROR_MESSAGE" /></translation>

@@ -12,12 +12,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/sharing/ack_message_handler.h"
 #include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
+#endif  // defined(OS_ANDROID)
 
 namespace syncer {
 class DeviceInfoTracker;
@@ -87,6 +92,10 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   syncer::SyncService* sync_service_;
   AckMessageHandler ack_message_handler_;
   PingMessageHandler ping_message_handler_;
+
+#if defined(OS_ANDROID)
+  ClickToCallMessageHandler click_to_call_message_handler_;
+#endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_;
 

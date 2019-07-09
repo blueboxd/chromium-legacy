@@ -108,7 +108,15 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
     event = MessageEvent::CreateError(
         GetExecutionContext()->GetSecurityOrigin()->ToString());
   }
-  EnqueueEvent(*event, TaskType::kPostedMessage);
+  // <specdef
+  // href="https://html.spec.whatwg.org/multipage/web-messaging.html#dom-broadcastchannel-postmessage">
+  // <spec>The tasks must use the DOM manipulation task source, and, for
+  // those where the event loop specified by the target BroadcastChannel
+  // object's BroadcastChannel settings object is a window event loop,
+  // must be associated with the responsible document specified by that
+  // target BroadcastChannel object's BroadcastChannel settings object.
+  // </spec>
+  EnqueueEvent(*event, TaskType::kDOMManipulation);
 }
 
 void BroadcastChannel::OnError() {
@@ -131,6 +139,13 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
   // Local BroadcastChannelClient for messages send from the browser to this
   // channel.
   mojom::blink::BroadcastChannelClientAssociatedPtrInfo local_client_info;
+  // Note: We cannot associate per-frame task runner here, but postTask
+  //       to it manually via EnqueueEvent, since the current expectation
+  //       is to receive messages even after close for which queued before
+  //       close.
+  //       https://github.com/whatwg/html/issues/1319
+  //       Relying on Mojo binding will cancel the enqueued messages
+  //       at close().
   binding_.Bind(mojo::MakeRequest(&local_client_info));
   binding_.set_connection_error_handler(
       WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));

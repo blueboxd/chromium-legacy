@@ -640,11 +640,43 @@ mojom("web_ui_test_mojo_bindings") {
   ]
 }
 
+mojom("mojo_web_test_helper_test") {
+  testonly = true
+  sources = [
+    "data/mojo_web_test_helper_test.mojom",
+  ]
+
+  # This mojom interface is exposed publicly to web tests which use
+  # prepackaged redistributable JS bindings. It is therefore not desirable to
+  # scramble these messages.
+  scramble_message_ids = false
+}
+
 mojom("mojo_web_test_bindings") {
   testonly = true
   sources = [
     "data/lite_js_test.mojom",
-    "data/mojo_web_test_helper_test.mojom",
+  ]
+
+  public_deps = [
+    ":mojo_web_test_helper_test",
+  ]
+
+  # This mojom interface is exposed publicly to web tests which use
+  # prepackaged redistributable JS bindings. It is therefore not desirable to
+  # scramble these messages.
+  scramble_message_ids = false
+  use_old_js_lite_bindings_names = false
+}
+
+mojom("mojo_web_test_old_names_bindings") {
+  testonly = true
+  sources = [
+    "data/lite_js_old_names_test.mojom",
+  ]
+
+  public_deps = [
+    ":mojo_web_test_helper_test",
   ]
 
   # This mojom interface is exposed publicly to web tests which use
@@ -951,6 +983,7 @@ test("content_browsertests") {
     "../browser/service_worker/service_worker_browsertest.cc",
     "../browser/service_worker/service_worker_clients_api_browsertest.cc",
     "../browser/service_worker/service_worker_file_upload_browsertest.cc",
+    "../browser/service_worker/service_worker_network_isolation_key_browsertest.cc",
     "../browser/service_worker/service_worker_no_best_effort_tasks_browsertest.cc",
     "../browser/session_history_browsertest.cc",
     "../browser/shape_detection/shape_detection_browsertest.cc",

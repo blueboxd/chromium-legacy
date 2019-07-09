@@ -64,8 +64,6 @@ class FrameRendererThumbnail : public FrameRenderer {
 
   // Validate the thumbnail image by comparing it against known golden values.
   bool ValidateThumbnail();
-  // Save the thumbnail image to disk.
-  void SaveThumbnail();
 
  private:
   explicit FrameRendererThumbnail(
@@ -84,6 +82,8 @@ class FrameRendererThumbnail : public FrameRenderer {
   // Convert the thumbnail image to RGBA.
   const std::vector<uint8_t> ConvertThumbnailToRGBA()
       EXCLUSIVE_LOCKS_REQUIRED(renderer_lock_);
+  // Save the thumbnail image to disk.
+  void SaveThumbnail() EXCLUSIVE_LOCKS_REQUIRED(renderer_lock_);
 
   // Destroy the texture associated with the |mailbox| on the renderer thread.
   void DeleteTexture(const gpu::Mailbox& mailbox, const gpu::SyncToken&);

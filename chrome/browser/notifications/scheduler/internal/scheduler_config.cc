@@ -6,6 +6,10 @@
 
 namespace notifications {
 
+// The notification data is hold for one week.
+constexpr base::TimeDelta kDefaultNotificationExpiration =
+    base::TimeDelta::FromDays(7);
+
 // The impression history is hold for 4 weeks.
 constexpr base::TimeDelta kDefaultImpressionExpiration =
     base::TimeDelta::FromDays(28);
@@ -37,6 +41,7 @@ SchedulerConfig::SchedulerConfig()
     : max_daily_shown_all_type(3),
       max_daily_shown_per_type(10),
       initial_daily_shown_per_type(2),
+      notification_expiration(kDefaultNotificationExpiration),
       impression_expiration(kDefaultImpressionExpiration),
       suppression_duration(kDefaultSuppressionDuration),
       dismiss_count(3),

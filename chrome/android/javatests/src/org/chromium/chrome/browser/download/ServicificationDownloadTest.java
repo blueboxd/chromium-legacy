@@ -80,7 +80,7 @@ public final class ServicificationDownloadTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
+    @CommandLineFlags.Add({"enable-features=NetworkService"})
     public void testResumeInterruptedDownload() {
         mNativeTestRule.assertOnlyServiceManagerStarted();
 

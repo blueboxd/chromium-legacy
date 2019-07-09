@@ -528,13 +528,6 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
                  TimeNotSet());
 
     histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 3);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 2);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 4, 1);
-
-    histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramClearName, 1);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramClearName, 3, 1);
@@ -562,11 +555,6 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 1);
 
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramClearName, 1);
@@ -598,11 +586,6 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0, 1);
 
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramClearName, 1);
@@ -736,9 +719,6 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
     ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
 
     histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0);
-
-    histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramClearName, 1);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramClearName, 2, 1);
@@ -795,8 +775,6 @@ TEST_P(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
                  TimeNotSet());
     EXPECT_EQ(0.5, GetActualScore(origin4));
 
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0);
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramClearName, 0);
   }

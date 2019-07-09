@@ -94,6 +94,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     LayoutUnit main_axis_border_scrollbar_padding =
         is_horizontal_flow ? physical_border_padding.HorizontalSum()
                            : physical_border_padding.VerticalSum();
+    LayoutUnit main_axis_border_and_padding =
+        main_axis_border_scrollbar_padding -
+        (is_horizontal_flow
+             ? child.GetLayoutBox()->VerticalScrollbarWidth()
+             : child.GetLayoutBox()->HorizontalScrollbarHeight());
 
     // We want the child's min/max size in its writing mode, not ours. We'll
     // only ever use it if the child's inline axis is our main axis.
@@ -145,8 +150,10 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     // Spec calls this "flex base size"
     // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
+    // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
+    // but no padding or border.
     LayoutUnit flex_base_content_size =
-        flex_base_border_box - main_axis_border_scrollbar_padding;
+        flex_base_border_box - main_axis_border_and_padding;
 
     NGPhysicalBoxStrut physical_child_margins =
         ComputePhysicalMargins(child_space, child_style);
@@ -245,7 +252,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     algorithm_
         ->emplace_back(child.GetLayoutBox(), flex_base_content_size,
                        min_max_sizes_in_main_axis_direction,
-                       main_axis_border_scrollbar_padding, main_axis_margin)
+                       main_axis_border_and_padding, main_axis_margin)
         .ng_input_node = child;
   }
 }
@@ -291,14 +298,12 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       LogicalSize available_size;
       if (is_column_) {
         available_size.inline_size = content_box_size_.inline_size;
-        available_size.block_size =
-            flex_item.flexed_content_size +
-            flex_item.main_axis_border_scrollbar_padding;
+        available_size.block_size = flex_item.flexed_content_size +
+                                    flex_item.main_axis_border_and_padding;
         space_builder.SetIsFixedSizeBlock(true);
       } else {
-        available_size.inline_size =
-            flex_item.flexed_content_size +
-            flex_item.main_axis_border_scrollbar_padding;
+        available_size.inline_size = flex_item.flexed_content_size +
+                                     flex_item.main_axis_border_and_padding;
         available_size.block_size = content_box_size_.block_size;
         space_builder.SetIsFixedSizeInline(true);
       }
@@ -371,10 +376,9 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
         SetOrthogonalFallbackInlineSizeIfNeeded(
             Style(), flex_item.ng_input_node, &space_builder);
 
-        LogicalSize available_size(
-            flex_item.flexed_content_size +
-                flex_item.main_axis_border_scrollbar_padding,
-            flex_item.cross_axis_size);
+        LogicalSize available_size(flex_item.flexed_content_size +
+                                       flex_item.main_axis_border_and_padding,
+                                   flex_item.cross_axis_size);
         if (is_column_)
           available_size.Transpose();
         space_builder.SetAvailableSize(available_size);

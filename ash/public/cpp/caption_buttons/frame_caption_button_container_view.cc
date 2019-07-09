@@ -151,7 +151,8 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame)
-    : frame_(frame),
+    : views::AnimationDelegateViews(frame->GetRootView()),
+      frame_(frame),
       model_(std::make_unique<DefaultCaptionButtonModel>(frame)) {
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal);

@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">No es posible verificar tu contraseña de Windows. Vuelve a intentarlo.</translation>
 <translation id="3306357053520292004">Ya se agregó un usuario en esta computadora que usa esta cuenta. Accede con una diferente.</translation>
 <translation id="369030246015333661">Se bloqueó tu cuenta. Comunícate con un administrador del sistema.</translation>
+<translation id="3968372833844047539">Solo pueden acceder los usuarios de G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Ocurrió un error interno.</translation>
+<translation id="4267670563222825190">No se encontró ningún usuario de dominio para tu cuenta. Ponte en contacto con el administrador.</translation>
 <translation id="4300229033992784001">Se cambió la contraseña de tu cuenta. Ingresa tu contraseña de Windows actual para sincronizar tu cuenta de Windows con tu cuenta de trabajo.</translation>
 <translation id="4706454071748629324">No se pudo agregar un usuario nuevo. Esta computadora solo permite crear un usuario con una cuenta de trabajo.</translation>
 <translation id="6292766200512304540">Usuario creado a partir de una cuenta de trabajo</translation>

@@ -22,6 +22,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_context.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device_impl.h"
@@ -792,7 +793,7 @@ void UsbDeviceHandleImpl::GenericTransfer(
   }
 
   std::unique_ptr<Transfer> transfer;
-  UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
+  UsbTransferType transfer_type = endpoint_it->second.endpoint->type;
   if (transfer_type == UsbTransferType::BULK) {
     transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
                                             static_cast<int>(buffer->size()),
@@ -996,8 +997,9 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
       for (const UsbInterfaceDescriptor& iface : config->interfaces) {
         if (iface.interface_number == interface_number &&
             iface.alternate_setting == claimed_iface->alternate_setting()) {
-          for (const UsbEndpointDescriptor& endpoint : iface.endpoints) {
-            endpoint_map_[endpoint.address] = {&iface, &endpoint};
+          for (const auto& endpoint : iface.endpoints) {
+            endpoint_map_[ConvertEndpointNumberToAddress(*endpoint)] = {
+                &iface, endpoint.get()};
           }
           break;
         }

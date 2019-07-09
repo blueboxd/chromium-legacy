@@ -6,9 +6,11 @@
 #define MEDIA_GPU_CHROMEOS_PLATFORM_VIDEO_FRAME_POOL_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -36,6 +38,8 @@ namespace media {
 // will be purged.
 class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
  public:
+  using DmabufId = const std::vector<base::ScopedFD>*;
+
   PlatformVideoFramePool();
   ~PlatformVideoFramePool() override;
 
@@ -53,6 +57,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
 
  private:
   friend class PlatformVideoFramePoolTest;
+
   using CreateFrameCB = base::RepeatingCallback<scoped_refptr<VideoFrame>(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
@@ -77,16 +82,12 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   static void OnFrameReleasedThunk(
       base::Optional<base::WeakPtr<PlatformVideoFramePool>> pool,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      int wrapped_frame_id,
       scoped_refptr<VideoFrame> origin_frame);
-  // Called when a wrapped frame gets destroyed. |wrapped_frame_id| is unique_id
-  // of the wrapped frame. The actual frame is placed in |free_frames_| by
-  // this function so it can be reused.
+  // Called when a wrapped frame gets destroyed.
   // When returning a frame to the pool, the pool might have already been
   // destroyed. In this case, the WeakPtr of the pool will have been invalidated
   // at |parent_task_runner_|, and OnFrameReleased() will not get executed.
-  void OnFrameReleased(int wrapped_frame_id,
-                       scoped_refptr<VideoFrame> origin_frame);
+  void OnFrameReleased(scoped_refptr<VideoFrame> origin_frame);
 
   void InsertFreeFrame_Locked(scoped_refptr<VideoFrame> frame)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -123,7 +124,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // |natural_size_|.
   base::circular_deque<FrameEntry> free_frames_ GUARDED_BY(lock_);
   // Mapping from the unique_id of the wrapped frame to the original frame.
-  std::map<int, VideoFrame*> frames_in_use_ GUARDED_BY(lock_);
+  std::map<DmabufId, VideoFrame*> frames_in_use_ GUARDED_BY(lock_);
 
   // The maximum number of frames created by the pool.
   size_t max_num_frames_ GUARDED_BY(lock_);

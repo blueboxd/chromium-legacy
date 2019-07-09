@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2872961005593481000">Închide</translation>
+<translation id="2912823482158781027">ACTUALIZEAZĂ TICHETUL</translation>
 <translation id="3511655281162215899">Alege imediat o parolă nouă</translation>
+<translation id="3562817605261346876">Actualizează în curând tichetul pentru <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Parolă nouă</translation>
 <translation id="445059817448385655">Parolă veche</translation>
 <translation id="467510802200863975">Parolele nu se potrivesc</translation>
@@ -22,12 +24,14 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="5733345267661125295">Alege acum o parolă nouă</translation>
+<translation id="5743581760404859096">Tichetul Kerberos va expira în curând</translation>
 <translation id="5832805196449965646">Adăugați un utilizator</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="6058625436358447366">Pentru a finaliza, introdu parola veche și pe cea nouă</translation>
 <translation id="6106186594183574873">Pentru a finaliza, introdu vechea parolă</translation>
 <translation id="6146993107019042706">Pentru a finaliza, introdu noua parolă</translation>
 <translation id="6574601967010742428">Administratorul dispozitivului poate să îți monitorizeze activitatea.</translation>
+<translation id="7280705187789120111">Tichetul Kerberos va expira în curând</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Parola curentă a expirat!}=1{Parola curentă va expira în mai puțin de o zi!}few{Parola curentă va expira în mai puțin de # zile!}other{Parola curentă va expira în mai puțin de # de zile!}}</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7690294790491645610">Confirmă noua parolă</translation>

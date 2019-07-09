@@ -54,7 +54,7 @@ void PDFiumRange::SetCharCount(int char_count) {
 const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
     const pp::Point& offset,
     double zoom,
-    int rotation) {
+    int rotation) const {
   if (offset == cached_screen_rects_offset_ &&
       zoom == cached_screen_rects_zoom_) {
     return cached_screen_rects_;

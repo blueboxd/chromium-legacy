@@ -24,7 +24,7 @@ namespace util {
 // stream.
 class FileStreamMd5Digester {
  public:
-  using ResultCallback = base::OnceCallback<void(const std::string&)>;
+  using ResultCallback = base::OnceCallback<void(std::string)>;
 
   FileStreamMd5Digester();
   ~FileStreamMd5Digester();

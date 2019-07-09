@@ -120,5 +120,86 @@ void AbstractTextureImplOnSharedContext::OnContextLost() {
   shared_context_state_.reset();
 }
 
+AbstractTextureImplOnSharedContextPassthrough::
+    AbstractTextureImplOnSharedContextPassthrough(
+        GLenum target,
+        scoped_refptr<gpu::SharedContextState> shared_context_state)
+    : shared_context_state_(std::move(shared_context_state)) {
+  DCHECK(shared_context_state_);
+
+  // The calling code which wants to create this abstract texture should have
+  // already made the shared context current.
+  DCHECK(shared_context_state_->IsCurrent(nullptr));
+
+  // Create a gles2 Texture.
+  GLuint service_id = 0;
+  auto* api = gl::g_current_gl_context;
+  api->glGenTexturesFn(1, &service_id);
+
+  GLint prev_texture = 0;
+  api->glGetIntegervFn(GetTextureBindingQuery(target), &prev_texture);
+
+  api->glBindTextureFn(target, service_id);
+  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glBindTexture(target, prev_texture);
+
+  texture_ = new TexturePassthrough(service_id, target);
+  shared_context_state_->AddContextLostObserver(this);
+}
+
+AbstractTextureImplOnSharedContextPassthrough::
+    ~AbstractTextureImplOnSharedContextPassthrough() {
+  if (cleanup_cb_)
+    std::move(cleanup_cb_).Run(this);
+}
+
+TextureBase* AbstractTextureImplOnSharedContextPassthrough::GetTextureBase()
+    const {
+  return texture_.get();
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::SetParameteri(GLenum pname,
+                                                                  GLint param) {
+  NOTIMPLEMENTED();
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::BindStreamTextureImage(
+    GLStreamTextureImage* image,
+    GLuint service_id) {
+  NOTIMPLEMENTED();
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::BindImage(
+    gl::GLImage* image,
+    bool client_managed) {
+  NOTIMPLEMENTED();
+}
+
+gl::GLImage* AbstractTextureImplOnSharedContextPassthrough::GetImage() const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::SetCleared() {
+  NOTIMPLEMENTED();
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::SetCleanupCallback(
+    CleanupCallback cb) {
+  cleanup_cb_ = std::move(cb);
+}
+
+void AbstractTextureImplOnSharedContextPassthrough::OnContextLost() {
+  if (cleanup_cb_)
+    std::move(cleanup_cb_).Run(this);
+  texture_->MarkContextLost();
+  shared_context_state_->RemoveContextLostObserver(this);
+  shared_context_state_ = nullptr;
+}
+
 }  // namespace gles2
 }  // namespace gpu

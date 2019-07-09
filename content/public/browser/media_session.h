@@ -67,7 +67,8 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   // Adds an observer to listen to events related to this MediaSession.
   void AddObserver(
-      media_session::mojom::MediaSessionObserverPtr observer) override = 0;
+      mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer)
+      override = 0;
 
   // Skip to the previous track. If there is no previous track then this will be
   // a no-op.

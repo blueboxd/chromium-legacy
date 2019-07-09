@@ -117,13 +117,14 @@ RESOURCES = \
 	src/images/settings_timer_duration.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
+	src/js/browser_proxy/browser_proxy.js \
 	src/js/gallerybutton.js \
 	src/js/google-analytics-bundle.js \
 	src/js/main.js \
 	src/js/metrics.js \
-	src/js/models/gallery.js \
 	src/js/models/filenamer.js \
 	src/js/models/filesystem.js \
+	src/js/models/gallery.js \
 	src/js/mojo/imagecapture.js \
 	src/js/nav.js \
 	src/js/resolution_event_broker.js \

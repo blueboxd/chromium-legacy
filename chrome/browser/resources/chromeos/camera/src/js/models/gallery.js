@@ -286,7 +286,7 @@ cca.models.Gallery.prototype.wrapPicture_ = function(
 
 /**
  * Saves photo capture result into persistent storage and adds it into gallery.
- * @param {Blob} blob Data of the photo to be added.
+ * @param {!Blob} blob Data of the photo to be added.
  * @param {string} filename Filename of photo to be added.
  * @return {!Promise} Promise for the operation.
  */
@@ -324,7 +324,6 @@ cca.models.Gallery.prototype.saveVideo = async function(tempfile, filename) {
 /**
  * Adds a picture into gallery.
  * @param {cca.models.Gallery.Picture} picture Picture to be added.
- * @async
  * @private
  */
 cca.models.Gallery.prototype.addPicture_ = async function(picture) {

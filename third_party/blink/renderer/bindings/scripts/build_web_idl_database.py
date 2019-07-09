@@ -11,19 +11,20 @@ The output file may contain information about component, too.
 
 import optparse
 import utilities
-from web_idl.idl_compiler import IdlCompiler
-from web_idl import ir_builder
 from web_idl.identifier_ir_map import IdentifierIRMap
+from web_idl.idl_compiler import IdlCompiler
+from web_idl.idl_reference_proxy import RefByIdFactory
+from web_idl.ir_builder import load_and_register_idl_definitions
 
 
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--output', type='string',
-                      help='pickle file to write down')
+                      help='filepath of the resulting database')
     options, args = parser.parse_args()
 
     if options.output is None:
-        parser.error('Must specify a pickle file to output using --output.')
+        parser.error('Specify a filepath of the database with --output.')
 
     return options, args
 
@@ -31,7 +32,13 @@ def parse_options():
 def main():
     options, filepaths = parse_options()
     ir_map = IdentifierIRMap()
-    ir_builder.load_and_register_idl_definitions(filepaths, ir_map)
+    ref_to_idl_type_factory = RefByIdFactory()
+    ref_to_idl_def_factory = RefByIdFactory()
+    load_and_register_idl_definitions(
+        filepaths,
+        ir_map.register,
+        ref_to_idl_type_factory.create,
+        ref_to_idl_def_factory.create)
     idl_compiler = IdlCompiler(ir_map)
     idl_database = idl_compiler.build_database()
     utilities.write_pickle_file(options.output, idl_database)

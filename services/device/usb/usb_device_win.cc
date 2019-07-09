@@ -81,7 +81,7 @@ void UsbDeviceWin::OnReadDescriptors(
     return;
   }
 
-  descriptor_ = *descriptor;
+  descriptor_ = std::move(*descriptor);
 
   // WinUSB only supports the configuration 1.
   ActiveConfigurationChanged(1);

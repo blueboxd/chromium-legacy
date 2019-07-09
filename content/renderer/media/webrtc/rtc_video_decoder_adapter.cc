@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -24,6 +25,7 @@
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_types.h"
@@ -240,7 +242,9 @@ int32_t RTCVideoDecoderAdapter::Decode(
   // to software decoding. See https://crbug.com/webrtc/9304.
   if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
       input_image.SpatialIndex().value_or(0) > 0) {
-    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    }
   }
 
   if (missing_frames || !input_image._completeFrame) {
@@ -261,10 +265,29 @@ int32_t RTCVideoDecoderAdapter::Decode(
     // ok, we got key frame and can continue decoding
     key_frame_required_ = false;
   }
+
+  std::vector<uint32_t> spatial_layer_frame_size;
+  for (int i = 0;; i++) {
+    auto frame_size = input_image.SpatialLayerFrameSize(i);
+    if (!frame_size)
+      break;
+    spatial_layer_frame_size.push_back(*frame_size);
+  }
+
   // Convert to media::DecoderBuffer.
   // TODO(sandersd): What is |render_time_ms|?
-  scoped_refptr<media::DecoderBuffer> buffer =
-      media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+  scoped_refptr<media::DecoderBuffer> buffer;
+  if (spatial_layer_frame_size.size() > 1) {
+    const uint8_t* side_data =
+        reinterpret_cast<const uint8_t*>(spatial_layer_frame_size.data());
+    size_t side_data_size =
+        spatial_layer_frame_size.size() * sizeof(uint32_t) / sizeof(uint8_t);
+    buffer = media::DecoderBuffer::CopyFrom(
+        input_image.data(), input_image.size(), side_data, side_data_size);
+  } else {
+    buffer =
+        media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+  }
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 
@@ -282,6 +305,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
     base::AutoLock auto_lock(lock_);
     if (has_error_)
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+
     if (pending_buffers_.size() >= kMaxPendingBuffers) {
       // We are severely behind. Drop pending buffers and request a keyframe to
       // catch up as quickly as possible.

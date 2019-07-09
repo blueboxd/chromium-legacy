@@ -27,7 +27,8 @@ using mojom::blink::NativeFileSystemErrorPtr;
 
 NativeFileSystemDirectoryHandle::NativeFileSystemDirectoryHandle(
     const String& name,
-    mojom::blink::NativeFileSystemDirectoryHandlePtr mojo_ptr)
+    RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>
+        mojo_ptr)
     : NativeFileSystemHandle(name), mojo_ptr_(std::move(mojo_ptr)) {
   DCHECK(mojo_ptr_);
 }
@@ -45,10 +46,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
              mojom::blink::NativeFileSystemFileHandlePtr handle) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context)
+              return;
             if (result->error_code == base::File::FILE_OK) {
               resolver->Resolve(
                   MakeGarbageCollected<NativeFileSystemFileHandle>(
-                      name, std::move(handle)));
+                      name,
+                      RevocableInterfacePtr<
+                          mojom::blink::NativeFileSystemFileHandle>(
+                          handle.PassInterface(),
+                          context->GetInterfaceInvalidator(),
+                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
             } else {
               resolver->Reject(
                   file_error::CreateDOMException(result->error_code));
@@ -72,10 +81,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
              mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context)
+              return;
             if (result->error_code == base::File::FILE_OK) {
               resolver->Resolve(
                   MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                      name, std::move(handle)));
+                      name,
+                      RevocableInterfacePtr<
+                          mojom::blink::NativeFileSystemDirectoryHandle>(
+                          handle.PassInterface(),
+                          context->GetInterfaceInvalidator(),
+                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
             } else {
               resolver->Reject(
                   file_error::CreateDOMException(result->error_code));
@@ -96,8 +113,8 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 ScriptValue NativeFileSystemDirectoryHandle::getEntries(
     ScriptState* script_state) {
-  auto* iterator =
-      MakeGarbageCollected<NativeFileSystemDirectoryIterator>(this);
+  auto* iterator = MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
+      this, ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
   auto context = script_state->GetContext();
   v8::Local<v8::Object> result = v8::Object::New(isolate);
@@ -160,10 +177,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
          mojom::blink::NativeFileSystemManagerPtr,
          NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+        ExecutionContext* context = resolver->GetExecutionContext();
+        if (!context)
+          return;
         if (result->error_code == base::File::FILE_OK) {
           resolver->Resolve(
               MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                  kSandboxRootDirectoryName, std::move(handle)));
+                  kSandboxRootDirectoryName,
+                  RevocableInterfacePtr<
+                      mojom::blink::NativeFileSystemDirectoryHandle>(
+                      handle.PassInterface(),
+                      context->GetInterfaceInvalidator(),
+                      context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
         } else {
           resolver->Reject(file_error::CreateDOMException(result->error_code));
         }

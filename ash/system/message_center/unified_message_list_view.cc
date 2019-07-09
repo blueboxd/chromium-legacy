@@ -212,7 +212,8 @@ class UnifiedMessageListView::MessageViewContainer
 UnifiedMessageListView::UnifiedMessageListView(
     UnifiedMessageCenterView* message_center_view,
     UnifiedSystemTrayModel* model)
-    : message_center_view_(message_center_view),
+    : views::AnimationDelegateViews(this),
+      message_center_view_(message_center_view),
       model_(model),
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);

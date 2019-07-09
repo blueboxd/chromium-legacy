@@ -325,7 +325,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // NOTE: This weak pointer is invalidated when the message pipe is closed or
   // transferred (i.e., when |connected_| is set to false).
   base::WeakPtr<Connector> weak_self_;
-  base::WeakPtrFactory<Connector> weak_factory_;
+  base::WeakPtrFactory<Connector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Connector);
 };

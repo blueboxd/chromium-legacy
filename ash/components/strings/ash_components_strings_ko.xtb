@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="104962181688258143">파일 앱 열기</translation>
+<translation id="1098295134904615027">오른쪽에서 가상 데스크를 활성화합니다.</translation>
 <translation id="1122869341872663659"><ph name="QUERY" />에 관한 검색결과 <ph name="N" />개 표시 중</translation>
 <translation id="1195667586424773550">링크를 탭의 검색주소창으로 드래그하세요.</translation>
 <translation id="1204450209689312104">시크릿 모드로 새 창 열기</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 또는 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">행의 끝으로 이동</translation>
+<translation id="1499072997694708844">열려 있는 찾기 창을 닫거나 현재 페이지 로드를 중지합니다.</translation>
 <translation id="1510238584712386396">런처</translation>
 <translation id="152892567002884378">볼륨 크게</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">검색주소창에 입력한 주소에 www. 및 .com을 추가한 후 페이지 열기</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 또는 <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">왼쪽에서 가상 데스크를 활성화합니다.</translation>
 <translation id="1996162290124031907">다음 탭으로 이동</translation>
 <translation id="2010818616644390445">창의 마지막 탭으로 이동</translation>
 <translation id="2040706009561734834">런처 열기/닫기</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">스크린샷 찍기</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">주소 표시줄로 이동</translation>
+<translation id="3165428420335997629">새로운 가상 데스크를 만듭니다.</translation>
 <translation id="3256109297135787951">실행기에 있는 항목에서 강조표시를 삭제합니다.</translation>
 <translation id="3288816184963444640">현재 창 닫기</translation>
 <translation id="3407560819924487926">작업 관리자 호출</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">현재 페이지 검색</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />를 누르고 링크를 클릭</translation>
 <translation id="561814908794220892">새 탭에서 웹페이지 열기</translation>
+<translation id="5620219513321115856">활성 창을 오른쪽 데스크로 옮깁니다.</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> 또는 <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">탭에서 링크 열기</translation>
 <translation id="5757474750054631686">키보드 어둡게(백라이트 키보드만 해당)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">화면 90도 회전</translation>
 <translation id="8241665785394195545">오른쪽 대괄호</translation>
 <translation id="8264941229485248811">Developer Tools 검사기 표시 또는 숨기기</translation>
+<translation id="8355937569537581904">현재 가상 데스크를 삭제합니다.</translation>
 <translation id="836869401750819675">다운로드 페이지 열기</translation>
 <translation id="8388247778047144397">링크를 탭 표시줄의 빈 영역으로 드래그</translation>
 <translation id="8389638407792712197">새 창 열기</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">이전 단어 또는 글자를 선택</translation>
 <translation id="8727232706774971183">알림 확인</translation>
 <translation id="8855885154700222542">전체화면 키</translation>
+<translation id="8881584919399569791">활성 창을 왼쪽 데스크로 옮깁니다.</translation>
 <translation id="88986195241502842">페이지 아래로</translation>
 <translation id="8924883688469390268">이전 사용자로 전환</translation>
 <translation id="8977648847395357314">검색주소창의 콘텐츠를 선택</translation>

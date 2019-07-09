@@ -133,6 +133,22 @@ void SetHistoryEntryUrlAndTitle(
   result->SetString("title", title_to_set);
 }
 
+// Helper function to check if entry is present in user remote data (server-side
+// history).
+bool IsEntryInRemoteUserData(
+    const BrowsingHistoryService::HistoryEntry& entry) {
+  switch (entry.entry_type) {
+    case BrowsingHistoryService::HistoryEntry::EntryType::EMPTY_ENTRY:
+    case BrowsingHistoryService::HistoryEntry::EntryType::LOCAL_ENTRY:
+      return false;
+    case BrowsingHistoryService::HistoryEntry::EntryType::REMOTE_ENTRY:
+    case BrowsingHistoryService::HistoryEntry::EntryType::COMBINED_ENTRY:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // Converts |entry| to a DictionaryValue to be owned by the caller.
 std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
@@ -223,6 +239,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetBoolean("starred", bookmark_model->IsBookmarked(entry.url));
   result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
   result->SetBoolean("blockedVisit", is_blocked_visit);
+  result->SetBoolean("isUrlInRemoteUserData", IsEntryInRemoteUserData(entry));
 
   return result;
 }

@@ -22,13 +22,6 @@ class ImageSkia;
 
 namespace extensions {
 
-// Returns true if |page_url| is in the scope of the app for |app_url|. If the
-// app has no scope defined (as in a bookmark app), we fall back to checking
-// |page_url| has the same origin as |app_url|.
-bool IsSameScope(const GURL& app_url,
-                 const GURL& page_url,
-                 content::BrowserContext* profile);
-
 class Extension;
 
 // Class to encapsulate logic to control the browser UI for extension based web
@@ -80,6 +73,8 @@ class HostedAppBrowserController : public web_app::AppBrowserController {
 
   // Gets the launch url for the app.
   GURL GetAppLaunchURL() const override;
+
+  bool IsUrlInAppScope(const GURL& url) const override;
 
   // Gets the extension for this controller.
   const Extension* GetExtensionForTesting() const;

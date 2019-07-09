@@ -1320,11 +1320,7 @@ TEST_F(ExtensionSettingsSyncTest,
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
   // This value should be larger than the limit in sync_storage_backend.cc.
-  std::string string_10k;
-  for (size_t i = 0; i < 10000; ++i) {
-    string_10k.append("a");
-  }
-  base::Value large_value(string_10k);
+  base::Value large_value(std::string(10000, 'a'));
 
   PostOnBackendSequenceAndWait(FROM_HERE, [&, this]() {
     GetSyncableService(model_type)

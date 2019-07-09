@@ -254,6 +254,12 @@ const base::Feature kDecodeLossyWebPImagesToYUV{
 const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables usage of render frame observer as the receiver of the resource
+// loading hints in the render process.
+// https://crbug.com/891328.
+const base::Feature kSendPreviewsLoadingHintsBeforeCommit{
+    "SendPreviewsLoadingHintsBeforeCommit", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at
 // https://crbug.com/942440.

@@ -264,9 +264,9 @@ class PDFiumEngine : public PDFEngine,
   // PDFiumPage because we might not have that structure when we need this.
   pp::Size GetPageSize(int index);
 
-  void GetAllScreenRectsUnion(std::vector<PDFiumRange>* rect_range,
+  void GetAllScreenRectsUnion(const std::vector<PDFiumRange>& rect_range,
                               const pp::Point& offset_point,
-                              std::vector<pp::Rect>* rect_vector);
+                              std::vector<pp::Rect>* rect_vector) const;
 
   void UpdateTickMarks();
 
@@ -364,7 +364,7 @@ class PDFiumEngine : public PDFEngine,
   void PaintPageShadow(int progressive_index, pp::ImageData* image_data);
 
   // Highlight visible find results and selections.
-  void DrawSelections(int progressive_index, pp::ImageData* image_data);
+  void DrawSelections(int progressive_index, pp::ImageData* image_data) const;
 
   // Paints an page that hasn't finished downloading.
   void PaintUnavailablePage(int page_index,
@@ -408,7 +408,7 @@ class PDFiumEngine : public PDFEngine,
                  int color_red,
                  int color_green,
                  int color_blue,
-                 std::vector<pp::Rect>* highlighted_rects);
+                 std::vector<pp::Rect>* highlighted_rects) const;
 
   // Helper function to convert a device to page coordinates.  If the page is
   // not yet loaded, |page_x| and |page_y| will be set to 0.

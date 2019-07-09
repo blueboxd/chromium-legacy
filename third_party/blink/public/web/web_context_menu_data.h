@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_menu_item_info.h"
 
@@ -81,13 +80,6 @@ struct WebContextMenuData {
 
   // Whether the image in context is a null.
   bool has_image_contents;
-
-  // Whether the image in context is a Client-side Lo-Fi placeholder image.
-  bool is_placeholder_image;
-
-  // If |media_type| is MediaTypeImage and |has_image_contents| is true, then
-  // this contains the image's WebURLResponse.
-  WebURLResponse image_response;
 
   // The absolute URL of the page in context.
   WebURL page_url;

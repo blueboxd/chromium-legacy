@@ -69,7 +69,7 @@
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1385214448885562192">Pritisnite »enter« za sprejetje ali »escape« za preklic, dol za naprej in gor za nazaj.</translation>
 <translation id="1396114365388024581">sezzav</translation>
-<translation id="139902759009894363">Najava atributov obogatenega besedila</translation>
+<translation id="139902759009894363">Izgovorjava atributov obogatenega besedila</translation>
 <translation id="1405567553485452995">Svetlo zelena</translation>
 <translation id="1417889266572670458">Mornarsko modra</translation>
 <translation id="1431911867058218151">Slivova</translation>
@@ -320,6 +320,7 @@
 <translation id="3232388865800379423">Pojavni gumb</translation>
 <translation id="3241052487511142956">Prejšnja obiskana povezava</translation>
 <translation id="3241638166094654466">Celice v posamezni vrstici:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">pokončno</translation>
 <translation id="3286390186030710347">Drsnik</translation>
 <translation id="3299925995433437805">Ni naslednje obiskane povezave</translation>

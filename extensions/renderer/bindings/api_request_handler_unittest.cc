@@ -12,6 +12,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/test_interaction_provider.h"
 #include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/converter.h"
 #include "gin/function_template.h"
@@ -41,11 +42,13 @@ class APIRequestHandlerTest : public APIBindingTest {
     return std::make_unique<APIRequestHandler>(
         base::DoNothing(),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-        nullptr, base::BindRepeating(&GetTestUserActivationState));
+        nullptr, interaction_provider());
   }
 
-  void SaveUserActivationState(base::Optional<bool>* ran_with_user_gesture) {
-    *ran_with_user_gesture = GetTestUserActivationState(MainContext());
+  void SaveUserActivationState(v8::Local<v8::Context> context,
+                               base::Optional<bool>* ran_with_user_gesture) {
+    *ran_with_user_gesture =
+        interaction_provider()->HasActiveInteraction(context);
   }
 
  protected:
@@ -58,12 +61,19 @@ class APIRequestHandlerTest : public APIBindingTest {
             &APIRequestHandlerTest::SetDidRunJS, base::Unretained(this))));
   }
 
+  InteractionProvider* interaction_provider() {
+    if (!interaction_provider_)
+      interaction_provider_ = std::make_unique<TestInteractionProvider>();
+    return interaction_provider_.get();
+  }
+
   bool did_run_js() const { return did_run_js_; }
 
  private:
   void SetDidRunJS() { did_run_js_ = true; }
 
   bool did_run_js_ = false;
+  std::unique_ptr<TestInteractionProvider> interaction_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandlerTest);
 };
@@ -287,7 +297,8 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
       gin::CreateFunctionTemplate(
           isolate(),
           base::BindRepeating(&APIRequestHandlerTest::SaveUserActivationState,
-                              base::Unretained(this), &ran_with_user_gesture));
+                              base::Unretained(this), context,
+                              &ran_with_user_gesture));
   v8::Local<v8::Function> v8_callback =
       function_template->GetFunction(context).ToLocalChecked();
 
@@ -310,7 +321,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   // activate a new user gesture on the stack, and v2 should rely on the gesture
   // being persisted (or generated from the browser). We should clean this up.
 
-  EXPECT_TRUE(GetTestUserActivationState(MainContext()));
+  EXPECT_TRUE(interaction_provider()->HasActiveInteraction(context));
 
   request_id = request_handler->StartRequest(
       context, kMethod, std::make_unique<base::ListValue>(), v8_callback,
@@ -321,7 +332,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   EXPECT_TRUE(*ran_with_user_gesture);
 
   // Sanity check: the callback doesn't change the state
-  EXPECT_TRUE(GetTestUserActivationState(MainContext()));
+  EXPECT_TRUE(interaction_provider()->HasActiveInteraction(context));
 }
 
 TEST_F(APIRequestHandlerTest, RequestThread) {
@@ -338,7 +349,7 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
   APIRequestHandler request_handler(
       base::BindRepeating(on_request, &thread),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      nullptr, base::BindRepeating(&GetTestUserActivationState));
+      nullptr, interaction_provider());
 
   request_handler.StartRequest(
       context, kMethod, std::make_unique<base::ListValue>(),
@@ -375,7 +386,7 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
       base::DoNothing(),
       APILastError(base::BindRepeating(get_parent),
                    base::BindRepeating(log_error, &logged_error)),
-      nullptr, base::BindRepeating(&GetTestUserActivationState));
+      nullptr, interaction_provider());
 
   const char kReportExposedLastError[] =
       "(function() {\n"
@@ -477,7 +488,7 @@ TEST_F(APIRequestHandlerTest, AddPendingRequest) {
   APIRequestHandler request_handler(
       base::BindRepeating(handle_request, &dispatched_request),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      nullptr, base::BindRepeating(&GetTestUserActivationState));
+      nullptr, interaction_provider());
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
@@ -520,7 +531,7 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
   APIRequestHandler request_handler(
       base::DoNothing(),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      &exception_handler, base::BindRepeating(&GetTestUserActivationState));
+      &exception_handler, interaction_provider());
 
   v8::TryCatch outer_try_catch(isolate());
   v8::Local<v8::Function> callback_throwing_error =

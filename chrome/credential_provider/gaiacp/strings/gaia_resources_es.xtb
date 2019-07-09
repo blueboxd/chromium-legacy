@@ -9,7 +9,9 @@
 <translation id="2595469428674600431">No se ha podido verificar tu contraseña de Windows. Vuelve a intentarlo.</translation>
 <translation id="3306357053520292004">Ya se ha registrado otro usuario en este ordenador con esta cuenta. Inicia sesión con otra cuenta.</translation>
 <translation id="369030246015333661">Tu cuenta se ha bloqueado. Ponte en contacto con el administrador del sistema.</translation>
+<translation id="3968372833844047539">Solo pueden iniciar sesión los usuarios de empresa de G Suite.</translation>
 <translation id="4057329986137569701">Se ha producido un error interno.</translation>
+<translation id="4267670563222825190">No se ha encontrado ningún usuario de dominio para tu cuenta. Ponte en contacto con tu administrador.</translation>
 <translation id="4300229033992784001">La contraseña de tu cuenta ha cambiado. Introduce tu contraseña de Windows actual para sincronizar tu cuenta de Windows con la de trabajo.</translation>
 <translation id="4706454071748629324">No se ha podido añadir un nuevo usuario. En este ordenador solo se pueden crear usuarios con una cuenta de trabajo.</translation>
 <translation id="6292766200512304540">Usuario creado desde una cuenta de trabajo</translation>

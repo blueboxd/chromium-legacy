@@ -10,11 +10,11 @@
 
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "base/synchronization/lock.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -105,6 +105,34 @@ ScopedVAImage::~ScopedVAImage() {
     va_buffer_.release();
     vaDestroyImage(va_display_, image_->image_id);
   }
+}
+
+ScopedVASurface::ScopedVASurface(base::Lock* va_lock,
+                                 VADisplay va_display,
+                                 VASurfaceID va_surface_id,
+                                 const gfx::Size& size,
+                                 unsigned int va_rt_format)
+    : va_lock_(va_lock),
+      va_display_(va_display),
+      va_surface_id_(va_surface_id),
+      size_(size),
+      va_rt_format_(va_rt_format) {}
+
+ScopedVASurface::~ScopedVASurface() {
+  if (VA_INVALID_ID == va_surface_id_)
+    return;
+
+  base::AutoLock auto_lock(*va_lock_);
+  VASurfaceID va_surface_to_destroy = va_surface_id_;
+  const VAStatus va_res =
+      vaDestroySurfaces(va_display_, &va_surface_to_destroy, 1);
+  if (VA_STATUS_SUCCESS != va_res)
+    LOG(ERROR) << "vaDestroySurfaces failed: " << vaErrorStr(va_res);
+}
+
+bool ScopedVASurface::IsValid() const {
+  return va_surface_id_ != VA_INVALID_ID && !size_.IsEmpty() &&
+         va_rt_format_ != kInvalidVaRtFormat;
 }
 
 bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,

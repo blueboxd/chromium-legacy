@@ -34,6 +34,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
@@ -187,9 +188,12 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
       &DevToolsFrontendImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
-  frame.GetInterfaceRegistry()->AddInterface(
-      WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
-                         WrapWeakPersistent(&frame)));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
+    frame.GetInterfaceRegistry()->AddInterface(
+        WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
+                           WrapWeakPersistent(&frame)));
+  }
   ModulesInitializer::InitLocalFrame(frame);
 }
 

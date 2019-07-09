@@ -6,13 +6,13 @@
 #define SERVICES_DEVICE_USB_USB_ENDPOINT_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "services/device/usb/usb_descriptors.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace device {
 
 class UsbEndpointAndroid {
  public:
-  static UsbEndpointDescriptor Convert(
+  static mojom::UsbEndpointInfoPtr Convert(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& usb_endpoint);
 };

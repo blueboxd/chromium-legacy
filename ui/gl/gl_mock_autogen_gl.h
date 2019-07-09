@@ -866,6 +866,7 @@ MOCK_METHOD7(InvalidateSubFramebuffer,
                   GLint y,
                   GLint width,
                   GLint height));
+MOCK_METHOD1(InvalidateTextureANGLE, void(GLenum target));
 MOCK_METHOD1(IsBuffer, GLboolean(GLuint buffer));
 MOCK_METHOD1(IsEnabled, GLboolean(GLenum cap));
 MOCK_METHOD1(IsFenceAPPLE, GLboolean(GLuint fence));
@@ -1247,6 +1248,15 @@ MOCK_METHOD9(TexImage2D,
                   GLenum format,
                   GLenum type,
                   const void* pixels));
+MOCK_METHOD8(TexImage2DExternalANGLE,
+             void(GLenum target,
+                  GLint level,
+                  GLint internalformat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLint border,
+                  GLenum format,
+                  GLenum type));
 MOCK_METHOD10(TexImage2DRobustANGLE,
               void(GLenum target,
                    GLint level,

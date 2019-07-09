@@ -191,7 +191,9 @@ Polymer({
    * @private
    */
   getOptions_: function() {
-    return Array.from(this.querySelectorAll('.dropdown-item'))
+    return Array
+        .from(this.querySelectorAll(
+            '.dropdown-item:not([hidden]):not([disabled])'))
         .map(cr.ui.FocusRow.getFocusableElement);
   },
 
@@ -333,9 +335,6 @@ Polymer({
     do {
       focusedIndex = (numOptions + focusedIndex + step) % numOptions;
       nextOption = options[focusedIndex];
-      if (nextOption.disabled || nextOption.hidden) {
-        nextOption = null;
-      }
       counter++;
     } while (!nextOption && counter < numOptions);
 

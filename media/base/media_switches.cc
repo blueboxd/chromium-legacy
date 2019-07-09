@@ -297,6 +297,10 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable VA-API hardware encode acceleration for H264 on AMD.
+const base::Feature kVaapiH264AMDEncoder{"VaapiH264AMDEncoder",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable VA-API hardware low power encoder for all codecs.
 const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -308,6 +312,10 @@ const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
 // Enable VA-API hardware encode acceleration for VP9.
 const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable VP9 k-SVC decoding with HW decoder for webrtc use case on ChromeOS.
+const base::Feature kVp9kSVCHWDecoding{"Vp9kSVCHWDecoding",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",

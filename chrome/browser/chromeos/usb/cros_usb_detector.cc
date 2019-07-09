@@ -18,6 +18,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/system_connector.h"
@@ -35,6 +36,23 @@ namespace {
 static CrosUsbDetector* g_cros_usb_detector = nullptr;
 
 const char kNotifierUsb[] = "crosusb.connected";
+
+// ARCVM (Android VM) is considered as the "default" VM here in the sense that
+// the Android runtime is enabled by default on Chrome OS and is always running.
+// Android also has its own mechanisms/permissions ultimately relying on Chrome
+// OS for granting access to the USB devices attached in ARCVM/ARC++.
+// This means that unclaimed devices get auto-attached to ARCVM on connect until
+// the user decides otherwise by e.g. disconnecting them or explicitly sharing
+// them with another VM such as Crostini.
+// Note that attaching a device to a VM makes it visible by the guest kernel in
+// that VM but doesn't actually claim/open the device by itself, i.e. a device
+// attached in a VM (and not open there) can still be opened outside that VM.
+const char* const kDefaultVmName = arc::kArcVmName;
+
+// Helper free function used with BindOnce() below for convenience.
+void IgnoreBool(base::OnceClosure closure, bool) {
+  std::move(closure).Run();
+}
 
 void RecordNotificationClosure(CrosUsbNotificationClosed disposition) {
   UMA_HISTOGRAM_ENUMERATION("CrosUsb.NotificationClosed", disposition);
@@ -73,7 +91,8 @@ class CrosUsbNotificationDelegate
       device::mojom::UsbDeviceInfoPtr device_info)
       : notification_id_(notification_id),
         device_info_(std::move(device_info)),
-        disposition_(CrosUsbNotificationClosed::kUnknown) {}
+        disposition_(CrosUsbNotificationClosed::kUnknown),
+        weak_ptr_factory_(this) {}
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
@@ -113,6 +132,7 @@ class CrosUsbNotificationDelegate
   std::string notification_id_;
   device::mojom::UsbDeviceInfoPtr device_info_;
   CrosUsbNotificationClosed disposition_;
+  base::WeakPtrFactory<CrosUsbNotificationDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosUsbNotificationDelegate);
 };
@@ -181,6 +201,11 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
 SharedUsbDeviceInfo::SharedUsbDeviceInfo() = default;
 SharedUsbDeviceInfo::SharedUsbDeviceInfo(const SharedUsbDeviceInfo&) = default;
 SharedUsbDeviceInfo::~SharedUsbDeviceInfo() = default;
+
+SharedUsbDeviceInfo::VmSharingInfo::VmSharingInfo() = default;
+SharedUsbDeviceInfo::VmSharingInfo::VmSharingInfo(const VmSharingInfo&) =
+    default;
+SharedUsbDeviceInfo::VmSharingInfo::~VmSharingInfo() = default;
 
 std::string CrosUsbDetector::MakeNotificationId(const std::string& guid) {
   return "cros:" + guid;
@@ -317,15 +342,17 @@ void CrosUsbDetector::OnDeviceChecked(
   }
 
   SharedUsbDeviceInfo new_device;
-  new_device.vm_name = crostini::kCrostiniDefaultVmName;
   new_device.guid = device_info->guid;
   new_device.label = ProductLabelFromDevice(device_info);
-  new_device.shared = false;
-  new_device.guest_port = base::nullopt;
 
   shared_usb_devices_.push_back(new_device);
   available_device_info_.emplace(device_info->guid, device_info.Clone());
   SignalSharedUsbDeviceObservers();
+
+  // USB devices not claimed by Chrome OS get automatically attached to the
+  // default VM. Note that this relies on the underlying VM (ARCVM) having its
+  // own permission model to restrict access to the device.
+  AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
 
   // Some devices should not trigger the notification.
   if (hide_notification || !ShouldShowNotification(*device_info)) {
@@ -358,7 +385,10 @@ void CrosUsbDetector::OnDeviceRemoved(
   std::string guid = device_info->guid;
   for (const auto& device : shared_usb_devices_) {
     if (device.guid == guid) {
-      DetachUsbDeviceFromVm(device.vm_name, guid, base::DoNothing());
+      for (const auto& sharing_info_pair : device.vm_sharing_info) {
+        DetachUsbDeviceFromVmInternal(sharing_info_pair.first, guid,
+                                      base::DoNothing());
+      }
     }
   }
   const auto& start =
@@ -382,9 +412,15 @@ void CrosUsbDetector::OnDeviceManagerConnectionError() {
 void CrosUsbDetector::ConnectSharedDevicesOnVmStartup() {
   // Reattach shared devices when the VM becomes available.
   for (auto& device : shared_usb_devices_) {
-    if (device.shared) {
-      AttachUsbDeviceToVm(crostini::kCrostiniDefaultVmName, device.guid,
-                          base::DoNothing());
+    bool attached_device = false;
+    for (const auto& sharing_pair : device.vm_sharing_info) {
+      if (sharing_pair.second.shared) {
+        attached_device = true;
+        AttachUsbDeviceToVm(sharing_pair.first, device.guid, base::DoNothing());
+      }
+    }
+    if (!attached_device) {
+      AttachUsbDeviceToVm(kDefaultVmName, device.guid, base::DoNothing());
     }
   }
 }
@@ -393,17 +429,36 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {
+  for (auto& device : shared_usb_devices_) {
+    if (device.guid == guid) {
+      // Mark the USB device shared so that we know to reattach it on VM
+      // restart.
+      // Setting this flag early also allows the UI not to flicker because of
+      // the notification resulting from the default VM detach below.
+      device.vm_sharing_info[vm_name].shared = true;
+      // The guest port will be set on completion.
+      break;
+    }
+  }
+  if (vm_name == kDefaultVmName) {
+    AttachUsbDeviceToVmInternal(kDefaultVmName, guid, std::move(callback));
+    return;
+  }
+  auto attach_internal = base::BindOnce(
+      &CrosUsbDetector::AttachUsbDeviceToVmInternal,
+      weak_ptr_factory_.GetWeakPtr(), vm_name, guid, std::move(callback));
+  DetachUsbDeviceFromVm(
+      kDefaultVmName, guid,
+      base::BindOnce(&IgnoreBool, std::move(attach_internal)));
+}
+
+void CrosUsbDetector::AttachUsbDeviceToVmInternal(
+    const std::string& vm_name,
+    const std::string& guid,
+    base::OnceCallback<void(bool success)> callback) {
   auto it = available_device_info_.find(guid);
   if (it == available_device_info_.end()) {
     return;
-  }
-
-  for (auto& device : shared_usb_devices_) {
-    if (device.guid == guid) {
-      // Mark the USB Device shared so that we know to reattach it on VM
-      // restart.
-      device.shared = true;
-    }
   }
 
   const auto& device_info = it->second;
@@ -421,6 +476,23 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {
+  if (vm_name == kDefaultVmName) {
+    DetachUsbDeviceFromVmInternal(vm_name, guid, std::move(callback));
+    return;
+  }
+  auto attach_to_default_vm =
+      base::BindOnce(&CrosUsbDetector::AttachUsbDeviceToVmInternal,
+                     weak_ptr_factory_.GetWeakPtr(), kDefaultVmName, guid,
+                     std::move(callback));
+  DetachUsbDeviceFromVmInternal(
+      vm_name, guid,
+      base::BindOnce(&IgnoreBool, std::move(attach_to_default_vm)));
+}
+
+void CrosUsbDetector::DetachUsbDeviceFromVmInternal(
+    const std::string& vm_name,
+    const std::string& guid,
+    base::OnceCallback<void(bool success)> callback) {
   const auto& it = available_device_info_.find(guid);
   if (it == available_device_info_.end()) {
     // If there wasn't an existing attachment, then removal is a no-op and
@@ -433,8 +505,11 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
   base::Optional<uint8_t> guest_port;
   for (const auto& device : shared_usb_devices_) {
     if (device.guid == guid) {
-      guest_port = device.guest_port;
-      break;
+      const auto it = device.vm_sharing_info.find(vm_name);
+      if (it != device.vm_sharing_info.end()) {
+        guest_port = it->second.guest_port;
+        break;
+      }
     }
   }
 
@@ -446,7 +521,7 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
       vm_name, device_info.Clone(), *guest_port,
       base::BindOnce(&CrosUsbDetector::OnUsbDeviceDetachFinished,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, guid,
-                     std::move(callback), *guest_port));
+                     std::move(callback)));
 }
 
 void CrosUsbDetector::OnListAttachedDevices(
@@ -466,9 +541,26 @@ void CrosUsbDetector::OnAttachUsbDeviceOpened(
     std::move(callback).Run(/*success=*/false);
     return;
   }
-
   base::ScopedFD fd(file.TakePlatformFile());
-
+  if (!manager()) {
+    LOG(ERROR) << "Attaching device without Crostini manager instance";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  for (const auto& device : shared_usb_devices_) {
+    if (device.guid == device_info->guid) {
+      const auto it = device.vm_sharing_info.find(vm_name);
+      if (it != device.vm_sharing_info.end() && it->second.guest_port) {
+        // The device is already attached.
+        std::move(callback).Run(/*success=*/true);
+        return;
+      }
+    }
+  }
+  // TODO(b/123374026): Ideally CrostiniManager wouldn't be used for
+  // attaching/detaching USB devices from non-Crostini VMs, e.g. ARCVM. It works
+  // currently since CrostiniManager is mostly delegating to ConciergeClient but
+  // it's a little confusing and fragile.
   const std::string guid = device_info->guid;
   manager()->AttachUsbDevice(
       vm_name, std::move(device_info), std::move(fd),
@@ -486,7 +578,10 @@ void CrosUsbDetector::OnUsbDeviceAttachFinished(
   if (success) {
     for (auto& device : shared_usb_devices_) {
       if (device.guid == guid) {
-        device.guest_port = guest_port;
+        auto& vm_sharing_info = device.vm_sharing_info[vm_name];
+        vm_sharing_info.shared = true;
+        vm_sharing_info.guest_port = guest_port;
+        break;
       }
     }
   }
@@ -498,12 +593,10 @@ void CrosUsbDetector::OnUsbDeviceDetachFinished(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback,
-    uint8_t guest_port,
     bool success) {
   for (auto& device : shared_usb_devices_) {
     if (device.guid == guid) {
-      device.guest_port = base::nullopt;
-      device.shared = false;
+      device.vm_sharing_info.erase(vm_name);
       break;
     }
   }

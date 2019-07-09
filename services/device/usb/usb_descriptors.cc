@@ -15,6 +15,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_device_handle.h"
 
 namespace device {
@@ -234,87 +235,6 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
 
 }  // namespace
 
-UsbEndpointDescriptor::UsbEndpointDescriptor(const uint8_t* data)
-    : UsbEndpointDescriptor(data[2] /* bEndpointAddress */,
-                            data[3] /* bmAttributes */,
-                            data[4] + (data[5] << 8) /* wMaxPacketSize */,
-                            data[6] /* bInterval */) {
-  DCHECK_GE(data[0], kEndpointDescriptorLength);
-  DCHECK_EQ(data[1], kEndpointDescriptorType);
-}
-
-UsbEndpointDescriptor::UsbEndpointDescriptor(uint8_t address,
-                                             uint8_t attributes,
-                                             uint16_t maximum_packet_size,
-                                             uint8_t polling_interval)
-    : address(address),
-      maximum_packet_size(maximum_packet_size),
-      polling_interval(polling_interval) {
-  // These fields are defined in Table 9-24 of the USB 3.1 Specification.
-  switch (address & 0x80) {
-    case 0x00:
-      direction = UsbTransferDirection::OUTBOUND;
-      break;
-    case 0x80:
-      direction = UsbTransferDirection::INBOUND;
-      break;
-  }
-  switch (attributes & 0x03) {
-    case 0x00:
-      transfer_type = UsbTransferType::CONTROL;
-      break;
-    case 0x01:
-      transfer_type = UsbTransferType::ISOCHRONOUS;
-      break;
-    case 0x02:
-      transfer_type = UsbTransferType::BULK;
-      break;
-    case 0x03:
-      transfer_type = UsbTransferType::INTERRUPT;
-      break;
-  }
-  switch (attributes & 0x0F) {
-    // Isochronous endpoints only.
-    case 0x05:
-      synchronization_type = UsbSynchronizationType::ASYNCHRONOUS;
-      break;
-    case 0x09:
-      synchronization_type = UsbSynchronizationType::ADAPTIVE;
-      break;
-    case 0x0D:
-      synchronization_type = UsbSynchronizationType::SYNCHRONOUS;
-      break;
-    default:
-      synchronization_type = UsbSynchronizationType::NONE;
-  }
-  switch (attributes & 0x33) {
-    // Isochronous endpoint usages.
-    case 0x01:
-      usage_type = UsbUsageType::DATA;
-      break;
-    case 0x11:
-      usage_type = UsbUsageType::FEEDBACK;
-      break;
-    case 0x21:
-      usage_type = UsbUsageType::EXPLICIT_FEEDBACK;
-      break;
-    // Interrupt endpoint usages.
-    case 0x03:
-      usage_type = UsbUsageType::PERIODIC;
-      break;
-    case 0x13:
-      usage_type = UsbUsageType::NOTIFICATION;
-      break;
-    default:
-      usage_type = UsbUsageType::RESERVED;
-  }
-}
-
-UsbEndpointDescriptor::UsbEndpointDescriptor(
-    const UsbEndpointDescriptor& other) = default;
-
-UsbEndpointDescriptor::~UsbEndpointDescriptor() = default;
-
 UsbInterfaceDescriptor::UsbInterfaceDescriptor(const uint8_t* data)
     : UsbInterfaceDescriptor(data[2] /* bInterfaceNumber */,
                              data[3] /* bAlternateSetting */,
@@ -337,8 +257,23 @@ UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
       interface_protocol(interface_protocol),
       first_interface(interface_number) {}
 
+// Do a deep copy especially needed by |endpoints|.
 UsbInterfaceDescriptor::UsbInterfaceDescriptor(
-    const UsbInterfaceDescriptor& other) = default;
+    const UsbInterfaceDescriptor& other)
+    : interface_number(other.interface_number),
+      alternate_setting(other.alternate_setting),
+      interface_class(other.interface_class),
+      interface_subclass(other.interface_subclass),
+      interface_protocol(other.interface_protocol),
+      extra_data(other.extra_data),
+      first_interface(other.first_interface) {
+  for (auto& endpoint : other.endpoints) {
+    endpoints.push_back(endpoint.Clone());
+  }
+}
+
+UsbInterfaceDescriptor::UsbInterfaceDescriptor(UsbInterfaceDescriptor&& other) =
+    default;
 
 UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
 
@@ -363,6 +298,8 @@ UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
 UsbConfigDescriptor::UsbConfigDescriptor(const UsbConfigDescriptor& other) =
     default;
 
+UsbConfigDescriptor::UsbConfigDescriptor(UsbConfigDescriptor&& other) = default;
+
 UsbConfigDescriptor::~UsbConfigDescriptor() = default;
 
 void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
@@ -370,8 +307,8 @@ void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
   ParseInterfaceAssociationDescriptors(extra_data, &functions);
   for (const auto& interface : interfaces) {
     ParseInterfaceAssociationDescriptors(interface.extra_data, &functions);
-    for (const auto& endpoint : interface.endpoints)
-      ParseInterfaceAssociationDescriptors(endpoint.extra_data, &functions);
+    for (auto& endpoint : interface.endpoints)
+      ParseInterfaceAssociationDescriptors(endpoint->extra_data, &functions);
   }
 
   // libusb has collected interface association descriptors in the |extra_data|
@@ -416,12 +353,32 @@ UsbDeviceDescriptor::UsbDeviceDescriptor() = default;
 UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) =
     default;
 
+UsbDeviceDescriptor::UsbDeviceDescriptor(UsbDeviceDescriptor&& other) = default;
+
+UsbDeviceDescriptor& UsbDeviceDescriptor::operator=(
+    UsbDeviceDescriptor&& other) {
+  usb_version = other.usb_version;
+  device_class = other.device_class;
+  device_subclass = other.device_subclass;
+  device_protocol = other.device_protocol;
+  vendor_id = other.vendor_id;
+  product_id = other.product_id;
+  device_version = other.device_version;
+  i_manufacturer = other.i_manufacturer;
+  i_product = other.i_product;
+  i_serial_number = other.i_serial_number;
+  num_configurations = other.num_configurations;
+  configurations.swap(other.configurations);
+
+  return *this;
+}
+
 UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
 bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
   UsbConfigDescriptor* last_config = nullptr;
   UsbInterfaceDescriptor* last_interface = nullptr;
-  UsbEndpointDescriptor* last_endpoint = nullptr;
+  mojom::UsbEndpointInfo* last_endpoint = nullptr;
 
   for (auto it = buffer.begin(); it != buffer.end();
        /* incremented internally */) {
@@ -467,8 +424,8 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
       case kEndpointDescriptorType:
         if (!last_interface || length < kEndpointDescriptorLength)
           return false;
-        last_interface->endpoints.emplace_back(data);
-        last_endpoint = &last_interface->endpoints.back();
+        last_interface->endpoints.push_back(BuildUsbEndpointInfoPtr(data));
+        last_endpoint = last_interface->endpoints.back().get();
         break;
       default:
         // Append unknown descriptor types to the |extra_data| field of the last
@@ -538,6 +495,90 @@ void ReadUsbStringDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       device_handle, 0, 0,
       base::BindOnce(&OnReadLanguageIds, device_handle, std::move(index_map),
                      std::move(callback)));
+}
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(const uint8_t* data) {
+  DCHECK_GE(data[0], kEndpointDescriptorLength);
+  DCHECK_EQ(data[1], kEndpointDescriptorType);
+
+  return BuildUsbEndpointInfoPtr(
+      data[2] /* bEndpointAddress */, data[3] /* bmAttributes */,
+      data[4] + (data[5] << 8) /* wMaxPacketSize */, data[6] /* bInterval */);
+}
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
+                                           uint8_t attributes,
+                                           uint16_t maximum_packet_size,
+                                           uint8_t polling_interval) {
+  UsbEndpointInfoPtr endpoint = mojom::UsbEndpointInfo::New();
+  endpoint->endpoint_number = ConvertEndpointAddressToNumber(address);
+
+  // These fields are defined in Table 9-24 of the USB 3.1 Specification.
+  switch (address & 0x80) {
+    case 0x00:
+      endpoint->direction = UsbTransferDirection::OUTBOUND;
+      break;
+    case 0x80:
+      endpoint->direction = UsbTransferDirection::INBOUND;
+      break;
+  }
+
+  switch (attributes & 0x03) {
+    case 0x00:
+      endpoint->type = UsbTransferType::CONTROL;
+      break;
+    case 0x01:
+      endpoint->type = UsbTransferType::ISOCHRONOUS;
+      break;
+    case 0x02:
+      endpoint->type = UsbTransferType::BULK;
+      break;
+    case 0x03:
+      endpoint->type = UsbTransferType::INTERRUPT;
+      break;
+  }
+
+  switch (attributes & 0x0F) {
+    // Isochronous endpoints only.
+    case 0x05:
+      endpoint->synchronization_type = UsbSynchronizationType::ASYNCHRONOUS;
+      break;
+    case 0x09:
+      endpoint->synchronization_type = UsbSynchronizationType::ADAPTIVE;
+      break;
+    case 0x0D:
+      endpoint->synchronization_type = UsbSynchronizationType::SYNCHRONOUS;
+      break;
+    default:
+      endpoint->synchronization_type = UsbSynchronizationType::NONE;
+  }
+
+  switch (attributes & 0x33) {
+    // Isochronous endpoint usages.
+    case 0x01:
+      endpoint->usage_type = UsbUsageType::DATA;
+      break;
+    case 0x11:
+      endpoint->usage_type = UsbUsageType::FEEDBACK;
+      break;
+    case 0x21:
+      endpoint->usage_type = UsbUsageType::EXPLICIT_FEEDBACK;
+      break;
+    // Interrupt endpoint usages.
+    case 0x03:
+      endpoint->usage_type = UsbUsageType::PERIODIC;
+      break;
+    case 0x13:
+      endpoint->usage_type = UsbUsageType::NOTIFICATION;
+      break;
+    default:
+      endpoint->usage_type = UsbUsageType::RESERVED;
+  }
+
+  endpoint->packet_size = static_cast<uint32_t>(maximum_packet_size);
+  endpoint->polling_interval = polling_interval;
+
+  return endpoint;
 }
 
 }  // namespace device

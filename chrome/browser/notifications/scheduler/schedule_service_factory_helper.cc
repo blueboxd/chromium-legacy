@@ -79,7 +79,7 @@ KeyedService* CreateNotificationScheduleService(
   auto notification_store =
       std::make_unique<NotificationStore>(std::move(notification_db));
   auto notification_manager = ScheduledNotificationManager::Create(
-      std::move(notification_store), registered_clients);
+      std::move(notification_store), registered_clients, *config.get());
 
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(client_registrar), std::move(background_task_scheduler),

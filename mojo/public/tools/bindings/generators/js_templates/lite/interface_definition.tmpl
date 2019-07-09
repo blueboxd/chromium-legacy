@@ -18,15 +18,15 @@
 {% endmacro %}
 
 {%  if generate_closure_exports -%}
-goog.provide('{{module.namespace}}.{{interface.name}}');
+goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.receiver}}');
 goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
 goog.provide('{{module.namespace}}.{{interface.name}}Interface');
-goog.provide('{{module.namespace}}.{{interface.name}}Proxy');
-goog.provide('{{module.namespace}}.{{interface.name}}Request');
+goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.remote}}');
+goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}}');
 {% endif %}
 
 /** @export */
-{{module.namespace}}.{{interface.name}}Request = class {
+{{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}} = class {
   /** @param {!MojoHandle} handle */
   constructor(handle) {
     /** @public {!MojoHandle} */
@@ -52,19 +52,19 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
  * @export
  * @implements { {{module.namespace}}.{{interface.name}}Interface }
  */
-{{module.namespace}}.{{interface.name}}Proxy = class {
+{{module.namespace}}.{{interface.name}}{{primitives_names.remote}} = class {
   /** @param {MojoHandle=} opt_handle */
   constructor(opt_handle) {
     /**
-     * @private {!mojo.internal.interfaceSupport.InterfaceRemoteBase<!{{module.namespace}}.{{interface.name}}Request>}
+     * @private {!mojo.internal.interfaceSupport.InterfaceRemoteBase<!{{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}}>}
      */
     this.proxy =
         new mojo.internal.interfaceSupport.InterfaceRemoteBase(
-          {{module.namespace}}.{{interface.name}}Request,
+          {{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}},
           opt_handle);
 
     /**
-     * @public {!mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper<!{{module.namespace}}.{{interface.name}}Request>}
+     * @public {!mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper<!{{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}}>}
      */
     this.$ = new mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper(this.proxy);
 
@@ -109,17 +109,17 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
  *
  * @export
  */
-{{module.namespace}}.{{interface.name}} = class {
+{{module.namespace}}.{{interface.name}}{{primitives_names.receiver}} = class {
   /**
    * @param {!{{module.namespace}}.{{interface.name}}Interface } impl
    */
   constructor(impl) {
-    /** @private {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<!{{module.namespace}}.{{interface.name}}Proxy>} */
+    /** @private {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<!{{module.namespace}}.{{interface.name}}{{primitives_names.remote}}>} */
     this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
-        {{module.namespace}}.{{interface.name}}Proxy);
+        {{module.namespace}}.{{interface.name}}{{primitives_names.remote}});
 
     /**
-     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}Proxy>}
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}{{primitives_names.remote}}>}
      */
     this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
 
@@ -140,6 +140,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
     this.onConnectionError = this.helper_internal_.getConnectionErrorEventRouter();
   }
 
+  {% if use_old_names -%}
   /**
    * Returns a proxy for this interface which sends messages to the browser.
    * The browser must have an interface request binder registered for this
@@ -154,6 +155,14 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
                        proxy.$.bindNewPipeAndPassReceiver().handle);
     return proxy;
   }
+
+  /**
+   * @return {!string}
+   */
+  static get $interfaceName() {
+    return "{{mojom_namespace}}.{{interface.name}}";
+  }
+  {% endif %}
 };
 
 {#--- Enums #}
@@ -164,12 +173,36 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
             enum) }}
 {%-  endfor %}
 
+{% if not use_old_names -%}
+
 /**
- * @const {string}
- * @export
+ *  @export
  */
-{{module.namespace}}.{{interface.name}}.$interfaceName =
-    '{{mojom_namespace}}.{{interface.name}}';
+{{module.namespace}}.{{interface.name}} = class {
+  /**
+   * @return {!string}
+   */
+  static get $interfaceName() {
+    return "{{mojom_namespace}}.{{interface.name}}";
+  }
+
+  /**
+   * Returns a remote for this interface which sends messages to the browser.
+   * The browser must have an interface request binder registered for this
+   * interface and accessible to the calling document's frame.
+   *
+   * @return {!{{module.namespace}}.{{interface.name}}Remote}
+   * @export
+   */
+  static getRemote() {
+    let remote = new {{module.namespace}}.{{interface.name}}Remote;
+    Mojo.bindInterface(this.$interfaceName,
+                       remote.$.bindNewPipeAndPassReceiver().handle);
+    return remote;
+  }
+};
+
+{% endif %}
 
 /**
  * An object which receives request messages for the {{interface.name}}
@@ -182,10 +215,10 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
 {{module.namespace}}.{{interface.name}}CallbackRouter = class {
   constructor() {
     this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
-      {{module.namespace}}.{{interface.name}}Proxy);
+      {{module.namespace}}.{{interface.name}}{{primitives_names.remote}});
 
     /**
-     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}Proxy>}
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}{{primitives_names.remote}}>}
      */
     this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
 

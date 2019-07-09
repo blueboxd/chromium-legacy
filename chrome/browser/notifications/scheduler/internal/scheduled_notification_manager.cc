@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 
 namespace notifications {
@@ -30,10 +31,12 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
   ScheduledNotificationManagerImpl(
       Store store,
-      const std::vector<SchedulerClientType>& clients)
+      const std::vector<SchedulerClientType>& clients,
+      const SchedulerConfig& config)
       : store_(std::move(store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
+        config_(config),
         weak_ptr_factory_(this) {}
 
  private:
@@ -160,11 +163,20 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       return;
     }
 
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-      std::string guid = (*it)->guid;
-      auto type = (*it)->type;
-      if (clients_.count(type))
-        notifications_[type].emplace(guid, std::move(*it));
+    for (auto it = entries.begin(); it != entries.end(); it++) {
+      auto* entry = it->get();
+      // Prune expired notifications. Also delete them in db.
+      bool expired = entry->create_time + config_.notification_expiration <=
+                     base::Time::Now();
+      if (expired) {
+        store_->Delete(
+            entry->guid,
+            base::BindOnce(
+                &ScheduledNotificationManagerImpl::OnNotificationDeleted,
+                weak_ptr_factory_.GetWeakPtr()));
+      } else if (clients_.count(entry->type)) {
+        notifications_[entry->type].emplace(entry->guid, std::move(*it));
+      }
     }
     SyncRegisteredClients();
     std::move(callback).Run(true);
@@ -180,7 +192,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   std::map<SchedulerClientType,
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
-
+  const SchedulerConfig& config_;
   base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
 };
@@ -190,9 +202,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 std::unique_ptr<ScheduledNotificationManager>
 ScheduledNotificationManager::Create(
     std::unique_ptr<CollectionStore<NotificationEntry>> store,
-    const std::vector<SchedulerClientType>& clients) {
+    const std::vector<SchedulerClientType>& clients,
+    const SchedulerConfig& config) {
   return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store),
-                                                            clients);
+                                                            clients, config);
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;

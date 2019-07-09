@@ -177,6 +177,26 @@ if (use_debug_fission == "default") {
       (use_gold || use_lld) && cc_wrapper == ""
 }
 
+if (is_win || is_android || is_chromeos) {
+  # Set the path to use orderfile for linking Chrome
+  # Note that this is for using only one orderfile for linking
+  # the Chrome binary/library.
+  declare_args() {
+    chrome_orderfile_path = ""
+
+    if (defined(default_chrome_orderfile)) {
+      # Allow downstream tools to set orderfile path with
+      # another variable.
+      chrome_orderfile_path = default_chrome_orderfile
+    } else if (is_win && is_clang && is_official_build) {
+      chrome_orderfile_path = "build/chrome.$target_cpu.orderfile"
+    } else if (is_chromeos) {
+      # FIXME(tcwang): update this with autoroller.
+      chrome_orderfile_path = ""
+    }
+  }
+}
+
 # default_include_dirs ---------------------------------------------------------
 #
 # This is a separate config so that third_party code (which would not use the
@@ -2428,5 +2448,47 @@ if (is_ios || is_mac) {
     common_flags = [ "-fobjc-arc" ]
     cflags_objc = common_flags
     cflags_objcc = common_flags
+  }
+}
+
+if (is_chromeos) {
+  # This config is intended to be a temporary to facilitate
+  # the transition to use orderfile in Chrome OS. Once orderfile
+  # use becomes a default in Chrome OS, this config should not
+  # be needed.
+  config("use_orderfile_for_hugepage") {
+    if (chrome_orderfile_path != "") {
+      defines = [ "CHROMEOS_ORDERFILE_USE" ]
+    }
+  }
+}
+
+if (is_win || is_android || is_chromeos) {
+  # Use orderfile for linking Chrome on win, android, and Chrome OS.
+  # This config enables using an orderfile for linking in LLD.
+  config("chrome_orderfile_config") {
+    assert(use_lld)
+    if (chrome_orderfile_path != "") {
+      _rebased_orderfile = rebase_path(chrome_orderfile_path, root_build_dir)
+      if (is_android || is_chromeos) {
+        ldflags = [
+          "-Wl,--symbol-ordering-file",
+          "-Wl,$_rebased_orderfile",
+          "-Wl,--no-warn-symbol-ordering",
+        ]
+      } else {
+        ldflags = [
+          "/order:@$rebased_orderfile",
+
+          # Ignore warnings about missing functions or functions not in their
+          # own section.
+          "/ignore:4037",
+          "/ignore:4065",
+        ]
+      }
+      inputs = [
+        chrome_orderfile_path,
+      ]
+    }
   }
 }

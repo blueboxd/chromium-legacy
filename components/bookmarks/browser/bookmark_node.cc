@@ -29,10 +29,11 @@ const base::char16 kInvalidChars[] = {
 // static
 const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 
-BookmarkNode::BookmarkNode(const GURL& url) : BookmarkNode(0, url, false) {}
+BookmarkNode::BookmarkNode(const GURL& url)
+    : BookmarkNode(0, url, url.is_empty() ? FOLDER : URL, false) {}
 
 BookmarkNode::BookmarkNode(int64_t id, const GURL& url)
-    : BookmarkNode(id, url, false) {}
+    : BookmarkNode(id, url, url.is_empty() ? FOLDER : URL, false) {}
 
 BookmarkNode::~BookmarkNode() = default;
 
@@ -107,13 +108,18 @@ const GURL& BookmarkNode::GetTitledUrlNodeUrl() const {
   return url_;
 }
 
-BookmarkNode::BookmarkNode(int64_t id, const GURL& url, bool is_permanent_node)
+BookmarkNode::BookmarkNode(int64_t id,
+                           const GURL& url,
+                           Type type,
+                           bool is_permanent_node)
     : id_(id),
       url_(url),
-      type_(url_.is_empty() ? FOLDER : URL),
+      type_(type),
       date_added_(base::Time::Now()),
       favicon_type_(favicon_base::IconType::kInvalid),
-      is_permanent_node_(is_permanent_node) {}
+      is_permanent_node_(is_permanent_node) {
+  DCHECK((type == URL) != url.is_empty());
+}
 
 void BookmarkNode::InvalidateFavicon() {
   icon_url_.reset();
@@ -124,8 +130,10 @@ void BookmarkNode::InvalidateFavicon() {
 
 // BookmarkPermanentNode -------------------------------------------------------
 
-BookmarkPermanentNode::BookmarkPermanentNode(int64_t id)
-    : BookmarkNode(id, GURL(), true) {}
+BookmarkPermanentNode::BookmarkPermanentNode(int64_t id, Type type)
+    : BookmarkNode(id, GURL(), type, true) {
+  DCHECK(type != URL);
+}
 
 BookmarkPermanentNode::~BookmarkPermanentNode() = default;
 

@@ -153,6 +153,10 @@ class AccessibilityManager
   // Returns true if autoclick is enabled.
   bool IsAutoclickEnabled() const;
 
+  // Requests the Autoclick extension find the bounds of the nearest scrollable
+  // ancestor to the point in the screen, as given in screen coordinates.
+  void RequestAutoclickScrollableBoundsForPoint(gfx::Point& point_in_screen);
+
   // Enables or disables the virtual keyboard.
   void EnableVirtualKeyboard(bool enabled);
   // Returns true if the virtual keyboard is enabled, otherwise false.

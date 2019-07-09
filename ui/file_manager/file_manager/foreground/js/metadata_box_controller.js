@@ -98,6 +98,7 @@ MetadataBoxController.GENERAL_METADATA_NAME = [
 /**
  * Update the view of metadata box.
  * @param {!Event} event
+ *
  * @private
  */
 MetadataBoxController.prototype.updateView_ = function(event) {
@@ -117,7 +118,7 @@ MetadataBoxController.prototype.updateView_ = function(event) {
   if (event.type === 'date-time-format-changed') {
     // Update the displayed entry modificationTime format only, and return.
     this.metadataModel_.get([entry], ['modificationTime'])
-        .then(this.updateModificationTime_.bind(this, entry, isSameEntry));
+        .then(this.updateModificationTime_.bind(this, entry));
     return;
   }
 
@@ -154,18 +155,13 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     this.metadataBox_.metadataRendered('size');
   }
 
-  this.updateModificationTime_(entry, isSameEntry, items);
+  this.updateModificationTime_(entry, items);
 
-  if (item.externalFileUrl || item.alternateUrl) {
-    this.metadataModel_.get([entry], ['contentMimeType']).then(items => {
-      const item = items[0];
-      this.metadataBox_.mediaMimeType = item.contentMimeType || '';
-      this.metadataBox_.metadataRendered('mime');
-    });
-  } else {
-    this.metadataModel_.get([entry], ['mediaMimeType']).then(items => {
-      const item = items[0];
-      this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
+  if (!entry.isDirectory) {
+    const sniffMimeType = (item.externalFileUrl || item.alternateUrl) ?
+        'contentMimeType' : 'mediaMimeType';
+    this.metadataModel_.get([entry], [sniffMimeType]).then(items => {
+      this.metadataBox_.mediaMimeType = items[0][sniffMimeType] || '';
       this.metadataBox_.metadataRendered('mime');
     });
   }
@@ -221,13 +217,12 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
  * Updates the metadata box modificationTime.
  *
  * @param {!Entry} entry
- * @param {boolean} isSameEntry if the entry is not changed from the last time.
  * @param {!Array<!MetadataItem>} items
  *
  * @private
  */
 MetadataBoxController.prototype.updateModificationTime_ = function(
-    entry, isSameEntry, items) {
+    entry, items) {
   const item = items[0];
 
   if (item.modificationTime) {

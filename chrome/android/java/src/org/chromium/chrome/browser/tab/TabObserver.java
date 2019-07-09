@@ -157,7 +157,9 @@ public interface TabObserver {
     /**
      * Called when a context menu is shown for a {@link WebContents} owned by a {@link Tab}.
      * @param tab  The notifying {@link Tab}.
-     * @param menu The {@link ContextMenu} that is being shown.
+     * @param menu The {@link ContextMenu} that is being shown. Deprecated: The menu param is only
+     *             used for some tests and new context menu implementations don't extend
+     *             ContextMenu.
      */
     void onContextMenuShown(Tab tab, ContextMenu menu);
 

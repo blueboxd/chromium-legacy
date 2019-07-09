@@ -27,9 +27,6 @@
 #include "media/base/media_switches.h"
 #include "url/origin.h"
 
-const char MediaEngagementService::kHistogramURLsDeletedScoreReductionName[] =
-    "Media.Engagement.URLsDeletedScoreReduction";
-
 const char MediaEngagementService::kHistogramClearName[] =
     "Media.Engagement.Clear";
 
@@ -69,15 +66,6 @@ bool MediaEngagementTimeFilterAdapter(
   MediaEngagementScore score = service->CreateEngagementScore(origin);
   base::Time playback_time = score.last_media_playback_time();
   return playback_time >= delete_begin && playback_time <= delete_end;
-}
-
-void RecordURLsDeletedScoreReduction(double previous_score,
-                                     double current_score) {
-  int difference = round((previous_score * 100) - (current_score * 100));
-  DCHECK_GE(difference, 0);
-  UMA_HISTOGRAM_PERCENTAGE(
-      MediaEngagementService::kHistogramURLsDeletedScoreReductionName,
-      difference);
 }
 
 void RecordClear(MediaEngagementClearReason reason) {
@@ -228,7 +216,6 @@ void MediaEngagementService::OnURLsDeleted(
     // If this results in zero visits then clear the score.
     if (score.visits() <= 0) {
       // Score is now set to 0 so the reduction is equal to the original score.
-      RecordURLsDeletedScoreReduction(original_score, 0);
       Clear(kv.first);
       continue;
     }
@@ -237,8 +224,6 @@ void MediaEngagementService::OnURLsDeleted(
     // MEI score consistent.
     score.SetMediaPlaybacks(original_score * score.visits());
     score.Commit();
-
-    RecordURLsDeletedScoreReduction(original_score, score.actual_score());
   }
 }
 

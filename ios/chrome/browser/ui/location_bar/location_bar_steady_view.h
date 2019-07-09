@@ -31,13 +31,14 @@
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-- (void)setColorScheme:(LocationBarSteadyViewColorScheme*)colorScheme;
-
 // Sets the location image. If |locationImage| is nil, hides the image view.
 - (void)setLocationImage:(UIImage*)locationImage;
 
 // Sets the location label's text.
 - (void)setLocationLabelText:(NSString*)string;
+
+// Sets the location label's text and styles it as if it were placeholder text.
+- (void)setLocationLabelPlaceholderText:(NSString*)string;
 
 // Displays the location InfobarBadgeButton if |display| is YES, hides it if
 // |display| is NO. Will animate change if |animated| is YES.
@@ -57,6 +58,8 @@
 @property(nonatomic, strong) UIButton* trailingButton;
 // The string that describes the current security level. Used for a11y.
 @property(nonatomic, copy) NSString* securityLevelAccessibilityString;
+// Current in-use color scheme.
+@property(nonatomic, strong) LocationBarSteadyViewColorScheme* colorScheme;
 
 @end
 

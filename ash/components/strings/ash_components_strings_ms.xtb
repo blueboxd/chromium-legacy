@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="104962181688258143">Buka apl Fail</translation>
+<translation id="1098295134904615027">Aktifkan meja maya di sebelah kanan</translation>
 <translation id="1122869341872663659">Memaparkan <ph name="N" /> hasil carian untuk <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Seret pautan ke bar alamat tab</translation>
 <translation id="1204450209689312104">Buka tetingkap baharu dalam mod inkognito</translation>
@@ -12,6 +13,7 @@
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> atau <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Pergi ke hujung baris</translation>
+<translation id="1499072997694708844">Tutup mana-mana tetingkap cari yang terbuka atau berhenti memuatkan halaman semasa anda</translation>
 <translation id="1510238584712386396">Pelancar</translation>
 <translation id="152892567002884378">Tambah kelantangan</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kemudian <ph name="ESC" /></translation>
@@ -22,6 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Tambahkan www. dan .com pada input dalam bar alamat, kemudian buka halaman</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kemudian <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> atau <ph name="LEFT" /></translation>
+<translation id="1929866390202038233">Aktifkan meja maya di sebelah kiri</translation>
 <translation id="1996162290124031907">Pergi ke tab seterusnya</translation>
 <translation id="2010818616644390445">Pergi ke tab terakhir dalam tetingkap</translation>
 <translation id="2040706009561734834">Buka/tutup pelancar</translation>
@@ -33,7 +36,7 @@
 <translation id="2185166372312820725">Pergi ke tab sebelumnya</translation>
 <translation id="2194790690264064655">Tekan <ph name="CTRL" /> dan klik pautan</translation>
 <translation id="2246352309084894470">Buka/tutup pelancar skrin penuh</translation>
-<translation id="2354531887393764880">masa</translation>
+<translation id="2354531887393764880">titik</translation>
 <translation id="2382644247745281995">Tidak disokong dengan reka letak papan kekunci semasa</translation>
 <translation id="2397416548179033562">Paparkan menu Chrome</translation>
 <translation id="2424073332829844142">Hidupkan dan matikan Kekunci Caps Lock</translation>
@@ -61,6 +64,7 @@
 <translation id="3105917916468784889">Ambil tangkapan skrin</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Tumpukan bar alamat</translation>
+<translation id="3165428420335997629">Buat meja maya baharu</translation>
 <translation id="3256109297135787951">Buang serlahan daripada item pada rak anda</translation>
 <translation id="3288816184963444640">Tutup tetingkap semasa</translation>
 <translation id="3407560819924487926">Paparkan pengurus tugas</translation>
@@ -114,6 +118,7 @@
 <translation id="5554139136362089836">Cari di halaman semasa</translation>
 <translation id="5563050856984839829">Tekan <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> dan klik pautan</translation>
 <translation id="561814908794220892">Buka halaman web dalam tab baharu</translation>
+<translation id="5620219513321115856">Alih tetingkap aktif ke meja di sebelah kanan</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> atau <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">Buka pautan dalam tab</translation>
 <translation id="5757474750054631686">Malapkan papan kekunci (untuk papan kekunci bercahaya belakang sahaja)</translation>
@@ -176,6 +181,7 @@
 <translation id="8234414138295101081">Putar skrin 90 darjah</translation>
 <translation id="8241665785394195545">tanda kurung kanan</translation>
 <translation id="8264941229485248811">Tunjukkan atau sembunyikan pemeriksa Alat Pembangun</translation>
+<translation id="8355937569537581904">Alih keluar meja maya semasa</translation>
 <translation id="836869401750819675">Buka halaman Muat Turun</translation>
 <translation id="8388247778047144397">Seret pautan ke bahagian kosong pada jalur tab</translation>
 <translation id="8389638407792712197">Buka tetingkap baharu</translation>
@@ -187,6 +193,7 @@
 <translation id="8717459106217102612">Pilih perkataan atau huruf sebelumnya</translation>
 <translation id="8727232706774971183">Lihat pemberitahuan anda</translation>
 <translation id="8855885154700222542">Kekunci skrin penuh</translation>
+<translation id="8881584919399569791">Alih tetingkap aktif ke meja di sebelah kiri</translation>
 <translation id="88986195241502842">Halaman bawah</translation>
 <translation id="8924883688469390268">Beralih kepada pengguna sebelumnya</translation>
 <translation id="8977648847395357314">Pilih kandungan dalam bar alamat</translation>

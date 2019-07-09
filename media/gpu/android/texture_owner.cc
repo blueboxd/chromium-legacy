@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "media/gpu/android/image_reader_gl_owner.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
@@ -60,10 +61,13 @@ std::unique_ptr<gpu::gles2::AbstractTexture> TextureOwner::CreateTexture(
     scoped_refptr<gpu::SharedContextState> context_state) {
   DCHECK(context_state);
 
-  // This assumes a non-passthrough (validating) command decoder, which is safe
-  // on Android for now. TODO(vikassoni): Make this independent of cmd decoder
-  // type in future to support passthrough decoder.
-  // Note that the size isn't really used.  We just care about the service id.
+  gpu::gles2::FeatureInfo* feature_info = context_state->feature_info();
+  if (feature_info && feature_info->is_passthrough_cmd_decoder()) {
+    return std::make_unique<
+        gpu::gles2::AbstractTextureImplOnSharedContextPassthrough>(
+        GL_TEXTURE_EXTERNAL_OES, std::move(context_state));
+  }
+
   return std::make_unique<gpu::gles2::AbstractTextureImplOnSharedContext>(
       GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
       0,  // width

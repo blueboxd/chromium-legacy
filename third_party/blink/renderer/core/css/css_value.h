@@ -265,6 +265,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   explicit CSSValue(ClassType class_type)
       : primitive_unit_type_(0),
         value_list_separator_(kSpaceSeparator),
+        is_non_negative_math_function_(false),
         class_type_(class_type) {}
 
   // NOTE: This class is non-virtual for memory and performance reasons.
@@ -278,6 +279,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   unsigned primitive_unit_type_ : 7;  // CSSPrimitiveValue::UnitType
 
   unsigned value_list_separator_ : kValueListSeparatorBits;
+
+  // CSSMathFunctionValue
+  unsigned is_non_negative_math_function_ : 1;
 
  private:
   unsigned class_type_ : kClassTypeBits;  // ClassType

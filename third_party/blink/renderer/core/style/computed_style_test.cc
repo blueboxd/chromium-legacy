@@ -70,13 +70,22 @@ TEST(ComputedStyleTest, ClipPathEqual) {
 TEST(ComputedStyleTest, FocusRingWidth) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetEffectiveZoom(3.5);
-#if defined(OS_MACOSX)
   style->SetOutlineStyle(EBorderStyle::kSolid);
+#if defined(OS_MACOSX)
   EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
-  EXPECT_EQ(3.5, style->GetOutlineStrokeWidthForFocusRing());
+  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
+  static uint16_t outline_width = 4;
+  style->SetOutlineWidth(outline_width);
+
+  double expected_width =
+      LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 3.5;
+  EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
+
+  expected_width =
+      LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 1.0;
   style->SetEffectiveZoom(0.5);
-  EXPECT_EQ(1, style->GetOutlineStrokeWidthForFocusRing());
+  EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
 #endif
 }
 

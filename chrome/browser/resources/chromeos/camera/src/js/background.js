@@ -26,7 +26,7 @@ cca.bg.MIN_WIDTH = 768;
  * @type {number}
  * @const
  */
-cca.bg.INITIAL_ASPECT_RATIO = 1.3333333333;
+cca.bg.INITIAL_ASPECT_RATIO = 1.7777777777;
 
 /**
  * Top bar color of the window.

@@ -86,11 +86,12 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
 
 TEST_F(PerformanceObserverTest, Enqueue) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -99,11 +100,12 @@ TEST_F(PerformanceObserverTest, Enqueue) {
 
 TEST_F(PerformanceObserverTest, Deliver) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -115,11 +117,12 @@ TEST_F(PerformanceObserverTest, Deliver) {
 
 TEST_F(PerformanceObserverTest, Disconnect) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -129,4 +132,4 @@ TEST_F(PerformanceObserverTest, Disconnect) {
   EXPECT_FALSE(IsRegistered());
   EXPECT_EQ(0, NumPerformanceEntries());
 }
-}
+}  // namespace blink

@@ -17,7 +17,7 @@ cca.util = cca.util || {};
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
  * position.
- * @param {Blob} blob JPEG blob that might contain EXIF orientation field.
+ * @param {!Blob} blob JPEG blob that might contain EXIF orientation field.
  * @return {Promise<Object<number, boolean>>}
  */
 cca.util.getPhotoOrientation = function(blob) {
@@ -89,7 +89,7 @@ cca.util.getPhotoOrientation = function(blob) {
 
 /**
  * Orients a photo to the upright orientation.
- * @param {Blob} blob Photo as a blob.
+ * @param {!Blob} blob Photo as a blob.
  * @param {function(Blob)} onSuccess Success callback with the result photo as
  *     a blob.
  * @param {function()} onFailure Failure callback.
@@ -182,7 +182,8 @@ cca.util.isChromeOS = function() {
  */
 cca.util.animateOnce = function(element, callback) {
   element.classList.remove('animate');
-  element.offsetWidth; // Force calculation to re-apply animation.
+  /** @suppress {suspiciousCode} */
+  element.offsetWidth;  // Force calculation to re-apply animation.
   element.classList.add('animate');
   cca.util.waitAnimationCompleted(element, () => {
     element.classList.remove('animate');
@@ -693,12 +694,12 @@ cca.util.ScrollTracker.prototype.probe_ = function() {
 
 /**
  * Makes an element scrollable by dragging with a mouse.
- * @param {cca.util.Scroller} scroller Scroller for the element.
+ * @param {cca.util.SmoothScroller} scroller SmoothScroller for the element.
  * @constructor
  */
 cca.util.MouseScroller = function(scroller) {
   /**
-   * @type {cca.util.Scroller}
+   * @type {cca.util.SmoothScroller}
    * @private
    */
   this.scroller_ = scroller;
@@ -890,9 +891,9 @@ cca.util.setupI18nElements = function(rootElement) {
 
 /**
  * Reads blob into Image.
- * @param {Blob} blob
+ * @param {!Blob} blob
  * @return {Promise<HTMLImageElement>}
- * @throw {Error}
+ * @throws {Error}
  */
 cca.util.blobToImage = function(blob) {
   return new Promise((resolve, reject) => {

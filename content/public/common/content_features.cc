@@ -16,10 +16,6 @@ namespace features {
 const base::Feature kAllowActivationDelegationAttr{
     "AllowActivationDelegationAttr", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows starting services without the browser process.
-const base::Feature kAllowStartingServiceManagerOnly{
-    "AllowStartingServiceManagerOnly", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables content-initiated, main frame navigations to data URLs.
 // TODO(meacer): Remove when the deprecation is complete.
 //               https://www.chromestatus.com/feature/5669602927312896

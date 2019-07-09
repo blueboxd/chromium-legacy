@@ -232,10 +232,10 @@ void NodeSet::TraversalSort() const {
     if (nodes.Contains(&n))
       sorted_nodes.push_back(&n);
 
-    if (!contains_attribute_nodes || !n.IsElementNode())
+    auto* element = DynamicTo<Element>(&n);
+    if (!element || !contains_attribute_nodes)
       continue;
 
-    Element* element = ToElement(&n);
     AttributeCollection attributes = element->Attributes();
     for (auto& attribute : attributes) {
       Attr* attr = element->AttrIfExists(attribute.GetName());

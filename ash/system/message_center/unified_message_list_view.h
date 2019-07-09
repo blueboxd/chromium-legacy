@@ -6,9 +6,9 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_LIST_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -31,7 +31,7 @@ class ASH_EXPORT UnifiedMessageListView
     : public views::View,
       public message_center::MessageCenterObserver,
       public message_center::MessageView::SlideObserver,
-      public gfx::AnimationDelegate {
+      public views::AnimationDelegateViews {
  public:
   // |message_center_view| can be null in unit tests.
   UnifiedMessageListView(UnifiedMessageCenterView* message_center_view,
@@ -87,7 +87,7 @@ class ASH_EXPORT UnifiedMessageListView
   // message_center::MessageView::SlideObserver:
   void OnSlideStarted(const std::string& notification_id) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;

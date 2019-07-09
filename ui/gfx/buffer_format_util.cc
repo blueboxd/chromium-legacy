@@ -25,61 +25,6 @@ static_assert(base::size(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
               "BufferFormat::LAST must be last value of kBufferFormats");
 
-bool RowSizeForBufferFormatChecked(
-    size_t width, BufferFormat format, size_t plane, size_t* size_in_bytes) {
-  base::CheckedNumeric<size_t> checked_size = width;
-  switch (format) {
-    case BufferFormat::R_8:
-      checked_size += 3;
-      if (!checked_size.IsValid())
-        return false;
-      *size_in_bytes = (checked_size & ~0x3).ValueOrDie();
-      return true;
-    case BufferFormat::R_16:
-    case BufferFormat::RG_88:
-    case BufferFormat::BGR_565:
-    case BufferFormat::RGBA_4444:
-    case BufferFormat::UYVY_422:
-      checked_size *= 2;
-      checked_size += 3;
-      if (!checked_size.IsValid())
-        return false;
-      *size_in_bytes = (checked_size & ~0x3).ValueOrDie();
-      return true;
-    case BufferFormat::BGRX_8888:
-    case BufferFormat::BGRX_1010102:
-    case BufferFormat::RGBX_1010102:
-    case BufferFormat::RGBX_8888:
-    case BufferFormat::RGBA_8888:
-    case BufferFormat::BGRA_8888:
-      checked_size *= 4;
-      if (!checked_size.IsValid())
-        return false;
-      *size_in_bytes = checked_size.ValueOrDie();
-      return true;
-    case BufferFormat::RGBA_F16:
-      checked_size *= 8;
-      if (!checked_size.IsValid())
-        return false;
-      *size_in_bytes = checked_size.ValueOrDie();
-      return true;
-    case BufferFormat::YVU_420:
-      DCHECK_EQ(0u, width % 2);
-      *size_in_bytes = width / SubsamplingFactorForBufferFormat(format, plane);
-      return true;
-    case BufferFormat::YUV_420_BIPLANAR:
-      DCHECK_EQ(width % 2, 0u);
-      *size_in_bytes = width;
-      return true;
-    case BufferFormat::P010:
-      DCHECK_EQ(width % 2, 0u);
-      *size_in_bytes = 2 * width;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
 }  // namespace
 
 std::vector<BufferFormat> GetBufferFormatsForTesting() {
@@ -150,6 +95,63 @@ size_t RowSizeForBufferFormat(size_t width, BufferFormat format, size_t plane) {
   bool valid = RowSizeForBufferFormatChecked(width, format, plane, &row_size);
   DCHECK(valid);
   return row_size;
+}
+
+bool RowSizeForBufferFormatChecked(size_t width,
+                                   BufferFormat format,
+                                   size_t plane,
+                                   size_t* size_in_bytes) {
+  base::CheckedNumeric<size_t> checked_size = width;
+  switch (format) {
+    case BufferFormat::R_8:
+      checked_size += 3;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = (checked_size & ~0x3).ValueOrDie();
+      return true;
+    case BufferFormat::R_16:
+    case BufferFormat::RG_88:
+    case BufferFormat::BGR_565:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::UYVY_422:
+      checked_size *= 2;
+      checked_size += 3;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = (checked_size & ~0x3).ValueOrDie();
+      return true;
+    case BufferFormat::BGRX_8888:
+    case BufferFormat::BGRX_1010102:
+    case BufferFormat::RGBX_1010102:
+    case BufferFormat::RGBX_8888:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
+      checked_size *= 4;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = checked_size.ValueOrDie();
+      return true;
+    case BufferFormat::RGBA_F16:
+      checked_size *= 8;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = checked_size.ValueOrDie();
+      return true;
+    case BufferFormat::YVU_420:
+      DCHECK_EQ(0u, width % 2);
+      *size_in_bytes = width / SubsamplingFactorForBufferFormat(format, plane);
+      return true;
+    case BufferFormat::YUV_420_BIPLANAR:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = width;
+      return true;
+    case BufferFormat::P010:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = 2 * width;
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 size_t BufferSizeForBufferFormat(const Size& size, BufferFormat format) {

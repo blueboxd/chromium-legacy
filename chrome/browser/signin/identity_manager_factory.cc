@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
@@ -26,6 +27,12 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #endif
 
 namespace {
@@ -106,10 +113,26 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.network_connection_tracker = content::GetNetworkConnectionTracker();
   params.pref_service = profile->GetPrefs();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  DCHECK(factory);
+  params.account_manager =
+      factory->GetAccountManager(profile->GetPath().value());
+  params.is_regular_profile =
+      !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
+#endif
+
   params.token_service = ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
       context, params.pref_service, params.account_tracker_service.get(),
       params.network_connection_tracker, params.account_consistency,
+#if defined(OS_CHROMEOS)
+      params.account_manager, params.is_regular_profile,
+#endif
       params.signin_client);
+
   std::unique_ptr<identity::IdentityManager> identity_manager =
       identity::BuildIdentityManager(&params);
 

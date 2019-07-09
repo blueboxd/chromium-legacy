@@ -37,6 +37,8 @@ import java.util.List;
  * A helper class that handles generating context menus for {@link WebContents}s.
  */
 public class ContextMenuHelper implements OnCreateContextMenuListener {
+    public static Callback<RevampedContextMenuCoordinator> sRevampedContextMenuShownCallback;
+
     private static final int MAX_SHARE_DIMEN_PX = 2048;
 
     private final WebContents mWebContents;
@@ -137,6 +139,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                             topContentOffsetPx, this::shareImageWithLastShareComponent);
             menuCoordinator.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback,
                     mOnMenuShown, mOnMenuClosed);
+            if (sRevampedContextMenuShownCallback != null) {
+                sRevampedContextMenuShownCallback.onResult(menuCoordinator);
+            }
             // TODO(sinansahin): This could be pushed in to the header mediator.
             if (mCurrentContextMenuParams.isImage()) {
                 getThumbnail(

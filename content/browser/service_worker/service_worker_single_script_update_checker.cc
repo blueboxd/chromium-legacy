@@ -7,10 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
-#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
+#include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -18,7 +17,6 @@
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/common/mime_util/mime_util.h"
 
 // TODO(momohatt): Use ServiceWorkerMetrics for UMA.
 
@@ -149,47 +147,16 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingHeader);
 
-  // We don't have complete info here, but fill in what we have now.
-  // At least we need headers and SSL info.
-  auto response_info = std::make_unique<net::HttpResponseInfo>();
-  response_info->headers = response_head.headers;
-  if (response_head.ssl_info.has_value())
-    response_info->ssl_info = *response_head.ssl_info;
-  response_info->was_fetched_via_spdy = response_head.was_fetched_via_spdy;
-  response_info->was_alpn_negotiated = response_head.was_alpn_negotiated;
-  response_info->alpn_negotiated_protocol =
-      response_head.alpn_negotiated_protocol;
-  response_info->connection_info = response_head.connection_info;
-  response_info->remote_endpoint = response_head.remote_endpoint;
-
-  network_loader_state_ =
-      ServiceWorkerNewScriptLoader::NetworkLoaderState::kWaitingForBody;
-  network_accessed_ = response_head.network_accessed;
-
-  if (response_head.headers->response_code() / 100 != 2) {
-    std::string error_message =
-        base::StringPrintf(kServiceWorkerBadHTTPResponseError,
-                           response_head.headers->response_code());
-    Fail(blink::ServiceWorkerStatusCode::kErrorNetwork, error_message);
-    return;
-  }
-
-  // Check the certificate error.
-  if (net::IsCertStatusError(response_head.cert_status) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreCertificateErrors)) {
-    Fail(blink::ServiceWorkerStatusCode::kErrorSecurity,
-         kServiceWorkerSSLError);
-    return;
-  }
-
-  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
-    std::string error_message =
-        response_head.mime_type.empty()
-            ? kServiceWorkerNoMIMEError
-            : base::StringPrintf(kServiceWorkerBadMIMEError,
-                                 response_head.mime_type.c_str());
-    Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message);
+  network::URLLoaderCompletionStatus completion_status;
+  std::string error_message;
+  std::unique_ptr<net::HttpResponseInfo> response_info =
+      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
+          response_head, &completion_status, &error_message);
+  if (completion_status.error_code != net::OK) {
+    blink::ServiceWorkerStatusCode status_code =
+        service_worker_loader_helpers::MapNetErrorToServiceWorkerStatus(
+            static_cast<net::Error>(completion_status.error_code));
+    Fail(status_code, error_message);
     return;
   }
 
@@ -200,7 +167,6 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
     std::string service_worker_allowed;
     bool has_header = response_head.headers->EnumerateHeader(
         nullptr, kServiceWorkerAllowed, &service_worker_allowed);
-    std::string error_message;
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
             scope_, script_url_, has_header ? &service_worker_allowed : nullptr,
             &error_message)) {
@@ -208,6 +174,10 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
       return;
     }
   }
+
+  network_loader_state_ =
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kWaitingForBody;
+  network_accessed_ = response_head.network_accessed;
 
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));

@@ -295,13 +295,6 @@ class MediaCodecUtil {
 
         assert result.mediaCodec == null;
 
-        // Creation of ".secure" codecs sometimes crash instead of throwing exceptions
-        // on pre-JBMR2 devices.
-        if (codecType == CodecType.SECURE
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            return result;
-        }
-
         // Do not create codec for blacklisted devices.
         if (!isDecoderSupportedForDevice(mime)) {
             Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
@@ -367,12 +360,6 @@ class MediaCodecUtil {
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
         // *************************************************************
         if (mime.equals("video/x-vnd.on2.vp8")) {
-            // Only support VP8 on Android versions where we don't have to synchronously
-            // tear down the MediaCodec on surface destruction because VP8 requires us to
-            // completely drain the decoder before releasing it, which is difficult and
-            // time consuming to do while the surface is being destroyed.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return false;
-
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
                 // Some Samsung devices cannot render VP8 video directly to the surface.
 

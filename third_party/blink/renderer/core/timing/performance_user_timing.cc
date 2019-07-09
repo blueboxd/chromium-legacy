@@ -130,7 +130,8 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
     return nullptr;
   }
 
-  return PerformanceMark::Create(script_state, mark_name, start, detail);
+  return PerformanceMark::Create(script_state, mark_name, start, detail,
+                                 exception_state);
 }
 
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
@@ -234,8 +235,11 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
       "blink.user_timing", measure_name.Utf8().c_str(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
-  auto* measure = MakeGarbageCollected<PerformanceMeasure>(
-      script_state, measure_name, start_time, end_time, detail);
+  PerformanceMeasure* measure =
+      PerformanceMeasure::Create(script_state, measure_name, start_time,
+                                 end_time, detail, exception_state);
+  if (!measure)
+    return nullptr;
   InsertPerformanceEntry(measures_map_, *measure);
   if (end_time >= start_time) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(

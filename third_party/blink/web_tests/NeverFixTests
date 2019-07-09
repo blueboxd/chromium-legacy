@@ -271,12 +271,6 @@ crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-006.html [ 
 crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle-mismatch.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle.html [ WontFix ]
 
-# We could fix this test for us and upstream it if the test shell user agent
-# would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ Linux ] http/tests/misc/timer-vs-loading.html [ WontFix ]
-crbug.com/7482 [ Win ] http/tests/misc/timer-vs-loading.html [ WontFix ]
-crbug.com/7482 [ Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
-
 # On Linux bold emoji are already supported.
 crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
 crbug.com/551843 [ Linux ] fast/text/emoji-font-weight-mac.html [ WontFix ]

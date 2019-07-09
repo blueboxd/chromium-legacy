@@ -30,13 +30,18 @@ namespace {
 using testing::_;
 using testing::Return;
 
+// TODO(victorvianna): Rename to kPageUrl and kIconUrl.
 const char kDummyPageUrl[] = "https://www.example.com";
 const char kDummyIconUrl[] = "https://www.example.com/favicon16.png";
+const FaviconRequestOrigin kDummyOrigin = FaviconRequestOrigin::HISTORY;
+const char kDummyOriginHistogramSuffix[] = ".HISTORY";
+const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
+base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
+const char kAvailabilityHistogramName[] = "Sync.FaviconAvailability";
+const char kGroupingHistogramName[] = "Sync.SizeOfFaviconServerRequestGroup";
 const int kDefaultDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
-const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
 const SkColor kTestColor = SK_ColorRED;
-base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 
 SkBitmap CreateTestSkBitmap(int desired_size_in_pixel) {
   SkBitmap bitmap;
@@ -162,12 +167,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyBitmap) {
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_FALSE(result.is_valid());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kNotAvailable, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kNotAvailable, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncBitmap) {
@@ -187,12 +192,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncBitmap) {
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.is_valid());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kSync, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kSync, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
@@ -213,12 +218,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.is_valid());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kLocal, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -252,10 +257,14 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.is_valid());
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -289,14 +298,14 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.is_valid());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.HISTORY",
-                                       FaviconAvailability::kLocal, 1);
   histogram_tester_.ExpectUniqueSample(
-      "Sync.SizeOfFaviconServerRequestGroup.HISTORY", 1, 1);
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyImage) {
@@ -312,12 +321,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyImage) {
       .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
-      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
-      FaviconRequestOrigin::UNKNOWN,
+      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.image.IsEmpty());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kNotAvailable, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kNotAvailable, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncImage) {
@@ -333,12 +342,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncImage) {
       .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
-      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
-      FaviconRequestOrigin::UNKNOWN,
+      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kSync, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kSync, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalImage) {
@@ -355,12 +364,12 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalImage) {
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
-      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
-      FaviconRequestOrigin::UNKNOWN,
+      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
-  histogram_tester_.ExpectUniqueSample("Sync.FaviconAvailability.UNKNOWN",
-                                       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kLocal, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -389,15 +398,14 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
-      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
-      FaviconRequestOrigin::RECENTLY_CLOSED_TABS, /*icon_url_for_uma=*/GURL(),
-      &tracker_);
+      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
+      /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
-      "Sync.FaviconAvailability.RECENTLY_CLOSED_TABS",
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
   histogram_tester_.ExpectUniqueSample(
-      "Sync.SizeOfFaviconServerRequestGroup.RECENTLY_CLOSED_TABS", 1, 1);
+      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -426,11 +434,16 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
-      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
-      FaviconRequestOrigin::RECENTLY_CLOSED_TABS, /*icon_url_for_uma=*/GURL(),
+      GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
+      /*icon_url_for_uma=*/GURL(),
 
       &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
+      FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectUniqueSample(
+      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -456,8 +469,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
 }
 
@@ -480,8 +492,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldResizeSyncBitmap) {
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
-      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
-      kDummyPlatform,
+      base::BindOnce(&StoreBitmap, &result), kDummyOrigin, kDummyPlatform,
       /*icon_url_for_uma=*/GURL(), &tracker_);
   EXPECT_TRUE(result.is_valid());
   EXPECT_EQ(gfx::Size(kDesiredSizeInPixel, kDesiredSizeInPixel),

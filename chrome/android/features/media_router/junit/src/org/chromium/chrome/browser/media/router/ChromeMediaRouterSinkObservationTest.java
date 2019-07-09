@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.media.router;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.os.Build;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -121,7 +119,6 @@ public class ChromeMediaRouterSinkObservationTest extends ChromeMediaRouterTestB
     public void testIsLowRamDevice() throws Exception {
         SysUtils.resetForTesting();
         CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE);
-        assertEquals(Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2,
-                mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));
+        assertEquals(false, mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));
     }
 }

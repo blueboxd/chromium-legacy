@@ -766,8 +766,8 @@
       <message name="IDS_IME_NAME_KEYBOARD_ITALIAN" desc="The input method name shows in system tray menu, this shows [Italian keyboard].">
         Italian keyboard
       </message>
-      <message name="IDS_IME_NAME_KEYBOARD_JAPANESE" desc="The input method name shows in system tray menu, this shows [Japanese keyboard].">
-        Japanese keyboard
+      <message name="IDS_IME_NAME_KEYBOARD_JAPANESE" desc="The input method name shows in system tray menu, this shows [Alphanumeric input (for Japanese keyboard)]. Native name in Japanese is '英数入力（日本語キーボード用）'. This refers to the keyboard with Japanese JIS layout that types Latin alphanumeric and symbol characters.">
+        Alphanumeric input (for Japanese keyboard)
       </message>
       <message name="IDS_IME_NAME_KEYBOARD_KAZAKH" desc="The input method name shows in system tray menu, this shows [Kazakh keyboard].">
         Kazakh keyboard
@@ -893,11 +893,11 @@
       <message name="IDS_IME_NAME_INPUTMETHOD_DAYI" desc="The input method name shows in system tray menu, this is Dayi (\u5927\u6613) input method for Traditional Chinese.">
         Dayi input method
       </message>
-      <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_JP" desc="The input method name shows in system tray menu, this is Japanese input method for Japanese keyboard.">
-        Google Japanese Input (for Japanese keyboard)
+      <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_JP" desc="The input method name shows in system tray menu, this is Google Japanese input method on Japanese JIS keyboard layout. Native name in Japanese is '日本語入力（日本語キーボード用）'.">
+        Japanese input (for Japanese keyboard)
       </message>
-      <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_US" desc="The input method name shows in system tray menu, this is Japanese input method for US keyboard.">
-        Google Japanese Input (for US keyboard)
+      <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_US" desc="The input method name shows in system tray menu, this is Google Japanese input method on US ANSI keyboard layout. Native name in Japanese is '日本語入力（USキーボード用）'">
+        Japanese input (for US keyboard)
       </message>
       <message name="IDS_IME_NAME_INPUTMETHOD_PINYIN" desc="The input method name shows in system tray menu, this is Pinyin input method for Simplified Chinese.">
         Pinyin input method

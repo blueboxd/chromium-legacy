@@ -969,7 +969,7 @@ void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
 
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
-    blink::mojom::CredentialManagerRequest request,
+    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver,
     content::RenderFrameHost* render_frame_host) {
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
@@ -993,7 +993,7 @@ void ChromePasswordManagerClient::BindCredentialManager(
   if (!instance)
     return;
 
-  instance->content_credential_manager_.BindRequest(std::move(request));
+  instance->content_credential_manager_.BindRequest(std::move(receiver));
 }
 
 // static

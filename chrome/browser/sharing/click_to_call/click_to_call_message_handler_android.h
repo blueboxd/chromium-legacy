@@ -12,7 +12,8 @@
 // Handles incoming messages for the click to call feature.
 class ClickToCallMessageHandler : public SharingMessageHandler {
  public:
-  ~ClickToCallMessageHandler() override = default;
+  ClickToCallMessageHandler();
+  ~ClickToCallMessageHandler() override;
 
   // SharingMessageHandler
   void OnMessage(

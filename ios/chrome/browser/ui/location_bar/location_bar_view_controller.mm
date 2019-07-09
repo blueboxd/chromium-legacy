@@ -126,10 +126,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 - (void)setIncognito:(BOOL)incognito {
   _incognito = incognito;
-  [self.locationBarSteadyView
-      setColorScheme:incognito
-                         ? [LocationBarSteadyViewColorScheme incognitoScheme]
-                         : [LocationBarSteadyViewColorScheme standardScheme]];
+  self.locationBarSteadyView.colorScheme =
+      incognito ? [LocationBarSteadyViewColorScheme incognitoScheme]
+                : [LocationBarSteadyViewColorScheme standardScheme];
 }
 
 - (void)setDispatcher:(id<ActivityServiceCommands,
@@ -238,19 +237,16 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.locationBarSteadyView.securityLevelAccessibilityString = statusText;
 }
 
+// Updates display on the NTP. Note that this is only meaningful on iPad, where
+// the location bar is visible after scrolling the fakebox off the page. On
+// iPhone, the location bar is not shown on the NTP at all.
 - (void)updateForNTP:(BOOL)isNTP {
   if (isNTP) {
     // Display a fake "placeholder".
     NSString* placeholderString =
         l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
-    LocationBarSteadyViewColorScheme* scheme =
-        self.incognito ? [LocationBarSteadyViewColorScheme incognitoScheme]
-                       : [LocationBarSteadyViewColorScheme standardScheme];
-    UIColor* placeholderColor = scheme.placeholderColor;
-    self.locationBarSteadyView.locationLabel.attributedText = [
-        [NSAttributedString alloc]
-        initWithString:placeholderString
-            attributes:@{NSForegroundColorAttributeName : placeholderColor}];
+    [self.locationBarSteadyView
+        setLocationLabelPlaceholderText:placeholderString];
   }
   self.hideShareButtonWhileOnIncognitoNTP = isNTP;
 }

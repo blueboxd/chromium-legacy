@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -38,13 +39,18 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
+
+constexpr char kMockHost[] = "mock.host";
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
@@ -78,6 +84,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   ~ResourceLoadingNoFeaturesBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -161,6 +169,10 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
     cmd->AppendSwitch("optimization-guide-disable-installer");
+
+    // Needed so that the browser can connect to kMockHost.
+    cmd->AppendSwitch("ignore-certificate-errors");
+
     cmd->AppendSwitch("purge_hint_cache_store");
 
     // Due to race conditions, it's possible that blacklist data is not loaded
@@ -222,7 +234,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     ProcessHintsComponent(
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING,
-            {hint_setup_url.host()}, page_pattern, resource_patterns));
+            {hint_setup_url.host(), kMockHost}, page_pattern,
+            resource_patterns));
     LoadHintsForUrl(hint_setup_url);
   }
 
@@ -296,8 +309,19 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     subresource_expected_["/baz.woff2"] = expect_woff_requested;
   }
 
+  int GetProcessID() const {
+    return browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetMainFrame()
+        ->GetProcess()
+        ->GetID();
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
   void TearDownOnMainThread() override {
@@ -349,7 +373,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
   GURL https_url_preload_;
@@ -372,50 +395,82 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 };
 
 // This test class enables ResourceLoadingHints with OptimizationHints.
-// Parameter is true if the test should be run with a webpage that preloads
-// resources in the HTML head using link-rel preload.
+// First parameter is true if the test should be run with a webpage that
+// preloads resources in the HTML head using link-rel preload.
+// Second parameter is true if the blink feature
+// kSendPreviewsLoadingHintsBeforeCommit should be enabled.
 class ResourceLoadingHintsBrowserTest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
       public ResourceLoadingNoFeaturesBrowserTest {
  public:
-  ResourceLoadingHintsBrowserTest() = default;
+  ResourceLoadingHintsBrowserTest()
+      : use_preload_resources_webpage_(std::get<0>(GetParam())),
+        use_render_frame_observer_(std::get<1>(GetParam())) {}
 
   ~ResourceLoadingHintsBrowserTest() override = default;
 
   void SetUp() override {
     // Enabling NoScript should have no effect since resource loading takes
     // priority over NoScript.
-    scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
-         previews::features::kOptimizationHints,
-         previews::features::kResourceLoadingHints,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService},
-        {});
+    if (!use_render_frame_observer_) {
+      scoped_feature_list_.InitWithFeatures(
+          {previews::features::kPreviews, previews::features::kNoScriptPreviews,
+           previews::features::kOptimizationHints,
+           previews::features::kResourceLoadingHints,
+           data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {blink::features::kSendPreviewsLoadingHintsBeforeCommit,
+           previews::features::kPreviews, previews::features::kNoScriptPreviews,
+           previews::features::kOptimizationHints,
+           previews::features::kResourceLoadingHints,
+           data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService},
+          {});
+    }
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
 
+  GURL GetURLWithMockHost(const net::EmbeddedTestServer& server,
+                          const std::string& relative_url) const {
+    return server.GetURL(kMockHost, relative_url);
+  }
+
   const GURL& https_url() const override {
-    if (GetParam())
+    if (use_preload_resources_webpage_)
       return ResourceLoadingNoFeaturesBrowserTest::https_url_preload();
     return ResourceLoadingNoFeaturesBrowserTest::https_url();
   }
 
   const GURL& https_url_iframe() const override {
-    if (GetParam())
+    if (use_preload_resources_webpage_)
       return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe_preload();
     return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe();
   }
 
+  bool use_preload_resources_webpage() const {
+    return use_preload_resources_webpage_;
+  }
+
+  bool use_render_frame_observer() const { return use_render_frame_observer_; }
+
  private:
+  const bool use_preload_resources_webpage_;
+  const bool use_render_frame_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
 
-// Parameter is true if the test should be run with a webpage that preloads
-// resources in the HTML head using link-rel preload.
+// First parameter is true if the test should be run with a webpage that
+// preloads resources in the HTML head using link-rel preload. Second parameter
+// is true if the blink feature kSendPreviewsLoadingHintsBeforeCommit
+// should be enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          ResourceLoadingHintsBrowserTest,
-                         ::testing::Values(false, true));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
@@ -429,9 +484,7 @@ INSTANTIATE_TEST_SUITE_P(,
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
 
   GURL url = https_url();
@@ -484,6 +537,28 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
+
+  int previous_process_id = GetProcessID();
+
+  {
+    // Navigate to a cross-origin URL. Ensure that (i) there is no browser
+    // crash; and (ii) web contents observer sends the hints to the correct
+    // agent on the renderer side.
+    SetExpectedFooJpgRequest(false);
+    SetExpectedBarJpgRequest(true);
+
+    base::HistogramTester histogram_tester_2;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GetURLWithMockHost(*https_server_, "/resource_loading_hints.html"));
+
+    int current_process_id = GetProcessID();
+    EXPECT_NE(previous_process_id, current_process_id);
+    base::RunLoop().RunUntilIdle();
+    RetryForHistogramUntilCountReached(
+        &histogram_tester_2,
+        "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1);
+  }
 }
 
 // The test loads https_url_iframe() which is whitelisted for resource blocking.
@@ -588,9 +663,7 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsEnabled)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
 
   base::test::ScopedFeatureList scoped_list;
@@ -634,10 +707,9 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsEnabled)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
+
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -716,9 +788,7 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(SameOriginDifferentPattern)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   // Whitelist resource loading hints for https_url()'s' host and pattern.
   SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
@@ -779,9 +849,7 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsNotEnabled)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
@@ -817,9 +885,7 @@ IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
-  // TODO(https://crbug.com/891328): The test does not pass when resources are
-  // loaded using link-rel preload.
-  if (GetParam())
+  if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   GURL url = redirect_url();
 

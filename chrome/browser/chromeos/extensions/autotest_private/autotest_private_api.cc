@@ -805,30 +805,37 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcAppFunction::Run() {
   if (!prefs)
     return RespondNow(Error("ARC is not available"));
 
-  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs->GetApp(params->app_id);
-  if (!app_info)
-    return RespondNow(Error("App is not available"));
+  std::unique_ptr<base::DictionaryValue> app_value;
+  {
+    const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs->GetApp(params->app_id);
+    if (!app_info)
+      return RespondNow(Error("App is not available"));
 
-  auto app_value = std::make_unique<base::DictionaryValue>();
+    app_value = std::make_unique<base::DictionaryValue>();
 
-  app_value->SetKey("name", base::Value(app_info->name));
-  app_value->SetKey("packageName", base::Value(app_info->package_name));
-  app_value->SetKey("activity", base::Value(app_info->activity));
-  app_value->SetKey("intentUri", base::Value(app_info->intent_uri));
-  app_value->SetKey("iconResourceId", base::Value(app_info->icon_resource_id));
-  app_value->SetKey("lastLaunchTime",
-                    base::Value(app_info->last_launch_time.ToJsTime()));
-  app_value->SetKey("installTime",
-                    base::Value(app_info->install_time.ToJsTime()));
-  app_value->SetKey("sticky", base::Value(app_info->sticky));
-  app_value->SetKey("notificationsEnabled",
-                    base::Value(app_info->notifications_enabled));
-  app_value->SetKey("ready", base::Value(app_info->ready));
-  app_value->SetKey("suspended", base::Value(app_info->suspended));
-  app_value->SetKey("showInLauncher", base::Value(app_info->show_in_launcher));
-  app_value->SetKey("shortcut", base::Value(app_info->shortcut));
-  app_value->SetKey("launchable", base::Value(app_info->launchable));
+    app_value->SetKey("name", base::Value(std::move(app_info->name)));
+    app_value->SetKey("packageName",
+                      base::Value(std::move(app_info->package_name)));
+    app_value->SetKey("activity", base::Value(std::move(app_info->activity)));
+    app_value->SetKey("intentUri",
+                      base::Value(std::move(app_info->intent_uri)));
+    app_value->SetKey("iconResourceId",
+                      base::Value(std::move(app_info->icon_resource_id)));
+    app_value->SetKey("lastLaunchTime",
+                      base::Value(app_info->last_launch_time.ToJsTime()));
+    app_value->SetKey("installTime",
+                      base::Value(app_info->install_time.ToJsTime()));
+    app_value->SetKey("sticky", base::Value(app_info->sticky));
+    app_value->SetKey("notificationsEnabled",
+                      base::Value(app_info->notifications_enabled));
+    app_value->SetKey("ready", base::Value(app_info->ready));
+    app_value->SetKey("suspended", base::Value(app_info->suspended));
+    app_value->SetKey("showInLauncher",
+                      base::Value(app_info->show_in_launcher));
+    app_value->SetKey("shortcut", base::Value(app_info->shortcut));
+    app_value->SetKey("launchable", base::Value(app_info->launchable));
+  }
 
   return RespondNow(OneArgument(std::move(app_value)));
 }
@@ -851,26 +858,31 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
   if (!prefs)
     return RespondNow(Error("ARC is not available"));
 
-  const std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
-      prefs->GetPackage(params->package_name);
-  if (!package_info)
-    return RespondNow(Error("Package is not available"));
+  std::unique_ptr<base::DictionaryValue> package_value;
+  {
+    const std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
+        prefs->GetPackage(params->package_name);
+    if (!package_info)
+      return RespondNow(Error("Package is not available"));
 
-  auto package_value = std::make_unique<base::DictionaryValue>();
-  package_value->SetKey("packageName", base::Value(package_info->package_name));
-  package_value->SetKey("packageVersion",
-                        base::Value(package_info->package_version));
-  package_value->SetKey(
-      "lastBackupAndroidId",
-      base::Value(base::NumberToString(package_info->last_backup_android_id)));
-  package_value->SetKey("lastBackupTime",
-                        base::Value(base::Time::FromDeltaSinceWindowsEpoch(
-                                        base::TimeDelta::FromMicroseconds(
-                                            package_info->last_backup_time))
-                                        .ToJsTime()));
-  package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
-  package_value->SetKey("system", base::Value(package_info->system));
-  package_value->SetKey("vpnProvider", base::Value(package_info->vpn_provider));
+    package_value = std::make_unique<base::DictionaryValue>();
+    package_value->SetKey("packageName",
+                          base::Value(std::move(package_info->package_name)));
+    package_value->SetKey("packageVersion",
+                          base::Value(package_info->package_version));
+    package_value->SetKey("lastBackupAndroidId",
+                          base::Value(base::NumberToString(
+                              package_info->last_backup_android_id)));
+    package_value->SetKey("lastBackupTime",
+                          base::Value(base::Time::FromDeltaSinceWindowsEpoch(
+                                          base::TimeDelta::FromMicroseconds(
+                                              package_info->last_backup_time))
+                                          .ToJsTime()));
+    package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
+    package_value->SetKey("system", base::Value(package_info->system));
+    package_value->SetKey("vpnProvider",
+                          base::Value(package_info->vpn_provider));
+  }
   return RespondNow(OneArgument(std::move(package_value)));
 }
 
@@ -1157,7 +1169,7 @@ void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
     std::string base64Png(png_data->front(),
                           png_data->front() + png_data->size());
     base::Base64Encode(base64Png, &base64Png);
-    Respond(OneArgument(std::make_unique<base::Value>(base64Png)));
+    Respond(OneArgument(std::make_unique<base::Value>(std::move(base64Png))));
   } else {
     Respond(Error(base::StrCat(
         {"Error taking screenshot ",
@@ -1221,11 +1233,11 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
     std::vector<chromeos::Printer> printer_list =
         printers_manager_->GetPrinters(type);
     for (const auto& printer : printer_list) {
-      vresults.push_back(base::Value(base::Value::Type::DICTIONARY));
-      base::Value& result = vresults.back();
+      base::Value result(base::Value::Type::DICTIONARY);
       result.SetKey("printerName", base::Value(printer.display_name()));
       result.SetKey("printerId", base::Value(printer.id()));
       result.SetKey("printerType", base::Value(GetPrinterType(type)));
+      vresults.push_back(std::move(result));
     }
   }
   // We have to respond in separate task, because it will cause a destruction of
@@ -1641,7 +1653,8 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
       // SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported by shelf_prefs.cc
       return RespondNow(Error("SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported"));
   }
-  return RespondNow(OneArgument(std::make_unique<base::Value>(str_behavior)));
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(std::move(str_behavior))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -51,6 +51,11 @@ SharingService::SharingService(
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kPingMessage,
       &ping_message_handler_);
+#if defined(OS_ANDROID)
+  fcm_handler_->AddSharingHandler(
+      chrome_browser_sharing::SharingMessage::kClickToCallMessage,
+      &click_to_call_message_handler_);
+#endif  // defined(OS_ANDROID)
 
   if (!sync_service_->HasObserver(this))
     sync_service_->AddObserver(this);

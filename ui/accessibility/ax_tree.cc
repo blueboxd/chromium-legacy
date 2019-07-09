@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
@@ -173,14 +173,17 @@ AXTree::AXTree() {
   initial_state.root_id = -1;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
-  DCHECK(!language_info_stats);
-  language_info_stats.reset(new AXLanguageInfoStats());
+  // TODO(chrishall): should language_detection_manager be a member or pointer?
+  // TODO(chrishall): do we want to initialize all the time, on demand, or only
+  //                  when feature flag is set?
+  DCHECK(!language_detection_manager);
+  language_detection_manager.reset(new AXLanguageDetectionManager());
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
-  DCHECK(!language_info_stats);
-  language_info_stats.reset(new AXLanguageInfoStats());
+  DCHECK(!language_detection_manager);
+  language_detection_manager.reset(new AXLanguageDetectionManager());
 }
 
 AXTree::~AXTree() {

@@ -65,13 +65,23 @@ class CORE_EXPORT ImageRecordsManager {
   ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
-  inline void SetNodeDetached(const DOMNodeId& visible_node_id) {
-    detached_ids_.insert(visible_node_id);
+  inline void RemoveVisibleRecord(const DOMNodeId& visible_node_id) {
+    base::WeakPtr<ImageRecord> record =
+        visible_node_map_.find(visible_node_id)->value->AsWeakPtr();
+    size_ordered_set_.erase(record);
+    visible_node_map_.erase(visible_node_id);
+    // Leave out |images_queued_for_paint_time_| intentionally because the null
+    // record will be removed in |AssignPaintTimeToRegisteredQueuedNodes|.
   }
-  inline void SetNodeReattachedIfNeeded(const DOMNodeId& visible_node_id) {
-    if (!detached_ids_.Contains(visible_node_id))
-      return;
-    detached_ids_.erase(visible_node_id);
+  inline void RemoveVisibleRecord(
+      const BackgroundImageId& background_image_id) {
+    base::WeakPtr<ImageRecord> record =
+        visible_background_image_map_.find(background_image_id)
+            ->value->AsWeakPtr();
+    size_ordered_set_.erase(record);
+    visible_background_image_map_.erase(background_image_id);
+    // Leave out |images_queued_for_paint_time_| intentionally because the null
+    // record will be removed in |AssignPaintTimeToRegisteredQueuedNodes|.
   }
 
   inline void RecordInvisibleNode(const DOMNodeId& node_id) {
@@ -117,19 +127,26 @@ class CORE_EXPORT ImageRecordsManager {
                              unsigned current_frame_index);
 
   inline bool NeedMeausuringPaintTime() const {
-    return !images_queued_for_paint_time_.empty();
+    return !images_queued_for_paint_time_.IsEmpty();
   }
 
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
   inline bool HasUnregisteredRecordsInQueued(
       unsigned last_registered_frame_index) {
+    while (!images_queued_for_paint_time_.IsEmpty() &&
+           !images_queued_for_paint_time_.back()) {
+      images_queued_for_paint_time_.pop_back();
+    }
+    if (images_queued_for_paint_time_.IsEmpty())
+      return false;
     DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
     return last_registered_frame_index < LastQueuedFrameIndex();
   }
   void AssignPaintTimeToRegisteredQueuedNodes(const base::TimeTicks&,
                                               unsigned last_queued_frame_index);
   inline unsigned LastQueuedFrameIndex() const {
+    DCHECK(images_queued_for_paint_time_.back());
     return images_queued_for_paint_time_.back()->frame_index;
   }
 
@@ -152,7 +169,7 @@ class CORE_EXPORT ImageRecordsManager {
       const uint64_t& visual_size);
   inline void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>& record,
                                       unsigned current_frame_index) {
-    images_queued_for_paint_time_.push(record);
+    images_queued_for_paint_time_.push_back(record);
     record->frame_index = current_frame_index;
   }
   inline void SetLoaded(base::WeakPtr<ImageRecord>& record) {
@@ -166,14 +183,12 @@ class CORE_EXPORT ImageRecordsManager {
   HashMap<BackgroundImageId, std::unique_ptr<ImageRecord>>
       visible_background_image_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
-  // Use |DOMNodeId| instead of |ImageRecord|* for the efficiency of inserting
-  // and erasing.
-  HashSet<DOMNodeId> detached_ids_;
+
   // This stores the image records, which are ordered by size.
   ImageRecordSet size_ordered_set_;
   // |ImageRecord|s waiting for paint time are stored in this queue
   // until they get a swap time.
-  std::queue<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
+  Deque<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };

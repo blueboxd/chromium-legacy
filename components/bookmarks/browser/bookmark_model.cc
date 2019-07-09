@@ -571,7 +571,6 @@ const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
-  new_node->set_type(BookmarkNode::FOLDER);
   if (meta_info)
     new_node->SetMetaInfoMap(*meta_info);
 
@@ -606,7 +605,6 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
       std::make_unique<BookmarkNode>(generate_next_node_id(), url);
   new_node->SetTitle(title);
   new_node->set_date_added(creation_time);
-  new_node->set_type(BookmarkNode::URL);
   if (meta_info)
     new_node->SetMetaInfoMap(*meta_info);
 

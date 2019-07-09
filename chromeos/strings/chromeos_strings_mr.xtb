@@ -9,7 +9,9 @@
 <translation id="2338501278241028356">जवळपासचे डिव्हाइस शोधण्यासाठी ब्लूटूथ सुरू करा</translation>
 <translation id="2805756323405976993">ॲप्लिकेशन</translation>
 <translation id="2872961005593481000">बंद करा</translation>
+<translation id="2912823482158781027">तिकीट रिफ्रेश करा</translation>
 <translation id="3511655281162215899">कृपया लगेच नवीन पासवर्ड निवडा</translation>
+<translation id="3562817605261346876">कृपया <ph name="PRINCIPAL_NAME" /> चे तिकीट लवकर रिफ्रेश करा</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
 <translation id="445059817448385655">जुना पासवर्ड</translation>
 <translation id="467510802200863975">पासवर्ड जुळत नाहीत</translation>
@@ -22,12 +24,14 @@
 <translation id="5457599981699367932">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="54609108002486618">व्यवस्‍थापित</translation>
 <translation id="5733345267661125295">कृपया आता नवीन पासवर्ड निवडा</translation>
+<translation id="5743581760404859096">तुमचे Kerberos तिकीट एक्स्पायर होत आहे</translation>
 <translation id="5832805196449965646">व्यक्ती जोडा</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="6058625436358447366">पूर्ण करण्यासाठी, तुमचे जुने आणि नवीन पासवर्ड एंटर करा</translation>
 <translation id="6106186594183574873">पूर्ण करण्यासाठी, तुमचा जुना पासवर्ड एंटर करा</translation>
-<translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचे नवीन पासवर्ड एंटर करा</translation>
+<translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचा नवीन पासवर्ड एंटर करा</translation>
 <translation id="6574601967010742428">डिव्हाइस ॲडमिनिस्ट्रेटर कदाचित तुमची ॲक्टिव्हिटी नियंत्रित करू शकेल.</translation>
+<translation id="7280705187789120111">Kerberos तिकीट एक्स्पायर होत आहे</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{तुमचा सध्याचा पासवर्ड एक्स्पायर झाला आहे!}=1{तुमचा सध्याचा पासवर्ड एका दिवसापेक्षा कमी वेळेत एक्स्पायर होईल!}other{तुमचा सध्याचा पासवर्ड # दिवसांपेक्षा कमी वेळेत एक्स्पायर होईल!}}</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7690294790491645610">नवीन पासवर्ड कन्फर्म करा</translation>

@@ -175,7 +175,7 @@ interface MediaSession {
   // |type| represents the origin of the request.
   Resume@5(SuspendType suspend_type);
 
-  AddObserver@6(MediaSessionObserver observer);
+  AddObserver@6(pending_remote<MediaSessionObserver> observer);
 
   // Skip to the previous track. If there is no previous track then this will
   // be a no-op.

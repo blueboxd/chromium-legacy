@@ -11,6 +11,9 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 
 class Profile;
 
@@ -32,13 +35,19 @@ class ResourceLoadingHintsWebContentsObserver
 
   // Overridden from content::WebContentsObserver. If the navigation is of type
   // resource loading hints preview, then this method sends the resource loading
-  // hints mojo message to the renderer.
+  // hints mojo message to the renderer before the commit occurs. This ensures
+  // that the hints will be available to the renderer as soon as the document
+  // starts rendering.
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // TODO(https://crbug.com/891328): Clean up older interfaces once
+  // kUseRenderFrameObserverForPreviewsLoadingHints is enabled by default.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
   // Sends resource loading hints to the renderer.
-  void SendResourceLoadingHints(content::NavigationHandle* navigation_handle,
-                                bool is_reload) const;
+  void SendResourceLoadingHints(content::NavigationHandle* navigation_handle);
 
   // Returns the pattern of resources that should be blocked when loading
   // |document_gurl|. The pattern may be a single substring to match against the
@@ -50,6 +59,9 @@ class ResourceLoadingHintsWebContentsObserver
 
   // Set in constructor.
   Profile* profile_ = nullptr;
+
+  blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedPtr
+  GetResourceLoadingHintsReceiver(content::NavigationHandle* navigation_handle);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -5,16 +5,133 @@
 #include "components/viz/common/gpu/metal_api_proxy.h"
 
 #include "base/debug/crash_logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/synchronization/condition_variable.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/gl/progress_reporter.h"
 
 namespace {
+
+// State shared between the caller of [MTLDevice newLibraryWithSource:] and its
+// MTLNewLibraryCompletionHandler (and similarly for -[MTLDevice
+// newRenderPipelineStateWithDescriptor:]. The completion handler may be called
+// on another thread, so all members are protected by a lock. Accessed via
+// scoped_refptr to ensure that it exists until its last accessor is gone.
+class API_AVAILABLE(macos(10.11)) AsyncMetalState
+    : public base::RefCountedThreadSafe<AsyncMetalState> {
+ public:
+  AsyncMetalState() : condition_variable(&lock) {}
+
+  // All members may only be accessed while |lock| is held.
+  base::Lock lock;
+  base::ConditionVariable condition_variable;
+
+  // Set to true when the completion handler is called.
+  bool has_result = false;
+
+  // The results of the async operation. These are set only by the first
+  // completion handler to run.
+  id<MTLLibrary> library = nil;
+  id<MTLRenderPipelineState> render_pipeline_state = nil;
+  NSError* error = nil;
+
+ private:
+  friend class base::RefCountedThreadSafe<AsyncMetalState>;
+  ~AsyncMetalState() { DCHECK(has_result); }
+};
+
+id<MTLLibrary> API_AVAILABLE(macos(10.11))
+    NewLibraryWithRetry(id<MTLDevice> device,
+                        NSString* source,
+                        MTLCompileOptions* options,
+                        __autoreleasing NSError** error) {
+  // Request and wait on an asynchronous shader compilation. If the compilation
+  // does not return within kRetryPeriod, then re-issue the compilation request.
+  // The value of kRetryPeriod is the 98th percentile of
+  // Gpu.MetalProxy.NewLibraryTime.
+  SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
+  const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
+
+  auto state = base::MakeRefCounted<AsyncMetalState>();
+  for (size_t attempt = 0;; ++attempt) {
+    // The completion handler will signal the condition variable we will wait
+    // on. Note that completionHandler will hold a reference to |state|.
+    MTLNewLibraryCompletionHandler completionHandler = ^(id<MTLLibrary> library,
+                                                         NSError* error) {
+      base::AutoLock lock(state->lock);
+      if (!state->has_result) {
+        UMA_HISTOGRAM_COUNTS_100("Gpu.MetalProxy.NewLibraryAttempt", attempt);
+        state->has_result = true;
+        state->library = [library retain];
+        state->error = [error retain];
+        state->condition_variable.Signal();
+      }
+    };
+
+    // Request asynchronous compilation. Note that |completionHandler| may be
+    // called from within this function call, or it may be called from a
+    // different thread.
+    [device newLibraryWithSource:source
+                         options:options
+               completionHandler:completionHandler];
+
+    // Wait for any of the previous calls to complete.
+    base::AutoLock lock(state->lock);
+    state->condition_variable.TimedWait(kRetryPeriod);
+
+    // If we have results from any attempt, use them.
+    if (state->has_result) {
+      *error = [state->error autorelease];
+      return state->library;
+    }
+
+    // Otherwise, try compiling the shader again. Keep re-trying forever until
+    // the watchdog timer kills the process.
+  }
+}
+
+id<MTLRenderPipelineState> API_AVAILABLE(macos(10.11))
+    NewRenderPipelineStateWithRetry(id<MTLDevice> device,
+                                    MTLRenderPipelineDescriptor* descriptor,
+                                    __autoreleasing NSError** error) {
+  // This function is almost-identical to the above NewLibraryWithRetry. See
+  // comments in that function.
+  // The value of kRetryPeriod is the 99th percentile of
+  // Gpu.MetalProxy.NewRenderPipelineStateTime.
+  SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
+  const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
+  auto state = base::MakeRefCounted<AsyncMetalState>();
+  for (size_t attempt = 0;; ++attempt) {
+    MTLNewRenderPipelineStateCompletionHandler completionHandler =
+        ^(id<MTLRenderPipelineState> render_pipeline_state, NSError* error) {
+          base::AutoLock lock(state->lock);
+          if (!state->has_result) {
+            UMA_HISTOGRAM_COUNTS_100(
+                "Gpu.MetalProxy.NewRenderPipelineStateAttempt", attempt);
+            state->has_result = true;
+            state->render_pipeline_state = [render_pipeline_state retain];
+            state->error = [error retain];
+            state->condition_variable.Signal();
+          }
+        };
+    [device newRenderPipelineStateWithDescriptor:descriptor
+                               completionHandler:completionHandler];
+    base::AutoLock lock(state->lock);
+    state->condition_variable.TimedWait(kRetryPeriod);
+    if (state->has_result) {
+      *error = [state->error autorelease];
+      return state->render_pipeline_state;
+    }
+  }
+}
+
 // Maximum length of a shader to be uploaded with a crash report.
 constexpr uint32_t kShaderCrashDumpLength = 8128;
-}
+
+}  // namespace
 
 @implementation MTLDeviceProxy
 - (id)initWithDevice:(id<MTLDevice>)device {
@@ -189,9 +306,7 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
 
   gl::ScopedProgressReporter scoped_reporter(progressReporter_);
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
-  id<MTLLibrary> library = [device_ newLibraryWithSource:source
-                                                 options:options
-                                                   error:error];
+  id<MTLLibrary> library = NewLibraryWithRetry(device_, source, options, error);
   shaderKey.Clear();
 
   // Shaders from Skia will have either a vertexMain or fragmentMain function.
@@ -249,7 +364,7 @@ PROXY_METHOD3_SLOW(void,
   gl::ScopedProgressReporter scoped_reporter(progressReporter_);
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
   id<MTLRenderPipelineState> pipelineState =
-      [device_ newRenderPipelineStateWithDescriptor:descriptor error:error];
+      NewRenderPipelineStateWithRetry(device_, descriptor, error);
 
   vertexShaderKey.Clear();
   fragmentShaderKey.Clear();

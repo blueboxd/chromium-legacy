@@ -9,7 +9,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
@@ -50,8 +49,8 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantScreenContextController,
                   mojom::AssistantVolumeControl,
                   mojom::CrosDisplayConfigController, mojom::ImeController,
-                  mojom::NightLightController, mojom::TrayAction,
-                  mojom::VoiceInteractionController, mojom::VpnList>())
+                  mojom::TrayAction, mojom::VoiceInteractionController,
+                  mojom::VpnList>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(content::mojom::kServiceName, "navigation")

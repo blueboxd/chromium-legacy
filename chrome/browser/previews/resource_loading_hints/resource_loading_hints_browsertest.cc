@@ -26,6 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -415,7 +416,7 @@ class ResourceLoadingHintsBrowserTest
     if (!use_render_frame_observer_) {
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews, previews::features::kNoScriptPreviews,
-           previews::features::kOptimizationHints,
+           optimization_guide::features::kOptimizationHints,
            previews::features::kResourceLoadingHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
@@ -424,7 +425,7 @@ class ResourceLoadingHintsBrowserTest
       scoped_feature_list_.InitWithFeatures(
           {blink::features::kSendPreviewsLoadingHintsBeforeCommit,
            previews::features::kPreviews, previews::features::kNoScriptPreviews,
-           previews::features::kOptimizationHints,
+           optimization_guide::features::kOptimizationHints,
            previews::features::kResourceLoadingHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
@@ -668,8 +669,8 @@ IN_PROC_BROWSER_TEST_P(
 
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
-      previews::features::kOptimizationHintsExperiments,
-      {{previews::features::kOptimizationHintsExperimentNameParam,
+      optimization_guide::features::kOptimizationHintsExperiments,
+      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
         optimization_guide::testing::kFooExperimentName}});
 
   GURL url = https_url();
@@ -712,8 +713,8 @@ IN_PROC_BROWSER_TEST_P(
 
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
-      previews::features::kOptimizationHintsExperiments,
-      {{previews::features::kOptimizationHintsExperimentNameParam,
+      optimization_guide::features::kOptimizationHintsExperiments,
+      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
         optimization_guide::testing::kFooExperimentName}});
 
   GURL url = https_url();
@@ -853,8 +854,8 @@ IN_PROC_BROWSER_TEST_P(
     return;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
-      previews::features::kOptimizationHintsExperiments,
-      {{previews::features::kOptimizationHintsExperimentNameParam,
+      optimization_guide::features::kOptimizationHintsExperiments,
+      {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
         "some_other_experiment"}});
 
   GURL url = https_url();

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/serial/serial.h"
 #include "third_party/blink/renderer/modules/serial/serial_options.h"
+#include "third_party/blink/renderer/modules/serial/serial_port_underlying_sink.h"
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_source.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
@@ -17,6 +18,7 @@ namespace blink {
 
 namespace {
 const char kOpenError[] = "Failed to open serial port.";
+const char kUnexpectedCloseError[] = "The port closed unexpectedly.";
 const int kMaxBufferSize = 16 * 1024 * 1024; /* 16 MiB */
 }  // namespace
 
@@ -180,7 +182,15 @@ void SerialPort::clearReadError(ScriptState* script_state,
 
 void SerialPort::close() {
   if (underlying_source_) {
+    // The ReadableStream will report "done" when the data pipe is closed.
     underlying_source_->ExpectClose();
+  }
+  if (underlying_sink_) {
+    // TODO(crbug.com/893334): Rather than triggering an error on the
+    // WritableStream this should imply a call to abort() and fail if the stream
+    // is locked.
+    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, "The port has been closed."));
   }
   ContextDestroyed();
 }
@@ -190,6 +200,11 @@ void SerialPort::UnderlyingSourceClosed() {
   underlying_source_ = nullptr;
 }
 
+void SerialPort::UnderlyingSinkClosed() {
+  writable_ = nullptr;
+  underlying_sink_ = nullptr;
+}
+
 void SerialPort::ContextDestroyed() {
   // Release connection-related resources as quickly as possible.
   port_.reset();
@@ -197,12 +212,16 @@ void SerialPort::ContextDestroyed() {
     client_binding_.Unbind();
   readable_ = nullptr;
   underlying_source_ = nullptr;
+  writable_ = nullptr;
+  underlying_sink_ = nullptr;
 }
 
 void SerialPort::Trace(Visitor* visitor) {
   visitor->Trace(parent_);
   visitor->Trace(readable_);
   visitor->Trace(underlying_source_);
+  visitor->Trace(writable_);
+  visitor->Trace(underlying_sink_);
   visitor->Trace(open_resolver_);
   ScriptWrappable::Trace(visitor);
 }
@@ -218,12 +237,16 @@ void SerialPort::OnReadError(device::mojom::blink::SerialReceiveError error) {
   if (underlying_source_) {
     // TODO(crbug.com/893334): Customize the exception based on |error|.
     underlying_source_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, "Port encountered error."));
+        DOMExceptionCode::kNetworkError, "Port encountered read error."));
   }
 }
 
 void SerialPort::OnSendError(device::mojom::blink::SerialSendError error) {
-  // TODO(crbug.com/893334): Signal to the underlying sink.
+  if (underlying_sink_) {
+    // TODO(crbug.com/893334): Customize the exception based on |error|.
+    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNetworkError, "Port encountered write error."));
+  }
 }
 
 bool SerialPort::CreateDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
@@ -250,9 +273,12 @@ void SerialPort::OnConnectionError() {
   }
   if (underlying_source_) {
     underlying_source_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, "Port closed unexpectedly."));
+        DOMExceptionCode::kNetworkError, kUnexpectedCloseError));
   }
-  // TODO(crbug.com/893334): Signal to the underlying sink.
+  if (underlying_sink_) {
+    underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNetworkError, kUnexpectedCloseError));
+  }
   ContextDestroyed();
 }
 
@@ -294,7 +320,12 @@ void SerialPort::InitializeReadableStream(
 void SerialPort::InitializeWritableStream(
     ScriptState* script_state,
     mojo::ScopedDataPipeProducerHandle writable_pipe) {
-  // TODO(crbug.com/893334): Implement a SerialPortUnderlyingSink.
+  DCHECK(!underlying_sink_);
+  DCHECK(!writable_);
+  underlying_sink_ = MakeGarbageCollected<SerialPortUnderlyingSink>(
+      this, std::move(writable_pipe));
+  writable_ = WritableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_sink_, 0);
 }
 
 }  // namespace blink

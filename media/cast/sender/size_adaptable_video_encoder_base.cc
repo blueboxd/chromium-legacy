@@ -21,8 +21,7 @@ SizeAdaptableVideoEncoderBase::SizeAdaptableVideoEncoderBase(
       video_config_(video_config),
       status_change_cb_(status_change_cb),
       frames_in_encoder_(0),
-      next_frame_id_(FrameId::first()),
-      weak_factory_(this) {
+      next_frame_id_(FrameId::first()) {
   cast_environment_->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,

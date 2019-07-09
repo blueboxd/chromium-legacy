@@ -72,7 +72,6 @@
 #include "base/task/task_traits.h"
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
-#include "net/dns/dns_config_service_posix.h"
 
 namespace net {
 
@@ -100,8 +99,6 @@ class NetworkChangeNotifierAndroid::BlockingThreadObjects {
 
   void Init() {
     address_tracker_.Init();
-    dns_config_service_.WatchConfig(
-        base::Bind(&NetworkChangeNotifier::SetDnsConfig));
   }
 
   static void NotifyNetworkChangeNotifierObservers() {
@@ -110,7 +107,6 @@ class NetworkChangeNotifierAndroid::BlockingThreadObjects {
   }
 
  private:
-  internal::DnsConfigServicePosix dns_config_service_;
   // Used to detect tunnel state changes.
   internal::AddressTrackerLinux address_tracker_;
 

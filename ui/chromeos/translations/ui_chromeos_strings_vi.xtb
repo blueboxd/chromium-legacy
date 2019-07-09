@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1351692861129622852">Đang nhập <ph name="FILE_COUNT" /> tệp...</translation>
 <translation id="1352103415082130575">Bàn phím tiếng Thái (Pattachote)</translation>
-<translation id="1358032944105037487">Bàn phím tiếng Nhật</translation>
 <translation id="1358735829858566124">Không thể sử dụng được tệp hoặc thư mục.</translation>
 <translation id="1363028406613469049">Số theo dõi</translation>
 <translation id="1378727793141957596">Chào mừng bạn đến với Google Drive!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Đã sao lưu <ph name="FILE_COUNT" /> ảnh vào <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Đang sao chép...</translation>
 <translation id="3475447146579922140">Bảng tính Google</translation>
-<translation id="3494768541638400973">Phương pháp Nhập tiếng Nhật của Google (dành cho bàn phím Nhật)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> lỗi.</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Đã tìm thấy <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Lộn ngược</translation>
-<translation id="6937152069980083337">Phương pháp Nhập tiếng Nhật của Google (dành cho bàn phím Hoa Kỳ)</translation>
 <translation id="6939777852457331078">Bàn phím Workman Hoa Kỳ</translation>
 <translation id="696203921837389374">Bật đồng bộ hóa qua dữ liệu di động</translation>
 <translation id="6965382102122355670">OK</translation>

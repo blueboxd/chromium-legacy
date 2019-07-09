@@ -27,7 +27,6 @@
 namespace storage {
 
 class ClientUsageTracker;
-class StorageMonitor;
 
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
@@ -37,8 +36,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
  public:
   UsageTracker(const std::vector<QuotaClient*>& clients,
                blink::mojom::StorageType type,
-               SpecialStoragePolicy* special_storage_policy,
-               StorageMonitor* storage_monitor);
+               SpecialStoragePolicy* special_storage_policy);
   ~UsageTracker() override;
 
   blink::mojom::StorageType type() const {
@@ -102,8 +100,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
   std::vector<GlobalUsageCallback> global_usage_callbacks_;
   std::map<std::string, std::vector<UsageWithBreakdownCallback>>
       host_usage_callbacks_;
-
-  StorageMonitor* storage_monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

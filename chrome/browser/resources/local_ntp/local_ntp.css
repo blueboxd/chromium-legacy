@@ -834,13 +834,13 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 .menu-option {
   border-radius: 0 16px 16px 0;
+  cursor: pointer;
   font-size: 14px;
   height: 32px;
   left: 0;
   line-height: 32px;
   margin-bottom: 16px;
   outline: none;
-  user-select: none;
   width: 192px;
 }
 
@@ -853,10 +853,25 @@ html[dir=rtl] .menu-option {
   background-color: rgba(var(--GB900-rgb), .1);
 }
 
+@media (prefers-color-scheme: dark) {
+  .menu-option:hover,
+  .menu-option:focus {
+    background-color: rgba(var(--GB200-rgb), .03);
+  }
+}
+
 .menu-option:active,
 .menu-option.selected {
   background-color: rgb(232, 240, 254);
   color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active,
+  .menu-option.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    color: rgb(var(--GB300-rgb));
+  }
 }
 
 .menu-option-icon-wrapper {
@@ -887,6 +902,13 @@ html[dir=rtl] .menu-option {
 .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
 .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+  .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #shortcuts-icon {
@@ -1028,6 +1050,7 @@ html[dir=rtl] .menu-option {
 #customization-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 #customization-menu .bg-sel-tile-title {
@@ -1047,10 +1070,14 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-default.bg-sel-tile-bg {
   background-color: white;
-  border: 1px solid rgb(var(--GG300-rgb));
-  height: 174px;
-  margin-inline-end: 6px;
-  width: 174px;
+  height: 176px;
+  width: 176px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default.bg-sel-tile-bg {
+    background-color: transparent;
+  }
 }
 
 #customization-menu .bg-sel-tile-bg.selected  {
@@ -1059,18 +1086,19 @@ html[dir=rtl] .menu-option {
 
 @media (prefers-color-scheme: dark) {
   #backgrounds-default.selected,
-  #backgrounds-image-menu .bg-sel-tile-bg.selected {
-    background-color: rgba(var(--GB200-rgb), .5);
+  #customization-menu .bg-sel-tile-bg.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
   }
 }
 
+#backgrounds-menu {
+  /* Remove extra spacing between inline-block elements. */
+  font-size: 0;
+}
+
 #backgrounds-upload.bg-sel-tile-bg {
-  background-color: white;
-  border: 1px solid rgb(var(--GG300-rgb));
-  height: 174px;
-  margin-inline-end: 6px;
+  background-color: transparent;
   vertical-align: top;
-  width: 174px;
 }
 
 #menu-back-wrapper {
@@ -1083,6 +1111,7 @@ html[dir=rtl] .menu-option {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 20px;
   background-color: rgb(var(--GG900-rgb));
+  cursor: pointer;
   height: 20px;
   margin-inline-start: 8px;
   margin-top: 8px;
@@ -1137,11 +1166,19 @@ html[dir=rtl] #menu-back {
 }
 
 #backgrounds-upload-wrapper {
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
   display: inline-block;
   left: 0;
   opacity: 1;
   position: relative;
   top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-wrapper {
+    border-color: rgb(var(--GG700-rgb));
+  }
 }
 
 #backgrounds-upload-icon {
@@ -1158,8 +1195,15 @@ html[dir=rtl] #menu-back {
 
 #backgrounds-upload-text {
   color: rgb(var(--GG700-rgb));
+  font-size: 13px;
   text-align: center;
   width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-text {
+    color: inherit;
+  }
 }
 
 #customization-menu .bg-sel-tile .selected-circle {
@@ -1191,8 +1235,21 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 #backgrounds-default-icon {
   background-color: white;
   background-repeat: no-repeat;
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
   margin: auto;
   opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default-icon {
+    background-color: rgb(41, 42, 45);
+    border-color: rgb(var(--GG700-rgb));
+  }
+
+  .selected #backgrounds-default-icon {
+    border-color: transparent;
+  }
 }
 
 .mini-page {
@@ -1253,18 +1310,31 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 }
 
 .sh-option-image {
-  background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
   box-sizing: border-box;
+  cursor: pointer;
   height: 176px;
   position: relative;
   width: 268px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-image {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 .selected .sh-option-image {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-image {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-mini {
@@ -1279,6 +1349,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 144px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-mini {
+    background-color: rgb(41, 42, 45);
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 html[dir=rtl] .sh-option-mini {
   left: 40px;
   right: unset;
@@ -1289,12 +1366,26 @@ html[dir=rtl] .sh-option-mini {
       0 4px 8px 3px rgba(var(--GG800-rgb), .15);
 }
 
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini {
+    border-color: transparent;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
+  }
+}
+
 .sh-option-mini .mini-shortcuts {
   background-color: rgb(var(--GG500-rgb));
 }
 
 .selected .sh-option-mini .mini-shortcuts {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini .mini-shortcuts {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-icon {
@@ -1320,8 +1411,20 @@ html[dir=rtl] .sh-option-icon {
   right: 16px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-icon {
+    background-color: rgb(var(--GG700-rgb));
+  }
+}
+
 .selected .sh-option-icon {
   background-color: rgba(var(--GB600-rgb), .24);
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-image .selected-circle {
@@ -1355,7 +1458,6 @@ html[dir=rtl] .sh-option-image .selected-check {
 }
 
 #sh-hide {
-  background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
   box-sizing: border-box;
@@ -1366,10 +1468,24 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 100%;
 }
 
+@media (prefers-color-scheme: dark) {
+  #sh-hide {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 #sh-hide.selected {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
   color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  #sh-hide.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+    color: rgb(var(--GB300-rgb));
+  }
 }
 
 #sh-hide > div {
@@ -1390,6 +1506,12 @@ html[dir=rtl] .sh-option-image .selected-check {
 
 .selected #sh-hide-icon {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected #sh-hide-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #sh-hide-title {
@@ -1418,6 +1540,12 @@ html[dir=rtl] .sh-option-image .selected-check {
   z-index: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+  .switch {
+    background-color: rgb(41, 42, 45);
+  }
+}
+
 /* Hide the toggle's default checkbox. */
 .switch input {
   opacity: 0;
@@ -1430,7 +1558,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   bottom: 0;
   cursor: pointer;
   display: block;
-  left: -3px;
+  left: 0;
   position: absolute;
   right: 0;
   top: 0;
@@ -1446,7 +1574,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   content: '';
   display: block;
   height: 16px;
-  left: 0;
+  left: -3px;
   position: absolute;
   transition: transform linear 80ms, background-color linear 80ms;
   width: 16px;
@@ -1457,7 +1585,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   background-color: rgb(128, 134, 139);
   border-radius: 50%;
   height: 40px;
-  left: -12px;
+  left: -15px;
   opacity: 0;
   position: absolute;
   top: -14px;
@@ -1465,8 +1593,20 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 40px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .toggle .highlight {
+    background-color: rgb(var(--GG300-rgb));
+  }
+}
+
 input:checked + .toggle {
   background-color: rgba(var(--GB600-rgb), .5);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle {
+    background-color: rgba(var(--GB300-rgb), .5);
+  }
 }
 
 input:focus + .toggle {
@@ -1478,10 +1618,24 @@ input:active + .toggle .highlight,
   opacity: .15;
 }
 
+@media (prefers-color-scheme: dark) {
+  input:active + .toggle .highlight,
+  #customization-menu:not(.using-mouse-nav) input:focus + .toggle .highlight {
+    opacity: .4;
+  }
+}
+
 input:checked + .toggle .knob,
 input:checked + .toggle .highlight {
   background-color: rgb(var(--GB600-rgb));
   transform: translateX(18px);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle .knob,
+  input:checked + .toggle .highlight {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #colors-default-icon {
@@ -1501,8 +1655,10 @@ input:checked + .toggle .highlight {
   width: 100%;
 }
 
-html[darkmode=true] #colors-theme {
-  border-color: rgb(var(--GG700-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme {
+    border-color: rgb(var(--GG700-rgb));
+  }
 }
 
 #colors-theme.visible {
@@ -1525,8 +1681,10 @@ html[darkmode=true] #colors-theme {
   width: 24px;
 }
 
-html[darkmode=true] #colors-theme-icon {
- background-color: rgb(var(--GG200-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
 }
 
 #colors-theme-name {
@@ -1548,8 +1706,10 @@ html[darkmode=true] #colors-theme-icon {
   width: 20px;
 }
 
-html[darkmode=true] #colors-theme-link-icon {
- background-color: rgb(var(--GG200-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme-link-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
 }
 
 #colors-theme-uninstall {

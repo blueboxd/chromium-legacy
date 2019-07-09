@@ -120,10 +120,10 @@ Polymer({
    * @private
    */
   getConnectionStateText_: function(networkState, deviceState) {
-    const connectionState = networkState ? networkState.connectionState : null;
-    if (!connectionState) {
+    if (!networkState) {
       return '';
     }
+    const connectionState = networkState.connectionState;
     const name =
         networkState ? OncMojo.getNetworkDisplayName(networkState) : '';
     if (OncMojo.connectionStateIsConnected(connectionState)) {

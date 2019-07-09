@@ -270,7 +270,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   std::unique_ptr<CdmWrapper> cdm_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<CdmAdapter> weak_factory_;
+  base::WeakPtrFactory<CdmAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapter);
 };

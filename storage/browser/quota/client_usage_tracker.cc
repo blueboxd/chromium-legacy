@@ -7,10 +7,9 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "net/base/url_util.h"
-#include "storage/browser/quota/storage_monitor.h"
-#include "storage/browser/quota/storage_observer.h"
 
 namespace storage {
 
@@ -61,11 +60,9 @@ ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker,
     QuotaClient* client,
     blink::mojom::StorageType type,
-    SpecialStoragePolicy* special_storage_policy,
-    StorageMonitor* storage_monitor)
+    SpecialStoragePolicy* special_storage_policy)
     : client_(client),
       type_(type),
-      storage_monitor_(storage_monitor),
       global_limited_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
@@ -160,19 +157,12 @@ void ClientUsageTracker::UpdateUsageCache(const url::Origin& origin,
                                                       : &global_limited_usage_,
                            delta);
 
-    // Notify the usage monitor that usage has changed. The storage monitor may
-    // be nullptr during tests.
-    if (storage_monitor_) {
-      StorageObserver::Filter filter(type_, origin);
-      storage_monitor_->NotifyUsageChange(filter, delta);
-    }
     return;
   }
 
-  // We don't know about this host yet, so populate our cache for it.
-  GetHostUsage(host,
-               base::BindOnce(&ClientUsageTracker::DidGetHostUsageAfterUpdate,
-                              AsWeakPtr(), origin));
+  // We call GetHostUsage() so that the cache still updates, but we don't need
+  // to do anything else with the usage so we do not pass a callback.
+  GetHostUsage(host, base::DoNothing());
 }
 
 int64_t ClientUsageTracker::GetCachedUsage() const {
@@ -380,16 +370,6 @@ void ClientUsageTracker::AccumulateOriginUsage(
   AddCachedHost(host);
   host_usage_accumulators_.Run(
       host, info->limited_usage, info->unlimited_usage);
-}
-
-void ClientUsageTracker::DidGetHostUsageAfterUpdate(const url::Origin& origin,
-                                                    int64_t usage) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!storage_monitor_)
-    return;
-
-  StorageObserver::Filter filter(type_, origin);
-  storage_monitor_->NotifyUsageChange(filter, 0);
 }
 
 void ClientUsageTracker::AddCachedOrigin(const url::Origin& origin,

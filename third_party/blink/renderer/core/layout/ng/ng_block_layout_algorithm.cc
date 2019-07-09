@@ -1280,15 +1280,6 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   base::Optional<LayoutUnit> child_bfc_block_offset =
       layout_result->BfcBlockOffset();
 
-  // TODO(layout-dev): A more optimal version of this is to set
-  // relayout_child_when_bfc_resolved only if the child tree itself _added_ any
-  // floats that it failed to position. Currently, we risk relaying out the
-  // parent block for no reason, because we're not able to make this
-  // distinction.
-  bool relayout_child_when_bfc_resolved =
-      layout_result->AdjoiningFloatTypes() && !child_bfc_block_offset &&
-      !child_space.ForcedBfcBlockOffset();
-
   bool is_self_collapsing = layout_result->IsSelfCollapsing();
 
   // Only non self-collapsing children (e.g. "normal children") can be pushed
@@ -1327,9 +1318,9 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     // present, but we shouldn't apply it (instead preferring the child's new
     // BFC block-offset).
     DCHECK(!ConstraintSpace().AncestorHasClearancePastAdjoiningFloats());
-    ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset,
-                          /* forced_bfc_block_offset */ base::nullopt);
-    return false;
+    if (!ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset,
+                               /* forced_bfc_block_offset */ base::nullopt))
+      return false;
   }
 
   // We have special behaviour for a self-collapsing child which gets pushed
@@ -1366,16 +1357,28 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       return false;
   }
 
+  bool self_collapsing_child_needs_relayout = false;
   if (!child_bfc_block_offset) {
     // Layout wasn't able to determine the BFC block-offset of the child. This
     // has to mean that the child is self-collapsing.
     DCHECK(is_self_collapsing);
 
     if (container_builder_.BfcBlockOffset()) {
-      // Since we know our own BFC block offset, though, we can calculate that
+      // Since we know our own BFC block-offset, though, we can calculate that
       // of the child as well.
       child_bfc_block_offset = PositionSelfCollapsingChildWithParentBfc(
           child, child_space, *child_data, *layout_result);
+
+      // We may need to relayout this child if it had any objects which were
+      // positioned in the incorrect position.
+      //
+      // TODO(layout-dev): A more optimal version of this is to set this flag
+      // only if the child tree *added* any floats which it failed to position.
+      // Currently, we risk relaying out the sub-tree for no reason, because
+      // we're not able to make this distinction.
+      if (layout_result->AdjoiningFloatTypes() &&
+          !child_space.ForcedBfcBlockOffset())
+        self_collapsing_child_needs_relayout = true;
     }
   } else if (!child_had_clearance) {
     // We shouldn't have any pending floats here, since an in-flow child found
@@ -1411,7 +1414,6 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   //
   // The resulting margin strut in the above example will be {40, -30}. See
   // |ComputeInflowPosition| for how this end margin strut is used.
-  bool self_collapsing_child_had_clearance_needs_relayout = false;
   if (self_collapsing_child_had_clearance) {
     NGMarginStrut margin_strut;
     margin_strut.Append(child_data->margins.block_start,
@@ -1421,7 +1423,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     // previous one.
     if (child_data->margin_strut != margin_strut) {
       child_data->margin_strut = margin_strut;
-      self_collapsing_child_had_clearance_needs_relayout = true;
+      self_collapsing_child_needs_relayout = true;
     }
   }
 
@@ -1430,8 +1432,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   //  - It has some unpositioned floats.
   //  - It was affected by clearance.
   if ((layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved ||
-       relayout_child_when_bfc_resolved ||
-       self_collapsing_child_had_clearance_needs_relayout) &&
+       self_collapsing_child_needs_relayout) &&
       child_bfc_block_offset) {
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, *child_data, child_available_size_, /* is_new_fc */ false,
@@ -1455,7 +1456,6 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
-    relayout_child_when_bfc_resolved = false;
   }
 
   // It is now safe to update our version of the exclusion space, and any
@@ -1482,7 +1482,8 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   // If we are a new formatting context, the child will get re-laid out once it
   // has been positioned.
   if (!container_builder_.BfcBlockOffset()) {
-    abort_when_bfc_block_offset_updated_ |= relayout_child_when_bfc_resolved;
+    abort_when_bfc_block_offset_updated_ |=
+        layout_result->AdjoiningFloatTypes();
     // If our BFC block offset is unknown, and the child got pushed down by
     // floats, so will we.
     if (layout_result->IsPushedByFloats())
@@ -2328,14 +2329,11 @@ bool NGBlockLayoutAlgorithm::NeedsAbortOnBfcBlockOffsetChange() const {
   // If no previous BFC block offset was set, we need to abort.
   if (!ConstraintSpace().ForcedBfcBlockOffset())
     return true;
+
   // If the previous BFC block offset matches the new one, we can continue.
   // Otherwise, we need to abort.
-  LayoutUnit old_bfc_block_offset = *ConstraintSpace().ForcedBfcBlockOffset();
-
-  // In order to determine if the two offsets are equal, we also need to adjust
-  // floats offset by the clearance offset.
-  ApplyClearance(ConstraintSpace(), &old_bfc_block_offset);
-  return *container_builder_.BfcBlockOffset() != old_bfc_block_offset;
+  return *container_builder_.BfcBlockOffset() !=
+         *ConstraintSpace().ForcedBfcBlockOffset();
 }
 
 void NGBlockLayoutAlgorithm::PositionPendingFloats(

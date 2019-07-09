@@ -201,6 +201,12 @@ void HistoryService::ClearCachedDataForContextID(ContextID context_id) {
                               history_backend_, context_id));
 }
 
+void HistoryService::ClearAllOnDemandFavicons() {
+  ScheduleTask(PRIORITY_NORMAL,
+               base::BindOnce(&HistoryBackend::ClearAllOnDemandFavicons,
+                              history_backend_));
+}
+
 URLDatabase* HistoryService::InMemoryDatabase() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return in_memory_backend_ ? in_memory_backend_->db() : nullptr;

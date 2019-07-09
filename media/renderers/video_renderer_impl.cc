@@ -130,9 +130,7 @@ VideoRendererImpl::VideoRendererImpl(
       have_renderered_frames_(false),
       last_frame_opaque_(false),
       painted_first_frame_(false),
-      min_buffered_frames_(limits::kMaxVideoFrames),
-      weak_factory_(this),
-      cancel_on_flush_weak_factory_(this) {
+      min_buffered_frames_(limits::kMaxVideoFrames) {
   DCHECK(create_video_decoders_cb_);
 }
 

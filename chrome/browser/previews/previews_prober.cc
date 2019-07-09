@@ -6,10 +6,15 @@
 
 #include <math.h>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
+#include "chrome/browser/previews/proto/previews_prober_cache_entry.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -19,6 +24,11 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+
+#if defined(OS_ANDROID)
+#include "net/android/network_library.h"
+#include "net/base/network_interfaces.h"
+#endif
 
 namespace {
 
@@ -48,6 +58,104 @@ base::TimeDelta ComputeNextTimeDeltaForBackoff(PreviewsProber::Backoff backoff,
       return base_interval;
     case PreviewsProber::Backoff::kExponential:
       return base_interval * pow(2, attempts_so_far);
+  }
+}
+
+std::string GenerateNetworkID(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  network::mojom::ConnectionType connection_type =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  if (network_connection_tracker) {
+    network_connection_tracker->GetConnectionType(&connection_type,
+                                                  base::DoNothing());
+  }
+
+  std::string id = base::NumberToString(static_cast<int>(connection_type));
+  bool is_cellular =
+      network::NetworkConnectionTracker::IsConnectionCellular(connection_type);
+  if (is_cellular) {
+    // Don't care about cell connection type.
+    id = "cell";
+  }
+
+// Further identify WiFi and cell connections. These calls are only supported
+// for Android devices.
+#if defined(OS_ANDROID)
+  if (connection_type == network::mojom::ConnectionType::CONNECTION_WIFI) {
+    return base::StringPrintf("%s,%s", id.c_str(), net::GetWifiSSID().c_str());
+  }
+
+  if (is_cellular) {
+    return base::StringPrintf(
+        "%s,%s", id.c_str(),
+        net::android::GetTelephonyNetworkOperator().c_str());
+  }
+#endif
+
+  return id;
+}
+
+base::Optional<base::Value> EncodeCacheEntryValue(
+    const PreviewsProberCacheEntry& entry) {
+  std::string serialized_entry;
+  bool serialize_to_string_ok = entry.SerializeToString(&serialized_entry);
+  if (!serialize_to_string_ok)
+    return base::nullopt;
+
+  std::string base64_encoded;
+  base::Base64Encode(serialized_entry, &base64_encoded);
+  return base::Value(base64_encoded);
+}
+
+base::Optional<PreviewsProberCacheEntry> DecodeCacheEntryValue(
+    const base::Value& value) {
+  if (!value.is_string())
+    return base::nullopt;
+
+  std::string base64_decoded;
+  if (!base::Base64Decode(value.GetString(), &base64_decoded))
+    return base::nullopt;
+
+  PreviewsProberCacheEntry entry;
+  if (!entry.ParseFromString(base64_decoded))
+    return base::nullopt;
+
+  return entry;
+}
+
+base::Time LastModifiedTimeFromCacheEntry(
+    const PreviewsProberCacheEntry& entry) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(entry.last_modified()));
+}
+
+void RemoveOldestDictionaryEntry(base::DictionaryValue* dict) {
+  std::vector<std::string> keys_to_remove;
+
+  std::string oldest_key;
+  base::Time oldest_mod_time = base::Time::Max();
+  for (const auto& iter : dict->DictItems()) {
+    base::Optional<PreviewsProberCacheEntry> entry =
+        DecodeCacheEntryValue(iter.second);
+    if (!entry.has_value()) {
+      // Also remove anything that can't be decoded.
+      keys_to_remove.push_back(iter.first);
+      continue;
+    }
+
+    base::Time mod_time = LastModifiedTimeFromCacheEntry(entry.value());
+    if (mod_time < oldest_mod_time) {
+      oldest_key = iter.first;
+      oldest_mod_time = mod_time;
+    }
+  }
+
+  if (!oldest_key.empty()) {
+    keys_to_remove.push_back(oldest_key);
+  }
+
+  for (const std::string& key : keys_to_remove) {
+    dict->RemoveKey(key);
   }
 }
 
@@ -84,7 +192,9 @@ PreviewsProber::PreviewsProber(
     const HttpMethod http_method,
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
-    const TimeoutPolicy& timeout_policy)
+    const TimeoutPolicy& timeout_policy,
+    const size_t max_cache_entries,
+    base::TimeDelta revalidate_cache_after)
     : PreviewsProber(delegate,
                      url_loader_factory,
                      name,
@@ -93,7 +203,10 @@ PreviewsProber::PreviewsProber(
                      headers,
                      retry_policy,
                      timeout_policy,
-                     base::DefaultTickClock::GetInstance()) {}
+                     max_cache_entries,
+                     revalidate_cache_after,
+                     base::DefaultTickClock::GetInstance(),
+                     base::DefaultClock::GetInstance()) {}
 
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
@@ -104,7 +217,10 @@ PreviewsProber::PreviewsProber(
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
-    const base::TickClock* tick_clock)
+    const size_t max_cache_entries,
+    base::TimeDelta revalidate_cache_after,
+    const base::TickClock* tick_clock,
+    const base::Clock* clock)
     : delegate_(delegate),
       name_(NameForClient(name)),
       url_(url),
@@ -112,11 +228,14 @@ PreviewsProber::PreviewsProber(
       headers_(headers),
       retry_policy_(retry_policy),
       timeout_policy_(timeout_policy),
+      max_cache_entries_(max_cache_entries),
+      revalidate_cache_after_(revalidate_cache_after),
       successive_retry_count_(0),
       successive_timeout_count_(0),
+      cached_probe_results_(std::make_unique<base::DictionaryValue>()),
       tick_clock_(tick_clock),
+      clock_(clock),
       is_active_(false),
-      last_probe_status_(base::nullopt),
       network_connection_tracker_(nullptr),
       url_loader_factory_(url_loader_factory),
       weak_factory_(this) {
@@ -314,7 +433,7 @@ void PreviewsProber::ProcessProbeFailure() {
   DCHECK(!url_loader_);
   DCHECK(is_active_);
 
-  last_probe_status_ = false;
+  RecordProbeResult(false);
 
   if (retry_policy_.max_retries > successive_retry_count_) {
     base::TimeDelta interval = ComputeNextTimeDeltaForBackoff(
@@ -341,11 +460,54 @@ void PreviewsProber::ProcessProbeSuccess() {
   DCHECK(!url_loader_);
   DCHECK(is_active_);
 
-  last_probe_status_ = true;
+  RecordProbeResult(true);
   ResetState();
 }
 
-base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() const {
+base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return last_probe_status_;
+
+  base::Value* cache_entry =
+      cached_probe_results_->FindKey(GetCacheKeyForCurrentNetwork());
+  if (!cache_entry)
+    return base::nullopt;
+
+  base::Optional<PreviewsProberCacheEntry> entry =
+      DecodeCacheEntryValue(*cache_entry);
+  if (!entry.has_value())
+    return base::nullopt;
+
+  // Check if the cache entry should be revalidated.
+  if (clock_->Now() >=
+      LastModifiedTimeFromCacheEntry(entry.value()) + revalidate_cache_after_) {
+    SendNowIfInactive(false);
+  }
+
+  return entry.value().is_success();
+}
+
+void PreviewsProber::RecordProbeResult(bool success) {
+  PreviewsProberCacheEntry entry;
+  entry.set_is_success(success);
+  entry.set_last_modified(
+      clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  base::Optional<base::Value> encoded = EncodeCacheEntryValue(entry);
+  if (!encoded.has_value()) {
+    NOTREACHED();
+    return;
+  }
+
+  cached_probe_results_->SetKey(GetCacheKeyForCurrentNetwork(),
+                                std::move(encoded.value()));
+
+  if (cached_probe_results_->DictSize() > max_cache_entries_)
+    RemoveOldestDictionaryEntry(cached_probe_results_.get());
+}
+
+std::string PreviewsProber::GetCacheKeyForCurrentNetwork() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::StringPrintf(
+      "%s;%s:%d", GenerateNetworkID(network_connection_tracker_).c_str(),
+      url_.host().c_str(), url_.EffectiveIntPort());
 }

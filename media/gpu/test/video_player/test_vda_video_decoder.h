@@ -113,7 +113,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   SEQUENCE_CHECKER(vda_wrapper_sequence_checker_);
 
   base::WeakPtr<TestVDAVideoDecoder> weak_this_;
-  base::WeakPtrFactory<TestVDAVideoDecoder> weak_this_factory_;
+  base::WeakPtrFactory<TestVDAVideoDecoder> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestVDAVideoDecoder);
 };

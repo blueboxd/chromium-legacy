@@ -56,6 +56,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -283,7 +284,8 @@ class PreviewsLitePageServerBrowserTest
         previews::features::kLitePageServerPreviews, feature_parameters);
 
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kOptimizationHints,
+        {previews::features::kPreviews,
+         optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService,

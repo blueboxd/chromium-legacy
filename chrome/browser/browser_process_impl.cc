@@ -98,12 +98,12 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
@@ -1281,7 +1281,7 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
   DCHECK(!optimization_guide_service_);
   created_optimization_guide_service_ = true;
 
-  if (!previews::params::IsOptimizationHintsEnabled())
+  if (!optimization_guide::features::IsOptimizationHintsEnabled())
     return;
 
   optimization_guide_service_ =

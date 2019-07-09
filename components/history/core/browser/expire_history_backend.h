@@ -98,6 +98,11 @@ class ExpireHistoryBackend {
   // accordingly.
   void ExpireHistoryBeforeForTesting(base::Time end_time);
 
+  // Clears all old on-demand favicons from thumbnail database. Fails silently
+  // (we don't care about favicons so much, so don't want to stop everything if
+  // it fails).
+  void ClearOldOnDemandFaviconsIfPossible(base::Time expiration_threshold);
+
   // Returns the current cut-off time before which we will start expiring stuff.
   // Note that this as an absolute time rather than a delta, so the caller
   // should not save it.
@@ -234,11 +239,6 @@ class ExpireHistoryBackend {
   // to the items in work queue, and schedules another call to happen in the
   // future.
   void DoExpireIteration();
-
-  // Clears all old on-demand favicons from thumbnail database. Fails silently
-  // (we don't care about favicons so much, so don't want to stop everything if
-  // it fails).
-  void ClearOldOnDemandFaviconsIfPossible(base::Time expiration_threshold);
 
   // Tries to expire the oldest |max_visits| visits from history that are older
   // than |time_threshold|. The return value indicates if we think there might

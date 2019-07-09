@@ -414,7 +414,10 @@
 </if> <!-- _google_chrome or not is_macosx -->
         <cr-lazy-render id="menu">
           <template>
-            <cr-action-menu on-close="onCloseMenu_"
+            <cr-action-menu
+<if expr="chromeos or is_win">
+                on-close="onCloseMenu_"
+</if>
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
               <cr-checkbox id="uiLanguageItem"

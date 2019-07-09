@@ -124,7 +124,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // Is the client an audio element?
   bool is_client_audio_element_ = false;
 
-  base::WeakPtrFactory<ResourceMultiBufferDataProvider> weak_factory_;
+  base::WeakPtrFactory<ResourceMultiBufferDataProvider> weak_factory_{this};
 };
 
 }  // namespace media

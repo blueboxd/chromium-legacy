@@ -28,8 +28,12 @@ public class ProgressBarCoordinator {
         mMediator = new ProgressBarMediator(model, activityTabProvider);
     }
 
-    public void onActivityResume() {
-        mMediator.onActivityResume();
+    public void onActivityStart() {
+        mMediator.onActivityStart();
+    }
+
+    public void skipShowingOnNextActivityStart() {
+        mMediator.skipShowingOnNextActivityStart();
     }
 
     public void destroy() {

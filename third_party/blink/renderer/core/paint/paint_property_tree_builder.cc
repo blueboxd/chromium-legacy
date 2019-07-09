@@ -1546,7 +1546,8 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
 
   // We need OverflowClip for hit-testing if the clip rect excluding overlay
   // scrollbars is different from the normal clip rect.
-  auto clip_rect = block->OverflowClipRect(PhysicalOffset());
+  auto clip_rect = block->OverflowClipRect(
+      PhysicalOffset(), kIgnorePlatformAndCSSOverlayScrollbarSize);
   auto clip_rect_excluding_overlay_scrollbars = block->OverflowClipRect(
       PhysicalOffset(), kExcludeOverlayScrollbarSizeForHitTesting);
   if (clip_rect != clip_rect_excluding_overlay_scrollbars)
@@ -1608,7 +1609,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
       } else if (object_.IsBox()) {
         state.clip_rect =
             ToSnappedClipRect(ToLayoutBox(object_).OverflowClipRect(
-                context_.current.paint_offset));
+                context_.current.paint_offset,
+                kIgnorePlatformAndCSSOverlayScrollbarSize));
         state.clip_rect_excluding_overlay_scrollbars = FloatClipRect(
             FloatRect(PixelSnappedIntRect(ToLayoutBox(object_).OverflowClipRect(
                 context_.current.paint_offset,

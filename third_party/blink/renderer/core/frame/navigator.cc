@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator_id.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/loader/cookie_jar.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -86,14 +85,14 @@ UserAgentMetadata Navigator::GetUserAgentMetadata() const {
 }
 
 bool Navigator::cookieEnabled() const {
-  if (!GetFrame())
+  if (!GetFrame() || !GetFrame()->GetDocument())
     return false;
 
   Settings* settings = GetFrame()->GetSettings();
   if (!settings || !settings->GetCookieEnabled())
     return false;
 
-  return CookiesEnabled(GetFrame()->GetDocument());
+  return GetFrame()->GetDocument()->CookiesEnabled();
 }
 
 String Navigator::GetAcceptLanguages() {

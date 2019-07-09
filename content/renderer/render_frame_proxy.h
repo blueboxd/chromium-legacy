@@ -106,7 +106,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   static RenderFrameProxy* CreateProxyForPortal(
       RenderFrameImpl* parent,
       int proxy_routing_id,
-      const base::UnguessableToken& devtools_frame_token);
+      const base::UnguessableToken& devtools_frame_token,
+      const blink::WebElement& portal_element);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);

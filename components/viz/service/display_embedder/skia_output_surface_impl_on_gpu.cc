@@ -851,6 +851,23 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   auto* surface =
       from_fbo0 ? output_sk_surface() : offscreen_surfaces_[id].surface();
 
+  // If a platform doesn't support RGBX_8888 format, we will use RGBA_8888
+  // instead. In this case, we need discard alpha channel (modify the alpha
+  // value to 0xff, but keep other channel not changed).
+  bool need_discard_alpha = from_fbo0 && (output_device_->is_emulated_rgbx());
+  if (need_discard_alpha) {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
+    SkPaint paint;
+    paint.setColor(SK_ColorBLACK);
+    paint.setBlendMode(SkBlendMode::kDstATop);
+    surface->getCanvas()->drawPaint(paint);
+    surface->flush();
+  }
+
   if (!is_using_vulkan() && !features::IsUsingSkiaForGLReadback()) {
     // Lazy initialize GLRendererCopier.
     if (!copier_) {
@@ -889,6 +906,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       gl_id = texture_mapper.value().client_id();
       internal_format = GL_RGBA;
     }
+
     gfx::Size surface_size(surface->width(), surface->height());
     ScopedUseContextProvider use_context_provider(this, gl_id);
     copier_->CopyFromTextureOrFramebuffer(std::move(request), geometry,

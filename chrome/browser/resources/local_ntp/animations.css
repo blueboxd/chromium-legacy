@@ -62,6 +62,10 @@ button.paper {
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 
+button.paper:not(:disabled) {
+  cursor: pointer;
+}
+
 button.paper:disabled {
   transition: none;
 }

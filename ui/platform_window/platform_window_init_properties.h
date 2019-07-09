@@ -56,6 +56,8 @@ struct PlatformWindowInitProperties {
 #if defined(OS_FUCHSIA)
   fuchsia::ui::views::ViewToken view_token;
 #endif
+
+  bool activatable = false;
 };
 
 }  // namespace ui

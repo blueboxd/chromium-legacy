@@ -334,6 +334,23 @@ def get_current_xcode_info():
   }
 
 
+def get_test_names(app_path):
+  """Gets list of tests from test app.
+
+  Args:
+     app_path: A path to test target bundle.
+
+  Returns:
+     List of tests.
+  """
+  cmd = ['otool', '-ov', app_path]
+  test_pattern = re.compile(
+      'imp (?:0[xX][0-9a-fA-F]+ )?-\['
+      '(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test(?:Case)?)\s'
+      '(?P<testMethod>test[A-Za-z0-9_]*)\]')
+  return test_pattern.findall(subprocess.check_output(cmd))
+
+
 def shard_xctest(object_path, shards, test_cases=None):
   """Gets EarlGrey test methods inside a test target and splits them into shards
 
@@ -345,12 +362,7 @@ def shard_xctest(object_path, shards, test_cases=None):
   Returns:
     A list of test shards.
   """
-  cmd = ['otool', '-ov', object_path]
-  test_pattern = re.compile(
-    'imp -\[(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test[Case]*) '
-    '(?P<testMethod>test[A-Za-z0-9_]*)\]')
-  test_names = test_pattern.findall(subprocess.check_output(cmd))
-
+  test_names = get_test_names(object_path)
   # If test_cases are passed in, only shard the intersection of them and the
   # listed tests.  Format of passed-in test_cases can be either 'testSuite' or
   # 'testSuite/testMethod'.  The listed tests are tuples of ('testSuite',

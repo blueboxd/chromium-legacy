@@ -308,7 +308,7 @@ SkCanvas::SrcRectConstraint GetTextureConstraint(
   bool fills_left = valid_texel_bounds.x() <= 0.f;
   bool fills_right = valid_texel_bounds.right() >= image->width();
   bool fills_top = valid_texel_bounds.y() <= 0.f;
-  bool fills_bottom = valid_texel_bounds.y() >= image->height();
+  bool fills_bottom = valid_texel_bounds.bottom() >= image->height();
   if (fills_left && fills_right && fills_top && fills_bottom) {
     // The entire image is contained in the content area, so hardware clamping
     // ensures only content texels are sampled

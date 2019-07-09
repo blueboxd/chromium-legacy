@@ -160,8 +160,6 @@ def _CreateUncompressedPakSizeDeltas(symbols):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--author', required=True, help='CL author')
-  # TODO(agrieve): Use this to not fail on reverts. https://crbug.com/978942
-  parser.add_argument('--commit-message', help='CL description')
   parser.add_argument(
       '--apk-name', required=True, help='Name of the apk (ex. Name.apk)')
   parser.add_argument(

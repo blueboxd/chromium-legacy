@@ -196,11 +196,12 @@ void WidgetInputHandlerImpl::InputWasProcessed() {
 }
 
 void WidgetInputHandlerImpl::AttachSynchronousCompositor(
-    mojom::SynchronousCompositorControlHostPtr control_host,
-    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+        compositor_receiver) {
   input_handler_manager_->AttachSynchronousCompositor(
-      std::move(control_host), std::move(host), std::move(compositor_request));
+      std::move(control_host), std::move(host), std::move(compositor_receiver));
 }
 
 void WidgetInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {

@@ -12,6 +12,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class AppMenuButton;
+class Browser;
 
 // This bubble view is displayed when a Happiness tracking survey is triggered.
 // It displays a WebUI that hosts the survey.
@@ -19,15 +20,14 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
  public:
   // Returns a pointer to the Hats Bubble being shown. For testing only.
   static views::BubbleDialogDelegateView* GetHatsBubble();
-  // Shows the bubble if one is not already showing.
-  static views::BubbleDialogDelegateView* CreateHatsBubble(
-      AppMenuButton* anchor_button,
-      Browser* browser,
-      gfx::NativeView parent_view);
+  // Creates and shows the bubble anchored to the |anchor_button|.
+  static void Show(AppMenuButton* anchor_button, Browser* browser);
 
  protected:
   // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
+  base::string16 GetWindowTitle() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Accept() override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
@@ -39,6 +39,7 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
 
   static HatsBubbleView* instance_;
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
+  const Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsBubbleView);
 };

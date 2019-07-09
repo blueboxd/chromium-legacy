@@ -308,13 +308,15 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
 // ----------------------------------------------------------------
 
 AudioParam::AudioParam(BaseAudioContext& context,
+                       const String& parent_uuid,
                        AudioParamType param_type,
                        double default_value,
                        AudioParamHandler::AutomationRate rate,
                        AudioParamHandler::AutomationRateMode rate_mode,
                        float min_value,
                        float max_value)
-    : handler_(AudioParamHandler::Create(context,
+    : InspectorHelperMixin(parent_uuid),
+      handler_(AudioParamHandler::Create(context,
                                          param_type,
                                          default_value,
                                          rate,
@@ -325,16 +327,7 @@ AudioParam::AudioParam(BaseAudioContext& context,
       deferred_task_handler_(&context.GetDeferredTaskHandler()) {}
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
-                               AudioParamType param_type,
-                               double default_value) {
-  return MakeGarbageCollected<AudioParam>(
-      context, param_type, default_value,
-      AudioParamHandler::AutomationRate::kAudio,
-      AudioParamHandler::AutomationRateMode::kVariable,
-      -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-}
-
-AudioParam* AudioParam::Create(BaseAudioContext& context,
+                               const String& parent_uuid,
                                AudioParamType param_type,
                                double default_value,
                                AudioParamHandler::AutomationRate rate,
@@ -343,9 +336,9 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                                float max_value) {
   DCHECK_LE(min_value, max_value);
 
-  return MakeGarbageCollected<AudioParam>(context, param_type, default_value,
-                                          rate, rate_mode, min_value,
-                                          max_value);
+  return MakeGarbageCollected<AudioParam>(context, parent_uuid, param_type,
+                                          default_value, rate, rate_mode,
+                                          min_value, max_value);
 }
 
 AudioParam::~AudioParam() {

@@ -34,7 +34,7 @@ class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
 
   mojom::ProvisionFetcherPtr provision_fetcher_ptr_;
 
-  base::WeakPtrFactory<MojoProvisionFetcher> weak_factory_;
+  base::WeakPtrFactory<MojoProvisionFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoProvisionFetcher);
 };

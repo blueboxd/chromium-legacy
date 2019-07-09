@@ -111,10 +111,7 @@ DecoderStream<StreamType>::DecoderStream(
       pending_decode_requests_(0),
       duration_tracker_(8),
       received_config_change_during_reinit_(false),
-      pending_demuxer_read_(false),
-      weak_factory_(this),
-      fallback_weak_factory_(this),
-      prepare_weak_factory_(this) {
+      pending_demuxer_read_(false) {
   FUNCTION_DVLOG(1);
 }
 

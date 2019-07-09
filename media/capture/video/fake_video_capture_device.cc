@@ -459,8 +459,7 @@ FakeVideoCaptureDevice::FakeVideoCaptureDevice(
     : supported_formats_(supported_formats),
       frame_deliverer_factory_(std::move(frame_deliverer_factory)),
       photo_device_(std::move(photo_device)),
-      device_state_(std::move(device_state)),
-      weak_factory_(this) {}
+      device_state_(std::move(device_state)) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -297,6 +298,16 @@ void SessionSyncBridge::ApplyStopSyncChanges(
   local_session_event_router_->Stop();
   if (delete_metadata_change_list) {
     store_->DeleteAllDataAndMetadata();
+
+    // Ensure that we clear on-demand favicons that were downloaded using user
+    // synced history data, especially by HistoryUiFaviconRequestHandler. We do
+    // it upon disabling of sessions sync to have symmetry with the condition
+    // checked inside that layer to allow downloads (sessions sync enabled).
+    history::HistoryService* history_service =
+        sessions_client_->GetHistoryService();
+    if (history_service) {
+      history_service->ClearAllOnDemandFavicons();
+    }
   }
   syncing_.reset();
 }

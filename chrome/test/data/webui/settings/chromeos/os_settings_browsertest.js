@@ -287,12 +287,60 @@ var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
       '//ui/webui/resources/js/assert.js',
       BROWSER_SETTINGS_PATH + 'test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'test_cups_printers_browser_proxy.js',
       'cups_printer_page_tests.js',
     ]);
   }
 };
 
 TEST_F('OSSettingsPrintingPageTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Tests for the CUPS printer entry.
+// eslint-disable-next-line no-var
+var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'printing_page/cups_printers_entry_list.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'cups_printer_entry_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPrinterEntryTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Tests for the CUPS printer landing page.
+// eslint-disable-next-line no-var
+var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'printing_page/cups_printers.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'test_cups_printers_browser_proxy.js',
+      'cups_printer_landing_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPrinterLandingPageTest', 'AllJavascriptTests', function() {
   mocha.run();
 });
 

@@ -29,6 +29,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,38 +49,33 @@ const char kInitiationStatusName[] = "Translate.InitiationStatus.v2";
 // Overrides NetworkChangeNotifier, simulating connection type changes
 // for tests.
 // TODO(groby): Combine with similar code in ResourceRequestAllowedNotifierTest.
-class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
+class TestNetworkChangeNotifier {
  public:
   TestNetworkChangeNotifier()
-      : connection_type_to_return_(
-            net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
+      : mock_notifier_(net::test::MockNetworkChangeNotifier::Create()) {}
 
   // Simulates a change of the connection type to |type|. This will notify any
   // objects that are NetworkChangeNotifiers.
   void SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::ConnectionType type) {
-    connection_type_to_return_ = type;
+    mock_notifier_->SetConnectionType(type);
     net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
-        connection_type_to_return_);
+        type);
     base::RunLoop().RunUntilIdle();
   }
 
   void SimulateOffline() {
-    connection_type_to_return_ = net::NetworkChangeNotifier::CONNECTION_NONE;
+    mock_notifier_->SetConnectionType(
+        net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
   void SimulateOnline() {
-    connection_type_to_return_ = net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
+    mock_notifier_->SetConnectionType(
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   }
 
  private:
-  ConnectionType GetCurrentConnectionType() const override {
-    return connection_type_to_return_;
-  }
-
-  // The currently simulated network connection type. If this is set to
-  // CONNECTION_NONE, then NetworkChangeNotifier::IsOffline will return true.
-  net::NetworkChangeNotifier::ConnectionType connection_type_to_return_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> mock_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
 };

@@ -77,7 +77,7 @@ class FakeRemoter final : public mojom::Remoter {
   std::unique_ptr<FakeRemotingDataStreamSender> audio_stream_sender_;
   std::unique_ptr<FakeRemotingDataStreamSender> video_stream_sender_;
 
-  base::WeakPtrFactory<FakeRemoter> weak_factory_;
+  base::WeakPtrFactory<FakeRemoter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeRemoter);
 };

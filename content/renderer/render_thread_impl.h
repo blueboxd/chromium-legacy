@@ -32,7 +32,6 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/frame_sink_provider.mojom.h"
-#include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -327,7 +326,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return low_memory_mode_controller_.get();
   }
 
-  mojom::RenderFrameMessageFilter* render_frame_message_filter();
   mojom::RenderMessageFilter* render_message_filter();
 
   // Get the GPU channel. Returns NULL if the channel is not established or
@@ -718,7 +716,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojo::AssociatedBinding<mojom::Renderer> renderer_binding_;
 
-  mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;

@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351692861129622852">Nag-i-import ng <ph name="FILE_COUNT" /> (na) file...</translation>
 <translation id="1352103415082130575">Thai keyboard (Pattachote)</translation>
-<translation id="1358032944105037487">Hapon na keyboard</translation>
 <translation id="1358735829858566124">Hindi nagagamit ang file o ang direktoryo.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Maligayang pagdating sa Google Drive!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> (na) larawan ang na-back up sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kinokopya...</translation>
 <translation id="3475447146579922140">Spreadsheet ng Google</translation>
-<translation id="3494768541638400973">Pag-input na Japanese ng Google (para sa Japanese na keyboard)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> (na) error.</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portuguese</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> ang nakita</translation>
 <translation id="6935521024859866267">Paru-paro</translation>
-<translation id="6937152069980083337">Pag-input na Japanese ng Google (para sa US na keyboard)</translation>
 <translation id="6939777852457331078">US Workman na keyboard</translation>
 <translation id="696203921837389374">I-enable ang pagsi-sync gamit ang mobile data</translation>
 <translation id="6965382102122355670">OK</translation>

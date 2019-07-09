@@ -10,16 +10,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import android.support.test.filters.SmallTest;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
-
 /**
  * Test functionality of UrlResponseMatcher.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class UrlResponseMatcherTest {
     @Test
     @SmallTest

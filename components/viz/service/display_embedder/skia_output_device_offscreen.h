@@ -40,6 +40,7 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   GrContext* const gr_context_;
   const bool has_alpha_;
   sk_sp<SkSurface> sk_surface_;
+  bool supports_rgbx_ = true;
 
  private:
   SkImageInfo image_info_;

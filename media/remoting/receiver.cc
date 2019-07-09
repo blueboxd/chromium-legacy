@@ -26,8 +26,7 @@ constexpr base::TimeDelta kTimeUpdateInterval =
 Receiver::Receiver(std::unique_ptr<Renderer> renderer, RpcBroker* rpc_broker)
     : renderer_(std::move(renderer)),
       rpc_broker_(rpc_broker),
-      rpc_handle_(rpc_broker_->GetUniqueHandle()),
-      weak_factory_(this) {
+      rpc_handle_(rpc_broker_->GetUniqueHandle()) {
   DCHECK(renderer_);
   DCHECK(rpc_broker_);
   rpc_broker_->RegisterMessageReceiverCallback(

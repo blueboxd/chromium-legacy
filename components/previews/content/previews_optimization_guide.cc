@@ -15,8 +15,10 @@
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/hint_cache_store.h"
@@ -53,15 +55,17 @@ constexpr base::TimeDelta kUpdateFetchedHintsDelay =
 // override instead.
 bool ShouldPurgeHintCacheStoreOnStartup() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(switches::kHintsProtoOverride) ||
-         cmd_line->HasSwitch(switches::kPurgeHintCacheStore);
+  return cmd_line->HasSwitch(
+             optimization_guide::switches::kHintsProtoOverride) ||
+         cmd_line->HasSwitch(
+             optimization_guide::switches::kPurgeHintCacheStore);
 }
 
 // Available hint components are only processed if a proto override isn't being
 // used; otherwise, the hints from the proto override are used instead.
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHintsProtoOverride);
+      optimization_guide::switches::kHintsProtoOverride);
 }
 
 // Attempts to parse a base64 encoded Optimization Guide Configuration proto
@@ -70,11 +74,11 @@ bool IsHintComponentProcessingDisabled() {
 std::unique_ptr<optimization_guide::proto::Configuration>
 ParseHintsProtoFromCommandLine() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kHintsProtoOverride))
+  if (!cmd_line->HasSwitch(optimization_guide::switches::kHintsProtoOverride))
     return nullptr;
 
-  std::string b64_pb =
-      cmd_line->GetSwitchValueASCII(switches::kHintsProtoOverride);
+  std::string b64_pb = cmd_line->GetSwitchValueASCII(
+      optimization_guide::switches::kHintsProtoOverride);
 
   std::string binary_pb;
   if (!base::Base64Decode(b64_pb, &binary_pb)) {
@@ -99,11 +103,11 @@ ParseHintsProtoFromCommandLine() {
 base::Optional<std::vector<std::string>>
 ParseHintsFetchOverrideFromCommandLine() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kFetchHintsOverride))
+  if (!cmd_line->HasSwitch(optimization_guide::switches::kFetchHintsOverride))
     return base::nullopt;
 
-  std::string override_hosts_value =
-      cmd_line->GetSwitchValueASCII(switches::kFetchHintsOverride);
+  std::string override_hosts_value = cmd_line->GetSwitchValueASCII(
+      optimization_guide::switches::kFetchHintsOverride);
 
   std::vector<std::string> hosts =
       base::SplitString(override_hosts_value, ",", base::TRIM_WHITESPACE,
@@ -117,7 +121,7 @@ ParseHintsFetchOverrideFromCommandLine() {
 
 bool ShouldOverrideFetchHintsTimer() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kFetchHintsOverrideTimer);
+      optimization_guide::switches::kFetchHintsOverrideTimer);
 }
 
 // Provides a random time delta in seconds between |kFetchRandomMinDelay| and
@@ -326,14 +330,17 @@ void PreviewsOptimizationGuide::FetchHints() {
       ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
     top_hosts = previews_top_host_provider_->GetTopHosts(
-        previews::params::MaxHostsForOptimizationGuideServiceHintsFetch());
+        optimization_guide::features::
+            MaxHostsForOptimizationGuideServiceHintsFetch());
   }
-  DCHECK_GE(previews::params::MaxHostsForOptimizationGuideServiceHintsFetch(),
+  DCHECK_GE(optimization_guide::features::
+                MaxHostsForOptimizationGuideServiceHintsFetch(),
             top_hosts->size());
 
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<HintsFetcher>(
-        url_loader_factory_, params::GetOptimizationGuideServiceURL());
+        url_loader_factory_,
+        optimization_guide::features::GetOptimizationGuideServiceURL());
   }
 
   if (top_hosts->size() > 0) {
@@ -417,7 +424,7 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
     return;
   }
 
-  if (!previews::params::IsHintsFetchingEnabled())
+  if (!optimization_guide::features::IsHintsFetchingEnabled())
     return;
 
   if (ParseHintsFetchOverrideFromCommandLine() ||

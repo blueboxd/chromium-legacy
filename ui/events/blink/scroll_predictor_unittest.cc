@@ -13,13 +13,15 @@
 #include "ui/events/blink/prediction/empty_predictor.h"
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
-
-using blink::WebInputEvent;
-using blink::WebGestureEvent;
+#include "ui/events/blink/prediction/linear_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 namespace test {
 namespace {
+
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
 
 constexpr double kEpsilon = 0.001;
 
@@ -116,7 +118,7 @@ class ScrollPredictorTest : public testing::Test {
               GetFieldTrialParamValueByFeature(feature, "predictor"));
   }
 
-  void VerifyPredictorType(const std::string& expected_type) {
+  void VerifyPredictorType(const char* expected_type) {
     EXPECT_EQ(expected_type, scroll_predictor_->predictor_->GetName());
   }
 
@@ -370,23 +372,31 @@ TEST_F(ScrollPredictorTest, ScrollPredictorNotChangeScrollDirection) {
 }
 
 TEST_F(ScrollPredictorTest, ScrollPredictorTypeSelection) {
-  // Empty Predictor when kResamplingScrollEvents not enabled.
+  // Empty Predictor when kResamplingScrollEvents is disabled.
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType("Empty");
+  VerifyPredictorType(input_prediction::kScrollPredictorNameEmpty);
 
   // When resampling is enabled, predictor type is set from
   // kResamplingScrollEvents.
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "empty");
+  ConfigureFieldTrial(features::kResamplingScrollEvents,
+                      input_prediction::kScrollPredictorNameEmpty);
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType("Empty");
+  VerifyPredictorType(input_prediction::kScrollPredictorNameEmpty);
 
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "lsq");
+  ConfigureFieldTrial(features::kResamplingScrollEvents,
+                      input_prediction::kScrollPredictorNameLsq);
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType("LSQ");
+  VerifyPredictorType(input_prediction::kScrollPredictorNameLsq);
 
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "kalman");
+  ConfigureFieldTrial(features::kResamplingScrollEvents,
+                      input_prediction::kScrollPredictorNameKalman);
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType("Kalman");
+  VerifyPredictorType(input_prediction::kScrollPredictorNameKalman);
+
+  ConfigureFieldTrial(features::kResamplingScrollEvents,
+                      input_prediction::kScrollPredictorNameLinearFirst);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameLinearFirst);
 }
 
 }  // namespace test

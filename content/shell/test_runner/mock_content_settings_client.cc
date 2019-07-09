@@ -4,6 +4,7 @@
 
 #include "content/shell/test_runner/mock_content_settings_client.h"
 
+#include "content/public/common/origin_util.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
@@ -63,6 +64,38 @@ bool MockContentSettingsClient::AllowAutoplay(bool default_value) {
 
 void MockContentSettingsClient::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
+}
+
+void MockContentSettingsClient::PersistClientHints(
+    const blink::WebEnabledClientHints& enabled_client_hints,
+    base::TimeDelta duration,
+    const blink::WebURL& url) {
+  const url::Origin origin = url::Origin::Create(url);
+  if (!content::IsOriginSecure(url))
+    return;
+  if (duration <= base::TimeDelta())
+    return;
+  ClientHintsPersistencyData data;
+  data.expiration = base::Time::Now() + duration;
+  data.client_hints = enabled_client_hints;
+  client_hints_map_[origin] = data;
+}
+
+void MockContentSettingsClient::GetAllowedClientHintsFromSource(
+    const blink::WebURL& url,
+    blink::WebEnabledClientHints* client_hints) const {
+  const url::Origin origin = url::Origin::Create(url);
+  const auto& it = client_hints_map_.find(origin);
+
+  DCHECK(client_hints);
+  if (it != client_hints_map_.end() &&
+      it->second.expiration >= base::Time::Now()) {
+    *client_hints = it->second.client_hints;
+  }
+}
+
+void MockContentSettingsClient::ResetClientHintsPersistencyData() {
+  client_hints_map_.clear();
 }
 
 }  // namespace test_runner

@@ -15,11 +15,11 @@
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/testing/nserror_util.h"
+#import "ios/web/public/test/navigation_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,19 +39,44 @@ WebStateList* GetCurrentWebStateList() {
       .interfaceProvider.currentInterface.tabModel.webStateList;
 }
 
+web::WebState* GetWebStateWithId(NSString* tab_id) {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  for (int i = 0; i < web_state_list->count(); ++i) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(i);
+    if ([tab_id isEqualToString:GetIdForWebState(web_state)])
+      return web_state;
+  }
+  return nil;
+}
+
+// Returns the index of the WebState with the given tab_id, or
+// WebStateList::kInvalidIndex if no such WebState is found.
+int GetIndexOfWebStateWithId(NSString* tab_id) {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  return web_state_list->GetIndexOfWebState(GetWebStateWithId(tab_id));
+}
+
 }  // namespace
 
 @implementation CWTWebDriverAppInterface
 
-+ (NSError*)loadURL:(NSString*)URL timeoutInSeconds:(NSTimeInterval)timeout {
++ (NSError*)loadURL:(NSString*)URL
+               inTab:(NSString*)tabID
+    timeoutInSeconds:(NSTimeInterval)timeout {
+  __block web::WebState* webState = nullptr;
   grey_dispatch_sync_on_main_thread(^{
-    chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(URL)));
+    webState = GetWebStateWithId(tabID);
+    if (webState)
+      web::test::LoadUrl(webState, GURL(base::SysNSStringToUTF8(URL)));
   });
+
+  if (!webState)
+    return testing::NSErrorWithLocalizedDescription(@"No matching tab");
 
   bool success = WaitUntilConditionOrTimeout(timeout, ^bool {
     __block BOOL isLoading = NO;
     grey_dispatch_sync_on_main_thread(^{
-      isLoading = chrome_test_util::GetCurrentWebState()->IsLoading();
+      isLoading = webState->IsLoading();
     });
     return !isLoading;
   });
@@ -89,16 +114,16 @@ WebStateList* GetCurrentWebStateList() {
   return tabIDs;
 }
 
-+ (NSError*)closeCurrentTab {
++ (NSError*)closeTabWithID:(NSString*)ID {
   __block NSError* error = nil;
   grey_dispatch_sync_on_main_thread(^{
-    web::WebState* webState = chrome_test_util::GetCurrentWebState();
-    if (webState) {
+    int webStateIndex = GetIndexOfWebStateWithId(ID);
+    if (webStateIndex != WebStateList::kInvalidIndex) {
       WebStateList* webStateList = GetCurrentWebStateList();
-      webStateList->CloseWebStateAt(webStateList->GetIndexOfWebState(webState),
+      webStateList->CloseWebStateAt(webStateIndex,
                                     WebStateList::CLOSE_USER_ACTION);
     } else {
-      error = testing::NSErrorWithLocalizedDescription(@"No current tab");
+      error = testing::NSErrorWithLocalizedDescription(@"No matching tab");
     }
   });
 
@@ -109,22 +134,20 @@ WebStateList* GetCurrentWebStateList() {
   __block NSError* error = nil;
   grey_dispatch_sync_on_main_thread(^{
     DCHECK(!chrome_test_util::IsIncognitoMode());
-    WebStateList* webStateList = GetCurrentWebStateList();
-
-    for (int i = 0; i < webStateList->count(); ++i) {
-      web::WebState* webState = webStateList->GetWebStateAt(i);
-      if ([ID isEqualToString:GetIdForWebState(webState)]) {
-        webStateList->ActivateWebStateAt(i);
-        return;
-      }
+    int webStateIndex = GetIndexOfWebStateWithId(ID);
+    if (webStateIndex != WebStateList::kInvalidIndex) {
+      WebStateList* webStateList = GetCurrentWebStateList();
+      webStateList->ActivateWebStateAt(webStateIndex);
+    } else {
+      error = testing::NSErrorWithLocalizedDescription(@"No matching tab");
     }
-    error = testing::NSErrorWithLocalizedDescription(@"No matching tab");
   });
 
   return error;
 }
 
 + (NSString*)executeAsyncJavaScriptFunction:(NSString*)function
+                                      inTab:(NSString*)tabID
                            timeoutInSeconds:(NSTimeInterval)timeout {
   const std::string kMessageResultKey("result");
 
@@ -148,10 +171,6 @@ WebStateList* GetCurrentWebStateList() {
       "(%s).call(null, %s)", base::SysNSStringToUTF8(function).c_str(),
       scriptCompletionHandler.c_str());
 
-  // Remember the ID of the WebState we inject into since script execution can
-  // change the current WebState (e.g., by opening or closing tabs).
-  __block NSString* currentWebStateID = nil;
-
   __block base::Optional<base::Value> messageValue;
   const web::WebState::ScriptCommandCallback callback =
       base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
@@ -170,17 +189,18 @@ WebStateList* GetCurrentWebStateList() {
         return true;
       });
 
+  __block BOOL webStateFound = NO;
   grey_dispatch_sync_on_main_thread(^{
-    web::WebState* webState = chrome_test_util::GetCurrentWebState();
+    web::WebState* webState = GetWebStateWithId(tabID);
     if (!webState)
       return;
-    currentWebStateID = GetIdForWebState(webState);
+    webStateFound = YES;
     webState->AddScriptCommandCallback(callback, command);
     webState->ExecuteJavaScript(
         base::UTF8ToUTF16(scriptFunctionWithCompletionHandler));
   });
 
-  if (!currentWebStateID)
+  if (!webStateFound)
     return nil;
 
   bool success = WaitUntilConditionOrTimeout(timeout, ^bool {
@@ -192,15 +212,9 @@ WebStateList* GetCurrentWebStateList() {
   });
 
   grey_dispatch_sync_on_main_thread(^{
-    WebStateList* webStateList = GetCurrentWebStateList();
-
-    for (int i = 0; i < webStateList->count(); ++i) {
-      web::WebState* webState = webStateList->GetWebStateAt(i);
-      if ([currentWebStateID isEqualToString:GetIdForWebState(webState)]) {
-        webState->RemoveScriptCommandCallback(command);
-        return;
-      }
-    }
+    web::WebState* webState = GetWebStateWithId(tabID);
+    if (webState)
+      webState->RemoveScriptCommandCallback(command);
   });
 
   if (!success)

@@ -48,6 +48,8 @@ jumbo_source_set("blink") {
     "prediction/least_squares_predictor.h",
     "prediction/linear_predictor.cc",
     "prediction/linear_predictor.h",
+    "prediction/predictor_factory.cc",
+    "prediction/predictor_factory.h",
     "scroll_predictor.cc",
     "scroll_predictor.h",
     "synchronous_input_handler_proxy.h",

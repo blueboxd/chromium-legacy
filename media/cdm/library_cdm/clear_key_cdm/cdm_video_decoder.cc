@@ -163,8 +163,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
   VideoDecoderAdapter(CdmHostProxy* cdm_host_proxy,
                       std::unique_ptr<VideoDecoder> video_decoder)
       : cdm_host_proxy_(cdm_host_proxy),
-        video_decoder_(std::move(video_decoder)),
-        weak_factory_(this) {
+        video_decoder_(std::move(video_decoder)) {
     DCHECK(cdm_host_proxy_);
   }
 
@@ -284,7 +283,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
   using VideoFrameQueue = base::queue<scoped_refptr<VideoFrame>>;
   VideoFrameQueue decoded_video_frames_;
 
-  base::WeakPtrFactory<VideoDecoderAdapter> weak_factory_;
+  base::WeakPtrFactory<VideoDecoderAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderAdapter);
 };

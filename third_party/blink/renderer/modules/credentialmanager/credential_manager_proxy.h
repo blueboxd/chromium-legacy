@@ -55,7 +55,7 @@ class MODULES_EXPORT CredentialManagerProxy
   static CredentialManagerProxy* From(Document&);
 
  private:
-  mojom::blink::AuthenticatorPtr authenticator_;
+  mojo::Remote<mojom::blink::Authenticator> authenticator_;
   mojo::Remote<mojom::blink::CredentialManager> credential_manager_;
 };
 

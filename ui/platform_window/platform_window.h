@@ -53,6 +53,9 @@ class PlatformWindow : public PropertyHandler {
   virtual void Restore() = 0;
   virtual PlatformWindowState GetPlatformWindowState() const = 0;
 
+  virtual void Activate() = 0;
+  virtual void Deactivate() = 0;
+
   virtual void SetCursor(PlatformCursor cursor) = 0;
 
   // Moves the cursor to |location|. Location is in platform window coordinates.

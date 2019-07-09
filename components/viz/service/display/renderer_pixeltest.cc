@@ -1075,9 +1075,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(backer): Blending is not correct for SkiaRenderer
-// (https://crbug.com/953284)
-TYPED_TEST(GPURendererPixelTest, DISABLED_SolidColorBlend) {
+TYPED_TEST(GPURendererPixelTest, SolidColorBlend) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -2381,7 +2379,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
@@ -4080,7 +4078,7 @@ TYPED_TEST(RendererPixelTestWithFlippedOutputSurface, ExplicitFlipTest) {
   // right-side up result regardless (i.e., NOT blue_yellow_flipped.png).
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTestWithFlippedOutputSurface, CheckChildPassUnflipped) {
@@ -4511,22 +4509,10 @@ TYPED_TEST(RendererPixelTest, RoundedCornerOnRenderPass) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
-  if (std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
-    // GL Renderer should have an exact match as that is the reference point.
-    EXPECT_TRUE(this->RunPixelTest(
-        &pass_list,
-        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
-        cc::ExactPixelComparator(true)));
-  } else {
-    // Software/skia renderer uses skia rrect to create rounded corner clip.
-    // This results in a different corner path due to a different anti aliasing
-    // approach than the fragment shader in gl renderer.
-    EXPECT_TRUE(this->RunPixelTest(
-        &pass_list,
-        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
-        cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
-  }
+  base::FilePath path(FILE_PATH_LITERAL("rounded_corner_render_pass_.png"));
+  path = path.InsertBeforeExtensionASCII(this->renderer_type());
+  EXPECT_TRUE(this->RunPixelTest(&pass_list, path,
+                                 cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {

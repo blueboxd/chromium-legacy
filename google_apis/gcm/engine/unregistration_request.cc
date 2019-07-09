@@ -177,7 +177,6 @@ void UnregistrationRequest::Start() {
   DVLOG(1) << "Performing unregistration for: " << request_info_.app_id();
   recorder_->RecordUnregistrationSent(request_info_.app_id(),
                                       source_to_record_);
-  request_start_time_ = base::TimeTicks::Now();
   url_loader_->SetAllowHttpErrorResults(true);
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
@@ -275,10 +274,7 @@ void UnregistrationRequest::OnURLLoadComplete(
   DVLOG(1) << "UnregistrationRequestStatus: " << status;
 
   DCHECK(custom_request_handler_.get());
-  custom_request_handler_->ReportUMAs(
-      status,
-      backoff_entry_.failure_count(),
-      base::TimeTicks::Now() - request_start_time_);
+  custom_request_handler_->ReportUMAs(status);
 
   recorder_->RecordUnregistrationResponse(request_info_.app_id(),
                                           source_to_record_, status);
@@ -293,10 +289,8 @@ void UnregistrationRequest::OnURLLoadComplete(
     recorder_->RecordUnregistrationResponse(request_info_.app_id(),
                                             source_to_record_, status);
 
-    // Only REACHED_MAX_RETRIES is reported because the function will skip
-    // reporting count and time when status is not SUCCESS.
     DCHECK(custom_request_handler_.get());
-    custom_request_handler_->ReportUMAs(status, 0, base::TimeDelta());
+    custom_request_handler_->ReportUMAs(status);
   }
 
   callback_.Run(status);

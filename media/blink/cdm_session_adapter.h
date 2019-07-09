@@ -162,7 +162,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   std::unique_ptr<blink::WebContentDecryptionModuleResult> cdm_created_result_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmSessionAdapter);
 };

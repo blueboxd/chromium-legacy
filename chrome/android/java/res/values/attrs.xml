@@ -88,4 +88,8 @@
     <declare-styleable name="TileGridLayout">
         <attr name="minHorizontalSpacing" format="dimension"/>
     </declare-styleable>
+
+    <declare-styleable name="ExploreSitesTileView">
+        <attr name="iconCornerRadius" format="dimension"/>
+    </declare-styleable>
 </resources>

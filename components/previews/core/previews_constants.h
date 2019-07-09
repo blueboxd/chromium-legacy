@@ -15,10 +15,6 @@ extern const char kPreviewsOptimizationGuideUpdateHintsResultHistogramString[];
 // finished loading.
 extern const char kPreviewsOptimizationGuideOnLoadedHintResultHistogramString[];
 
-// The remote Optimization Guide Service production server to fetcher hints
-// from.
-extern const char kOptimizationGuideServiceDefaultURL[];
-
 }  // namespace previews
 
 #endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_CONSTANTS_H_

@@ -371,8 +371,6 @@ target(link_target_type, "renderer") {
     "renderer_main_platform_delegate_linux.cc",
     "renderer_main_platform_delegate_mac.mm",
     "renderer_main_platform_delegate_win.cc",
-    "renderer_webcookiejar_impl.cc",
-    "renderer_webcookiejar_impl.h",
     "resource_timing_info_conversions.cc",
     "resource_timing_info_conversions.h",
     "sad_plugin.cc",

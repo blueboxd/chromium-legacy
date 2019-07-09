@@ -15,7 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"

@@ -13,7 +13,8 @@
 #include "base/macros.h"
 #include "content/browser/webauth/authenticator_common.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 
 namespace url {
@@ -35,12 +36,13 @@ class InternalAuthenticatorImpl : public blink::mojom::InternalAuthenticator,
 
   ~InternalAuthenticatorImpl() override;
 
-  // Creates a binding between this implementation and |request|.
+  // Creates a binding between this implementation and |receiver|.
   //
   // Note that one InternalAuthenticatorImpl instance can be bound to
   // exactly one interface connection at a time, and disconnected when the frame
   // navigates to a new active document.
-  void Bind(blink::mojom::InternalAuthenticatorRequest request);
+  void Bind(
+      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver);
 
  private:
   friend class InternalAuthenticatorImplTest;
@@ -75,7 +77,7 @@ class InternalAuthenticatorImpl : public blink::mojom::InternalAuthenticator,
   std::unique_ptr<AuthenticatorCommon> authenticator_common_;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
-  mojo::Binding<blink::mojom::InternalAuthenticator> binding_;
+  mojo::Receiver<blink::mojom::InternalAuthenticator> receiver_{this};
 
   base::WeakPtrFactory<InternalAuthenticatorImpl> weak_factory_;
 

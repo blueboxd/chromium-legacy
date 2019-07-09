@@ -611,13 +611,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
                                          bool should_check_children) const;
 
-  bool ContainsDirtyOverlayScrollbars() const {
-    return contains_dirty_overlay_scrollbars_;
-  }
-  void SetContainsDirtyOverlayScrollbars(bool dirty_scrollbars) {
-    contains_dirty_overlay_scrollbars_ = dirty_scrollbars;
-  }
-
   // If the input CompositorFilterOperation is not empty, it will be populated
   // only if |filter_on_effect_node_dirty_| is true or the reference box has
   // changed. Otherwise it will be populated unconditionally.
@@ -883,9 +876,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_self_painting_layer_descendant_;
   }
-  bool IsNonStackedWithInFlowStackedDescendant() const {
-    DCHECK(!needs_descendant_dependent_flags_update_);
-    return is_non_stacked_with_in_flow_stacked_descendant_;
+
+  // See PaintLayerStackingNode::layer_to_overlay_scrollbars_painting_after_.
+  bool NeedsReorderOverlayScrollbars() const {
+    return needs_reorder_overlay_scrollbars_;
   }
 
   // Returns true if there is a descendant with blend-mode that is
@@ -1112,6 +1106,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return descendant_needs_compositing_layer_assignment_;
   }
 
+  void DirtyStackingContextZOrderLists();
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 
@@ -1275,6 +1271,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // PaintLayerPaintOrderIterator.
   PaintLayerStackingNode* StackingNode() const { return stacking_node_.get(); }
 
+  void SetNeedsReorderOverlayScrollbars(bool b) {
+    needs_reorder_overlay_scrollbars_ = b;
+  }
+
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
   // case.
@@ -1298,8 +1298,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Set on a stacking context layer that has 3D descendants anywhere
   // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
   unsigned has3d_transformed_descendant_ : 1;
-
-  unsigned contains_dirty_overlay_scrollbars_ : 1;
 
   unsigned needs_ancestor_dependent_compositing_inputs_update_ : 1;
   unsigned child_needs_compositing_inputs_update_ : 1;
@@ -1355,7 +1353,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned descendant_needs_compositing_layer_assignment_ : 1;
 
   unsigned has_self_painting_layer_descendant_ : 1;
-  unsigned is_non_stacked_with_in_flow_stacked_descendant_ : 1;
+
+  unsigned needs_reorder_overlay_scrollbars_ : 1;
 
 #if DCHECK_IS_ON()
   mutable unsigned layer_list_mutation_allowed_ : 1;

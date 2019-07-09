@@ -9,10 +9,10 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_hints_util.h"
-#include "components/previews/core/previews_experiments.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -301,9 +301,9 @@ TEST_F(PreviewsTopHostProviderImplTest,
 TEST_F(PreviewsTopHostProviderImplTest,
        IntializeTopHostBlacklistWithMaxTopSites) {
   size_t engaged_hosts =
-      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   size_t max_top_hosts =
-      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   AddEngagedHosts(engaged_hosts);
 
   // Blacklist should be populated on the first request.
@@ -314,7 +314,8 @@ TEST_F(PreviewsTopHostProviderImplTest,
   hosts = top_host_provider()->GetTopHosts(max_top_hosts);
   EXPECT_EQ(
       hosts.size(),
-      engaged_hosts - previews::params::MaxHintsFetcherTopHostBlacklistSize());
+      engaged_hosts -
+          optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize());
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kInitialized);
@@ -325,15 +326,15 @@ TEST_F(PreviewsTopHostProviderImplTest,
   // hosts by engagement score.
   EXPECT_TRUE(IsHostBlacklisted(base::StringPrintf(
       "domain%zu.com",
-      previews::params::MaxHintsFetcherTopHostBlacklistSize())));
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize())));
   EXPECT_FALSE(IsHostBlacklisted(base::StringPrintf("domain%u.com", 1u)));
 }
 
 TEST_F(PreviewsTopHostProviderImplTest, TopHostsFilteredByEngagementThreshold) {
   size_t engaged_hosts =
-      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   size_t max_top_hosts =
-      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+      optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
 
   AddEngagedHosts(engaged_hosts);
   // Add two hosts with very low engagement scores that should not be returned
@@ -349,7 +350,8 @@ TEST_F(PreviewsTopHostProviderImplTest, TopHostsFilteredByEngagementThreshold) {
   hosts = top_host_provider()->GetTopHosts(max_top_hosts);
   EXPECT_EQ(
       hosts.size(),
-      engaged_hosts - previews::params::MaxHintsFetcherTopHostBlacklistSize());
+      engaged_hosts -
+          optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize());
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kInitialized);

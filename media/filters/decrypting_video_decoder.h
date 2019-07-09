@@ -113,7 +113,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   bool support_clear_content_ = false;
 
   base::WeakPtr<DecryptingVideoDecoder> weak_this_;
-  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingVideoDecoder);
 };

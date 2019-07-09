@@ -9,3 +9,23 @@ source_set("public") {
     "badge_type.h",
   ]
 }
+
+source_set("badges") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "badge_consumer.h",
+    "badge_coordinator.h",
+    "badge_coordinator.mm",
+    "badge_mediator.h",
+    "badge_mediator.mm",
+  ]
+  deps = [
+    ":public",
+    "//ios/chrome/browser/infobars:badge",
+    "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/web",
+    "//ios/chrome/browser/web_state_list",
+  ]
+}

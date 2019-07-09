@@ -194,7 +194,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   bool is_suspended_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<PipelineImpl> weak_factory_;
+  base::WeakPtrFactory<PipelineImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PipelineImpl);
 };

@@ -35,8 +35,6 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierTest, TrialDisabled) {
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
 class TrialComparisonCertVerifierFeatureEnabledTest
@@ -69,18 +67,10 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
-// Flaky on Mac. See https://crbug.com/981325.
-#if defined(OS_MACOSX)
-#define MAYBE_TrialEnabledPrefEnabled DISABLED_TrialEnabledPrefEnabled
-#else
-#define MAYBE_TrialEnabledPrefEnabled TrialEnabledPrefEnabled
-#endif
 IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
-                       MAYBE_TrialEnabledPrefEnabled) {
+                       TrialEnabledPrefEnabled) {
   safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
                                           true);
 
@@ -96,16 +86,10 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
     // If both the dual cert verifier trial feature and the builtin verifier
     // feature are enabled, the dual cert verifier trial should not be used.
     histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
-    histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
-                                0);
-    histograms.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
     return;
   }
 #endif
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
-  histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary", 1);
-  histograms.ExpectUniqueSample("Net.CertVerifier_TrialComparisonResult",
-                                net::TrialComparisonCertVerifier::kEqual, 1);
 }
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
@@ -148,7 +132,5 @@ IN_PROC_BROWSER_TEST_F(
   // If both the dual cert verifier trial feature and the builtin verifier
   // feature are enabled, the dual cert verifier trial should not be used.
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary", 0);
-  histograms.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 #endif

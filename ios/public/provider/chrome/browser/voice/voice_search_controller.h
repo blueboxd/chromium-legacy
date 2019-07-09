@@ -11,6 +11,10 @@
 @class Tab;
 @class UIViewController;
 
+namespace web {
+class WebState;
+}
+
 // TODO(crbug.com/607204): Convert to Objective-C class.
 class VoiceSearchController
     : public base::RefCountedThreadSafe<VoiceSearchController> {
@@ -23,12 +27,16 @@ class VoiceSearchController
   // Preloads views and view controllers needed for the voice search UI.
   virtual void PrepareToAppear();
 
+  // TODO(crbug.com/982030): Deprecated - This method will be removed after
+  // switching to use WebState instead of Tab.
+  virtual void StartRecognition(UIViewController* presenting_view_controller,
+                                Tab* current_tab);
   // Starts recognizing and recording process. Will call the delegate method
   // upon completion if the recognition succeeds.
   // |presenting_view_controller| is the UIViewController from which to present
   // the Voice Search input UI.
   virtual void StartRecognition(UIViewController* presenting_view_controller,
-                                Tab* current_tab);
+                                web::WebState* current_web_state);
 
   // Whether or not the Text To Speech user preference is enabled.
   virtual bool IsTextToSpeechEnabled();

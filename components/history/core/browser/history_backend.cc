@@ -2819,6 +2819,10 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   return true;
 }
 
+void HistoryBackend::ClearAllOnDemandFavicons() {
+  expirer_.ClearOldOnDemandFaviconsIfPossible(base::Time::Now());
+}
+
 bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   // Create the duplicate URL table. We will copy the kept URLs into this.
   if (!db_->CreateTemporaryURLTable())

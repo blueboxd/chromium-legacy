@@ -33,7 +33,6 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/browser/quota/storage_observer.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace base {
@@ -50,7 +49,6 @@ namespace content {
 class MockQuotaManager;
 class MockStorageClient;
 class QuotaManagerTest;
-class StorageMonitorTest;
 }  // namespace content
 
 namespace storage {
@@ -58,7 +56,6 @@ namespace storage {
 class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
-class StorageMonitor;
 class UsageTracker;
 
 struct QuotaManagerDeleter;
@@ -242,11 +239,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   bool ResetUsageTracker(blink::mojom::StorageType type);
 
-  // Used to register/deregister observers that wish to monitor storage events.
-  void AddStorageObserver(StorageObserver* observer,
-                          const StorageObserver::MonitorParams& params);
-  void RemoveStorageObserver(StorageObserver* observer);
-
   static const int64_t kPerHostPersistentQuotaLimit;
   static const char kDatabaseName[];
   static const int kThresholdOfErrorsToBeBlacklisted;
@@ -267,7 +259,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   friend class base::DeleteHelper<QuotaManager>;
   friend class base::RefCountedDeleteOnSequence<QuotaManager>;
   friend class content::QuotaManagerTest;
-  friend class content::StorageMonitorTest;
   friend class content::MockQuotaManager;
   friend class content::MockStorageClient;
   friend class quota_internals::QuotaInternalsProxy;
@@ -477,8 +468,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   // overwritten by QuotaManagerTest in order to attain deterministic reported
   // values. The default value points to QuotaManager::GetVolumeInfo.
   GetVolumeInfoFn get_volume_info_fn_;
-
-  std::unique_ptr<StorageMonitor> storage_monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

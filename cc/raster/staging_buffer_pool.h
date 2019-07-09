@@ -142,7 +142,7 @@ class CC_EXPORT StagingBufferPool
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::WeakPtrFactory<StagingBufferPool> weak_ptr_factory_;
+  base::WeakPtrFactory<StagingBufferPool> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

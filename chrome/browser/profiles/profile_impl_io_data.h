@@ -12,10 +12,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/prefs/pref_store.h"
 
-namespace net {
-class CookieStore;
-}  // namespace net
-
 class ProfileImplIOData : public ProfileIOData {
  public:
   class Handle {
@@ -24,8 +20,7 @@ class ProfileImplIOData : public ProfileIOData {
     ~Handle();
 
     // Init() must be called before ~Handle().
-    void Init(const base::FilePath& extensions_cookie_path,
-              const base::FilePath& profile_path);
+    void Init(const base::FilePath& profile_path);
 
     content::ResourceContext* GetResourceContext() const;
     // GetResourceContextNoInit() does not call LazyInitialize() so it can be
@@ -55,29 +50,8 @@ class ProfileImplIOData : public ProfileIOData {
   };
 
  private:
-  struct LazyParams {
-    LazyParams();
-    ~LazyParams();
-
-    // All of these parameters are intended to be read on the IO thread.
-    base::FilePath extensions_cookie_path;
-    bool restore_old_session_cookies;
-    bool persist_session_cookies;
-  };
-
   ProfileImplIOData();
   ~ProfileImplIOData() override;
-
-  void OnMainRequestContextCreated(
-      ProfileParams* profile_params) const override;
-  void InitializeExtensionsCookieStore(
-      ProfileParams* profile_params) const override;
-  net::CookieStore* GetExtensionsCookieStore() const override;
-
-  // Lazy initialization params.
-  mutable std::unique_ptr<LazyParams> lazy_params_;
-
-  mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

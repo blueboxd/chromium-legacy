@@ -33,6 +33,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
@@ -378,7 +379,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
 TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnHintsFetcherEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {previews::features::kOptimizationHintsFetching}, {});
+      {optimization_guide::features::kOptimizationHintsFetching}, {});
 
   data_reduction_proxy::DataReductionProxySettings::
       SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);

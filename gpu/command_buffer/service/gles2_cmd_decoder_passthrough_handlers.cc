@@ -2041,12 +2041,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleOverlayPlaneCHROMIUM(
   GLfloat uv_y = static_cast<GLfloat>(c.uv_y);
   GLfloat uv_width = static_cast<GLfloat>(c.uv_width);
   GLfloat uv_height = static_cast<GLfloat>(c.uv_height);
+  bool enable_blend = static_cast<bool>(c.enable_blend);
   GLuint gpu_fence_id = static_cast<GLuint>(c.gpu_fence_id);
 
-  return DoScheduleOverlayPlaneCHROMIUM(plane_z_order, plane_transform,
-                                        overlay_texture_id, bounds_x, bounds_y,
-                                        bounds_width, bounds_height, uv_x, uv_y,
-                                        uv_width, uv_height, gpu_fence_id);
+  return DoScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height,
+      enable_blend, gpu_fence_id);
 }
 
 error::Error

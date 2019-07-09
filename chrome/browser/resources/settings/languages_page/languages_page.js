@@ -127,8 +127,10 @@ Polymer({
   ],
   // </if>
 
+  // <if expr="chromeos or is_win">
   /** @private {boolean} */
   isChangeInProgress_: false,
+  // </if>
 
   // <if expr="not is_macosx">
   /**
@@ -313,6 +315,52 @@ Polymer({
   onInputMethodOptionsTap_: function(e) {
     this.languageHelper.openInputMethodOptions(e.model.item.id);
   },
+
+  // TODO(hsuregan): Remove when SplitSettings is complete.
+  /**
+   * Incorporates pageVisibility check along with isProspectiveUILanguage_().
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
+   * @private
+   */
+  shouldShowExplanation_: function(languageCode, prospectiveUILanguage) {
+    return this.pageVisibility &&
+        this.pageVisibility.uiDisplayedInThisLanguage &&
+        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage);
+  },
+
+  /**
+   * @param {string} id The input method ID.
+   * @param {string} currentId The ID of the currently enabled input method.
+   * @return {boolean} True if the IDs match.
+   * @private
+   */
+  isCurrentInputMethod_: function(id, currentId) {
+    assert(cr.isChromeOS);
+    return id == currentId;
+  },
+
+  /**
+   * @param {string} id The input method ID.
+   * @param {string} currentId The ID of the currently enabled input method.
+   * @return {string} The class for the input method item.
+   * @private
+   */
+  getInputMethodItemClass_: function(id, currentId) {
+    assert(cr.isChromeOS);
+    return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
+  },
+
+  getInputMethodName_: function(id) {
+    assert(cr.isChromeOS);
+    const inputMethod =
+        this.languages.inputMethods.enabled.find(function(inputMethod) {
+          return inputMethod.id == id;
+        });
+    return inputMethod ? inputMethod.displayName : '';
+  },
   // </if>
 
   // <if expr="chromeos or is_win">
@@ -404,6 +452,42 @@ Polymer({
 
     this.closeMenuSoon_();
   },
+
+  /**
+   * Checks whether the prospective UI language (the pref that indicates what
+   * language to use in Chrome) matches the current language. This pref is used
+   * only on Chrome OS and Windows; we don't control the UI language elsewhere.
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
+   * @private
+   */
+  isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
+    return languageCode == prospectiveUILanguage;
+  },
+
+  /**
+   * @param {string} prospectiveUILanguage
+   * @return {string}
+   * @private
+   */
+  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
+    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
+  },
+
+  /**
+   * Handler for the restart button.
+   * @private
+   */
+  onRestartTap_: function() {
+    // <if expr="chromeos">
+    settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
+    // </if>
+    // <if expr="is_win">
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
+    // </if>
+  },
   // </if>
 
   /**
@@ -492,48 +576,6 @@ Polymer({
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
-
-  // <if expr="chromeos or is_win">
-  /**
-   * Checks whether the prospective UI language (the pref that indicates what
-   * language to use in Chrome) matches the current language. This pref is used
-   * only on Chrome OS and Windows; we don't control the UI language elsewhere.
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The prospective UI language.
-   * @return {boolean} True if the given language matches the prospective UI
-   *     pref (which may be different from the actual UI language).
-   * @private
-   */
-  isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
-    return languageCode == prospectiveUILanguage;
-  },
-
-  // <if expr="chromeos">
-  // TODO(hsuregan): Remove when SplitSettings is complete.
-  /**
-   * Incorporates pageVisibility check along with isProspectiveUILanguage_().
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The prospective UI language.
-   * @return {boolean} True if the given language matches the prospective UI
-   *     pref (which may be different from the actual UI language).
-   * @private
-   */
-  shouldShowExplanation_: function(languageCode, prospectiveUILanguage) {
-    return this.pageVisibility &&
-        this.pageVisibility.uiDisplayedInThisLanguage &&
-        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage);
-  },
-  // </if>
-
-  /**
-   * @param {string} prospectiveUILanguage
-   * @return {string}
-   * @private
-   */
-  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
-    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
-  },
-  // </if>
 
   /**
    * @return {string}
@@ -751,39 +793,6 @@ Polymer({
     return undefined;
   },
 
-  // <if expr="chromeos">
-  /**
-   * @param {string} id The input method ID.
-   * @param {string} currentId The ID of the currently enabled input method.
-   * @return {boolean} True if the IDs match.
-   * @private
-   */
-  isCurrentInputMethod_: function(id, currentId) {
-    assert(cr.isChromeOS);
-    return id == currentId;
-  },
-
-  /**
-   * @param {string} id The input method ID.
-   * @param {string} currentId The ID of the currently enabled input method.
-   * @return {string} The class for the input method item.
-   * @private
-   */
-  getInputMethodItemClass_: function(id, currentId) {
-    assert(cr.isChromeOS);
-    return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
-  },
-
-  getInputMethodName_: function(id) {
-    assert(cr.isChromeOS);
-    const inputMethod =
-        this.languages.inputMethods.enabled.find(function(inputMethod) {
-          return inputMethod.id == id;
-        });
-    return inputMethod ? inputMethod.displayName : '';
-  },
-  // </if>
-
   /**
    * @param {!Event} e
    * @private
@@ -833,21 +842,6 @@ Polymer({
       }
     }, settings.kMenuCloseDelay);
   },
-
-  // <if expr="chromeos or is_win">
-  /**
-   * Handler for the restart button.
-   * @private
-   */
-  onRestartTap_: function() {
-    // <if expr="chromeos">
-    settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
-    // </if>
-    // <if expr="is_win">
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-    // </if>
-  },
-  // </if>
 
   /**
    * Toggles the expand button within the element being listened to.

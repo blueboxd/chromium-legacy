@@ -139,7 +139,7 @@ public class UsbChooserDialogTest {
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.GONE, items.getVisibility());
 
-        dialog.dismiss();
+        dialog.cancel();
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

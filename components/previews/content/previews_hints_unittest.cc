@@ -16,6 +16,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/hint_cache_store.h"
@@ -23,7 +24,6 @@
 #include "components/previews/content/previews_hints_util.h"
 #include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -669,7 +669,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     int inflation_percent = 0;
@@ -751,7 +751,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     int inflation_percent = 0;
@@ -830,7 +830,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(

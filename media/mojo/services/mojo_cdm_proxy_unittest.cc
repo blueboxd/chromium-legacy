@@ -44,7 +44,7 @@ class MockCdmProxyContext : public CdmProxyContext {};
 
 class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
  public:
-  MockCdmProxy() : weak_factory_(this) {}
+  MockCdmProxy() {}
   ~MockCdmProxy() override = default;
 
   // media::CdmProxy implementation.
@@ -84,7 +84,7 @@ class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
 
  private:
   MockCdmProxyContext mock_cdm_proxy_context_;
-  base::WeakPtrFactory<MockCdmProxy> weak_factory_;
+  base::WeakPtrFactory<MockCdmProxy> weak_factory_{this};
 };
 
 class MockCdmProxyClient : public cdm::CdmProxyClient {

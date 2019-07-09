@@ -208,7 +208,7 @@ class CC_EXPORT CheckerImageTracker {
 
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
 
-  base::WeakPtrFactory<CheckerImageTracker> weak_factory_;
+  base::WeakPtrFactory<CheckerImageTracker> weak_factory_{this};
 };
 
 }  // namespace cc

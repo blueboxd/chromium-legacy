@@ -293,15 +293,15 @@ class MEDIA_EXPORT DecoderStream {
   base::TimeDelta skip_prepare_until_timestamp_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_;
+  base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_{this};
 
   // Used to invalidate pending decode requests and output callbacks.
-  base::WeakPtrFactory<DecoderStream<StreamType>> fallback_weak_factory_;
+  base::WeakPtrFactory<DecoderStream<StreamType>> fallback_weak_factory_{this};
 
   // Used to invalidate outputs awaiting preparation. This can't use either of
   // the above factories since they are used to bind one time callbacks given
   // to decoders that may not be reinitialized after Reset().
-  base::WeakPtrFactory<DecoderStream<StreamType>> prepare_weak_factory_;
+  base::WeakPtrFactory<DecoderStream<StreamType>> prepare_weak_factory_{this};
 };
 
 template <>

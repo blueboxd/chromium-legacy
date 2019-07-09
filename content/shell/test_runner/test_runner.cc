@@ -1528,6 +1528,7 @@ void TestRunner::Reset() {
   loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
+  mock_content_settings_client_->ResetClientHintsPersistencyData();
   drag_image_.reset();
 
   blink::WebSecurityPolicy::ClearOriginAccessList();

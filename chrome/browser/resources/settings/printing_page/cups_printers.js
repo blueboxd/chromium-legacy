@@ -44,6 +44,18 @@ Polymer({
 
     /**@private */
     addPrinterResultText_: String,
+
+    /**
+     * TODO(jimmyxgong): Remove this feature flag conditional once feature
+     * is launched.
+     * @private
+     */
+    enableUpdatedUI_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('updatedCupsPrintersUiEnabled');
+      },
+    },
   },
 
   listeners: {
@@ -96,22 +108,30 @@ Polymer({
 
   /**
    * @param {!CustomEvent<!{
-    *      resultCode: PrinterSetupResult,
-    *      printerName: string
-    * }>} event
-    * @private
-    */
+   *      resultCode: PrinterSetupResult,
+   *      printerName: string
+   * }>} event
+   * @private
+   */
    openResultToast_: function(event) {
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUI_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerAddedSuccessfulMessage',
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUI_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);

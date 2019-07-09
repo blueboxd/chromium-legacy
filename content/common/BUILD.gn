@@ -488,7 +488,6 @@ mojom("mojo_bindings") {
     "navigation_client.mojom",
     "navigation_params.mojom",
     "page_state.mojom",
-    "render_frame_message_filter.mojom",
     "render_frame_metadata.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",

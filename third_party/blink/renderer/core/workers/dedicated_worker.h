@@ -70,9 +70,9 @@ class CORE_EXPORT DedicatedWorker final
       public WebDedicatedWorker {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
-  // Eager finalization is needed to notify the parent object destruction of the
+  // Pre-finalization is needed to notify the parent object destruction of the
   // GC-managed messaging proxy and to initiate worker termination.
-  EAGERLY_FINALIZE();
+  USING_PRE_FINALIZER(DedicatedWorker, Dispose);
 
  public:
   static DedicatedWorker* Create(ExecutionContext*,
@@ -84,6 +84,8 @@ class CORE_EXPORT DedicatedWorker final
                   const KURL& script_request_url,
                   const WorkerOptions*);
   ~DedicatedWorker() override;
+
+  void Dispose();
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,

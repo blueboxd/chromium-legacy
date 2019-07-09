@@ -57,21 +57,22 @@ class EgtestsApp(object):
     egtests_app: full path to egtests app.
     project_path: root project folder.
     module_name: egtests module name.
-    filtered_tests: List of tests to include or exclude, depending on `invert`.
-    invert: type of filter(True - inclusive, False - exclusive).
+    included_tests: List of tests to run.
+    excluded_tests: List of tests not to run.
   """
 
-  def __init__(self, egtests_app, filtered_tests=None, invert=False,
+  def __init__(self, egtests_app, included_tests=None, excluded_tests=None,
                test_args=None, env_vars=None, host_app_path=None):
     """Initialize Egtests.
 
     Args:
       egtests_app: (str) full path to egtests app.
-      filtered_tests: (list) Specific tests to run
-        (it can inclusive/exclusive based on invert parameter).
+      included_tests: (list) Specific tests to run
          E.g.
           [ 'TestCaseClass1/testMethod1', 'TestCaseClass2/testMethod2']
-      invert: type of filter(True - inclusive, False - exclusive).
+      excluded_tests: (list) Specific tests not to run
+         E.g.
+          [ 'TestCaseClass1', 'TestCaseClass2/testMethod2']
       test_args: List of strings to pass as arguments to the test when
         launching.
       env_vars: List of environment variables to pass to the test itself.
@@ -85,8 +86,8 @@ class EgtestsApp(object):
     self.egtests_path = egtests_app
     self.project_path = os.path.dirname(self.egtests_path)
     self.module_name = os.path.splitext(os.path.basename(egtests_app))[0]
-    self.filter = filtered_tests
-    self.invert = invert
+    self.included_tests = included_tests or []
+    self.excluded_tests = excluded_tests or []
     self.test_args = test_args
     self.env_vars = env_vars
     self.host_app_path = host_app_path
@@ -121,15 +122,15 @@ class EgtestsApp(object):
     """
     module = self.module_name + '_module'
     module_data = {
-            'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
-            'TestHostPath': '%s' % self.egtests_path,
-            'TestingEnvironmentVariables': {
-                'DYLD_INSERT_LIBRARIES': (
-                    '__PLATFORMS__/iPhoneSimulator.platform/Developer/'
-                    'usr/lib/libXCTestBundleInject.dylib'),
-                'DYLD_LIBRARY_PATH': self.project_path,
-                'DYLD_FRAMEWORK_PATH': self.project_path + ':',
-                'XCInjectBundleInto': '__TESTHOST__/%s' % self.module_name
+        'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
+        'TestHostPath': '%s' % self.egtests_path,
+        'TestingEnvironmentVariables': {
+            'DYLD_INSERT_LIBRARIES': (
+                '__PLATFORMS__/iPhoneSimulator.platform/Developer/'
+                'usr/lib/libXCTestBundleInject.dylib'),
+            'DYLD_LIBRARY_PATH': self.project_path,
+            'DYLD_FRAMEWORK_PATH': self.project_path + ':',
+            'XCInjectBundleInto': '__TESTHOST__/%s' % self.module_name
             }
         }
     # Add module data specific to EG2 or EG1 tests
@@ -140,9 +141,9 @@ class EgtestsApp(object):
       module_data['UITargetAppPath'] = '%s' % self.host_app_path
       # Special handling for Xcode10.2
       dependent_products = [
-        module_data['UITargetAppPath'],
-        module_data['TestBundlePath'],
-        module_data['TestHostPath']
+          module_data['UITargetAppPath'],
+          module_data['TestBundlePath'],
+          module_data['TestHostPath']
       ]
       module_data['DependentProductPaths'] = dependent_products
     # EG1 tests
@@ -152,13 +153,12 @@ class EgtestsApp(object):
     xctestrun_data = {
         module: module_data
     }
-    if self.filter:
-      if self.invert:
-        xctestrun_data[module].update(
-            {'SkipTestIdentifiers': self.filter})
-      else:
-        xctestrun_data[module].update(
-            {'OnlyTestIdentifiers': self.filter})
+    if self.excluded_tests:
+      xctestrun_data[module].update(
+          {'SkipTestIdentifiers': self.excluded_tests})
+    if self.included_tests:
+      xctestrun_data[module].update(
+          {'OnlyTestIdentifiers': self.included_tests})
     if self.env_vars:
       xctestrun_data[module].update(
           {'EnvironmentVariables': self.env_vars})
@@ -207,34 +207,6 @@ class LaunchCommand(object):
     else:
       self._log_parser = xcode_log_parser.XcodeLogParser()
 
-  def _make_cmd_list_for_failed_tests(self, failed_results, out_dir,
-                                      test_args=None, env_vars=None):
-    """Makes cmd list based on failure results.
-
-    Args:
-      failed_results: Map of failed tests, where key is name of egtests_app and
-        value is a list of failed_test_case/test_methods:
-          {
-              'failed_test_case/test_methods': ['StackTrace']
-          }
-      out_dir: (str) An output path.
-      test_args: List of strings to pass as arguments to the test when
-        launching.
-      env_vars: List of environment variables to pass to the test itself.
-
-    Returns:
-      List of Launch commands to re-run failed tests.
-      Every destination will run on separate clone of a stimulator.
-    """
-    eg_app = EgtestsApp(
-        egtests_app=self.egtests_app.egtests_path,
-        filtered_tests=[test.replace(' ', '/') for test in failed_results],
-        test_args=test_args,
-        env_vars=env_vars,
-        host_app_path=self.egtests_app.host_app_path)
-    # Regenerates xctest run and gets a command.
-    return self.command(eg_app, out_dir, self.destination, shards=1)
-
   def summary_log(self):
     """Calculates test summary - how many passed, failed and error tests.
 
@@ -266,8 +238,10 @@ class LaunchCommand(object):
 
     Returns:
       returncode - return code of command run.
+      output - command output as list of strings.
     """
     LOGGER.info('Launching %s with env %s' % (cmd, self.env))
+    output = []
     proc = subprocess.Popen(
         cmd,
         env=self.env,
@@ -291,49 +265,47 @@ class LaunchCommand(object):
         break
       line = line.rstrip()
       LOGGER.info(line)
+      output.append(line)
       sys.stdout.flush()
 
     proc.wait()
     LOGGER.info('Command %s finished with %d' % (cmd, proc.returncode))
-    return proc.returncode
+    return proc.returncode, output
 
   def launch(self):
     """Launches tests using xcodebuild."""
     cmd_list = []
     self.test_results['attempts'] = []
+    cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
+    shards = self.shards
 
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
-      # Create a command for the 1st run or if tests did not start,
-      # re-run the same command but with different output folder.
-      # (http://crbug.com/916620) If tests did not start, repeat the command.
-      if (not self.test_results['attempts'] or
-          {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}.intersection(
-              self.test_results['attempts'][-1]['failed'].keys())):
-        cmd_list = self.command(self.egtests_app,
-                                outdir_attempt,
-                                self.destination,
-                                self.shards)
-      # Re-init the command based on list of failed tests.
-      else:
-        cmd_list = self._make_cmd_list_for_failed_tests(
-            self.test_results['attempts'][-1]['failed'],
-            outdir_attempt,
-            test_args=self.egtests_app.test_args,
-            env_vars=self.egtests_app.env_vars)
-
+      cmd_list = self.command(self.egtests_app,
+                              outdir_attempt,
+                              self.destination,
+                              shards)
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       LOGGER.info('Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list)))
-      self.launch_attempt(cmd_list, outdir_attempt)
+      _, output = self.launch_attempt(cmd_list, outdir_attempt)
       self.test_results['attempts'].append(
-          self._log_parser.collect_test_results(outdir_attempt))
+          self._log_parser.collect_test_results(outdir_attempt, output))
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
       self._log_parser.copy_screenshots(outdir_attempt)
-
+      # Exclude passed tests in next test attempt.
+      self.egtests_app.excluded_tests += self.test_results['attempts'][-1][
+          'passed']
+      # If tests are not completed(interrupted or did not start)
+      # re-run them with the same number of shards,
+      # otherwise re-run with shards=1 and exclude passed tests.
+      cancelled_attempt = cancelled_statuses.intersection(
+          self.test_results['attempts'][-1]['failed'].keys())
+      if not cancelled_attempt:
+        shards = 1
     self.test_results['end_run'] = int(time.time())
     self.summary_log()
 
@@ -514,7 +486,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     launch_commands = []
     for params in self.sharding_data:
       launch_commands.append(LaunchCommand(
-          EgtestsApp(params['app'], filtered_tests=params['test_cases'],
+          EgtestsApp(params['app'], included_tests=params['test_cases'],
                      env_vars=self.env_vars, test_args=self.test_args,
                      host_app_path=params['host']),
           params['destination'],
@@ -557,6 +529,12 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.logs['flaked tests'] = list(
         all_failures - set(self.logs['failed tests']))
 
+    # Gets not-started/interrupted tests
+    aborted_tests = list(set(self.get_all_tests()) - set(
+        self.logs['failed tests']) - set(self.logs['passed tests']))
+    aborted_tests.sort()
+    self.logs['aborted tests'] = aborted_tests
+
     # Test is failed if there are failures for the last run.
     return not self.logs['failed tests']
 
@@ -567,3 +545,20 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """
     LOGGER.info('Erasing all simulators.')
     subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
+
+  def get_all_tests(self):
+    """Gets all tests from test bundle."""
+    test_app_bundle = os.path.join(self.app_path, os.path.splitext(
+        os.path.basename(self.app_path))[0])
+    # Method names that starts with test* and also are in *TestCase classes
+    # but they are not test-methods.
+    # TODO(crbug.com/982435): Rename not test methods with test-suffix.
+    not_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
+    all_tests = []
+    for test_class, test_method in test_runner.get_test_names(test_app_bundle):
+      test_name = '%s/%s' % (test_class, test_method)
+      if (test_name not in not_tests and
+          # Filter by self.test_cases if specified
+          (test_class in self.test_cases if self.test_cases else True)):
+        all_tests.append(test_name)
+    return all_tests

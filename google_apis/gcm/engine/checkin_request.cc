@@ -265,10 +265,6 @@ void CheckinRequest::OnURLLoadComplete(const network::SimpleURLLoader* source,
   }
 
   RecordCheckinStatusAndReportUMA(SUCCESS, recorder_, false);
-  UMA_HISTOGRAM_COUNTS_1M("GCM.CheckinRetryCount",
-                          backoff_entry_.failure_count());
-  UMA_HISTOGRAM_TIMES("GCM.CheckinCompleteTime",
-                      base::TimeTicks::Now() - request_start_time_);
   callback_.Run(response_status, response_proto);
 }
 

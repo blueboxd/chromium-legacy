@@ -39,6 +39,9 @@
 namespace blink {
 
 TEST(WebUserGestureTokenTest, Basic) {
+  // UserGestureTokens are meaningless with UAv2.
+  RuntimeEnabledFeatures::SetUserActivationV2Enabled(false);
+
   WebUserGestureToken token;
 
   {

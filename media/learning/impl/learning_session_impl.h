@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
 
   CreateTaskControllerCB controller_factory_;
 
-  base::WeakPtrFactory<LearningSessionImpl> weak_factory_;
+  base::WeakPtrFactory<LearningSessionImpl> weak_factory_{this};
 };
 
 }  // namespace learning

@@ -172,7 +172,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   bool key_added_while_decrypt_pending_;
 
   base::WeakPtr<DecryptingDemuxerStream> weak_this_;
-  base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_;
+  base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingDemuxerStream);
 };

@@ -8,9 +8,9 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
-#include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -22,8 +22,9 @@ bool IsDisabledPerOptimizationHintExperiment(
       !optimization.experiment_name().empty() &&
       optimization.experiment_name() !=
           base::GetFieldTrialParamValueByFeature(
-              features::kOptimizationHintsExperiments,
-              features::kOptimizationHintsExperimentNameParam)) {
+              optimization_guide::features::kOptimizationHintsExperiments,
+              optimization_guide::features::
+                  kOptimizationHintsExperimentNameParam)) {
     return true;
   }
   // Now check if optimization depends on an experiment not being enabled.
@@ -31,8 +32,9 @@ bool IsDisabledPerOptimizationHintExperiment(
       !optimization.excluded_experiment_name().empty() &&
       optimization.excluded_experiment_name() ==
           base::GetFieldTrialParamValueByFeature(
-              features::kOptimizationHintsExperiments,
-              features::kOptimizationHintsExperimentNameParam)) {
+              optimization_guide::features::kOptimizationHintsExperiments,
+              optimization_guide::features::
+                  kOptimizationHintsExperimentNameParam)) {
     return true;
   }
   return false;

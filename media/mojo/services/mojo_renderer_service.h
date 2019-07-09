@@ -138,7 +138,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   base::Closure bad_message_cb_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
-  base::WeakPtrFactory<MojoRendererService> weak_factory_;
+  base::WeakPtrFactory<MojoRendererService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererService);
 };

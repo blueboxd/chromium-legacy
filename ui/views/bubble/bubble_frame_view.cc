@@ -28,7 +28,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/event_utils.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/paint_info.h"
@@ -404,9 +403,7 @@ void BubbleFrameView::ViewHierarchyChanged(
 
 void BubbleFrameView::VisibilityChanged(View* starting_from, bool is_visible) {
   NonClientFrameView::VisibilityChanged(starting_from, is_visible);
-
-  if (is_visible)
-    view_shown_time_stamp_ = base::TimeTicks::Now();
+  input_protector_.VisibilityChanged(is_visible);
 }
 
 void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
@@ -426,7 +423,7 @@ void BubbleFrameView::PaintChildren(const PaintInfo& paint_info) {
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (IsPossiblyUnintendedInteraction(view_shown_time_stamp_, event))
+  if (input_protector_.IsPossiblyUnintendedInteraction(event))
     return;
 
   if (sender == close_) {
@@ -514,7 +511,7 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(
 }
 
 void BubbleFrameView::ResetViewShownTimeStampForTesting() {
-  view_shown_time_stamp_ = base::TimeTicks();
+  input_protector_.ResetForTesting();
 }
 
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(

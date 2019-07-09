@@ -432,6 +432,30 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardZero) {
   EXPECT_EQ(2000, run_count.load(std::memory_order_relaxed));
 }
 
+TEST_F(ScopedTaskEnvironmentTest, NestedFastForwardBy) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  constexpr TimeDelta kDelayPerTask = TimeDelta::FromMilliseconds(1);
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+
+  int max_nesting_level = 0;
+
+  RepeatingClosure post_fast_forwarding_task;
+  post_fast_forwarding_task = BindLambdaForTesting([&]() {
+    if (max_nesting_level < 5) {
+      ++max_nesting_level;
+      ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_fast_forwarding_task, kDelayPerTask);
+      scoped_task_environment.FastForwardBy(kDelayPerTask);
+    }
+  });
+  post_fast_forwarding_task.Run();
+
+  EXPECT_EQ(max_nesting_level, 5);
+  EXPECT_EQ(scoped_task_environment.NowTicks(), start_time + kDelayPerTask * 5);
+}
+
 TEST_F(ScopedTaskEnvironmentTest, CrossThreadTaskPostingDoesntAffectMockTime) {
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,

@@ -31,6 +31,10 @@
 
 namespace {
 
+// Tasks posted in this file are on the critical path of displaying the official
+// virtual keyboard on Chrome OS. https://crbug.com/976542
+constexpr base::TaskPriority kUserBlocking = base::TaskPriority::USER_BLOCKING;
+
 // An arbitrary delay to coalesce multiple writes to the cache.
 const int kValidationCacheCoalescingTimeMS = 6000;
 const base::FilePath::CharType kValidationCacheFileName[] =
@@ -281,7 +285,7 @@ void NaClBrowser::EnsureIrtAvailable() {
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
     auto task_runner = base::CreateTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), kUserBlocking,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     std::unique_ptr<base::FileProxy> file_proxy(
         new base::FileProxy(task_runner.get()));
@@ -375,7 +379,7 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // task and further file access will not occur until after we get a
       // response.
       base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          FROM_HERE, {base::MayBlock(), kUserBlocking},
           base::BindOnce(ReadCache, validation_cache_file_path_, data),
           base::BindOnce(&NaClBrowser::OnValidationCacheLoaded,
                          base::Unretained(this), base::Owned(data)));

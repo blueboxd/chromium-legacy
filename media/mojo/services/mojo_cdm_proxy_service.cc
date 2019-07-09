@@ -13,7 +13,7 @@ namespace media {
 MojoCdmProxyService::MojoCdmProxyService(
     std::unique_ptr<::media::CdmProxy> cdm_proxy,
     MojoCdmServiceContext* context)
-    : cdm_proxy_(std::move(cdm_proxy)), context_(context), weak_factory_(this) {
+    : cdm_proxy_(std::move(cdm_proxy)), context_(context) {
   DVLOG(1) << __func__;
   DCHECK(cdm_proxy_);
   DCHECK(context_);

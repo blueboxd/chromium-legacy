@@ -81,7 +81,9 @@
   DISABLED_UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_ANDROID)
 #define MAYBE_UsingRealWebcam_AllocateBadSize UsingRealWebcam_AllocateBadSize
-#define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
+// This format is not returned by VideoCaptureDeviceFactoryAndroid's
+// GetSupportedFormats
+#define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
 #define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
 #define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize

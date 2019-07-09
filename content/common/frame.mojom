@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
+import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/public/common/resource_type.mojom";
@@ -367,9 +368,11 @@ interface FrameHost {
 
   // Requests that this frame adopts the portal identified by |portal_token|.
   // Returns |proxy_routing_id|, which is the routing id of the portal's
-  // RenderFrameProxy.
+  // RenderFrameProxy, |replicated_state|, the replicated state associated with
+  // that RFP, and the |devtools_frame_token|.
   [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
       => (int32 proxy_routing_id,
+          FrameReplicationState replicated_state,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Creates and returns a KeepAliveHandle.

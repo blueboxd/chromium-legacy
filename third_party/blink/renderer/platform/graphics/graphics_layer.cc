@@ -114,6 +114,12 @@ GraphicsLayer::~GraphicsLayer() {
   RemoveAllChildren();
   RemoveFromParent();
   DCHECK(!parent_);
+
+  // This ensures we clean-up the ElementId to cc::Layer mapping in
+  // LayerTreeHost before a new layer with the same ElementId is added.
+  // Regression from BGPT: https://crbug.com/979002
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    SetElementId(CompositorElementId());
 }
 
 IntRect GraphicsLayer::VisualRect() const {

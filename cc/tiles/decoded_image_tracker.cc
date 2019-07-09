@@ -28,8 +28,7 @@ DecodedImageTracker::DecodedImageTracker(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : image_controller_(controller),
       task_runner_(std::move(task_runner)),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(image_controller_);
 }
 

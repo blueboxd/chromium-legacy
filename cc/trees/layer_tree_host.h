@@ -878,7 +878,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.
-  base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_;
+  base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_{
+      this};
 };
 
 }  // namespace cc

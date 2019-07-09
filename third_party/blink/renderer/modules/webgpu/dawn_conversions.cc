@@ -29,9 +29,6 @@ DawnBindingType AsDawnEnum<DawnBindingType>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "uniform-buffer") {
     return DAWN_BINDING_TYPE_UNIFORM_BUFFER;
   }
-  if (webgpu_enum == "dynamic-uniform-buffer") {
-    return DAWN_BINDING_TYPE_DYNAMIC_UNIFORM_BUFFER;
-  }
   NOTREACHED();
   return DAWN_BINDING_TYPE_FORCE32;
 }

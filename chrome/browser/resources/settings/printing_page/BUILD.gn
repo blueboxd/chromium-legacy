@@ -16,9 +16,13 @@ js_type_check("closure_compile") {
       ":cups_add_printer_dialog_elements",
       ":cups_edit_printer_dialog",
       ":cups_printer_dialog_util",
+      ":cups_printer_types",
       ":cups_printers",
       ":cups_printers_browser_proxy",
+      ":cups_printers_entry",
+      ":cups_printers_entry_list",
       ":cups_printers_list",
+      ":cups_saved_printers",
       ":printing_browser_proxy",
     ]
   }
@@ -73,6 +77,12 @@ if (is_chromeos) {
     ]
   }
 
+  js_library("cups_printer_types") {
+    deps = [
+      ":cups_printers_browser_proxy",
+    ]
+  }
+
   js_library("cups_printer_dialog_util") {
     deps = [
       "//ui/webui/resources/js:cr",
@@ -82,6 +92,7 @@ if (is_chromeos) {
   js_library("cups_printers") {
     deps = [
       ":cups_printers_browser_proxy",
+      ":cups_saved_printers",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
       "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
@@ -99,12 +110,36 @@ if (is_chromeos) {
     ]
   }
 
+  js_library("cups_printers_entry") {
+    deps = [
+      ":cups_printer_types",
+      ":cups_printers_browser_proxy",
+    ]
+  }
+
+  js_library("cups_printers_entry_list") {
+    deps = [
+      ":cups_printer_types",
+      ":cups_printers_browser_proxy",
+      "//ui/webui/resources/js:list_property_update_behavior",
+    ]
+  }
+
   js_library("cups_printers_list") {
     deps = [
       ":cups_printers_browser_proxy",
       "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
       "//ui/webui/resources/js:cr",
       "//ui/webui/resources/js:icon",
+    ]
+  }
+
+  js_library("cups_saved_printers") {
+    deps = [
+      ":cups_printer_types",
+      ":cups_printers_browser_proxy",
+      "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
+      "//ui/webui/resources/js:web_ui_listener_behavior",
     ]
   }
 }

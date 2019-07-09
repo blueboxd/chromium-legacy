@@ -114,9 +114,9 @@ crbug.com/840394 [ linux ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailur
 crbug.com/840394 [ mac ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
 
 # TODO(kbr): temporary suppression for new test.
-crbug.com/575305 [ linux ] Pixel_WebGLSadCanvas [ Failure ]
-crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ Failure ]
-crbug.com/872423 [ mac ] Pixel_WebGLSadCanvas [ Failure ]
+crbug.com/575305 [ linux ] Pixel_WebGLSadCanvas [ Skip ]
+crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ Skip ]
+crbug.com/872423 [ mac ] Pixel_WebGLSadCanvas [ Skip ]
 crbug.com/575305 [ android ] Pixel_WebGLSadCanvas [ Skip ]
 
 crbug.com/868596 [ android nvidia ] Pixel_CanvasLowLatencyWebGL [ Failure ]
@@ -124,12 +124,12 @@ crbug.com/868596 [ android nvidia ] Pixel_CanvasLowLatencyWebGL [ Failure ]
 crbug.com/868596 [ android nvidia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # float16 is not yet supported for accelerated canvases
-crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
+crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 # Fails on Nexus 5, 6 and 6P
-crbug.com/883500 [ android qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Failure ]
-crbug.com/883500 [ android qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Failure ]
-crbug.com/883500 [ android qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Failure ]
+crbug.com/883500 [ android qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
 
 # Flakes on Nexus 5X.
 crbug.com/883500 [ android-chromium qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
@@ -139,23 +139,23 @@ crbug.com/883500 [ android-chromium qualcomm-adreno-(tm)-418 ] Pixel_BackgroundI
 crbug.com/580386 [ android ] Pixel_Video_Context_Loss_MP4 [ Skip ]
 
 # Fails on Mac Pro FYI Release (AMD)
-crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_MP4 [ Failure ]
-crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_Context_Loss_MP4 [ Failure ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Failure ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_90 [ Failure ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_180 [ Failure ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Failure ]
+crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_MP4 [ Skip ]
+crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 
 # Fails on multiple Android devices.
 crbug.com/927107 [ android ] Pixel_CSS3DBlueBox [ Failure ]
 
 # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
-crbug.com/925744 [ android ] Pixel_Video_MP4 [ Failure ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Failure ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_180 [ Failure ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_270 [ Failure ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_90 [ Failure ]
-crbug.com/925744 [ android ] Pixel_Video_VP9 [ Failure ]
+crbug.com/925744 [ android ] Pixel_Video_MP4 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_VP9 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_Context_Loss_VP9 [ Skip ]
 
 # Skip on platforms where DXVA vs D3D11 decoder doesn't matter.
@@ -182,17 +182,17 @@ crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [
 crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]
 
 # Failing on Linux and Windows, both Intel HD 630 and NVIDIA Quadro P400
-crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
-crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
-crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
-crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
+crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
+crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
+crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
+crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 
 # Producing blank images on Macmini and Macbook Pro
-crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
-crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
+crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
+crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
 # Fails when the browser feature SkiaRenderer is enabled
 crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
-crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Failure ]
+crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]

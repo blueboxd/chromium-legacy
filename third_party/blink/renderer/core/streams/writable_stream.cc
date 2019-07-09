@@ -53,6 +53,19 @@ WritableStream* WritableStream::Create(ScriptState* script_state,
   return stream;
 }
 
+WritableStream* WritableStream::CreateWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSinkBase* underlying_sink,
+    size_t high_water_mark) {
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    return WritableStreamNative::CreateWithCountQueueingStrategy(
+        script_state, underlying_sink, high_water_mark);
+  }
+
+  return WritableStreamWrapper::CreateWithCountQueueingStrategy(
+      script_state, underlying_sink, high_water_mark);
+}
+
 // static
 WritableStream* WritableStream::Deserialize(ScriptState* script_state,
                                             MessagePort* port,

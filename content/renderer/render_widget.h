@@ -595,8 +595,9 @@ class CONTENT_EXPORT RenderWidget
                                          gfx::PointF* local_point);
 
   // Widget mojom overrides.
-  void SetupWidgetInputHandler(mojom::WidgetInputHandlerRequest request,
-                               mojom::WidgetInputHandlerHostPtr host) override;
+  void SetupWidgetInputHandler(
+      mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 

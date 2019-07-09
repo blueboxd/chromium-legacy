@@ -14,7 +14,8 @@
 #include "content/browser/webauth/authenticator_common.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace base {
@@ -62,7 +63,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // Note that one AuthenticatorImpl instance can be bound to exactly one
   // interface connection at a time, and disconnected when the frame navigates
   // to a new active document.
-  void Bind(blink::mojom::AuthenticatorRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 
  private:
   friend class AuthenticatorImplTest;
@@ -88,7 +89,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   std::unique_ptr<AuthenticatorCommon> authenticator_common_;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
-  mojo::Binding<blink::mojom::Authenticator> binding_;
+  mojo::Receiver<blink::mojom::Authenticator> receiver_{this};
 
   base::WeakPtrFactory<AuthenticatorImpl> weak_factory_;
 

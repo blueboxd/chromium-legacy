@@ -291,9 +291,9 @@ interface WidgetInputHandler {
   // Attach the synchronous compositor interface. This method only
   // should be called for Android WebView.
   AttachSynchronousCompositor(
-      SynchronousCompositorControlHost control_host,
-      associated SynchronousCompositorHost host,
-      associated SynchronousCompositor& compositor_request);
+      pending_remote<SynchronousCompositorControlHost> control_host,
+      pending_associated_remote<SynchronousCompositorHost> host,
+      pending_associated_receiver<SynchronousCompositor> compositor_request);
 };
 
 // This interface provides the input actions associated with the RenderFrame.
@@ -384,6 +384,7 @@ interface FrameInputHandler {
   // Return an associated WidgetInputHandler interface so that input
   // messages to the widget associated with this frame can be sent
   // serially.
-  GetWidgetInputHandler(associated WidgetInputHandler& interface_request,
-                        WidgetInputHandlerHost host);
+  GetWidgetInputHandler(
+      pending_associated_receiver<WidgetInputHandler> interface_request,
+      pending_remote<WidgetInputHandlerHost> host);
 };

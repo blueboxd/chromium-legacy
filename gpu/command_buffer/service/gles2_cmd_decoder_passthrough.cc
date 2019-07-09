@@ -2587,6 +2587,19 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
   return false;
 }
 
+void GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult(
+    const char* function_name,
+    uint64_t swap_id,
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
+  // Handling of the out-fence should have already happened before reaching
+  // this function, so we don't expect to get a valid fence here.
+  DCHECK(!gpu_fence);
+
+  CheckSwapBuffersResult(result, function_name);
+}
+
 error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(
     gfx::SwapResult result,
     const char* function_name) {

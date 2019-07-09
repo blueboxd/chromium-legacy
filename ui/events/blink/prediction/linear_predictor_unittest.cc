@@ -5,6 +5,7 @@
 #include "ui/events/blink/prediction/linear_predictor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/prediction/input_predictor_unittest_helpers.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 namespace test {
@@ -36,13 +37,15 @@ class LinearPredictorSecondOrderTest : public InputPredictorTest {
 // Test if the output name of the predictor is taking account of the
 // equation order
 TEST_F(LinearPredictorFirstOrderTest, GetName) {
-  ASSERT_STREQ(predictor_->GetName(), "LinearFirst");
+  EXPECT_EQ(predictor_->GetName(),
+            input_prediction::kScrollPredictorNameLinearFirst);
 }
 
 // Test if the output name of the predictor is taking account of the
 // equation order
 TEST_F(LinearPredictorSecondOrderTest, GetName) {
-  ASSERT_STREQ(predictor_->GetName(), "LinearSecond");
+  EXPECT_EQ(predictor_->GetName(),
+            input_prediction::kScrollPredictorNameLinearSecond);
 }
 
 // Test that the number of events required to compute a prediction is correct

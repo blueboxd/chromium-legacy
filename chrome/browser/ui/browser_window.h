@@ -448,10 +448,9 @@ class BrowserWindow : public ui::BaseWindow {
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) = 0;
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+  // Shows User Happiness Tracking Survey's invitation bubble anchored to the
+  // app menu button.
   virtual void ShowHatsBubbleFromAppMenuButton() = 0;
-#endif
 
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,

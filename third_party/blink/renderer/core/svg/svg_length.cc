@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -132,18 +133,26 @@ void SVGLength::SetValue(float value, const SVGLengthContext& context) {
       value_->TypeWithCalcResolved());
 }
 
-static bool IsCalcCSSUnitType(CSSPrimitiveValue::UnitType type) {
-  return type >= CSSPrimitiveValue::UnitType::kCalc &&
-         type <=
-             CSSPrimitiveValue::UnitType::kCalcPercentageWithLengthAndNumber;
-}
-
 static bool IsSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
   return (CSSPrimitiveValue::IsLength(type) ||
           type == CSSPrimitiveValue::UnitType::kNumber ||
-          type == CSSPrimitiveValue::UnitType::kPercentage ||
-          IsCalcCSSUnitType(type)) &&
+          type == CSSPrimitiveValue::UnitType::kPercentage) &&
          type != CSSPrimitiveValue::UnitType::kQuirkyEms;
+}
+
+static bool IsSupportedCalculationCategory(CalculationCategory category) {
+  switch (category) {
+    case kCalcLength:
+    case kCalcNumber:
+    case kCalcPercent:
+    case kCalcPercentNumber:
+    case kCalcPercentLength:
+    case kCalcLengthNumber:
+    case kCalcPercentLengthNumber:
+      return true;
+    default:
+      return false;
+  }
 }
 
 void SVGLength::SetUnitType(CSSPrimitiveValue::UnitType type) {
@@ -212,8 +221,13 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
   if (!new_value)
     return SVGParseStatus::kExpectedLength;
 
-  if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
-    return SVGParseStatus::kExpectedLength;
+  if (const auto* math_value = DynamicTo<CSSMathFunctionValue>(new_value)) {
+    if (!IsSupportedCalculationCategory(math_value->Category()))
+      return SVGParseStatus::kExpectedLength;
+  } else {
+    if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
+      return SVGParseStatus::kExpectedLength;
+  }
 
   value_ = new_value;
   return SVGParseStatus::kNoError;

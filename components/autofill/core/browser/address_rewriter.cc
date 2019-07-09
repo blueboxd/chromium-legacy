@@ -17,13 +17,12 @@ namespace {
 
 // Import in the internal rule table symbols. The data is defined in
 // components/autofill/core/browser/address_rewriter_rules.cc
-using internal::Rule;
 using internal::RegionInfo;
 using internal::kRuleTable;
 using internal::kRuleTableSize;
 
 // Aliases for the types used by the compiled rules cache.
-using CompiledRule = std::pair<std::unique_ptr<re2::RE2>, re2::StringPiece>;
+using CompiledRule = std::pair<std::unique_ptr<re2::RE2>, const char *>;
 using CompiledRuleVector = std::vector<CompiledRule>;
 using CompiledRuleCache = std::unordered_map<std::string, CompiledRuleVector>;
 
@@ -71,12 +70,15 @@ class Cache {
     options.set_utf8(true);
     options.set_word_boundary(true);
     CompiledRuleVector& compiled_rules = data_[region];
+
     compiled_rules.reserve(region_info->num_rules);
-    for (size_t i = 0; i < region_info->num_rules; ++i) {
-      const Rule& rule = region_info->rules[i];
-      std::unique_ptr<re2::RE2> pattern(new re2::RE2(rule.pattern, options));
-      re2::StringPiece rewrite(rule.rewrite);
-      compiled_rules.emplace_back(std::move(pattern), std::move(rewrite));
+
+    const char* iterator = region_info->rules;
+    for(size_t i = 0; i < region_info->num_rules; ++i){
+      auto pattern = std::make_unique<re2::RE2>(iterator, options);
+      iterator += strlen(iterator) + 1;
+      compiled_rules.emplace_back(std::move(pattern), iterator);
+      iterator += strlen(iterator) + 1;
     }
 
     // Return a pointer to the data.

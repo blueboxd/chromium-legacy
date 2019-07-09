@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator.h"

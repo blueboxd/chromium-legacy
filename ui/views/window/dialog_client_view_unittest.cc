@@ -514,10 +514,11 @@ TEST_F(DialogClientViewTest, FocusChangingButtons) {
 }
 
 // Ensures that clicks are ignored for short time after view has been shown.
-TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks) {
+TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks_ClickAfterShown) {
   widget()->Show();
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
 
+  // Should ignore clicks right after the dialog is shown.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   client_view()->ButtonPressed(client_view()->ok_button(), mouse_event);
@@ -530,6 +531,47 @@ TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks) {
                      ui::EventTimeForNow() + base::TimeDelta::FromMilliseconds(
                                                  GetDoubleClickInterval()),
                      ui::EF_NONE, ui::EF_NONE));
+  EXPECT_TRUE(widget()->IsClosed());
+}
+
+// Ensures that repeated clicks with short intervals after view has been shown
+// are also ignored.
+TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks_RepeatedClicks) {
+  widget()->Show();
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
+
+  const base::TimeTicks kNow = ui::EventTimeForNow();
+  const base::TimeDelta kShortClickInterval =
+      base::TimeDelta::FromMilliseconds(GetDoubleClickInterval());
+
+  // Should ignore clicks right after the dialog is shown.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             kNow, ui::EF_NONE, ui::EF_NONE);
+  client_view()->ButtonPressed(client_view()->ok_button(), mouse_event);
+  client_view()->ButtonPressed(client_view()->cancel_button(), mouse_event);
+  EXPECT_FALSE(widget()->IsClosed());
+
+  // Should ignore repeated clicks with short intervals, even though enough time
+  // has passed since the dialog was shown.
+  const base::TimeDelta kRepeatedClickInterval = kShortClickInterval / 2;
+  const size_t kNumClicks = 4;
+  ASSERT_TRUE(kNumClicks * kRepeatedClickInterval > kShortClickInterval);
+  base::TimeTicks event_time = kNow;
+  for (size_t i = 0; i < kNumClicks; i++) {
+    client_view()->ButtonPressed(
+        client_view()->cancel_button(),
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       event_time, ui::EF_NONE, ui::EF_NONE));
+    EXPECT_FALSE(widget()->IsClosed());
+    event_time += kRepeatedClickInterval;
+  }
+
+  // Sufficient time passed, events are now allowed.
+  event_time += kShortClickInterval;
+  client_view()->ButtonPressed(
+      client_view()->cancel_button(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     event_time, ui::EF_NONE, ui::EF_NONE));
   EXPECT_TRUE(widget()->IsClosed());
 }
 

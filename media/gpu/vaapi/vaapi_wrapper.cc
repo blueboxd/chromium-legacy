@@ -1294,6 +1294,27 @@ bool VaapiWrapper::CreateContextAndSurfaces(
   return success;
 }
 
+std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateContextAndScopedVASurface(
+    unsigned int va_format,
+    const gfx::Size& size) {
+  if (va_context_id_ != VA_INVALID_ID) {
+    LOG(ERROR) << "The current context should be destroyed before creating a "
+                  "new one";
+    return nullptr;
+  }
+
+  std::unique_ptr<ScopedVASurface> scoped_va_surface =
+      CreateScopedVASurface(va_format, size);
+  if (!scoped_va_surface)
+    return nullptr;
+
+  if (CreateContext(va_format, size))
+    return scoped_va_surface;
+
+  DestroyContext();
+  return nullptr;
+}
+
 void VaapiWrapper::DestroyContextAndSurfaces(
     std::vector<VASurfaceID> va_surfaces) {
   DestroyContext();

@@ -240,3 +240,7 @@ bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()
     const {
   return false;
 }
+
+bool IOSChromePasswordManagerClient::IsNewTabPage() const {
+  return false;
+}

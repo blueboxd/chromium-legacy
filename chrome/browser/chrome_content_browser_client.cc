@@ -58,6 +58,7 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
@@ -2702,20 +2703,6 @@ std::string ChromeContentBrowserClient::GetWebBluetoothBlocklist() {
                                             "blocklist_additions");
 }
 
-net::CookieStore* ChromeContentBrowserClient::OverrideCookieStoreForURL(
-    const GURL& url,
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-    return io_data->GetExtensionsCookieStore();
-  }
-#endif
-
-  return nullptr;
-}
-
 #if defined(OS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
     const std::string& username_hash) {
@@ -5123,6 +5110,24 @@ void ChromeContentBrowserClient::CreateWebSocket(
                                   site_for_cookies, user_agent,
                                   std::move(handshake_client));
 #endif
+}
+
+bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int routing_id,
+    network::mojom::RestrictedCookieManagerRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (origin.scheme() == extensions::kExtensionScheme) {
+    extensions::ChromeExtensionCookies::Get(browser_context)
+        ->CreateRestrictedCookieManager(origin, std::move(*request));
+    return true;
+  }
+#endif
+  return false;
 }
 
 void ChromeContentBrowserClient::OnNetworkServiceCreated(

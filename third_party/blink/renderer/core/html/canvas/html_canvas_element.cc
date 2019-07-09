@@ -1154,11 +1154,6 @@ void HTMLCanvasElement::Trace(Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-void HTMLCanvasElement::DisableDeferral(DisableDeferralReason reason) {
-  if (canvas2d_bridge_)
-    canvas2d_bridge_->DisableDeferral(reason);
-}
-
 Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   DCHECK(Is2d());
   if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {

@@ -208,8 +208,8 @@ class CapturedSitesPasswordManagerBrowserTest
         GetReplayFilesRootDirectory()
             .AppendASCII(GetParam().scenarioDir.c_str())
             .AppendASCII(GetParam().siteName.c_str());
-    SetServerUrlLoader(std::make_unique<ServerUrlLoader>(
-        absl::make_unique<ServerCacheReplayer>(
+    SetServerUrlLoader(
+        std::make_unique<ServerUrlLoader>(std::make_unique<ServerCacheReplayer>(
             capture_file_path,
             ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
   }

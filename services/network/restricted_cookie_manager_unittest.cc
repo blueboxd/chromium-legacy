@@ -221,6 +221,8 @@ class RestrictedCookieManagerTest : public testing::Test {
 
   bool received_bad_message() { return received_bad_message_; }
 
+  mojom::RestrictedCookieManager* backend() { return service_ptr_.get(); }
+
  protected:
   void OnBadMessage(const std::string& reason) {
     EXPECT_TRUE(expecting_bad_message_) << "Unexpected bad message: " << reason;
@@ -274,6 +276,14 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlBlankFilter) {
 
   EXPECT_EQ("cookie-name-2", cookies[1].Name());
   EXPECT_EQ("cookie-value-2", cookies[1].Value());
+
+  // Can also use the document.cookie-style API to get the same info.
+  std::string cookies_out;
+  EXPECT_TRUE(backend()->GetCookiesString(GURL("http://example.com/test/"),
+                                          GURL("http://example.com"),
+                                          &cookies_out));
+  EXPECT_EQ("cookie-name=cookie-value; cookie-name-2=cookie-value-2",
+            cookies_out);
 }
 
 TEST_F(RestrictedCookieManagerTest, GetAllForUrlEmptyFilter) {
@@ -345,6 +355,21 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlFromWrongOrigin) {
   EXPECT_TRUE(received_bad_message());
 
   ASSERT_THAT(cookies, testing::SizeIs(0));
+}
+
+TEST_F(RestrictedCookieManagerTest, GetCookieStringFromWrongOrigin) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/");
+  SetSessionCookie("other-cookie-name", "other-cookie-value", "not-example.com",
+                   "/");
+
+  ExpectBadMessage();
+  std::string cookies_out;
+  EXPECT_TRUE(backend()->GetCookiesString(GURL("http://notexample.com/test/"),
+                                          GURL("http://example.com"),
+                                          &cookies_out));
+  EXPECT_TRUE(received_bad_message());
+  EXPECT_TRUE(cookies_out.empty());
 }
 
 TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
@@ -463,6 +488,23 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
   EXPECT_EQ("new-value", cookies[0].Value());
 }
 
+TEST_F(RestrictedCookieManagerTest, SetCookieFromString) {
+  EXPECT_TRUE(backend()->SetCookieFromString(GURL("http://example.com/test/"),
+                                             GURL("http://example.com"),
+                                             "new-name=new-value;path=/"));
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "new-name";
+  options->match_type = mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+
+  ASSERT_THAT(cookies, testing::SizeIs(1));
+
+  EXPECT_EQ("new-name", cookies[0].Name());
+  EXPECT_EQ("new-value", cookies[0].Value());
+}
+
 TEST_F(RestrictedCookieManagerTest, SetCanonicalCookieFromWrongOrigin) {
   ExpectBadMessage();
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
@@ -472,6 +514,14 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookieFromWrongOrigin) {
           /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT),
       GURL("http://not-example.com/test/"), GURL("http://not-example.com")));
+  ASSERT_TRUE(received_bad_message());
+}
+
+TEST_F(RestrictedCookieManagerTest, SetCookieFromStringWrongOrigin) {
+  ExpectBadMessage();
+  EXPECT_TRUE(backend()->SetCookieFromString(
+      GURL("http://notexample.com/test/"), GURL("http://example.com"),
+      "new-name=new-value;path=/"));
   ASSERT_TRUE(received_bad_message());
 }
 
@@ -565,6 +615,25 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   EXPECT_EQ(recorded_activity()[0].status,
             net::CanonicalCookie::CookieInclusionStatus::
                 EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+}
+
+TEST_F(RestrictedCookieManagerTest, CookiesEnabledFor) {
+  // Default, third-party access is OK.
+  bool result = false;
+  EXPECT_TRUE(backend()->CookiesEnabledFor(
+      GURL("http://example.com"), GURL("http://notexample.com"), &result));
+  EXPECT_TRUE(result);
+
+  // Third-part cookies disabled.
+  cookie_settings_.set_block_third_party_cookies(true);
+  EXPECT_TRUE(backend()->CookiesEnabledFor(
+      GURL("http://example.com"), GURL("http://notexample.com"), &result));
+  EXPECT_FALSE(result);
+
+  // First-party ones still OK.
+  EXPECT_TRUE(backend()->CookiesEnabledFor(
+      GURL("http://example.com"), GURL("http://example.com"), &result));
+  EXPECT_TRUE(result);
 }
 
 namespace {

@@ -24,8 +24,8 @@ namespace views {
 class View;
 
 // Base class for layout managers that can do layout calculation separately
-// from layout application. Derived classes must implement GetProposedLayout().
-// Used in interpolating and animating layouts.
+// from layout application. Derived classes must implement
+// CalculateProposedLayout(). Used in interpolating and animating layouts.
 class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
  public:
   // Represents layout information for a child view within a host being laid
@@ -58,11 +58,9 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   View* host_view() { return host_view_; }
   const View* host_view() const { return host_view_; }
 
-  // Creates a proposed layout for the host view, including bounds and
-  // visibility for all children currently included in the layout, or returns a
-  // cached layout that was previously created.
-  virtual ProposedLayout GetProposedLayout(
-      const SizeBounds& size_bounds) const = 0;
+  // Fetches a proposed layout for a host view with size |host_size|. If the
+  // result had already been calculated, a cached value may be returned.
+  ProposedLayout GetProposedLayout(const gfx::Size& host_size) const;
 
   // Excludes a specific view from the layout when doing layout calculations.
   // Useful when a child view is meant to be displayed but has its size and
@@ -72,10 +70,10 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   virtual bool IsChildViewIgnoredByLayout(const View* child_view) const;
 
   // LayoutManager:
-  gfx::Size GetPreferredSize(const View* host) const final;
-  gfx::Size GetMinimumSize(const View* host) const final;
-  int GetPreferredHeightForWidth(const View* host, int width) const final;
-  void Layout(View* host) final;
+  gfx::Size GetPreferredSize(const View* host) const override;
+  gfx::Size GetMinimumSize(const View* host) const override;
+  int GetPreferredHeightForWidth(const View* host, int width) const override;
+  void Layout(View* host) override;
   void InvalidateLayout() override;
   void Installed(View* host) override;
   void ViewAdded(View* host, View* view) override;
@@ -86,6 +84,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   LayoutManagerBase();
 
   bool IsChildIncludedInLayout(const View* child) const;
+
+  // Creates a proposed layout for the host view, including bounds and
+  // visibility for all children currently included in the layout.
+  virtual ProposedLayout CalculateProposedLayout(
+      const SizeBounds& size_bounds) const = 0;
 
   // Applies |layout| to the children of the host view.
   void ApplyLayout(const ProposedLayout& layout);

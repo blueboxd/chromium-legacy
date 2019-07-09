@@ -13,9 +13,11 @@
 // avoid deadlock while waiting for actions to complete on the main thread.
 @interface CWTWebDriverAppInterface : NSObject
 
-// Loads the given URL in the current tab. Returns an error if the page fails
-// to load within |timeout| seconds.
-+ (NSError*)loadURL:(NSString*)URL timeoutInSeconds:(NSTimeInterval)timeout;
+// Loads the given URL in the tab identified by |tabID|. Returns an error if the
+// page fails to load within |timeout| seconds or if no such tab exists.
++ (NSError*)loadURL:(NSString*)URL
+               inTab:(NSString*)tabID
+    timeoutInSeconds:(NSTimeInterval)timeout;
 
 // Returns the id of the current tab. If no tabs are open, returns nil.
 + (NSString*)getCurrentTabID;
@@ -23,18 +25,21 @@
 // Returns an array containing the ids of all open tabs.
 + (NSArray*)getTabIDs;
 
-// Closes the current tab. Returns an error if there is no open tab.
-+ (NSError*)closeCurrentTab;
+// Closes the tab identified by |tabID|. Returns an error if there is no such
+// tab.
++ (NSError*)closeTabWithID:(NSString*)ID;
 
 // Makes the tab identified by |ID| the current tab. Returns an error if there
 // is no such tab.
 + (NSError*)switchToTabWithID:(NSString*)ID;
 
-// Executes the given JavaScript function in the current tab. This must be a
-// function that takes a single argument, and uses this argument as a
+// Executes the given JavaScript function in the tab identified by |tabID|. This
+// must be a function that takes a single argument, and uses this argument as a
 // completion handler. Returns the value passed to the completion handler. If
-// script execution does not complete within |timeout| seconds, returns nil.
+// no such tab exists, or if script execution does not complete within |timeout|
+// seconds, returns nil.
 + (NSString*)executeAsyncJavaScriptFunction:(NSString*)function
+                                      inTab:(NSString*)tabID
                            timeoutInSeconds:(NSTimeInterval)timeout;
 
 // Allows script to open tabs using "window.open" JavaScript calls.

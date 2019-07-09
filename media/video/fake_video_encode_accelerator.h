@@ -83,7 +83,7 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   // A list of buffers available for putting fake encoded frames in.
   std::list<BitstreamBuffer> available_buffers_;
 
-  base::WeakPtrFactory<FakeVideoEncodeAccelerator> weak_this_factory_;
+  base::WeakPtrFactory<FakeVideoEncodeAccelerator> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoEncodeAccelerator);
 };

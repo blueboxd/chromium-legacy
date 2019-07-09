@@ -23,8 +23,7 @@ PipelineController::PipelineController(
       suspended_cb_(suspended_cb),
       before_resume_cb_(before_resume_cb),
       resumed_cb_(resumed_cb),
-      error_cb_(error_cb),
-      weak_factory_(this) {
+      error_cb_(error_cb) {
   DCHECK(pipeline_);
   DCHECK(renderer_factory_cb_);
   DCHECK(seeked_cb_);

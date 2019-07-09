@@ -986,7 +986,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
-  base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_;
+  base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

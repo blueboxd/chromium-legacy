@@ -25,6 +25,7 @@ namespace blink {
 
 enum class WebTreeScopeType;
 class InterfaceRegistry;
+class WebElement;
 class WebLocalFrameClient;
 class WebRemoteFrameClient;
 class WebString;
@@ -43,6 +44,13 @@ class WebRemoteFrame : public WebFrame {
 
   BLINK_EXPORT static WebRemoteFrame*
   CreateMainFrame(WebView*, WebRemoteFrameClient*, WebFrame* opener = nullptr);
+
+  // Also performs core initialization to associate the created remote frame
+  // with the provided <portal> element.
+  BLINK_EXPORT static WebRemoteFrame* CreateForPortal(
+      WebTreeScopeType,
+      WebRemoteFrameClient*,
+      const WebElement& portal_element);
 
   // Specialized factory methods to allow the embedder to replicate the frame
   // tree between processes.

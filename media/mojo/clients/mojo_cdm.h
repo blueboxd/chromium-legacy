@@ -178,7 +178,7 @@ class MojoCdm : public ContentDecryptionModule,
   CdmPromiseAdapter cdm_promise_adapter_;
 
   // This must be the last member.
-  base::WeakPtrFactory<MojoCdm> weak_factory_;
+  base::WeakPtrFactory<MojoCdm> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdm);
 };

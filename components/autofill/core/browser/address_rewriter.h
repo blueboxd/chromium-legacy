@@ -30,16 +30,10 @@ class AddressRewriter {
 // Implementation details follow. Not part of the public interface.
 namespace internal {
 
-// The structure used to statically define a rule.
-struct Rule {
-  const char* pattern;
-  const char* rewrite;
-};
-
 // The structure used to statically define a set of rules for a region.
 struct RegionInfo {
   const char* region;
-  const Rule* rules;
+  const char* rules;
   size_t num_rules;
 
   bool operator<(const base::StringPiece& region) const {

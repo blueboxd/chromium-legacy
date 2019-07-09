@@ -12,6 +12,78 @@ async function getFakeSerialPort(fake) {
   return { port, fakePort };
 }
 
+// Compare two Uint8Arrays.
+function compareArrays(actual, expected) {
+  assert_true(actual instanceof Uint8Array, 'actual is Uint8Array');
+  assert_true(expected instanceof Uint8Array, 'expected is Uint8Array');
+  assert_equals(actual.byteLength, expected.byteLength, 'lengths equal');
+  for (let i = 0; i < expected.byteLength; ++i)
+    assert_equals(actual[i], expected[i], `Mismatch at position ${i}.`);
+}
+
+// Pull from |reader| until it reports done and return the data as a combined
+// Uint8Array.
+async function readAll(reader) {
+  const chunks = [];
+  while (true) {
+    let { value, done } = await reader.read();
+    if (done) {
+      // It would be better to allocate |buffer| up front with the number of
+      // of bytes expected but this is the best that can be done without a BYOB
+      // reader to control the amount of data read.
+      const length =
+          chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+      const buffer = new Uint8Array(length);
+      chunks.reduce((offset, chunk) => {
+        buffer.set(chunk, offset);
+        return offset + chunk.byteLength;
+      }, 0);
+      return buffer;
+    }
+
+    chunks.push(value);
+  }
+}
+
+// Implementation of an UnderlyingSource to create a ReadableStream from a Mojo
+// data pipe consumer handle.
+class DataPipeSource {
+  constructor(consumer) {
+    this.consumer_ = consumer;
+  }
+
+  async pull(controller) {
+    let chunk = new ArrayBuffer(64);
+    let {result, numBytes} = this.consumer_.readData(chunk);
+    if (result == Mojo.RESULT_OK) {
+      controller.enqueue(new Uint8Array(chunk, 0, numBytes));
+      return;
+    } else if (result == Mojo.RESULT_FAILED_PRECONDITION) {
+      controller.close();
+      return;
+    } else if (result == Mojo.RESULT_SHOULD_WAIT) {
+      await this.readable();
+      return this.pull(controller);
+    }
+  }
+
+  cancel() {
+    this.watcher_.cancel();
+    this.consumer_.close();
+  }
+
+  readable() {
+    return new Promise((resolve) => {
+      this.watcher_ =
+          this.consumer_.watch({ readable: true, peerClosed: true }, () => {
+            this.watcher_.cancel();
+            this.watcher_ = undefined;
+            resolve();
+          });
+    });
+  }
+}
+
 // Implementation of an UnderlyingSink to create a WritableStream from a Mojo
 // data pipe producer handle.
 class DataPipeSink {
@@ -25,7 +97,7 @@ class DataPipeSink {
       if (numBytes < chunk.byteLength)
         return this.write(chunk.slice(numBytes), controller);
     } else if (result == Mojo.RESULT_FAILED_PRECONDITION) {
-      controller.close();
+      throw new DOMException("The pipe is closed.", "InvalidStateError");
     } else if (result == Mojo.RESULT_SHOULD_WAIT) {
       await this.writable();
       return this.write(chunk, controller);
@@ -33,13 +105,14 @@ class DataPipeSink {
   }
 
   close() {
-    if (this._watcher)
-      this._watcher.cancel();
+    assert_equals(undefined, this._watcher);
     this._producer.close();
   }
 
   abort(reason) {
-    this.close();
+    if (this._watcher)
+      this._watcher.cancel();
+    this._producer.close();
   }
 
   writable() {
@@ -74,6 +147,13 @@ class FakeSerialPort {
     writer.releaseLock();
   }
 
+  async read() {
+    let reader = this.readable_.getReader();
+    let result = await reader.read();
+    reader.releaseLock();
+    return result;
+  }
+
   simulateParityError() {
     this.writable_.getWriter().close();
     this.writable_ = undefined;
@@ -96,6 +176,7 @@ class FakeSerialPort {
   async open(options, in_stream, out_stream, client) {
     this.options_ = options;
     this.client_ = client;
+    this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
     this.writable_ = new WritableStream(new DataPipeSink(out_stream));
     return { success: true };
   }

@@ -18,6 +18,28 @@ import test_runner
 LOGGER = logging.getLogger(__name__)
 
 
+def parse_passed_tests_for_interrupted_run(output):
+  """Parses xcode runner output to get passed tests only.
+
+  Args:
+    output: [str] An output of test run.
+
+  Returns:
+    The list of passed tests only that will be a filter for next attempt.
+  """
+  passed_tests = []
+  # Test has format:
+  # [09:04:42:INFO] Test case '-[Test_class test_method]' passed.
+  passed_test_regex = re.compile(r'Test case \'\-\[(.+?)\s(.+?)\]\' passed')
+
+  for test_line in output:
+    m_test = passed_test_regex.search(test_line)
+    if m_test:
+      passed_tests.append('%s/%s' % (m_test.group(1), m_test.group(2)))
+  LOGGER.info('%d passed tests for interrupted build.' % len(passed_tests))
+  return passed_tests
+
+
 def format_test_case(test_case):
   """Format test case from `-[TestClass TestMethod]` to `TestClass_TestMethod`.
 
@@ -162,11 +184,12 @@ class Xcode11LogParser(object):
     return passed_tests
 
   @staticmethod
-  def collect_test_results(xcresult):
+  def collect_test_results(xcresult, output):
     """Gets test result data from xcresult.
 
     Args:
       xcresult: (str) A path to xcresult.
+      output: [str] An output of test run.
 
     Returns:
       Test result as a map:
@@ -190,7 +213,8 @@ class Xcode11LogParser(object):
     plist_path = os.path.join(xcresult + '.xcresult', 'Info.plist')
     if not os.path.exists(plist_path):
       test_results['failed']['BUILD_INTERRUPTED'] = [
-          '%s with test results does not exist.' % plist_path]
+          '%s with test results does not exist.' % plist_path] + output
+      test_results['passed'] = parse_passed_tests_for_interrupted_run(output)
       return test_results
 
     root = json.loads(Xcode11LogParser._xcresulttool_get(xcresult))
@@ -280,11 +304,12 @@ class XcodeLogParser(object):
     return status_summary
 
   @staticmethod
-  def collect_test_results(output_folder):
+  def collect_test_results(output_folder, output):
     """Gets test result data from Info.plist.
 
     Args:
       output_folder: (str) A path to output folder.
+      output: [str] An output of test run.
     Returns:
       Test result as a map:
         {
@@ -301,7 +326,8 @@ class XcodeLogParser(object):
     plist_path = os.path.join(output_folder, 'Info.plist')
     if not os.path.exists(plist_path):
       test_results['failed']['BUILD_INTERRUPTED'] = [
-          '%s with test results does not exist.' % plist_path]
+          '%s with test results does not exist.' % plist_path] + output
+      test_results['passed'] = parse_passed_tests_for_interrupted_run(output)
       return test_results
 
     root = plistlib.readPlist(plist_path)

@@ -26,6 +26,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -252,7 +253,7 @@ void PreviewsUITabHelper::MaybeRecordPreviewReload(
 
 void PreviewsUITabHelper::MaybeShowInfoBarForHintsFetcher() {
   if (!base::FeatureList::IsEnabled(
-          previews::features::kOptimizationHintsFetching))
+          optimization_guide::features::kOptimizationHintsFetching))
     return;
 
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(

@@ -139,8 +139,7 @@ MultibufferDataSource::MultibufferDataSource(
       playback_rate_(0.0),
       media_log_(media_log),
       host_(host),
-      downloading_cb_(downloading_cb),
-      weak_factory_(this) {
+      downloading_cb_(downloading_cb) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   DCHECK(host_);
   DCHECK(downloading_cb_);

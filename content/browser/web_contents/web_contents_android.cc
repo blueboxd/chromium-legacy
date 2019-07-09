@@ -455,10 +455,10 @@ void WebContentsAndroid::ExitFullscreen(JNIEnv* env,
 void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  RenderFrameHostImpl* frame = web_contents_->GetFocusedFrame();
-  if (!frame)
+  auto* input_handler = web_contents_->GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-  frame->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
+  input_handler->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
 }
 
 void WebContentsAndroid::SelectWordAroundCaretAck(bool did_select,
@@ -472,10 +472,10 @@ void WebContentsAndroid::SelectWordAroundCaretAck(bool did_select,
 void WebContentsAndroid::SelectWordAroundCaret(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  RenderFrameHostImpl* frame = web_contents_->GetFocusedFrame();
-  if (!frame)
+  auto* input_handler = web_contents_->GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-  frame->GetFrameInputHandler()->SelectWordAroundCaret(
+  input_handler->SelectWordAroundCaret(
       base::BindOnce(&WebContentsAndroid::SelectWordAroundCaretAck,
                      weak_factory_.GetWeakPtr()));
 }

@@ -146,10 +146,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     global_browser_set_up_function_ = set_up_function;
   }
 
- protected:
   // Returns the browser created by BrowserMain().
   Browser* browser() const { return browser_; }
 
+ protected:
   // Closes the given browser and waits for it to release all its resources.
   void CloseBrowserSynchronously(Browser* browser);
 
@@ -311,5 +311,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };
+
+// When including either in_process_browser_test.h or android_browser_test.h
+// depending on the platform, use this type alias as the test base class.
+using PlatformBrowserTest = InProcessBrowserTest;
 
 #endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

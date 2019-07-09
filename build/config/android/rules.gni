@@ -62,27 +62,31 @@ template("create_native_executable_dist") {
 
   _libraries_list = "${target_gen_dir}/${target_name}_library_dependencies.list"
 
-  _runtime_deps_file = "$target_gen_dir/${target_name}.runtimedeps"
-  _runtime_deps_target_name = "${target_name}__runtime_deps"
-  group(_runtime_deps_target_name) {
-    data = _sanitizer_runtimes
-    data_deps = []
-    if (defined(invoker.deps)) {
-      data_deps += invoker.deps
+  _shared_library_list_file = "$target_gen_dir/${target_name}.native_libs"
+  _shared_library_list_target_name = "${target_name}__shared_library_list"
+  generated_file(_shared_library_list_target_name) {
+    forward_variables_from(invoker, [ "deps" ])
+    metadata = {
+      shared_libraries = _sanitizer_runtimes
     }
-    write_runtime_deps = _runtime_deps_file
+    outputs = [
+      _shared_library_list_file,
+    ]
+    data_keys = [ "shared_libraries" ]
+    walk_keys = [ "shared_libraries_barrier" ]
+    rebase = root_build_dir
   }
 
   _find_deps_target_name = "${target_name}__find_library_dependencies"
 
   # TODO(agrieve): Extract dependent libs from GN rather than readelf.
   action_with_pydeps(_find_deps_target_name) {
-    deps = invoker.deps + [ ":$_runtime_deps_target_name" ]
+    deps = invoker.deps + [ ":$_shared_library_list_target_name" ]
     script = "//build/android/gyp/write_ordered_libraries.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = [
       invoker.binary,
-      _runtime_deps_file,
+      _shared_library_list_file,
       android_readelf,
     ]
     outputs = [
@@ -92,7 +96,7 @@ template("create_native_executable_dist") {
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--runtime-deps",
-      rebase_path(_runtime_deps_file, root_build_dir),
+      rebase_path(_shared_library_list_file, root_build_dir),
       "--output",
       rebase_path(_libraries_list, root_build_dir),
       "--readelf",
@@ -2203,38 +2207,44 @@ if (enable_java_templates) {
     if (_shared_libraries_is_valid) {
       _native_libs_deps += invoker.shared_libraries
 
-      # To determine the filenames of all dependent shared libraries, write the
-      # runtime deps of |shared_libraries| to a file during "gn gen".
-      # write_build_config.py will then grep this file for *.so to obtain the
-      # complete list.
-      _runtime_deps_file =
-          "$target_gen_dir/${_template_name}.native.runtimedeps"
-      group("${_template_name}__runtime_deps") {
+      # Write shared library output files of all dependencies to a file. Those
+      # will be the shared libraries packaged into the APK.
+      _shared_library_list_file =
+          "$target_gen_dir/${_template_name}.native_libs"
+      generated_file("${_template_name}__shared_library_list") {
         deps = _native_libs_deps
-        write_runtime_deps = _runtime_deps_file
+        outputs = [
+          _shared_library_list_file,
+        ]
+        data_keys = [ "shared_libraries" ]
+        walk_keys = [ "shared_libraries_barrier" ]
+        rebase = root_build_dir
       }
     } else {
       # Must exist for instrumentation_test_apk() to depend on.
-      group("${_template_name}__runtime_deps") {
+      group("${_template_name}__shared_library_list") {
       }
     }
 
     if (_secondary_abi_shared_libraries_is_valid) {
       _secondary_abi_native_libs_deps += invoker.secondary_abi_shared_libraries
 
-      # To determine the filenames of all dependent shared libraries, write the
-      # runtime deps of |shared_libraries| to a file during "gn gen".
-      # write_build_config.py will then grep this file for *.so to obtain the
-      # complete list.
-      _secondary_abi_runtime_deps_file =
-          "$target_gen_dir/${_template_name}.secondary.abi.native.runtimedeps"
-      group("${_template_name}__secondary_abi__runtime_deps") {
+      # Write shared library output files of all dependencies to a file. Those
+      # will be the shared libraries packaged into the APK.
+      _secondary_abi_shared_library_list_file =
+          "$target_gen_dir/${_template_name}.secondary_abi_native_libs"
+      generated_file("${_template_name}__secondary_abi_shared_library_list") {
         deps = _secondary_abi_native_libs_deps
-        write_runtime_deps = _secondary_abi_runtime_deps_file
+        outputs = [
+          _secondary_abi_shared_library_list_file,
+        ]
+        data_keys = [ "shared_libraries" ]
+        walk_keys = [ "shared_libraries_barrier" ]
+        rebase = root_build_dir
       }
     } else {
       # Must exist for instrumentation_test_apk() to depend on.
-      group("${_template_name}__secondary_abi__runtime_deps") {
+      group("${_template_name}__secondary_abi_shared_library_list") {
       }
     }
 
@@ -2558,13 +2568,13 @@ if (enable_java_templates) {
         script = "//build/android/gyp/write_ordered_libraries.py"
         deps = [
           ":$_build_config_target",
-          ":${_template_name}__runtime_deps",
-          ":${_template_name}__secondary_abi__runtime_deps",
+          ":${_template_name}__secondary_abi_shared_library_list",
+          ":${_template_name}__shared_library_list",
         ]
         if (_native_libs_deps != []) {
-          _deps_file_to_use = _runtime_deps_file
+          _deps_file_to_use = _shared_library_list_file
         } else {
-          _deps_file_to_use = _secondary_abi_runtime_deps_file
+          _deps_file_to_use = _secondary_abi_shared_library_list_file
         }
         inputs = [
           _deps_file_to_use,
@@ -2772,11 +2782,11 @@ if (enable_java_templates) {
       # The dep is unnecessary since the runtime_deps file is created by gn gen
       # and the runtime_deps file is added to write_build_config.py's depfile.
       if (_native_libs_deps != []) {
-        shared_libraries_runtime_deps_file = _runtime_deps_file
+        shared_libraries_runtime_deps_file = _shared_library_list_file
       }
       if (_secondary_abi_native_libs_deps != []) {
         secondary_abi_shared_libraries_runtime_deps_file =
-            _secondary_abi_runtime_deps_file
+            _secondary_abi_shared_library_list_file
       }
 
       extra_shared_libraries = _extra_native_libs
@@ -3680,15 +3690,15 @@ if (enable_java_templates) {
       # Ensure unstripped libraries are included in runtime deps so that
       # symbolization can be done.
       deps = [
-        ":${_apk_target_name}__runtime_deps",
-        ":${_apk_target_name}__secondary_abi__runtime_deps",
+        ":${_apk_target_name}__secondary_abi_shared_library_list",
+        ":${_apk_target_name}__shared_library_list",
       ]
       if (defined(invoker.apk_under_test)) {
         _under_test_label =
             get_label_info(invoker.apk_under_test, "label_no_toolchain")
         deps += [
-          "${_under_test_label}__runtime_deps",
-          "${_under_test_label}__secondary_abi__runtime_deps",
+          "${_under_test_label}__secondary_abi_shared_library_list",
+          "${_under_test_label}__shared_library_list",
         ]
       }
     }
@@ -3775,8 +3785,8 @@ if (enable_java_templates) {
       }
       shared_libraries = [ invoker.shared_library ]
       deps += [
-        ":${target_name}__runtime_deps",
-        ":${target_name}__secondary_abi__runtime_deps",
+        ":${target_name}__secondary_abi_shared_library_list",
+        ":${target_name}__shared_library_list",
         "//base:base_java",
         "//testing/android/reporter:reporter_java",
       ]

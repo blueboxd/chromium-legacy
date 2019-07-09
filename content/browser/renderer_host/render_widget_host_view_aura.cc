@@ -1415,8 +1415,10 @@ bool RenderWidgetHostViewAura::SetEditableSelectionRange(
   RenderFrameHostImpl* rfh = GetFocusedFrame();
   if (!rfh)
     return false;
-  rfh->GetFrameInputHandler()->SetEditableSelectionOffsets(range.start(),
-                                                           range.end());
+  auto* input_handler = rfh->GetFrameInputHandler();
+  if (!input_handler)
+    return false;
+  input_handler->SetEditableSelectionOffsets(range.start(), range.end());
   return true;
 }
 
@@ -1473,8 +1475,12 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
   RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
+  if (!rfh)
+    return;
+  auto* input_handler = rfh->GetFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->ExtendSelectionAndDelete(before, after);
 }
 
 void RenderWidgetHostViewAura::EnsureCaretNotInRect(
@@ -1524,11 +1530,14 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   RenderFrameHostImpl* frame = GetFocusedFrame();
-  if (frame) {
-    frame->GetFrameInputHandler()->SetCompositionFromExistingText(
-        range.start(), range.end(), ui_ime_text_spans);
-    has_composition_text_ = true;
-  }
+  if (!frame)
+    return false;
+  auto* input_handler = frame->GetFrameInputHandler();
+  if (!input_handler)
+    return false;
+  input_handler->SetCompositionFromExistingText(range.start(), range.end(),
+                                                ui_ime_text_spans);
+  has_composition_text_ = true;
   return true;
 }
 
@@ -2530,9 +2539,13 @@ void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
 void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& node_rect) {
   RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (rfh) {
-    rfh->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(node_rect);
-  }
+  if (!rfh)
+    return;
+
+  auto* input_handler = rfh->GetFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->ScrollFocusedEditableNodeIntoRect(node_rect);
 }
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {

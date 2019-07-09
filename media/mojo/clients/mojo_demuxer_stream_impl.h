@@ -57,7 +57,7 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
 
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
 
-  base::WeakPtrFactory<MojoDemuxerStreamImpl> weak_factory_;
+  base::WeakPtrFactory<MojoDemuxerStreamImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MojoDemuxerStreamImpl);
 };
 

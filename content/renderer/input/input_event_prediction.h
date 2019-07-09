@@ -11,6 +11,7 @@
 #include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/prediction/input_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 #include "ui/events/event.h"
 
 using blink::WebInputEvent;
@@ -43,13 +44,6 @@ class CONTENT_EXPORT InputEventPrediction {
   friend class InputEventPredictionTest;
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, PredictorType);
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, ResamplingDisabled);
-
-  enum class PredictorType { kEmpty, kLsq, kKalman, kKalmanTimeFiltered };
-
-  // Initialize selected_predictor_type_ from field trial parameters of
-  // kResamplingInputEvent flag if resampling is enable. Otherwise set it
-  // from kInputPredictorTypeChoice.
-  void SetUpPredictorType();
 
   // The following functions are for handling multiple TouchPoints in a
   // WebTouchEvent. They should be more neat when WebTouchEvent is elimated.
@@ -93,7 +87,7 @@ class CONTENT_EXPORT InputEventPrediction {
 
   // Store the field trial parameter used for choosing different types of
   // predictor.
-  PredictorType selected_predictor_type_;
+  ui::input_prediction::PredictorType selected_predictor_type_;
 
   bool enable_resampling_ = false;
 

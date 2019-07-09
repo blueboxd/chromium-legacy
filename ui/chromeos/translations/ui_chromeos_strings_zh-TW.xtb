@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351692861129622852">正在匯入 <ph name="FILE_COUNT" /> 個檔案...</translation>
 <translation id="1352103415082130575">泰文鍵盤 (Pattachote)</translation>
-<translation id="1358032944105037487">日文鍵盤</translation>
 <translation id="1358735829858566124">檔案或目錄無法使用。</translation>
 <translation id="1363028406613469049">追蹤</translation>
 <translation id="1378727793141957596">歡迎使用 Google 雲端硬碟！</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">已將 <ph name="FILE_COUNT" /> 張相片備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">複製中...</translation>
 <translation id="3475447146579922140">Google 試算表</translation>
-<translation id="3494768541638400973">Google 日文輸入法 (適用於日文鍵盤)</translation>
 <translation id="3495304270784461826">發生 <ph name="COUNT" /> 個錯誤。</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     找到 <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">上下顛倒</translation>
-<translation id="6937152069980083337">Google 日文輸入法 (適用於美式鍵盤)</translation>
 <translation id="6939777852457331078">美式 Workman 鍵盤</translation>
 <translation id="696203921837389374">啟用透過行動數據進行同步處理的功能</translation>
 <translation id="6965382102122355670">確定</translation>

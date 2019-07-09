@@ -668,12 +668,14 @@ AudioBufferSourceNode::AudioBufferSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
       playback_rate_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioBufferSourcePlaybackRate,
                              1.0,
                              AudioParamHandler::AutomationRate::kControl,
                              AudioParamHandler::AutomationRateMode::kFixed)),
       detune_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioBufferSourceDetune,
                              0.0,
                              AudioParamHandler::AutomationRate::kControl,

@@ -11,11 +11,9 @@
 
 #include "base/optional.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/render_frame_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
-#include "net/cookies/canonical_cookie.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -54,10 +52,7 @@ struct WebPluginInfo;
 // with the routing id for a newly created RenderFrame.
 //
 // This object is created on the UI thread and used on the IO thread.
-class CONTENT_EXPORT RenderFrameMessageFilter
-    : public BrowserMessageFilter,
-      public BrowserAssociatedInterface<mojom::RenderFrameMessageFilter>,
-      public mojom::RenderFrameMessageFilter {
+class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
  public:
   RenderFrameMessageFilter(int render_process_id,
                            PluginServiceImpl* plugin_service,
@@ -68,8 +63,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
-
-  network::mojom::CookieManagerPtr* GetCookieManager();
 
   // Clears |resource_context_| to prevent accessing it after deletion.
   void ClearResourceContext();
@@ -98,26 +91,11 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   ~RenderFrameMessageFilter() override;
 
-  void InitializeCookieManager(
-      network::mojom::CookieManagerRequest cookie_manager_request);
-
   // |params_reply| is an out parameter. Browser process defines it for the
   // renderer process.
   void OnCreateChildFrame(
       const FrameHostMsg_CreateChildFrame_Params& params,
       FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
-  void OnCookiesEnabled(int render_frame_id,
-                        const GURL& url,
-                        const GURL& site_for_cookies,
-                        bool* cookies_enabled);
-
-  // Check the policy for getting cookies. Gets the cookies if allowed.
-  void CheckPolicyForCookies(int render_frame_id,
-                             const GURL& url,
-                             const GURL& site_for_cookies,
-                             GetCookiesCallback callback,
-                             const net::CookieList& cookie_list,
-                             const net::CookieStatusList& excluded_cookies);
 
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
 
@@ -131,17 +109,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                           bool* blocked);
 
   void OnRenderProcessGone();
-
-  // mojom::RenderFrameMessageFilter:
-  void SetCookie(int32_t render_frame_id,
-                 const GURL& url,
-                 const GURL& site_for_cookies,
-                 const std::string& cookie_line,
-                 SetCookieCallback callback) override;
-  void GetCookies(int render_frame_id,
-                  const GURL& url,
-                  const GURL& site_for_cookies,
-                  GetCookiesCallback callback) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnGetPluginInfo(int render_frame_id,
@@ -183,8 +150,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;
-
-  network::mojom::CookieManagerPtr cookie_manager_;
 
   // Needed for issuing routing ids and surface ids.
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;

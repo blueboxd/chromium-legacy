@@ -8,6 +8,8 @@ import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,6 +29,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabViewBinder.ElementViewHolder;
+import org.chromium.ui.HorizontalListDividerDrawable;
 import org.chromium.ui.modelutil.ListModel;
 
 /**
@@ -66,6 +70,46 @@ class PasswordAccessorySheetViewBinder {
      * Holds a TextView that represents a bottom command and is separated to the top by a divider.
      */
     static class FooterCommandViewHolder extends ElementViewHolder<FooterCommand, LinearLayout> {
+        public static class DynamicTopDivider extends RecyclerView.ItemDecoration {
+            @Override
+            public void getItemOffsets(
+                    Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                super.getItemOffsets(outRect, view, parent, state);
+                if (view.getId() != R.id.footer_command) return;
+                int previous = parent.indexOfChild(view) - 1;
+                if (previous < 0) return;
+                if (parent.getChildAt(previous).getId() == R.id.footer_command) return;
+                outRect.top = view.getContext().getResources().getDimensionPixelSize(
+                                      R.dimen.keyboard_accessory_suggestion_padding)
+                        + view.getContext().getResources().getDimensionPixelSize(
+                                R.dimen.divider_height);
+            }
+
+            @Override
+            public void onDraw(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
+                int attatchedChlidCount = parent.getChildCount();
+                for (int i = 0; i < attatchedChlidCount - 1; ++i) {
+                    View currentView = parent.getChildAt(i);
+                    if (currentView.getId() == R.id.footer_command) break;
+
+                    View nextView = parent.getChildAt(i + 1);
+                    if (nextView.getId() != R.id.footer_command) continue;
+
+                    Drawable dividerDrawable =
+                            HorizontalListDividerDrawable.create(nextView.getContext());
+                    int top = currentView.getBottom()
+                            + currentView.getContext().getResources().getDimensionPixelOffset(
+                                      R.dimen.keyboard_accessory_suggestion_padding)
+                                    / 2;
+                    int bottom = top + dividerDrawable.getIntrinsicHeight();
+                    dividerDrawable.setBounds(parent.getLeft() + parent.getPaddingLeft(), top,
+                            parent.getRight() - parent.getPaddingRight(), bottom);
+
+                    dividerDrawable.draw(canvas);
+                }
+            }
+        }
+
         FooterCommandViewHolder(ViewGroup parent) {
             super(parent, R.layout.password_accessory_sheet_legacy_option);
         }
@@ -155,5 +199,6 @@ class PasswordAccessorySheetViewBinder {
 
     static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
         view.setAdapter(PasswordAccessorySheetCoordinator.createAdapter(model));
+        view.addItemDecoration(new FooterCommandViewHolder.DynamicTopDivider());
     }
 }

@@ -15,9 +15,9 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_experiments.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -137,7 +137,7 @@ OptimizationHintsComponentInstallerPolicy::GetMimeTypes() const {
 
 void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
                                         PrefService* profile_prefs) {
-  if (!previews::params::IsOptimizationHintsEnabled()) {
+  if (!optimization_guide::features::IsOptimizationHintsEnabled()) {
     return;
   }
 

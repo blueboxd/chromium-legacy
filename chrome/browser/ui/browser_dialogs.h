@@ -76,7 +76,6 @@ namespace chrome {
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser);
 void HideTaskManager();
 
-#if !defined(OS_MACOSX)
 // Creates and shows an HTML dialog with the given delegate and context.
 // The window is automatically destroyed when it is closed.
 // Returns the created window.
@@ -86,7 +85,6 @@ void HideTaskManager();
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
-#endif  // !defined(OS_MACOSX)
 
 // Shows the create chrome app shortcut dialog box.
 // |close_callback| may be null.

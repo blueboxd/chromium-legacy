@@ -138,6 +138,14 @@ PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
   return PlatformWindowState::kNormal;
 }
 
+void ScenicWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void ScenicWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED_LOG_ONCE();
 }

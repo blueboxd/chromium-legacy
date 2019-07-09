@@ -219,7 +219,7 @@ class CourierRenderer : public Renderer {
   // reported buffer underflow.
   bool receiver_is_blocked_on_local_demuxers_ = true;
 
-  base::WeakPtrFactory<CourierRenderer> weak_factory_;
+  base::WeakPtrFactory<CourierRenderer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CourierRenderer);
 };

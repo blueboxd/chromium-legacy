@@ -10,9 +10,9 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
-#include "components/previews/core/previews_experiments.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -30,10 +30,10 @@ HintsFetcher::HintsFetcher(
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
           "key",
-          params::GetOptimizationGuideServiceAPIKey())) {
+          optimization_guide::features::GetOptimizationGuideServiceAPIKey())) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
-  CHECK(previews::params::IsHintsFetchingEnabled());
+  CHECK(optimization_guide::features::IsHintsFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}

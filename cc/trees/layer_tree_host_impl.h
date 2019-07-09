@@ -439,6 +439,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   DrawMode GetDrawMode() const;
 
+  void DidNotNeedBeginFrame();
+
   // TileManagerClient implementation.
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
@@ -478,7 +480,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
-  void DidNotNeedBeginFrame() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
@@ -949,6 +950,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void AllocateLocalSurfaceId();
 
   const LayerTreeSettings settings_;
+
+  // This is set to true only if:
+  //  . The compositor is running single-threaded (i.e. there is no separate
+  //    compositor/impl thread).
+  //  . There is no scheduler (which means layer-update, composite, etc. steps
+  //    happen explicitly via. synchronous calls to appropriate functions).
+  // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
 
   const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
@@ -1209,7 +1217,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.
-  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_;
+  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_{this};
 };
 
 }  // namespace cc

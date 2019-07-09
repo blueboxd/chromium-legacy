@@ -21,6 +21,7 @@ namespace net {
 struct DnsConfig;
 class NetworkChangeNotifierFactory;
 struct NetworkInterface;
+class SystemDnsConfigChangeNotifier;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
 
 #if defined(OS_LINUX)
@@ -369,6 +370,9 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Retrieve the last read DnsConfig. This could be expensive if the system has
   // a large HOSTS file.
+  //
+  // TODO(crbug.com/971411): Remove once HostResolverManager converted to
+  // directly use SystemDnsConfigChangeNotifier.
   static void GetDnsConfig(DnsConfig* config);
 
 #if defined(OS_LINUX)
@@ -509,9 +513,12 @@ class NET_EXPORT NetworkChangeNotifier {
     base::TimeDelta connection_type_online_delay_;
   };
 
-  explicit NetworkChangeNotifier(
+  // If |system_dns_config_notifier| is null (the default), a shared singleton
+  // will be used that will be leaked on shutdown.
+  NetworkChangeNotifier(
       const NetworkChangeCalculatorParams& params =
-          NetworkChangeCalculatorParams());
+          NetworkChangeCalculatorParams(),
+      SystemDnsConfigChangeNotifier* system_dns_config_notifier = nullptr);
 
 #if defined(OS_LINUX)
   // Returns the AddressTrackerLinux if present.
@@ -550,7 +557,7 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Stores |config| in NetworkState and notifies observers. The first
   // notification will be OnInitialDNSConfigRead, and after that OnDNSChanged.
-  static void SetDnsConfig(const DnsConfig& config);
+  static void SetDnsConfigForTesting(const DnsConfig& config);
 
   // Clears previous DnsConfig, if any, to simulate the first one being set.
   static void ClearDnsConfigForTesting();
@@ -558,6 +565,14 @@ class NET_EXPORT NetworkChangeNotifier {
   // Infer connection type from |GetNetworkList|. If all network interfaces
   // have the same type, return it, otherwise return CONNECTION_UNKNOWN.
   static ConnectionType ConnectionTypeFromInterfaces();
+
+  SystemDnsConfigChangeNotifier* system_dns_config_notifier() {
+    DCHECK(system_dns_config_notifier_);
+    return system_dns_config_notifier_;
+  }
+  // Unregisters and clears |system_dns_config_notifier_|. Useful if a subclass
+  // owns the notifier and is destroying it before |this|'s destructor is called
+  void StopSystemDnsConfigNotifier();
 
   // Clears the global NetworkChangeNotifier pointer.  This should be called
   // as early as possible in the destructor to prevent races.
@@ -569,8 +584,8 @@ class NET_EXPORT NetworkChangeNotifier {
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;
 
-  class NetworkState;
   class NetworkChangeCalculator;
+  class SystemDnsConfigObserver;
 
   void NotifyObserversOfIPAddressChangeImpl();
   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
@@ -595,8 +610,8 @@ class NET_EXPORT NetworkChangeNotifier {
   const scoped_refptr<base::ObserverListThreadSafe<NetworkObserver>>
       network_observer_list_;
 
-  // The current network state. Hosts DnsConfig, exposed via GetDnsConfig.
-  scoped_refptr<NetworkState> network_state_;
+  SystemDnsConfigChangeNotifier* system_dns_config_notifier_;
+  std::unique_ptr<SystemDnsConfigObserver> system_dns_config_observer_;
 
   // Computes NetworkChange signal from IPAddress and ConnectionType signals.
   std::unique_ptr<NetworkChangeCalculator> network_change_calculator_;

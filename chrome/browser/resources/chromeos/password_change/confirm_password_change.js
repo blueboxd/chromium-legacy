@@ -6,11 +6,14 @@
  * @fileoverview 'confirm-password-change' is a dialog so that the user can
  * either confirm their old password, or confirm their new password (twice),
  * or both, as part of an in-session password change.
+ * The dialog shows a spinner while it tries to change the password. This
+ * spinner is also shown immediately in the case we are trying to change the
+ * password using scraped data, and if this fails the spinner is hidden and
+ * the main confirm dialog is shown.
  */
 
-// TODO(https://crbug.com/930109): Logic is not done. Need to add logic to
-// show a spinner, to show only some of the password fields,
-// and to handle clicks on the save button.
+// TODO(https://crbug.com/930109): Add logic to show only some of the passwords
+// fields if some of the passwords were successfully scraped.
 
 /** @enum{number} */
 const ValidationErrorType = {
@@ -19,6 +22,12 @@ const ValidationErrorType = {
   MISSING_NEW_PASSWORD: 2,
   MISSING_CONFIRM_NEW_PASSWORD: 3,
   PASSWORDS_DO_NOT_MATCH: 4,
+  INCORRECT_OLD_PASSWORD: 5,
+};
+
+/** Default arguments that are used when not embedded in a dialog. */
+const DefaultArgs = {
+  showSpinnerInitially: false,
 };
 
 Polymer({
@@ -50,11 +59,34 @@ Polymer({
       type: Number,
       value: ValidationErrorType.NO_ERROR,
     },
+
+    errorString_:
+        {type: String, computed: 'getErrorString(currentValidationError_)'}
   },
 
   /** @override */
   attached: function() {
-    this.$.dialog.showModal();
+    // WebDialogUI class stores extra parameters in JSON in 'dialogArguments'
+    // variable, if this webui is being rendered in a dialog.
+    const argsJson = chrome.getVariableValue('dialogArguments');
+    const args = argsJson ? JSON.parse(argsJson) : DefaultArgs;
+
+    this.showSpinner_(args.showSpinnerInitially);
+
+    this.addWebUIListener('incorrect-old-password', () => {
+      this.onIncorrectOldPassword_();
+    });
+  },
+
+  /**
+   * @private
+   */
+  showSpinner_: function(showSpinner) {
+    // Dialog is on top, spinner is underneath, so showing dialog hides spinner.
+    if (showSpinner)
+      this.$.dialog.close();
+    else
+      this.$.dialog.showModal();
   },
 
   /**
@@ -64,7 +96,22 @@ Polymer({
     this.currentValidationError_ = this.findFirstError_();
     if (this.currentValidationError_ == ValidationErrorType.NO_ERROR) {
       chrome.send('changePassword', [this.old_password_, this.new_password_]);
+      this.showSpinner_(true);
     }
+  },
+
+  /**
+   * @private
+   */
+  onIncorrectOldPassword_: function() {
+    // Only show the error if the user had previously typed an old password.
+    // This is also called when an incorrect password was scraped. In that case
+    // we hide the spinner and show the dialog so they can confirm.
+    if (this.old_password_) {
+      this.currentValidationError_ = ValidationErrorType.INCORRECT_OLD_PASSWORD;
+      this.old_password_ = '';
+    }
+    this.showSpinner_(false);
   },
 
   /**
@@ -92,8 +139,9 @@ Polymer({
    * @private
    */
   invalidOldPassword_: function() {
-    return this.currentValidationError_ ==
-        ValidationErrorType.MISSING_OLD_PASSWORD;
+    const err = this.currentValidationError_;
+    return err == ValidationErrorType.MISSING_OLD_PASSWORD ||
+        err == ValidationErrorType.INCORRECT_OLD_PASSWORD;
   },
 
   /**
@@ -110,17 +158,23 @@ Polymer({
    * @private
    */
   invalidConfirmNewPassword_: function() {
-    return this.currentValidationError_ ==
-        ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD ||
-        this.passwordsDoNotMatch_();
+    const err = this.currentValidationError_;
+    return err == ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD ||
+        err == ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
   },
 
   /**
-   * @return {boolean}
+   * @return {string}
    * @private
    */
-  passwordsDoNotMatch_: function() {
-    return this.currentValidationError_ ==
-        ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
+  getErrorString_: function() {
+    switch (this.currentValidationError_) {
+      case ValidationErrorType.INCORRECT_OLD_PASSWORD:
+        return this.i18n('incorrectPassword');
+      case ValidationErrorType.PASSWORDS_DO_NOT_MATCH:
+        return this.i18n('matchError');
+      default:
+        return '';
+    }
   },
 });

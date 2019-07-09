@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -327,7 +328,7 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
 
   // Check server whitelist/blacklist, if provided.
   if (ShouldCheckOptimizationHints(type)) {
-    if (params::IsOptimizationHintsEnabled()) {
+    if (optimization_guide::features::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
       return ShouldAllowPreviewPerOptimizationHints(previews_data, url, type,
@@ -391,7 +392,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
 
   // Re-check server optimization hints (if provided) on this commit-time URL.
   if (ShouldCheckOptimizationHints(type) &&
-      params::IsOptimizationHintsEnabled()) {
+      optimization_guide::features::IsOptimizationHintsEnabled()) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
         previews_data, committed_url, type, &passed_reasons);

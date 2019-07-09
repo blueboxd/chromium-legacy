@@ -74,8 +74,7 @@ RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
       record_repeat_count_(kDefaultRecordRepeatCount),
       settings_(std::move(value)),
       main_thread_benchmark_done_(false),
-      layer_tree_host_(nullptr),
-      weak_ptr_factory_(this) {
+      layer_tree_host_(nullptr) {
   base::DictionaryValue* settings = nullptr;
   settings_->GetAsDictionary(&settings);
   if (!settings)

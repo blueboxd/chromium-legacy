@@ -55,7 +55,7 @@ class StreamProvider final : public MediaResource {
   // Run only once when first error occurs;
   base::Closure error_callback_;
 
-  base::WeakPtrFactory<StreamProvider> weak_factory_;
+  base::WeakPtrFactory<StreamProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamProvider);
 };

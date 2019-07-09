@@ -807,7 +807,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
       status: "stable",
     },
     {
@@ -822,6 +822,9 @@
     {
       name: "LayoutNGFragmentCaching",
       implied_by: ["LayoutNG"],
+    },
+    {
+      name: "LayoutNGFragmentItem",
     },
     {
       name: "LayoutNGLineCache",
@@ -1571,6 +1574,7 @@
     },
     {
       name: "UserActivationV2",
+      status: "stable",
     },
     {
       name: "UserAgentClientHint",

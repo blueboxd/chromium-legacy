@@ -84,8 +84,7 @@ WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     CdmFactory* cdm_factory,
     MediaPermission* media_permission)
     : cdm_factory_(cdm_factory),
-      key_system_config_selector_(KeySystems::GetInstance(), media_permission),
-      weak_factory_(this) {
+      key_system_config_selector_(KeySystems::GetInstance(), media_permission) {
   DCHECK(cdm_factory_);
 }
 

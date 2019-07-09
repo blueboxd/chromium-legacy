@@ -191,7 +191,6 @@ void RegistrationRequest::Start() {
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   url_loader_->AttachStringForUpload(body, kRegistrationRequestContentType);
   recorder_->RecordRegistrationSent(request_info_.app_id(), source_to_record_);
-  request_start_time_ = base::TimeTicks::Now();
   url_loader_->SetAllowHttpErrorResults(true);
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
@@ -298,10 +297,7 @@ void RegistrationRequest::OnURLLoadComplete(
                                         source_to_record_, status);
 
   DCHECK(custom_request_handler_.get());
-  custom_request_handler_->ReportUMAs(
-      status,
-      backoff_entry_.failure_count(),
-      base::TimeTicks::Now() - request_start_time_);
+  custom_request_handler_->ReportUMAs(status);
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
@@ -313,10 +309,8 @@ void RegistrationRequest::OnURLLoadComplete(
     recorder_->RecordRegistrationResponse(request_info_.app_id(),
                                           source_to_record_, status);
 
-    // Only REACHED_MAX_RETRIES is reported because the function will skip
-    // reporting count and time when status is not SUCCESS.
     DCHECK(custom_request_handler_.get());
-    custom_request_handler_->ReportUMAs(status, 0, base::TimeDelta());
+    custom_request_handler_->ReportUMAs(status);
   }
 
   callback_.Run(status, token);

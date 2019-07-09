@@ -2977,29 +2977,6 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 #endif
 }
 
-#if !defined(OS_ANDROID)
-void BrowserView::ShowHatsBubbleFromAppMenuButton() {
-  // Never show any HaTS bubble in Incognito.
-  if (!IsRegularOrGuestSession())
-    return;
-
-  AppMenuButton* app_menu_button =
-      toolbar_button_provider()->GetAppMenuButton();
-
-  // Do not show Hatsbubble if there is no avatar menu button to anchor from
-  if (!app_menu_button)
-    return;
-
-  DCHECK(app_menu_button->GetWidget());
-  views::BubbleDialogDelegateView* bubble = HatsBubbleView::CreateHatsBubble(
-      app_menu_button, browser(),
-      app_menu_button->GetWidget()->GetNativeView());
-
-  bubble->SetHighlightedButton(app_menu_button);
-  bubble->GetWidget()->Show();
-}
-#endif
-
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params,
@@ -3024,6 +3001,21 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                   access_point, avatar_button, browser(),
                                   focus_first_profile_button);
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+}
+
+void BrowserView::ShowHatsBubbleFromAppMenuButton() {
+  // Never show any HaTS bubble in Incognito.
+  if (!IsRegularOrGuestSession())
+    return;
+
+  AppMenuButton* app_menu_button =
+      toolbar_button_provider()->GetAppMenuButton();
+
+  // Do not show HaTS bubble if there is no avatar menu button to anchor to.
+  if (!app_menu_button)
+    return;
+
+  HatsBubbleView::Show(app_menu_button, browser());
 }
 
 void BrowserView::ExecuteExtensionCommand(

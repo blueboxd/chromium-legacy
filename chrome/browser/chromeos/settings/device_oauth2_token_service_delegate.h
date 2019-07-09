@@ -30,13 +30,16 @@ class PrefService;
 
 namespace chromeos {
 
+class DeviceOAuth2TokenService;
+
 class DeviceOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
       public gaia::GaiaOAuthClient::Delegate {
  public:
   DeviceOAuth2TokenServiceDelegate(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* local_state);
+      PrefService* local_state,
+      DeviceOAuth2TokenService* service);
   ~DeviceOAuth2TokenServiceDelegate() override;
 
   typedef base::Callback<void(bool)> StatusCallback;

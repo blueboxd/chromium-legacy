@@ -121,6 +121,9 @@ class HistoryService : public KeyedService {
   // out any cached data associated with that context.
   void ClearCachedDataForContextID(ContextID context_id);
 
+  // Clears all on-demand favicons from thumbnail database.
+  void ClearAllOnDemandFavicons();
+
   // Triggers the backend to load if it hasn't already, and then returns the
   // in-memory URL database. The returned pointer may be null if the in-memory
   // database has not been loaded yet. This pointer is owned by the history

@@ -349,6 +349,11 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
     std::move(callback).Run(nullptr);
     return;
   }
+  if (network->type() == shill::kTypeEthernetEap) {
+    NET_LOG(ERROR) << "EthernetEap not supported for GetNetworkState";
+    std::move(callback).Run(nullptr);
+    return;
+  }
   std::move(callback).Run(GetMojoNetworkState(network));
 }
 
@@ -382,6 +387,11 @@ void CrosNetworkConfig::GetNetworkStateList(
   }
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : networks) {
+    if (network->type() == shill::kTypeEthernetEap) {
+      // EthernetEap is used by Shill to store EAP properties and does not
+      // represent a separate network service.
+      continue;
+    }
     mojom::NetworkStatePropertiesPtr mojo_network =
         GetMojoNetworkState(network);
     if (mojo_network)

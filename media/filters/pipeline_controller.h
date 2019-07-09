@@ -230,7 +230,7 @@ class MEDIA_EXPORT PipelineController {
   bool pending_startup_ = false;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<PipelineController> weak_factory_;
+  base::WeakPtrFactory<PipelineController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PipelineController);
 };

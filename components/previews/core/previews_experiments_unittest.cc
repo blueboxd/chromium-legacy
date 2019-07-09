@@ -190,31 +190,6 @@ TEST(PreviewsExperimentsTest, TestShouldExcludeMediaSuffix) {
   }
 }
 
-TEST(PreviewsExperimentsTest, TestGetOptimizationGuideServiceURLHTTPSOnly) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsFetching,
-      {{"optimization_guide_service_url", "http://NotAnHTTPSServer.com"}});
-
-  EXPECT_EQ(params::GetOptimizationGuideServiceURL().spec(),
-            kOptimizationGuideServiceDefaultURL);
-  EXPECT_TRUE(
-      params::GetOptimizationGuideServiceURL().SchemeIs(url::kHttpsScheme));
-}
-
-TEST(PreviewsExperimentsTest, TestGetOptimizationGuideServiceURLViaFinch) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  std::string optimization_guide_service_url = "https://finchserver.com/";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsFetching,
-      {{"optimization_guide_service_url", optimization_guide_service_url}});
-
-  EXPECT_EQ(params::GetOptimizationGuideServiceURL().spec(),
-            optimization_guide_service_url);
-}
-
 }  // namespace
 
 }  // namespace previews

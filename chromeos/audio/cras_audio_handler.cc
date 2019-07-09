@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
-#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -20,6 +20,7 @@
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -240,6 +241,10 @@ void CrasAudioHandler::RemoveAudioObserver(AudioObserver* observer) {
 
 bool CrasAudioHandler::HasKeyboardMic() {
   return GetKeyboardMic() != nullptr;
+}
+
+bool CrasAudioHandler::HasHotwordDevice() {
+  return GetHotwordDevice() != nullptr;
 }
 
 bool CrasAudioHandler::IsOutputMuted() {
@@ -783,6 +788,15 @@ const AudioDevice* CrasAudioHandler::GetKeyboardMic() const {
   for (const auto& item : audio_devices_) {
     const AudioDevice& device = item.second;
     if (device.is_input && device.type == AUDIO_TYPE_KEYBOARD_MIC)
+      return &device;
+  }
+  return nullptr;
+}
+
+const AudioDevice* CrasAudioHandler::GetHotwordDevice() const {
+  for (const auto& item : audio_devices_) {
+    const AudioDevice& device = item.second;
+    if (device.is_input && device.type == AUDIO_TYPE_HOTWORD)
       return &device;
   }
   return nullptr;

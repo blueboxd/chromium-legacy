@@ -18,7 +18,7 @@ class NGInlineItem;
 // Because this context is in initial state for when fragmentation occurs and
 // some other cases, do not add things that are too expensive to rebuild.
 class NGInlineChildLayoutContext {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   // Returns the NGInlineLayoutStateStack in this context.

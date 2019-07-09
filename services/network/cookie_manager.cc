@@ -50,15 +50,7 @@ CookieManager::CookieManager(
     : cookie_store_(cookie_store),
       session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)) {
   if (params) {
-    cookie_settings_.set_block_third_party_cookies(
-        params->block_third_party_cookies);
-    cookie_settings_.set_content_settings(params->settings);
-    cookie_settings_.set_secure_origin_cookies_allowed_schemes(
-        params->secure_origin_cookies_allowed_schemes);
-    cookie_settings_.set_matching_scheme_cookies_allowed_schemes(
-        params->matching_scheme_cookies_allowed_schemes);
-    cookie_settings_.set_third_party_cookies_allowed_schemes(
-        params->third_party_cookies_allowed_schemes);
+    ConfigureCookieSettings(*params, &cookie_settings_);
     // Don't wait for callback, the work happens synchronously.
     AllowFileSchemeCookies(params->allow_file_scheme_cookies,
                            base::DoNothing());
@@ -230,6 +222,20 @@ void CookieManager::SetForceKeepSessionState() {
 
 void CookieManager::BlockThirdPartyCookies(bool block) {
   cookie_settings_.set_block_third_party_cookies(block);
+}
+
+// static
+void CookieManager::ConfigureCookieSettings(
+    const network::mojom::CookieManagerParams& params,
+    CookieSettings* out) {
+  out->set_block_third_party_cookies(params.block_third_party_cookies);
+  out->set_content_settings(params.settings);
+  out->set_secure_origin_cookies_allowed_schemes(
+      params.secure_origin_cookies_allowed_schemes);
+  out->set_matching_scheme_cookies_allowed_schemes(
+      params.matching_scheme_cookies_allowed_schemes);
+  out->set_third_party_cookies_allowed_schemes(
+      params.third_party_cookies_allowed_schemes);
 }
 
 void CookieManager::CrashOnGetCookieList() {

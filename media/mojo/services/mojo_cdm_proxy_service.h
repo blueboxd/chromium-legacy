@@ -73,7 +73,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
   int cdm_id_ = CdmContext::kInvalidCdmId;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MojoCdmProxyService> weak_factory_;
+  base::WeakPtrFactory<MojoCdmProxyService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmProxyService);
 };

@@ -68,9 +68,6 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // viz::ContextProviders) must be recreated.
   virtual void DidLoseLayerTreeFrameSink() = 0;
 
-  // Notification that the client does not need a new BeginFrame.
-  virtual void DidNotNeedBeginFrame() = 0;
-
   // For SynchronousCompositor (WebView) to ask the layer compositor to submit
   // a new CompositorFrame synchronously.
   virtual void OnDraw(const gfx::Transform& transform,

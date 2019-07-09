@@ -99,7 +99,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   cc::PaintCanvas* DrawingCanvas() const final;
   cc::PaintCanvas* ExistingDrawingCanvas() const final;
-  void DisableDeferral(DisableDeferralReason) final;
 
   void DidDraw() final;
   void DidDraw(const SkIRect& dirty_rect) final;

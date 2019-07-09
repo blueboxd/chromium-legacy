@@ -2621,9 +2621,25 @@ ScrollbarTheme& PaintLayerScrollableArea::GetPageScrollbarTheme() const {
   return page->GetScrollbarTheme();
 }
 
+void PaintLayerScrollableArea::DidAddScrollbar(
+    Scrollbar& scrollbar,
+    ScrollbarOrientation orientation) {
+  // Z-order of reparented scrollbar is updated along with the z-order lists.
+  if (scrollbar.IsOverlayScrollbar())
+    layer_->DirtyStackingContextZOrderLists();
+
+  ScrollableArea::DidAddScrollbar(scrollbar, orientation);
+}
+
 void PaintLayerScrollableArea::WillRemoveScrollbar(
     Scrollbar& scrollbar,
     ScrollbarOrientation orientation) {
+  if (layer_->NeedsReorderOverlayScrollbars()) {
+    // Z-order of reparented scrollbar is updated along with the z-order lists.
+    DCHECK(scrollbar.IsOverlayScrollbar());
+    layer_->DirtyStackingContextZOrderLists();
+  }
+
   if (!scrollbar.IsCustomScrollbar() &&
       !(orientation == kHorizontalScrollbar ? LayerForHorizontalScrollbar()
                                             : LayerForVerticalScrollbar())) {

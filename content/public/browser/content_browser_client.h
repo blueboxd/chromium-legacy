@@ -121,7 +121,6 @@ class AuthCredentials;
 class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
-class CookieStore;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
@@ -662,12 +661,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Example:
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
-
-  // Allow the embedder to override the cookie store for a particular URL.
-  // Returns nullptr to indicate the regular cookie store should be used.
-  // This is called on the IO thread.
-  virtual net::CookieStore* OverrideCookieStoreForURL(const GURL& url,
-                                                      ResourceContext* context);
 
 #if defined(OS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
@@ -1286,13 +1279,17 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to intercept the mojo object vended to renderer
   // processes for limited, origin-locked (to |origin|), access to
-  // script-accessible cookies.  |*request| is always valid upon entry and MUST
-  // be valid upon return. The embedder may swap out the value of |*request| for
-  // its own.
+  // script-accessible cookies from JavaScript. |*request| is always valid upon
+  // entry.
   //
-  // Currently this only affects the (hidden by default, experimental)
-  // CookieStore API, but may affect all JavaScript cookie operations in the
-  // future.
+  // If this methods returns true, it should have created an object bound to
+  // |*request|, and the value of |*request| afterwards is unusable.
+  //
+  // If the method returns false, it's the caller's responsibility to create
+  // an appropriate RestrictedCookieManager bound to the value of |*request|
+  // after it finishes executing --- the implementation is permitted to swap out
+  // the value of |*request| for a different one (which permits interposition
+  // of a proxy object).
   //
   // If |is_service_worker| is false, then |process_id| and |routing_id|
   // describe the frame the result is to be used from. If it's true, operations
@@ -1300,7 +1297,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // appropriate for |origin|.
   //
   // This is called on the UI thread.
-  virtual void WillCreateRestrictedCookieManager(
+  virtual bool WillCreateRestrictedCookieManager(
+      BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,
       int process_id,

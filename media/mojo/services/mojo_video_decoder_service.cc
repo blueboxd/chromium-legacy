@@ -89,8 +89,7 @@ MojoVideoDecoderService::MojoVideoDecoderService(
     MojoMediaClient* mojo_media_client,
     MojoCdmServiceContext* mojo_cdm_service_context)
     : mojo_media_client_(mojo_media_client),
-      mojo_cdm_service_context_(mojo_cdm_service_context),
-      weak_factory_(this) {
+      mojo_cdm_service_context_(mojo_cdm_service_context) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
   DCHECK(mojo_cdm_service_context_);

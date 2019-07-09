@@ -22,7 +22,6 @@ namespace base {
 
 class Clock;
 class FileDescriptorWatcher;
-class ThreadPoolInstance;
 class TickClock;
 
 namespace test {
@@ -102,13 +101,13 @@ class ScopedTaskEnvironment {
   // Note that this is irrelevant (and ignored) under
   // ThreadingMode::MAIN_THREAD_ONLY
   enum class ThreadPoolExecutionMode {
-    // Thread pool tasks are queued and only executed when RunUntilIdle() is
-    // explicitly
-    // called.
+    // Thread pool tasks are queued and only executed when RunUntilIdle(),
+    // FastForwardBy(), or FastForwardUntilNoTasksRemain() are explicitly
+    // called. Note: RunLoop::Run() does *not* unblock the ThreadPool in this
+    // mode (it strictly runs only the main thread).
     QUEUED,
     // Thread pool tasks run as they are posted. RunUntilIdle() can still be
-    // used to block
-    // until done.
+    // used to block until done.
     ASYNC,
     DEFAULT = ASYNC
   };
@@ -197,8 +196,40 @@ class ScopedTaskEnvironment {
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
   // virtual time by |delta|, causing all tasks on the main thread with a
-  // remaining delay less than or equal to |delta| to be executed before this
-  // returns. |delta| must be non-negative.
+  // remaining delay less than or equal to |delta| to be executed in their
+  // natural order before this returns. |delta| must be non-negative. Upon
+  // returning from this method, NowTicks() will be >= the initial |NowTicks() +
+  // delta|. It is guaranteed to be == iff tasks executed in this
+  // FastForwardBy() didn't result in nested calls to time-advancing-methods.
+  //
+  // Nesting FastForwardBy() calls is fairly rare but here's what will happen if
+  // you do: Each FastForwardBy() call will set a goal equal to |NowTicks() +
+  // delta|, how far the combined nesting calls reach depends on the current
+  // NowTicks() at the time each nesting fast-forward call is made.
+  //
+  // e.g. nesting a FastForwardBy(2ms) from a 1ms delayed task running from a
+  // FastForwardBy(1ms) will:
+  //   FastForwardBy(1ms)
+  //   ================
+  //                  FastForwardBy(2ms)
+  //                  ================================
+  //   Result: NowTicks() is 3ms further in the future
+  //
+  // but, nesting the same FastForwardBy(2ms) from an immediate task running
+  // from the same FastForwardBy(1ms) would:
+  //   FastForwardBy(1ms)
+  //   ================
+  //    FastForwardBy(2ms)
+  //    ================================
+  //   Result: NowTicks() is 2ms further in the future
+  //
+  // and if the initial call was instead a FastForwardBy(5ms), we'd get:
+  //   FastForwardBy(5ms)                             (cover remaining delta)
+  //   ================                               ==========================
+  //                  FastForwardBy(2ms)
+  //                  ================================
+  //   Result: NowTicks() is 5ms further in the future.
+  //
   // TODO(gab): Make this apply to ThreadPool delayed tasks as well
   // (currently only main thread time is mocked).
   void FastForwardBy(TimeDelta delta);
@@ -287,7 +318,8 @@ class ScopedTaskEnvironment {
                         trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
-  ThreadPoolExecutionMode thread_pool_execution_mode_;
+  const ThreadPoolExecutionMode thread_pool_execution_mode_;
+  const ThreadingMode threading_mode_;
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
@@ -304,9 +336,7 @@ class ScopedTaskEnvironment {
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
-  const ThreadPoolInstance* thread_pool_ = nullptr;
-
-  // Owned by |thread_pool_|.
+  // Owned by the ThreadPoolInstance.
   TestTaskTracker* task_tracker_ = nullptr;
 
   // Ensures destruction of lazy TaskRunners when this is destroyed.

@@ -135,13 +135,20 @@ suite('CrostiniPageTests', function() {
     test('Import', function() {
       assertTrue(!!subpage.$$('#crostini-export-import'));
       subpage.$$('#crostini-export-import').click();
-      return flushAsync().then(() => {
-        subpage = crostiniPage.$$('settings-crostini-export-import');
-        assertTrue(!!subpage.$$('#import cr-button'));
-        subpage.$$('#import cr-button').click();
-        assertEquals(
-            1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
-      });
+      return flushAsync()
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            subpage.$$('#import cr-button').click();
+            return flushAsync();
+          })
+          .then(() => {
+            subpage =
+                subpage.$$('settings-crostini-import-confirmation-dialog');
+            subpage.$$('cr-dialog cr-button[id="continue"]').click();
+            assertEquals(
+                1,
+                crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
+          });
     });
 
     test('Remove', function() {

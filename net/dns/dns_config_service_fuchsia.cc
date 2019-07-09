@@ -17,8 +17,6 @@ DnsConfigServiceFuchsia::~DnsConfigServiceFuchsia() = default;
 
 void DnsConfigServiceFuchsia::ReadNow() {
   // TODO(crbug.com/950717): Implement this method.
-  OnConfigRead(DnsConfig());
-  OnHostsRead(DnsHosts());
 }
 
 bool DnsConfigServiceFuchsia::StartWatching() {

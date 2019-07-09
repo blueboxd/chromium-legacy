@@ -14,6 +14,7 @@
 #include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/worker_thread_observer.h"
+#include "base/time/time_override.h"
 #include "base/trace_event/trace_event.h"
 
 #if defined(OS_MACOSX)
@@ -133,7 +134,7 @@ void WorkerThread::Cleanup() {
 void WorkerThread::BeginUnusedPeriod() {
   CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(last_used_time_.is_null());
-  last_used_time_ = TimeTicks::Now();
+  last_used_time_ = subtle::TimeTicksNowIgnoringOverride();
 }
 
 void WorkerThread::EndUnusedPeriod() {

@@ -110,8 +110,7 @@ VideoSender::VideoSender(
       playout_delay_change_cb_(playout_delay_change_cb),
       low_latency_mode_(false),
       last_reported_encoder_utilization_(-1.0),
-      last_reported_lossy_utilization_(-1.0),
-      weak_factory_(this) {
+      last_reported_lossy_utilization_(-1.0) {
   video_encoder_ = VideoEncoder::Create(
       cast_environment_,
       video_config,

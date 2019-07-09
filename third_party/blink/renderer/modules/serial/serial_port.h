@@ -23,6 +23,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class Serial;
 class SerialOptions;
+class SerialPortUnderlyingSink;
 class SerialPortUnderlyingSource;
 class WritableStream;
 
@@ -37,14 +38,16 @@ class SerialPort final : public ScriptWrappable,
 
   // Web-exposed functions
   ReadableStream* readable() const { return readable_; }
-  WritableStream* writable() const { return nullptr; }
+  WritableStream* writable() const { return writable_; }
 
   ScriptPromise open(ScriptState*, const SerialOptions* options);
   void clearReadError(ScriptState*, ExceptionState&);
   void close();
 
   const base::UnguessableToken& token() const { return info_->token; }
+
   void UnderlyingSourceClosed();
+  void UnderlyingSinkClosed();
 
   void ContextDestroyed();
   void Trace(Visitor*) override;
@@ -76,6 +79,8 @@ class SerialPort final : public ScriptWrappable,
 
   Member<ReadableStream> readable_;
   Member<SerialPortUnderlyingSource> underlying_source_;
+  Member<WritableStream> writable_;
+  Member<SerialPortUnderlyingSink> underlying_sink_;
 
   // Resolver for the Promise returned by open().
   Member<ScriptPromiseResolver> open_resolver_;

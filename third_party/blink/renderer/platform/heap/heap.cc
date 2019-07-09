@@ -613,7 +613,11 @@ bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
 }
 
 void ThreadHeap::ConcurrentSweep() {
-  // TODO(bikineev): Implement concurrent sweeper.
+  // Concurrent sweep simply sweeps pages not calling finalizers.
+  for (size_t i = BlinkGC::kEagerSweepArenaIndex + 1;
+       i < BlinkGC::kNumberOfArenas; i++) {
+    arenas_[i]->SweepOnConcurrentThread();
+  }
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

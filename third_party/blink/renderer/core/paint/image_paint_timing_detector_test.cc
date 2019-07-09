@@ -97,15 +97,6 @@ class ImagePaintTimingDetectorTest
   }
 
   size_t CountVisibleImageRecords() {
-    if (!GetPaintTimingDetector().GetImagePaintTimingDetector())
-      return 0;
-
-    return GetPaintTimingDetector()
-        .GetImagePaintTimingDetector()
-        ->records_manager_.visible_node_map_.size();
-  }
-
-  size_t CountVisibleBackgroundImageRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
         ->records_manager_.visible_background_image_map_.size();
@@ -117,9 +108,6 @@ class ImagePaintTimingDetectorTest
                ->records_manager_.visible_background_image_map_.size() +
            GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
-               ->records_manager_.visible_node_map_.size() +
-           GetPaintTimingDetector()
-               .GetImagePaintTimingDetector()
                ->records_manager_.size_ordered_set_.size() +
            GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
@@ -129,7 +117,7 @@ class ImagePaintTimingDetectorTest
   size_t CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->records_manager_.visible_node_map_.size();
+        ->records_manager_.visible_background_image_map_.size();
   }
 
   size_t CountRankingSetRecords() {
@@ -392,7 +380,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OpacityZero) {
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountVisibleImageRecords(), 0u);
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -409,7 +396,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_VisibilityHidden) {
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountVisibleImageRecords(), 0u);
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -426,7 +412,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_DisplayNone) {
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountVisibleImageRecords(), 0u);
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -443,7 +428,6 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OpacityNonZero) {
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountVisibleImageRecords(), 1u);
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
 }
@@ -808,7 +792,7 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage) {
   )HTML");
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 1u);
+  EXPECT_EQ(CountVisibleImageRecords(), 1u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
@@ -825,8 +809,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   )HTML");
   SetImageAndPaint("target", 1, 1);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 1u);
-  EXPECT_EQ(CountVisibleImageRecords(), 1u);
+  EXPECT_EQ(CountVisibleImageRecords(), 2u);
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 1u);
@@ -840,7 +823,7 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
       }
     </style>
   )HTML");
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreHtml) {
@@ -853,7 +836,7 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreHtml) {
     </style>
     </html>
   )HTML");
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreGradient) {
@@ -867,7 +850,7 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreGradient) {
       place-holder
     </div>
   )HTML");
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
 }
 
 // We put two background images in the same object, and test whether FCP++ can
@@ -885,7 +868,7 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImageTrackedDifferently) {
     </style>
     <div id="d"></div>
   )HTML");
-  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 2u);
+  EXPECT_EQ(CountVisibleImageRecords(), 2u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest, DeactivateAfterUserInput) {
@@ -897,7 +880,7 @@ TEST_F(ImagePaintTimingDetectorTest, DeactivateAfterUserInput) {
   SimulateScroll();
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+  EXPECT_FALSE(GetPaintTimingDetector().GetImagePaintTimingDetector());
 }
 
 TEST_F(ImagePaintTimingDetectorTest, NullTimeNoCrash) {

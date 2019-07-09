@@ -188,7 +188,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   // Histogram metrics used to record
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
-  base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
+  base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_{this};
 };
 
 }  // namespace mojo_embedder

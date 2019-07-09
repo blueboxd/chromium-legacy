@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> dosya içe aktarılıyor...</translation>
 <translation id="1352103415082130575">Tayca klavye (Pattachote)</translation>
-<translation id="1358032944105037487">Japonca klavye</translation>
 <translation id="1358735829858566124">Dosya veya dizin kullanılamıyor.</translation>
 <translation id="1363028406613469049">Takip numarası</translation>
 <translation id="1378727793141957596">Google Drive'a hoş geldiniz!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotoğraf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklendi</translation>
 <translation id="3470502288861289375">Kopyalanıyor...</translation>
 <translation id="3475447146579922140">Google e-tablosu</translation>
-<translation id="3494768541638400973">Google Japonca Girişi (Japonca klavye için)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hata.</translation>
 <translation id="3519867315646775981">Harf çevirisi (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portekizce</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> bulundu</translation>
 <translation id="6935521024859866267">Baş Aşağı</translation>
-<translation id="6937152069980083337">Google Japonca Girişi (ABD klavye için)</translation>
 <translation id="6939777852457331078">ABD Workman klavye</translation>
 <translation id="696203921837389374">Mobil veriler üzerinden senkronizasyonu etkinleştir</translation>
 <translation id="6965382102122355670">Tamam</translation>

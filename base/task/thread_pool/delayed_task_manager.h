@@ -17,8 +17,7 @@
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/thread_pool/task.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 
@@ -34,9 +33,7 @@ class BASE_EXPORT DelayedTaskManager {
   // Posts |task| for execution immediately.
   using PostTaskNowCallback = OnceCallback<void(Task task)>;
 
-  // |tick_clock| can be specified for testing.
-  DelayedTaskManager(std::unique_ptr<const TickClock> tick_clock =
-                         std::make_unique<DefaultTickClock>());
+  DelayedTaskManager();
   ~DelayedTaskManager();
 
   // Starts the delayed task manager, allowing past and future tasks to be
@@ -95,7 +92,8 @@ class BASE_EXPORT DelayedTaskManager {
   // Get the time at which to schedule the next |ProcessRipeTasks()| execution,
   // or TimeTicks::Max() if none needs to be scheduled (i.e. no task, or next
   // task already scheduled).
-  TimeTicks GetTimeToScheduleProcessRipeTasksLockRequired();
+  TimeTicks GetTimeToScheduleProcessRipeTasksLockRequired()
+      EXCLUSIVE_LOCKS_REQUIRED(queue_lock_);
 
   // Schedule |ProcessRipeTasks()| on the service thread to be executed at the
   // given |process_ripe_tasks_time|, provided the given time is not
@@ -105,18 +103,16 @@ class BASE_EXPORT DelayedTaskManager {
 
   const RepeatingClosure process_ripe_tasks_closure_;
 
-  const std::unique_ptr<const TickClock> tick_clock_;
-
-  scoped_refptr<TaskRunner> service_thread_task_runner_;
-
-  IntrusiveHeap<DelayedTask> delayed_task_queue_;
-
   // Synchronizes access to |delayed_task_queue_| and the setting of
-  // |service_thread_task_runner|. Once |service_thread_task_runner_| is set,
+  // |service_thread_task_runner_|. Once |service_thread_task_runner_| is set,
   // it is never modified. It is therefore safe to access
   // |service_thread_task_runner_| without synchronization once it is observed
   // that it is non-null.
   CheckedLock queue_lock_;
+
+  scoped_refptr<TaskRunner> service_thread_task_runner_;
+
+  IntrusiveHeap<DelayedTask> delayed_task_queue_ GUARDED_BY(queue_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(DelayedTaskManager);
 };

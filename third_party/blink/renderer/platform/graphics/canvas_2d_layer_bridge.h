@@ -104,7 +104,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void DoPaintInvalidation(const FloatRect& dirty_rect);
   cc::Layer* Layer();
   bool Restore();
-  void DisableDeferral(DisableDeferralReason);
   void UpdateFilterQuality();
 
   // virtual for unit testing

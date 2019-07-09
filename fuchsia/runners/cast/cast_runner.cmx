@@ -1,6 +1,8 @@
 {
   "sandbox": {
-    "features": [],
+    "features": [
+      "deprecated-ambient-replace-as-executable"
+    ],
     "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.device.NameProvider",

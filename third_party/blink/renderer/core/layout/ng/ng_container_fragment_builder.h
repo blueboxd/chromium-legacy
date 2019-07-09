@@ -28,7 +28,7 @@ class NGExclusionSpace;
 class NGPhysicalFragment;
 
 class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   struct ChildWithOffset {

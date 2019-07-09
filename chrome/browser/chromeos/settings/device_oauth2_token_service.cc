@@ -48,9 +48,10 @@ void DeviceOAuth2TokenService::OnValidationCompleted(
 }
 
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
-    std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {
-  DCHECK(delegate_);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* local_state) {
+  delegate_ = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
+      url_loader_factory, local_state, this);
   delegate_->AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);

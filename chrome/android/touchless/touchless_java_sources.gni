@@ -72,6 +72,7 @@ touchless_test_java_sources = [
   "touchless/javatests/src/org/chromium/chrome/browser/touchless/NoTouchActivityTest.java",
   "touchless/javatests/src/org/chromium/chrome/browser/touchless/TouchlessNavigationRecorderTest.java",
   "touchless/javatests/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediatorTest.java",
+  "touchless/javatests/src/org/chromium/chrome/browser/touchless/TouchlessPreferencesTest.java",
 ]
 
 touchless_junit_test_java_sources = [

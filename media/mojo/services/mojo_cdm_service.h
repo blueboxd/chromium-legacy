@@ -115,7 +115,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
 
   mojom::ContentDecryptionModuleClientAssociatedPtr client_;
 
-  base::WeakPtrFactory<MojoCdmService> weak_factory_;
+  base::WeakPtrFactory<MojoCdmService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmService);
 };

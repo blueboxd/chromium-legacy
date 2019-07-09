@@ -228,7 +228,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   // we can reduce the number of allocations and data transfers.
   std::vector<std::unique_ptr<PlaneResource>> all_resources_;
 
-  base::WeakPtrFactory<VideoResourceUpdater> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoResourceUpdater> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoResourceUpdater);
 };

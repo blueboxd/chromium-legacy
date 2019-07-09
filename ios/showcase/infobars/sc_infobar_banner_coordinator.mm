@@ -57,7 +57,7 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
 #pragma mark InfobarBannerPositioner
 
-- (CGFloat)modalHeight {
+- (CGFloat)modalHeightForWidth:(CGFloat)width {
   return 200;
 }
 

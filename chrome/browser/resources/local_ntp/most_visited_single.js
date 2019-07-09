@@ -489,14 +489,17 @@ class Grid {
     // Listen for the drag event on the tile instead of the tile container. The
     // tile container remains static during the reorder flow.
     tile.firstChild.draggable = true;
+    // Prevent default drag events on the shortcut link.
+    const tileItem = tile.firstChild.firstChild;
+    tileItem.draggable = false;
     tile.firstChild.addEventListener('dragstart', (event) => {
+      // Support link dragging (i.e. dragging the URL to the omnibox).
+      event.dataTransfer.setData('text/uri-list', tileItem.href);
+      // Remove the ghost image that appears when dragging.
+      const emptyImg = new Image();
+      event.dataTransfer.setDragImage(emptyImg, 0, 0);
+
       this.startReorder_(tile, event, /*mouseMode=*/ true);
-    });
-    // Listen for the mouseover event on the tile container. If this is placed
-    // on the tile instead, it can be triggered while the tile is translated to
-    // its new position.
-    tile.addEventListener('mouseover', (event) => {
-      this.reorderToIndex_(index);
     });
 
     // Set up touch support.
@@ -516,17 +519,12 @@ class Grid {
       // Insert the held tile at the index we are hovering over.
       const moveOver = (moveEvent) => {
         // Touch events do not have a 'mouseover' equivalent, so we need to
-        // manually check if we are hovering over a tile.
+        // manually check if we are hovering over a tile. If so, insert the held
+        // tile there.
         // Note: The first item in |changedTouches| is the current position.
         const x = moveEvent.changedTouches[0].pageX;
         const y = moveEvent.changedTouches[0].pageY;
-        const elements = document.elementsFromPoint(x, y);
-        for (let i = 0; i < elements.length; i++) {
-          if (elements[i].classList.contains('grid-tile-container')) {
-            this.reorderToIndex_(Number(elements[i].getAttribute('index')));
-            break;
-          }
-        }
+        this.reorderToIndexAtPoint_(x, y);
       };
       // Allow 'touchstart' events again when reordering stops/was never
       // started.
@@ -565,13 +563,24 @@ class Grid {
     // Disable other hover/active styling for all tiles.
     document.body.classList.add(CLASSES.REORDERING);
 
-    // Set up event listeners for the reorder flow. Listen for mouse events if
+    // Set up event listeners for the reorder flow. Listen for drag events if
     // |mouseMode|, touch events otherwise.
     if (mouseMode) {
-      const mouseMove = this.trackCursor_(tile, event.pageX, event.pageY, true);
-      document.addEventListener('mousemove', mouseMove);
-      document.addEventListener('mouseup', () => {
-        document.removeEventListener('mousemove', mouseMove);
+      const trackCursor =
+          this.trackCursor_(tile, event.pageX, event.pageY, true);
+      // The 'dragover' event must be tracked at the document level, since the
+      // currently dragged tile will interfere with 'dragover' events on the
+      // other tiles.
+      const dragOver = (dragOverEvent) => {
+        trackCursor(dragOverEvent);
+        // Since the 'dragover' event is not tied to a specific tile, we need to
+        // manually check if we are hovering over a tile. If so, insert the held
+        // tile there.
+        this.reorderToIndexAtPoint_(dragOverEvent.pageX, dragOverEvent.pageY);
+      };
+      document.addEventListener('dragover', dragOver);
+      document.addEventListener('dragend', () => {
+        document.removeEventListener('dragover', dragOver);
         this.stopReorder_(tile);
       }, {once: true});
     } else {
@@ -580,7 +589,7 @@ class Grid {
       const trackCursor = this.trackCursor_(
           tile, event.changedTouches[0].pageX, event.changedTouches[0].pageY,
           false);
-      const touchEnd = (event) => {
+      const touchEnd = (touchEndEvent) => {
         tile.firstChild.removeEventListener('touchmove', trackCursor);
         tile.firstChild.removeEventListener('touchend', touchEnd);
         tile.firstChild.removeEventListener('touchcancel', touchEnd);
@@ -614,6 +623,25 @@ class Grid {
 
     this.itemToReorder_ = -1;
     this.newIndexOfItemToReorder_ = -1;
+  }
+
+  /**
+   * Attempts to insert the currently held tile at the index located at (x, y).
+   * Does nothing if there is no tile at (x, y) or the reorder flow is not
+   * ongoing.
+   * @param {number} x The x coordinate.
+   * @param {number} y The y coordinate.
+   * @private
+   */
+  reorderToIndexAtPoint_(x, y) {
+    const elements = document.elementsFromPoint(x, y);
+    for (let i = 0; i < elements.length; i++) {
+      if (elements[i].classList.contains('grid-tile-container') &&
+          elements[i].getAttribute('index') !== null) {
+        this.reorderToIndex_(Number(elements[i].getAttribute('index')));
+        return;
+      }
+    }
   }
 
   /**

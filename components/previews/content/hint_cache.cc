@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/hint_update_data.h"
-#include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -22,6 +22,8 @@ const size_t kDefaultMaxMemoryCacheHints = 20;
 // Verify |get_hints_response| and load the hints that have keys represented by
 // hosts suffix into UpdateData to be stored in the HintCache. Returns true if
 // there are applicable hints moved into UpdateData that can be stored.
+// TODO(crbug/969558): Consolidate this with ProcessConfigurationHints for
+// component hints.
 bool ProcessGetHintsResponse(
     optimization_guide::proto::GetHintsResponse* get_hints_response,
     HintUpdateData* fetched_hints_update_data) {
@@ -107,7 +109,7 @@ void HintCache::UpdateComponentHints(
                                     std::move(callback));
 }
 
-bool HintCache::UpdateFetchedHints(
+void HintCache::UpdateFetchedHints(
     std::unique_ptr<optimization_guide::proto::GetHintsResponse>
         get_hints_response,
     base::Time update_time,
@@ -117,17 +119,15 @@ bool HintCache::UpdateFetchedHints(
     expiry_time += base::TimeDelta().FromSeconds(
         get_hints_response->max_cache_duration().seconds());
   } else {
-    expiry_time += params::StoredFetchedHintsFreshnessDuration();
+    expiry_time +=
+        optimization_guide::features::StoredFetchedHintsFreshnessDuration();
   }
   std::unique_ptr<HintUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
-  if (ProcessGetHintsResponse(get_hints_response.get(),
-                              fetched_hints_update_data.get())) {
-    hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
-                                    std::move(callback));
-    return true;
-  }
-  return false;
+  ProcessGetHintsResponse(get_hints_response.get(),
+                          fetched_hints_update_data.get());
+  hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
+                                  std::move(callback));
 }
 
 void HintCache::ClearFetchedHints() {

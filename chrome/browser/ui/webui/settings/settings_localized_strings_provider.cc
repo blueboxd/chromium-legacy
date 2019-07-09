@@ -530,6 +530,10 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       {"crostiniExportLabel", IDS_SETTINGS_CROSTINI_EXPORT_LABEL},
       {"crostiniImport", IDS_SETTINGS_CROSTINI_IMPORT},
       {"crostiniImportLabel", IDS_SETTINGS_CROSTINI_IMPORT_LABEL},
+      {"crostiniImportConfirmationDialogTitle",
+       IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_TITLE},
+      {"crostiniImportConfirmationDialogMessage",
+       IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_MESSAGE},
       {"crostiniRemoveButton", IDS_SETTINGS_CROSTINI_REMOVE_BUTTON},
       {"crostiniSharedUsbDevicesLabel",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL},
@@ -2269,6 +2273,10 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "printingCUPSPrintPpdLearnMoreUrl",
       GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
+
+  html_source->AddBoolean(
+      "updatedCupsPrintersUiEnabled",
+      base::FeatureList::IsEnabled(features::kCupsPrintersUiOverhaul));
 #endif
 }
 

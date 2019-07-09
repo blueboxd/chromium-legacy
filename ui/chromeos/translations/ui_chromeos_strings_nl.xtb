@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> bestanden importeren...</translation>
 <translation id="1352103415082130575">Thais toetsenbord (Pattachote)</translation>
-<translation id="1358032944105037487">Japans toetsenbord</translation>
 <translation id="1358735829858566124">Het bestand of de map is niet bruikbaar.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Welkom bij Google Drive!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Er is een back-up van <ph name="FILE_COUNT" /> foto's gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopiëren...</translation>
 <translation id="3475447146579922140">Google-spreadsheet</translation>
-<translation id="3494768541638400973">Japanse invoer van Google (voor Japans toetsenbord)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fouten.</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugees</translation>
@@ -516,7 +514,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> gevonden</translation>
 <translation id="6935521024859866267">Ondersteboven</translation>
-<translation id="6937152069980083337">Japanse invoer van Google (voor Amerikaans toetsenbord)</translation>
 <translation id="6939777852457331078">Amerikaans Workman-toetsenbord</translation>
 <translation id="696203921837389374">Synchroniseren via mobiele data inschakelen</translation>
 <translation id="6965382102122355670">OK</translation>

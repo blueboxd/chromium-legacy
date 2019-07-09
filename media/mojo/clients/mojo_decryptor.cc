@@ -44,7 +44,7 @@ base::OnceCallback<T> ToOnceCallback(const base::RepeatingCallback<T>& cb) {
 // done in the constructor.
 MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor,
                              uint32_t writer_capacity)
-    : remote_decryptor_(std::move(remote_decryptor)), weak_factory_(this) {
+    : remote_decryptor_(std::move(remote_decryptor)) {
   DVLOG(1) << __func__;
 
   uint32_t audio_writer_capacity =

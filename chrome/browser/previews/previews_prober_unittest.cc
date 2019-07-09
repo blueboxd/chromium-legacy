@@ -19,6 +19,7 @@
 
 namespace {
 const GURL kTestUrl("https://test.com");
+const base::TimeDelta kCacheRevalidateAfter(base::TimeDelta::FromDays(1));
 }  // namespace
 
 class TestDelegate : public PreviewsProber::Delegate {
@@ -54,7 +55,10 @@ class TestPreviewsProber : public PreviewsProber {
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
-      const base::TickClock* tick_clock)
+      const size_t max_cache_entries,
+      base::TimeDelta revalidate_cache_after,
+      const base::TickClock* tick_clock,
+      const base::Clock* clock)
       : PreviewsProber(delegate,
                        url_loader_factory,
                        name,
@@ -63,7 +67,10 @@ class TestPreviewsProber : public PreviewsProber {
                        headers,
                        retry_policy,
                        timeout_policy,
-                       tick_clock) {}
+                       max_cache_entries,
+                       revalidate_cache_after,
+                       tick_clock,
+                       clock) {}
 };
 
 class PreviewsProberTest : public testing::Test {
@@ -103,7 +110,8 @@ class PreviewsProberTest : public testing::Test {
         delegate, test_shared_loader_factory_,
         PreviewsProber::ClientName::kLitepages, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
-        thread_bundle_.GetMockTickClock());
+        1, kCacheRevalidateAfter, thread_bundle_.GetMockTickClock(),
+        thread_bundle_.GetMockClock());
   }
 
   void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
@@ -202,6 +210,100 @@ TEST_F(PreviewsProberTest, NetworkChangeStartsProber) {
       network::mojom::ConnectionType::CONNECTION_4G);
   RunUntilIdle();
 
+  EXPECT_TRUE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, NetworkConnectionShardsCache) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // The different type of cellular networks shouldn't make a difference.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_4G);
+  RunUntilIdle();
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_2G);
+  RunUntilIdle();
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+
+  // Switching to WIFI does make a difference.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  RunUntilIdle();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+}
+
+TEST_F(PreviewsProberTest, CacheMaxSize) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  FastForward(base::TimeDelta::FromSeconds(1));
+
+  // Change the connection type and report a new probe result.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  RunUntilIdle();
+
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+
+  FastForward(base::TimeDelta::FromSeconds(1));
+
+  // Then, flip back to the original connection type. The old probe status
+  // should not be persisted since the max cache size for testing is 1.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+}
+
+TEST_F(PreviewsProberTest, CacheAutoRevalidation) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Fast forward until just before revalidation time.
+  FastForward(kCacheRevalidateAfter - base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Fast forward the rest of the way and check the prober is active again.
+  FastForward(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
 }
 

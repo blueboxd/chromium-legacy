@@ -140,7 +140,12 @@ cr.define('settings', function() {
      * @private
      */
     shouldExpandAdvanced_: function(route) {
-      return this.tagName == 'SETTINGS-BASIC-PAGE' &&
+      return (
+                 this.tagName == 'SETTINGS-BASIC-PAGE'
+                 // <if expr="chromeos">
+                 || this.tagName == 'OS-SETTINGS-PAGE'
+                 // </if>
+                 ) &&
           settings.routes.ADVANCED && settings.routes.ADVANCED.contains(route);
     },
 

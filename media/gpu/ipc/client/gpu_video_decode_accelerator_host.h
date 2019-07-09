@@ -107,7 +107,7 @@ class GpuVideoDecodeAcceleratorHost
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GpuVideoDecodeAcceleratorHost> weak_this_factory_;
+  base::WeakPtrFactory<GpuVideoDecodeAcceleratorHost> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };

@@ -10,10 +10,10 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/previews/content/previews_hints_util.h"
-#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -69,7 +69,7 @@ void PreviewsTopHostProviderImpl::InitializeHintsFetcherTopHostBlacklist() {
 
   for (const auto& detail : engagement_details) {
     if (top_host_blacklist->size() >=
-        previews::params::MaxHintsFetcherTopHostBlacklistSize()) {
+        optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize()) {
       break;
     }
     if (detail.origin.SchemeIsHTTPOrHTTPS()) {

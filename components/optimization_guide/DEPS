@@ -1,3 +1,5 @@
 include_rules = [
   "+components/prefs",
+  "+google_apis",
+  "+net",
 ]

@@ -44,9 +44,6 @@ base::Optional<base::Time> IncrementMonthAndSetDayOfMonth(
 
 namespace {
 
-// Number of days in a week.
-constexpr int kDaysInAWeek = 7;
-
 // The tag associated to register |update_check_timer_|.
 constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
 
@@ -54,21 +51,16 @@ constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
 constexpr char kStartUpdateCheckTimerTaskRunnerTag[] =
     "StartUpdateCheckTimerTaskRunner";
 
-DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency GetFrequency(
+DeviceScheduledUpdateChecker::Frequency GetFrequency(
     const std::string& frequency) {
-  if (frequency == "DAILY") {
-    return DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-        kDaily;
-  }
+  if (frequency == "DAILY")
+    return DeviceScheduledUpdateChecker::Frequency::kDaily;
 
-  if (frequency == "WEEKLY") {
-    return DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-        kWeekly;
-  }
+  if (frequency == "WEEKLY")
+    return DeviceScheduledUpdateChecker::Frequency::kWeekly;
 
   DCHECK_EQ(frequency, "MONTHLY");
-  return DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-      kMonthly;
+  return DeviceScheduledUpdateChecker::Frequency::kMonthly;
 }
 
 // Convert the string day of week to an integer value suitable for
@@ -121,12 +113,10 @@ ParseScheduledUpdate(const base::Value* value) {
 
   // Parse extra fields for weekly and monthly frequencies.
   switch (result.frequency) {
-    case DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-        kDaily:
+    case DeviceScheduledUpdateChecker::Frequency::kDaily:
       break;
 
-    case DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-        kWeekly: {
+    case DeviceScheduledUpdateChecker::Frequency::kWeekly: {
       const std::string* day_of_week = value->FindStringKey({"day_of_week"});
       if (!day_of_week) {
         LOG(ERROR) << "Day of week missing";
@@ -138,8 +128,7 @@ ParseScheduledUpdate(const base::Value* value) {
       break;
     }
 
-    case DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency::
-        kMonthly: {
+    case DeviceScheduledUpdateChecker::Frequency::kMonthly: {
       base::Optional<int> day_of_month = value->FindIntKey({"day_of_month"});
       if (!day_of_month) {
         LOG(ERROR) << "Day of month missing";
@@ -172,7 +161,8 @@ base::Optional<base::Time> CalculateNextUpdateCheckWeeklyTime(
   base::TimeDelta delay_from_cur;
   if (day_of_week < cur_local_exploded_time.day_of_week) {
     delay_from_cur = base::TimeDelta::FromDays(
-        day_of_week + kDaysInAWeek - cur_local_exploded_time.day_of_week);
+        day_of_week + update_checker_internal::kDaysInAWeek -
+        cur_local_exploded_time.day_of_week);
   } else {
     delay_from_cur = base::TimeDelta::FromDays(
         day_of_week - cur_local_exploded_time.day_of_week);
@@ -203,7 +193,8 @@ base::Optional<base::Time> CalculateNextUpdateCheckWeeklyTime(
   // correct. Add observers for both those changes and then recalculate update
   // check time again.
   if (cur_time >= update_check_time)
-    update_check_time += base::TimeDelta::FromDays(kDaysInAWeek);
+    update_check_time +=
+        base::TimeDelta::FromDays(update_checker_internal::kDaysInAWeek);
 
   return update_check_time;
 }
@@ -265,8 +256,9 @@ base::Optional<base::Time> CalculateNextUpdateCheckMonthlyTime(
 // |cros_settings_observer_| will be destroyed as part of this object
 // guaranteeing to not run |OnScheduledUpdateCheckDataChanged| after its
 // destruction. Therefore, it's safe to use "this" while adding this observer.
-// Similarly, |start_update_check_timer_task_executor_| will be destroyed as
-// part of this object, so it's safe to use "this" with any callbacks.
+// Similarly, |start_update_check_timer_task_executor_| and
+// |os_and_policies_update_checker_| will be destroyed as part of this object,
+// so it's safe to use "this" with any callbacks.
 DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
     chromeos::CrosSettings* cros_settings)
     : cros_settings_(cros_settings),
@@ -279,8 +271,11 @@ DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
           kStartUpdateCheckTimerTaskRunnerTag,
           base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
                               base::Unretained(this)),
-          update_checker_internal::kMaxRetryUpdateCheckIterations,
-          update_checker_internal::kStartUpdateCheckTimerRetryTime) {
+          update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations,
+          update_checker_internal::kStartUpdateCheckTimerRetryTime),
+      os_and_policies_update_checker_(
+          base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
+                              base::Unretained(this))) {
   // Check if policy already exists.
   OnScheduledUpdateCheckDataChanged();
 }
@@ -294,28 +289,36 @@ DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::
 DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::
     ~ScheduledUpdateCheckData() = default;
 
-void DeviceScheduledUpdateChecker::UpdateCheck() {
-  // TODO(crbug.com/924762): Add trigger to do the actual update check.
-  // If a policy exists, schedule the next update check timer.
-  if (!scheduled_update_check_data_)
-    return;
+void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
+  // If no policy exists, state should have been reset and this callback
+  // shouldn't have fired.
+  DCHECK(scheduled_update_check_data_);
 
-  // |start_update_check_timer_task_executor_| will be destroyed as part of this
-  // object, so it's safe to use "this" with any callbacks.
-  start_update_check_timer_task_executor_.Start(
-      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
-                          base::Unretained(this)),
-      base::BindOnce(
-          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
-          base::Unretained(this)));
+  // Following things needs to be done on every update check event. These will
+  // be done serially to make state management easier -
+  // - Check for download any updates.
+  // - TODO(crbug.com/924762)  Refresh policies.
+  // - Calculate and start the next update check timer.
+  //
+  // |os_and_policies_update_checker_| will be destroyed as part of this object,
+  // so it's safe to use "this" with any callbacks. This overrides any previous
+  // update check calls. Since, the minimum update frequency is daily there is
+  // very little chance of stepping on an existing update check that hasn't
+  // finished for a day. Timeouts will ensure that an update check completes,
+  // successfully or unsuccessfully, way before a day.
+  os_and_policies_update_checker_.Start(
+      base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
+                     base::Unretained(this)));
 }
 
 void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
-  // If the policy is removed then reset all state.
+  // If the policy is removed then reset all state including any existing update
+  // checks.
   const base::Value* value =
       cros_settings_->GetPref(chromeos::kDeviceScheduledUpdateCheck);
   if (!value) {
     ResetState();
+    os_and_policies_update_checker_.Stop();
     return;
   }
 
@@ -327,15 +330,10 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
     LOG(ERROR) << "Failed to parse policy";
     return;
   }
-  scheduled_update_check_data_ = std::move(scheduled_update_check_data);
 
   // Policy has been updated, calculate and set |update_check_timer_| again.
-  start_update_check_timer_task_executor_.Start(
-      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
-                          base::Unretained(this)),
-      base::BindOnce(
-          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
-          base::Unretained(this)));
+  scheduled_update_check_data_ = std::move(scheduled_update_check_data);
+  MaybeStartUpdateCheckTimer();
 }
 
 base::Optional<base::Time>
@@ -347,7 +345,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
   // time and then modify it based on the policy set.
   base::Time update_check_time;
   switch (scheduled_update_check_data_->frequency) {
-    case ScheduledUpdateCheckData::Frequency::kDaily: {
+    case DeviceScheduledUpdateChecker::Frequency::kDaily: {
       base::Time::Exploded update_check_local_exploded_time;
       cur_time.LocalExplode(&update_check_local_exploded_time);
       update_check_local_exploded_time.hour =
@@ -377,7 +375,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
       break;
     }
 
-    case ScheduledUpdateCheckData::Frequency::kWeekly: {
+    case DeviceScheduledUpdateChecker::Frequency::kWeekly: {
       DCHECK(scheduled_update_check_data_->day_of_week);
       base::Optional<base::Time> result = CalculateNextUpdateCheckWeeklyTime(
           cur_time, scheduled_update_check_data_->hour,
@@ -392,7 +390,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
       break;
     }
 
-    case ScheduledUpdateCheckData::Frequency::kMonthly: {
+    case DeviceScheduledUpdateChecker::Frequency::kMonthly: {
       DCHECK(scheduled_update_check_data_->day_of_month);
       base::Optional<base::Time> result = CalculateNextUpdateCheckMonthlyTime(
           cur_time, scheduled_update_check_data_->hour,
@@ -413,6 +411,8 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
 }
 
 void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
+  DCHECK(scheduled_update_check_data_);
+
   // For accuracy of the next update check, capture current time as close to the
   // start of this function as possible.
   const base::TimeTicks cur_ticks = GetTicksSinceBoot();
@@ -442,7 +442,7 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   // to use "this" while starting the timer.
   update_check_timer_->Start(
       scheduled_update_check_data_->next_update_check_time_ticks,
-      base::BindOnce(&DeviceScheduledUpdateChecker::UpdateCheck,
+      base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired,
                      base::Unretained(this)),
       base::BindOnce(&DeviceScheduledUpdateChecker::OnTimerStartResult,
                      base::Unretained(this)));
@@ -458,11 +458,37 @@ void DeviceScheduledUpdateChecker::OnTimerStartResult(bool result) {
 }
 
 void DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure() {
-  // Retrying has a limit. In the unlikely scenario this is met, reset all
-  // state. Now an update check can only happen when a new policy comes in or
-  // Chrome is restarted.
+  // Retrying has a limit. In the unlikely scenario this is met, let an existing
+  // lingering update check from a previous iteration finish. Reset all other
+  // state including any callbacks. The next update check can only happen when
+  // a new policy comes in or Chrome is restarted.
   LOG(ERROR) << "Failed to start update check timer after all retries";
   ResetState();
+}
+
+void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer() {
+  // No need to start the next update check timer if the policy has been
+  // removed. This can happen if an update check was ongoing, a new policy came
+  // in but failed to start the timer which reset all state in
+  // |OnStartUpdateCheckTimerRetryFailure|.
+  if (!scheduled_update_check_data_)
+    return;
+
+  // Safe to use |this| as |start_update_check_timer_task_executor_| is a member
+  // of |this|.
+  start_update_check_timer_task_executor_.Start(
+      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
+                          base::Unretained(this)),
+      base::BindOnce(
+          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
+          base::Unretained(this)));
+}
+
+void DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(bool result) {
+  // Start the next update check timer irrespective of the current update check
+  // succeeding or not.
+  LOG_IF(ERROR, !result) << "Update check failed";
+  MaybeStartUpdateCheckTimer();
 }
 
 void DeviceScheduledUpdateChecker::ResetState() {

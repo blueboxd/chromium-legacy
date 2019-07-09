@@ -603,6 +603,8 @@ void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
     ActivateViewportIntersectionMonitoring(true);
   }
 
+  wake_lock_->ElementDidMoveToNewDocument();
+
   HTMLMediaElement::DidMoveToNewDocument(old_document);
 }
 

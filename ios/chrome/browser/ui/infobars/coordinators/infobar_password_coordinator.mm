@@ -173,8 +173,10 @@
     self.passwordInfoBarDelegate->InfobarDismissed();
 }
 
-- (CGFloat)infobarModalHeight {
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
   UITableView* tableView = self.modalViewController.tableView;
+  // Update the tableView frame to then layout its content for |width|.
+  tableView.frame = CGRectMake(0, 0, width, tableView.frame.size.height);
   [tableView setNeedsLayout];
   [tableView layoutIfNeeded];
 

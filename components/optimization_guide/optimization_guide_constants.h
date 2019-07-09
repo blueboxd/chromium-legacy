@@ -14,6 +14,9 @@ extern const base::FilePath::CharType kUnindexedHintsFileName[];
 
 extern const char kRulesetFormatVersionString[];
 
+// The remote Optimization Guide Service production server to fetch hints from.
+extern const char kOptimizationGuideServiceDefaultURL[];
+
 }  // namespace optimization_guide
 
 #endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_CONSTANTS_H_

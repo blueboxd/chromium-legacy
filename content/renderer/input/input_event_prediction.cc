@@ -9,9 +9,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/common/content_features.h"
-#include "ui/events/blink/prediction/empty_predictor.h"
-#include "ui/events/blink/prediction/kalman_predictor.h"
-#include "ui/events/blink/prediction/least_squares_predictor.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -23,12 +20,6 @@ namespace content {
 
 namespace {
 
-constexpr char kPredictor[] = "predictor";
-constexpr char kInputEventPredictorTypeLsq[] = "lsq";
-constexpr char kInputEventPredictorTypeEmpty[] = "empty";
-constexpr char kInputEventPredictorTypeKalmanTimeFiltered[] =
-    "kalman_time_filtered";
-
 constexpr uint32_t kPredictEventCount = 3;
 constexpr base::TimeDelta kPredictionInterval =
     base::TimeDelta::FromMilliseconds(8);
@@ -37,32 +28,27 @@ constexpr base::TimeDelta kPredictionInterval =
 
 InputEventPrediction::InputEventPrediction(bool enable_resampling)
     : enable_resampling_(enable_resampling) {
-  SetUpPredictorType();
-}
-
-InputEventPrediction::~InputEventPrediction() {}
-
-void InputEventPrediction::SetUpPredictorType() {
   // When resampling is enabled, set predictor type by resampling flag params;
   // otherwise, get predictor type parameters from kInputPredictorTypeChoice
   // flag.
-  std::string predictor_type =
-      enable_resampling_ ? GetFieldTrialParamValueByFeature(
-                               features::kResamplingInputEvents, kPredictor)
-                         : GetFieldTrialParamValueByFeature(
-                               features::kInputPredictorTypeChoice, kPredictor);
+  std::string predictor_name =
+      enable_resampling_
+          ? GetFieldTrialParamValueByFeature(features::kResamplingInputEvents,
+                                             "predictor")
+          : GetFieldTrialParamValueByFeature(
+                features::kInputPredictorTypeChoice, "predictor");
 
-  if (predictor_type == kInputEventPredictorTypeLsq)
-    selected_predictor_type_ = PredictorType::kLsq;
-  else if (predictor_type == kInputEventPredictorTypeEmpty)
-    selected_predictor_type_ = PredictorType::kEmpty;
-  else if (predictor_type == kInputEventPredictorTypeKalmanTimeFiltered)
-    selected_predictor_type_ = PredictorType::kKalmanTimeFiltered;
+  if (predictor_name.empty())
+    selected_predictor_type_ =
+        ui::input_prediction::PredictorType::kScrollPredictorTypeKalman;
   else
-    selected_predictor_type_ = PredictorType::kKalman;
+    selected_predictor_type_ =
+        ui::PredictorFactory::GetPredictorTypeFromName(predictor_name);
 
   mouse_predictor_ = CreatePredictor();
 }
+
+InputEventPrediction::~InputEventPrediction() {}
 
 void InputEventPrediction::HandleEvents(
     blink::WebCoalescedInputEvent& coalesced_event,
@@ -102,18 +88,7 @@ void InputEventPrediction::HandleEvents(
 
 std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
     const {
-  switch (selected_predictor_type_) {
-    case PredictorType::kEmpty:
-      return std::make_unique<ui::EmptyPredictor>();
-    case PredictorType::kLsq:
-      return std::make_unique<ui::LeastSquaresPredictor>();
-    case PredictorType::kKalman:
-      return std::make_unique<ui::KalmanPredictor>(
-          false /* enable_time_filtering */);
-    case PredictorType::kKalmanTimeFiltered:
-      return std::make_unique<ui::KalmanPredictor>(
-          true /* enable_time_filtering */);
-  }
+  return ui::PredictorFactory::GetPredictor(selected_predictor_type_);
 }
 
 void InputEventPrediction::UpdatePrediction(const WebInputEvent& event) {

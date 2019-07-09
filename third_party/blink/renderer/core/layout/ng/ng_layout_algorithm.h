@@ -63,8 +63,7 @@ template <typename NGInputNodeType,
           typename NGBoxFragmentBuilderType,
           typename NGBreakTokenType>
 class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
-  USING_FAST_MALLOC(NGLayoutAlgorithm);
-
+  STACK_ALLOCATED();
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
                     scoped_refptr<const ComputedStyle> style,

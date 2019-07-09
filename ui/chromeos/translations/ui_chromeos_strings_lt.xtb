@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="1351692861129622852">Importuojami failai (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Tailandietiška klaviatūra („Pattachote“)</translation>
-<translation id="1358032944105037487">Japoniška klaviatūra</translation>
 <translation id="1358735829858566124">Failas arba katalogas nenaudojamas.</translation>
 <translation id="1363028406613469049">Takelis</translation>
 <translation id="1378727793141957596">Sveiki, tai – „Google“ diskas!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Sukurta atsarginių nuotraukų kopijų <ph name="BEGIN_LINK" />„Google“ diske<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopijuojama...</translation>
 <translation id="3475447146579922140">„Google“ skaičiuoklė</translation>
-<translation id="3494768541638400973">„Google“ įvestis japonų k. (skirta japonų k. simbolių klaviatūrai)</translation>
 <translation id="3495304270784461826">Klaidų: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalų</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Rasta: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Aukštyn kojomis</translation>
-<translation id="6937152069980083337">„Google“ įvestis japonų k. (skirta JAV klaviatūrai)</translation>
 <translation id="6939777852457331078">JAV „Workman“ klaviatūra</translation>
 <translation id="696203921837389374">Įgalinti mobiliųjų duomenų sinchronizavimą</translation>
 <translation id="6965382102122355670">Gerai</translation>

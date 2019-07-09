@@ -82,7 +82,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   std::unique_ptr<media::AudioDecoder> decoder_;
 
   base::WeakPtr<MojoAudioDecoderService> weak_this_;
-  base::WeakPtrFactory<MojoAudioDecoderService> weak_factory_;
+  base::WeakPtrFactory<MojoAudioDecoderService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoderService);
 };

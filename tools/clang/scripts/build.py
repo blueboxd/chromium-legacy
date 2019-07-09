@@ -477,9 +477,13 @@ def main():
                msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
+      test_targets = [ 'check-all' ]
+      if sys.platform == 'darwin':
+        # TODO(crbug.com/731375): Run check-all on Darwin too.
+        test_targets = [ 'check-llvm', 'check-clang', 'check-builtins' ]
       if sys.platform == 'win32':
         CopyDiaDllTo(os.path.join(LLVM_BOOTSTRAP_DIR, 'bin'))
-      RunCommand(['ninja', 'check-all'], msvc_arch='x64')
+      RunCommand(['ninja'] + test_targets, msvc_arch='x64')
     RunCommand(['ninja', 'install'], msvc_arch='x64')
 
     if sys.platform == 'win32':

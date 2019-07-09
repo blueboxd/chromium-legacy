@@ -1023,8 +1023,8 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
         page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 2);
 }
 
-// TODO(crbug.com/981058): Re-enable this test on Linux.
-#if defined(OS_LINUX)
+// TODO(crbug.com/981058): Re-enable this test on Linux and Windows.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestPageEndReasonUMACoinFlipHoldback \
   DISABLED_TestPageEndReasonUMACoinFlipHoldback
 #else

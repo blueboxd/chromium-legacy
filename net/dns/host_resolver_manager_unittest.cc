@@ -3593,14 +3593,14 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   }
 
   void ChangeDnsConfig(const DnsConfig& config) {
-    NetworkChangeNotifier::SetDnsConfig(config);
+    NetworkChangeNotifier::SetDnsConfigForTesting(config);
     // Notification is delivered asynchronously.
     base::RunLoop().RunUntilIdle();
   }
 
   void SetInitialDnsConfig(const DnsConfig& config) {
     NetworkChangeNotifier::ClearDnsConfigForTesting();
-    NetworkChangeNotifier::SetDnsConfig(config);
+    NetworkChangeNotifier::SetDnsConfigForTesting(config);
     // Notification is delivered asynchronously.
     base::RunLoop().RunUntilIdle();
   }

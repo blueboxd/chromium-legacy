@@ -114,9 +114,7 @@ void FakeRemotingDataStreamSender::CancelInFlightData() {
 }
 
 FakeRemoter::FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail)
-    : source_(std::move(source)),
-      start_will_fail_(start_will_fail),
-      weak_factory_(this) {}
+    : source_(std::move(source)), start_will_fail_(start_will_fail) {}
 
 FakeRemoter::~FakeRemoter() = default;
 

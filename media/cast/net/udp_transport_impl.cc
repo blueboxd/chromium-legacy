@@ -68,8 +68,7 @@ UdpTransportImpl::UdpTransportImpl(
       send_buffer_size_(media::cast::kMaxBurstSize *
                         media::cast::kMaxIpPacketSize),
       status_callback_(status_callback),
-      bytes_sent_(0),
-      weak_factory_(this) {
+      bytes_sent_(0) {
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
 }
 

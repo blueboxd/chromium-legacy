@@ -122,10 +122,10 @@ TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   // Decision Tree: Apply
   // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
-      "/images/resources/count-down-color-test.png", &features));
+      "/images/resources/twitter_favicon.ico", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.0078125f, 0.0f, 0.0f});
+  AssertFeaturesEqual(features, {1.0f, 0.0002441f, 0.542092f, 0.1500000f});
 
   // Test Case 4:
   // Color

@@ -29,6 +29,7 @@ bool IsColorTransparent(const SkColor& color) {
 const int kPixelsToSample = 1000;
 const int kBlocksCount1D = 10;
 const int kMinImageSizeForClassification1D = 24;
+const int kMaxImageSizeForClassification1D = 100;
 const float kMinOpaquePixelPercentageForForeground = 0.2;
 
 // Decision tree lower and upper thresholds for grayscale and color images.
@@ -46,8 +47,14 @@ DarkModeClassification DarkModeBitmapImageClassifier::Classify(
     Image& image,
     const FloatRect& src_rect) {
   if (src_rect.Width() < kMinImageSizeForClassification1D ||
-      src_rect.Height() < kMinImageSizeForClassification1D)
+      src_rect.Height() < kMinImageSizeForClassification1D) {
     return DarkModeClassification::kApplyFilter;
+  }
+
+  if (src_rect.Width() > kMaxImageSizeForClassification1D ||
+      src_rect.Height() > kMaxImageSizeForClassification1D) {
+    return DarkModeClassification::kDoNotApplyFilter;
+  }
 
   Vector<float> features;
   Vector<SkColor> sampled_pixels;

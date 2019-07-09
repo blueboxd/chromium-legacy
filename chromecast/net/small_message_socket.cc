@@ -78,11 +78,10 @@ bool SmallMessageSocket::SendBuffer(net::IOBuffer* data, int size) {
 void SmallMessageSocket::Send() {
   for (int i = 0; i < kMaxIOLoop; ++i) {
     DCHECK(write_buffer_);
-    // TODO(kmackay): Use base::BindOnce() once it is supported.
     int result =
         socket_->Write(write_buffer_.get(), write_buffer_->BytesRemaining(),
-                       base::BindRepeating(&SmallMessageSocket::OnWriteComplete,
-                                           base::Unretained(this)),
+                       base::BindOnce(&SmallMessageSocket::OnWriteComplete,
+                                      base::Unretained(this)),
                        MISSING_TRAFFIC_ANNOTATION);
     if (!HandleWriteResult(result)) {
       return;
@@ -153,11 +152,10 @@ void SmallMessageSocket::Read() {
   // This improves average packet receive delay as compared to always posting a
   // new task for each call to Read().
   for (int i = 0; i < kMaxIOLoop; ++i) {
-    // TODO(kmackay): Use base::BindOnce() once it is supported.
     int read_result =
         socket_->Read(read_buffer_.get(), read_buffer_->RemainingCapacity(),
-                      base::BindRepeating(&SmallMessageSocket::OnReadComplete,
-                                          base::Unretained(this)));
+                      base::BindOnce(&SmallMessageSocket::OnReadComplete,
+                                     base::Unretained(this)));
 
     if (!HandleReadResult(read_result)) {
       return;

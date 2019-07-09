@@ -135,8 +135,7 @@ CheckerImageTracker::CheckerImageTracker(ImageController* image_controller,
     : image_controller_(image_controller),
       client_(client),
       enable_checker_imaging_(enable_checker_imaging),
-      min_image_bytes_to_checker_(min_image_bytes_to_checker),
-      weak_factory_(this) {}
+      min_image_bytes_to_checker_(min_image_bytes_to_checker) {}
 
 CheckerImageTracker::~CheckerImageTracker() = default;
 

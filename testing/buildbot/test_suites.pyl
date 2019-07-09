@@ -5117,24 +5117,17 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # TODO(https://crbug.com/850107): Merge this back into
-    # gpu_common_telemetry_tests once Gold is stabilized.
-    'gpu_common_gold_telemetry_tests': [
+    'gpu_common_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    'gpu_common_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
     'gpu_common_win_and_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 

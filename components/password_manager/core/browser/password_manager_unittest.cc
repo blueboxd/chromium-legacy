@@ -100,6 +100,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     ON_CALL(filter_, ShouldSaveEnterprisePasswordHash(_))
         .WillByDefault(Return(false));
     ON_CALL(filter_, IsSyncAccountEmail(_)).WillByDefault(Return(false));
+    ON_CALL(*this, IsNewTabPage()).WillByDefault(Return(false));
   }
 
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
@@ -123,6 +124,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
   MOCK_METHOD0(GetMetricsRecorder, PasswordManagerMetricsRecorder*());
+  MOCK_CONST_METHOD0(IsNewTabPage, bool());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -1291,6 +1293,48 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
       testing::Mock::VerifyAndClearExpectations(&client_);
       testing::Mock::VerifyAndClearExpectations(&store_);
     }
+  }
+}
+
+TEST_F(PasswordManagerTest,
+       HashSavedOnGaiaFormWithSkipSavePasswordAndToNTPNavigation) {
+  for (bool only_new_parser : {false, true}) {
+    SCOPED_TRACE(testing::Message("only_new_parser = ") << only_new_parser);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (only_new_parser) {
+      TurnOnOnlyNewParser(&scoped_feature_list);
+      EXPECT_CALL(*store_, GetLogins(_, _))
+          .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    } else {
+      TurnOnNewParsingForFilling(&scoped_feature_list, true);
+    }
+
+    PasswordForm form(MakeSimpleGAIAForm());
+    // Simulate that this is Gaia form that should be ignored for
+    // saving/filling.
+    form.is_gaia_with_skip_save_password_form = true;
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+        .WillRepeatedly(Return(true));
+    manager()->OnPasswordFormsParsed(&driver_, {form});
+
+    ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
+        .WillByDefault(Return(true));
+    ON_CALL(*client_.GetStoreResultFilter(), ShouldSave(_))
+        .WillByDefault(Return(false));
+    ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
+        .WillByDefault(Return(true));
+
+    EXPECT_CALL(
+        *store_,
+        SaveGaiaPasswordHash(
+            "googleuser", form.password_value,
+            metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+
+    EXPECT_CALL(client_, IsNewTabPage()).WillRepeatedly(Return(true));
+    OnPasswordFormSubmitted(form);
+    manager()->DidNavigateMainFrame(false);
+    testing::Mock::VerifyAndClearExpectations(&client_);
+    testing::Mock::VerifyAndClearExpectations(&store_);
   }
 }
 #endif

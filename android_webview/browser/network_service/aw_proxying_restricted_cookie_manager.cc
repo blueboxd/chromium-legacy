@@ -114,6 +114,43 @@ void AwProxyingRestrictedCookieManager::AddChangeListener(
       std::move(callback));
 }
 
+void AwProxyingRestrictedCookieManager::SetCookieFromString(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::string& cookie,
+    SetCookieFromStringCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (AllowCookies(url, site_for_cookies)) {
+    underlying_restricted_cookie_manager_->SetCookieFromString(
+        url, site_for_cookies, cookie, std::move(callback));
+  } else {
+    std::move(callback).Run();
+  }
+}
+
+void AwProxyingRestrictedCookieManager::GetCookiesString(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    GetCookiesStringCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (AllowCookies(url, site_for_cookies)) {
+    underlying_restricted_cookie_manager_->GetCookiesString(
+        url, site_for_cookies, std::move(callback));
+  } else {
+    std::move(callback).Run("");
+  }
+}
+
+void AwProxyingRestrictedCookieManager::CookiesEnabledFor(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    CookiesEnabledForCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  std::move(callback).Run(AllowCookies(url, site_for_cookies));
+}
+
 AwProxyingRestrictedCookieManager::AwProxyingRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerPtr
         underlying_restricted_cookie_manager,

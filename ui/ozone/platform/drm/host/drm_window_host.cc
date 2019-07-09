@@ -118,6 +118,14 @@ PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
   return PlatformWindowState::kUnknown;
 }
 
+void DrmWindowHost::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void DrmWindowHost::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
 }

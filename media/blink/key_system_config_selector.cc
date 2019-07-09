@@ -306,8 +306,7 @@ KeySystemConfigSelector::KeySystemConfigSelector(
     MediaPermission* media_permission)
     : key_systems_(key_systems),
       media_permission_(media_permission),
-      is_supported_media_type_cb_(base::BindRepeating(&IsSupportedMediaType)),
-      weak_factory_(this) {
+      is_supported_media_type_cb_(base::BindRepeating(&IsSupportedMediaType)) {
   DCHECK(key_systems_);
   DCHECK(media_permission_);
 }

@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/input_event_activation_protector.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_observer.h"
 
@@ -142,8 +143,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // SetupLayout(). Everything will be manually updated afterwards.
   bool adding_or_removing_views_ = false;
 
-  // Time when view has been shown.
-  base::TimeTicks view_shown_time_stamp_;
+  InputEventActivationProtector input_protector_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };

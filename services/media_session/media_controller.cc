@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 
@@ -56,7 +57,7 @@ class MediaController::ImageObserverHolder {
     owner_->session_->ipc()->GetMediaImageBitmap(
         *image, minimum_size_px_, desired_size_px_,
         base::BindOnce(&MediaController::ImageObserverHolder::OnImage,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void ClearImage() {
@@ -79,6 +80,8 @@ class MediaController::ImageObserverHolder {
   int const desired_size_px_;
 
   mojom::MediaControllerImageObserverPtr observer_;
+
+  base::WeakPtrFactory<ImageObserverHolder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageObserverHolder);
 };

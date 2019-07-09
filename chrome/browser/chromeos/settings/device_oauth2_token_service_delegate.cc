@@ -33,7 +33,8 @@ void DeviceOAuth2TokenServiceDelegate::OnServiceAccountIdentityChanged() {
 
 DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* local_state)
+    PrefService* local_state,
+    DeviceOAuth2TokenService* service)
     : url_loader_factory_(url_loader_factory),
       local_state_(local_state),
       state_(STATE_LOADING),

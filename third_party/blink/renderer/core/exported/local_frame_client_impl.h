@@ -203,7 +203,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   bool AllowContentInitiatedDataUrlNavigations(const KURL&) override;
 
-  WebCookieJar* CookieJar() const override;
   void FrameFocused() const override;
   void DidChangeName(const String&) override;
   void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;

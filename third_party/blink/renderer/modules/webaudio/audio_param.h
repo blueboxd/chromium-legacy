@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param_timeline.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_summing_junction.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_helper_mixin.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -255,18 +256,13 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 };
 
 // AudioParam class represents web-exposed AudioParam interface.
-class AudioParam final : public ScriptWrappable {
+class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // The most common case where the rate, mode, and limits can default.
-  static AudioParam* Create(BaseAudioContext&,
-                            AudioParamType,
-                            double default_value);
-  // The general case where the rate and mode cannot use defaults (but the
-  // limits can).
   static AudioParam* Create(
       BaseAudioContext&,
+      const String& parent_uuid,
       AudioParamType,
       double default_value,
       AudioParamHandler::AutomationRate rate,
@@ -275,12 +271,14 @@ class AudioParam final : public ScriptWrappable {
       float max_value = std::numeric_limits<float>::max());
 
   AudioParam(BaseAudioContext&,
+             const String& parent_uuid,
              AudioParamType,
              double default_value,
              AudioParamHandler::AutomationRate rate,
              AudioParamHandler::AutomationRateMode rate_mode,
              float min,
              float max);
+
   ~AudioParam() override;
 
   void Trace(blink::Visitor*) override;

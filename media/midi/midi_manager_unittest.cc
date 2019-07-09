@@ -35,8 +35,7 @@ using mojom::Result;
 
 class FakeMidiManager : public MidiManager {
  public:
-  explicit FakeMidiManager(MidiService* service)
-      : MidiManager(service), weak_factory_(this) {}
+  explicit FakeMidiManager(MidiService* service) : MidiManager(service) {}
 
   ~FakeMidiManager() override = default;
 
@@ -68,14 +67,14 @@ class FakeMidiManager : public MidiManager {
  private:
   bool initialized_ = false;
 
-  base::WeakPtrFactory<FakeMidiManager> weak_factory_;
+  base::WeakPtrFactory<FakeMidiManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManager);
 };
 
 class FakeMidiManagerFactory : public MidiService::ManagerFactory {
  public:
-  FakeMidiManagerFactory() : weak_factory_(this) {}
+  FakeMidiManagerFactory() {}
   ~FakeMidiManagerFactory() override = default;
 
   std::unique_ptr<MidiManager> Create(MidiService* service) override {
@@ -103,7 +102,7 @@ class FakeMidiManagerFactory : public MidiService::ManagerFactory {
 
  private:
   base::WeakPtr<FakeMidiManager> manager_ = nullptr;
-  base::WeakPtrFactory<FakeMidiManagerFactory> weak_factory_;
+  base::WeakPtrFactory<FakeMidiManagerFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManagerFactory);
 };

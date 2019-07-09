@@ -641,11 +641,16 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
       ScheduleIdleLazySweep();
   }
 
-  if (sweep_completed)
+  if (sweep_completed) {
+    // TODO(bikineev): We need to synchronize with concurrent sweepers here
+    // using the same bottleneck as in CompleteSweep().
     PostSweep();
+  }
 }
 
 void ThreadState::PerformConcurrentSweep() {
+  VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
+          << "ConcurrentSweep";
   // Concurrent sweeper doesn't call finalizers - this guarantees that sweeping
   // is not called recursively.
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
@@ -813,8 +818,6 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   if (IsGCForbidden())
     return;
 
-  base::AutoReset<bool> precise_gc_allowed_scope(&precise_gc_allowed_, true);
-
   switch (GetGCState()) {
     case kForcedGCForTestingScheduled:
       CollectAllGarbageForTesting();
@@ -934,7 +937,7 @@ void ThreadState::CompleteSweep() {
     return;
 
   {
-    // CompleteSweep may be called during regular mutator exececution, from a
+    // CompleteSweep may be called during regular mutator execution, from a
     // task, or from the atomic pause in which the atomic scope has already been
     // opened.
     const bool was_in_atomic_pause = in_atomic_pause();
@@ -950,6 +953,12 @@ void ThreadState::CompleteSweep() {
 
     // Wait for concurrent sweepers.
     sweeper_scheduler_.CancelAndWait();
+
+    // Concurrent sweepers may perform some work at the last stage (e.g.
+    // sweeping the last page and preparing finalizers).
+    // TODO(bikineev): This should be changed to Heap.Finalize() to only call
+    // remaining finalizers, not perform complete sweeping once again.
+    Heap().CompleteSweep();
 
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
@@ -1032,8 +1041,15 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
                       event.incremental_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingAllObjects",
-                      event.sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingForeground",
+                      event.foreground_sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingBackground",
+                      event.background_sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingSum", event.sweeping_time());
+  UMA_HISTOGRAM_TIMES(
+      "BlinkGC.TimeForCompleteSweep",
+      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
+
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForInvokingPreFinalizers",
       event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
@@ -1062,10 +1078,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
   UMA_HISTOGRAM_TIMES("BlinkGC.AtomicPhaseMarking",
                       event.atomic_marking_time());
-
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.CompleteSweep",
-      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
@@ -1391,13 +1403,6 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
-  // // Precise GC must only be executed when we don't need to scan the stack.
-  // crbug.com/937117 crbug.com/937117
-  if (stack_state == BlinkGC::kNoHeapPointersOnStack &&
-      reason != BlinkGC::GCReason::kForcedGCForTesting &&
-      reason != BlinkGC::GCReason::kThreadTerminationGC)
-    CHECK(precise_gc_allowed_);
-
   // Nested garbage collection invocations are not supported.
   CHECK(!IsGCForbidden());
   // Garbage collection during sweeping is not supported. This can happen when

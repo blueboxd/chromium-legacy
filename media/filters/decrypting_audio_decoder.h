@@ -122,7 +122,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   bool support_clear_content_ = false;
 
   base::WeakPtr<DecryptingAudioDecoder> weak_this_;
-  base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
+  base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingAudioDecoder);
 };

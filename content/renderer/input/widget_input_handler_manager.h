@@ -10,8 +10,9 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "ui/events/blink/input_handler_proxy.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 
@@ -54,11 +55,11 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       blink::scheduler::WebThreadScheduler* main_thread_scheduler,
       bool needs_input_handler);
   void AddAssociatedInterface(
-      mojom::WidgetInputHandlerAssociatedRequest interface_request,
-      mojom::WidgetInputHandlerHostPtr host);
+      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host);
 
-  void AddInterface(mojom::WidgetInputHandlerRequest interface_request,
-                    mojom::WidgetInputHandlerHostPtr host);
+  void AddInterface(mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+                    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host);
 
   // InputHandlerProxyClient overrides.
   void WillShutdown() override;
@@ -93,9 +94,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   mojom::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
 
   void AttachSynchronousCompositor(
-      mojom::SynchronousCompositorControlHostPtr control_host,
-      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-      mojom::SynchronousCompositorAssociatedRequest compositor_request);
+      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+          compositor_request);
 
 #if defined(OS_ANDROID)
   content::SynchronousCompositorRegistry* GetSynchronousCompositorRegistry();
@@ -129,8 +131,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       bool smooth_scroll_enabled,
       bool sync_compositing);
   void BindAssociatedChannel(
-      mojom::WidgetInputHandlerAssociatedRequest request);
-  void BindChannel(mojom::WidgetInputHandlerRequest request);
+      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request);
+  void BindChannel(mojo::PendingReceiver<mojom::WidgetInputHandler> request);
   void HandleInputEvent(
       const ui::WebScopedInputEvent& event,
       const ui::LatencyInfo& latency,
@@ -164,16 +166,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // thread.
   std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
 
-  using WidgetInputHandlerHost = scoped_refptr<
-      mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>>;
-
   // The WidgetInputHandlerHost is bound on the compositor task runner
   // but class can be called on the compositor and main thread.
-  WidgetInputHandlerHost host_;
+  mojo::SharedRemote<mojom::WidgetInputHandlerHost> host_;
 
   // Host that was passed as part of the FrameInputHandler associated
   // channel.
-  WidgetInputHandlerHost associated_host_;
+  mojo::SharedRemote<mojom::WidgetInputHandlerHost> associated_host_;
 
   // Any thread can access these variables.
   scoped_refptr<MainThreadEventQueue> input_event_queue_;

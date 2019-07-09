@@ -81,8 +81,8 @@ public class ProgressBarMediatorTest {
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
-        // The progress bar should be shown on activity resume.
-        mProgressBarMediator.onActivityResume();
+        // The progress bar should be shown on activity start.
+        mProgressBarMediator.onActivityStart();
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
 

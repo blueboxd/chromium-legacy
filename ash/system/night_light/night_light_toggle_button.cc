@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/night_light/night_light_controller.h"
+#include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ui/accessibility/ax_enums.mojom.h"

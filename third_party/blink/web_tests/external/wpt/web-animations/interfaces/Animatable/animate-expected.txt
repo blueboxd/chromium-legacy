@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 135 tests; 126 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 137 tests; 134 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -8,18 +8,19 @@ PASS Element.animate() accepts empty keyframe lists (input: [])
 PASS Element.animate() accepts empty keyframe lists (input: null)
 PASS Element.animate() accepts empty keyframe lists (input: undefined)
 PASS Element.animate() accepts a one property two value property-indexed keyframes specification
-FAIL Element.animate() accepts a one shorthand property two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
-FAIL Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,marginTop,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
+PASS Element.animate() accepts a one shorthand property two value property-indexed keyframes specification
+PASS Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification
 PASS Element.animate() accepts a two property two value property-indexed keyframes specification
 PASS Element.animate() accepts a two property property-indexed keyframes specification with different numbers of values
 PASS Element.animate() accepts a property-indexed keyframes specification with an invalid value
 PASS Element.animate() accepts a one property two value property-indexed keyframes specification that needs to stringify its values
 PASS Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference
-FAIL Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
+PASS Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference in a shorthand property
 PASS Element.animate() accepts a one property one value property-indexed keyframes specification
 PASS Element.animate() accepts a one property one non-array value property-indexed keyframes specification
 PASS Element.animate() accepts a one property two value property-indexed keyframes specification where the first value is invalid
 PASS Element.animate() accepts a one property two value property-indexed keyframes specification where the second value is invalid
+PASS Element.animate() accepts a property-indexed keyframes specification with a CSS variable as the property
 PASS Element.animate() accepts a property-indexed keyframe with a single offset
 PASS Element.animate() accepts a property-indexed keyframe with an array of offsets
 PASS Element.animate() accepts a property-indexed keyframe with an array of offsets that is too short
@@ -47,13 +48,14 @@ PASS Element.animate() accepts a property-indexed keyframe with a single-element
 PASS Element.animate() accepts a one property one keyframe sequence
 PASS Element.animate() accepts a one property two keyframe sequence
 PASS Element.animate() accepts a two property two keyframe sequence
-FAIL Element.animate() accepts a one shorthand property two keyframe sequence assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
-FAIL Element.animate() accepts a two property (a shorthand and one of its component longhands) two keyframe sequence assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,marginTop,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
+PASS Element.animate() accepts a one shorthand property two keyframe sequence
+PASS Element.animate() accepts a two property (a shorthand and one of its component longhands) two keyframe sequence
 PASS Element.animate() accepts a two property keyframe sequence where one property is missing from the first keyframe
 PASS Element.animate() accepts a two property keyframe sequence where one property is missing from the last keyframe
 PASS Element.animate() accepts a one property two keyframe sequence that needs to stringify its values
 PASS Element.animate() accepts a keyframe sequence with a CSS variable reference
-FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
+PASS Element.animate() accepts a keyframe sequence with a CSS variable reference in a shorthand property
+PASS Element.animate() accepts a keyframe sequence with a CSS variable as its property
 PASS Element.animate() accepts a keyframe sequence with duplicate values for a given interior offset
 PASS Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1
 PASS Element.animate() accepts a two property four keyframe sequence

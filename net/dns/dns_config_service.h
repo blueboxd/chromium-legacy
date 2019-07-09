@@ -29,7 +29,8 @@ class NET_EXPORT_PRIVATE DnsConfigService {
   // ReadConfig() and WatchConfig().
   typedef base::Callback<void(const DnsConfig& config)> CallbackType;
 
-  // Creates the platform-specific DnsConfigService.
+  // Creates the platform-specific DnsConfigService. May return |nullptr| if
+  // reading system DNS settings is not supported on the current platform.
   static std::unique_ptr<DnsConfigService> CreateSystemService();
 
   DnsConfigService();

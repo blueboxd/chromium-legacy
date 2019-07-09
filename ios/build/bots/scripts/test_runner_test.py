@@ -8,6 +8,7 @@
 import collections
 import glob
 import logging
+import mock
 import os
 import subprocess
 import unittest
@@ -602,6 +603,37 @@ class DeviceTestRunnerTest(TestCase):
     self.assertEqual(
         self.tr.xctestrun_data['TestTargetName']['OnlyTestIdentifiers'],
         ['a', 'b', 'c', 'd']
+    )
+
+  @mock.patch('subprocess.check_output', autospec=True)
+  def test_get_test_names(self, mock_subprocess):
+    otool_output = (
+        'imp 0x102492020 -[BrowserViewControllerTestCase testJavaScript]'
+        'name 0x105ee8b84 testFixForCrbug801165'
+        'types 0x105f0c842 v16 @ 0:8'
+        'name 0x105ee8b9a testOpenURLFromNTP'
+        'types 0x105f0c842 v16 @ 0:8'
+        'imp 0x102493b30 -[BrowserViewControllerTestCase testOpenURLFromNTP]'
+        'name 0x105ee8bad testOpenURLFromTab'
+        'types 0x105f0c842 v16 @ 0:8'
+        'imp 0x102494180 -[BrowserViewControllerTestCase testOpenURLFromTab]'
+        'name 0x105ee8bc0 testOpenURLFromTabSwitcher'
+        'types 0x105f0c842 v16 @ 0:8'
+        'imp 0x102494f70 -[BrowserViewControllerTestCase testTabSwitch]'
+        'types 0x105f0c842 v16 @ 0:8'
+        'imp 0x102494f70 -[BrowserViewControllerTestCase helper]'
+        'imp 0x102494f70 -[BrowserViewControllerTestCCCCCCCCC testMethod]'
+    )
+    mock_subprocess.return_value = otool_output
+    tests = test_runner.get_test_names('')
+    self.assertEqual(
+        [
+            ('BrowserViewControllerTestCase', 'testJavaScript'),
+            ('BrowserViewControllerTestCase', 'testOpenURLFromNTP'),
+            ('BrowserViewControllerTestCase', 'testOpenURLFromTab'),
+            ('BrowserViewControllerTestCase', 'testTabSwitch')
+        ],
+        tests
     )
 
 

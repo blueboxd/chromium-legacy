@@ -46,34 +46,35 @@ class CWTRequestHandler {
 
  private:
   // Creates a new session, if no session has already been created. Otherwise,
-  // return an error.
+  // return an error. Sets the target tab to the current tab.
   base::Value InitializeSession();
 
   // Terminates the current session.
   base::Value CloseSession();
 
-  // Navigates the current tab to the given URL, and wait for the page load to
+  // Navigates the target tab to the given URL, and waits for the page load to
   // complete.
   base::Value NavigateToUrl(const base::Value* url);
 
   // Sets timeouts used when performing browser operations.
   base::Value SetTimeouts(const base::Value& timeouts);
 
-  // Gets the id of the current tab. Returns an error value if no tab is open.
-  base::Value GetCurrentTabId();
+  // Gets the id of the target tab. Returns an error if the target tab has been
+  // closed.
+  base::Value GetTargetTabId();
 
   // Gets the ids of all open tabs.
   base::Value GetAllTabIds();
 
-  // Switches to the tab with the given id. Returns an error value if no such
-  // tab exists.
-  base::Value SwitchToTabWithId(const base::Value* id);
+  // Switches to the tab with the given id and makes this the target tab.
+  // Returns an error value if no such tab exists.
+  base::Value SwitchToTabWithId(const base::Value* tab_id);
 
-  // Closes the current tab. Returns an error value if no tab is open.
+  // Closes the target tab. Returns an error value if no tab is open.
   // Otherwise, returns the ids of the remaining tabs.
-  base::Value CloseCurrentTab();
+  base::Value CloseTargetTab();
 
-  // Executes the given script in the current tab. Returns an error if script
+  // Executes the given script in the target tab. Returns an error if script
   // execution times out. Otherwise, returns the result of script execution.
   // When |is_async_function| is true, the given script must be the body of a
   // function that uses its last argument (that is, the argument at
@@ -104,6 +105,9 @@ class CWTRequestHandler {
 
   // A randomly-generated identifier created by InitializeSession().
   std::string session_id_;
+
+  // The tab that's the target of WebDriver actions.
+  std::string target_tab_id_;
 
   // Timeouts used when performing browser operations.
   NSTimeInterval script_timeout_;

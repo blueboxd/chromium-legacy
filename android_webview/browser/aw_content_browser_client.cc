@@ -1124,7 +1124,8 @@ uint32_t AwContentBrowserClient::GetWebSocketOptions(
   return options;
 }
 
-void AwContentBrowserClient::WillCreateRestrictedCookieManager(
+bool AwContentBrowserClient::WillCreateRestrictedCookieManager(
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
     bool is_service_worker,
     int process_id,
@@ -1139,6 +1140,8 @@ void AwContentBrowserClient::WillCreateRestrictedCookieManager(
   AwProxyingRestrictedCookieManager::CreateAndBind(
       std::move(target_rcm_info), is_service_worker, process_id, routing_id,
       std::move(orig_request));
+
+  return false;  // only made a proxy, still need the actual impl to be made.
 }
 
 std::string AwContentBrowserClient::GetProduct() {

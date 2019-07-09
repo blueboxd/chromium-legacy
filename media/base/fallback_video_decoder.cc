@@ -17,8 +17,7 @@ FallbackVideoDecoder::FallbackVideoDecoder(
     std::unique_ptr<VideoDecoder> preferred,
     std::unique_ptr<VideoDecoder> fallback)
     : preferred_decoder_(std::move(preferred)),
-      fallback_decoder_(std::move(fallback)),
-      weak_factory_(this) {}
+      fallback_decoder_(std::move(fallback)) {}
 
 void FallbackVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                       bool low_delay,

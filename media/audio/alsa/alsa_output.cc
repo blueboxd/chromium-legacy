@@ -171,8 +171,7 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       volume_(1.0f),
       source_callback_(NULL),
       audio_bus_(AudioBus::Create(params)),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_factory_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(audio_bus_->frames() * bytes_per_frame_, packet_size_);
 

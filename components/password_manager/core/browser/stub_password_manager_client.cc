@@ -111,4 +111,8 @@ bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }
 
+bool StubPasswordManagerClient::IsNewTabPage() const {
+  return false;
+}
+
 }  // namespace password_manager

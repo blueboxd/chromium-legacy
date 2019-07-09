@@ -7,34 +7,6 @@
 <script src="resources/serial-test-utils.js"></script>
 <script>
 
-function compareArrays(actual, expected) {
-  assert_equals(actual.byteLength, expected.byteLength);
-  for (let i = 0; i < expected.byteLength; ++i)
-    assert_equals(actual[i], expected[i], `Mismatch at position ${i}.`);
-}
-
-async function readAll(reader) {
-  const chunks = [];
-  while (true) {
-    let { value, done } = await reader.read();
-    if (done) {
-      // It would be better to allocate |buffer| up front with the number of
-      // of bytes expected but this is the best that can be done without a BYOB
-      // reader to control the amount of data read.
-      const length =
-          chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
-      const buffer = new Uint8Array(length);
-      chunks.reduce((offset, chunk) => {
-        buffer.set(chunk, offset);
-        return offset + chunk.byteLength;
-      }, 0);
-      return buffer;
-    }
-
-    chunks.push(value);
-  }
-}
-
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
 

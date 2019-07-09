@@ -244,9 +244,7 @@ DrawImage CreateBitmapDrawImage(gfx::Size size) {
 
 class ImageControllerTest : public testing::Test {
  public:
-  ImageControllerTest()
-      : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-        weak_ptr_factory_(this) {
+  ImageControllerTest() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
     image_ = CreateDiscardableDrawImage(gfx::Size(1, 1));
   }
   ~ImageControllerTest() override = default;
@@ -314,7 +312,7 @@ class ImageControllerTest : public testing::Test {
   std::unique_ptr<ImageController> controller_;
   DrawImage image_;
 
-  base::WeakPtrFactory<ImageControllerTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageControllerTest> weak_ptr_factory_{this};
 };
 
 // Test that GetTasksForImagesAndRef does not generate task for PaintWorklet

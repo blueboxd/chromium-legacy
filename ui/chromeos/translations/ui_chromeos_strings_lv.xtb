@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351692861129622852">Notiek <ph name="FILE_COUNT" /> failu importēšana...</translation>
 <translation id="1352103415082130575">Taju valodas tastatūra (Pattachote)</translation>
-<translation id="1358032944105037487">Japāņu tastatūra</translation>
 <translation id="1358735829858566124">Fails vai katalogs nav izmantojams.</translation>
 <translation id="1363028406613469049">Izsekošana</translation>
 <translation id="1378727793141957596">Laipni lūdzam pakalpojumā Google disks!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotoattēli dublēti <ph name="BEGIN_LINK" />Google diskā<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Notiek kopēšana...</translation>
 <translation id="3475447146579922140">Google izklājlapa</translation>
-<translation id="3494768541638400973">Google japāņu valodas ievade (japāņu valodas tastatūrai)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> kļūdas.</translation>
 <translation id="3519867315646775981">Transliterācija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugāļu valoda</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Atrasts: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Otrādi</translation>
-<translation id="6937152069980083337">Google japāņu valodas ievade (ASV tastatūrai)</translation>
 <translation id="6939777852457331078">Workman (ASV) tastatūra</translation>
 <translation id="696203921837389374">Iespējot mobilo datu sinhronizāciju</translation>
 <translation id="6965382102122355670">Labi</translation>

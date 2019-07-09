@@ -47,6 +47,8 @@ class X11WindowOzone : public PlatformWindow,
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
+  void Activate() override;
+  void Deactivate() override;
   PlatformWindowState GetPlatformWindowState() const override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

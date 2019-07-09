@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="1351692861129622852">Увозе се датотеке (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Тајска тастатура (Pattachote)</translation>
-<translation id="1358032944105037487">Језик тастатуре: јапански</translation>
 <translation id="1358735829858566124">Није могуће користити датотеку или директоријум.</translation>
 <translation id="1363028406613469049">Песма</translation>
 <translation id="1378727793141957596">Добро дошли у Google диск!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Резервна копија слика (<ph name="FILE_COUNT" />) је направљена на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Копирање...</translation>
 <translation id="3475447146579922140">Google табела</translation>
-<translation id="3494768541638400973">Google јапански метод уноса (за јапанску тастатуру)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешака.</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Пронађене су датотеке (<ph name="FILE_COUNT" />)</translation>
 <translation id="6935521024859866267">Наопачке</translation>
-<translation id="6937152069980083337">Google јапански метод уноса (за америчку тастатуру)</translation>
 <translation id="6939777852457331078">Америчка Workman тастатура</translation>
 <translation id="696203921837389374">Омогући синхронизацију преко мобилне везе за пренос података</translation>
 <translation id="6965382102122355670">Потврди</translation>

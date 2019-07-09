@@ -115,7 +115,8 @@ class MockCredentialManagerDocumentInterfaceBroker
     mock_credential_manager_->Bind(std::move(receiver));
   }
 
-  void GetAuthenticator(mojom::blink::AuthenticatorRequest request) override {}
+  void GetAuthenticator(
+      mojo::PendingReceiver<mojom::blink::Authenticator> receiver) override {}
 
  private:
   MockCredentialManager* mock_credential_manager_;

@@ -1142,6 +1142,26 @@ jinja_template_resources("chrome_test_apk_template_resources") {
   variables = [ "manifest_package=$chrome_public_test_manifest_package" ]
 }
 
+config("orderfile_config") {
+  if (chrome_orderfile != "") {
+    _rebased_orderfile = rebase_path(chrome_orderfile, root_build_dir)
+    if (use_lld) {
+      # Code reordering is supported only for LLD. This is because orderfile
+      # generator does not expand symbol names to section names. Without
+      # section names like 'text.hot' or '.text.unlikely' the Gold linker cannot
+      # produce a proper ordering.
+      ldflags = [
+        "-Wl,--symbol-ordering-file",
+        "-Wl,$_rebased_orderfile",
+        "-Wl,--no-warn-symbol-ordering",
+      ]
+    }
+    inputs = [
+      chrome_orderfile,
+    ]
+  }
+}
+
 # Chrome APK's native library.
 chrome_common_shared_library("libchrome") {
   sources = [

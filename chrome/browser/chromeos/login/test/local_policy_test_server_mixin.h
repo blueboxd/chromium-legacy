@@ -19,6 +19,20 @@
 
 namespace chromeos {
 
+namespace system {
+class ScopedFakeStatisticsProvider;
+}  // namespace system
+
+namespace test {
+
+// Test constants used during enrollment wherever appropriate.
+constexpr char kTestDomain[] = "test-domain.com";
+constexpr char kTestRlzBrandCodeKey[] = "TEST";
+constexpr char kTestSerialNumber[] = "111111";
+constexpr char kTestHardwareClass[] = "hw";
+
+}  // namespace test
+
 // This test mixin covers setting up LocalPolicyTestServer and adding a
 // command-line flag to use it. Please see SetUp function for default settings.
 // Server is started after SetUp execution.
@@ -87,6 +101,16 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
           InitialEnrollmentMode initial_mode,
       const base::Optional<std::string>& management_domain,
       const base::Optional<bool> is_license_packaged_with_device);
+
+  // Utility function that configures server parameters for zero-touch
+  // enrollment. Should be used in conjunction with enabling zero-touch
+  // via command line and calling |ConfigureFakeStatisticsForZeroTouch|.
+  void SetupZeroTouchForcedEnrollment();
+
+  // Configures fake statistics provider with values that can be used with
+  // zero-touch enrollment.
+  void ConfigureFakeStatisticsForZeroTouch(
+      system::ScopedFakeStatisticsProvider* provider);
 
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> policy_test_server_;

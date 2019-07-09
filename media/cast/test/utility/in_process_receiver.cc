@@ -49,8 +49,7 @@ InProcessReceiver::InProcessReceiver(
       local_end_point_(local_end_point),
       remote_end_point_(remote_end_point),
       audio_config_(audio_config),
-      video_config_(video_config),
-      weak_factory_(this) {}
+      video_config_(video_config) {}
 
 InProcessReceiver::~InProcessReceiver() {
   Stop();

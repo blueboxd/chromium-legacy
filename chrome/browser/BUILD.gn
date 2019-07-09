@@ -1852,6 +1852,7 @@ jumbo_split_static_library("browser") {
   deps = [
     ":active_use_util",
     ":ntp_background_proto",
+    ":previews_protos",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -5121,6 +5122,12 @@ source_set("active_use_util") {
 source_set("theme_properties") {
   sources = [
     "themes/theme_properties.h",
+  ]
+}
+
+proto_library("previews_protos") {
+  sources = [
+    "previews/proto/previews_prober_cache_entry.proto",
   ]
 }
 

@@ -20,6 +20,7 @@ void ExitFingerprintPinSetupScreen();
 void WaitForDiscoverScreen();
 void ExitDiscoverPinSetupScreen();
 void SkipToEnrollmentOnRecovery();
+void WaitForEnrollmentScreen();
 
 #if defined(GOOGLE_CHROME_BUILD)
 void WaitForEulaScreen();

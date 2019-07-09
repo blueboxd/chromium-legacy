@@ -106,11 +106,6 @@ html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
   transition: transform 300ms ease-in-out;
 }
 
-/* Prevent navigation while we're reordering the tiles. */
-body.reordering .grid-tile {
-  pointer-events: none;
-}
-
 /* Prevent transitions on the held tile in order for it to smoothly follow the
  * mouse. */
 .grid-reorder .grid-tile {

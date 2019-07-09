@@ -68,8 +68,7 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       is_suspending_(false),
-      is_passthrough_(false),
-      weak_factory_(this) {
+      is_passthrough_(false) {
   DCHECK(create_audio_decoders_cb_);
 
   // PowerObserver's must be added and removed from the same thread, but we

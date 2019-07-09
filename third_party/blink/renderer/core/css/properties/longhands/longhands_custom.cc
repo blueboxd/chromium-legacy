@@ -6685,7 +6685,7 @@ const CSSValue* Translate::ParseSingleValue(
   if (translate_y) {
     CSSValue* translate_z = css_property_parser_helpers::ConsumeLength(
         range, context.Mode(), kValueRangeAll);
-    if (translate_y->GetIntValue() == 0 && !translate_z)
+    if (translate_y->IsZero() && !translate_z)
       return list;
 
     list->Append(*translate_y);

@@ -55,7 +55,7 @@ class MEDIA_EXPORT VideoThumbnailDecoder {
   std::vector<uint8_t> encoded_data_;
 
   VideoFrameCallback video_frame_callback_;
-  base::WeakPtrFactory<VideoThumbnailDecoder> weak_factory_;
+  base::WeakPtrFactory<VideoThumbnailDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoThumbnailDecoder);
 };

@@ -165,6 +165,28 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   bool IsStringKeyframe() const override { return true; }
 
+  // The unresolved property and their values. This is needed for correct
+  // implementation of KeyframeEffect.getKeyframes(). We use a single list for
+  // CSS, SVG properties. The only requirement for a property value to be
+  // in this list is that it parses correctly.
+  //
+  // See: https://drafts.csswg.org/web-animations/#keyframes-section
+  HeapHashMap<PropertyHandle, Member<const CSSValue>> input_properties_;
+
+  // The resolved properties are computed from unresolved ones applying these
+  // steps:
+  //  1. Resolve conflicts when multiple properties map to same underlying
+  //      one (e.g., margin, margin-top)
+  //  2. Expand shorthands to longhands
+  //  3. Expand logical properties to physical ones
+  //
+  // See:
+  // https://drafts.csswg.org/web-animations/#calculating-computed-keyframes
+  //
+  // TODO(816956): AFAICT we don't do (1) at the moment rather we parse and feed
+  // values into the MutableCSSPropertyValueSet which keeps replacing values as
+  // they come in. I am not sure if it leads to the same conflict resolution
+  // that web-animation expects. This needs more investigation.
   Member<MutableCSSPropertyValueSet> css_property_map_;
   Member<MutableCSSPropertyValueSet> presentation_attribute_map_;
   HashMap<const QualifiedName*, String> svg_attribute_map_;

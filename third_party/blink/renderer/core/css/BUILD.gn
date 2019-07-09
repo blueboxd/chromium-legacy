@@ -100,6 +100,8 @@ blink_core_sources("css") {
     "css_invalid_variable_value.h",
     "css_keyframe_rule.cc",
     "css_keyframe_rule.h",
+    "css_keyframe_shorthand_value.cc",
+    "css_keyframe_shorthand_value.h",
     "css_keyframes_rule.cc",
     "css_keyframes_rule.h",
     "css_layout_function_value.cc",

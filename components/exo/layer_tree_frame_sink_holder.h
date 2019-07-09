@@ -57,7 +57,6 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override;
   void DidLoseLayerTreeFrameSink() override;
-  void DidNotNeedBeginFrame() override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,

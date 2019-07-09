@@ -36,8 +36,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // For testing purposes. Receives a |netstack| pointer for easy mocking.
   // Interfaces can be filtered out by passing in |required_features|, which is
   // defined in fuchsia::hardware::ethernet.
-  NetworkChangeNotifierFuchsia(fuchsia::netstack::NetstackPtr netstack,
-                               uint32_t required_features);
+  NetworkChangeNotifierFuchsia(
+      fuchsia::netstack::NetstackPtr netstack,
+      uint32_t required_features,
+      SystemDnsConfigChangeNotifier* system_dns_config_notifier = nullptr);
 
   // Forwards the network interface list along with the result of
   // GetRouteTable() to OnRouteTableReceived().

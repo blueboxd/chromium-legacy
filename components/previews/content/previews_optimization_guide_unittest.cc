@@ -26,8 +26,10 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -39,7 +41,6 @@
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -290,7 +291,8 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
 
     base::test::ScopedFeatureList scoped_list;
-    scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+    scoped_list.InitAndEnableFeature(
+        optimization_guide::features::kOptimizationHintsFetching);
 
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the PreviewsOptimizationGuide is ready to process hints.
@@ -662,7 +664,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   base::Base64Encode(encoded_config, &encoded_config);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHintsProtoOverride, encoded_config);
+      optimization_guide::switches::kHintsProtoOverride, encoded_config);
   CreateServiceAndGuide();
 
   // Verify page matches and ECT thresholds.
@@ -697,7 +699,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   base::Base64Encode(encoded_config, &encoded_config);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHintsProtoOverride, encoded_config);
+      optimization_guide::switches::kHintsProtoOverride, encoded_config);
   CreateServiceAndGuide();
 
   // Verify page matches and ECT thresholds.
@@ -737,7 +739,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   base::Base64Encode(encoded_config, &encoded_config);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHintsProtoOverride, encoded_config);
+      optimization_guide::switches::kHintsProtoOverride, encoded_config);
   CreateServiceAndGuide();
 
   // Verify page matches and ECT thresholds.
@@ -757,7 +759,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWithInvalidCommandLineOverride) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHintsProtoOverride, "this-is-not-a-proto");
+      optimization_guide::switches::kHintsProtoOverride, "this-is-not-a-proto");
   CreateServiceAndGuide();
 
   EXPECT_FALSE(guide()->GetHintsForTesting());
@@ -766,7 +768,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWithPurgeHintCacheStoreCommandLineAndNoPreexistingData) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kPurgeHintCacheStore);
+      optimization_guide::switches::kPurgeHintCacheStore);
   CreateServiceAndGuide();
 
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
@@ -792,7 +794,7 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kPurgeHintCacheStore);
+      optimization_guide::switches::kPurgeHintCacheStore);
   CreateServiceAndGuide();
 
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
@@ -1086,7 +1088,8 @@ TEST_F(PreviewsOptimizationGuideTest,
   // With the optimization NOT flagged as experimental and no experiment
   // enabled, the optimization should be enabled.
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  scoped_list.InitAndDisableFeature(
+      optimization_guide::features::kOptimizationHintsExperiments);
   DoExperimentFlagTest(base::nullopt, true);
 }
 
@@ -1094,7 +1097,8 @@ TEST_F(PreviewsOptimizationGuideTest,
        HandlesExperimentalFlagWithEmptyExperimentName) {
   // Empty experiment names should be equivalent to no experiment flag set.
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  scoped_list.InitAndDisableFeature(
+      optimization_guide::features::kOptimizationHintsExperiments);
   DoExperimentFlagTest("", true);
 }
 
@@ -1103,7 +1107,8 @@ TEST_F(PreviewsOptimizationGuideTest,
   // With the optimization flagged as experimental and no experiment
   // enabled, the optimization should be disabled.
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(features::kOptimizationHintsExperiments);
+  scoped_list.InitAndDisableFeature(
+      optimization_guide::features::kOptimizationHintsExperiments);
   DoExperimentFlagTest("foo_experiment", false);
 }
 
@@ -1113,7 +1118,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   // name running, the optimization should be enabled.
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsExperiments,
+      optimization_guide::features::kOptimizationHintsExperiments,
       {{"experiment_name", "foo_experiment"}});
   DoExperimentFlagTest("foo_experiment", true);
 }
@@ -1124,7 +1129,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   // enabled, the optimization should be disabled.
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsExperiments,
+      optimization_guide::features::kOptimizationHintsExperiments,
       {{"experiment_name", "bar_experiment"}});
   DoExperimentFlagTest("foo_experiment", false);
 }
@@ -1548,7 +1553,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   base::test::ScopedFeatureList scoped_list2;
   scoped_list2.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsExperiments,
+      optimization_guide::features::kOptimizationHintsExperiments,
       {{"experiment_name", "experiment_1"}});
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
@@ -1585,7 +1590,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   base::test::ScopedFeatureList scoped_list2;
   scoped_list2.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsExperiments,
+      optimization_guide::features::kOptimizationHintsExperiments,
       {{"experiment_name", "experiment_2"}});
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
@@ -1622,7 +1627,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   base::test::ScopedFeatureList scoped_list2;
   scoped_list2.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsExperiments,
+      optimization_guide::features::kOptimizationHintsExperiments,
       {{"experiment_name", "experiment_1"},
        {"experiment_name", "experiment_2"}});
 
@@ -1816,7 +1821,8 @@ TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledNoHosts) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
 
   guide()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
@@ -1831,11 +1837,41 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledNoHosts) {
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 }
 
+TEST_F(PreviewsOptimizationGuideTest,
+       HintsFetcherEnabledWithHostsNoHintsInResponse) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+
+  std::vector<std::string> hosts = {"example1.com", "example2.com"};
+
+  // This should be called exactly once, confirming that hints are not fetched
+  // again after |kTestFetchRetryDelaySecs|.
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+      .Times(1)
+      .WillRepeatedly(testing::Return(hosts));
+
+  guide()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+
+  // Load hints so that OnHintsUpdated is called. This will force FetchHints to
+  // be triggered if OptimizationHintsFetching is enabled.
+  InitializeFixedCountResourceLoadingHints();
+  // Cause the timer to fire the fetch event.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+
+  // Check that hints should not be fetched again after the delay for a failed
+  // hints fetch attempt.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+}
+
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledWithHosts) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
-  std::string opt_guide_url = "https://hintsserver.com";
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
 
   guide()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
@@ -1857,7 +1893,8 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledWithHosts) {
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerRetryDelay) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
   std::string opt_guide_url = "https://hintsserver.com";
 
   guide()->SetHintsFetcherForTesting(
@@ -1886,7 +1923,8 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerRetryDelay) {
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerFetchSucceeds) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
   std::string opt_guide_url = "https://hintsserver.com";
 
   guide()->SetHintsFetcherForTesting(
@@ -1918,7 +1956,8 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerFetchSucceeds) {
 
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndDisableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
 
   EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
   CreateServiceAndGuide();
@@ -1931,7 +1970,8 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherLastFetchAtttempt) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
 
   // Set the last fetch attempt to 5 minutes ago, simulating a short duration
   // since last execution (simulating browser crash/close-reopen).
@@ -1985,7 +2025,8 @@ TEST_F(PreviewsOptimizationGuideDataSaverOffTest,
        HintsFetcherEnabledDataSaverDisabled) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
   std::string opt_guide_url = "https://hintsserver.com";
 
   guide()->SetHintsFetcherForTesting(

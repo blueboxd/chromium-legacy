@@ -13,6 +13,10 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 
+#if !defined(OS_ANDROID)
+#include "chromecast/external_mojo/external_service_support/crash_reporter_client.h"
+#endif
+
 namespace chromecast {
 namespace external_service_support {
 
@@ -35,6 +39,10 @@ void CommonProcessInitialization(int argc, char** argv) {
   base::FeatureList::InitializeInstance(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+
+#if !defined(OS_ANDROID)
+  CrashReporterClient::InitCrashReporter();
+#endif
 
   CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
 }

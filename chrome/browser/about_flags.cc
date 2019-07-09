@@ -142,6 +142,7 @@
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/blink/blink_features.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
@@ -985,22 +986,34 @@ const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
-    {"predictor", "lsq"}};
-
+    {"predictor", ui::input_prediction::kScrollPredictorNameLsq}};
 const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
-    {"predictor", "kalman"}};
-
+    {"predictor", ui::input_prediction::kScrollPredictorNameKalman}};
 const FeatureEntry::FeatureParam
     kResamplingInputEventsKalmanTimeFilteredEnabled[] = {
-        {"predictor", "kalman_time_filtered"}};
+        {"predictor",
+         ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered}};
+const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
+    {"predictor", ui::input_prediction::kScrollPredictorNameLinearFirst}};
+const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
+    {"predictor", ui::input_prediction::kScrollPredictorNameLinearSecond}};
 
 const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
-    {{"lsq", kResamplingInputEventsLSQEnabled,
+    {{ui::input_prediction::kScrollPredictorNameLsq,
+      kResamplingInputEventsLSQEnabled,
       base::size(kResamplingInputEventsLSQEnabled), nullptr},
-     {"kalman", kResamplingInputEventsKalmanEnabled,
+     {ui::input_prediction::kScrollPredictorNameKalman,
+      kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr},
-     {"kalman time filtered", kResamplingInputEventsKalmanTimeFilteredEnabled,
-      base::size(kResamplingInputEventsKalmanTimeFilteredEnabled), nullptr}};
+     {ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered,
+      kResamplingInputEventsKalmanTimeFilteredEnabled,
+      base::size(kResamplingInputEventsKalmanTimeFilteredEnabled), nullptr},
+     {ui::input_prediction::kScrollPredictorNameLinearFirst,
+      kResamplingInputEventsLinearFirstEnabled,
+      base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
+     {ui::input_prediction::kScrollPredictorNameLinearSecond,
+      kResamplingInputEventsLinearSecondEnabled,
+      base::size(kResamplingInputEventsLinearSecondEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {

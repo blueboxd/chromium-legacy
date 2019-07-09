@@ -189,4 +189,8 @@ bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }
 
+bool WebViewPasswordManagerClient::IsNewTabPage() const {
+  return false;
+}
+
 }  // namespace ios_web_view

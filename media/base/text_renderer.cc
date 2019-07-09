@@ -25,8 +25,7 @@ TextRenderer::TextRenderer(
     : task_runner_(task_runner),
       add_text_track_cb_(add_text_track_cb),
       state_(kUninitialized),
-      pending_read_count_(0),
-      weak_factory_(this) {}
+      pending_read_count_(0) {}
 
 TextRenderer::~TextRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());

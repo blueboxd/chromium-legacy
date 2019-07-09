@@ -276,6 +276,16 @@ PlatformWindowState X11WindowOzone::GetPlatformWindowState() const {
   return state_;
 }
 
+void X11WindowOzone::Activate() {
+  // TODO(crbug.com/973772): Propagate activation changes
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11WindowOzone::Deactivate() {
+  // TODO(crbug.com/973772): Propagate activation changes
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void X11WindowOzone::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, x11::None, xroot_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/task_runner.h"
 
 namespace base {
@@ -46,14 +47,10 @@ void DelayedTaskManager::DelayedTask::SetScheduled() {
   scheduled_ = true;
 }
 
-DelayedTaskManager::DelayedTaskManager(
-    std::unique_ptr<const TickClock> tick_clock)
+DelayedTaskManager::DelayedTaskManager()
     : process_ripe_tasks_closure_(
           BindRepeating(&DelayedTaskManager::ProcessRipeTasks,
-                        Unretained(this))),
-      tick_clock_(std::move(tick_clock)) {
-  DCHECK(tick_clock_);
-}
+                        Unretained(this))) {}
 
 DelayedTaskManager::~DelayedTaskManager() = default;
 
@@ -101,7 +98,7 @@ void DelayedTaskManager::ProcessRipeTasks() {
 
   {
     CheckedAutoLock auto_lock(queue_lock_);
-    const TimeTicks now = tick_clock_->NowTicks();
+    const TimeTicks now = ThreadPoolClock::Now();
     while (!delayed_task_queue_.empty() &&
            delayed_task_queue_.Min().task.delayed_run_time <= now) {
       // The const_cast on top is okay since the DelayedTask is
@@ -139,7 +136,7 @@ void DelayedTaskManager::ScheduleProcessRipeTasksOnServiceThread(
   DCHECK(!next_delayed_task_run_time.is_null());
   if (next_delayed_task_run_time.is_max())
     return;
-  const TimeTicks now = tick_clock_->NowTicks();
+  const TimeTicks now = ThreadPoolClock::Now();
   TimeDelta delay = std::max(TimeDelta(), next_delayed_task_run_time - now);
   service_thread_task_runner_->PostDelayedTask(
       FROM_HERE, process_ripe_tasks_closure_, delay);

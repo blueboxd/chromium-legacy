@@ -46,14 +46,29 @@ public class DecoderServiceHost
     // A content resolver for providing file descriptors for the images.
     private ContentResolver mContentResolver;
 
-    // The number of successful decodes, per batch.
-    private int mSuccessfulDecodes;
+    // The number of successful image decodes (not video), per batch.
+    private int mSuccessfulImageDecodes;
 
-    // The number of runtime failures during decoding, per batch.
-    private int mFailedDecodesRuntime;
+    // The number of runtime failures during image decoding (not video), per batch.
+    private int mFailedImageDecodesRuntime;
 
-    // The number of out of memory failures during decoding, per batch.
-    private int mFailedDecodesMemory;
+    // The number of out of memory failures during image decoding (not video), per batch.
+    private int mFailedImageDecodesMemory;
+
+    // The number of successful video decodes, per batch.
+    private int mSuccessfulVideoDecodes;
+
+    // The number of file errors during video decoding, per batch.
+    private int mFailedVideoDecodesFile;
+
+    // The number of runtime failures during video decoding, per batch.
+    private int mFailedVideoDecodesRuntime;
+
+    // The number of io failures during video decoding, per batch.
+    private int mFailedVideoDecodesIo;
+
+    // The number of io failures during video decoding, per batch.
+    private int mFailedVideoDecodesUnknown;
 
     // A worker task for asynchronously handling video decode requests.
     private DecodeVideoTask mWorkerTask;
@@ -259,32 +274,79 @@ public class DecoderServiceHost
 
         if (mProcessingRequests.entrySet().iterator().hasNext()) return;
 
-        int totalRequests = mSuccessfulDecodes + mFailedDecodesRuntime + mFailedDecodesMemory;
-        if (totalRequests > 0) {
-            // TODO(finnur): Add corresponding UMA for videos.
-            int runtimeFailures = 100 * mFailedDecodesRuntime / totalRequests;
+        int totalImageRequests =
+                mSuccessfulImageDecodes + mFailedImageDecodesRuntime + mFailedImageDecodesMemory;
+        if (totalImageRequests > 0) {
+            // Calculate and transmit UMA for image decoding.
+            int runtimeFailures = 100 * mFailedImageDecodesRuntime / totalImageRequests;
             RecordHistogram.recordPercentageHistogram(
                     "Android.PhotoPicker.DecoderHostFailureRuntime", runtimeFailures);
 
-            int memoryFailures = 100 * mFailedDecodesMemory / totalRequests;
+            int memoryFailures = 100 * mFailedImageDecodesMemory / totalImageRequests;
             RecordHistogram.recordPercentageHistogram(
                     "Android.PhotoPicker.DecoderHostFailureOutOfMemory", memoryFailures);
 
-            mSuccessfulDecodes = 0;
-            mFailedDecodesRuntime = 0;
-            mFailedDecodesMemory = 0;
+            mSuccessfulImageDecodes = 0;
+            mFailedImageDecodesRuntime = 0;
+            mFailedImageDecodesMemory = 0;
+        }
+
+        int totalVideoRequests = mSuccessfulVideoDecodes + mFailedVideoDecodesFile
+                + mFailedVideoDecodesRuntime + mFailedVideoDecodesIo + mFailedVideoDecodesUnknown;
+        if (totalVideoRequests > 0) {
+            // Calculate and transmit UMA for video decoding.
+            int videoFileFailures = 100 * mFailedVideoDecodesFile / totalVideoRequests;
+            RecordHistogram.recordPercentageHistogram(
+                    "Android.PhotoPicker.DecoderHostVideoFileError", videoFileFailures);
+
+            int videoRuntimeFailures = 100 * mFailedVideoDecodesRuntime / totalVideoRequests;
+            RecordHistogram.recordPercentageHistogram(
+                    "Android.PhotoPicker.DecoderHostVideoRuntimeError", videoRuntimeFailures);
+
+            int videoIoFailures = 100 * mFailedVideoDecodesIo / totalVideoRequests;
+            RecordHistogram.recordPercentageHistogram(
+                    "Android.PhotoPicker.DecoderHostVideoIoError", videoIoFailures);
+
+            int videoUnknownFailures = 100 * mFailedVideoDecodesUnknown / totalVideoRequests;
+            RecordHistogram.recordPercentageHistogram(
+                    "Android.PhotoPicker.DecoderHostVideoUnknownError", videoUnknownFailures);
+
+            mSuccessfulVideoDecodes = 0;
+            mFailedVideoDecodesFile = 0;
+            mFailedVideoDecodesRuntime = 0;
+            mFailedVideoDecodesIo = 0;
+            mFailedVideoDecodesUnknown = 0;
         }
     }
 
     /**
      * A callback that receives the results of the video decoding.
      * @param uri The uri of the decoded video.
-     * @param bitmap The thumbnail representing the decoded video.
+     * @param bitmaps The thumbnails representing the decoded video.
      * @param duration The video duration (a formatted human-readable string, for example "3:00").
+     * @param decodingResult Whether the decoding was successful.
      */
     @Override
-    public void videoDecodedCallback(Uri uri, List<Bitmap> bitmaps, String duration) {
-        // TODO(finnur): Add corresponding UMA for video decoding.
+    public void videoDecodedCallback(Uri uri, List<Bitmap> bitmaps, String duration,
+            @DecodeVideoTask.DecodingResult int decodingResult) {
+        switch (decodingResult) {
+            case DecodeVideoTask.DecodingResult.SUCCESS:
+                if (bitmaps == null || bitmaps.size() == 0)
+                    mFailedVideoDecodesUnknown++;
+                else
+                    mSuccessfulVideoDecodes++;
+                break;
+            case DecodeVideoTask.DecodingResult.FILE_ERROR:
+                mFailedVideoDecodesFile++;
+                break;
+            case DecodeVideoTask.DecodingResult.RUNTIME_ERROR:
+                mFailedVideoDecodesRuntime++;
+                break;
+            case DecodeVideoTask.DecodingResult.IO_ERROR:
+                mFailedVideoDecodesIo++;
+                break;
+        }
+
         closeRequest(uri.getPath(), true, bitmaps, duration, -1);
     }
 
@@ -306,13 +368,13 @@ public class DecoderServiceHost
                         ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
                         : null;
                 decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
-                mSuccessfulDecodes++;
+                mSuccessfulImageDecodes++;
                 bitmaps = new ArrayList<>(1);
                 bitmaps.add(bitmap);
             } catch (RuntimeException e) {
-                mFailedDecodesRuntime++;
+                mFailedImageDecodesRuntime++;
             } catch (OutOfMemoryError e) {
-                mFailedDecodesMemory++;
+                mFailedImageDecodesMemory++;
             } finally {
                 closeRequest(
                         filePath, /*isVideo=*/false, bitmaps, /*videoDuration=*/null, decodeTime);
@@ -334,19 +396,41 @@ public class DecoderServiceHost
         DecoderServiceParams params = mProcessingRequests.get(filePath);
         if (params != null) {
             long endRpcCall = SystemClock.elapsedRealtime();
-            RecordHistogram.recordTimesHistogram(
-                    "Android.PhotoPicker.RequestProcessTime", endRpcCall - params.mTimestamp);
+            if (isVideo) {
+                if (bitmaps.size() > 1) {
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.PhotoPicker.RequestProcessTimeAnimation",
+                            endRpcCall - params.mTimestamp);
+                } else {
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.PhotoPicker.RequestProcessTimeThumbnail",
+                            endRpcCall - params.mTimestamp);
+                }
+            } else {
+                RecordHistogram.recordTimesHistogram(
+                        "Android.PhotoPicker.RequestProcessTime", endRpcCall - params.mTimestamp);
+            }
 
             params.mCallback.imagesDecodedCallback(filePath, isVideo, bitmaps, videoDuration);
 
-            // TODO(finnur): Add UMA for videos.
-            if (!isVideo && decodeTime != -1 && bitmaps != null && bitmaps.get(0) != null) {
-                RecordHistogram.recordTimesHistogram(
-                        "Android.PhotoPicker.ImageDecodeTime", decodeTime);
-
+            if (decodeTime != -1 && bitmaps != null && bitmaps.get(0) != null) {
                 int sizeInKB = bitmaps.get(0).getByteCount() / ConversionUtils.BYTES_PER_KILOBYTE;
-                RecordHistogram.recordCustomCountHistogram(
-                        "Android.PhotoPicker.ImageByteCount", sizeInKB, 1, 100000, 50);
+                if (isVideo) {
+                    if (bitmaps.size() > 1) {
+                        RecordHistogram.recordTimesHistogram(
+                                "Android.PhotoPicker.VideoDecodeTimeAnimation", decodeTime);
+                    } else {
+                        RecordHistogram.recordTimesHistogram(
+                                "Android.PhotoPicker.VideoDecodeTimeThumbnail", decodeTime);
+                        RecordHistogram.recordCustomCountHistogram(
+                                "Android.PhotoPicker.VideoByteCount", sizeInKB, 1, 100000, 50);
+                    }
+                } else {
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.PhotoPicker.ImageDecodeTime", decodeTime);
+                    RecordHistogram.recordCustomCountHistogram(
+                            "Android.PhotoPicker.ImageByteCount", sizeInKB, 1, 100000, 50);
+                }
             }
             mProcessingRequests.remove(filePath);
         }

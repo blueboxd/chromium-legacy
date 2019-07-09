@@ -102,7 +102,7 @@
   self.modalViewController = nil;
 }
 
-- (CGFloat)infobarModalHeight {
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
   // TODO(crbug.com/911864): Implement, this is a temporary value. If
   // InfobarConfirmCoordinator ends up having no Modal this should DCHECK or
   // NOTREACHED.

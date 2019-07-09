@@ -46,8 +46,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       parent_local_surface_id_allocator_(
           new viz::ParentLocalSurfaceIdAllocator),
       client_provided_begin_frame_source_(begin_frame_source),
-      external_begin_frame_source_(this),
-      weak_ptr_factory_(this) {
+      external_begin_frame_source_(this) {
   parent_local_surface_id_allocator_->GenerateId();
 }
 

@@ -38,7 +38,6 @@
 #include "storage/browser/quota/quota_macros.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
-#include "storage/browser/quota/storage_monitor.h"
 #include "storage/browser/quota/usage_tracker.h"
 
 using blink::mojom::StorageType;
@@ -878,7 +877,6 @@ QuotaManager::QuotaManager(
       is_getting_eviction_origin_(false),
       special_storage_policy_(std::move(special_storage_policy)),
       get_volume_info_fn_(&QuotaManager::GetVolumeInfo),
-      storage_monitor_(new StorageMonitor(this)),
       weak_factory_(this) {
   DCHECK_EQ(settings_.refresh_interval, base::TimeDelta::Max());
   if (!get_settings_function.is_null()) {
@@ -1189,36 +1187,20 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
   switch (type) {
     case StorageType::kTemporary:
       temporary_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kTemporary, special_storage_policy_.get(),
-          storage_monitor_.get()));
+          clients_, StorageType::kTemporary, special_storage_policy_.get()));
       return true;
     case StorageType::kPersistent:
       persistent_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kPersistent, special_storage_policy_.get(),
-          storage_monitor_.get()));
+          clients_, StorageType::kPersistent, special_storage_policy_.get()));
       return true;
     case StorageType::kSyncable:
       syncable_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kSyncable, special_storage_policy_.get(),
-          storage_monitor_.get()));
+          clients_, StorageType::kSyncable, special_storage_policy_.get()));
       return true;
     default:
       NOTREACHED();
   }
   return true;
-}
-
-void QuotaManager::AddStorageObserver(
-    StorageObserver* observer, const StorageObserver::MonitorParams& params) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(observer);
-  storage_monitor_->AddObserver(observer, params);
-}
-
-void QuotaManager::RemoveStorageObserver(StorageObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(observer);
-  storage_monitor_->RemoveObserver(observer);
 }
 
 QuotaManager::~QuotaManager() {
@@ -1246,15 +1228,12 @@ void QuotaManager::LazyInitialize() {
   database_.reset(new QuotaDatabase(is_incognito_ ? base::FilePath() :
       profile_path_.AppendASCII(kDatabaseName)));
 
-  temporary_usage_tracker_.reset(
-      new UsageTracker(clients_, StorageType::kTemporary,
-                       special_storage_policy_.get(), storage_monitor_.get()));
-  persistent_usage_tracker_.reset(
-      new UsageTracker(clients_, StorageType::kPersistent,
-                       special_storage_policy_.get(), storage_monitor_.get()));
-  syncable_usage_tracker_.reset(
-      new UsageTracker(clients_, StorageType::kSyncable,
-                       special_storage_policy_.get(), storage_monitor_.get()));
+  temporary_usage_tracker_.reset(new UsageTracker(
+      clients_, StorageType::kTemporary, special_storage_policy_.get()));
+  persistent_usage_tracker_.reset(new UsageTracker(
+      clients_, StorageType::kPersistent, special_storage_policy_.get()));
+  syncable_usage_tracker_.reset(new UsageTracker(
+      clients_, StorageType::kSyncable, special_storage_policy_.get()));
 
   if (!is_incognito_) {
     histogram_timer_.Start(

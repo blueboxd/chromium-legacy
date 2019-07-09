@@ -415,8 +415,7 @@ bool Vp9FrameContext::IsValid() const {
   return true;
 }
 
-Vp9Parser::Context::Vp9FrameContextManager::Vp9FrameContextManager()
-    : weak_ptr_factory_(this) {}
+Vp9Parser::Context::Vp9FrameContextManager::Vp9FrameContextManager() {}
 
 Vp9Parser::Context::Vp9FrameContextManager::~Vp9FrameContextManager() = default;
 

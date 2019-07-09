@@ -13,6 +13,8 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
@@ -58,15 +60,29 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
   void GetInterface(const std::string& name,
                     mojo::ScopedInterfaceEndpointHandle handle);
 
+  // Remove this after done with migration from AssociatedInterfaceRequest to
+  // PendingAssociatedReceiver.
   // Templated helpers for GetInterface().
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfaceRequest<Interface> request) {
     GetInterface(Interface::Name_, request.PassHandle());
   }
 
+  // Remove this after done with migration from AssociatedInterfacePtr to
+  // AssociatedRemote.
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
     GetInterface(mojo::MakeRequest(proxy, task_runner_));
+  }
+
+  template <typename Interface>
+  void GetInterface(mojo::PendingAssociatedReceiver<Interface> receiver) {
+    GetInterface(Interface::Name_, receiver.PassHandle());
+  }
+
+  template <typename Interface>
+  void GetInterface(mojo::AssociatedRemote<Interface>* remote) {
+    GetInterface(remote->BindNewEndpointAndPassReceiver());
   }
 
   void OverrideBinderForTesting(

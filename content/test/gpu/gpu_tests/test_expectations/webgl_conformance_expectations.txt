@@ -62,10 +62,8 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
-crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+# TODO(ynovikov): re-add suppressions below once this is removed.
+crbug.com/979444 conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
@@ -526,7 +524,7 @@ crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/li
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
-crbug.com/611945 [ android qualcomm-adreno-(tm)-420 no-angle ] conformance/context/context-size-change.html [ Failure ]
+crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-size-change.html [ Failure ]
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/premultiplyalpha-test.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/qualcomm-crash.html [ Failure ]
@@ -581,25 +579,9 @@ crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-cra
 # Android ANGLE GLES
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/extensions/oes-texture-float-with-image.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/extensions/oes-texture-half-float-with-image.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/image/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-
-# Canvas tests fail with missing fonts
-crbug.com/908866 [ android opengles ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/extensions/oes-texture-half-float-with-canvas.html [ Failure ]
-crbug.com/908866 [ android opengles ] conformance/textures/canvas/* [ Failure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android opengles ] conformance/context/context-size-change.html [ Failure ]
-crbug.com/angleproject/2407 [ android opengles ] conformance/misc/uninitialized-test.html [ Failure ]
-crbug.com/908912 [ android opengles ] conformance/renderbuffers/framebuffer-test.html [ Failure ]
-crbug.com/angleproject/2978 [ android opengles ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Failure ]
 crbug.com/angleproject/1552 [ android opengles ] WebglExtension_WEBGL_compressed_texture_etc1 [ Failure ]
 
 ############

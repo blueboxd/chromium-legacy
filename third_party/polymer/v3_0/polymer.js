@@ -8,6 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
+export {afterNextRender, beforeNextRender} from './lib/utils/render-status.js';
 export {animationFrame, idlePeriod, microTask} from './lib/utils/async.js';
 import * as gestures from './lib/utils/gestures.js';
 export {gestures};

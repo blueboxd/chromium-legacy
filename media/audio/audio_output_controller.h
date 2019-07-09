@@ -333,7 +333,7 @@ class MEDIA_EXPORT AudioOutputController
   // we'll have concurrent access from different threads. Only the factory may
   // be used to invalidate WeakPtrs while the stream is active.
   base::WeakPtr<AudioOutputController> weak_this_for_errors_;
-  base::WeakPtrFactory<AudioOutputController> weak_factory_for_errors_;
+  base::WeakPtrFactory<AudioOutputController> weak_factory_for_errors_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };

@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
 import org.chromium.chrome.browser.touchless.snackbar.BlackHoleSnackbarManager;
@@ -28,7 +28,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /** A coordinator for touchless UI. */
 public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserver,
-                                                   InflationObserver, PauseResumeWithNativeObserver,
+                                                   InflationObserver, StartStopWithNativeObserver,
                                                    TouchlessUiCoordinator {
     private ChromeActivity mActivity;
 
@@ -83,13 +83,17 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
         mTouchlessZoomHelper = new TouchlessZoomHelper(mActivity.getActivityTabProvider());
     }
 
-    @Override
-    public void onResumeWithNative() {
-        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onActivityResume();
+    public void skipShowingProgressBarOnNextActivityStart() {
+        mProgressBarCoordinator.skipShowingOnNextActivityStart();
     }
 
     @Override
-    public void onPauseWithNative() {}
+    public void onStartWithNative() {
+        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onActivityStart();
+    }
+
+    @Override
+    public void onStopWithNative() {}
 
     @Override
     public KeyEvent processKeyEvent(KeyEvent event) {

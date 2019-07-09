@@ -1661,6 +1661,8 @@ source_set("chromeos") {
     "policy/off_hours/off_hours_policy_applier.h",
     "policy/off_hours/off_hours_proto_parser.cc",
     "policy/off_hours/off_hours_proto_parser.h",
+    "policy/os_and_policies_update_checker.cc",
+    "policy/os_and_policies_update_checker.h",
     "policy/policy_cert_service.cc",
     "policy/policy_cert_service.h",
     "policy/policy_cert_service_factory.cc",

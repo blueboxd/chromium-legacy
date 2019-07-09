@@ -81,11 +81,8 @@ void UsbPrinterNotification::Click(
     // Body of notification clicked.
     visible_ = false;
     if (type_ == Type::kConfigurationRequired) {
-      auto* const settings_manager =
-          chrome::SettingsWindowManager::GetInstance();
-      settings_manager->ShowChromePageForProfile(
-          profile_,
-          chrome::GetSettingsUrl(chrome::kNativePrintingSettingsSubPage));
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile_, chrome::kNativePrintingSettingsSubPage);
     }
     return;
   }

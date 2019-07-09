@@ -81,8 +81,7 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
       needs_push_properties_(false),
-      mutator_(nullptr),
-      weak_factory_(this) {
+      mutator_(nullptr) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         std::make_unique<ScrollOffsetAnimationsImpl>(this);

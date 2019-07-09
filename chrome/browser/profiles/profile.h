@@ -222,11 +222,6 @@ class Profile : public content::BrowserContext {
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  // Returns a callback (which must be executed on the IO thread) that returns
-  // the cookie store for the chrome-extensions:// scheme.
-  virtual base::OnceCallback<net::CookieStore*()>
-  GetExtensionsCookieStoreGetter() = 0;
-
   // Returns the main URLLoaderFactory.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;

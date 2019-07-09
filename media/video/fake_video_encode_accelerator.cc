@@ -18,8 +18,7 @@ FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
     : task_runner_(task_runner),
       will_initialization_succeed_(true),
       client_(NULL),
-      next_frame_is_first_frame_(true),
-      weak_this_factory_(this) {}
+      next_frame_is_first_frame_(true) {}
 
 FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {
   weak_this_factory_.InvalidateWeakPtrs();

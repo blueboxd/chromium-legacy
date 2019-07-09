@@ -143,6 +143,7 @@ void StereoPannerHandler::SetChannelCountMode(const String& mode,
 StereoPannerNode::StereoPannerNode(BaseAudioContext& context)
     : AudioNode(context),
       pan_(AudioParam::Create(context,
+                              Uuid(),
                               kParamTypeStereoPannerPan,
                               0,
                               AudioParamHandler::AutomationRate::kAudio,

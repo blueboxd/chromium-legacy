@@ -35,7 +35,7 @@
 
 // The infobar modal height. Used to calculate its presentation container
 // height.
-- (CGFloat)infobarModalHeight;
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width;
 
 @end
 

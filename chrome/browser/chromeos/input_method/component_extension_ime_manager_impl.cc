@@ -164,7 +164,9 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
   // url won't be override by IME component extensions.
   base::FilePath* copied_file_path = new base::FilePath(file_path);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      // USER_BLOCKING because it is on the critical path of displaying the
+      // virtual keyboard. See https://crbug.com/976542
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&CheckFilePath, base::Unretained(copied_file_path)),
       base::Bind(&OnFilePathChecked, base::Unretained(profile),
                  base::Owned(new std::string(extension_id)),

@@ -88,7 +88,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   // Note that this class is already thread hostile when bound.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<MojoVideoEncodeAcceleratorService> weak_factory_;
+  base::WeakPtrFactory<MojoVideoEncodeAcceleratorService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoEncodeAcceleratorService);
 };

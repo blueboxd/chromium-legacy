@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1351692861129622852">Импортират се <ph name="FILE_COUNT" /> файла...</translation>
 <translation id="1352103415082130575">Тайландска клавиатура (паташот)</translation>
-<translation id="1358032944105037487">Японска клавиатура</translation>
 <translation id="1358735829858566124">Файлът или директорията не могат да се използват.</translation>
 <translation id="1363028406613469049">Запис</translation>
 <translation id="1378727793141957596">Добре дошли в Google Диск!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Копира се...</translation>
 <translation id="3475447146579922140">Електронна таблица в Google</translation>
-<translation id="3494768541638400973">Google Редактор с метод за въвеждане на японски (за японска клавиатура)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
@@ -515,7 +513,6 @@
 <ph name="LINE_BREAK1" />
 Намерихме <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Наопаки</translation>
-<translation id="6937152069980083337">Google Редактор с метод за въвеждане на японски (за американска клавиатура)</translation>
 <translation id="6939777852457331078">Американска (Уъркман) клавиатура</translation>
 <translation id="696203921837389374">Активиране на синхронизирането чрез мобилни данни</translation>
 <translation id="6965382102122355670">OK</translation>

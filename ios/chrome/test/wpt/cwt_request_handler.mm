@@ -55,7 +55,7 @@ const char kWebDriverSessionAlreadyExistsMessage[] = "A session already exists";
 const char kWebDriverUnknownCommandMessage[] = "No such command";
 const char kWebDriverInvalidTimeoutMessage[] =
     "Timeouts must be non-negative integers";
-const char kWebDriverNoOpenWindowMessage[] = "No currently open window";
+const char kWebDriverNoTargetWindowMessage[] = "Target window has been closed";
 const char kWebDriverMissingWindowHandleMessage[] = "No handle argument";
 const char kWebDriverNoMatchingWindowMessage[] =
     "No window with the given handle";
@@ -130,7 +130,7 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     }
 
     if (command == kWebDriverWindowCommand)
-      return GetCurrentTabId();
+      return GetTargetTabId();
 
     if (command == kWebDriverWindowHandlesCommand)
       return GetAllTabIds();
@@ -188,7 +188,7 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
       return CloseSession();
 
     if (command == kWebDriverWindowCommand)
-      return CloseCurrentTab();
+      return CloseTargetTab();
 
     return base::nullopt;
   }
@@ -231,6 +231,8 @@ base::Value CWTRequestHandler::InitializeSession() {
   }
 
   [CWTWebDriverAppInterface enablePopups];
+  target_tab_id_ =
+      base::SysNSStringToUTF8([CWTWebDriverAppInterface getCurrentTabID]);
 
   base::Value result(base::Value::Type::DICTIONARY);
   session_id_ = base::GenerateGUID();
@@ -272,6 +274,7 @@ base::Value CWTRequestHandler::NavigateToUrl(const base::Value* url) {
 
   NSError* error = [CWTWebDriverAppInterface
                loadURL:base::SysUTF8ToNSString(url->GetString())
+                 inTab:base::SysUTF8ToNSString(target_tab_id_)
       timeoutInSeconds:page_load_timeout_];
   if (!error)
     return base::Value(base::Value::Type::NONE);
@@ -301,14 +304,15 @@ base::Value CWTRequestHandler::SetTimeouts(const base::Value& timeouts) {
   return base::Value(base::Value::Type::NONE);
 }
 
-base::Value CWTRequestHandler::GetCurrentTabId() {
-  NSString* tab_id = [CWTWebDriverAppInterface getCurrentTabID];
-  if (!tab_id) {
+base::Value CWTRequestHandler::GetTargetTabId() {
+  NSArray* tab_ids = [CWTWebDriverAppInterface getTabIDs];
+  if ([tab_ids indexOfObject:base::SysUTF8ToNSString(target_tab_id_)] ==
+      NSNotFound) {
     return CreateErrorValue(kWebDriverNoSuchWindowError,
-                            kWebDriverNoOpenWindowMessage);
+                            kWebDriverNoTargetWindowMessage);
   }
 
-  return base::Value(base::SysNSStringToUTF8(tab_id));
+  return base::Value(target_tab_id_);
 }
 
 base::Value CWTRequestHandler::GetAllTabIds() {
@@ -320,28 +324,32 @@ base::Value CWTRequestHandler::GetAllTabIds() {
   return id_list;
 }
 
-base::Value CWTRequestHandler::SwitchToTabWithId(const base::Value* id) {
-  if (!id || !id->is_string()) {
+base::Value CWTRequestHandler::SwitchToTabWithId(const base::Value* tab_id) {
+  if (!tab_id || !tab_id->is_string()) {
     return CreateErrorValue(kWebDriverInvalidArgumentError,
                             kWebDriverMissingWindowHandleMessage);
   }
 
   NSError* error = [CWTWebDriverAppInterface
-      switchToTabWithID:base::SysUTF8ToNSString(id->GetString())];
+      switchToTabWithID:base::SysUTF8ToNSString(tab_id->GetString())];
 
-  if (!error)
+  if (!error) {
+    target_tab_id_ = tab_id->GetString();
     return base::Value(base::Value::Type::NONE);
+  }
 
   return CreateErrorValue(kWebDriverNoSuchWindowError,
                           kWebDriverNoMatchingWindowMessage);
 }
 
-base::Value CWTRequestHandler::CloseCurrentTab() {
-  NSError* error = [CWTWebDriverAppInterface closeCurrentTab];
+base::Value CWTRequestHandler::CloseTargetTab() {
+  NSError* error = [CWTWebDriverAppInterface
+      closeTabWithID:base::SysUTF8ToNSString(target_tab_id_)];
+  target_tab_id_.clear();
 
   if (error) {
     return CreateErrorValue(kWebDriverNoSuchWindowError,
-                            kWebDriverNoOpenWindowMessage);
+                            kWebDriverNoTargetWindowMessage);
   }
 
   return GetAllTabIds();
@@ -375,6 +383,7 @@ base::Value CWTRequestHandler::ExecuteScript(const base::Value* script,
 
   NSString* result_as_json = [CWTWebDriverAppInterface
       executeAsyncJavaScriptFunction:function_to_execute
+                               inTab:base::SysUTF8ToNSString(target_tab_id_)
                     timeoutInSeconds:script_timeout_];
 
   if (!result_as_json) {

@@ -130,7 +130,9 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()) {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
     // Because the network service is enabled we need a system Connector or
@@ -296,7 +298,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
-  net::test::MockNetworkChangeNotifier network_change_notifier_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };

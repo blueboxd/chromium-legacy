@@ -22,8 +22,11 @@ InSessionPasswordChangeManager::CreateIfEnabled(Profile* primary_profile) {
   if (primary_profile->GetPrefs()->GetBoolean(
           prefs::kSamlInSessionPasswordChangeEnabled)) {
     return std::make_unique<InSessionPasswordChangeManager>(primary_profile);
+  } else {
+    // If the policy is disabled, clear the SAML password attributes.
+    SamlPasswordAttributes::DeleteFromPrefs(primary_profile->GetPrefs());
+    return nullptr;
   }
-  return nullptr;
 }
 
 InSessionPasswordChangeManager::InSessionPasswordChangeManager(
@@ -41,6 +44,32 @@ void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
   PasswordChangeDialog::Show(primary_profile_);
 }
 
+void InSessionPasswordChangeManager::OnSamlPasswordChanged(
+    const std::string& scraped_old_password,
+    const std::string& scraped_new_password) {
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(
+      primary_user_->GetAccountId(), true);
+  PasswordChangeDialog::Dismiss();
+
+  const bool both_passwords_scraped =
+      !scraped_old_password.empty() && !scraped_new_password.empty();
+  if (both_passwords_scraped) {
+    // Both passwords scraped so we try to change cryptohome password now.
+    // Show the confirm dialog but initially showing a spinner. If the change
+    // fails, then the dialog will hide the spinner and show a prompt.
+    // If the change succeeds, the dialog and spinner will just disappear.
+    ConfirmPasswordChangeDialog::Show(scraped_old_password,
+                                      scraped_new_password,
+                                      /*show_spinner_initially=*/true);
+    ChangePassword(scraped_old_password, scraped_new_password);
+  } else {
+    // Failed to scrape passwords - prompt for passwords immediately.
+    ConfirmPasswordChangeDialog::Show(scraped_old_password,
+                                      scraped_new_password,
+                                      /*show_spinner_initially=*/false);
+  }
+}
+
 void InSessionPasswordChangeManager::ChangePassword(
     const std::string& old_password,
     const std::string& new_password) {
@@ -49,11 +78,12 @@ void InSessionPasswordChangeManager::ChangePassword(
   authenticator_->MigrateKey(user_context, old_password);
 }
 
-void InSessionPasswordChangeManager::HandlePasswordScrapeFailure() {
-  // TODO(https://crbug.com/930109): Show different versions of the dialog
-  // depending on whether any usable passwords were scraped.
-  PasswordChangeDialog::Dismiss();
-  ConfirmPasswordChangeDialog::Show();
+void InSessionPasswordChangeManager::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void InSessionPasswordChangeManager::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void InSessionPasswordChangeManager::OnAuthSuccess(
@@ -77,8 +107,14 @@ void InSessionPasswordChangeManager::OnAuthSuccess(
 }
 
 void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {
-  // TODO(https://crbug.com/930109): Ask user for the old password.
   VLOG(1) << "Failed to change cryptohome password: " << error.GetErrorString();
+  NotifyObservers(CHANGE_PASSWORD_AUTH_FAILURE);
+}
+
+void InSessionPasswordChangeManager::NotifyObservers(Event event) {
+  for (auto& observer : observer_list_) {
+    observer.OnEvent(event);
+  }
 }
 
 }  // namespace chromeos

@@ -42,7 +42,7 @@
 //
 // Callbacks also support cancellation. A common use is binding the receiver
 // object as a WeakPtr<T>. If that weak pointer is invalidated, calling Run()
-// will be a no-op. Note that |is_cancelled()| and |is_null()| are distinct:
+// will be a no-op. Note that |IsCancelled()| and |is_null()| are distinct:
 // simply cancelling a callback will not also make it null.
 //
 // base::Callback is currently a type alias for base::RepeatingCallback. In the

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider_handler_view.h"
@@ -325,11 +326,10 @@ void SplitViewDivider::UpdateDividerBounds() {
 }
 
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
-  aura::Window* root_window =
-      divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          root_window);
+          Shell::GetPrimaryRootWindow()->GetChildById(
+              desks_util::GetActiveDeskContainerId()));
   const int divider_position = controller_->divider_position();
   const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,

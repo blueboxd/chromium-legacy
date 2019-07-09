@@ -408,7 +408,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   const base::TickClock* clock_;
 
-  base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourcePool> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

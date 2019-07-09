@@ -40,6 +40,8 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
     return IsNonNegative() ? kValueRangeNonNegative : kValueRangeAll;
   }
 
+  bool IsZero() const;
+
   // TODO(crbug.com/979895): Make sure these functions are called only when
   // the math expression resolves into a double value.
   double DoubleValue() const;

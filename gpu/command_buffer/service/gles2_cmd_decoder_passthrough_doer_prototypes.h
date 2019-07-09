@@ -894,6 +894,7 @@ error::Error DoScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                             GLfloat uv_y,
                                             GLfloat uv_width,
                                             GLfloat uv_height,
+                                            bool enable_blend,
                                             GLuint gpu_fence_id);
 error::Error DoScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,

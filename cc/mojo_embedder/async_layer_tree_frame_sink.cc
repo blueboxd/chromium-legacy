@@ -96,8 +96,7 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
                             params->client_name)),
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
-          params->client_name)),
-      weak_factory_(this) {
+          params->client_name)) {
   // We should not create hit test data provider if we want to use cc layer tree
   // to generated data.
   if (features::IsVizHitTestingSurfaceLayerEnabled())

@@ -27,22 +27,22 @@ LayoutManagerBase::~LayoutManagerBase() = default;
 gfx::Size LayoutManagerBase::GetPreferredSize(const View* host) const {
   DCHECK_EQ(host_view_, host);
   if (!preferred_size_)
-    preferred_size_ = GetProposedLayout(SizeBounds()).host_size;
+    preferred_size_ = CalculateProposedLayout(SizeBounds()).host_size;
   return *preferred_size_;
 }
 
 gfx::Size LayoutManagerBase::GetMinimumSize(const View* host) const {
   DCHECK_EQ(host_view_, host);
   if (!minimum_size_)
-    minimum_size_ = GetProposedLayout(SizeBounds(0, 0)).host_size;
+    minimum_size_ = CalculateProposedLayout(SizeBounds(0, 0)).host_size;
   return *minimum_size_;
 }
 
 int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
                                                   int width) const {
   if (!last_height_for_width_ || last_height_for_width_->width() != width) {
-    const int height =
-        GetProposedLayout(SizeBounds(width, base::nullopt)).host_size.height();
+    const int height = CalculateProposedLayout(SizeBounds(width, base::nullopt))
+                           .host_size.height();
     last_height_for_width_ = gfx::Size(width, height);
   }
 
@@ -52,11 +52,7 @@ int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
 void LayoutManagerBase::Layout(View* host) {
   DCHECK_EQ(host_view_, host);
   const gfx::Size size = host->size();
-  if (!last_requested_size_ || *last_requested_size_ != size) {
-    last_requested_size_ = size;
-    last_layout_ = GetProposedLayout(SizeBounds(size));
-  }
-  ApplyLayout(last_layout_);
+  ApplyLayout(GetProposedLayout(size));
 }
 
 void LayoutManagerBase::InvalidateLayout() {
@@ -64,6 +60,15 @@ void LayoutManagerBase::InvalidateLayout() {
   preferred_size_.reset();
   last_height_for_width_.reset();
   last_requested_size_.reset();
+}
+
+LayoutManagerBase::ProposedLayout LayoutManagerBase::GetProposedLayout(
+    const gfx::Size& host_size) const {
+  if (!last_requested_size_ || *last_requested_size_ != host_size) {
+    last_requested_size_ = host_size;
+    last_layout_ = CalculateProposedLayout(SizeBounds(host_size));
+  }
+  return last_layout_;
 }
 
 void LayoutManagerBase::SetChildViewIgnoredByLayout(View* child_view,

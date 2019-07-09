@@ -53,9 +53,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       pending_frame_is_eos_(false),
       media_status_(DemuxerStream::kOk),
       data_pipe_writer_(std::move(producer_handle)),
-      bytes_written_to_pipe_(0),
-      request_buffer_weak_factory_(this),
-      weak_factory_(this) {
+      bytes_written_to_pipe_(0) {
   DCHECK(main_task_runner_);
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->BelongsToCurrentThread());

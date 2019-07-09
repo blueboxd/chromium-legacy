@@ -37,7 +37,7 @@ class MojoMediaLog final : public MediaLog {
 
   base::WeakPtr<MojoMediaLog> weak_this_;
 
-  base::WeakPtrFactory<MojoMediaLog> weak_ptr_factory_;
+  base::WeakPtrFactory<MojoMediaLog> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaLog);
 };

@@ -45,6 +45,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
                                    public TimerBase,
                                    public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
+  USING_PRE_FINALIZER(DOMTimer, Dispose);
 
  public:
   // Creates a new timer owned by the ExecutionContext, starts it and returns
@@ -65,11 +66,12 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  // Eager finalization is needed to promptly stop this Timer object.
+  // Pre finalizer is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for
   // destruction (when lazily swept), but some of its members (m_action) may
   // already have been finalized & must not be accessed.
-  EAGERLY_FINALIZE();
+  void Dispose();
+  
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 

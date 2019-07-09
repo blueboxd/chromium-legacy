@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/linear_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 
@@ -13,10 +14,9 @@ LinearPredictor::LinearPredictor(EquationOrder order) {
 LinearPredictor::~LinearPredictor() {}
 
 const char* LinearPredictor::GetName() const {
-  if (equation_order_ == EquationOrder::kFirstOrder)
-    return "LinearFirst";
-  else
-    return "LinearSecond";
+  return equation_order_ == EquationOrder::kFirstOrder
+             ? input_prediction::kScrollPredictorNameLinearFirst
+             : input_prediction::kScrollPredictorNameLinearSecond;
 }
 
 void LinearPredictor::Reset() {

@@ -296,6 +296,28 @@ void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
                                 &ProfileNetworkContextService::UpdateCTPolicy);
 }
 
+// static
+network::mojom::CookieManagerParamsPtr
+ProfileNetworkContextService::CreateCookieManagerParams(
+    Profile* profile,
+    const content_settings::CookieSettings& cookie_settings) {
+  auto out = network::mojom::CookieManagerParams::New();
+  out->block_third_party_cookies =
+      cookie_settings.ShouldBlockThirdPartyCookies();
+  out->secure_origin_cookies_allowed_schemes.push_back(
+      content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  out->third_party_cookies_allowed_schemes.push_back(
+      extensions::kExtensionScheme);
+#endif
+
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  out->settings = std::move(settings);
+  return out;
+}
+
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
@@ -330,24 +352,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
-
   network_context_params->cookie_manager_params =
-      network::mojom::CookieManagerParams::New();
-  network_context_params->cookie_manager_params->block_third_party_cookies =
-      cookie_settings_->ShouldBlockThirdPartyCookies();
-  network_context_params->cookie_manager_params
-      ->secure_origin_cookies_allowed_schemes.push_back(
-          content::kChromeUIScheme);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  network_context_params->cookie_manager_params
-      ->third_party_cookies_allowed_schemes.push_back(
-          extensions::kExtensionScheme);
-#endif
-
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
-  network_context_params->cookie_manager_params->settings = std::move(settings);
+      CreateCookieManagerParams(profile_, *cookie_settings_);
 
   // Configure on-disk storage for non-OTR profiles. OTR profiles just use
   // default behavior (in memory storage, default sizes).

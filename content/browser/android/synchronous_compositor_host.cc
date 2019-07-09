@@ -28,7 +28,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -52,24 +52,26 @@ class SynchronousCompositorControlHost
     bridge_->RemoteClosedOnIOThread();
   }
 
-  static void Create(mojom::SynchronousCompositorControlHostRequest request,
-                     scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
-                     int process_id) {
+  static void Create(
+      mojo::PendingReceiver<mojom::SynchronousCompositorControlHost> receiver,
+      scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
+      int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CreateOnIOThread, std::move(request), std::move(bridge),
-                       process_id));
+        base::BindOnce(&CreateOnIOThread, std::move(receiver),
+                       std::move(bridge), process_id));
   }
 
   static void CreateOnIOThread(
-      mojom::SynchronousCompositorControlHostRequest request,
+      mojo::PendingReceiver<mojom::SynchronousCompositorControlHost> receiver,
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
       int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    mojo::MakeStrongBinding(std::make_unique<SynchronousCompositorControlHost>(
-                                std::move(bridge), process_id),
-                            std::move(request));
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<SynchronousCompositorControlHost>(std::move(bridge),
+                                                           process_id),
+        std::move(receiver));
   }
 
   // SynchronousCompositorControlHost overrides.
@@ -117,7 +119,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
-      host_binding_(this),
       bytes_limit_(0u),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
@@ -134,21 +135,13 @@ SynchronousCompositorHost::~SynchronousCompositorHost() {
 }
 
 void SynchronousCompositorHost::InitMojo() {
-  mojom::SynchronousCompositorControlHostPtr host_control;
-  mojom::SynchronousCompositorControlHostRequest host_request =
-      mojo::MakeRequest(&host_control);
+  mojo::PendingRemote<mojom::SynchronousCompositorControlHost> host_control;
 
-  SynchronousCompositorControlHost::Create(std::move(host_request), bridge_,
-                                           process_id_);
-  mojom::SynchronousCompositorHostAssociatedPtr host;
-  host_binding_.Bind(mojo::MakeRequest(&host));
-
-  mojom::SynchronousCompositorAssociatedRequest compositor_request =
-      mojo::MakeRequest(&sync_compositor_);
-
+  SynchronousCompositorControlHost::Create(
+      host_control.InitWithNewPipeAndPassReceiver(), bridge_, process_id_);
   rwhva_->host()->GetWidgetInputHandler()->AttachSynchronousCompositor(
-      std::move(host_control), host.PassInterface(),
-      std::move(compositor_request));
+      std::move(host_control), host_receiver_.BindNewEndpointAndPassRemote(),
+      sync_compositor_.BindNewEndpointAndPassReceiver());
 }
 
 bool SynchronousCompositorHost::IsReadyForSynchronousCall() {
@@ -583,6 +576,8 @@ RenderProcessHost* SynchronousCompositorHost::GetRenderProcessHost() {
 
 mojom::SynchronousCompositor*
 SynchronousCompositorHost::GetSynchronousCompositor() {
+  if (!sync_compositor_)
+    return nullptr;
   return sync_compositor_.get();
 }
 

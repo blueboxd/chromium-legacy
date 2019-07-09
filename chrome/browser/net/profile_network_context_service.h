@@ -55,6 +55,12 @@ class ProfileNetworkContextService
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Packages up configuration info in |profile| and |cookie_settings| into a
+  // mojo-friendly form.
+  static network::mojom::CookieManagerParamsPtr CreateCookieManagerParams(
+      Profile* profile,
+      const content_settings::CookieSettings& cookie_settings);
+
   // Flushes all pending proxy configuration changes.
   void FlushProxyConfigMonitorForTesting();
 

@@ -91,8 +91,6 @@ InputRouterImpl::InputRouterImpl(
       device_scale_factor_(1.f),
       compositor_touch_action_enabled_(
           base::FeatureList::IsEnabled(features::kCompositorTouchAction)),
-      host_binding_(this),
-      frame_host_binding_(this),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
@@ -245,15 +243,16 @@ base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
   return touch_action_filter_.active_touch_action();
 }
 
-void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
-                               bool frame_handler) {
-  if (frame_handler) {
-    frame_host_binding_.Close();
-    frame_host_binding_.Bind(std::move(request));
-  } else {
-    host_binding_.Close();
-    host_binding_.Bind(std::move(request));
-  }
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+InputRouterImpl::BindNewHost() {
+  host_receiver_.reset();
+  return host_receiver_.BindNewPipeAndPassRemote();
+}
+
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+InputRouterImpl::BindNewFrameHost() {
+  frame_host_receiver_.reset();
+  return frame_host_receiver_.BindNewPipeAndPassRemote();
 }
 
 void InputRouterImpl::StopFling() {

@@ -689,14 +689,10 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  base::FilePath extensions_cookie_path = GetPath();
-  extensions_cookie_path =
-      extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
-
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(extensions_cookie_path, GetPath());
+  io_data_.Init(GetPath());
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
@@ -1162,16 +1158,6 @@ content::ResourceContext* ProfileImpl::GetResourceContext() {
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
-base::OnceCallback<net::CookieStore*()>
-ProfileImpl::GetExtensionsCookieStoreGetter() {
-  return base::BindOnce(
-      [](content::ResourceContext* context) {
-        auto* io_data = ProfileIOData::FromResourceContext(context);
-        return io_data->GetExtensionsCookieStore();
-      },
-      GetResourceContext());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

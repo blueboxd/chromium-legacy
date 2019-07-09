@@ -24,8 +24,7 @@ DecryptingRenderer::DecryptingRenderer(
       media_task_runner_(media_task_runner),
       client_(nullptr),
       media_resource_(nullptr),
-      decrypting_media_resource_(nullptr),
-      weak_factory_(this) {
+      decrypting_media_resource_(nullptr) {
   DCHECK(renderer_);
 }
 

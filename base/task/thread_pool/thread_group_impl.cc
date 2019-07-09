@@ -30,6 +30,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -724,7 +725,7 @@ bool ThreadGroupImpl::WorkerThreadDelegateImpl::CanCleanupLockRequired(
 
   const TimeTicks last_used_time = worker->GetLastUsedTime();
   return !last_used_time.is_null() &&
-         TimeTicks::Now() - last_used_time >=
+         subtle::TimeTicksNowIgnoringOverride() - last_used_time >=
              outer_->after_start().suggested_reclaim_time &&
          (outer_->workers_.size() > outer_->after_start().initial_max_tasks ||
           !FeatureList::IsEnabled(kNoDetachBelowInitialCapacity)) &&
@@ -737,7 +738,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
 
   outer_->num_tasks_before_detach_histogram_->Add(
       worker_only().num_tasks_since_last_detach);
-  outer_->cleanup_timestamps_.push(TimeTicks::Now());
+  outer_->cleanup_timestamps_.push(subtle::TimeTicksNowIgnoringOverride());
   worker->Cleanup();
   outer_->idle_workers_stack_.Remove(worker);
 
@@ -876,7 +877,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::MayBlockEntered() {
 
   DCHECK(!incremented_max_tasks_since_blocked_);
   DCHECK(read_worker().may_block_start_time.is_null());
-  write_worker().may_block_start_time = TimeTicks::Now();
+  write_worker().may_block_start_time = subtle::TimeTicksNowIgnoringOverride();
   ++outer_->num_unresolved_may_block_;
   if (read_worker().is_running_best_effort_task)
     ++outer_->num_unresolved_best_effort_may_block_;
@@ -933,7 +934,8 @@ bool ThreadGroupImpl::WorkerThreadDelegateImpl::
     MustIncrementMaxTasksLockRequired() {
   if (!incremented_max_tasks_since_blocked_ &&
       !read_any().may_block_start_time.is_null() &&
-      TimeTicks::Now() - read_any().may_block_start_time >=
+      subtle::TimeTicksNowIgnoringOverride() -
+              read_any().may_block_start_time >=
           outer_->after_start().may_block_threshold) {
     incremented_max_tasks_since_blocked_ = true;
 
@@ -994,7 +996,7 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
   DCHECK_LE(workers_.size(), max_tasks_);
 
   if (!cleanup_timestamps_.empty()) {
-    detach_duration_histogram_->AddTime(TimeTicks::Now() -
+    detach_duration_histogram_->AddTime(subtle::TimeTicksNowIgnoringOverride() -
                                         cleanup_timestamps_.top());
     cleanup_timestamps_.pop();
   }

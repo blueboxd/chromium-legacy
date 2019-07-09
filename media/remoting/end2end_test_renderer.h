@@ -65,7 +65,7 @@ class End2EndTestRenderer final : public Renderer {
   // A receiver that renders media streams.
   std::unique_ptr<Receiver> receiver_;
 
-  base::WeakPtrFactory<End2EndTestRenderer> weak_factory_;
+  base::WeakPtrFactory<End2EndTestRenderer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(End2EndTestRenderer);
 };

@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="1351692861129622852">Імпортування файлів (<ph name="FILE_COUNT" />)…</translation>
 <translation id="1352103415082130575">Тайська клавіатура (паттачоте)</translation>
-<translation id="1358032944105037487">Японська розкладка</translation>
 <translation id="1358735829858566124">Файл або каталог не можна використовувати.</translation>
 <translation id="1363028406613469049">Композиція</translation>
 <translation id="1378727793141957596">Вітаємо на Диску Google!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">На <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /> імпортовано <ph name="FILE_COUNT" /> фото</translation>
 <translation id="3470502288861289375">Копіювання…</translation>
 <translation id="3475447146579922140">Таблиці Google</translation>
-<translation id="3494768541638400973">Метод введення Google для японської мови (японська клавіатура)</translation>
 <translation id="3495304270784461826">Помилок: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслітерація (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Португальська</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Знайдено: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Догори дригом</translation>
-<translation id="6937152069980083337">Метод введення Google для японської мови (клавіатура США)</translation>
 <translation id="6939777852457331078">Клавіатура US Workman</translation>
 <translation id="696203921837389374">Увімкнути синхронізацію через мобільний Інтернет</translation>
 <translation id="6965382102122355670">OK</translation>

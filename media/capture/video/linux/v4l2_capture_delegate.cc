@@ -243,8 +243,7 @@ V4L2CaptureDelegate::V4L2CaptureDelegate(
       device_fd_(v4l2),
       is_capturing_(false),
       timeout_count_(0),
-      rotation_(rotation),
-      weak_factory_(this) {}
+      rotation_(rotation) {}
 
 void V4L2CaptureDelegate::AllocateAndStart(
     int width,

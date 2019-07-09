@@ -17,8 +17,7 @@ PowerObserverHelper::PowerObserverHelper(
     base::RepeatingClosure resume_callback)
     : task_runner_(std::move(task_runner)),
       suspend_callback_(std::move(suspend_callback)),
-      resume_callback_(std::move(resume_callback)),
-      weak_factory_(this) {
+      resume_callback_(std::move(resume_callback)) {
   DCHECK(!suspend_callback_.is_null());
   DCHECK(!resume_callback_.is_null());
 

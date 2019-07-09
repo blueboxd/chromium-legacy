@@ -13,9 +13,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/hint_cache.h"
-#include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_features.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -34,7 +33,7 @@ class HintsFetcherTest : public testing::Test {
                 &test_url_loader_factory_)) {
     base::test::ScopedFeatureList scoped_list;
     scoped_list.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsFetching, {});
+        optimization_guide::features::kOptimizationHintsFetching, {});
 
     hints_fetcher_ = std::make_unique<HintsFetcher>(
         shared_url_loader_factory_, GURL(optimization_guide_service_url));

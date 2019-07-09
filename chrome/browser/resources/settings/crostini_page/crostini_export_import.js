@@ -11,6 +11,14 @@
 Polymer({
   is: 'settings-crostini-export-import',
 
+  properties: {
+    /** @private */
+    showImportConfirmationDialog_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
   /** @private */
   onExportClick_: function() {
     settings.CrostiniBrowserProxyImpl.getInstance().exportCrostiniContainer();
@@ -18,6 +26,11 @@ Polymer({
 
   /** @private */
   onImportClick_: function() {
-    settings.CrostiniBrowserProxyImpl.getInstance().importCrostiniContainer();
+    this.showImportConfirmationDialog_ = true;
+  },
+
+  /** @private */
+  onImportConfirmationDialogClose_: function() {
+    this.showImportConfirmationDialog_ = false;
   },
 });

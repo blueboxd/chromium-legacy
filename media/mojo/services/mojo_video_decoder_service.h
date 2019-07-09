@@ -118,7 +118,7 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   ProvideOverlayInfoCB provide_overlay_info_cb_;
 
   base::WeakPtr<MojoVideoDecoderService> weak_this_;
-  base::WeakPtrFactory<MojoVideoDecoderService> weak_factory_;
+  base::WeakPtrFactory<MojoVideoDecoderService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoderService);
 };

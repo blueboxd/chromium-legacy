@@ -21,9 +21,27 @@
 
 namespace chromeos {
 
-ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() = default;
+ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() {
+  auto* in_session_password_change_manager =
+      g_browser_process->platform_part()->in_session_password_change_manager();
+  CHECK(in_session_password_change_manager);
+  in_session_password_change_manager->AddObserver(this);
+}
 
-ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() = default;
+ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() {
+  auto* in_session_password_change_manager =
+      g_browser_process->platform_part()->in_session_password_change_manager();
+  CHECK(in_session_password_change_manager);
+  in_session_password_change_manager->RemoveObserver(this);
+}
+
+void ConfirmPasswordChangeHandler::OnEvent(
+    InSessionPasswordChangeManager::Event event) {
+  if (event == InSessionPasswordChangeManager::CHANGE_PASSWORD_AUTH_FAILURE) {
+    AllowJavascript();
+    FireWebUIListener("incorrect-old-password");
+  }
+}
 
 void ConfirmPasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
@@ -34,7 +52,6 @@ void ConfirmPasswordChangeHandler::HandleChangePassword(
   CHECK(in_session_password_change_manager);
   in_session_password_change_manager->ChangePassword(old_password,
                                                      new_password);
-  // TODO(olsen): Show a spinner until password change is complete.
 }
 
 void ConfirmPasswordChangeHandler::RegisterMessages() {

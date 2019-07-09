@@ -26,8 +26,7 @@ DecryptingMediaResource::DecryptingMediaResource(
     : media_resource_(media_resource),
       cdm_context_(cdm_context),
       media_log_(media_log),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   DCHECK(media_resource);
   DCHECK_EQ(MediaResource::STREAM, media_resource->GetType());
   DCHECK(cdm_context_);

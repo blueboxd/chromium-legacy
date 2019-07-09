@@ -125,6 +125,14 @@ PlatformWindowState WinWindow::GetPlatformWindowState() const {
   return PlatformWindowState::kUnknown;
 }
 
+void WinWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void WinWindow::SetCursor(PlatformCursor cursor) {
   ::SetCursor(cursor);
 }

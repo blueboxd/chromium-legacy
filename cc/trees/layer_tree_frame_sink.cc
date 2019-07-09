@@ -48,8 +48,7 @@ LayerTreeFrameSink::LayerTreeFrameSink(
     : context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
       compositor_task_runner_(std::move(compositor_task_runner)),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      weak_ptr_factory_(this) {
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 

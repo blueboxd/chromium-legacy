@@ -1064,6 +1064,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     return javascript_dialog_navigation_deferrer_.get();
   }
 
+  // Returns the focused frame's input handler.
+  mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.

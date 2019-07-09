@@ -94,15 +94,18 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
 }
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::TypeWithCalcResolved() const {
-  if (GetType() != UnitType::kCalc)
+  if (IsNumericLiteralValue())
     return GetType();
   return To<CSSMathFunctionValue>(this)->TypeWithMathFunctionResolved();
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(UnitType unit_type, ClassType class_type)
-    : CSSValue(class_type) {
-  primitive_unit_type_ = static_cast<unsigned>(unit_type);
+bool CSSPrimitiveValue::IsCalculatedPercentageWithLength() const {
+  return IsCalculated() &&
+         To<CSSMathFunctionValue>(this)->Category() == kCalcPercentLength;
 }
+
+CSSPrimitiveValue::CSSPrimitiveValue(ClassType class_type)
+    : CSSValue(class_type) {}
 
 // static
 CSSPrimitiveValue* CSSPrimitiveValue::CreateFromLength(const Length& length,
@@ -298,6 +301,11 @@ double CSSPrimitiveValue::GetDoubleValue() const {
                         : To<CSSNumericLiteralValue>(this)->DoubleValue();
 }
 
+bool CSSPrimitiveValue::IsZero() const {
+  return IsCalculated() ? To<CSSMathFunctionValue>(this)->IsZero()
+                        : To<CSSNumericLiteralValue>(this)->IsZero();
+}
+
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::CanonicalUnitTypeForCategory(
     UnitCategory category) {
   // The canonical unit type is chosen according to the way
@@ -462,12 +470,7 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
       return "vmin";
     case UnitType::kViewportMax:
       return "vmax";
-    case UnitType::kUnknown:
-    case UnitType::kCalc:
-    case UnitType::kCalcPercentageWithNumber:
-    case UnitType::kCalcPercentageWithLength:
-    case UnitType::kCalcLengthWithNumber:
-    case UnitType::kCalcPercentageWithLengthAndNumber:
+    default:
       break;
   }
   NOTREACHED();

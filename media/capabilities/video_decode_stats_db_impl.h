@@ -145,7 +145,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // callbacks to this happen on the checked sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoDecodeStatsDBImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoDecodeStatsDBImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImpl);
 };

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
@@ -131,6 +132,9 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   // Returns true if keyboard mic exists.
   bool HasKeyboardMic();
+
+  // Returns true if hotword input device exists.
+  bool HasHotwordDevice();
 
   // Returns true if audio output is muted for the system.
   bool IsOutputMuted();
@@ -350,6 +354,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   const AudioDevice* GetDeviceFromStableDeviceId(
       uint64_t stable_device_id) const;
   const AudioDevice* GetKeyboardMic() const;
+
+  const AudioDevice* GetHotwordDevice() const;
 
   // Initializes audio state, which should only be called when CrasAudioHandler
   // is created or cras audio client is restarted.

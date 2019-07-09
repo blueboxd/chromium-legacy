@@ -53,4 +53,36 @@ interface RestrictedCookieManager {
   // The subscription is canceled by closing the pipe.
   AddChangeListener(url.mojom.Url url, url.mojom.Url site_for_cookies,
                     CookieChangeListener listener) => ();
+
+  // Sets a cookie.  If setting of this cookie is not permitted either by web
+  // platform rules, or user preferences, the attempt will be silently ignored.
+  // This does not extend to passing in a |url| that does not match the origin
+  // RestrictedCookieManager is bound to --- that will be treated as the
+  // renderer violating security rules.
+  //
+  // The implementation may block, e.g. while cookies are still being loaded, or
+  // to serialize with other operations.
+  [Sync]
+  SetCookieFromString(url.mojom.Url url, url.mojom.Url site_for_cookies,
+                      string cookie) => ();
+
+  // Used to get cookies for the given URL. Cookies that are blocked by user
+  // preferences will be skipped, down to potentially returning an empty string.
+  // The implementation may block, e.g. while cookies are still being loaded, or
+  // to serialize with other operations.
+  //
+  // Passing in |url| that does not match the origin RestrictedCookieManager
+  // is bounded to will be treated as the renderer violating security rules.
+  [Sync]
+  GetCookiesString(url.mojom.Url url,
+                   url.mojom.Url site_for_cookies) => (string cookies);
+
+  // Used to check if cookies are enabled for the given URL in context of a
+  // given site.
+  //
+  // Passing in |url| that does not match the origin RestrictedCookieManager
+  // is bounded to will be treated as the renderer violating security rules.
+  [Sync]
+  CookiesEnabledFor(url.mojom.Url url,
+                    url.mojom.Url site_for_cookies) => (bool cookies_enabled);
 };

@@ -571,36 +571,6 @@
   </if>
 
   <if expr="chromeos">
-    <!-- Kiosk Next Shell page. Note that this experience is currently a prototype and is not shown
-         to end users at this point.
-         TODO(922687): Change these strings to the final ones when our internal repo is ready.-->
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_TITLE" desc="The title of Kiosk Next Shell section." translateable="false">
-      Kiosk Next Shell (Dev)
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_LABEL" desc="The text associated with the contained shell section setting." translateable="false">
-      Kiosk Next Shell
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_ENABLE" desc="Text shown when displaying the enable Kiosk Next Shell button." translateable="false">
-      Enables the Kiosk Next Shell for the next sign in.
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_DISABLE" desc="Text shown when displaying the disable Kiosk Next Shell button." translateable="false">
-      Disable the Kiosk Next Shell and return to the normal Chrome OS experience.
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_TURN_OFF" desc="Label for the button that disables the Kiosk Next Shell." translateable="false">
-      Turn off
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_TITLE" desc="Title for the confirmation dialog when disabling the Kiosk Next Shell." translateable="false">
-      Turn off the Kiosk Next Shell
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_TITLE" desc="Title for the confirmation dialog when enabling the Kiosk Next Shell." translateable="false">
-      Turn on the Kiosk Next Shell
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_BODY" desc="Body text for the confirmation dialog when disabling the Kiosk Next Shell." translateable="false">
-      This will turn off the Kiosk Next Shell, sign you out and return you to the normal Chrome OS experience.
-    </message>
-    <message name="IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_BODY" desc="Body text for the confirmation dialog when enabling the Kiosk Next Shell." translateable="false">
-      This will sign you out and turn on the Kiosk Next Shell.
-    </message>
     <!-- Crostini Page -->
     <message name="IDS_SETTINGS_CROSTINI_TITLE" desc="The title of Crostini section.">
       Linux (Beta)
@@ -649,6 +619,12 @@
     </message>
     <message name="IDS_SETTINGS_CROSTINI_IMPORT_LABEL" desc="Description shown next to the button to import (restore) Crostini.">
       Replace your Linux apps and files with a previous backup
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_TITLE" desc="Title of the confirmation dialog displayed before container import begins.">
+      Confirm Restore
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_MESSAGE" desc="Message of the confirmation dialog displayed before container import begins.">
+      Restoring will override your existing linux installation. Are you sure you wish to continue?
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB preferences

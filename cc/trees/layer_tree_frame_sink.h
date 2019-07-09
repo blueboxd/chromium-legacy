@@ -155,7 +155,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
  private:
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_;
+  base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

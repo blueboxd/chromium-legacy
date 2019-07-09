@@ -13,6 +13,7 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 namespace content {
@@ -84,9 +85,12 @@ class InputRouter {
 
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
-  // Associate this InputRouter with a remote host channel.
-  virtual void BindHost(mojom::WidgetInputHandlerHostRequest request,
-                        bool frame_handler) = 0;
+  // Create and bind a new host channel.
+  virtual mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() = 0;
+
+  // Create and bind a new frame based host channel.
+  virtual mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+  BindNewFrameHost() = 0;
 
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;

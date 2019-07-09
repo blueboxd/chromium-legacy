@@ -53,7 +53,6 @@ import java.util.ArrayList;
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
 public class ExploreSitesPageTest {
     // clang-format on
 
@@ -116,6 +115,7 @@ public class ExploreSitesPageTest {
     @SmallTest
     @DisabledTest
     @Feature({"ExploreSites", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testScrolledLayout_withBack() throws Exception {
         final int scrollPosition = 2;
         onView(instanceOf(RecyclerView.class))
@@ -135,6 +135,7 @@ public class ExploreSitesPageTest {
     @Test
     @SmallTest
     @Feature({"ExploreSites", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testInitialLayout() throws Exception {
         onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(0));
         mRenderTestRule.render(mRecyclerView, "initial_layout");
@@ -143,7 +144,7 @@ public class ExploreSitesPageTest {
     @Test
     @SmallTest
     @CommandLineFlags.
-    Add({"enabled-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"})
     @Feature({"ExploreSites", "RenderTest"})
     public void
@@ -154,7 +155,38 @@ public class ExploreSitesPageTest {
 
     @Test
     @SmallTest
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"
+                    + "/denseVariation/titleBottom"})
+    @Feature({"ExploreSites"})
+    public void
+    testInitialLayout_DenseTitleBottom() throws Exception {
+        // Ensure that the DenseTitleBottomView has loaded without crashing
+        Assert.assertEquals(
+                DenseVariation.DENSE_TITLE_BOTTOM, ExploreSitesBridge.getDenseVariation());
+        // TODO(angelii): Add render test once layout is finalized.
+    }
+
+    @Test
+    @SmallTest
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"
+                    + "/denseVariation/titleRight"})
+    @Feature({"ExploreSites"})
+    public void
+    testInitialLayout_DenseTitleRight() throws Exception {
+        // Ensure that the DenseTitleRightView has loaded without crashing
+        Assert.assertEquals(
+                DenseVariation.DENSE_TITLE_RIGHT, ExploreSitesBridge.getDenseVariation());
+        // TODO(angelii): Add render test once layout is finalized.
+    }
+
+    @Test
+    @SmallTest
     @Feature({"ExploreSites", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testScrollingFromNTP() throws Exception {
         mActivityTestRule.loadUrl("about:blank");
         ExploreSitesCategory category = getTestingCatalog().get(2);
@@ -172,6 +204,7 @@ public class ExploreSitesPageTest {
     @Test
     @SmallTest
     @Feature({"ExploreSites", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testFocusRetention_WithBack() throws Exception {
         Assume.assumeTrue(FeatureUtilities.isNoTouchModeEnabled());
 

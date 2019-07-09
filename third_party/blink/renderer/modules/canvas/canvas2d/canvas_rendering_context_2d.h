@@ -179,7 +179,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   cc::PaintCanvas* DrawingCanvas() const final;
   cc::PaintCanvas* ExistingDrawingCanvas() const final;
-  void DisableDeferral(DisableDeferralReason) final;
 
   void DidDraw(const SkIRect& dirty_rect) final;
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;

@@ -70,20 +70,6 @@ enum MessageType {
   SEND_ERROR,        // Error sending a message.
 };
 
-enum OutgoingMessageTTLCategory {
-  TTL_ZERO,
-  TTL_LESS_THAN_OR_EQUAL_TO_ONE_MINUTE,
-  TTL_LESS_THAN_OR_EQUAL_TO_ONE_HOUR,
-  TTL_LESS_THAN_OR_EQUAL_TO_ONE_DAY,
-  TTL_LESS_THAN_OR_EQUAL_TO_ONE_WEEK,
-  TTL_MORE_THAN_ONE_WEEK,
-  TTL_MAXIMUM,
-  // NOTE: always keep this entry at the end. Add new TTL category only
-  // immediately above this line. Make sure to update the corresponding
-  // histogram enum accordingly.
-  TTL_CATEGORY_COUNT
-};
-
 enum ResetStoreError {
   DESTROYING_STORE_FAILED,
   INFINITE_STORE_RESET,
@@ -225,24 +211,6 @@ bool DeserializeInstanceIDData(const std::string& serialized_data,
 bool InstanceIDUsesSubtypeForAppId(const std::string& app_id) {
   // Always use subtypes with Instance ID, except for Chrome Apps/Extensions.
   return !crx_file::id_util::IdIsValid(app_id);
-}
-
-void RecordOutgoingMessageToUMA(const gcm::OutgoingMessage& message) {
-  OutgoingMessageTTLCategory ttl_category;
-  if (message.time_to_live == 0)
-    ttl_category = TTL_ZERO;
-  else if (message.time_to_live <= 60 )
-    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_MINUTE;
-  else if (message.time_to_live <= 60 * 60)
-    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_HOUR;
-  else if (message.time_to_live <= 24 * 60 * 60)
-    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_DAY;
-  else
-    ttl_category = TTL_MAXIMUM;
-
-  UMA_HISTOGRAM_ENUMERATION("GCM.OutgoingMessageTTL",
-                            ttl_category,
-                            TTL_CATEGORY_COUNT);
 }
 
 void RecordResetStoreErrorToUMA(ResetStoreError error) {
@@ -1228,8 +1196,6 @@ void GCMClientImpl::Send(const std::string& app_id,
                          const OutgoingMessage& message) {
   DCHECK_EQ(state_, READY);
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-
-  RecordOutgoingMessageToUMA(message);
 
   mcs_proto::DataMessageStanza stanza;
   stanza.set_ttl(message.time_to_live);

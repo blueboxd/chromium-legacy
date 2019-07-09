@@ -22,6 +22,10 @@ void VoiceSearchController::StartRecognition(
     UIViewController* presenting_view_controller,
     Tab* current_tab) {}
 
+void VoiceSearchController::StartRecognition(
+    UIViewController* presenting_view_controller,
+    web::WebState* current_web_state) {}
+
 bool VoiceSearchController::IsTextToSpeechEnabled() {
   return false;
 }

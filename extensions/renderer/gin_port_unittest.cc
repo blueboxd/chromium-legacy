@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/content_features.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
@@ -225,7 +227,14 @@ TEST_F(GinPortTest, TestPostMessage) {
     const char kFunction[] =
         "(function(port) { port.postMessage({data: [42]}); })";
     blink::WebScopedUserGesture user_gesture(nullptr);
-    test_post_message(kFunction, port_id, Message(R"({"data":[42]})", true));
+
+    // With User Activation v2, the activation state belongs to a (Web)Frame.
+    // So the missing frame pointer above means we don't expect activation
+    // below.
+    bool expect_user_gesture =
+        !base::FeatureList::IsEnabled(features::kUserActivationV2);
+    test_post_message(kFunction, port_id,
+                      Message(R"({"data":[42]})", expect_user_gesture));
   }
 
   {

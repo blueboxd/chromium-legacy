@@ -592,7 +592,7 @@ class SetMouseCaptureInterceptor
       : msg_received_(false),
         capturing_(false),
         host_(host),
-        impl_(binding().SwapImplForTesting(this)) {}
+        impl_(receiver().internal_state()->SwapImplForTesting(this)) {}
 
   bool Capturing() const { return capturing_; }
 
@@ -625,12 +625,12 @@ class SetMouseCaptureInterceptor
   friend class base::RefCountedThreadSafe<SetMouseCaptureInterceptor>;
 
   ~SetMouseCaptureInterceptor() override {
-    binding().SwapImplForTesting(impl_);
+    receiver().internal_state()->SwapImplForTesting(impl_);
   }
 
-  mojo::Binding<mojom::WidgetInputHandlerHost>& binding() {
+  mojo::Receiver<mojom::WidgetInputHandlerHost>& receiver() {
     return static_cast<InputRouterImpl*>(host_->input_router())
-        ->frame_host_binding_for_testing();
+        ->frame_host_receiver_for_testing();
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;

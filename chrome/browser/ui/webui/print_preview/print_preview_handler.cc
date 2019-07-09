@@ -896,10 +896,8 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 #if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
-  auto* const settings_manager = chrome::SettingsWindowManager::GetInstance();
-  settings_manager->ShowChromePageForProfile(
-      Profile::FromWebUI(web_ui()),
-      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      Profile::FromWebUI(web_ui()), chrome::kPrintingSettingsSubPage);
 }
 #endif
 

@@ -205,7 +205,6 @@ source_set("blink_headers") {
     "platform/web_content_security_policy.h",
     "platform/web_content_security_policy_struct.h",
     "platform/web_content_settings_client.h",
-    "platform/web_cookie_jar.h",
     "platform/web_crypto.h",
     "platform/web_crypto_algorithm.h",
     "platform/web_crypto_algorithm_params.h",

@@ -68,7 +68,7 @@ class MEDIA_MOJO_EXPORT MojoAudioInputStream
   mojo::Binding<AudioInputStream> binding_;
   mojom::AudioInputStreamClientPtr client_;
   std::unique_ptr<AudioInputDelegate> delegate_;
-  base::WeakPtrFactory<MojoAudioInputStream> weak_factory_;
+  base::WeakPtrFactory<MojoAudioInputStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioInputStream);
 };

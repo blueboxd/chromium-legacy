@@ -163,7 +163,7 @@ class GpuVideoDecodeAccelerator
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   // Weak pointers will be invalidated on IO thread.
-  base::WeakPtrFactory<Client> weak_factory_for_io_;
+  base::WeakPtrFactory<Client> weak_factory_for_io_{this};
 
   // Protects |uncleared_textures_| when DCHECK is on. This is for debugging
   // only. We don't want to hold a lock on IO thread. When DCHECK is off,

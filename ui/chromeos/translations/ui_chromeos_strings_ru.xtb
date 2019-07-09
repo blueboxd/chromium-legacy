@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Справа</translation>
 <translation id="1351692861129622852">Импорт файлов (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Тайская раскладка (Pattachote)</translation>
-<translation id="1358032944105037487">Японская раскладка</translation>
 <translation id="1358735829858566124">Этот файл или каталог непригоден для использования.</translation>
 <translation id="1363028406613469049">Трек</translation>
 <translation id="1378727793141957596">Добро пожаловать в Google Диск!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">На <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" /> сохранено <ph name="FILE_COUNT" /> фото</translation>
 <translation id="3470502288861289375">Копирование…</translation>
 <translation id="3475447146579922140">Электронная таблица Google</translation>
-<translation id="3494768541638400973">японская раскладка Google (для японской клавиатуры)</translation>
 <translation id="3495304270784461826">Ошибок: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Португальский</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Обнаружены файлы (<ph name="FILE_COUNT" />).</translation>
 <translation id="6935521024859866267">Вверх ногами</translation>
-<translation id="6937152069980083337">японская раскладка Google (для клавиатуры США)</translation>
 <translation id="6939777852457331078">Раскладка США (Workman)</translation>
 <translation id="696203921837389374">Синхронизировать по мобильной сети</translation>
 <translation id="6965382102122355670">ОК</translation>

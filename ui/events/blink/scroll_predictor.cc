@@ -8,48 +8,20 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/events/blink/prediction/empty_predictor.h"
-#include "ui/events/blink/prediction/kalman_predictor.h"
-#include "ui/events/blink/prediction/least_squares_predictor.h"
-#include "ui/events/blink/prediction/linear_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
 
 namespace ui {
 
-namespace {
-
-constexpr char kPredictor[] = "predictor";
-constexpr char kScrollPredictorTypeLsq[] = "lsq";
-constexpr char kScrollPredictorTypeKalman[] = "kalman";
-constexpr char kScrollPredictorTypeKalmanTimeFiltered[] =
-    "kalman_time_filtered";
-constexpr char kScrollPredictorLinearFirst[] = "linearFirst";
-constexpr char kScrollPredictorLinearSecond[] = "linearSecond";
-
-}  // namespace
-
 ScrollPredictor::ScrollPredictor() {
-  std::string predictor_type = GetFieldTrialParamValueByFeature(
-      features::kResamplingScrollEvents, kPredictor);
+  std::string predictor_name = GetFieldTrialParamValueByFeature(
+      features::kResamplingScrollEvents, "predictor");
 
-  if (predictor_type == kScrollPredictorTypeLsq)
-    predictor_ = std::make_unique<LeastSquaresPredictor>();
-  else if (predictor_type == kScrollPredictorTypeKalman)
-    predictor_ =
-        std::make_unique<KalmanPredictor>(false /* enable_time_filtering */);
-  else if (predictor_type == kScrollPredictorTypeKalmanTimeFiltered)
-    predictor_ =
-        std::make_unique<KalmanPredictor>(true /* enable_time_filtering */);
-  else if (predictor_type == kScrollPredictorLinearFirst)
-    predictor_ = std::make_unique<LinearPredictor>(
-        LinearPredictor::EquationOrder::kFirstOrder);
-  else if (predictor_type == kScrollPredictorLinearSecond)
-    predictor_ = std::make_unique<LinearPredictor>(
-        LinearPredictor::EquationOrder::kSecondOrder);
-  else
-    predictor_ = std::make_unique<EmptyPredictor>();
+  input_prediction::PredictorType predictor_type =
+      ui::PredictorFactory::GetPredictorTypeFromName(predictor_name);
+  predictor_ = ui::PredictorFactory::GetPredictor(predictor_type);
 }
 
 ScrollPredictor::~ScrollPredictor() = default;

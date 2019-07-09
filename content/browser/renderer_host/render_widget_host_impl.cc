@@ -323,10 +323,10 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void AttachSynchronousCompositor(
-      mojom::SynchronousCompositorControlHostPtr control_host,
-      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-      mojom::SynchronousCompositorAssociatedRequest compositor_request)
-      override {
+      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+          compositor_request) override {
     NOTREACHED() << "Input request on unbound interface";
   }
 };
@@ -3017,8 +3017,8 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
 void RenderWidgetHostImpl::SetupInputRouter() {
   in_flight_event_count_ = 0;
   StopInputEventAckTimeout();
-  associated_widget_input_handler_ = nullptr;
-  widget_input_handler_ = nullptr;
+  associated_widget_input_handler_.reset();
+  widget_input_handler_.reset();
 
   input_router_ = std::make_unique<InputRouterImpl>(
       this, this, fling_scheduler_.get(), GetInputRouterConfigForPlatform());
@@ -3036,11 +3036,13 @@ void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
   input_router_->SetForceEnableZoom(enabled);
 }
 
-void RenderWidgetHostImpl::SetWidgetInputHandler(
-    mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
-    mojom::WidgetInputHandlerHostRequest host_request) {
-  associated_widget_input_handler_ = std::move(widget_input_handler);
-  input_router_->BindHost(std::move(host_request), true);
+void RenderWidgetHostImpl::SetFrameInputHandler(
+    mojom::FrameInputHandler* frame_input_handler) {
+  if (!frame_input_handler)
+    return;
+  frame_input_handler->GetWidgetInputHandler(
+      associated_widget_input_handler_.BindNewEndpointAndPassReceiver(),
+      input_router_->BindNewFrameHost());
 }
 
 void RenderWidgetHostImpl::SetInputTargetClient(
@@ -3051,15 +3053,12 @@ void RenderWidgetHostImpl::SetInputTargetClient(
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
   if (widget) {
     // If we have a bound handler ensure that we destroy the old input router.
-    if (widget_input_handler_.get())
+    if (widget_input_handler_.is_bound())
       SetupInputRouter();
 
-    mojom::WidgetInputHandlerHostPtr host;
-    mojom::WidgetInputHandlerHostRequest host_request =
-        mojo::MakeRequest(&host);
-    widget->SetupWidgetInputHandler(mojo::MakeRequest(&widget_input_handler_),
-                                    std::move(host));
-    input_router_->BindHost(std::move(host_request), false);
+    widget->SetupWidgetInputHandler(
+        widget_input_handler_.BindNewPipeAndPassReceiver(),
+        input_router_->BindNewHost());
   }
 }
 

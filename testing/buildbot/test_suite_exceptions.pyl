@@ -1332,6 +1332,11 @@
       # Disabled due to dbus crashes crbug.com/927465
       'Linux FYI Experimental Release (Intel HD 630)',
       'Linux FYI Experimental Release (NVIDIA)',
+      'Linux FYI Release (Intel HD 630)',
+      'Linux FYI Release (NVIDIA)',
+      'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
+      'Linux Release (NVIDIA)',
+      'Linux Release Code Coverage (NVIDIA)',
     ],
   },
   'telemetry_perf_unittests': {

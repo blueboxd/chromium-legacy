@@ -482,6 +482,21 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
     input_handler_proxy_.SetTickClockForTesting(tick_clock);
   }
 
+  void DeliverInputForBeginFrame() {
+    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    base::TimeTicks frame_time =
+        base::TimeTicks() +
+        (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
+            interval;
+    input_handler_proxy_.DeliverInputForBeginFrame(viz::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, frame_time,
+        frame_time + interval, interval, viz::BeginFrameArgs::NORMAL));
+  }
+
+  void DeliverInputForHighLatencyMode() {
+    input_handler_proxy_.DeliverInputForHighLatencyMode();
+  }
+
   void SetScrollPredictionEnabled(bool enabled) {
     input_handler_proxy_.scroll_predictor_ =
         enabled ? std::make_unique<ScrollPredictor>() : nullptr;
@@ -500,6 +515,8 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   TestInputHandlerProxy input_handler_proxy_;
   std::vector<InputHandlerProxy::EventDisposition> event_disposition_recorder_;
   std::vector<ui::LatencyInfo> latency_info_recorder_;
+
+  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
@@ -1530,7 +1547,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd(_, true));
 
   // Dispatch all queued events.
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_EQ(0ul, event_queue().size());
   // Should run callbacks for every original events.
   EXPECT_EQ(4ul, event_disposition_recorder_.size());
@@ -1560,7 +1577,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   EXPECT_EQ(1ul, event_queue().size());
   EXPECT_EQ(1ul, event_disposition_recorder_.size());
 
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(2ul, event_disposition_recorder_.size());
@@ -1595,7 +1612,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   EXPECT_EQ(8ul, event_queue().size());
   EXPECT_EQ(2ul, event_disposition_recorder_.size());
 
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(12ul, event_disposition_recorder_.size());
@@ -1632,7 +1649,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
 
   // Dispatch all queued events.
   tick_clock.Advance(base::TimeDelta::FromMicroseconds(70));
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(5ul, event_disposition_recorder_.size());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
@@ -1779,7 +1796,7 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
 
   // Dispatch all events.
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Retrieve tracing data.
   auto analyzer = trace_analyzer::Stop();
@@ -1885,7 +1902,7 @@ TEST_F(InputHandlerProxyEventQueueTest, CoalescedLatencyInfo) {
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -30);
   HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   EXPECT_EQ(0ul, event_queue().size());
   // Should run callbacks for every original events.
@@ -1918,7 +1935,7 @@ TEST_F(InputHandlerProxyEventQueueTest, CoalescedEventSwitchToMainThread) {
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_EQ(3ul, event_disposition_recorder_.size());
   EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
             event_disposition_recorder_.back());
@@ -1936,7 +1953,7 @@ TEST_F(InputHandlerProxyEventQueueTest, CoalescedEventSwitchToMainThread) {
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -30);
   EXPECT_EQ(2ul, event_queue().size());
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   EXPECT_EQ(7ul, event_disposition_recorder_.size());
   EXPECT_EQ(false, latency_info_recorder_[4].coalesced());
@@ -1949,7 +1966,7 @@ TEST_F(InputHandlerProxyEventQueueTest, CoalescedEventSwitchToMainThread) {
   HandleGestureEvent(WebInputEvent::kGesturePinchEnd);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -30);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   EXPECT_EQ(0ul, event_queue().size());
   // Should run callbacks for every original events.
@@ -1977,13 +1994,13 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   // No prediction when start with a GSB
   ui::InputPredictor::InputData result;
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
 
   // Test predictor returns last GSU delta.
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -15);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_TRUE(GestureScrollEventPredictionAvailable(&result));
   EXPECT_EQ(-35, result.pos.y());
 
@@ -1994,8 +2011,42 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+// Test deliver input w/o prediction enabled.
+TEST_F(InputHandlerProxyEventQueueTest, DeliverInputWithHighLatencyMode) {
+  SetScrollPredictionEnabled(false);
+
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(2);
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll_));
+
+  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
+  DeliverInputForBeginFrame();
+  // 3 queued event be delivered.
+  EXPECT_EQ(3ul, event_disposition_recorder_.size());
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE, event_disposition_recorder_.back());
+
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
+  DeliverInputForHighLatencyMode();
+  // 2 queued event be delivered.
+  EXPECT_EQ(5ul, event_disposition_recorder_.size());
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE, event_disposition_recorder_.back());
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
@@ -2545,8 +2596,19 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
     for (uint32_t i = 0; i < count; ++i) {
       AdvanceClock(16);
       HandleScrollUpdate(true /* is_momentum */);
-      input_handler_proxy_.DeliverInputForBeginFrame();
+      DeliverInputForBeginFrame();
     }
+  }
+
+  void DeliverInputForBeginFrame() {
+    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    base::TimeTicks frame_time =
+        base::TimeTicks() +
+        (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
+            interval;
+    input_handler_proxy_.DeliverInputForBeginFrame(viz::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, frame_time,
+        frame_time + interval, interval, viz::BeginFrameArgs::NORMAL));
   }
 
  protected:
@@ -2555,6 +2617,8 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
     input_handler_proxy_.HandleInputEventWithLatencyInfo(
         std::move(event), latency, base::DoNothing());
   }
+
+  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 
   testing::NiceMock<MockInputHandler> mock_input_handler_;
   testing::NiceMock<MockInputHandlerProxyClient> mock_client_;
@@ -2576,7 +2640,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   // Flush one update, the first update is always ignored.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue three updates, they will be coalesced and count as two janks.
   // These will not count as an ordering jank, as there are more than 2
@@ -2588,7 +2652,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue two updates, they will be coalesced and count as one jank and one
   // ordering jank (https://crbug.com/952930).
@@ -2597,7 +2661,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue two updates, they will be coalesced and count as one jank and one
   // ordering jank (https://crbug.com/952930).
@@ -2606,13 +2670,13 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Add 93 non-janky events, bringing us to a total of 100 events.
   AddNonJankyEvents(93);
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       4, 1);
@@ -2636,7 +2700,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
     // Flush one update, the first update is always ignored.
     AdvanceClock(16);
     HandleScrollUpdate(true /* is_momentum */);
-    input_handler_proxy_.DeliverInputForBeginFrame();
+    DeliverInputForBeginFrame();
 
     // Enqueue two updates, they will be coalesced and count as one jank and one
     // ordering jank (https://crbug.com/952930).
@@ -2645,13 +2709,13 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
     AdvanceClock(16);
     HandleScrollUpdate(true /* is_momentum */);
     AdvanceClock(1);
-    input_handler_proxy_.DeliverInputForBeginFrame();
+    DeliverInputForBeginFrame();
 
     // Add 98 non-janky events, bringing us to a total of 100 events.
     AddNonJankyEvents(98);
 
     HandleScrollEnd();
-    input_handler_proxy_.DeliverInputForBeginFrame();
+    DeliverInputForBeginFrame();
 
     histogram_tester.ExpectUniqueSample(
         "Renderer4.MomentumScrollJankPercentage", 1, i + 1);
@@ -2675,7 +2739,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankRounding) {
   // Flush one update, the first update is always ignored.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue two updates, they will be coalesced and count as one jank and one
   // ordering jank (https://crbug.com/952930).
@@ -2684,14 +2748,14 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankRounding) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Add 500 non-janky events. Even with this many events, our round-up logic
   // should cause us to report 1% jank.
   AddNonJankyEvents(500);
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       1, 1);
@@ -2714,22 +2778,22 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestSimpleNoJank) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue one updates, no jank.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue one updates, no jank.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       0, 1);
@@ -2756,10 +2820,10 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestFirstGestureNoJank) {
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
                                     0);
@@ -2782,7 +2846,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
   AdvanceClock(16);
   HandleScrollUpdate(false /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue three updates, these will not cause jank, as none are momentum.
   AdvanceClock(16);
@@ -2792,10 +2856,10 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
   AdvanceClock(16);
   HandleScrollUpdate(false /* is_momentum */);
   AdvanceClock(1);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
                                     0);
@@ -2817,7 +2881,7 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestLongDelayNoOrderingJank) {
   // Flush one update, the first update is always ignored.
   AdvanceClock(16);
   HandleScrollUpdate(true /* is_momentum */);
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Enqueue two updates, they will be coalesced but won't count as ordering
   // jank due to the long delay.
@@ -2827,13 +2891,13 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestLongDelayNoOrderingJank) {
   HandleScrollUpdate(true /* is_momentum */);
   AdvanceClock(3);  // 3ms delay prevents counting as ordering jank
                     // (https://crbug.com/952930).
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   // Add 98 non-janky events, bringing us to a total of 100 events.
   AddNonJankyEvents(98);
 
   HandleScrollEnd();
-  input_handler_proxy_.DeliverInputForBeginFrame();
+  DeliverInputForBeginFrame();
 
   histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
                                       1, 1);

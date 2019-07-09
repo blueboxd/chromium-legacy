@@ -71,7 +71,7 @@ Polymer({
   },
 
   focusMenuButton: function() {
-    this.$.menuButton.focus();
+    cr.ui.focusWithoutInk(this.$.menuButton);
   },
 
   /** @return {BookmarksItemElement} */

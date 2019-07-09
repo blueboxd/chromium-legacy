@@ -97,7 +97,6 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
-#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/dc_renderer_layer_params.h"
@@ -132,25 +131,6 @@ const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
 const char kWEBGLMultiDrawExtension[] = "GL_WEBGL_multi_draw";
 const char kWEBGLMultiDrawInstancedExtension[] =
     "GL_WEBGL_multi_draw_instanced";
-
-gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
-  switch (plane_transform) {
-    case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_NONE;
-    case GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
-    case GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
-    case GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
-    case GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-    case GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
-    default:
-      return gfx::OVERLAY_TRANSFORM_INVALID;
-  }
-}
 
 template <typename MANAGER_TYPE, typename OBJECT_TYPE>
 GLuint GetClientId(const MANAGER_TYPE* manager, const OBJECT_TYPE* object) {

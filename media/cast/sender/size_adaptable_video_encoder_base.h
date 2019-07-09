@@ -109,7 +109,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   FrameId next_frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<SizeAdaptableVideoEncoderBase> weak_factory_;
+  base::WeakPtrFactory<SizeAdaptableVideoEncoderBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SizeAdaptableVideoEncoderBase);
 };

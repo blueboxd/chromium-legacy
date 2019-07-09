@@ -585,8 +585,15 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
 
 // static
 std::unique_ptr<DnsConfigService> DnsConfigService::CreateSystemService() {
+  // DnsConfigService on iOS doesn't watch the config so its result can become
+  // inaccurate at any time.  Disable it to prevent promulgation of inaccurate
+  // DnsConfigs.
+#ifdef OS_IOS
+  return nullptr;
+#else   // defined(OS_IOS)
   return std::unique_ptr<DnsConfigService>(
       new internal::DnsConfigServicePosix());
+#endif  // defined(OS_IOS)
 }
 
 }  // namespace net

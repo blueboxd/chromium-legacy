@@ -42,8 +42,7 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
                        : VideoDecodeAccelerator::Config::OutputMode::IMPORT),
       target_color_space_(target_color_space),
       frame_renderer_(frame_renderer),
-      decode_start_timestamps_(kTimestampCacheSize),
-      weak_this_factory_(this) {
+      decode_start_timestamps_(kTimestampCacheSize) {
   DETACH_FROM_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // TODO(crbug.com/933632) Remove support for allocate mode, and always use

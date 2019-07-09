@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -96,8 +97,8 @@ class CORE_EXPORT PaintLayerStackingNode {
   explicit PaintLayerStackingNode(PaintLayer&);
   ~PaintLayerStackingNode();
 
+  void DirtyZOrderLists();
   void UpdateZOrderLists();
-  static void DirtyStackingContextZOrderLists(PaintLayer&);
 
   // Returns whether a relevant style changed.
   static bool StyleDidChange(PaintLayer& paint_layer,
@@ -114,11 +115,21 @@ class CORE_EXPORT PaintLayerStackingNode {
     return neg_z_order_list_;
   }
 
+  const PaintLayers* LayersPaintingOverlayScrollbarsAfter(
+      const PaintLayer* layer) const {
+    DCHECK(!z_order_lists_dirty_);
+    auto it = layer_to_overlay_scrollbars_painting_after_.find(layer);
+    return it == layer_to_overlay_scrollbars_painting_after_.end() ? nullptr
+                                                                   : &it->value;
+  }
+
+  void ClearNeedsReorderOverlayScrollbars();
+
  private:
-  void DirtyZOrderLists();
   void RebuildZOrderLists();
 
-  void CollectLayers(PaintLayer&);
+  struct HighestLayers;
+  void CollectLayers(PaintLayer&, HighestLayers*);
 
 #if DCHECK_IS_ON()
   void UpdateStackingParentForZOrderLists(
@@ -134,6 +145,48 @@ class CORE_EXPORT PaintLayerStackingNode {
   PaintLayers pos_z_order_list_;
   // Holds descendants within our stacking context with negative z-indices.
   PaintLayers neg_z_order_list_;
+
+  // Overlay scrollbars need to be painted above all scrollable contents, even
+  // if the contents are stacked in a stacking context which is an ancestor of
+  // the scrolling layer, for example:
+  //   <div id="stacking-context" style="opacity: 0.5">
+  //     <div id="other" style="position: relative; z-index: 10></div>
+  //     <div id="scroller" style="overflow: scroll">
+  //       <div id="child" style="position: relative">CHILD</div>
+  //     </div>
+  //   </div>
+  // and
+  //   <div id="stacking-context" style="opacity: 0.5">
+  //     <div id="other" style="position: relative; z-index: 10></div>
+  //     <div id="scroller" style="overflow: scroll; position: relative">
+  //       <div id="child" style="position: absolute; z-index: 5">CHILD</div>
+  //     </div>
+  //   </div>
+  //
+  // The paint order without reordering overlay scrollbars would be:
+  //            stacking-context
+  //               /    |    \
+  //         scroller child  other
+  //            |
+  //    overlay scrollbars
+  // where the overlay scrollbars would be painted incorrectly below |child|
+  // which is scrollable by |scroller|.
+  //
+  // To paint the overlay scrollbars above all scrollable contents, we need to
+  // reorder the z-order of overlay scrollbars in the stacking context:
+  //            stacking-context
+  //             /    |    |   \
+  //       scroller child  |   other
+  //                       |
+  //                overlay scrollbars
+  //
+  // This map records which PaintLayers (the values of the map) have overlay
+  // scrollbars which should paint after the given PaintLayer (the key of the
+  // map). The value of the map is a list of PaintLayers because there may be
+  // more than one scroller in the same stacking context with overlay
+  // scrollbars.
+  HashMap<const PaintLayer*, PaintLayers>
+      layer_to_overlay_scrollbars_painting_after_;
 
   // Indicates whether the z-order lists above are dirty.
   bool z_order_lists_dirty_ : 1;

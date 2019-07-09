@@ -61,6 +61,7 @@ enum class RequestStartTrigger {
   SPDY_PROXY_DETECTED,
   REQUEST_REPRIORITIZED,
   LONG_QUEUED_REQUESTS_TIMER_FIRED,
+  EFFECTIVE_CONNECTION_TYPE_CHANGED,
 };
 
 const char* RequestStartTriggerString(RequestStartTrigger trigger) {
@@ -81,6 +82,8 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
       return "REQUEST_REPRIORITIZED";
     case RequestStartTrigger::LONG_QUEUED_REQUESTS_TIMER_FIRED:
       return "LONG_QUEUED_REQUESTS_TIMER_FIRED";
+    case RequestStartTrigger::EFFECTIVE_CONNECTION_TYPE_CHANGED:
+      return "EFFECTIVE_CONNECTION_TYPE_CHANGED";
   }
 }
 
@@ -375,9 +378,12 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
         tick_clock_(tick_clock) {
     DCHECK(tick_clock_);
 
-    UpdateParamsForNetworkQuality();
-    if (network_quality_estimator_)
+    if (network_quality_estimator_) {
+      effective_connection_type_ =
+          network_quality_estimator_->GetEffectiveConnectionType();
+      UpdateParamsForNetworkQuality();
       network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
+    }
   }
 
   ~Client() override {
@@ -477,7 +483,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
         resource_scheduler_->resource_scheduler_params_manager_
             .GetParamsForEffectiveConnectionType(
                 network_quality_estimator_
-                    ? network_quality_estimator_->GetEffectiveConnectionType()
+                    ? effective_connection_type_
                     : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
 
@@ -504,11 +510,19 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     START_REQUEST
   };
 
-  // net::EffectiveConnectionTypeObserver implementation:
+  // net::EffectiveConnectionTypeObserver:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType effective_connection_type) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (effective_connection_type_ == effective_connection_type)
+      return;
+
+    effective_connection_type_ = effective_connection_type;
     UpdateParamsForNetworkQuality();
+
+    // Change in network quality may allow |this| to dispatch more requests.
+    LoadAnyStartablePendingRequests(
+        RequestStartTrigger::EFFECTIVE_CONNECTION_TYPE_CHANGED);
   }
 
   // Records the metrics related to number of requests in flight.
@@ -822,12 +836,13 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   ShouldStartReqResult ShouldStartRequest(
       ScheduledResourceRequestImpl* request) const {
-    // Currently, browser initiated requests are not throttled.
-    if (is_browser_client_)
-      return START_REQUEST;
-
     if (!resource_scheduler_->enabled())
       return START_REQUEST;
+
+    // Currently, browser initiated requests are not throttled.
+    if (is_browser_client_) {
+      return START_REQUEST;
+    }
 
     const net::URLRequest& url_request = *request->url_request();
     // Syncronous requests could block the entire render, which could impact
@@ -1048,6 +1063,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   // Time when the last non-delayble request ended in this client.
   base::Optional<base::TimeTicks> last_non_delayable_request_end_;
+
+  // Current estimated value of the effective connection type.
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

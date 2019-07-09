@@ -49,8 +49,7 @@ AliveChecker::AliveChecker(
       timeout_(timeout),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       dead_callback_(std::move(dead_callback)),
-      stop_at_first_alive_notification_(stop_at_first_alive_notification),
-      weak_factory_(this) {
+      stop_at_first_alive_notification_(stop_at_first_alive_notification) {
   DCHECK(!dead_callback_.is_null());
   DCHECK_GT(check_interval_, base::TimeDelta());
   DCHECK_GT(timeout_, check_interval_);

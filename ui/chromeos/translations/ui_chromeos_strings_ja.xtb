@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> 件のファイルをインポートしています...</translation>
 <translation id="1352103415082130575">タイ語キーボード（Pattachote）</translation>
-<translation id="1358032944105037487">日本語のキーボード</translation>
 <translation id="1358735829858566124">このファイルまたはディレクトリは使用できません。</translation>
 <translation id="1363028406613469049">トラック</translation>
 <translation id="1378727793141957596">Google ドライブへようこそ。</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> 枚の写真を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップしました</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
 <translation id="3475447146579922140">Google スプレッドシート</translation>
-<translation id="3494768541638400973">Google 日本語入力（日本語キーボード用）</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" />が見つかりました</translation>
 <translation id="6935521024859866267">逆さま</translation>
-<translation id="6937152069980083337">Google 日本語入力（US キーボード用）</translation>
 <translation id="6939777852457331078">US Workman キーボード</translation>
 <translation id="696203921837389374">モバイルデータとの同期を有効にする</translation>
 <translation id="6965382102122355670">OK</translation>

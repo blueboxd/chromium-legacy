@@ -29,8 +29,6 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
       gr_context_ = sk_ref_sp<GrContext>(gr_context);
     } else {
       GrMockOptions mockOptions;
-      mockOptions.fConfigOptions[kBGRA_8888_GrPixelConfig] =
-          mockOptions.fConfigOptions[kRGBA_8888_GrPixelConfig];
       gr_context_ = GrContext::MakeMock(&mockOptions);
     }
     // enable all gpu features.

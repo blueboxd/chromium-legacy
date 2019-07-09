@@ -10,6 +10,11 @@ majority of the bots on the Chromium waterfall.
 
 [slides]: https://docs.google.com/presentation/d/1sZjyNe2apUhwr5sinRfPs7eTzH-3zO0VQ-Cj-8DlEDQ/edit?usp=sharing
 
+For information on pixel wrangling the Skia Gold version of the pixel tests
+(`pixel_skia_gold_tests` test suite), see [this documentation](gold_doc).
+
+[gold_doc]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/gpu_pixel_testing_with_gold.md
+
 [TOC]
 
 ## Fleet Status

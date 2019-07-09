@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_LISTENER_H_
 
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_helper_mixin.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -42,7 +43,7 @@ class PannerHandler;
 // AudioListener maintains the state of the listener in the audio scene as
 // defined in the OpenAL specification.
 
-class AudioListener : public ScriptWrappable {
+class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

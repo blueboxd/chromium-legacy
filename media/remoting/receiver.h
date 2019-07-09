@@ -78,7 +78,7 @@ class Receiver final : public RendererClient {
   // The timer to periodically update the media time.
   base::RepeatingTimer time_update_timer_;
 
-  base::WeakPtrFactory<Receiver> weak_factory_;
+  base::WeakPtrFactory<Receiver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Receiver);
 };

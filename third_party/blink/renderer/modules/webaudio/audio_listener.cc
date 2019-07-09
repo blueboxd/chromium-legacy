@@ -35,56 +35,66 @@
 namespace blink {
 
 AudioListener::AudioListener(BaseAudioContext& context)
-    : position_x_(
+    : InspectorHelperMixin(context.Uuid()),
+      position_x_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerPositionX,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       position_y_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerPositionY,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       position_z_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerPositionZ,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       forward_x_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerForwardX,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       forward_y_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerForwardY,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       forward_z_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerForwardZ,
                              -1.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_x_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerUpX,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_y_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerUpY,
                              1.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       up_z_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeAudioListenerUpZ,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,

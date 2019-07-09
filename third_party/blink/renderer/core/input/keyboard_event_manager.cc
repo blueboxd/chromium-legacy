@@ -185,7 +185,9 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       static_cast<ui::DomKey>(initial_key_event.dom_key));
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (!is_modifier && initial_key_event.dom_key != ui::DomKey::ESCAPE) {
+  if (!is_modifier && initial_key_event.dom_key != ui::DomKey::ESCAPE &&
+      (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
+       initial_key_event.GetType() == WebInputEvent::kRawKeyDown)) {
     gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
   }
 

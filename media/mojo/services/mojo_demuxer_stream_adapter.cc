@@ -22,8 +22,7 @@ MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
     const base::Closure& stream_ready_cb)
     : demuxer_stream_(std::move(demuxer_stream)),
       stream_ready_cb_(stream_ready_cb),
-      type_(UNKNOWN),
-      weak_factory_(this) {
+      type_(UNKNOWN) {
   DVLOG(1) << __func__;
   demuxer_stream_->Initialize(base::Bind(
       &MojoDemuxerStreamAdapter::OnStreamReady, weak_factory_.GetWeakPtr()));

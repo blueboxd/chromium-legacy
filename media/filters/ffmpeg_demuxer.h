@@ -409,8 +409,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtr<FFmpegDemuxer> weak_this_;
-  base::WeakPtrFactory<FFmpegDemuxer> cancel_pending_seek_factory_;
-  base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
+  base::WeakPtrFactory<FFmpegDemuxer> cancel_pending_seek_factory_{this};
+  base::WeakPtrFactory<FFmpegDemuxer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);
 };

@@ -165,7 +165,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   // ownership of the bitmaps with these ids to avoid leaking them.
   std::set<viz::SharedBitmapId> owned_bitmaps_;
 
-  base::WeakPtrFactory<TestLayerTreeFrameSink> weak_ptr_factory_;
+  base::WeakPtrFactory<TestLayerTreeFrameSink> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

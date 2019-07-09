@@ -21,8 +21,7 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
       decoder_route_id_(MSG_ROUTING_NONE),
       client_(nullptr),
       impl_(impl),
-      media_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_this_factory_(this) {
+      media_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(channel_);
   DCHECK(impl_);
 

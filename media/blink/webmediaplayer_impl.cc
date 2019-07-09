@@ -315,8 +315,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_background_video_playback_enabled_(
           params->IsBackgroundVideoPlaybackEnabled()),
       is_background_video_track_optimization_supported_(
-          params->IsBackgroundVideoTrackOptimizationSupported()),
-      weak_factory_(this) {
+          params->IsBackgroundVideoTrackOptimizationSupported()) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);

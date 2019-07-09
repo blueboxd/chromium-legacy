@@ -98,9 +98,7 @@ std::unique_ptr<CastSender> CastSender::Create(
 
 CastSenderImpl::CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
                                CastTransport* const transport_sender)
-    : cast_environment_(cast_environment),
-      transport_sender_(transport_sender),
-      weak_factory_(this) {
+    : cast_environment_(cast_environment), transport_sender_(transport_sender) {
   CHECK(cast_environment.get());
 }
 

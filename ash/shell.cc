@@ -102,7 +102,7 @@
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
-#include "ash/system/night_light/night_light_controller.h"
+#include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
@@ -420,10 +420,6 @@ bool Shell::ShouldSaveDisplaySettings() {
 
 DockedMagnifierControllerImpl* Shell::docked_magnifier_controller() {
   return docked_magnifier_controller_.get();
-}
-
-NightLightController* Shell::night_light_controller() {
-  return night_light_controller_.get();
 }
 
 ::wm::ActivationClient* Shell::activation_client() {
@@ -780,8 +776,8 @@ Shell::~Shell() {
   // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
 
-  // NightLightController depends on the PrefService as well as the window tree
-  // host manager, and must be destructed before them. crbug.com/724231.
+  // NightLightControllerImpl depends on the PrefService as well as the window
+  // tree host manager, and must be destructed before them. crbug.com/724231.
   night_light_controller_ = nullptr;
   // Similarly for DockedMagnifierControllerImpl.
   docked_magnifier_controller_ = nullptr;
@@ -935,7 +931,7 @@ void Shell::Init(
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
-  night_light_controller_ = std::make_unique<NightLightController>();
+  night_light_controller_ = std::make_unique<NightLightControllerImpl>();
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal

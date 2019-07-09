@@ -132,8 +132,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params.task_graph_runner),
       event_listener_properties_(),
-      mutator_host_(params.mutator_host),
-      defer_main_frame_update_weak_ptr_factory_(this) {
+      mutator_host_(params.mutator_host) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 

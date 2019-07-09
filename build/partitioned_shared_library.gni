@@ -64,6 +64,11 @@ template("partitioned_shared_library") {
       "-Wl,-soname,lib${_output_name}.so",
       "--link-only",
     ]
+
+    # This shared library is an intermediate artifact that should not packaged
+    # into the final build. Therefore, reset metadata.
+    metadata = {
+    }
   }
 
   template("partition_action") {
@@ -79,9 +84,9 @@ template("partitioned_shared_library") {
         invoker.unstripped_output,
         invoker.stripped_output,
       ]
-      data = [
-        invoker.stripped_output,
-      ]
+      metadata = {
+        shared_libraries = [ invoker.stripped_output ]
+      }
       args = [
         "--objcopy",
         rebase_path("$clang_base_path/bin/llvm-objcopy", root_build_dir),

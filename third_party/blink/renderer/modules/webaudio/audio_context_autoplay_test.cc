@@ -611,10 +611,11 @@ TEST_P(AudioContextAutoplayTest,
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       GetHistogramTester()->ExpectBucketCount(
-          kAutoplayMetric, AutoplayStatus::kAutoplayStatusFailed, 1);
+          kAutoplayMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
       GetHistogramTester()->ExpectTotalCount(kAutoplayMetric, 1);
       GetHistogramTester()->ExpectBucketCount(
-          kAutoplayCrossOriginMetric, AutoplayStatus::kAutoplayStatusFailed, 1);
+          kAutoplayCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded,
+          1);
       GetHistogramTester()->ExpectTotalCount(kAutoplayCrossOriginMetric, 1);
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:

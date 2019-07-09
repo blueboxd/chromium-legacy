@@ -242,7 +242,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
-  void WillCreateRestrictedCookieManager(
+  bool WillCreateRestrictedCookieManager(
+      content::BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,
       int process_id,

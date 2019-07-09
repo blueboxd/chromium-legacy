@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
 #include "chromeos/services/device_sync/pref_names.h"

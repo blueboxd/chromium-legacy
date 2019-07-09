@@ -276,9 +276,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_CHROMEOS)
   void OnTrustAnchorUsed(const std::string& username_hash) override;
 #endif
-  net::CookieStore* OverrideCookieStoreForURL(
-      const GURL& url,
-      content::ResourceContext* context) override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory() override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
@@ -504,6 +501,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& site_for_cookies,
       const base::Optional<std::string>& user_agent,
       network::mojom::WebSocketHandshakeClientPtr handshake_client) override;
+  bool WillCreateRestrictedCookieManager(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest* request) override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(

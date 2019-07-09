@@ -551,11 +551,6 @@ void ToolbarActionsModel::Populate() {
                              visible_icon_count_ == -1
                                  ? base::HistogramBase::kSampleType_MAX
                                  : visible_icon_count_);
-
-    UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.ToolbarActionsVisible",
-                             visible_icon_count_ == -1
-                                 ? base::HistogramBase::kSampleType_MAX
-                                 : visible_icon_count_);
   }
 }
 

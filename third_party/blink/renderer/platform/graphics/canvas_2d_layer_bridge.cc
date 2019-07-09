@@ -350,34 +350,6 @@ cc::PaintCanvas* Canvas2DLayerBridge::Canvas() {
   return nullptr;
 }
 
-void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
-  // Disabling deferral is permanent: once triggered by disableDeferral()
-  // we stay in immediate mode indefinitely. This is a performance heuristic
-  // that significantly helps a number of use cases. The rationale is that if
-  // immediate rendering was needed once, it is likely to be needed at least
-  // once per frame, which eliminates the possibility for inter-frame
-  // overdraw optimization. Furthermore, in cases where immediate mode is
-  // required multiple times per frame, the repeated flushing of deferred
-  // commands would cause significant overhead, so it is better to just stop
-  // trying to defer altogether.
-  if (!is_deferral_enabled_ || !resource_host_)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Blink.Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason,
-      kDisableDeferralReasonCount);
-  FlushRecording();
-  // Because we will be discarding the recorder, if the flush failed
-  // content will be lost -> force m_haveRecordedDrawCommands to false
-  have_recorded_draw_commands_ = false;
-
-  is_deferral_enabled_ = false;
-  recorder_.reset();
-  // install the current matrix/clip stack onto the immediate canvas
-  if (GetOrCreateResourceProvider())
-    resource_host_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
-}
-
 void Canvas2DLayerBridge::UpdateFilterQuality() {
   SkFilterQuality filter_quality = resource_host_->FilterQuality();
   if (GetOrCreateResourceProvider())

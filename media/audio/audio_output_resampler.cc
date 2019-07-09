@@ -189,8 +189,7 @@ AudioOutputResampler::AudioOutputResampler(
                           base::Bind(&AudioOutputResampler::Reinitialize,
                                      base::Unretained(this))),
       register_debug_recording_source_callback_(
-          register_debug_recording_source_callback),
-      weak_factory_(this) {
+          register_debug_recording_source_callback) {
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());

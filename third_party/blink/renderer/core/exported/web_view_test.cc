@@ -4176,7 +4176,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  EXPECT_EQ(2, client.GetUserGestureNotificationsCount());
+  EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(nullptr);
 }
 

@@ -29,6 +29,7 @@
 #include "base/task/thread_pool/thread_group.h"
 #include "base/task/thread_pool/thread_group_impl.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
@@ -127,6 +128,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
+
+  // The clock instance used by all classes in base/task/thread_pool. Must
+  // outlive everything else to ensure no discrepancy in Now().
+  ThreadPoolClock thread_pool_clock_;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;

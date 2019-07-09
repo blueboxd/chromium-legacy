@@ -118,11 +118,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return params_.media_type == WebContextMenuData::kMediaTypePlugin;
 
     case ITEM_GROUP_MEDIA_FILE:
-#if defined(WEBCONTEXT_MEDIATYPEFILE_DEFINED)
       return params_.media_type == WebContextMenuData::kMediaTypeFile;
-#else
-      return false;
-#endif
 
     case ITEM_GROUP_EDITABLE:
       return params_.is_editable;

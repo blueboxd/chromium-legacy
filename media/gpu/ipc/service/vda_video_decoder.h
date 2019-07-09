@@ -216,8 +216,8 @@ class VdaVideoDecoder : public VideoDecoder,
   //     indicates that we should not make any new client callbacks.
   base::WeakPtr<VdaVideoDecoder> gpu_weak_this_;
   base::WeakPtr<VdaVideoDecoder> parent_weak_this_;
-  base::WeakPtrFactory<VdaVideoDecoder> gpu_weak_this_factory_;
-  base::WeakPtrFactory<VdaVideoDecoder> parent_weak_this_factory_;
+  base::WeakPtrFactory<VdaVideoDecoder> gpu_weak_this_factory_{this};
+  base::WeakPtrFactory<VdaVideoDecoder> parent_weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VdaVideoDecoder);
 };

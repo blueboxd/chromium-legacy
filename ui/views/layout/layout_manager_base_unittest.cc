@@ -34,7 +34,7 @@ class TestLayoutManagerBase : public LayoutManagerBase {
   }
 
   // LayoutManagerBase:
-  ProposedLayout GetProposedLayout(
+  ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override {
     ProposedLayout layout;
     layout.host_size.set_width(
@@ -140,7 +140,7 @@ class MockLayoutManagerBase : public LayoutManagerBase {
   int num_layouts_generated() const { return num_layouts_generated_; }
 
   // LayoutManagerBase:
-  ProposedLayout GetProposedLayout(
+  ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override {
     ProposedLayout layout;
     layout.host_size = {kChildViewPadding, kChildViewPadding};

@@ -124,13 +124,6 @@ enum AccelerationHint {
   kPreferNoAcceleration,
 };
 
-// Note: enum used directly for histogram, values must not change
-enum DisableDeferralReason {
-  kDisableDeferralReasonUnknown =
-      0,  // Should not appear in production histograms
-  kDisableDeferralReasonCount,
-};
-
 enum MailboxSyncMode {
   kVerifiedSyncToken,
   kUnverifiedSyncToken,

@@ -18,12 +18,18 @@
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 // TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
+#if defined(LEAK_SANITIZER)
 #define MAYBE_TestAtkTextListItem DISABLED_TestAtkTextListItem
+#else
+#define MAYBE_TestAtkTextListItem TestAtkTextListItem
+#endif
+
+// TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
+// TODO(crbug.com/981913): This flakes on linux tsan.
+#if defined(LEAK_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
   DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
 #else
-#define MAYBE_TestAtkTextListItem TestAtkTextListItem
 #define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
   TestSetCaretSetsSequentialFocusNavigationStartingPoint
 #endif

@@ -402,9 +402,7 @@ TileManager::TileManager(
                               base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
-      next_tile_id_(0u),
-      task_set_finished_weak_ptr_factory_(this),
-      ready_to_draw_callback_weak_ptr_factory_(this) {}
+      next_tile_id_(0u) {}
 
 TileManager::~TileManager() {
   FinishTasksAndCleanUp();

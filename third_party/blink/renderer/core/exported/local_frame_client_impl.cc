@@ -919,12 +919,6 @@ WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
       html_media_element);
 }
 
-WebCookieJar* LocalFrameClientImpl::CookieJar() const {
-  if (!web_frame_->Client())
-    return nullptr;
-  return web_frame_->Client()->CookieJar();
-}
-
 void LocalFrameClientImpl::FrameFocused() const {
   if (web_frame_->Client())
     web_frame_->Client()->FrameFocused();

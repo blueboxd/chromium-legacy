@@ -27,9 +27,9 @@ namespace views {
 //
 //   InterpolatingLayoutManager* e =
 //       new InterpolatingLayoutManager(LayoutOrientation::kHorizontal);
-//   e->SetDefaultLayout(std::make_unique<CompactLayout>());
-//   e->AddLayout(std::make_unique<NormalLayout>(), 50, 50);
-//   e->AddLayout(std::make_unique<SpaciousLayout>(), 100, 150);
+//   e->AddLayout(std::make_unique<CompactLayout>());
+//   e->AddLayout(std::make_unique<NormalLayout>(), {50, 0});
+//   e->AddLayout(std::make_unique<SpaciousLayout>(), {100, 50});
 //
 // Now as the view expands, the different layouts are used:
 //
@@ -55,51 +55,74 @@ class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
   InterpolatingLayoutManager& SetOrientation(LayoutOrientation orientation);
   LayoutOrientation orientation() const { return orientation_; }
 
-  // Sets the default layout, which takes effect at zero size on the layout's
-  // main axis, and continues to be active until the next layout phases in.
-  //
-  // This object retains ownership of the layout engine, but the method returns
-  // a typed raw pointer to the added layout engine.
-  template <class T>
-  T* SetDefaultLayout(std::unique_ptr<T> layout_manager) {
-    T* const temp = layout_manager.get();
-    AddLayoutInternal(std::move(layout_manager), Span());
-    return temp;
-  }
-
-  // Adds an additional layout which starts and finished phasing in at
-  // |start_interpolation| and |end_interpolation|, respectively. Currently,
-  // having more than one layout's interpolation range overlapping results in
-  // undefined behavior.
+  // Adds a layout which starts and finished phasing in at |start_interpolation|
+  // and |end_interpolation|, respectively. Currently, having more than one
+  // layout's interpolation range overlapping results in undefined behavior.
   //
   // This object retains ownership of the layout engine, but the method returns
   // a typed raw pointer to the added layout engine.
   template <class T>
   T* AddLayout(std::unique_ptr<T> layout_manager,
-               const Span& interpolation_range) {
+               const Span& interpolation_range = Span()) {
     T* const temp = layout_manager.get();
     AddLayoutInternal(std::move(layout_manager), interpolation_range);
     return temp;
   }
 
-  // CachingLayout:
+  // Specifies which layout is default (i.e. will be used for determining
+  // preferred layout size). If you do not set this, the largest layout will be
+  // used.
+  void SetDefaultLayout(LayoutManagerBase* default_layout);
+
+  // LayoutManagerBase:
+  gfx::Size GetPreferredSize(const View* host) const override;
+  gfx::Size GetMinimumSize(const View* host) const override;
+  int GetPreferredHeightForWidth(const View* host, int width) const override;
   void InvalidateLayout() override;
   void SetChildViewIgnoredByLayout(View* child_view, bool ignored) override;
+
+ protected:
+  // LayoutManagerBase:
   void Installed(View* host_view) override;
   void ViewAdded(View* host_view, View* child_view) override;
   void ViewRemoved(View* host_view, View* child_view) override;
   void ViewVisibilitySet(View* host, View* view, bool visible) override;
-  ProposedLayout GetProposedLayout(
+  ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override;
 
  private:
+  // Describes an interpolation between two layouts as a pointer to each and
+  // a percentage of distance between them to interpolate linearly to.
+  struct LayoutInterpolation {
+    LayoutManagerBase* first = nullptr;
+    LayoutManagerBase* second = nullptr;
+
+    // The closer this number is to zero, the more of |first| is used; the
+    // closer to 1.0f, the more of |second|. If the value is 0, |second| may be
+    // null.
+    float percent_second = 0.0f;
+  };
+
   void AddLayoutInternal(std::unique_ptr<LayoutManagerBase> layout,
                          const Span& interpolation_range);
+
+  // Given a set of size bounds and the current layout's orientation, returns
+  // a LayoutInterpolation providing the two layouts to interpolate between.
+  // If only one layout applies, only |right| is set and |percent| is set to 1.
+  LayoutInterpolation GetInterpolation(const SizeBounds& bounds) const;
+
+  // Returns the default layout, or the largest layout if the default has not
+  // been set.
+  const LayoutManagerBase* GetDefaultLayout() const;
+
+  // Returns the smallest layout; useful for calculating minimum layout size.
+  const LayoutManagerBase* GetSmallestLayout() const;
 
   LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
 
   // Maps from interpolation range to embedded layout.
   std::map<Span, std::unique_ptr<LayoutManagerBase>> embedded_layouts_;
+  LayoutManagerBase* default_layout_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatingLayoutManager);
 };

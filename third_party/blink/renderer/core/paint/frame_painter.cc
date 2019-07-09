@@ -103,11 +103,6 @@ void FramePainter::PaintContents(GraphicsContext& context,
   layer_painter.Paint(context, cull_rect, updated_global_paint_flags,
                       root_layer_paint_flags);
 
-  if (root_layer->ContainsDirtyOverlayScrollbars()) {
-    layer_painter.PaintOverlayScrollbars(context, cull_rect,
-                                         updated_global_paint_flags);
-  }
-
   // Regions may have changed as a result of the visibility/z-index of element
   // changing.
   if (document->AnnotatedRegionsDirty())

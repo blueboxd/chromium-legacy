@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351692861129622852">파일 <ph name="FILE_COUNT" />개를 가져오는 중...</translation>
 <translation id="1352103415082130575">태국어 키보드(Pattachote)</translation>
-<translation id="1358032944105037487">일본어 키보드</translation>
 <translation id="1358735829858566124">파일 또는 디렉터리를 사용할 수 없습니다.</translation>
 <translation id="1363028406613469049">트랙</translation>
 <translation id="1378727793141957596">Google 드라이브에 오신 것을 환영합니다.</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">사진 <ph name="FILE_COUNT" />장을 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업</translation>
 <translation id="3470502288861289375">복사 중...</translation>
 <translation id="3475447146579922140">Google 스프레드시트</translation>
-<translation id="3494768541638400973">Google 일본어 입력기(일본어 키보드용)</translation>
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     파일 <ph name="FILE_COUNT" />개 있음</translation>
 <translation id="6935521024859866267">180도 회전</translation>
-<translation id="6937152069980083337">Google 일본어 입력기(미국 키보드용)</translation>
 <translation id="6939777852457331078">미국 워크맨 키보드</translation>
 <translation id="696203921837389374">모바일 데이터를 이용한 동기화 사용 설정</translation>
 <translation id="6965382102122355670">확인</translation>

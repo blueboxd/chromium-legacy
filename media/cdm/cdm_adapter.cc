@@ -214,8 +214,7 @@ CdmAdapter::CdmAdapter(
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      pool_(new AudioBufferMemoryPool()),
-      weak_factory_(this) {
+      pool_(new AudioBufferMemoryPool()) {
   DVLOG(1) << __func__;
 
   DCHECK(!key_system_.empty());

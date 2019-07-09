@@ -172,7 +172,9 @@ class ConnectionTypeGetter {
 
 class NetworkConnectionTrackerTest : public testing::Test {
  public:
-  NetworkConnectionTrackerTest() {}
+  NetworkConnectionTrackerTest()
+      : mock_network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()) {}
 
   ~NetworkConnectionTrackerTest() override {}
 
@@ -203,17 +205,18 @@ class NetworkConnectionTrackerTest : public testing::Test {
   // Simulates a connection type change and broadcast it to observers.
   void SimulateConnectionTypeChange(
       net::NetworkChangeNotifier::ConnectionType type) {
-    mock_network_change_notifier_.NotifyObserversOfNetworkChangeForTests(type);
+    mock_network_change_notifier_->NotifyObserversOfNetworkChangeForTests(type);
   }
 
   // Sets the current connection type of the mock network change notifier.
   void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    mock_network_change_notifier_.SetConnectionType(type);
+    mock_network_change_notifier_->SetConnectionType(type);
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      mock_network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkConnectionTracker> tracker_;
   std::unique_ptr<TestNetworkConnectionObserver> observer_;

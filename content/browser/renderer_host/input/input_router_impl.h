@@ -29,7 +29,8 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/input_event_ack_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ui {
 class LatencyInfo;
@@ -83,8 +84,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetForceEnableZoom(bool enabled) override;
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
   base::Optional<cc::TouchAction> ActiveTouchAction() override;
-  void BindHost(mojom::WidgetInputHandlerHostRequest request,
-                bool frame_handler) override;
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() override;
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewFrameHost()
+      override;
   void StopFling() override;
   void OnSetTouchAction(cc::TouchAction touch_action) override;
   void ForceSetTouchActionAuto() override;
@@ -112,9 +114,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void WaitForInputProcessed(base::OnceClosure callback) override;
 
   // Exposed so that tests can swap out the implementation and intercept calls.
-  mojo::Binding<mojom::WidgetInputHandlerHost>&
-  frame_host_binding_for_testing() {
-    return frame_host_binding_;
+  mojo::Receiver<mojom::WidgetInputHandlerHost>&
+  frame_host_receiver_for_testing() {
+    return frame_host_receiver_;
   }
 
   void ForceResetTouchActionForTest();
@@ -252,13 +254,13 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   // Last touch position relative to screen. Used to compute movementX/Y.
   base::flat_map<int, gfx::Point> global_touch_position_;
 
-  // The host binding associated with the widget input handler from
+  // The host receiver associated with the widget input handler from
   // the widget.
-  mojo::Binding<mojom::WidgetInputHandlerHost> host_binding_;
+  mojo::Receiver<mojom::WidgetInputHandlerHost> host_receiver_{this};
 
-  // The host binding associated with the widget input handler from
+  // The host receiver associated with the widget input handler from
   // the frame.
-  mojo::Binding<mojom::WidgetInputHandlerHost> frame_host_binding_;
+  mojo::Receiver<mojom::WidgetInputHandlerHost> frame_host_receiver_{this};
 
   base::WeakPtr<InputRouterImpl> weak_this_;
   base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_;

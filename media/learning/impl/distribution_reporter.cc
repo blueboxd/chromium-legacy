@@ -238,7 +238,7 @@ std::unique_ptr<DistributionReporter> DistributionReporter::Create(
 }
 
 DistributionReporter::DistributionReporter(const LearningTask& task)
-    : task_(task), weak_factory_(this) {}
+    : task_(task) {}
 
 DistributionReporter::~DistributionReporter() = default;
 

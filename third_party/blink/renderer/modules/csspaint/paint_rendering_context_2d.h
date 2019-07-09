@@ -56,7 +56,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
   cc::PaintCanvas* DrawingCanvas() const final;
   cc::PaintCanvas* ExistingDrawingCanvas() const final;
-  void DisableDeferral(DisableDeferralReason) final {}
 
   void DidDraw(const SkIRect&) final;
 

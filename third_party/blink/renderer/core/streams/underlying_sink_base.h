@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_UNDERLYING_SINK_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_UNDERLYING_SINK_BASE_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -12,7 +13,6 @@
 
 namespace blink {
 
-class ScriptPromise;
 class ScriptValue;
 class ScriptState;
 

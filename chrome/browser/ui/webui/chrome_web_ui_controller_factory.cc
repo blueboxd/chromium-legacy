@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
-#include "chrome/browser/ui/webui/hats/hats_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
@@ -437,12 +436,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<AppLauncherPageUI>;
   }
 #endif  // !defined(OS_CHROMEOS)
-  // HaTS for Desktop is distinct from the Android implementation of HaTS
-  if (url.host_piece() == chrome::kChromeUIHatsHost &&
-      base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop)) {
-    return &NewWebUI<HatsUI>;
-  }
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
        url.host_piece() == chrome::kChromeUIAppManagementHost ||

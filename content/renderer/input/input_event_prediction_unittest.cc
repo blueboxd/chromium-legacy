@@ -12,19 +12,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
+namespace content {
+
+namespace {
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebPointerProperties;
 using blink::WebTouchEvent;
-
-namespace content {
+using ui::input_prediction::PredictorType;
+}  // namespace
 
 class InputEventPredictionTest : public testing::Test {
  public:
   InputEventPredictionTest() {
     // Default to enable resampling with empty predictor for testing.
-    ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "empty");
+    ConfigureFieldTrialAndInitialize(
+        features::kResamplingInputEvents,
+        ui::input_prediction::kScrollPredictorNameEmpty);
   }
 
   int GetPredictorMapSize() const {
@@ -89,33 +95,40 @@ TEST_F(InputEventPredictionTest, PredictorType) {
   // Resampling is default to true for InputEventPredictionTest.
   EXPECT_TRUE(event_predictor_->enable_resampling_);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kEmpty);
+            PredictorType::kScrollPredictorTypeEmpty);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "empty");
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameEmpty);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kEmpty);
+            PredictorType::kScrollPredictorTypeEmpty);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "kalman");
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameKalman);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kKalman);
+            PredictorType::kScrollPredictorTypeKalman);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "lsq");
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameLsq);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kLsq);
+            PredictorType::kScrollPredictorTypeLsq);
 
-  // Default to kKalman.
+  // Default to Kalman predictor.
   ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "");
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kKalman);
+            PredictorType::kScrollPredictorTypeKalman);
 
-  ConfigureFieldTrialAndInitialize(features::kInputPredictorTypeChoice, "lsq");
+  ConfigureFieldTrialAndInitialize(
+      features::kInputPredictorTypeChoice,
+      ui::input_prediction::kScrollPredictorNameLsq);
   EXPECT_FALSE(event_predictor_->enable_resampling_);
-  // When enable_resampling_ is true, kInputPredictorTypeChoice flag have no
+  // When enable_resampling_ is true, kInputPredictorTypeChoice flag has no
   // effect.
-  event_predictor_->enable_resampling_ = true;
-  event_predictor_->SetUpPredictorType();
+  event_predictor_ = std::make_unique<InputEventPrediction>(true);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kKalman);
+            PredictorType::kScrollPredictorTypeKalman);
 }
 
 TEST_F(InputEventPredictionTest, MouseEvent) {
@@ -274,7 +287,7 @@ TEST_F(InputEventPredictionTest, ResamplingDisabled) {
   ConfigureFieldTrialAndInitialize(features::kInputPredictorTypeChoice, "");
   EXPECT_FALSE(event_predictor_->enable_resampling_);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            InputEventPrediction::PredictorType::kKalman);
+            PredictorType::kScrollPredictorTypeKalman);
 
   // Send 3 mouse move to get kalman predictor ready.
   WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
@@ -306,7 +319,9 @@ TEST_F(InputEventPredictionTest, ResamplingDisabled) {
 
 // Test that when dt > 20ms, no resampling, but has predicted points.
 TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "kalman");
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameKalman);
 
   base::TimeTicks event_time = ui::EventTimeForNow();
   // Send 3 mouse move each has 8ms interval to get kalman predictor ready.

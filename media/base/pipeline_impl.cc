@@ -190,7 +190,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   // Called from non-media threads when an error occurs.
   PipelineStatusCB error_cb_;
 
-  base::WeakPtrFactory<RendererWrapper> weak_factory_;
+  base::WeakPtrFactory<RendererWrapper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(RendererWrapper);
 };
 
@@ -208,9 +208,7 @@ PipelineImpl::RendererWrapper::RendererWrapper(
       state_(kCreated),
       status_(PIPELINE_OK),
       renderer_ended_(false),
-      text_renderer_ended_(false),
-      weak_factory_(this) {
-}
+      text_renderer_ended_(false) {}
 
 PipelineImpl::RendererWrapper::~RendererWrapper() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
@@ -990,8 +988,7 @@ PipelineImpl::PipelineImpl(
       client_(nullptr),
       playback_rate_(kDefaultPlaybackRate),
       volume_(kDefaultVolume),
-      is_suspended_(false),
-      weak_factory_(this) {
+      is_suspended_(false) {
   DVLOG(2) << __func__;
   renderer_wrapper_.reset(new RendererWrapper(
       media_task_runner_, std::move(main_task_runner), media_log_));

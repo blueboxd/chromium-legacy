@@ -150,8 +150,7 @@ End2EndTestRenderer::End2EndTestRenderer(std::unique_ptr<Renderer> renderer)
     : receiver_rpc_broker_(
           base::BindRepeating(&End2EndTestRenderer::OnMessageFromSink,
                               base::Unretained(this))),
-      receiver_(new Receiver(std::move(renderer), &receiver_rpc_broker_)),
-      weak_factory_(this) {
+      receiver_(new Receiver(std::move(renderer), &receiver_rpc_broker_)) {
   controller_ = CreateController(
       base::BindRepeating(&End2EndTestRenderer::SendMessageToSink,
                           weak_factory_.GetWeakPtr()),

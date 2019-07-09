@@ -216,7 +216,7 @@ void BaseArena::MakeConsistentForMutator() {
     page->MarkAsSwept();
   }
 
-  swept_pages_ = std::move(unswept_pages_);
+  swept_pages_.MoveFrom(std::move(unswept_pages_));
   DCHECK(SweepingAndFinalizationCompleted());
 
   VerifyObjectStartBitmap();
@@ -249,7 +249,7 @@ void BaseArena::PrepareForSweep() {
   }
 
   // Move all pages to a list of unswept pages.
-  unswept_pages_ = std::move(swept_pages_);
+  unswept_pages_.MoveFrom(std::move(swept_pages_));
   DCHECK(swept_pages_.IsEmpty());
 }
 
@@ -286,9 +286,9 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
 bool BaseArena::SweepUnsweptPageOnConcurrentThread(BasePage* page) {
   const bool is_empty = page->Sweep(FinalizeType::kDeferred);
   if (is_empty) {
-    swept_unfinalized_empty_pages_.Push(page);
+    swept_unfinalized_empty_pages_.PushLocked(page);
   } else {
-    swept_unfinalized_pages_.Push(page);
+    swept_unfinalized_pages_.PushLocked(page);
   }
   return is_empty;
 }
@@ -300,7 +300,7 @@ bool BaseArena::SweepUnsweptPage(BasePage* page) {
   } else {
     // First, we add page to the list of swept pages
     // so that the FindPageFromAddress check is happy.
-    swept_pages_.Push(page);
+    swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
   }
   return is_empty;
@@ -321,7 +321,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   // TODO(bikineev): We should probably process pages in the reverse order. This
   // will leave more work for concurrent sweeper and reduce memory footprint
   // faster.
-  while (BasePage* page = unswept_pages_.Pop()) {
+  while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPage(page);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
@@ -331,8 +331,8 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
     }
     page_count++;
   }
-  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
-    swept_pages_.Push(page);
+  while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
+    swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
@@ -342,7 +342,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
     }
     page_count++;
   }
-  while (BasePage* page = swept_unfinalized_empty_pages_.Pop()) {
+  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
     page->FinalizeSweep(SweepResult::kPageEmpty);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
@@ -357,7 +357,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
 }
 
 void BaseArena::SweepOnConcurrentThread() {
-  while (BasePage* page = unswept_pages_.Pop()) {
+  while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPageOnConcurrentThread(page);
   }
 }
@@ -370,15 +370,15 @@ void BaseArena::CompleteSweep() {
   // Some phases, e.g. verification, require iterability of a page.
   MakeIterable();
 
-  while (BasePage* page = unswept_pages_.Pop()) {
+  while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPage(page);
   }
 
-  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
-    swept_pages_.Push(page);
+  while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
+    swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
   }
-  while (BasePage* page = swept_unfinalized_empty_pages_.Pop()) {
+  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
     page->FinalizeSweep(SweepResult::kPageEmpty);
   }
 
@@ -670,7 +670,7 @@ void NormalPageArena::AllocatePage() {
   }
   NormalPage* page =
       new (page_memory->WritableStart()) NormalPage(page_memory, this);
-  swept_pages_.Push(page);
+  swept_pages_.PushLocked(page);
 
   GetThreadState()->Heap().stats_collector()->IncreaseAllocatedSpace(
       page->size());
@@ -827,8 +827,8 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
   Address result = nullptr;
   // First, process unfinalized pages as finalizing a page is faster than
   // sweeping.
-  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
-    swept_pages_.Push(page);
+  while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
+    swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
     // For NormalPage, stop lazy sweeping once we find a slot to
     // allocate a new object.
@@ -836,7 +836,7 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
     if (result)
       return result;
   }
-  while (BasePage* page = unswept_pages_.Pop()) {
+  while (BasePage* page = unswept_pages_.PopLocked()) {
     const bool is_empty = SweepUnsweptPage(page);
     if (!is_empty) {
       // For NormalPage, stop lazy sweeping once we find a slot to
@@ -1002,7 +1002,7 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
   ASAN_POISON_MEMORY_REGION(large_object->GetAddress() + large_object->size(),
                             kAllocationGranularity);
 
-  swept_pages_.Push(large_object);
+  swept_pages_.PushLocked(large_object);
 
   GetThreadState()->Heap().stats_collector()->IncreaseAllocatedSpace(
       large_object->size());
@@ -1032,7 +1032,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
                                          size_t gc_info_index) {
   Address result = nullptr;
   size_t swept_size = 0;
-  while (BasePage* page = unswept_pages_.Pop()) {
+  while (BasePage* page = unswept_pages_.PopLocked()) {
     if (page->Sweep(FinalizeType::kInlined)) {
       swept_size += static_cast<LargeObjectPage*>(page)->ObjectSize();
       page->RemoveFromHeap();
@@ -1044,7 +1044,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
         break;
       }
     } else {
-      swept_pages_.Push(page);
+      swept_pages_.PushLocked(page);
       page->MarkAsSwept();
     }
   }

@@ -17,7 +17,6 @@
 #include "components/previews/content/hint_update_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_switches.h"
 #include "url/gurl.h"
 
 namespace previews {

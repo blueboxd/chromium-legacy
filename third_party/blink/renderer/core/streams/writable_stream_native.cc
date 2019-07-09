@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
+#include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -214,6 +216,32 @@ WritableStreamNative* WritableStreamNative::Create(
       exception_state);
 
   //  8. Return stream.
+  return stream;
+}
+
+// static
+WritableStreamNative* WritableStreamNative::CreateWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSinkBase* underlying_sink,
+    size_t high_water_mark) {
+  // TODO(crbug.com/902633): This method of constructing a WritableStream
+  // introduces unnecessary trips through the V8. Perhaps we should implement
+  // algorithms based on an UnderlyingSinkBase, or C++ stream implementations
+  // should provide the algorithms directly.
+  ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
+      script_state, high_water_mark);
+  if (strategy.IsEmpty())
+    return nullptr;
+
+  auto underlying_sink_value = ScriptValue::From(script_state, underlying_sink);
+
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kConstructionContext,
+                                 "WritableStream");
+  auto* stream = MakeGarbageCollected<WritableStreamNative>(
+      script_state, underlying_sink_value, strategy, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
   return stream;
 }
 

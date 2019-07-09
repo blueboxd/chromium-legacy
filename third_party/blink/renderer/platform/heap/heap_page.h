@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace base {
 namespace trace_event {
@@ -528,6 +529,30 @@ class PageStack : Vector<BasePage*> {
   using Base::size;
 };
 
+class PageStackThreadSafe : public PageStack {
+ public:
+  void PushLocked(BasePage* page) {
+    WTF::MutexLocker locker(mutex_);
+    Push(page);
+  }
+
+  BasePage* PopLocked() {
+    WTF::MutexLocker locker(mutex_);
+    return Pop();
+  }
+
+  bool IsEmptyLocked() const {
+    WTF::MutexLocker locker(mutex_);
+    return IsEmpty();
+  }
+
+  // Explicit unsafe move assignment.
+  void MoveFrom(PageStack&& other) { PageStack::operator=(std::move(other)); }
+
+ private:
+  mutable WTF::Mutex mutex_;
+};
+
 // A bitmap for recording object starts. Objects have to be allocated at
 // minimum granularity of kGranularity.
 //
@@ -835,20 +860,21 @@ class PLATFORM_EXPORT BaseArena {
   virtual void VerifyObjectStartBitmap() {}
 
  protected:
-  bool SweepingCompleted() const { return unswept_pages_.IsEmpty(); }
+  bool SweepingCompleted() const { return unswept_pages_.IsEmptyLocked(); }
   bool SweepingAndFinalizationCompleted() const {
-    return unswept_pages_.IsEmpty() && swept_unfinalized_pages_.IsEmpty() &&
-           swept_unfinalized_empty_pages_.IsEmpty();
+    return unswept_pages_.IsEmptyLocked() &&
+           swept_unfinalized_pages_.IsEmptyLocked() &&
+           swept_unfinalized_empty_pages_.IsEmptyLocked();
   }
 
   // Pages for allocation.
-  PageStack swept_pages_;
+  PageStackThreadSafe swept_pages_;
   // Pages that are being swept.
-  PageStack unswept_pages_;
+  PageStackThreadSafe unswept_pages_;
   // Pages that have been swept but contain unfinalized objects.
-  PageStack swept_unfinalized_pages_;
+  PageStackThreadSafe swept_unfinalized_pages_;
   // Pages that have been swept and need to be removed from the heap.
-  PageStack swept_unfinalized_empty_pages_;
+  PageStackThreadSafe swept_unfinalized_empty_pages_;
 
  private:
   virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;

@@ -21,8 +21,7 @@ FakeVideoDecoder::FakeVideoDecoder(const std::string& decoder_name,
       state_(STATE_UNINITIALIZED),
       hold_decode_(false),
       total_bytes_decoded_(0),
-      fail_to_initialize_(false),
-      weak_factory_(this) {
+      fail_to_initialize_(false) {
   DVLOG(1) << decoder_name_ << ": " << __func__;
   DCHECK_GE(decoding_delay, 0);
 }

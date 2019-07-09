@@ -1,7 +1,8 @@
 {
   "sandbox": {
     "features": [
-      "isolated-persistent-storage"
+      "isolated-persistent-storage",
+      "deprecated-ambient-replace-as-executable"
     ],
     "services": [
       "fuchsia.device.NameProvider",

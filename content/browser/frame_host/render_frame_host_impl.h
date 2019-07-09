@@ -56,7 +56,9 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
@@ -1406,7 +1408,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if !defined(OS_ANDROID)
   void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
-  void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
+  void BindAuthenticatorRequest(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
 
   void BindPresentationServiceRequest(
@@ -1428,7 +1431,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       override;
   void GetCredentialManager(
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
-  void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
+  void GetAuthenticator(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override;
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;
   void GetVirtualAuthenticatorManager(
@@ -1951,7 +1955,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
-  mojom::FrameNavigationControlAssociatedPtr navigation_control_;
+  mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation
@@ -2104,7 +2108,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
-  mojom::FrameInputHandlerPtr frame_input_handler_;
+  mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;

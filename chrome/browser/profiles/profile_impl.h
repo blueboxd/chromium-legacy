@@ -150,8 +150,6 @@ class ProfileImpl : public Profile {
   const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const override;
   net::URLRequestContextGetter* GetRequestContext() override;
-  base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
-      override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;

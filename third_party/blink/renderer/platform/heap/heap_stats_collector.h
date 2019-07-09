@@ -252,11 +252,14 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // Overall time spent marking the heap.
     base::TimeDelta marking_time() const;
 
+    // Time spent in foreground tasks sweeping the heap.
+    base::TimeDelta foreground_sweeping_time() const;
+
+    // Time spent in background tasks sweeping the heap.
+    base::TimeDelta background_sweeping_time() const;
+
     // Overall time spent sweeping the heap.
     base::TimeDelta sweeping_time() const;
-
-    // Time spent in concurrent tasks sweeping the heap.
-    base::TimeDelta concurrent_sweeping_time() const;
 
     // Marking speed in bytes/s.
     double marking_time_in_bytes_per_second() const;

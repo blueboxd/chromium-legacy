@@ -21,7 +21,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/network/vpn_list.h"
-#include "ash/system/night_light/night_light_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -86,12 +85,6 @@ void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
     Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
 
-void BindNightLightControllerRequestOnMainThread(
-    mojom::NightLightControllerRequest request) {
-  if (Shell::HasInstance())
-    Shell::Get()->night_light_controller()->BindRequest(std::move(request));
-}
-
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
   if (Shell::HasInstance())
     Shell::Get()->tray_action()->BindRequest(std::move(request));
@@ -138,9 +131,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionRequestOnMainThread),

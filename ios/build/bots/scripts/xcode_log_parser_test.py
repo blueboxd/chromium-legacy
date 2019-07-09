@@ -203,7 +203,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
     mock_exist_file.return_value = True
     self.assertEqual(expected_test_results,
                      xcode_log_parser.Xcode11LogParser().collect_test_results(
-                         _XTEST_RESULT))
+                         _XTEST_RESULT, []))
 
   @mock.patch('os.path.exists', autospec=True)
   @mock.patch('xcode_log_parser.Xcode11LogParser._xcresulttool_get')
@@ -216,7 +216,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
     mock_exist_file.return_value = True
     self.assertEqual(expected_test_results,
                      xcode_log_parser.Xcode11LogParser().collect_test_results(
-                         _XTEST_RESULT))
+                         _XTEST_RESULT, []))
 
   @mock.patch('os.path.exists', autospec=True)
   def testCollectTestsDidNotRun(self, mock_exist_file):
@@ -227,7 +227,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
             '%s with test results does not exist.' % _XTEST_RESULT]}}
     self.assertEqual(expected_test_results,
                      xcode_log_parser.Xcode11LogParser().collect_test_results(
-                         _XTEST_RESULT))
+                         _XTEST_RESULT, []))
 
   @mock.patch('os.path.exists', autospec=True)
   def testCollectTestsInterruptedRun(self, mock_exist_file):
@@ -239,7 +239,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
                 _XTEST_RESULT + '.xcresult', 'Info.plist')]}}
     self.assertEqual(expected_test_results,
                      xcode_log_parser.Xcode11LogParser().collect_test_results(
-                         _XTEST_RESULT))
+                         _XTEST_RESULT, []))
 
   @mock.patch('os.path.exists', autospec=True)
   @mock.patch('xcode_log_parser.Xcode11LogParser._xcresulttool_get')
@@ -250,3 +250,22 @@ class XCode11LogParserTest(test_runner_test.TestCase):
     mock_xcresulttool_get.return_value = ACTIONS_RECORD_FAILED_TEST
     xcode_log_parser.Xcode11LogParser().copy_screenshots(_XTEST_RESULT)
     self.assertEqual(1, mock_copy.call_count)
+
+  @mock.patch('os.path.exists', autospec=True)
+  def testCollectTestResults_interruptedTests(self, mock_path_exists):
+    mock_path_exists.side_effect = [True, False]
+    output = [
+        '[09:03:42:INFO] Test case \'-[TestCase1 method1]\' passed on device.',
+        '[09:06:40:INFO] Test case \'-[TestCase2 method1]\' passed on device.',
+        '[09:09:00:INFO] Test case \'-[TestCase2 method1]\' failed on device.',
+        '** BUILD INTERRUPTED **',
+    ]
+    not_found_message = [
+        'Info.plist.xcresult/Info.plist with test results does not exist.']
+    res = xcode_log_parser.Xcode11LogParser().collect_test_results(
+        'Info.plist', output)
+    self.assertIn('BUILD_INTERRUPTED', res['failed'])
+    self.assertEqual(not_found_message + output,
+                     res['failed']['BUILD_INTERRUPTED'])
+    self.assertEqual(['TestCase1/method1', 'TestCase2/method1'],
+                     res['passed'])

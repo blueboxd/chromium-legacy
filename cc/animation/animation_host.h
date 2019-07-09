@@ -262,7 +262,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
 
-  base::WeakPtrFactory<AnimationHost> weak_factory_;
+  base::WeakPtrFactory<AnimationHost> weak_factory_{this};
 };
 
 }  // namespace cc

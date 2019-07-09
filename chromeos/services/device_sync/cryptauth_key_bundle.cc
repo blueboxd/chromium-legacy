@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 
 namespace chromeos {

@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -63,6 +66,13 @@ WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
                                                 WebRemoteFrameClient* client,
                                                 WebFrame* opener) {
   return WebRemoteFrameImpl::CreateMainFrame(web_view, client, opener);
+}
+
+WebRemoteFrame* WebRemoteFrame::CreateForPortal(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    const WebElement& portal_element) {
+  return WebRemoteFrameImpl::CreateForPortal(scope, client, portal_element);
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
@@ -91,6 +101,24 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   frame->InitializeCoreFrame(
       page, nullptr, g_null_atom,
       opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
+  return frame;
+}
+
+WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    const WebElement& portal_element) {
+  WebRemoteFrameImpl* frame =
+      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
+
+  Element* element = portal_element;
+  DCHECK(element->HasTagName(html_names::kPortalTag));
+  DCHECK(RuntimeEnabledFeatures::PortalsEnabled(&element->GetDocument()));
+  HTMLPortalElement* portal = static_cast<HTMLPortalElement*>(element);
+  LocalFrame* host_frame = portal->GetDocument().GetFrame();
+  frame->InitializeCoreFrame(*host_frame->GetPage(), portal, g_null_atom,
+                             &host_frame->window_agent_factory());
+
   return frame;
 }
 

@@ -104,7 +104,7 @@ class MojoDecryptor : public Decryptor {
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
 
-  base::WeakPtrFactory<MojoDecryptor> weak_factory_;
+  base::WeakPtrFactory<MojoDecryptor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoDecryptor);
 };

@@ -66,6 +66,7 @@ DelayNode::DelayNode(BaseAudioContext& context, double max_delay_time)
     : AudioNode(context),
       delay_time_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeDelayDelayTime,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,

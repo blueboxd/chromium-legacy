@@ -122,7 +122,7 @@ class MEDIA_EXPORT OffloadingVideoDecoder : public VideoDecoder {
   scoped_refptr<base::SequencedTaskRunner> offload_task_runner_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<OffloadingVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<OffloadingVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OffloadingVideoDecoder);
 };

@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> फ़ाइलें आयात की जा रही हैं...</translation>
 <translation id="1352103415082130575">थाई कीबोर्ड (पैट्टाशोटे)</translation>
-<translation id="1358032944105037487">जापानी कीबोर्ड</translation>
 <translation id="1358735829858566124">फा़इल या निर्देशिका उपयोग करने योग्य नहीं है.</translation>
 <translation id="1363028406613469049">ट्रैक</translation>
 <translation id="1378727793141957596">Google डिस्क में आपका स्वागत है!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> फ़ोटो का <ph name="BEGIN_LINK" />Google डिस्‍क<ph name="END_LINK" /> में बैक अप लिया गया</translation>
 <translation id="3470502288861289375">कॉपी किया जा रहा है...</translation>
 <translation id="3475447146579922140">Google spreadsheet</translation>
-<translation id="3494768541638400973">Google जापानी इनपुट (जापानी कीबोर्ड के लिए)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> त्रुटियां.</translation>
 <translation id="3519867315646775981">लिप्यंतरण (shalom ← שלום)</translation>
 <translation id="3522708245912499433">पुर्तगाली</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> मिल गया</translation>
 <translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
-<translation id="6937152069980083337">Google जापानी इनपुट (यूएस कीबोर्ड के लिए)</translation>
 <translation id="6939777852457331078">यूएस वर्कमैन कीबोर्ड</translation>
 <translation id="696203921837389374">मोबाइल डेटा पर सिंक करना चालू करें</translation>
 <translation id="6965382102122355670">ठीक है</translation>

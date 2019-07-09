@@ -83,12 +83,11 @@ def main():
     exclude_shared_libraries = options.exclude_shared_libraries.split(',')
   for f in open(options.runtime_deps):
     f = f[:-1]
-    if f.endswith('.so'):
-      p = f.replace('lib.unstripped/', '')
-      if os.path.basename(p) in exclude_shared_libraries:
-        continue
-      unsorted_lib_paths.append(p)
-      _library_path_map[os.path.basename(p)] = p
+    assert f.endswith('.so')
+    if os.path.basename(f) in exclude_shared_libraries:
+      continue
+    unsorted_lib_paths.append(f)
+    _library_path_map[os.path.basename(f)] = f
 
   lib_paths = GetSortedTransitiveDependencies(unsorted_lib_paths)
 

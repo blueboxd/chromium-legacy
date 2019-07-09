@@ -224,7 +224,7 @@ class RendererController final : public mojom::RemotingSource,
 
   const base::TickClock* clock_;
 
-  base::WeakPtrFactory<RendererController> weak_factory_;
+  base::WeakPtrFactory<RendererController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RendererController);
 };

@@ -18,34 +18,22 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='outer'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='outer'",
       "bounds": [352, 294]
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='content'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
       "position": [79, 79],
       "bounds": [196, 212],
       "contentsOpaque": true,
       "backgroundColor": "#DDDDDD"
     },
     {
-      "name": "Overflow Controls Host Layer",
-      "position": [62, 62],
-      "bounds": [230, 170],
-      "drawsContent": false
-    },
-    {
-      "name": "Vertical Scrollbar Layer",
-      "position": [280, 67],
-      "bounds": [7, 160],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='outer' (foreground) Layer",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='outer' (foreground) Layer",
       "bounds": [352, 294]
     },
     {
-      "name": "LayoutBlockFlow DIV class='scroller'",
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
       "position": [32, 32],
       "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
@@ -61,6 +49,18 @@
       "position": [67, 67],
       "bounds": [220, 236],
       "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "position": [62, 62],
+      "bounds": [230, 170],
+      "drawsContent": false
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [280, 67],
+      "bounds": [7, 160],
+      "drawsContent": false
     }
   ]
 }

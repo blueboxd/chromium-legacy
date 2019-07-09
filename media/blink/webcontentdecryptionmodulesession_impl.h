@@ -91,7 +91,8 @@ class WebContentDecryptionModuleSessionImpl
   // Since promises will live until they are fired, use a weak reference when
   // creating a promise in case this class disappears before the promise
   // actually fires.
-  base::WeakPtrFactory<WebContentDecryptionModuleSessionImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebContentDecryptionModuleSessionImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentDecryptionModuleSessionImpl);
 };

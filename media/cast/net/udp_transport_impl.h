@@ -136,7 +136,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
   std::unique_ptr<UdpPacketPipeReader> reader_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<UdpTransportImpl> weak_factory_;
+  base::WeakPtrFactory<UdpTransportImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UdpTransportImpl);
 };

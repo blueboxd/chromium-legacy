@@ -46,10 +46,7 @@ const char* ConvertFileStatus(FileStatus status) {
 MojoCdmFileIO::MojoCdmFileIO(Delegate* delegate,
                              cdm::FileIOClient* client,
                              mojom::CdmStorage* cdm_storage)
-    : delegate_(delegate),
-      client_(client),
-      cdm_storage_(cdm_storage),
-      weak_factory_(this) {
+    : delegate_(delegate), client_(client), cdm_storage_(cdm_storage) {
   DVLOG(1) << __func__;
   DCHECK(delegate_);
   DCHECK(client_);

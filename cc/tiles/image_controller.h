@@ -151,7 +151,7 @@ class CC_EXPORT ImageController {
   // from generating new tasks, this vector should be empty.
   std::vector<ImageDecodeRequest> orphaned_decode_requests_;
 
-  base::WeakPtrFactory<ImageController> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageController> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

@@ -15,7 +15,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/event_utils.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
@@ -167,9 +166,7 @@ gfx::Size DialogClientView::GetMaximumSize() const {
 
 void DialogClientView::VisibilityChanged(View* starting_from, bool is_visible) {
   ClientView::VisibilityChanged(starting_from, is_visible);
-
-  if (is_visible)
-    view_shown_time_stamp_ = base::TimeTicks::Now();
+  input_protector_.VisibilityChanged(is_visible);
 }
 
 void DialogClientView::Layout() {
@@ -242,7 +239,7 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (!GetDialogDelegate())
     return;
 
-  if (IsPossiblyUnintendedInteraction(view_shown_time_stamp_, event))
+  if (input_protector_.IsPossiblyUnintendedInteraction(event))
     return;
 
   if (sender == ok_button_)
@@ -254,7 +251,7 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void DialogClientView::ResetViewShownTimeStampForTesting() {
-  view_shown_time_stamp_ = base::TimeTicks();
+  input_protector_.ResetForTesting();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

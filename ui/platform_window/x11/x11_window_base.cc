@@ -262,6 +262,14 @@ PlatformWindowState X11WindowBase::GetPlatformWindowState() const {
   return state_;
 }
 
+void X11WindowBase::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11WindowBase::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, x11::None, xroot_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());

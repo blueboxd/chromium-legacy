@@ -200,8 +200,10 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
         PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);
     portal_ = portal_interceptor->GetPortal();
     RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
-    std::move(callback).Run(proxy_host->GetRoutingID(),
-                            portal->GetDevToolsFrameToken());
+    std::move(callback).Run(
+        proxy_host->GetRoutingID(),
+        proxy_host->frame_tree_node()->current_replication_state(),
+        portal->GetDevToolsFrameToken());
 
     if (run_loop_)
       run_loop_->Quit();

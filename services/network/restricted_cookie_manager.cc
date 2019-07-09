@@ -234,9 +234,12 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     }
   }
 
-  network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
-                                         frame_id_, url, site_for_cookies,
-                                         result_with_status);
+  if (network_context_client_) {
+    network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
+                                           frame_id_, url, site_for_cookies,
+                                           result_with_status);
+  }
+
   if (blocked) {
     DCHECK(result.empty());
     std::move(callback).Run({});
@@ -262,13 +265,14 @@ void RestrictedCookieManager::SetCanonicalCookie(
       !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 
   if (blocked) {
-    std::vector<net::CookieWithStatus> result_with_status;
-    result_with_status.push_back(
-        {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
-    network_context_client_->OnCookiesChanged(is_service_worker_, process_id_,
-                                              frame_id_, url, site_for_cookies,
-                                              result_with_status);
-
+    if (network_context_client_) {
+      std::vector<net::CookieWithStatus> result_with_status;
+      result_with_status.push_back(
+          {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+      network_context_client_->OnCookiesChanged(
+          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
+          result_with_status);
+    }
     std::move(callback).Run(false);
     return;
   }
@@ -307,26 +311,28 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
   // tightening up is rolled out.
   DCHECK_NE(status, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 
-  switch (status) {
-    case CookieInclusionStatus::INCLUDE: {
-      CookieInclusionStatus eventual_status =
-          net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
-                                                               net_options);
-      if (eventual_status != CookieInclusionStatus::INCLUDE) {
-        notify.push_back({cookie, eventual_status});
+  if (network_context_client_) {
+    switch (status) {
+      case CookieInclusionStatus::INCLUDE: {
+        CookieInclusionStatus eventual_status =
+            net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
+                                                                 net_options);
+        if (eventual_status != CookieInclusionStatus::INCLUDE) {
+          notify.push_back({cookie, eventual_status});
+        }
+        FALLTHROUGH;
       }
-      FALLTHROUGH;
-    }
-    case CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-    case CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE:
-      notify.push_back({cookie, status});
-      network_context_client_->OnCookiesChanged(
-          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-          std::move(notify));
-      break;
+      case CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+      case CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE:
+        notify.push_back({cookie, status});
+        network_context_client_->OnCookiesChanged(
+            is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
+            std::move(notify));
+        break;
 
-    default:
-      break;
+      default:
+        break;
+    }
   }
   std::move(user_callback).Run(status == CookieInclusionStatus::INCLUDE);
 }
@@ -363,6 +369,68 @@ void RestrictedCookieManager::AddChangeListener(
   // The linked list takes over the Listener ownership.
   listeners_.Append(listener.release());
   std::move(callback).Run();
+}
+
+void RestrictedCookieManager::SetCookieFromString(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::string& cookie,
+    SetCookieFromStringCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
+                                                           site_for_cookies));
+  options.set_exclude_httponly();  // Default, but make it explicit here.
+  std::unique_ptr<net::CanonicalCookie> parsed_cookie =
+      net::CanonicalCookie::Create(url, cookie, base::Time::Now(), options);
+  if (!parsed_cookie) {
+    std::move(callback).Run();
+    return;
+  }
+
+  // Further checks (origin_, settings), as well as logging done by
+  // SetCanonicalCookie()
+  SetCanonicalCookie(
+      *parsed_cookie, url, site_for_cookies,
+      base::BindOnce([](SetCookieFromStringCallback user_callback,
+                        bool success) { std::move(user_callback).Run(); },
+                     std::move(callback)));
+}
+
+void RestrictedCookieManager::GetCookiesString(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    GetCookiesStringCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Checks done by GetAllForUrl.
+
+  // Match everything.
+  auto match_options = mojom::CookieManagerGetOptions::New();
+  match_options->name = "";
+  match_options->match_type = mojom::CookieMatchType::STARTS_WITH;
+  GetAllForUrl(url, site_for_cookies, std::move(match_options),
+               base::BindOnce(
+                   [](GetCookiesStringCallback user_callback,
+                      const std::vector<net::CanonicalCookie>& cookies) {
+                     std::move(user_callback)
+                         .Run(net::CanonicalCookie::BuildCookieLine(cookies));
+                   },
+                   std::move(callback)));
+}
+
+void RestrictedCookieManager::CookiesEnabledFor(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    CookiesEnabledForCallback callback) {
+  if (!ValidateAccessToCookiesAt(url)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(
+      cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies));
 }
 
 void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {

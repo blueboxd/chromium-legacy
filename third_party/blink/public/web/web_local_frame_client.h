@@ -229,12 +229,17 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Request the creation of a new portal.
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-      mojo::ScopedInterfaceEndpointHandle client_endpoint) {
+      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      const WebElement& portal_element) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());
   }
+
+  // Request the creation of a remote frame which corresponds to an existing
+  // portal.
   virtual blink::WebRemoteFrame* AdoptPortal(
-      const base::UnguessableToken& portal_token) {
+      const base::UnguessableToken& portal_token,
+      const WebElement& portal_element) {
     return nullptr;
   }
 

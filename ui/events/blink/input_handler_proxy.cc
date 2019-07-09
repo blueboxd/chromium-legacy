@@ -396,20 +396,8 @@ void InputHandlerProxy::EnsureScrollUpdateLatencyComponent(
 void InputHandlerProxy::DispatchQueuedInputEvents() {
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
-  while (!compositor_event_queue_->empty()) {
-    std::unique_ptr<EventWithCallback> event_with_callback =
-        scroll_predictor_ ? scroll_predictor_->ResampleScrollEvents(
-                                compositor_event_queue_->Pop(), now)
-                          : compositor_event_queue_->Pop();
-
-    // Save the rAF time in the latency info to be able to compute the
-    // output latency.
-    LatencyInfo* latency_info = event_with_callback->mutable_latency_info();
-    latency_info->AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT, now);
-
-    DispatchSingleInputEvent(std::move(event_with_callback), now);
-  }
+  while (!compositor_event_queue_->empty())
+    DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
 }
 
 // This function handles creating synthetic Gesture events. It is currently used
@@ -1104,8 +1092,34 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
   }
 }
 
-void InputHandlerProxy::DeliverInputForBeginFrame() {
-  DispatchQueuedInputEvents();
+void InputHandlerProxy::DeliverInputForBeginFrame(
+    const viz::BeginFrameArgs& args) {
+  if (!scroll_predictor_)
+    DispatchQueuedInputEvents();
+
+  // Resampling GSUs and dispatch queued input events.
+  while (!compositor_event_queue_->empty()) {
+    std::unique_ptr<EventWithCallback> event_with_callback =
+        scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
+                                                args.frame_time);
+
+    // TODO(eirage): Remove this component as it's same as
+    // LATENCY_BEGIN_FRAME_RENDERER_*.
+    // Save the rAF time in the latency info to be able to compute the
+    // output latency.
+    LatencyInfo* latency_info = event_with_callback->mutable_latency_info();
+    latency_info->AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT,
+        args.frame_time);
+
+    DispatchSingleInputEvent(std::move(event_with_callback), args.frame_time);
+  }
+}
+
+void InputHandlerProxy::DeliverInputForHighLatencyMode() {
+  // When prediction enabled, do not handle input after commit complete.
+  if (!scroll_predictor_)
+    DispatchQueuedInputEvents();
 }
 
 void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(

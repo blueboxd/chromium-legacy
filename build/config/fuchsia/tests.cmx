@@ -4,7 +4,8 @@
       "isolated-persistent-storage",
       "root-ssl-certificates",
       "system-temp",
-      "vulkan"
+      "vulkan",
+      "deprecated-ambient-replace-as-executable"
     ],
     "dev": [
       "null",

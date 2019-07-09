@@ -1816,20 +1816,16 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
     mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
-  auto pair = client_->CreatePortal(portal_receiver.PassHandle(),
-                                    portal_client.PassHandle());
-  WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal, g_null_atom,
-                                    &GetFrame()->window_agent_factory());
-  return std::pair<RemoteFrame*, base::UnguessableToken>(
-      portal_frame->GetFrame(), pair.second);
+  WebRemoteFrame* portal_frame;
+  base::UnguessableToken portal_token;
+  std::tie(portal_frame, portal_token) = client_->CreatePortal(
+      portal_receiver.PassHandle(), portal_client.PassHandle(), portal);
+  return {ToWebRemoteFrameImpl(portal_frame)->GetFrame(), portal_token};
 }
 
 RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
   WebRemoteFrameImpl* portal_frame =
-      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken()));
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal, g_null_atom,
-                                    &GetFrame()->window_agent_factory());
+      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken(), portal));
   return portal_frame->GetFrame();
 }
 

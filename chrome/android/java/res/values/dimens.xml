@@ -379,6 +379,23 @@
     <dimen name="explore_sites_loading_spinny_size">36dp</dimen>
     <dimen name="explore_sites_loading_spinny_padding">24dp</dimen>
 
+    <dimen name="explore_sites_dense_icon_corner_radius">4dp</dimen>
+    <dimen name="explore_sites_dense_icon_size">32dp</dimen>
+    <dimen name="explore_sites_dense_icon_text_size">16dp</dimen>
+    <dimen name="explore_sites_dense_offline_badge_margin_start">26dp</dimen>
+
+    <dimen name="explore_sites_dense_title_right_icon_margin_start">4dp</dimen>
+    <dimen name="explore_sites_dense_title_right_tile_view_width">104dp</dimen>
+    <dimen name="explore_sites_dense_title_right_tile_view_height">40dp</dimen>
+    <dimen name="explore_sites_dense_title_right_title_height">32dp</dimen>
+    <dimen name="explore_sites_dense_title_right_title_margin_start">40dp</dimen>
+    <dimen name="explore_sites_dense_title_right_title_margin_top">4dp</dimen>
+
+    <dimen name="explore_sites_dense_title_bottom_icon_margin_top">4dp</dimen>
+    <dimen name="explore_sites_dense_title_bottom_tile_view_height">72dp</dimen>
+    <dimen name="explore_sites_dense_title_bottom_tile_view_width">64dp</dimen>
+    <dimen name="explore_sites_dense_title_bottom_title_margin_start">40dp</dimen>
+
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
     <dimen name="recent_tabs_group_view_vertical_padding">8dp</dimen>

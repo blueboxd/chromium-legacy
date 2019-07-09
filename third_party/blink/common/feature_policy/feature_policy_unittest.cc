@@ -1476,10 +1476,10 @@ TEST_F(FeaturePolicyTest, TestSandboxedFramePolicyForAllOrigins) {
   EXPECT_TRUE(
       policy2->IsFeatureEnabledForOrigin(kDefaultOnFeature, sandboxed_origin));
   EXPECT_TRUE(policy2->IsFeatureEnabled(kDefaultSelfFeature));
+  EXPECT_TRUE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
+                                                 sandboxed_origin));
   EXPECT_FALSE(
       policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
-  EXPECT_FALSE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
-                                                  sandboxed_origin));
 }
 
 TEST_F(FeaturePolicyTest, TestSandboxedFramePolicyForOpaqueSrcOrigin) {
@@ -1508,10 +1508,10 @@ TEST_F(FeaturePolicyTest, TestSandboxedFramePolicyForOpaqueSrcOrigin) {
   EXPECT_TRUE(
       policy2->IsFeatureEnabledForOrigin(kDefaultOnFeature, sandboxed_origin));
   EXPECT_TRUE(policy2->IsFeatureEnabled(kDefaultSelfFeature));
+  EXPECT_TRUE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
+                                                 sandboxed_origin));
   EXPECT_FALSE(
       policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
-  EXPECT_FALSE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
-                                                  sandboxed_origin));
 }
 
 TEST_F(FeaturePolicyTest, TestSandboxedFrameFromHeaderPolicy) {
@@ -1539,10 +1539,10 @@ TEST_F(FeaturePolicyTest, TestSandboxedFrameFromHeaderPolicy) {
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy, sandboxed_origin);
   EXPECT_TRUE(policy2->IsFeatureEnabled(kDefaultSelfFeature));
+  EXPECT_TRUE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
+                                                 sandboxed_origin));
   EXPECT_FALSE(
       policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
-  EXPECT_FALSE(policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
-                                                  sandboxed_origin));
 }
 
 TEST_F(FeaturePolicyTest, TestSandboxedPolicyIsNotInherited) {
@@ -1626,12 +1626,12 @@ TEST_F(FeaturePolicyTest, TestSandboxedPolicyCanBePropagated) {
   EXPECT_TRUE(policy3->IsFeatureEnabledForOrigin(kDefaultOnFeature,
                                                  sandboxed_origin_2));
   EXPECT_TRUE(policy3->IsFeatureEnabled(kDefaultSelfFeature));
+  EXPECT_TRUE(policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
+                                                 sandboxed_origin_2));
   EXPECT_FALSE(
       policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
   EXPECT_FALSE(policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
                                                   sandboxed_origin_1));
-  EXPECT_FALSE(policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature,
-                                                  sandboxed_origin_2));
 }
 
 TEST_F(FeaturePolicyTest, TestUndefinedFeaturesInFramePolicy) {

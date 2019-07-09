@@ -14,7 +14,6 @@ mojom("interfaces") {
     "cros_display_config.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
-    "night_light_controller.mojom",
     "tray_action.mojom",
     "voice_interaction_controller.mojom",
     "vpn_list.mojom",

@@ -43,7 +43,7 @@ void PasswordChangeHandler::HandleInitialize(const base::ListValue* value) {
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user)
     params.SetKey("userName", base::Value(user->GetDisplayEmail()));
-  CallJavascriptFunction(".password.change.loadAuthExtension", params);
+  CallJavascriptFunction("insession.password.change.loadAuthExtension", params);
 }
 
 void PasswordChangeHandler::HandleChangePassword(
@@ -52,22 +52,19 @@ void PasswordChangeHandler::HandleChangePassword(
   const base::Value& new_passwords = params->GetList()[1];
   VLOG(4) << "Scraped " << old_passwords.GetList().size() << " old passwords";
   VLOG(4) << "Scraped " << new_passwords.GetList().size() << " new passwords";
-  user_manager::User* user =
-      ProfileHelper::Get()->GetUserByProfile(Profile::FromWebUI(web_ui()));
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(user->GetAccountId(),
-                                                          true);
+
+  const std::string old_password = (old_passwords.GetList().size() > 0)
+                                       ? old_passwords.GetList()[0].GetString()
+                                       : "";
+  const std::string new_password = (new_passwords.GetList().size() == 1)
+                                       ? new_passwords.GetList()[0].GetString()
+                                       : "";
+
   auto* in_session_password_change_manager =
       g_browser_process->platform_part()->in_session_password_change_manager();
   CHECK(in_session_password_change_manager);
-
-  if (new_passwords.GetList().size() == 1 &&
-      old_passwords.GetList().size() > 0) {
-    in_session_password_change_manager->ChangePassword(
-        old_passwords.GetList()[0].GetString(),
-        new_passwords.GetList()[0].GetString());
-  } else {
-    in_session_password_change_manager->HandlePasswordScrapeFailure();
-  }
+  in_session_password_change_manager->OnSamlPasswordChanged(old_password,
+                                                            new_password);
 }
 
 void PasswordChangeHandler::RegisterMessages() {

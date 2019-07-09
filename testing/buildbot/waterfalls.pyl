@@ -44,7 +44,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -110,7 +110,7 @@
       'linux-archive-rel': {
         'mixins': [
           'linux-archive-rel-args',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -970,7 +970,7 @@
       },
       'UBSanVptr Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
@@ -1297,7 +1297,7 @@
       },
       'Linux Builder Goma Canary': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1308,7 +1308,7 @@
       },
       'Linux Viz': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1319,7 +1319,7 @@
       },
       'Linux x64 Goma Canary (clobber)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1330,7 +1330,7 @@
       },
       'Linux x64 Goma Canary LocalOutputCache': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1407,7 +1407,7 @@
       },
       'Mojo Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
@@ -1434,7 +1434,7 @@
       },
       'VR Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'vr_common_perftests',
@@ -1767,7 +1767,7 @@
       'linux-chromeos-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1779,7 +1779,7 @@
       'linux-chromeos-oobe-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1790,7 +1790,7 @@
       },
       'linux-chromium-tests-staging-builder': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all'
@@ -1801,7 +1801,7 @@
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -1811,7 +1811,7 @@
       'linux-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
@@ -1967,7 +1967,7 @@
       },
       'Chromium Linux Goma RBE Staging': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1978,7 +1978,7 @@
       },
       'Chromium Linux Goma RBE Staging (clobber)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1989,7 +1989,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -2000,7 +2000,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg) (clobber)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -2011,7 +2011,7 @@
       },
       'Chromium Linux Goma Staging': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -2374,7 +2374,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 5)': {
@@ -2388,7 +2388,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 5X)': {
@@ -2418,7 +2418,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 6P)': {
@@ -2433,7 +2433,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 9)': {
@@ -2448,7 +2448,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Pixel 2)': {
@@ -2763,7 +2763,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Mac FYI Experimental Release (Intel)': {
@@ -2846,7 +2846,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Mac FYI Retina Debug (NVIDIA)': {
@@ -2857,7 +2857,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Mac FYI Retina Release (AMD)': {
@@ -3260,7 +3260,7 @@
     'machines': {
       'Cast Audio Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'cast_shell',
@@ -3308,7 +3308,7 @@
       },
       'Leak Detection Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'isolated_scripts': 'leak_detection_isolated_scripts',
@@ -3316,7 +3316,7 @@
       },
       'Linux Builder': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all'
@@ -3340,7 +3340,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Builder Code Coverage': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'code-coverage',
         ],
         'additional_compile_targets': [
@@ -3374,7 +3374,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Tests Code Coverage': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'code-coverage',
         ],
         'test_suites': {
@@ -3410,7 +3410,7 @@
       },
       'linux-ozone-rel': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'chrome',
@@ -3660,7 +3660,7 @@
       },
       'Linux CFI': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
@@ -3668,7 +3668,7 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -3738,7 +3738,7 @@
       },
       'WebKit Linux MSAN': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3827,7 +3827,7 @@
       # see crbug.com/790309, crbug.com/790294, crbug.com/790286.
       'WebKit Linux ASAN': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3835,7 +3835,7 @@
       },
       'WebKit Linux Leak': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3894,7 +3894,7 @@
       },
       'WebRTC Chromium Linux Tester': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
@@ -3993,7 +3993,7 @@
       'WebRTC Chromium FYI Linux Tester': {
         'mixins': [
           'x86-64',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
@@ -4156,7 +4156,7 @@
     'machines': {
       'Linux - Future': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
@@ -4165,7 +4165,7 @@
       },
       'Linux - Future (dbg)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
@@ -4322,7 +4322,7 @@
       'linux-coverage-rel': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',

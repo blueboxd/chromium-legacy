@@ -135,12 +135,27 @@ public class ExploreSitesPage extends BasicNativePage {
 
         Context context = mView.getContext();
         mLayoutManager = new StableScrollLayoutManager(context);
-        int iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        RoundedIconGenerator iconGenerator = new RoundedIconGenerator(iconSizePx, iconSizePx,
-                iconSizePx / 2,
-                ApiCompatibilityUtils.getColor(
-                        context.getResources(), R.color.default_favicon_background_color),
-                context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_text_size));
+        int iconSizePx;
+        int textSizeDimensionResource;
+        int iconRadius;
+        boolean isDense = ExploreSitesBridge.isDense(ExploreSitesBridge.getDenseVariation());
+        if (isDense) {
+            iconSizePx = context.getResources().getDimensionPixelSize(
+                    R.dimen.explore_sites_dense_icon_size);
+            iconRadius = context.getResources().getDimensionPixelSize(
+                    R.dimen.explore_sites_dense_icon_corner_radius);
+            textSizeDimensionResource = R.dimen.explore_sites_dense_icon_text_size;
+        } else {
+            iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
+            textSizeDimensionResource = R.dimen.tile_view_icon_text_size;
+            iconRadius = iconSizePx / 2;
+        }
+
+        RoundedIconGenerator iconGenerator =
+                new RoundedIconGenerator(iconSizePx, iconSizePx, iconRadius,
+                        ApiCompatibilityUtils.getColor(
+                                context.getResources(), R.color.default_favicon_background_color),
+                        context.getResources().getDimensionPixelSize(textSizeDimensionResource));
 
         NativePageNavigationDelegateImpl navDelegate = new NativePageNavigationDelegateImpl(
                 activity, mProfile, host, activity.getTabModelSelector());

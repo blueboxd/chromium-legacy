@@ -3315,48 +3315,48 @@ BrowserAccessibilityManager*
 void WebContentsImpl::ExecuteEditCommand(
     const std::string& command,
     const base::Optional<base::string16>& value) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->ExecuteEditCommand(command, value);
+  input_handler->ExecuteEditCommand(command, value);
 }
 
 void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->MoveRangeSelectionExtent(extent);
+  input_handler->MoveRangeSelectionExtent(extent);
 }
 
 void WebContentsImpl::SelectRange(const gfx::Point& base,
                                   const gfx::Point& extent) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->SelectRange(base, extent);
+  input_handler->SelectRange(base, extent);
 }
 
 void WebContentsImpl::MoveCaret(const gfx::Point& extent) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->MoveCaret(extent);
+  input_handler->MoveCaret(extent);
 }
 
 void WebContentsImpl::AdjustSelectionByCharacterOffset(
     int start_adjust,
     int end_adjust,
     bool show_selection_menu) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
   using blink::mojom::SelectionMenuBehavior;
-  focused_frame->GetFrameInputHandler()->AdjustSelectionByCharacterOffset(
+  input_handler->AdjustSelectionByCharacterOffset(
       start_adjust, end_adjust,
       show_selection_menu ? SelectionMenuBehavior::kShow
                           : SelectionMenuBehavior::kHide);
@@ -3612,114 +3612,115 @@ WebContentsImpl::PauseSubresourceLoading() {
 }
 
 void WebContentsImpl::Undo() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Undo();
+  input_handler->Undo();
   RecordAction(base::UserMetricsAction("Undo"));
 }
 
 void WebContentsImpl::Redo() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-  focused_frame->GetFrameInputHandler()->Redo();
+
+  input_handler->Redo();
   RecordAction(base::UserMetricsAction("Redo"));
 }
 
 void WebContentsImpl::Cut() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Cut();
+  input_handler->Cut();
   RecordAction(base::UserMetricsAction("Cut"));
 }
 
 void WebContentsImpl::Copy() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Copy();
+  input_handler->Copy();
   RecordAction(base::UserMetricsAction("Copy"));
 }
 
 void WebContentsImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
   // Windows/Linux don't have the concept of a find pasteboard.
-  focused_frame->GetFrameInputHandler()->CopyToFindPboard();
+  input_handler->CopyToFindPboard();
   RecordAction(base::UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void WebContentsImpl::Paste() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Paste();
+  input_handler->Paste();
   for (auto& observer : observers_)
     observer.OnPaste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
 void WebContentsImpl::PasteAndMatchStyle() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->PasteAndMatchStyle();
+  input_handler->PasteAndMatchStyle();
   for (auto& observer : observers_)
     observer.OnPaste();
   RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void WebContentsImpl::Delete() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Delete();
+  input_handler->Delete();
   RecordAction(base::UserMetricsAction("DeleteSelection"));
 }
 
 void WebContentsImpl::SelectAll() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->SelectAll();
+  input_handler->SelectAll();
   RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
 void WebContentsImpl::CollapseSelection() {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->CollapseSelection();
+  input_handler->CollapseSelection();
 }
 
 void WebContentsImpl::Replace(const base::string16& word) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->Replace(word);
+  input_handler->Replace(word);
 }
 
 void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
-  RenderFrameHostImpl* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
 
-  focused_frame->GetFrameInputHandler()->ReplaceMisspelling(word);
+  input_handler->ReplaceMisspelling(word);
 }
 
 void WebContentsImpl::NotifyContextMenuClosed(
@@ -7248,6 +7249,13 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
   if (preferences_changed)
     NotifyPreferencesChanged();
+}
+
+mojom::FrameInputHandler* WebContentsImpl::GetFocusedFrameInputHandler() {
+  auto* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return nullptr;
+  return focused_frame->GetFrameInputHandler();
 }
 
 }  // namespace content

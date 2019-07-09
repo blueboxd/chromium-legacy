@@ -118,6 +118,9 @@ declare_args() {
 
   # Recording happens at this sample rate. Must be 16000, 48000 or 96000 Hz.
   audio_input_sample_rate = 16000
+
+  # Whether use unix sockets in Cast input/output stream.
+  use_unix_sockets = is_linux
 }
 
 declare_args() {

@@ -14,6 +14,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -233,6 +234,27 @@ bool LocalPolicyTestServerMixin::SetDeviceInitialEnrollmentResponse(
                          std::move(serial_entry));
   policy_test_server_->SetConfig(server_config_);
   return true;
+}
+
+void LocalPolicyTestServerMixin::SetupZeroTouchForcedEnrollment() {
+  SetFakeAttestationFlow();
+  auto initial_enrollment =
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
+  SetUpdateDeviceAttributesPermission(false);
+  SetDeviceInitialEnrollmentResponse(
+      test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
+      test::kTestDomain, base::nullopt /* is_license_packaged_with_device */);
+}
+
+void LocalPolicyTestServerMixin::ConfigureFakeStatisticsForZeroTouch(
+    system::ScopedFakeStatisticsProvider* provider) {
+  provider->SetMachineStatistic(system::kRlzBrandCodeKey,
+                                test::kTestRlzBrandCodeKey);
+  provider->SetMachineStatistic(system::kSerialNumberKeyForTest,
+                                test::kTestSerialNumber);
+  provider->SetMachineStatistic(system::kHardwareClassKey,
+                                test::kTestHardwareClass);
 }
 
 LocalPolicyTestServerMixin::~LocalPolicyTestServerMixin() = default;

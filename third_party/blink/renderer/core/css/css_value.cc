@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
+#include "third_party/blink/renderer/core/css/css_keyframe_shorthand_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -224,6 +225,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSRayValue>(*this, other);
       case kIdentifierClass:
         return CompareCSSValues<CSSIdentifierValue>(*this, other);
+      case kKeyframeShorthandClass:
+        return CompareCSSValues<CSSKeyframeShorthandValue>(*this, other);
       case kQuadClass:
         return CompareCSSValues<CSSQuadValue>(*this, other);
       case kReflectClass:
@@ -336,6 +339,8 @@ String CSSValue::CssText() const {
       return To<CSSRayValue>(this)->CustomCSSText();
     case kIdentifierClass:
       return To<CSSIdentifierValue>(this)->CustomCSSText();
+    case kKeyframeShorthandClass:
+      return To<CSSKeyframeShorthandValue>(this)->CustomCSSText();
     case kQuadClass:
       return To<CSSQuadValue>(this)->CustomCSSText();
     case kReflectClass:
@@ -479,6 +484,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kIdentifierClass:
       To<CSSIdentifierValue>(this)->~CSSIdentifierValue();
+      return;
+    case kKeyframeShorthandClass:
+      To<CSSKeyframeShorthandValue>(this)->~CSSKeyframeShorthandValue();
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->~CSSQuadValue();
@@ -639,6 +647,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kIdentifierClass:
       To<CSSIdentifierValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kKeyframeShorthandClass:
+      To<CSSKeyframeShorthandValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->TraceAfterDispatch(visitor);

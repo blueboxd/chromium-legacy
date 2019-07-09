@@ -21,10 +21,10 @@ interface DocumentInterfaceBroker {
   // notifications originated from Blink's AudioContext.
   GetAudioContextManager(pending_receiver<blink.mojom.AudioContextManager> receiver);
 
-  // Binds the blink.mojom.Authenticator interface request to its remote
+  // Binds the blink.mojom.Authenticator pending receiver to its remote
   // implementation in the browser process, to allow directing authenticators to
   // create or use a public key credential.
-  GetAuthenticator(blink.mojom.Authenticator& request);
+  GetAuthenticator(pending_receiver<blink.mojom.Authenticator> receiver);
 
   // Binds the blink.mojom.CredentialManager pending receiver to its remote
   // implementation in the browser process, to allow storing, retrieving and

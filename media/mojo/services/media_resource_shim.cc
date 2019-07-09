@@ -15,9 +15,7 @@ namespace media {
 MediaResourceShim::MediaResourceShim(
     std::vector<mojom::DemuxerStreamPtrInfo> streams,
     const base::Closure& demuxer_ready_cb)
-    : demuxer_ready_cb_(demuxer_ready_cb),
-      streams_ready_(0),
-      weak_factory_(this) {
+    : demuxer_ready_cb_(demuxer_ready_cb), streams_ready_(0) {
   DCHECK(!streams.empty());
   DCHECK(demuxer_ready_cb_);
 

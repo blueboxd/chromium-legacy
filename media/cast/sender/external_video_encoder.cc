@@ -619,8 +619,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
       create_video_encode_memory_cb_(create_video_encode_memory_cb),
       frame_size_(frame_size),
       bit_rate_(video_config.start_bitrate),
-      key_frame_requested_(false),
-      weak_factory_(this) {
+      key_frame_requested_(false) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK_GT(video_config.max_frame_rate, 0);
   DCHECK(!frame_size_.IsEmpty());

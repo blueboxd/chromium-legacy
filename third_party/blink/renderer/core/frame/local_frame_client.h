@@ -104,7 +104,6 @@ class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 class WebContentCaptureClient;
-class WebCookieJar;
 class WebDedicatedWorkerHostFactoryClient;
 class WebLayerTreeView;
 class WebLocalFrame;
@@ -342,8 +341,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual bool AllowContentInitiatedDataUrlNavigations(const KURL&) {
     return false;
   }
-
-  virtual WebCookieJar* CookieJar() const = 0;
 
   virtual void DidChangeName(const String&) {}
 

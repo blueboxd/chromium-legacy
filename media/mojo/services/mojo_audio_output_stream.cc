@@ -22,8 +22,7 @@ MojoAudioOutputStream::MojoAudioOutputStream(
     DeleterCallback deleter_callback)
     : stream_created_callback_(std::move(stream_created_callback)),
       deleter_callback_(std::move(deleter_callback)),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_created_callback_);
   DCHECK(deleter_callback_);

@@ -474,12 +474,15 @@ android_apk("cronet_sample_apk") {
   # Cronet jars will include this, so don't duplicate.
   generate_buildconfig_java = false
 
-  proguard_enabled = true
-  proguard_configs = [
-    "$target_gen_dir/cronet_impl_native_proguard.cfg",
-    "cronet_impl_common_proguard.cfg",
-    "//base/android/proguard/chromium_apk.flags",
-  ]
+  enable_multidex = false
+  if (!is_java_debug) {
+    proguard_enabled = true
+    proguard_configs = [
+      "$target_gen_dir/cronet_impl_native_proguard.cfg",
+      "cronet_impl_common_proguard.cfg",
+      "//base/android/proguard/chromium_apk.flags",
+    ]
+  }
 }
 
 android_resource_sizes_test("resource_sizes_cronet_sample_apk") {
@@ -743,8 +746,11 @@ if (!is_component_build) {
       "//third_party/junit",
     ]
 
-    proguard_enabled = true
-    proguard_configs = [ "sample/javatests/proguard.cfg" ]
+    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
+      proguard_configs = [ "sample/javatests/proguard.cfg" ]
+    }
   }
 
   generate_jni("cronet_tests_jni_headers") {
@@ -973,14 +979,17 @@ if (!is_component_build) {
       "//net:test_support",
     ]
 
-    proguard_enabled = true
+    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
 
-    proguard_configs = [
-      "$target_gen_dir/cronet_impl_native_proguard.cfg",
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-      "test/proguard.cfg",
-    ]
+      proguard_configs = [
+        "$target_gen_dir/cronet_impl_native_proguard.cfg",
+        "cronet_impl_common_proguard.cfg",
+        "cronet_impl_platform_proguard.cfg",
+        "test/proguard.cfg",
+      ]
+    }
   }
 
   android_resources("cronet_smoketests_platform_only_apk_resources") {
@@ -1013,13 +1022,16 @@ if (!is_component_build) {
       "//third_party/netty4:netty_all_java",
     ]
 
-    proguard_enabled = true
+    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
 
-    proguard_configs = [
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-      "test/proguard.cfg",
-    ]
+      proguard_configs = [
+        "cronet_impl_common_proguard.cfg",
+        "cronet_impl_platform_proguard.cfg",
+        "test/proguard.cfg",
+      ]
+    }
   }
 
   instrumentation_test_apk(
@@ -1044,13 +1056,16 @@ if (!is_component_build) {
       "//third_party/netty4:netty_all_java",
     ]
 
-    proguard_enabled = true
-    proguard_configs = [
-      "$target_gen_dir/cronet_impl_native_proguard.cfg",
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-      "test/proguard.cfg",
-    ]
+    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
+      proguard_configs = [
+        "$target_gen_dir/cronet_impl_native_proguard.cfg",
+        "cronet_impl_common_proguard.cfg",
+        "cronet_impl_platform_proguard.cfg",
+        "test/proguard.cfg",
+      ]
+    }
   }
 
   android_apk("cronet_perf_test_apk") {
@@ -1078,14 +1093,17 @@ if (!is_component_build) {
       "//third_party/junit",
     ]
 
-    proguard_enabled = true
-    proguard_configs = [
-      "$target_gen_dir/cronet_impl_native_proguard.cfg",
-      "cronet_impl_common_proguard.cfg",
-      "test/proguard.cfg",
-      "//base/android/proguard/chromium_apk.flags",
-      "//testing/android/proguard_for_test.flags",
-    ]
+    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
+      proguard_configs = [
+        "$target_gen_dir/cronet_impl_native_proguard.cfg",
+        "cronet_impl_common_proguard.cfg",
+        "test/proguard.cfg",
+        "//base/android/proguard/chromium_apk.flags",
+        "//testing/android/proguard_for_test.flags",
+      ]
+    }
   }
 
   test("cronet_unittests_android") {

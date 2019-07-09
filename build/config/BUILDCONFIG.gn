@@ -561,13 +561,43 @@ foreach(_target_type,
           "shared_library",
         ]) {
   template(_target_type) {
-    target(_target_type, target_name) {
+    _target_name = target_name
+    target(_target_type, _target_name) {
       forward_variables_from(invoker, "*", [ "no_default_deps" ])
       if (!defined(deps)) {
         deps = []
       }
       if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
         deps += [ "//build/config:${_target_type}_deps" ]
+      }
+
+      # On Android, write shared library output file to metadata. We will use
+      # this information to, for instance, collect all shared libraries that
+      # should be packaged into an APK.
+      if (!defined(invoker.metadata) && is_android &&
+          _target_type == "shared_library") {
+        _output_name = _target_name
+        if (defined(invoker.output_name)) {
+          _output_name = invoker.output_name
+        }
+
+        # Remove 'lib' prefix from output name if it exists.
+        _magic_prefix = "$0x01$0x01"
+        _output_name = string_replace("${_magic_prefix}${_output_name}",
+                                      "${_magic_prefix}lib",
+                                      _magic_prefix,
+                                      1)
+        _output_name = string_replace(_output_name, _magic_prefix, "", 1)
+
+        _shlib_extension = ".so"
+        if (is_component_build) {
+          _shlib_extension = ".cr.so"
+        }
+
+        metadata = {
+          shared_libraries =
+              [ "$root_out_dir/lib${_output_name}${_shlib_extension}" ]
+        }
       }
     }
   }

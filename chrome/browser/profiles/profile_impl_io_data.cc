@@ -96,21 +96,8 @@ ProfileImplIOData::Handle::~Handle() {
   io_data_->ShutdownOnUIThread();
 }
 
-void ProfileImplIOData::Handle::Init(
-    const base::FilePath& extensions_cookie_path,
-    const base::FilePath& profile_path) {
+void ProfileImplIOData::Handle::Init(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!io_data_->lazy_params_);
-
-  LazyParams* lazy_params = new LazyParams();
-
-  lazy_params->extensions_cookie_path = extensions_cookie_path;
-  lazy_params->restore_old_session_cookies =
-      profile_->ShouldRestoreOldSessionCookies();
-  lazy_params->persist_session_cookies =
-      profile_->ShouldPersistSessionCookies();
-
-  io_data_->lazy_params_.reset(lazy_params);
 
   // Keep track of profile path for data reduction proxy..
   io_data_->profile_path_ = profile_path;
@@ -188,41 +175,9 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->InitializeOnUIThread(profile_);
 }
 
-ProfileImplIOData::LazyParams::LazyParams()
-    : restore_old_session_cookies(false), persist_session_cookies(false) {}
-
-ProfileImplIOData::LazyParams::~LazyParams() {}
-
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(Profile::REGULAR_PROFILE) {}
 
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
-}
-
-void ProfileImplIOData::OnMainRequestContextCreated(
-    ProfileParams* profile_params) const {
-  DCHECK(lazy_params_);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  InitializeExtensionsCookieStore(profile_params);
-#endif
-
-  lazy_params_.reset();
-}
-
-void ProfileImplIOData::InitializeExtensionsCookieStore(
-    ProfileParams* profile_params) const {
-  content::CookieStoreConfig cookie_config(
-      lazy_params_->extensions_cookie_path,
-      lazy_params_->restore_old_session_cookies,
-      lazy_params_->persist_session_cookies, NULL);
-  cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-  // Enable cookies for chrome-extension URLs.
-  cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
-}
-
-net::CookieStore* ProfileImplIOData::GetExtensionsCookieStore() const {
-  return extensions_cookie_store_.get();
 }

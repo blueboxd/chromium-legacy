@@ -17,6 +17,7 @@
 #include "cc/input/touch_action.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/events/types/scroll_types.h"
 
 namespace gfx {
@@ -94,7 +95,8 @@ class CC_EXPORT InputHandlerClient {
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) = 0;
-  virtual void DeliverInputForBeginFrame() = 0;
+  virtual void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) = 0;
+  virtual void DeliverInputForHighLatencyMode() = 0;
 
  protected:
   InputHandlerClient() = default;

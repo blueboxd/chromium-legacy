@@ -350,12 +350,52 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   }
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
+    // A stream frame containing stream type will be written on the control
+    // stream first.
+    std::string type(1, 0x00);
+
+    quic::SettingsFrame settings;
+    settings.values[quic::kSettingsMaxHeaderListSize] =
+        quic::kDefaultMaxUncompressedHeaderSize;
+    std::unique_ptr<char[]> buffer1;
+    quic::QuicByteCount frame_length1 =
+        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
+    std::string settings_data = std::string(buffer1.get(), frame_length1);
+
+    quic::QuicStreamFrame type_frame;
+    quic::QuicStreamFrame settings_frame;
+    if (stream_offsets_[2] == 0) {
+      type_frame = GenerateNextStreamFrame(2, false, type);
+      frames.push_back(quic::QuicFrame(type_frame));
+      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
+      frames.push_back(quic::QuicFrame(settings_frame));
+    }
+
+    quic::PriorityFrame frame;
+    frame.weight = priority;
+    frame.dependency_type = quic::ROOT_OF_TREE;
+    frame.prioritized_type = quic::REQUEST_STREAM;
+    frame.prioritized_element_id = stream_id;
+
+    std::unique_ptr<char[]> buffer;
+    quic::QuicByteCount frame_length =
+        http_encoder_.SerializePriorityFrame(frame, &buffer);
+    std::string priority_data = std::string(buffer.get(), frame_length);
+
+    quic::QuicStreamFrame priority_frame =
+        GenerateNextStreamFrame(2, false, priority_data);
+
+    frames.push_back(quic::QuicFrame(priority_frame));
+
+    // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
     std::vector<quic::QuicStreamFrame> stream_frames =
         GenerateNextStreamFrames(stream_id, fin, data);
+
     for (const auto& frame : stream_frames)
       frames.push_back(quic::QuicFrame(frame));
+
     InitializeHeader(num, include_version);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
@@ -763,6 +803,42 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
   if (quic::VersionUsesQpack(version_.transport_version)) {
+    // A stream frame containing stream type will be written on the control
+    // stream first.
+    std::string type(1, 0x00);
+
+    quic::SettingsFrame settings;
+    settings.values[quic::kSettingsMaxHeaderListSize] =
+        quic::kDefaultMaxUncompressedHeaderSize;
+    std::unique_ptr<char[]> buffer1;
+    quic::QuicByteCount frame_length1 =
+        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
+    std::string settings_data = std::string(buffer1.get(), frame_length1);
+
+    quic::QuicStreamFrame type_frame;
+    quic::QuicStreamFrame settings_frame;
+    quic::QuicFrames frames;
+    if (stream_offsets_[2] == 0) {
+      type_frame = GenerateNextStreamFrame(2, false, type);
+      frames.push_back(quic::QuicFrame(type_frame));
+      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
+      frames.push_back(quic::QuicFrame(settings_frame));
+    }
+
+    quic::PriorityFrame frame;
+    frame.weight = priority;
+    frame.dependency_type = quic::ROOT_OF_TREE;
+    frame.prioritized_type = quic::REQUEST_STREAM;
+    frame.prioritized_element_id = stream_id;
+
+    std::unique_ptr<char[]> buffer;
+    quic::QuicByteCount frame_length =
+        http_encoder_.SerializePriorityFrame(frame, &buffer);
+    std::string priority_data = std::string(buffer.get(), frame_length);
+
+    quic::QuicStreamFrame priority_frame =
+        GenerateNextStreamFrame(2, false, priority_data);
+
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
@@ -776,9 +852,11 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
           stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
     }
 
-    quic::QuicFrames frames;
+    frames.push_back(quic::QuicFrame(priority_frame));
+
     for (const auto& frame : stream_frames)
       frames.push_back(quic::QuicFrame(frame));
+
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
 
@@ -820,12 +898,49 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
   InitializeHeader(packet_number, should_include_version);
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
+    // A stream frame containing stream type will be written on the control
+    // stream first.
+    std::string type(1, 0x00);
+
+    quic::SettingsFrame settings;
+    settings.values[quic::kSettingsMaxHeaderListSize] =
+        quic::kDefaultMaxUncompressedHeaderSize;
+    std::unique_ptr<char[]> buffer1;
+    quic::QuicByteCount frame_length1 =
+        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
+    std::string settings_data = std::string(buffer1.get(), frame_length1);
+
+    quic::QuicStreamFrame type_frame;
+    quic::QuicStreamFrame settings_frame;
+    quic::QuicFrames frames;
+    if (stream_offsets_[2] == 0) {
+      type_frame = GenerateNextStreamFrame(2, false, type);
+      frames.push_back(quic::QuicFrame(type_frame));
+      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
+      frames.push_back(quic::QuicFrame(settings_frame));
+    }
+
+    quic::PriorityFrame frame;
+    frame.weight = priority;
+    frame.dependency_type = quic::ROOT_OF_TREE;
+    frame.prioritized_type = quic::REQUEST_STREAM;
+    frame.prioritized_element_id = stream_id;
+
+    std::unique_ptr<char[]> buffer;
+    quic::QuicByteCount frame_length =
+        http_encoder_.SerializePriorityFrame(frame, &buffer);
+    std::string priority_data = std::string(buffer.get(), frame_length);
+
+    quic::QuicStreamFrame priority_frame =
+        GenerateNextStreamFrame(2, false, priority_data);
+
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
     std::vector<quic::QuicStreamFrame> stream_frames =
         GenerateNextStreamFrames(stream_id, fin, data);
 
-    quic::QuicFrames frames;
+    frames.push_back(quic::QuicFrame(priority_frame));
+
     for (const auto& frame : stream_frames)
       frames.push_back(quic::QuicFrame(frame));
     return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -855,13 +970,49 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     size_t* spdy_headers_frame_length,
     quic::QuicRstStreamErrorCode error_code) {
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // STREAM frames for HEADERS.
+    // A stream frame containing stream type will be written on the control
+    // stream first.
+    std::string type(1, 0x00);
+
+    quic::SettingsFrame settings;
+    settings.values[quic::kSettingsMaxHeaderListSize] =
+        quic::kDefaultMaxUncompressedHeaderSize;
+    std::unique_ptr<char[]> buffer1;
+    quic::QuicByteCount frame_length1 =
+        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
+    std::string settings_data = std::string(buffer1.get(), frame_length1);
+
+    quic::QuicStreamFrame type_frame;
+    quic::QuicStreamFrame settings_frame;
+    quic::QuicFrames frames;
+    if (stream_offsets_[2] == 0) {
+      type_frame = GenerateNextStreamFrame(2, false, type);
+      frames.push_back(quic::QuicFrame(type_frame));
+      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
+      frames.push_back(quic::QuicFrame(settings_frame));
+    }
+
+    quic::PriorityFrame frame;
+    frame.weight = priority;
+    frame.dependency_type = quic::ROOT_OF_TREE;
+    frame.prioritized_type = quic::REQUEST_STREAM;
+    frame.prioritized_element_id = stream_id;
+
+    std::unique_ptr<char[]> buffer;
+    quic::QuicByteCount frame_length =
+        http_encoder_.SerializePriorityFrame(frame, &buffer);
+    std::string priority_data = std::string(buffer.get(), frame_length);
+
+    quic::QuicStreamFrame priority_frame =
+        GenerateNextStreamFrame(2, false, priority_data);
+
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
     std::vector<quic::QuicStreamFrame> stream_frames =
         GenerateNextStreamFrames(stream_id, fin, data);
 
-    quic::QuicFrames frames;
+    frames.push_back(quic::QuicFrame(priority_frame));
+
     for (const auto& frame : stream_frames)
       frames.push_back(quic::QuicFrame(frame));
 

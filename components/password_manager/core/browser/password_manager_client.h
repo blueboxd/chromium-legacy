@@ -307,6 +307,9 @@ class PasswordManagerClient {
 
   virtual bool IsIsolationForPasswordSitesEnabled() const = 0;
 
+  // Returns true if the current page is to the new tab page.
+  virtual bool IsNewTabPage() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };

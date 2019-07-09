@@ -1175,14 +1175,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
                     std::string  /* json_string */)
 
-// Used to check if cookies are enabled for the given URL. This may block
-// waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CookiesEnabled,
-                            int /* render_frame_id */,
-                            GURL /* url */,
-                            GURL /* site_for_cookies */,
-                            bool /* cookies_enabled */)
-
 // Sent by the renderer process to check whether client 3D APIs
 // (Pepper 3D, WebGL) are explicitly blocked.
 IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Are3DAPIsBlocked,

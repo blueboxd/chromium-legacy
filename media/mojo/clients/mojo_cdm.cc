@@ -73,8 +73,7 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb),
-      weak_factory_(this) {
+      session_expiration_update_cb_(session_expiration_update_cb) {
   DVLOG(1) << __func__;
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);

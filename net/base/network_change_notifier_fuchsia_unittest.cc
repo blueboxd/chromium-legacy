@@ -16,6 +16,8 @@
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address.h"
+#include "net/dns/dns_config_service.h"
+#include "net/dns/system_dns_config_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -234,8 +236,12 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
     // notifier queries it.
     netstack_.Synchronize();
 
-    notifier_.reset(new NetworkChangeNotifierFuchsia(std::move(netstack_ptr_),
-                                                     required_features));
+    // Use a noop DNS notifier.
+    dns_config_notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>(
+        nullptr /* task_runner */, nullptr /* dns_config_service */);
+    notifier_.reset(new NetworkChangeNotifierFuchsia(
+        std::move(netstack_ptr_), required_features,
+        dns_config_notifier_.get()));
 
     NetworkChangeNotifier::AddConnectionTypeObserver(&observer_);
     NetworkChangeNotifier::AddIPAddressObserver(&ip_observer_);
@@ -260,6 +266,7 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
 
   // Allows us to allocate our own NetworkChangeNotifier for unit testing.
   NetworkChangeNotifier::DisableForTest disable_for_test_;
+  std::unique_ptr<SystemDnsConfigChangeNotifier> dns_config_notifier_;
   std::unique_ptr<NetworkChangeNotifierFuchsia> notifier_;
 
   testing::InSequence seq_;

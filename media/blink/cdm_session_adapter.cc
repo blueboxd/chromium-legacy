@@ -32,8 +32,7 @@ const char kCreateCdmUMAName[] = "CreateCdm";
 const char kTimeToCreateCdmUMAName[] = "CreateCdmTime";
 }  // namespace
 
-CdmSessionAdapter::CdmSessionAdapter()
-    : trace_id_(0), weak_ptr_factory_(this) {}
+CdmSessionAdapter::CdmSessionAdapter() : trace_id_(0) {}
 
 CdmSessionAdapter::~CdmSessionAdapter() = default;
 

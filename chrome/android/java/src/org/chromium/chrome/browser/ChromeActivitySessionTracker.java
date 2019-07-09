@@ -162,7 +162,8 @@ public class ChromeActivitySessionTracker {
 
         int totalTabCount = 0;
         for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (activity instanceof ChromeActivity) {
+            if (activity instanceof ChromeActivity
+                    && ((ChromeActivity) activity).areTabModelsInitialized()) {
                 TabModelSelector tabModelSelector =
                         ((ChromeActivity) activity).getTabModelSelector();
                 if (tabModelSelector != null) {

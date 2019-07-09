@@ -45,8 +45,9 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
       nullptr /* surfaceProps */);
   DCHECK(!!sk_surface_);
 
-  // Initialize alpha channel to opaque.
   if (!has_alpha_) {
+    is_emulated_rgbx_ = true;
+    // Initialize alpha channel to opaque.
     auto* canvas = sk_surface_->getCanvas();
     canvas->clear(SkColorSetARGB(255, 0, 0, 0));
   }

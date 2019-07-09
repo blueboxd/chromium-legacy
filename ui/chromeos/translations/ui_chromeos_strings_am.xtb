@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">ቀኝ</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> ፋይሎችን በማስመጣት ላይ...</translation>
 <translation id="1352103415082130575">የታይ ቁልፍ ሰሌዳ (ፓታቾት)</translation>
-<translation id="1358032944105037487">የጃፓንኛ ቁልፍ ሰሌዳ</translation>
 <translation id="1358735829858566124">ፋይሉ ወይም አቃፊው ሊሰራበት የሚችል አይደለም።</translation>
 <translation id="1363028406613469049">ትራክ</translation>
 <translation id="1378727793141957596">ወደ Google Drive እንኳን በደህና መጡ!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> ፎቶዎች ወደ <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> በምትኬ ተቀምጠዋል</translation>
 <translation id="3470502288861289375">በመቅዳት ላይ...</translation>
 <translation id="3475447146579922140">Google ተመን ሉህ</translation>
-<translation id="3494768541638400973">Google ጃፓንኛ ግቤት (ለጃፓንኛ ቁልፍ ሰሌዳ)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ስህተቶች።</translation>
 <translation id="3519867315646775981">በቋንቋ ፊደል መጻፍ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">ፖርቱጋሊኛ</translation>
@@ -514,7 +512,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> ተገኝቷል</translation>
 <translation id="6935521024859866267">ወደ ታች የተገለበጠ</translation>
-<translation id="6937152069980083337">Google ጃፓንኛ ግቤት (ለአሜሪካ ቁልፍ ሰሌዳ)</translation>
 <translation id="6939777852457331078">የአሜሪካ ዎርክማን ቁልፍ ሰሌዳ</translation>
 <translation id="696203921837389374">በሞባይል ውሂብ ላይ ማመሳሰልን አንቃ</translation>
 <translation id="6965382102122355670">እሺ</translation>

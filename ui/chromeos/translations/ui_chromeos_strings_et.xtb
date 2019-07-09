@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Paremale</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> faili importimine ...</translation>
 <translation id="1352103415082130575">Tai klaviatuur (Pattachote)</translation>
-<translation id="1358032944105037487">Jaapani klaviatuur</translation>
 <translation id="1358735829858566124">Fail või kataloog ei ole kasutatav.</translation>
 <translation id="1363028406613469049">Rada</translation>
 <translation id="1378727793141957596">Tere tulemast Google Drive'i!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotot on varundatud teenuses <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopeerimine ...</translation>
 <translation id="3475447146579922140">Google'i arvutustabel</translation>
-<translation id="3494768541638400973">Google'i jaapanikeelne sisestus (jaapani klaviatuuri jaoks)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> viga.</translation>
 <translation id="3519867315646775981">Transliteratsioon (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugali keel</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Leiti <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Tagurpidi</translation>
-<translation id="6937152069980083337">Google'i jaapanikeelne sisestus (USA klaviatuuri jaoks)</translation>
 <translation id="6939777852457331078">USA Workmani klaviatuur</translation>
 <translation id="696203921837389374">Luba sünkroonimine mobiilse andmeside kaudu</translation>
 <translation id="6965382102122355670">OK</translation>

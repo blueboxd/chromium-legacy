@@ -96,6 +96,7 @@ class WebViewPasswordManagerClient
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
   bool IsIsolationForPasswordSitesEnabled() const override;
+  bool IsNewTabPage() const override;
 
  private:
   // password_manager::PasswordManagerClientHelperDelegate implementation.

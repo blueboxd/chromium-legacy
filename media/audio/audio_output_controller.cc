@@ -106,8 +106,7 @@ AudioOutputController::AudioOutputController(
       sync_reader_(sync_reader),
       power_monitor_(
           params.sample_rate(),
-          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
-      weak_factory_for_errors_(this) {
+          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);

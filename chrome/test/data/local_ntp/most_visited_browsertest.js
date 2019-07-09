@@ -362,8 +362,8 @@ test.mostVisited.testReorderStart = function() {
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGridWithAdd(container, params, 10);
 
-  const dragStart = new Event('dragstart');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -387,7 +387,7 @@ test.mostVisited.testReorderStart = function() {
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
     // Stop the reorder flow.
-    document.dispatchEvent(mouseUp);
+    document.dispatchEvent(dragEnd);
 
     assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
     assertFalse(
@@ -487,9 +487,9 @@ test.mostVisited.testReorderFollowCursor = function() {
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGrid(container, params, 4);
 
-  const dragStart = new Event('dragstart');
-  const mouseMove = new Event('mousemove');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  const dragOver = new Event('dragover');
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -504,35 +504,35 @@ test.mostVisited.testReorderFollowCursor = function() {
   // No style should be applied to the tile yet.
   assertEquals('', tile.firstChild.style.transform);
 
-  // Move mouse 5px right and down. This should also move the tile 5px right and
-  // down.
-  mouseMove.pageX = 20;
-  mouseMove.pageY = 20;
+  // Move cursor 5px right and down. This should also move the tile 5px right
+  // and down.
+  dragOver.pageX = 20;
+  dragOver.pageY = 20;
   let expectedTransform = 'translate(5px, 5px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the top right corner. This should move the tile to the
+  // Move cursor beyond the top right corner. This should move the tile to the
   // top right corner of the grid but not beyond it.
-  mouseMove.pageX = 40;
-  mouseMove.pageY = 0;
+  dragOver.pageX = 40;
+  dragOver.pageY = 0;
   expectedTransform = 'translate(10px, 0px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the bottom left corner. This should move the tile to the
+  // Move cursor beyond the bottom left corner. This should move the tile to the
   // bottom left corner of the grid but not beyond it.
-  mouseMove.pageX = 0;
-  mouseMove.pageY = 40;
+  dragOver.pageX = 0;
+  dragOver.pageY = 40;
   expectedTransform = 'translate(0px, 10px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
 
   // Start the reorder flow on the center of the last tile.
 
@@ -543,31 +543,35 @@ test.mostVisited.testReorderFollowCursor = function() {
   // No style should be applied to the tile yet.
   assertEquals('', tile.firstChild.style.transform);
 
-  // Move mouse 5px left and up. This should also move the tile 5px left and up.
-  mouseMove.pageX = 20;
-  mouseMove.pageY = 20;
+  // Move cursor 5px left and up. This should also move the tile 5px left and
+  // up.
+  dragOver.pageX = 20;
+  dragOver.pageY = 20;
   expectedTransform = 'translate(-5px, -5px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the bottom left corner. This should move the tile to the
+  // Move cursor beyond the bottom left corner. This should move the tile to the
   // bottom left corner of the grid but not beyond it.
-  mouseMove.pageX = 0;
-  mouseMove.pageY = 40;
+  dragOver.pageX = 0;
+  dragOver.pageY = 40;
   expectedTransform = 'translate(-10px, 0px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the top right corner. This should move the tile to the
+  // Move cursor beyond the top right corner. This should move the tile to the
   // top right corner of the grid but not beyond it.
-  mouseMove.pageX = 40;
-  mouseMove.pageY = 0;
+  dragOver.pageX = 40;
+  dragOver.pageY = 0;
   expectedTransform = 'translate(0px, -10px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
+
+  // Stop the reorder flow.
+  document.dispatchEvent(dragEnd);
 };
 
 /**
@@ -591,9 +595,9 @@ test.mostVisited.testReorderFollowCursorRtl = function() {
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGrid(container, params, 4);
 
-  const dragStart = new Event('dragstart');
-  const mouseMove = new Event('mousemove');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  const dragOver = new Event('dragover');
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -608,26 +612,26 @@ test.mostVisited.testReorderFollowCursorRtl = function() {
   // No style should be applied to the tile yet.
   assertEquals('', tile.firstChild.style.transform);
 
-  // Move mouse beyond the top left corner. This should move the tile to the top
-  // left corner of the grid but not beyond it.
-  mouseMove.pageX = 0;
-  mouseMove.pageY = 0;
+  // Move cursor beyond the top left corner. This should move the tile to the
+  // top left corner of the grid but not beyond it.
+  dragOver.pageX = 0;
+  dragOver.pageY = 0;
   expectedTransform = 'translate(-10px, 0px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the bottom right corner. This should move the tile to the
-  // bottom right corner of the grid but not beyond it.
-  mouseMove.pageX = 40;
-  mouseMove.pageY = 40;
+  // Move cursor beyond the bottom right corner. This should move the tile to
+  // the bottom right corner of the grid but not beyond it.
+  dragOver.pageX = 40;
+  dragOver.pageY = 40;
   expectedTransform = 'translate(0px, 10px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
 
   // Start the reorder flow on the center of the last tile.
 
@@ -638,23 +642,26 @@ test.mostVisited.testReorderFollowCursorRtl = function() {
   // No style should be applied to the tile yet.
   assertEquals('', tile.firstChild.style.transform);
 
-  // Move mouse beyond the top left corner. This should move the tile to the top
-  // left corner of the grid but not beyond it.
-  mouseMove.pageX = 0;
-  mouseMove.pageY = 0;
+  // Move cursor beyond the top left corner. This should move the tile to the
+  // top left corner of the grid but not beyond it.
+  dragOver.pageX = 0;
+  dragOver.pageY = 0;
   expectedTransform = 'translate(0px, -10px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 
-  // Move mouse beyond the bottom right corner. This should move the tile to the
-  // bottom right corner of the grid but not beyond it.
-  mouseMove.pageX = 40;
-  mouseMove.pageY = 40;
+  // Move cursor beyond the bottom right corner. This should move the tile to
+  // the bottom right corner of the grid but not beyond it.
+  dragOver.pageX = 40;
+  dragOver.pageY = 40;
   expectedTransform = 'translate(10px, 0px)';
-  document.dispatchEvent(mouseMove);
+  document.dispatchEvent(dragOver);
 
   assertEquals(expectedTransform, tile.firstChild.style.transform);
+
+  // Stop the reorder flow.
+  document.dispatchEvent(dragEnd);
 };
 
 /**
@@ -739,15 +746,24 @@ test.mostVisited.testReorderInsert = function() {
     maxTiles: 6,
     enableReorder: true
   };
+  // Override for testing.
+  let testElementsFromPoint = [];
+  document.elementsFromPoint = (x, y) => {
+    return testElementsFromPoint;
+  };
 
   // Create a grid with uneven rows.
   let container = document.createElement('div');
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGrid(container, params, 5);
 
-  const dragStart = new Event('dragstart');
-  const mouseOver = new Event('mouseover');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  dragStart.pageX = 0;  // Point to some spot.
+  dragStart.pageY = 0;
+  const dragOver = new Event('dragover');
+  dragOver.pageX = 0;  // Point to some spot.
+  dragOver.pageY = 0;
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -757,38 +773,41 @@ test.mostVisited.testReorderInsert = function() {
   let tile = tiles[0];
   tile.firstChild.dispatchEvent(dragStart);
 
-  // Mouseover the second tile. This should shift tiles as if the held tile
+  // Move over the second tile. This should shift tiles as if the held tile
   // was inserted after.
   let expectedLayout = [
     '', 'translate(-10px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)',
     'translate(0px, 0px)'
   ];
-  tiles[1].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[1]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
-  // Mouseover the last tile. This should shift tiles as if the held tile was
+  // Move over the last tile. This should shift tiles as if the held tile was
   // inserted after.
   expectedLayout = [
     '', 'translate(-10px, 0px)', 'translate(-10px, 0px)',
     'translate(15px, -10px)', 'translate(-10px, 0px)'
   ];
-  tiles[4].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[4]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
-  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // Move over the first tile. This should shift tiles as if the held tile was
   // inserted before.
   expectedLayout = [
     '', 'translate(0px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)',
     'translate(0px, 0px)'
   ];
-  tiles[0].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[0]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
   // Check that the correct values were sent to the EmbeddedSearchAPI.
   assertEquals(0, test.mostVisited.reorderRid);
   assertEquals(0, test.mostVisited.reorderNewIndex);
@@ -798,28 +817,30 @@ test.mostVisited.testReorderInsert = function() {
   tile = tiles[3];
   tile.firstChild.dispatchEvent(dragStart);
 
-  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // Move over the first tile. This should shift tiles as if the held tile was
   // inserted before.
   expectedLayout = [
     'translate(10px, 0px)', 'translate(10px, 0px)', 'translate(-15px, 10px)',
     '', 'translate(0px, 0px)'
   ];
-  tiles[0].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[0]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
 
-  // Mouseover the last tile. This should shift tiles as if the held tile was
+  // Move over the last tile. This should shift tiles as if the held tile was
   // inserted after.
   expectedLayout = [
     'translate(0px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)', '',
     'translate(-10px, 0px)'
   ];
-  tiles[4].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[4]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
   // Check that the correct values were sent to the EmbeddedSearchAPI.
   assertEquals(3, test.mostVisited.reorderRid);
   assertEquals(4, test.mostVisited.reorderNewIndex);
@@ -841,15 +862,24 @@ test.mostVisited.testReorderInsertRtl = function() {
     maxTiles: 6,
     enableReorder: true
   };
+  // Override for testing.
+  let testElementsFromPoint = [];
+  document.elementsFromPoint = (x, y) => {
+    return testElementsFromPoint;
+  };
 
   // Create a grid with uneven rows.
   let container = document.createElement('div');
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGrid(container, params, 5);
 
-  const dragStart = new Event('dragstart');
-  const mouseOver = new Event('mouseover');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  dragStart.pageX = 0;  // Point to some spot.
+  dragStart.pageY = 0;
+  const dragOver = new Event('dragover');
+  dragOver.pageX = 0;  // Point to some spot.
+  dragOver.pageY = 0;
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -859,38 +889,41 @@ test.mostVisited.testReorderInsertRtl = function() {
   let tile = tiles[0];
   tile.firstChild.dispatchEvent(dragStart);
 
-  // Mouseover the second tile. This should shift tiles as if the held tile
+  // Move over the second tile. This should shift tiles as if the held tile
   // was inserted after.
   let expectedLayout = [
     '', 'translate(10px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)',
     'translate(0px, 0px)'
   ];
-  tiles[1].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[1]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
-  // Mouseover the last tile. This should shift tiles as if the held tile was
+  // Move over the last tile. This should shift tiles as if the held tile was
   // inserted after.
   expectedLayout = [
     '', 'translate(10px, 0px)', 'translate(10px, 0px)',
     'translate(-15px, -10px)', 'translate(10px, 0px)'
   ];
-  tiles[4].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[4]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
-  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // Move over the first tile. This should shift tiles as if the held tile was
   // inserted before.
   expectedLayout = [
     '', 'translate(0px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)',
     'translate(0px, 0px)'
   ];
-  tiles[0].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[0]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
   // Check that the correct values were sent to the EmbeddedSearchAPI.
   assertEquals(0, test.mostVisited.reorderRid);
   assertEquals(0, test.mostVisited.reorderNewIndex);
@@ -900,28 +933,30 @@ test.mostVisited.testReorderInsertRtl = function() {
   tile = tiles[3];
   tile.firstChild.dispatchEvent(dragStart);
 
-  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // Move over the first tile. This should shift tiles as if the held tile was
   // inserted before.
   expectedLayout = [
     'translate(-10px, 0px)', 'translate(-10px, 0px)', 'translate(15px, 10px)',
     '', 'translate(0px, 0px)'
   ];
-  tiles[0].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[0]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
 
-  // Mouseover the last tile. This should shift tiles as if the held tile was
+  // Move over the last tile. This should shift tiles as if the held tile was
   // inserted after.
   expectedLayout = [
     'translate(0px, 0px)', 'translate(0px, 0px)', 'translate(0px, 0px)', '',
     'translate(10px, 0px)'
   ];
-  tiles[4].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[4]];
+  document.dispatchEvent(dragOver);
 
   test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
   // Check that the correct values were sent to the EmbeddedSearchAPI.
   assertEquals(3, test.mostVisited.reorderRid);
   assertEquals(4, test.mostVisited.reorderNewIndex);
@@ -942,15 +977,24 @@ test.mostVisited.testReorderInsertWithAddButton = function() {
     maxTiles: 6,
     enableReorder: true
   };
+  // Override for testing.
+  let testElementsFromPoint = [];
+  document.elementsFromPoint = (x, y) => {
+    return testElementsFromPoint;
+  };
 
   // Create a grid with uneven rows.
   let container = document.createElement('div');
   $(test.mostVisited.MOST_VISITED).appendChild(container);
   test.mostVisited.initGridWithAdd(container, params, 5);
 
-  const dragStart = new Event('dragstart');
-  const mouseOver = new Event('mouseover');
-  const mouseUp = new Event('mouseup');
+  const dragStart = test.mostVisited.mockDragStart();
+  dragStart.pageX = 0;  // Point to some spot.
+  dragStart.pageY = 0;
+  const dragOver = new Event('dragover');
+  dragOver.pageX = 0;  // Point to some spot.
+  dragOver.pageY = 0;
+  const dragEnd = new Event('dragend');
 
   const tiles = document.getElementsByClassName(
       test.mostVisited.CLASSES.GRID_TILE_CONTAINER);
@@ -960,33 +1004,36 @@ test.mostVisited.testReorderInsertWithAddButton = function() {
   let tile = tiles[1];
   tile.firstChild.dispatchEvent(dragStart);
 
-  // Mouseover the first tile. This should shift tiles as if the held tile was
+  // Move over the first tile. This should shift tiles as if the held tile was
   // inserted before.
   let expectedLayout = [
     'translate(10px, 0px)', '', 'translate(0px, 0px)', 'translate(0px, 0px)', ''
   ];
-  tiles[0].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[0]];
+  document.dispatchEvent(dragOver);
 
-  test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 1);
 
-  // Mouseover the last tile (the add shortcut button). This should not shift
+  // Move over the last tile (the add shortcut button). This should not shift
   // the tiles.
-  tiles[4].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[4]];
+  document.dispatchEvent(dragOver);
 
-  test.mostVisited.assertReorderInsert(container, expectedLayout, 0);
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 1);
 
-  // Mouseover the second to last tile. This should shift tiles as if the held
+  // Move over the second to last tile. This should shift tiles as if the held
   // tile was inserted after.
   expectedLayout = [
     'translate(0px, 0px)', '', 'translate(-10px, 0px)',
     'translate(15px, -10px)', ''
   ];
-  tiles[3].dispatchEvent(mouseOver);
+  testElementsFromPoint = [tiles[3]];
+  document.dispatchEvent(dragOver);
 
-  test.mostVisited.assertReorderInsert(container, expectedLayout, 3);
+  test.mostVisited.assertReorderInsert(container, expectedLayout, 1);
 
   // Stop the reorder flow.
-  document.dispatchEvent(mouseUp);
+  document.dispatchEvent(dragEnd);
   // Check that the correct values were sent to the EmbeddedSearchAPI.
   assertEquals(1, test.mostVisited.reorderRid);
   assertEquals(3, test.mostVisited.reorderNewIndex);
@@ -1135,6 +1182,19 @@ test.mostVisited.appendTile = function(container, rid, isAddButton) {
   const tile = document.createElement('div');
   const gridTile = test.mostVisited.grid.createGridTile(tile, rid, isAddButton);
   container.appendChild(gridTile);
+};
+
+/**
+ * Returns a mock 'dragstart' event.
+ * @return {Event}
+ */
+test.mostVisited.mockDragStart = function() {
+  const dragStart = new Event('dragstart');
+  dragStart.dataTransfer = {
+    setData: (a, b) => {},
+    setDragImage: (a, b, c) => {},
+  };
+  return dragStart;
 };
 
 /**

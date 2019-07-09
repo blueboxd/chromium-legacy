@@ -161,9 +161,12 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
           context->Fetcher()->GetProperties().GetFetchClientSettingsObject());
 }
 
-DedicatedWorker::~DedicatedWorker() {
+DedicatedWorker::~DedicatedWorker() = default;
+
+void DedicatedWorker::Dispose() {
   DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
   context_proxy_->ParentObjectDestroyed();
+  factory_client_.reset();
 }
 
 void DedicatedWorker::postMessage(ScriptState* script_state,

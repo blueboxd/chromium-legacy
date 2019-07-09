@@ -434,8 +434,7 @@ VideoResourceUpdater::VideoResourceUpdater(
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       use_r16_texture_(use_r16_texture),
       max_resource_size_(max_resource_size),
-      tracing_id_(g_next_video_resource_updater_id.GetNext()),
-      weak_ptr_factory_(this) {
+      tracing_id_(g_next_video_resource_updater_id.GetNext()) {
   DCHECK(context_provider_ || raster_context_provider_ ||
          shared_bitmap_reporter_);
 

@@ -98,14 +98,7 @@ void Service::RequestAccessToken() {
 }
 
 bool Service::ShouldEnableHotword() {
-  bool dsp_available = false;
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (const chromeos::AudioDevice& device : devices) {
-    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
-      dsp_available = true;
-    }
-  }
+  bool dsp_available = chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
 
   // Disable hotword if hotword is not set to always on and power source is not
   // connected.

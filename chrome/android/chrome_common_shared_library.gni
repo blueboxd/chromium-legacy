@@ -14,6 +14,16 @@ import("//device/vr/buildflags/buildflags.gni")
 bundle_library_suffix = ""
 apk_pak_asset_type = "_apk"
 
+# This value is set downstream for internal builds.
+if (!defined(default_chrome_orderfile)) {
+  default_chrome_orderfile = ""
+}
+
+declare_args() {
+  # Path to a linker orderfile to use for libchrome.so, libmonochrome.so, etc.
+  chrome_orderfile = default_chrome_orderfile
+}
+
 # This template contains all common configuration for native shared libraries,
 # including libchrome, monochrome, standalone webview (also called monochrome),
 # and libchromefortest (used by chrome_public_test_apk).
@@ -61,7 +71,7 @@ template("chrome_common_shared_library") {
       deps += [ "//chrome:chrome_android_core" ]
     }
 
-    configs += [ "//build/config/compiler:chrome_orderfile_config" ]
+    configs += [ "//chrome/android:orderfile_config" ]
     public_configs = extra_chrome_shared_library_configs
     deps += extra_chrome_shared_library_deps
 

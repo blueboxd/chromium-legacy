@@ -568,8 +568,6 @@ void ProfileIOData::Init() const {
   certificate_provider_ = std::move(profile_params_->certificate_provider);
 #endif
 
-  OnMainRequestContextCreated(profile_params_.get());
-
   profile_params_.reset();
   initialized_ = true;
 }

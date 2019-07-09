@@ -126,7 +126,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   VideoDecoderImplementation video_decoder_implementation_;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;
-  base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<MojoVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };

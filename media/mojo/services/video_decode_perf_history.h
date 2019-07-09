@@ -197,7 +197,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // Ensures all access to class members come on the same sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoDecodePerfHistory> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoDecodePerfHistory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodePerfHistory);
 };

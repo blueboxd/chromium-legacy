@@ -19,8 +19,9 @@ CredentialManagerProxy::CredentialManagerProxy(Document& document) {
   frame->GetDocumentInterfaceBroker().GetCredentialManager(
       credential_manager_.BindNewPipeAndPassReceiver(
           frame->GetTaskRunner(TaskType::kUserInteraction)));
-  frame->GetDocumentInterfaceBroker().GetAuthenticator(mojo::MakeRequest(
-      &authenticator_, frame->GetTaskRunner(TaskType::kUserInteraction)));
+  frame->GetDocumentInterfaceBroker().GetAuthenticator(
+      authenticator_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kUserInteraction)));
 }
 
 CredentialManagerProxy::~CredentialManagerProxy() {}

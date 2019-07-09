@@ -13,6 +13,7 @@ import static org.chromium.net.CronetTestRule.getContext;
 import static org.chromium.net.CronetTestRule.getTestStorage;
 
 import android.support.test.filters.SmallTest;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.json.JSONObject;
 import org.junit.After;
@@ -21,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.test.util.CertTestUtil;
@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * Public-Key-Pinning tests of Cronet Java API.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class PkpTest {
     private static final String CERT_USED = "quic-chain.pem";
     private static final String[] CERTS_USED = {CERT_USED};

@@ -4,16 +4,24 @@
 
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string16.h"
-#include "chrome/browser/platform_util.h"
+#include "base/task/post_task.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
-#include "content/public/browser/navigation_handle.h"
+#include "chrome/browser/ui/views/hats/hats_web_dialog.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/buildflags.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -25,25 +33,47 @@ views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
 }
 
 // static
-views::BubbleDialogDelegateView* HatsBubbleView::CreateHatsBubble(
-    AppMenuButton* anchor_button,
-    Browser* browser,
-    gfx::NativeView parent_view) {
+void HatsBubbleView::Show(AppMenuButton* anchor_button, Browser* browser) {
   base::RecordAction(base::UserMetricsAction("HatsBubble.Show"));
 
-  return new HatsBubbleView(anchor_button, browser, parent_view);
+  DCHECK(anchor_button->GetWidget());
+  gfx::NativeView parent_view = anchor_button->GetWidget()->GetNativeView();
+
+  // Bubble delegate will be deleted when its window is destroyed.
+  auto* bubble = new HatsBubbleView(anchor_button, browser, parent_view);
+  bubble->SetHighlightedButton(anchor_button);
+  bubble->GetWidget()->Show();
 }
 
 HatsBubbleView::HatsBubbleView(AppMenuButton* anchor_button,
                                Browser* browser,
                                gfx::NativeView parent_view)
-    : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_LEFT),
-      close_bubble_helper_(this, browser) {
+    : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
+      close_bubble_helper_(this, browser),
+      browser_(browser) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
-  set_parent_window(parent_view);
+  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(10, 20, 10, 0),
+      10));
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  layout_manager->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kStart);
 
-  // TODO: this->AddChildView(WebUI)
+  // Add Logo icon.
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_PRODUCT_LOGO_32));
+  AddChildView(std::move(icon_view));
+
+  auto message = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_TEXT));
+  message->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  AddChildView(std::move(message));
+
+  set_parent_window(parent_view);
+  set_margins(gfx::Insets());
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 
@@ -52,8 +82,20 @@ HatsBubbleView::HatsBubbleView(AppMenuButton* anchor_button,
 
 HatsBubbleView::~HatsBubbleView() {}
 
-int HatsBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
+base::string16 HatsBubbleView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_TITLE);
+}
+
+base::string16 HatsBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return button == ui::DIALOG_BUTTON_OK
+             ? l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL)
+             : l10n_util::GetStringUTF16(IDS_NO_THANKS);
+}
+
+bool HatsBubbleView::Accept() {
+  HatsWebDialog::Show(browser_);
+  return true;
 }
 
 bool HatsBubbleView::ShouldShowCloseButton() const {

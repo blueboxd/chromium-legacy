@@ -229,7 +229,7 @@ class AutofillCapturedSitesInteractiveTest
     const base::FilePath capture_file_path =
         GetReplayFilesDirectory().AppendASCII(GetParam().c_str());
     SetServerUrlLoader(std::make_unique<test::ServerUrlLoader>(
-        absl::make_unique<test::ServerCacheReplayer>(
+        std::make_unique<test::ServerCacheReplayer>(
             capture_file_path,
             test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
   }

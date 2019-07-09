@@ -84,7 +84,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
 
   std::unique_ptr<MojoCdmProxy> cdm_proxy_;
 
-  base::WeakPtrFactory<MojoCdmHelper> weak_factory_;
+  base::WeakPtrFactory<MojoCdmHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);
 };
 

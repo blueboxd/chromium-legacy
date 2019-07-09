@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Generated 2016-10-20T18:50:22Z
+// Generated 2019-07-04T15:44:33Z
 
 #include "components/autofill/core/browser/address_rewriter.h"
 
@@ -10,3560 +10,3593 @@ namespace autofill {
 namespace internal {
 namespace {
 
-const Rule kRules_AD[] = {
-    {"\\bparroquia\\s+de\\s+andorra\\s+la\\s+vella\\b", "07"},
-    {"\\bprincipal\\s+de\\s+andorra\\b", "07"},
-    {"\\bprincipat\\s+de\\s+andorra\\b", "07"},
-    {"\\bsant\\s+julia\\s+de\\s+loria\\b", "06"},
-    {"\\bescaldes\\s+engordany\\b", "08"},
-    {"\\bandorra\\s+la\\s+vella\\b", "07"},
-    {"\\bcarrer\\s+del\\b", ""},
-    {"\\bla\\s+massana\\b", "04"},
-    {"\\bsant\\s+julia\\b", "06"},
-    {"\\bcarrer\\s+de\\b", ""},
-    {"\\bandorra\\b", "07"},
-    {"\\bcanillo\\b", "02"},
-    {"\\bmassana\\b", "04"},
-    {"\\bencamp\\b", "03"},
-    {"\\bordino\\b", "05"},
-    {"\\bc\\s+del\\b", ""},
-    {"\\bc\\s+de\\b", ""},
-    {"\\bad\\b", "07"},
-    {"\\ban\\b", "07"},
-    {"\\bca\\b", "02"},
-    {"\\bee\\b", "08"},
-    {"\\ben\\b", "03"},
-    {"\\bjl\\b", "06"},
-    {"\\bma\\b", "04"},
-    {"\\bor\\b", "05"},
-};
+const char* kRules_AD =
+"\\bparroquia\\s+de\\s+andorra\\s+la\\s+vella\\b\00007\000"
+"\\bprincipal\\s+de\\s+andorra\\b\00007\000"
+"\\bprincipat\\s+de\\s+andorra\\b\00007\000"
+"\\bsant\\s+julia\\s+de\\s+loria\\b\00006\000"
+"\\bescaldes\\s+engordany\\b\00008\000"
+"\\bandorra\\s+la\\s+vella\\b\00007\000"
+"\\bcarrer\\s+del\\b\000\000"
+"\\bla\\s+massana\\b\00004\000"
+"\\bsant\\s+julia\\b\00006\000"
+"\\bcarrer\\s+de\\b\000\000"
+"\\bandorra\\b\00007\000"
+"\\bcanillo\\b\00002\000"
+"\\bmassana\\b\00004\000"
+"\\bencamp\\b\00003\000"
+"\\bordino\\b\00005\000"
+"\\bc\\s+del\\b\000\000"
+"\\bc\\s+de\\b\000\000"
+"\\bad\\b\00007\000"
+"\\ban\\b\00007\000"
+"\\bca\\b\00002\000"
+"\\bee\\b\00008\000"
+"\\ben\\b\00003\000"
+"\\bjl\\b\00006\000"
+"\\bma\\b\00004\000"
+"\\bor\\b\00005\000"
+;
+int kNumRules_AD = 25;
 
-const Rule kRules_AR[] = {
-    {"\\btierra\\s+del\\s+fuego\\s+antartida\\s+e\\s+islas\\s+del\\s+"
-      "atlantico\\s+sur\\b",
-      "tierra del fuego"},
-    {"\\bciudad\\s+autonoma\\s+de\\s+buenos\\s+aires\\b", "caba"},
-    {"\\bla\\s+ciudad\\s+de\\s+buenos\\s+aires\\b", "caba"},
-    {"\\bcapital\\s+federal\\b", "caba"},
-    {"\\bdiecinueve\\b", "19"},
-    {"\\bdiecisiete\\b", "17"},
-    {"\\bargentina\\b", "ar"},
-    {"\\bboulevard\\b", "bv"},
-    {"\\bdieciocho\\b", "18"},
-    {"\\bdieciseis\\b", "16"},
-    {"\\bavenida\\b", "av"},
-    {"\\bcatorce\\b", "14"},
-    {"\\bprimera\\b", "1a"},
-    {"\\bsegunda\\b", "2a"},
-    {"\\bseptima\\b", "7a"},
-    {"\\btercera\\b", "3a"},
-    {"\\bcuarta\\b", "4a"},
-    {"\\bcuatro\\b", "4"},
-    {"\\boctava\\b", "8a"},
-    {"\\bpasaje\\b", "pje"},
-    {"\\bquince\\b", "15"},
-    {"\\bquinta\\b", "5a"},
-    {"\\bveinte\\b", "20"},
-    {"\\bcinco\\b", "5"},
-    {"\\bnueve\\b", "9"},
-    {"\\bsexta\\b", "6a"},
-    {"\\bsiete\\b", "7"},
-    {"\\btrece\\b", "13"},
-    {"\\bdiez\\b", "10"},
-    {"\\bdoce\\b", "12"},
-    {"\\bocho\\b", "8"},
-    {"\\bonce\\b", "11"},
-    {"\\bseis\\b", "6"},
-    {"\\btres\\b", "3"},
-    {"\\bdel\\b", ""},
-    {"\\bdos\\b", "2"},
-    {"\\blas\\b", ""},
-    {"\\blos\\b", ""},
-    {"\\buno\\b", "1"},
-    {"\\bde\\b", ""},
-    {"\\bel\\b", ""},
-    {"\\ble\\b", ""},
-};
+const char* kRules_AR =
+"\\btierra\\s+del\\s+fuego\\s+antartida\\s+e\\s+islas\\s+del\\s+atlantico\\s+sur\\b\000tierra del fuego\000"
+"\\bciudad\\s+autonoma\\s+de\\s+buenos\\s+aires\\b\000caba\000"
+"\\bla\\s+ciudad\\s+de\\s+buenos\\s+aires\\b\000caba\000"
+"\\bcapital\\s+federal\\b\000caba\000"
+"\\bdiecinueve\\b\00019\000"
+"\\bdiecisiete\\b\00017\000"
+"\\bargentina\\b\000ar\000"
+"\\bboulevard\\b\000bv\000"
+"\\bdieciocho\\b\00018\000"
+"\\bdieciseis\\b\00016\000"
+"\\bavenida\\b\000av\000"
+"\\bcatorce\\b\00014\000"
+"\\bprimera\\b\0001a\000"
+"\\bsegunda\\b\0002a\000"
+"\\bseptima\\b\0007a\000"
+"\\btercera\\b\0003a\000"
+"\\bcuarta\\b\0004a\000"
+"\\bcuatro\\b\0004\000"
+"\\boctava\\b\0008a\000"
+"\\bpasaje\\b\000pje\000"
+"\\bquince\\b\00015\000"
+"\\bquinta\\b\0005a\000"
+"\\bveinte\\b\00020\000"
+"\\bcinco\\b\0005\000"
+"\\bnueve\\b\0009\000"
+"\\bsexta\\b\0006a\000"
+"\\bsiete\\b\0007\000"
+"\\btrece\\b\00013\000"
+"\\bdiez\\b\00010\000"
+"\\bdoce\\b\00012\000"
+"\\bocho\\b\0008\000"
+"\\bonce\\b\00011\000"
+"\\bseis\\b\0006\000"
+"\\btres\\b\0003\000"
+"\\bdel\\b\000\000"
+"\\bdos\\b\0002\000"
+"\\blas\\b\000\000"
+"\\blos\\b\000\000"
+"\\buno\\b\0001\000"
+"\\bde\\b\000\000"
+"\\bel\\b\000\000"
+"\\ble\\b\000\000"
+;
+int kNumRules_AR = 42;
 
-const Rule kRules_AU[] = {
-    {"\\baustralian\\s+capital\\s+territory\\b", "act"},
-    {"\\bjervis\\s+bay\\s+territory\\b", "jbt"},
-    {"\\bnorthern\\s+territory\\b", "nt"},
-    {"\\bwestern\\s+australia\\b", "wa"},
-    {"\\bnew\\s+south\\s+wales\\b", "nsw"},
-    {"\\bsouth\\s+australia\\b", "sa"},
-    {"\\bqueensland\\b", "qld"},
-    {"\\baustralia\\b", "au"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\btasmania\\b", "tas"},
-    {"\\bvictoria\\b", "vic"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\bparkway\\b", "pkwy"},
-    {"\\ba\\.c\\.t\\.\\b", "act"},
-    {"\\bau\\-act\\b", "act"},
-    {"\\bau\\-jbt\\b", "jbt"},
-    {"\\bau\\-nsw\\b", "nsw"},
-    {"\\bau\\-qld\\b", "qld"},
-    {"\\bau\\-tas\\b", "tas"},
-    {"\\bau\\-vic\\b", "vic"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcommon\\b", "comm"},
-    {"\\bj\\.b\\.t\\.\\b", "jbt"},
-    {"\\bn\\.s\\.w\\.\\b", "nsw"},
-    {"\\bparade\\b", "pde"},
-    {"\\bstreet\\b", "st"},
-    {"\\ba\\.c\\.t\\b", "act"},
-    {"\\bau\\-nt\\b", "nt"},
-    {"\\bau\\-sa\\b", "sa"},
-    {"\\bau\\-wa\\b", "wa"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bdrive\\b", "dr"},
-    {"\\beight\\b", "8"},
-    {"\\bj\\.b\\.t\\b", "jbt"},
-    {"\\bmount\\b", "mt"},
-    {"\\bn\\.s\\.w\\b", "nsw"},
-    {"\\bnorth\\b", "n"},
-    {"\\bplace\\b", "pl"},
-    {"\\bpoint\\b", "pt"},
-    {"\\bsaint\\b", "st"},
-    {"\\bseven\\b", "7"},
-    {"\\bsouth\\b", "s"},
-    {"\\bthree\\b", "3"},
-    {"\\beast\\b", "e"},
-    {"\\bfive\\b", "5"},
-    {"\\bfour\\b", "4"},
-    {"\\blane\\b", "ln"},
-    {"\\bn\\.t\\.\\b", "nt"},
-    {"\\bnine\\b", "9"},
-    {"\\broad\\b", "rd"},
-    {"\\bs\\.a\\.\\b", "sa"},
-    {"\\bw\\.a\\.\\b", "wa"},
-    {"\\bwest\\b", "w"},
-    {"\\baus\\b", "au"},
-    {"\\bmt\\.\\b", "mt"},
-    {"\\bn\\.t\\b", "nt"},
-    {"\\bnth\\b", "n"},
-    {"\\bone\\b", "1"},
-    {"\\bpt\\.\\b", "pt"},
-    {"\\bs\\.a\\b", "sa"},
-    {"\\bsix\\b", "6"},
-    {"\\bst\\.\\b", "st"},
-    {"\\bsth\\b", "s"},
-    {"\\bten\\b", "10"},
-    {"\\btwo\\b", "2"},
-    {"\\bw\\.a\\b", "wa"},
-    {"\\be\\.\\b", "e"},
-    {"\\bn\\.\\b", "n"},
-    {"\\bs\\.\\b", "s"},
-    {"\\bw\\.\\b", "w"},
-};
+const char* kRules_AU =
+"\\baustralian\\s+capital\\s+territory\\b\000act\000"
+"\\bjervis\\s+bay\\s+territory\\b\000jbt\000"
+"\\bnorthern\\s+territory\\b\000nt\000"
+"\\bwestern\\s+australia\\b\000wa\000"
+"\\bnew\\s+south\\s+wales\\b\000nsw\000"
+"\\bsouth\\s+australia\\b\000sa\000"
+"\\bqueensland\\b\000qld\000"
+"\\baustralia\\b\000au\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bcrescent\\b\000cres\000"
+"\\btasmania\\b\000tas\000"
+"\\bvictoria\\b\000vic\000"
+"\\bhighway\\b\000hwy\000"
+"\\bparkway\\b\000pkwy\000"
+"\\ba\\.c\\.t\\.\\b\000act\000"
+"\\bau\\-act\\b\000act\000"
+"\\bau\\-jbt\\b\000jbt\000"
+"\\bau\\-nsw\\b\000nsw\000"
+"\\bau\\-qld\\b\000qld\000"
+"\\bau\\-tas\\b\000tas\000"
+"\\bau\\-vic\\b\000vic\000"
+"\\bavenue\\b\000ave\000"
+"\\bcommon\\b\000comm\000"
+"\\bj\\.b\\.t\\.\\b\000jbt\000"
+"\\bn\\.s\\.w\\.\\b\000nsw\000"
+"\\bparade\\b\000pde\000"
+"\\bstreet\\b\000st\000"
+"\\ba\\.c\\.t\\b\000act\000"
+"\\bau\\-nt\\b\000nt\000"
+"\\bau\\-sa\\b\000sa\000"
+"\\bau\\-wa\\b\000wa\000"
+"\\bcourt\\b\000ct\000"
+"\\bdrive\\b\000dr\000"
+"\\beight\\b\0008\000"
+"\\bj\\.b\\.t\\b\000jbt\000"
+"\\bmount\\b\000mt\000"
+"\\bn\\.s\\.w\\b\000nsw\000"
+"\\bnorth\\b\000n\000"
+"\\bplace\\b\000pl\000"
+"\\bpoint\\b\000pt\000"
+"\\bsaint\\b\000st\000"
+"\\bseven\\b\0007\000"
+"\\bsouth\\b\000s\000"
+"\\bthree\\b\0003\000"
+"\\beast\\b\000e\000"
+"\\bfive\\b\0005\000"
+"\\bfour\\b\0004\000"
+"\\blane\\b\000ln\000"
+"\\bn\\.t\\.\\b\000nt\000"
+"\\bnine\\b\0009\000"
+"\\broad\\b\000rd\000"
+"\\bs\\.a\\.\\b\000sa\000"
+"\\bw\\.a\\.\\b\000wa\000"
+"\\bwest\\b\000w\000"
+"\\baus\\b\000au\000"
+"\\bmt\\.\\b\000mt\000"
+"\\bn\\.t\\b\000nt\000"
+"\\bnth\\b\000n\000"
+"\\bone\\b\0001\000"
+"\\bpt\\.\\b\000pt\000"
+"\\bs\\.a\\b\000sa\000"
+"\\bsix\\b\0006\000"
+"\\bst\\.\\b\000st\000"
+"\\bsth\\b\000s\000"
+"\\bten\\b\00010\000"
+"\\btwo\\b\0002\000"
+"\\bw\\.a\\b\000wa\000"
+"\\be\\.\\b\000e\000"
+"\\bn\\.\\b\000n\000"
+"\\bs\\.\\b\000s\000"
+"\\bw\\.\\b\000w\000"
+;
+int kNumRules_AU = 71;
 
-const Rule kRules_BE[] = {
-    {"\\barrondissement\\s+administratif\\s+de\\b", ""},
-    {"\\barrondissement\\s+administratif\\s+d\\b", ""},
-    {"\\bbrussels\\s+hoofdstedelijk\\s+gewest\\b", "brussel"},
-    {"\\bbrussel\\s+hoofdstedelijk\\s+gewest\\b", "brussel"},
-    {"\\bregion\\s+de\\s+bruxelles\\s+capitale\\b", "brussel"},
-    {"\\bseptieme\\s+division\\s+francaise\\b", "7eme division frcse"},
-    {"\\bonze\\s+lieve\\s+heersebeestjes\\b", "onze lieve heersbeestjes"},
-    {"\\bregion\\s+brussel\\s+hauptstadt\\b", "brussel"},
-    {"\\balbert\\s+en\\s+marie\\s+louise\\b", "a & m l"},
-    {"\\balbert\\s+et\\s+marie\\s+louise\\b", "a & m l"},
-    {"\\bandree\\s+payfa\\s+fosseprez\\b", "a payfa fosseprez"},
-    {"\\bseptieme\\s+d\\s+i\\s+francaise\\b", "7eme division frcse"},
-    {"\\bwereldtentoonstellings\\b", "wereldtentoonstelings"},
-    {"\\bberchem\\s+sainte\\s+agathe\\b", "st agatha berchem"},
-    {"\\bflandres\\s+occidentales\\b", "westflandern"},
-    {"\\bsaint\\s+josse\\s+ten\\s+noode\\b", "saint josse"},
-    {"\\bflandre\\s+occidentales\\b", "westflandern"},
-    {"\\bflandres\\s+occidentale\\b", "westflandern"},
-    {"\\bhenri\\s+victor\\s+wolvens\\b", "h v wolvens"},
-    {"\\bjoseph\\s+van\\s+boterdael\\b", "joseph van boterdae"},
-    {"\\bmarilyn\\s+monroegaarde\\b", "marilyn monroe"},
-    {"\\bflandre\\s+occidentale\\b", "westflandern"},
-    {"\\bflandres\\s+orientales\\b", "ostflandern"},
-    {"\\bwoluwe\\s+saint\\s+pierre\\b", "st pieters woluwe"},
-    {"\\bbruxelles\\s+capitale\\b", "brussel"},
-    {"\\bflandre\\s+orientales\\b", "ostflandern"},
-    {"\\bflandres\\s+orientale\\b", "ostflandern"},
-    {"\\bhendrik\\s+conscience\\b", "henri conscience"},
-    {"\\bleonoardo\\s+da\\s+vinci\\b", "leonard de vinci"},
-    {"\\bwallonisch\\s+brabant\\b", "waals brabant"},
-    {"\\bwallonische\\s+region\\b", "wallonie"},
-    {"\\bbischoffsheimlaan\\b", "bischoffsheim"},
-    {"\\bbrouck\\s+du\\s+tilleul\\b", "brouck au tilleul"},
-    {"\\bflandre\\s+orientale\\b", "ostflandern"},
-    {"\\bleonardo\\s+da\\s+vinci\\b", "leonard de vinci"},
-    {"\\barmand\\s+scheitler\\b", "armand scheiter"},
-    {"\\bflamisch\\s+brabant\\b", "vlaams brabant"},
-    {"\\bflamische\\s+region\\b", "vlaams gewest"},
-    {"\\bhenri\\s+wafelaerts\\b", "henri wafelaert"},
-    {"\\bpieter\\s+hauwaerts\\b", "pierre hauwaerts"},
-    {"\\bregion\\s+wallonien\\b", "wallonie"},
-    {"\\brennequin\\s+sualem\\b", "renkin sualem"},
-    {"\\baugust\\s+de\\s+boeck\\b", "a de boeck"},
-    {"\\bbrabant\\s+flamand\\b", "vlaams brabant"},
-    {"\\bbruxelles\\s+ville\\b", "brussel"},
-    {"\\bflamisch\\s+region\\b", "vlaams gewest"},
-    {"\\bgodefroid\\s+kurth\\b", "godfroid kurth"},
-    {"\\boost\\s+vlaanderen\\b", "ostflandern"},
-    {"\\bregion\\s+flamande\\b", "vlaams gewest"},
-    {"\\bregion\\s+wallonne\\b", "wallonie"},
-    {"\\bwest\\s+vlaanderen\\b", "westflandern"},
-    {"\\barrondissement\\b", ""},
-    {"\\bbrabant\\s+wallon\\b", "waals brabant"},
-    {"\\blimburg\\s+strium\\b", "limburg stirum"},
-    {"\\bde\\s+ribaucourt\\b", "ribaucourt"},
-    {"\\bmichel\\s+angelo\\b", "michel ange"},
-    {"\\bpater\\s+damiaan\\b", "pater damian"},
-    {"\\bprofondeville\\b", "profondville"},
-    {"\\bsint\\s+lenaerts\\b", "sint lenaarts"},
-    {"\\bsualem\\s+renkin\\b", "renkin sualem"},
-    {"\\bdendermondse\\b", "dendermonde"},
-    {"\\bminnezangers\\b", "menestrelen"},
-    {"\\bvooruitgangs\\b", "vooruitgang"},
-    {"\\bwaals\\s+gewest\\b", "wallonie"},
-    {"\\bcortenbergh\\b", "cortenberg"},
-    {"\\bjette\\s+jetse\\b", "jette"},
-    {"\\bl\\s+urbanisme\\b", "i urbanisme"},
-    {"\\bprovince\\s+de\\b", ""},
-    {"\\bprovince\\s+du\\b", ""},
-    {"\\bpuits\\s+no\\s+iv\\b", "puits n4"},
-    {"\\bterhulpense\\b", "terhulpse"},
-    {"\\bhenegouwen\\b", "hainaut"},
-    {"\\blanguesdoc\\b", "languedoc"},
-    {"\\bluxembourg\\b", "luxemburg"},
-    {"\\bprovince\\s+d\\b", ""},
-    {"\\bpuit\\s+no\\s+iv\\b", "puits n4"},
-    {"\\bvan\\s+volxem\\b", "volxem"},
-    {"\\bantwerpen\\b", "anvers"},
-    {"\\bboulevard\\b", "bd"},
-    {"\\bbruxelles\\b", "brussel"},
-    {"\\bluitenant\\b", "liutenant"},
-    {"\\bwallonien\\b", "wallonie"},
-    {"\\bwestphael\\b", "wesphal"},
-    {"\\bbelgique\\b", "be"},
-    {"\\bbrussels\\b", "brussel"},
-    {"\\bchaussee\\b", "chee"},
-    {"\\bhennegau\\b", "hainaut"},
-    {"\\blimbourg\\b", "limburg"},
-    {"\\bsteenweg\\b", "stwg"},
-    {"\\bterrasse\\b", "tsse"},
-    {"\\bwestphal\\b", "wesphal"},
-    {"\\bavenues\\b", "av"},
-    {"\\bbelgien\\b", "be"},
-    {"\\bbelgium\\b", "be"},
-    {"\\bde\\s+wand\\b", "wand"},
-    {"\\bimpasse\\b", "imp"},
-    {"\\bjettese\\b", "jetse"},
-    {"\\bluttich\\b", "luik"},
-    {"\\bprovinz\\b", ""},
-    {"\\bstrasse\\b", "str"},
-    {"\\ballees\\b", "all"},
-    {"\\bavenue\\b", "av"},
-    {"\\bbelgie\\b", "be"},
-    {"\\bcentre\\b", "ctre"},
-    {"\\bsainte\\b", "st"},
-    {"\\bsquare\\b", "sq"},
-    {"\\bstraat\\b", "str"},
-    {"\\ballee\\b", "all"},
-    {"\\bliege\\b", "luik"},
-    {"\\bnamur\\b", "namen"},
-    {"\\bpiein\\b", "pl"},
-    {"\\bplace\\b", "pl"},
-    {"\\bplatz\\b", "pl"},
-    {"\\bplein\\b", "pl"},
-    {"\\broute\\b", "rte"},
-    {"\\bsaint\\b", "st"},
-    {"\\bsankt\\b", "st"},
-    {"\\bthier\\b", "their"},
-    {"\\bsint\\b", "st"},
-    {"\\bdes\\b", "d"},
-    {"\\brue\\b", "r"},
-    {"\\bste\\b", "st"},
-    {"\\bde\\b", "d"},
-    {"\\bdu\\b", "d"},
-};
+const char* kRules_BE =
+"\\barrondissement\\s+administratif\\s+de\\b\000\000"
+"\\barrondissement\\s+administratif\\s+d\\b\000\000"
+"\\bbrussels\\s+hoofdstedelijk\\s+gewest\\b\000brussel\000"
+"\\bbrussel\\s+hoofdstedelijk\\s+gewest\\b\000brussel\000"
+"\\bregion\\s+de\\s+bruxelles\\s+capitale\\b\000brussel\000"
+"\\bseptieme\\s+division\\s+francaise\\b\0007eme division frcse\000"
+"\\bonze\\s+lieve\\s+heersebeestjes\\b\000onze lieve heersbeestjes\000"
+"\\bregion\\s+brussel\\s+hauptstadt\\b\000brussel\000"
+"\\balbert\\s+en\\s+marie\\s+louise\\b\000a & m l\000"
+"\\balbert\\s+et\\s+marie\\s+louise\\b\000a & m l\000"
+"\\bandree\\s+payfa\\s+fosseprez\\b\000a payfa fosseprez\000"
+"\\bseptieme\\s+d\\s+i\\s+francaise\\b\0007eme division frcse\000"
+"\\bwereldtentoonstellings\\b\000wereldtentoonstelings\000"
+"\\bberchem\\s+sainte\\s+agathe\\b\000st agatha berchem\000"
+"\\bflandres\\s+occidentales\\b\000westflandern\000"
+"\\bsaint\\s+josse\\s+ten\\s+noode\\b\000saint josse\000"
+"\\bflandre\\s+occidentales\\b\000westflandern\000"
+"\\bflandres\\s+occidentale\\b\000westflandern\000"
+"\\bhenri\\s+victor\\s+wolvens\\b\000h v wolvens\000"
+"\\bjoseph\\s+van\\s+boterdael\\b\000joseph van boterdae\000"
+"\\bmarilyn\\s+monroegaarde\\b\000marilyn monroe\000"
+"\\bflandre\\s+occidentale\\b\000westflandern\000"
+"\\bflandres\\s+orientales\\b\000ostflandern\000"
+"\\bwoluwe\\s+saint\\s+pierre\\b\000st pieters woluwe\000"
+"\\bbruxelles\\s+capitale\\b\000brussel\000"
+"\\bflandre\\s+orientales\\b\000ostflandern\000"
+"\\bflandres\\s+orientale\\b\000ostflandern\000"
+"\\bhendrik\\s+conscience\\b\000henri conscience\000"
+"\\bleonoardo\\s+da\\s+vinci\\b\000leonard de vinci\000"
+"\\bwallonisch\\s+brabant\\b\000waals brabant\000"
+"\\bwallonische\\s+region\\b\000wallonie\000"
+"\\bbischoffsheimlaan\\b\000bischoffsheim\000"
+"\\bbrouck\\s+du\\s+tilleul\\b\000brouck au tilleul\000"
+"\\bflandre\\s+orientale\\b\000ostflandern\000"
+"\\bleonardo\\s+da\\s+vinci\\b\000leonard de vinci\000"
+"\\barmand\\s+scheitler\\b\000armand scheiter\000"
+"\\bflamisch\\s+brabant\\b\000vlaams brabant\000"
+"\\bflamische\\s+region\\b\000vlaams gewest\000"
+"\\bhenri\\s+wafelaerts\\b\000henri wafelaert\000"
+"\\bpieter\\s+hauwaerts\\b\000pierre hauwaerts\000"
+"\\bregion\\s+wallonien\\b\000wallonie\000"
+"\\brennequin\\s+sualem\\b\000renkin sualem\000"
+"\\baugust\\s+de\\s+boeck\\b\000a de boeck\000"
+"\\bbrabant\\s+flamand\\b\000vlaams brabant\000"
+"\\bbruxelles\\s+ville\\b\000brussel\000"
+"\\bflamisch\\s+region\\b\000vlaams gewest\000"
+"\\bgodefroid\\s+kurth\\b\000godfroid kurth\000"
+"\\boost\\s+vlaanderen\\b\000ostflandern\000"
+"\\bregion\\s+flamande\\b\000vlaams gewest\000"
+"\\bregion\\s+wallonne\\b\000wallonie\000"
+"\\bwest\\s+vlaanderen\\b\000westflandern\000"
+"\\barrondissement\\b\000\000"
+"\\bbrabant\\s+wallon\\b\000waals brabant\000"
+"\\blimburg\\s+strium\\b\000limburg stirum\000"
+"\\bde\\s+ribaucourt\\b\000ribaucourt\000"
+"\\bmichel\\s+angelo\\b\000michel ange\000"
+"\\bpater\\s+damiaan\\b\000pater damian\000"
+"\\bprofondeville\\b\000profondville\000"
+"\\bsint\\s+lenaerts\\b\000sint lenaarts\000"
+"\\bsualem\\s+renkin\\b\000renkin sualem\000"
+"\\bdendermondse\\b\000dendermonde\000"
+"\\bminnezangers\\b\000menestrelen\000"
+"\\bvooruitgangs\\b\000vooruitgang\000"
+"\\bwaals\\s+gewest\\b\000wallonie\000"
+"\\bcortenbergh\\b\000cortenberg\000"
+"\\bjette\\s+jetse\\b\000jette\000"
+"\\bl\\s+urbanisme\\b\000i urbanisme\000"
+"\\bprovince\\s+de\\b\000\000"
+"\\bprovince\\s+du\\b\000\000"
+"\\bpuits\\s+no\\s+iv\\b\000puits n4\000"
+"\\bterhulpense\\b\000terhulpse\000"
+"\\bhenegouwen\\b\000hainaut\000"
+"\\blanguesdoc\\b\000languedoc\000"
+"\\bluxembourg\\b\000luxemburg\000"
+"\\bprovince\\s+d\\b\000\000"
+"\\bpuit\\s+no\\s+iv\\b\000puits n4\000"
+"\\bvan\\s+volxem\\b\000volxem\000"
+"\\bantwerpen\\b\000anvers\000"
+"\\bboulevard\\b\000bd\000"
+"\\bbruxelles\\b\000brussel\000"
+"\\bluitenant\\b\000liutenant\000"
+"\\bwallonien\\b\000wallonie\000"
+"\\bwestphael\\b\000wesphal\000"
+"\\bbelgique\\b\000be\000"
+"\\bbrussels\\b\000brussel\000"
+"\\bchaussee\\b\000chee\000"
+"\\bhennegau\\b\000hainaut\000"
+"\\blimbourg\\b\000limburg\000"
+"\\bsteenweg\\b\000stwg\000"
+"\\bterrasse\\b\000tsse\000"
+"\\bwestphal\\b\000wesphal\000"
+"\\bavenues\\b\000av\000"
+"\\bbelgien\\b\000be\000"
+"\\bbelgium\\b\000be\000"
+"\\bde\\s+wand\\b\000wand\000"
+"\\bimpasse\\b\000imp\000"
+"\\bjettese\\b\000jetse\000"
+"\\bluttich\\b\000luik\000"
+"\\bprovinz\\b\000\000"
+"\\bstrasse\\b\000str\000"
+"\\ballees\\b\000all\000"
+"\\bavenue\\b\000av\000"
+"\\bbelgie\\b\000be\000"
+"\\bcentre\\b\000ctre\000"
+"\\bsainte\\b\000st\000"
+"\\bsquare\\b\000sq\000"
+"\\bstraat\\b\000str\000"
+"\\ballee\\b\000all\000"
+"\\bliege\\b\000luik\000"
+"\\bnamur\\b\000namen\000"
+"\\bpiein\\b\000pl\000"
+"\\bplace\\b\000pl\000"
+"\\bplatz\\b\000pl\000"
+"\\bplein\\b\000pl\000"
+"\\broute\\b\000rte\000"
+"\\bsaint\\b\000st\000"
+"\\bsankt\\b\000st\000"
+"\\bthier\\b\000their\000"
+"\\bsint\\b\000st\000"
+"\\bdes\\b\000d\000"
+"\\brue\\b\000r\000"
+"\\bste\\b\000st\000"
+"\\bde\\b\000d\000"
+"\\bdu\\b\000d\000"
+;
+int kNumRules_BE = 124;
 
-const Rule kRules_BR[] = {
-    {"\\brio\\s+grande\\s+do\\s+norte\\b", "rn"},
-    {"\\bmato\\s+grosso\\s+do\\s+sul\\b", "ms"},
-    {"\\brio\\s+grande\\s+do\\s+sul\\b", "rs"},
-    {"\\bdistrito\\s+federal\\b", "df"},
-    {"\\bdecimo\\s+primeiro\\b", "11"},
-    {"\\bdecimo\\s+terceiro\\b", "13"},
-    {"\\bespirito\\s+santo\\b", "es"},
-    {"\\brio\\s+de\\s+janeiro\\b", "rj"},
-    {"\\bsanta\\s+catarina\\b", "sc"},
-    {"\\bvinte\\s+e\\s+quatro\\b", "24"},
-    {"\\bdecimo\\s+oitavo\\b", "18"},
-    {"\\bdecimo\\s+quarto\\b", "14"},
-    {"\\bdecimo\\s+quinto\\b", "15"},
-    {"\\bdecimo\\s+setimo\\b", "17"},
-    {"\\bvinte\\s+e\\s+cinco\\b", "25"},
-    {"\\bdecimo\\s+sexto\\b", "16"},
-    {"\\bminas\\s+gerais\\b", "mg"},
-    {"\\bvinte\\s+e\\s+dois\\b", "22"},
-    {"\\bvinte\\s+e\\s+nove\\b", "29"},
-    {"\\bvinte\\s+e\\s+oito\\b", "28"},
-    {"\\bvinte\\s+e\\s+seis\\b", "26"},
-    {"\\bvinte\\s+e\\s+sete\\b", "27"},
-    {"\\bvinte\\s+e\\s+tres\\b", "23"},
-    {"\\bdecimo\\s+nono\\b", "19"},
-    {"\\bmato\\s+grosso\\b", "mt"},
-    {"\\bcomandante\\b", "com"},
-    {"\\bgovernador\\b", "gov"},
-    {"\\bpernambuco\\b", "pe"},
-    {"\\bpresidente\\b", "pres"},
-    {"\\bvinte\\s+e\\s+um\\b", "21"},
-    {"\\bcinquenta\\b", "50"},
-    {"\\bdezesseis\\b", "16"},
-    {"\\bdezessete\\b", "17"},
-    {"\\bduodecimo\\b", "12"},
-    {"\\bprofessor\\b", "prof"},
-    {"\\brepublica\\b", "rep"},
-    {"\\bsao\\s+paulo\\b", "sp"},
-    {"\\btocantins\\b", "to"},
-    {"\\bamazonas\\b", "am"},
-    {"\\bdezenove\\b", "19"},
-    {"\\bmaranhao\\b", "ma"},
-    {"\\bprimeiro\\b", "1"},
-    {"\\bprincesa\\b", "prsa"},
-    {"\\bquarenta\\b", "40"},
-    {"\\brondonia\\b", "ro"},
-    {"\\bsargento\\b", "sct"},
-    {"\\bsessenta\\b", "60"},
-    {"\\bterceiro\\b", "3"},
-    {"\\bvigesimo\\b", "20"},
-    {"\\balagoas\\b", "al"},
-    {"\\balameda\\b", "al"},
-    {"\\bavenida\\b", "av"},
-    {"\\bcatorze\\b", "14"},
-    {"\\bcoronel\\b", "cel"},
-    {"\\bdezoito\\b", "18"},
-    {"\\bestrada\\b", "estr"},
-    {"\\bnoventa\\b", "90"},
-    {"\\boitenta\\b", "80"},
-    {"\\bparaiba\\b", "pb"},
-    {"\\broraima\\b", "rr"},
-    {"\\bsegundo\\b", "2"},
-    {"\\bsenador\\b", "sen"},
-    {"\\bsergipe\\b", "se"},
-    {"\\bsetenta\\b", "70"},
-    {"\\bbrasil\\b", "b"},
-    {"\\bbrazil\\b", "b"},
-    {"\\bdecimo\\b", "x"},
-    {"\\bdoutor\\b", "dr"},
-    {"\\boitavo\\b", "8"},
-    {"\\bparana\\b", "pr"},
-    {"\\bprincs\\b", "prsa"},
-    {"\\bquarto\\b", "4"},
-    {"\\bquatro\\b", "4"},
-    {"\\bquinto\\b", "5"},
-    {"\\bquinze\\b", "15"},
-    {"\\bsetimo\\b", "7"},
-    {"\\btrinta\\b", "30"},
-    {"\\bamapa\\b", "ap"},
-    {"\\bbahia\\b", "ba"},
-    {"\\bbarao\\b", "b"},
-    {"\\bceara\\b", "ce"},
-    {"\\bcinco\\b", "5"},
-    {"\\bconde\\b", "cde"},
-    {"\\bduque\\b", "dq"},
-    {"\\bgoias\\b", "go"},
-    {"\\bnorte\\b", "n"},
-    {"\\boeste\\b", "w"},
-    {"\\bpadre\\b", "pe"},
-    {"\\bpiaui\\b", "pi"},
-    {"\\bsanta\\b", "sta"},
-    {"\\bsexto\\b", "6"},
-    {"\\btreze\\b", "13"},
-    {"\\bviela\\b", "ve"},
-    {"\\bvinte\\b", "20"},
-    {"\\bacre\\b", "ac"},
-    {"\\bbaia\\b", "ba"},
-    {"\\bdois\\b", "2"},
-    {"\\bdoze\\b", "12"},
-    {"\\beste\\b", "e"},
-    {"\\blote\\b", "lt"},
-    {"\\bnono\\b", "9"},
-    {"\\bnove\\b", "9"},
-    {"\\boito\\b", "8"},
-    {"\\bonze\\b", "11"},
-    {"\\bpara\\b", "pa"},
-    {"\\bsala\\b", "s"},
-    {"\\bseis\\b", "6"},
-    {"\\bsete\\b", "7"},
-    {"\\btres\\b", "3"},
-    {"\\bviii\\b", "8"},
-    {"\\bcem\\b", "100"},
-    {"\\bdas\\b", ""},
-    {"\\bdez\\b", "x"},
-    {"\\bdos\\b", ""},
-    {"\\biii\\b", "3"},
-    {"\\brua\\b", "r"},
-    {"\\bsan\\b", "s"},
-    {"\\bsgt\\b", "sct"},
-    {"\\bsul\\b", "s"},
-    {"\\bvii\\b", "7"},
-    {"\\b10\\b", "x"},
-    {"\\bbr\\b", "b"},
-    {"\\bda\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bdo\\b", ""},
-    {"\\bel\\b", ""},
-    {"\\bii\\b", "2"},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bsl\\b", "s"},
-    {"\\bum\\b", "1"},
-    {"\\bvi\\b", "6"},
-    {"\\bvl\\b", "ve"},
-    {"\\bi\\b", "1"},
-    {"\\bv\\b", "5"},
-};
+const char* kRules_BR =
+"\\brio\\s+grande\\s+do\\s+norte\\b\000rn\000"
+"\\bmato\\s+grosso\\s+do\\s+sul\\b\000ms\000"
+"\\brio\\s+grande\\s+do\\s+sul\\b\000rs\000"
+"\\bdistrito\\s+federal\\b\000df\000"
+"\\bdecimo\\s+primeiro\\b\00011\000"
+"\\bdecimo\\s+terceiro\\b\00013\000"
+"\\bespirito\\s+santo\\b\000es\000"
+"\\brio\\s+de\\s+janeiro\\b\000rj\000"
+"\\bsanta\\s+catarina\\b\000sc\000"
+"\\bvinte\\s+e\\s+quatro\\b\00024\000"
+"\\bdecimo\\s+oitavo\\b\00018\000"
+"\\bdecimo\\s+quarto\\b\00014\000"
+"\\bdecimo\\s+quinto\\b\00015\000"
+"\\bdecimo\\s+setimo\\b\00017\000"
+"\\bvinte\\s+e\\s+cinco\\b\00025\000"
+"\\bdecimo\\s+sexto\\b\00016\000"
+"\\bminas\\s+gerais\\b\000mg\000"
+"\\bvinte\\s+e\\s+dois\\b\00022\000"
+"\\bvinte\\s+e\\s+nove\\b\00029\000"
+"\\bvinte\\s+e\\s+oito\\b\00028\000"
+"\\bvinte\\s+e\\s+seis\\b\00026\000"
+"\\bvinte\\s+e\\s+sete\\b\00027\000"
+"\\bvinte\\s+e\\s+tres\\b\00023\000"
+"\\bdecimo\\s+nono\\b\00019\000"
+"\\bmato\\s+grosso\\b\000mt\000"
+"\\bcomandante\\b\000com\000"
+"\\bgovernador\\b\000gov\000"
+"\\bpernambuco\\b\000pe\000"
+"\\bpresidente\\b\000pres\000"
+"\\bvinte\\s+e\\s+um\\b\00021\000"
+"\\bcinquenta\\b\00050\000"
+"\\bdezesseis\\b\00016\000"
+"\\bdezessete\\b\00017\000"
+"\\bduodecimo\\b\00012\000"
+"\\bprofessor\\b\000prof\000"
+"\\brepublica\\b\000rep\000"
+"\\bsao\\s+paulo\\b\000sp\000"
+"\\btocantins\\b\000to\000"
+"\\bamazonas\\b\000am\000"
+"\\bdezenove\\b\00019\000"
+"\\bmaranhao\\b\000ma\000"
+"\\bprimeiro\\b\0001\000"
+"\\bprincesa\\b\000prsa\000"
+"\\bquarenta\\b\00040\000"
+"\\brondonia\\b\000ro\000"
+"\\bsargento\\b\000sct\000"
+"\\bsessenta\\b\00060\000"
+"\\bterceiro\\b\0003\000"
+"\\bvigesimo\\b\00020\000"
+"\\balagoas\\b\000al\000"
+"\\balameda\\b\000al\000"
+"\\bavenida\\b\000av\000"
+"\\bcatorze\\b\00014\000"
+"\\bcoronel\\b\000cel\000"
+"\\bdezoito\\b\00018\000"
+"\\bestrada\\b\000estr\000"
+"\\bnoventa\\b\00090\000"
+"\\boitenta\\b\00080\000"
+"\\bparaiba\\b\000pb\000"
+"\\broraima\\b\000rr\000"
+"\\bsegundo\\b\0002\000"
+"\\bsenador\\b\000sen\000"
+"\\bsergipe\\b\000se\000"
+"\\bsetenta\\b\00070\000"
+"\\bbrasil\\b\000b\000"
+"\\bbrazil\\b\000b\000"
+"\\bdecimo\\b\000x\000"
+"\\bdoutor\\b\000dr\000"
+"\\boitavo\\b\0008\000"
+"\\bparana\\b\000pr\000"
+"\\bprincs\\b\000prsa\000"
+"\\bquarto\\b\0004\000"
+"\\bquatro\\b\0004\000"
+"\\bquinto\\b\0005\000"
+"\\bquinze\\b\00015\000"
+"\\bsetimo\\b\0007\000"
+"\\btrinta\\b\00030\000"
+"\\bamapa\\b\000ap\000"
+"\\bbahia\\b\000ba\000"
+"\\bbarao\\b\000b\000"
+"\\bceara\\b\000ce\000"
+"\\bcinco\\b\0005\000"
+"\\bconde\\b\000cde\000"
+"\\bduque\\b\000dq\000"
+"\\bgoias\\b\000go\000"
+"\\bnorte\\b\000n\000"
+"\\boeste\\b\000w\000"
+"\\bpadre\\b\000pe\000"
+"\\bpiaui\\b\000pi\000"
+"\\bsanta\\b\000sta\000"
+"\\bsexto\\b\0006\000"
+"\\btreze\\b\00013\000"
+"\\bviela\\b\000ve\000"
+"\\bvinte\\b\00020\000"
+"\\bacre\\b\000ac\000"
+"\\bbaia\\b\000ba\000"
+"\\bdois\\b\0002\000"
+"\\bdoze\\b\00012\000"
+"\\beste\\b\000e\000"
+"\\blote\\b\000lt\000"
+"\\bnono\\b\0009\000"
+"\\bnove\\b\0009\000"
+"\\boito\\b\0008\000"
+"\\bonze\\b\00011\000"
+"\\bpara\\b\000pa\000"
+"\\bsala\\b\000s\000"
+"\\bseis\\b\0006\000"
+"\\bsete\\b\0007\000"
+"\\btres\\b\0003\000"
+"\\bviii\\b\0008\000"
+"\\bcem\\b\000100\000"
+"\\bdas\\b\000\000"
+"\\bdez\\b\000x\000"
+"\\bdos\\b\000\000"
+"\\biii\\b\0003\000"
+"\\brua\\b\000r\000"
+"\\bsan\\b\000s\000"
+"\\bsgt\\b\000sct\000"
+"\\bsul\\b\000s\000"
+"\\bvii\\b\0007\000"
+"\\b10\\b\000x\000"
+"\\bbr\\b\000b\000"
+"\\bda\\b\000\000"
+"\\bde\\b\000\000"
+"\\bdo\\b\000\000"
+"\\bel\\b\000\000"
+"\\bii\\b\0002\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bsl\\b\000s\000"
+"\\bum\\b\0001\000"
+"\\bvi\\b\0006\000"
+"\\bvl\\b\000ve\000"
+"\\bi\\b\0001\000"
+"\\bv\\b\0005\000"
+;
+int kNumRules_BR = 135;
 
-const Rule kRules_CA[] = {
-    {"\\bdsl\\s+de\\s+grand\\s+sault\\s+falls\\s+grand\\s+sault\\s+grand\\s+"
-      "falls\\b",
-      "grand falls"},
-    {"\\bsainte\\s+catherine\\s+de\\s+la\\s+jacques\\s+cartier\\b",
-      "ste catherine de la j cartier"},
-    {"\\bmadawaska\\s+maliseet\\s+frst\\s+nation\\b", "madawaska"},
-    {"\\bregional\\s+county\\s+municipality\\b", ""},
-    {"\\bshediac\\s+bridge\\s+shediac\\s+river\\b", "shediac bridge"},
-    {"\\bnewfoundland\\s+and\\s+labrador\\b", "nl"},
-    {"\\bterritoires\\s+du\\s+nord\\s+ouest\\b", "nt"},
-    {"\\bdsl\\s+de\\s+grand\\s+sault\\s+falls\\b", "grand falls"},
-    {"\\bregional\\s+municipality\\s+of\\b", ""},
-    {"\\bgrand\\s+sault\\s+grand\\s+falls\\b", "grand falls"},
-    {"\\bterre\\s+neuve\\s+et\\s+labrador\\b", "nl"},
-    {"\\bbay\\s+de\\s+verde\\s+peninsula\\b", "bvd"},
-    {"\\bile\\s+du\\s+prince\\s+edouard\\b", "pe"},
-    {"\\bnorthwest\\s+territories\\b", "nt"},
-    {"\\bregional\\s+municipality\\b", ""},
-    {"\\bcolombie\\s+britannique\\b", "bc"},
-    {"\\bprince\\s+edward\\s+island\\b", "pe"},
-    {"\\bregional\\s+district\\s+of\\b", ""},
-    {"\\bfrench\\s+village\\s+york\\b", "french village"},
-    {"\\bhead\\s+of\\s+bay\\s+despoir\\b", "head bay d\'espoir"},
-    {"\\bterritoire\\s+du\\s+yukon\\b", "yt"},
-    {"\\bnouveau\\s+brunswick\\b", "nb"},
-    {"\\bregional\\s+district\\b", ""},
-    {"\\bbritish\\s+columbia\\b", "bc"},
-    {"\\bcanton\\s+stanstead\\b", "stanstead"},
-    {"\\bmd\\s+of\\s+bonnyville\\b", "bonnyville"},
-    {"\\bnouvelle\\s+ecosse\\b", "ns"},
-    {"\\bst\\s+george\\s+brant\\b", "saint george"},
-    {"\\byukon\\s+territory\\b", "yt"},
-    {"\\bchisholm\\s+mills\\b", "chisholm"},
-    {"\\bsackville\\s+road\\b", "sackville"},
-    {"\\bnational\\s+park\\b", ""},
-    {"\\bnew\\s+brunswick\\b", "nb"},
-    {"\\bplacentia\\s+bay\\b", "pb"},
-    {"\\bbeaver\\s+brook\\b", "beaverbrook"},
-    {"\\bmetropolitan\\b", ""},
-    {"\\bnewfoundland\\b", "nl"},
-    {"\\brichibouctou\\b", "richibucto"},
-    {"\\bsaskatchewan\\b", "sk"},
-    {"\\bfortune\\s+bay\\b", "fb"},
-    {"\\bnova\\s+scotia\\b", "ns"},
-    {"\\bsubdivision\\b", "subdiv"},
-    {"\\bsutton\\s+west\\b", "sutton"},
-    {"\\bterre\\s+neuve\\b", "nl"},
-    {"\\btownship\\s+of\\b", ""},
-    {"\\btrinity\\s+bay\\b", "tb"},
-    {"\\bbelliveaus\\b", "belliveau"},
-    {"\\bconcession\\b", "conc"},
-    {"\\bcul\\s+de\\s+sac\\b", "cds"},
-    {"\\bcul\\-de\\-sac\\b", "cds"},
-    {"\\bde\\s+riviere\\b", "riviere"},
-    {"\\bexpressway\\b", "expy"},
-    {"\\bmackinnons\\b", "mckinnons"},
-    {"\\bnorth\\s+side\\b", "northside"},
-    {"\\bpine\\s+ridge\\b", "pineridge"},
-    {"\\brond\\s+point\\b", "rdpt"},
-    {"\\brond\\-point\\b", "rdpt"},
-    {"\\balternate\\b", "alt"},
-    {"\\bautoroute\\b", "aut"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bcarrefour\\b", "carref"},
-    {"\\bcounty\\s+of\\b", ""},
-    {"\\bcroissant\\b", "crois"},
-    {"\\bdiversion\\b", "divers"},
-    {"\\bechangeur\\b", "ech"},
-    {"\\besplanade\\b", "espl"},
-    {"\\bextension\\b", "exten"},
-    {"\\bhalf\\s+moon\\b", "halfmoon"},
-    {"\\bhighlands\\b", "hghlds"},
-    {"\\bkuskonook\\b", "kuskanook"},
-    {"\\bpromenade\\b", "prom"},
-    {"\\bturnabout\\b", "trnabt"},
-    {"\\bbusiness\\b", "bus"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\bcrossing\\b", "cross"},
-    {"\\bjunction\\b", ""},
-    {"\\bmanitoba\\b", "mb"},
-    {"\\bmountain\\b", "mtn"},
-    {"\\boak\\s+hill\\b", "oakhill"},
-    {"\\bpleasent\\b", "pleasant"},
-    {"\\bterrasse\\b", "tsse"},
-    {"\\btownline\\b", "tline"},
-    {"\\btownship\\b", ""},
-    {"\\balberta\\b", "ab"},
-    {"\\bby\\s+pass\\b", "bypass"},
-    {"\\bcircuit\\b", "circt"},
-    {"\\bcity\\s+of\\b", ""},
-    {"\\bcorners\\b", "crnrs"},
-    {"\\bestates\\b", "estate"},
-    {"\\bfreeway\\b", "fwy"},
-    {"\\bgardens\\b", "gdns"},
-    {"\\bgrounds\\b", "grnds"},
-    {"\\bharbour\\b", "harbr"},
-    {"\\bheights\\b", "hts"},
-    {"\\bherbert\\b", "hebert"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\bimpasse\\b", "imp"},
-    {"\\bkeenans\\b", "keenan"},
-    {"\\bl\'islet\\b", ""},
-    {"\\bla\\s+have\\b", "lahave"},
-    {"\\blanding\\b", "landng"},
-    {"\\blookout\\b", "lkout"},
-    {"\\bnarrows\\b", ""},
-    {"\\bnunavut\\b", "nu"},
-    {"\\bontario\\b", "on"},
-    {"\\borchard\\b", "orch"},
-    {"\\bparkway\\b", "pky"},
-    {"\\bpassage\\b", "pass"},
-    {"\\bpathway\\b", "ptway"},
-    {"\\bplateau\\b", "plat"},
-    {"\\breserve\\b", ""},
-    {"\\bsentier\\b", "sent"},
-    {"\\bstation\\b", ""},
-    {"\\bterrace\\b", "terr"},
-    {"\\bthicket\\b", "thick"},
-    {"\\btown\\s+of\\b", ""},
-    {"\\bvillage\\b", ""},
-    {"\\bavenue\\b", "av"},
-    {"\\bbakers\\b", "baker"},
-    {"\\bcanada\\b", "ca"},
-    {"\\bcanton\\b", ""},
-    {"\\bcenter\\b", ""},
-    {"\\bcentre\\b", ""},
-    {"\\bchemin\\b", "ch"},
-    {"\\bcircle\\b", "cir"},
-    {"\\bcounty\\b", ""},
-    {"\\bharbor\\b", "harbr"},
-    {"\\bisland\\b", ""},
-    {"\\bl\'isle\\b", "isle"},
-    {"\\blimits\\b", "lmts"},
-    {"\\bmackay\\b", "mckay"},
-    {"\\bmcgrey\\b", "mcgray"},
-    {"\\bpointe\\b", "pte"},
-    {"\\bquebec\\b", "qc"},
-    {"\\bruelle\\b", "rle"},
-    {"\\bsainte\\b", ""},
-    {"\\bsiding\\b", ""},
-    {"\\bsmiths\\b", "smith"},
-    {"\\bsquare\\b", "sq"},
-    {"\\bstreet\\b", ""},
-    {"\\bvalley\\b", ""},
-    {"\\bcarre\\b", "car"},
-    {"\\bclose\\b", "cl"},
-    {"\\bcourt\\b", "crt"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bfirst\\b", "fst"},
-    {"\\bforks\\b", ""},
-    {"\\bgrove\\b", "grv"},
-    {"\\bmanns\\b", "mann"},
-    {"\\bmetro\\b", ""},
-    {"\\bmount\\b", "mt"},
-    {"\\bnorth\\b", "n"},
-    {"\\bouest\\b", "o"},
-    {"\\bplace\\b", "pl"},
-    {"\\bpoint\\b", "pt"},
-    {"\\brange\\b", "rg"},
-    {"\\broute\\b", "rt"},
-    {"\\bsaint\\b", ""},
-    {"\\bsouth\\b", "s"},
-    {"\\btrail\\b", "trl"},
-    {"\\byukon\\b", "yt"},
-    {"\\bboul\\b", "blvd"},
-    {"\\bcity\\b", ""},
-    {"\\bcove\\b", ""},
-    {"\\beast\\b", ""},
-    {"\\bfrst\\b", "fst"},
-    {"\\blake\\b", ""},
-    {"\\blane\\b", "ln"},
-    {"\\bnord\\b", "n"},
-    {"\\bpark\\b", ""},
-    {"\\bpkwy\\b", "pky"},
-    {"\\broad\\b", ""},
-    {"\\bwest\\b", "o"},
-    {"\\bave\\b", "av"},
-    {"\\bbay\\b", ""},
-    {"\\bbdv\\b", ""},
-    {"\\bblp\\b", ""},
-    {"\\bcan\\b", "ca"},
-    {"\\bcbd\\b", ""},
-    {"\\bctr\\b", ""},
-    {"\\bdes\\b", ""},
-    {"\\bere\\b", ""},
-    {"\\best\\b", ""},
-    {"\\bile\\b", ""},
-    {"\\blab\\b", ""},
-    {"\\bndb\\b", ""},
-    {"\\bnth\\b", "n"},
-    {"\\bont\\b", "on"},
-    {"\\bpei\\b", "pe"},
-    {"\\brte\\b", "rt"},
-    {"\\bsal\\b", ""},
-    {"\\bsmb\\b", ""},
-    {"\\bste\\b", ""},
-    {"\\bsth\\b", "s"},
-    {"\\bsud\\b", "s"},
-    {"\\bbb\\b", ""},
-    {"\\bcb\\b", ""},
-    {"\\bco\\b", ""},
-    {"\\bd\'\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bdu\\b", ""},
-    {"\\ber\\b", ""},
-    {"\\bfn\\b", ""},
-    {"\\bgb\\b", ""},
-    {"\\bnd\\b", ""},
-    {"\\bpk\\b", ""},
-    {"\\brd\\b", ""},
-    {"\\bre\\b", ""},
-    {"\\bst\\b", ""},
-    {"\\bth\\b", ""},
-    {"\\bwb\\b", ""},
-    {"\\bc\\b", ""},
-    {"\\bd\\b", ""},
-    {"\\be\\b", ""},
-    {"\\bw\\b", "o"},
-};
+const char* kRules_CA =
+"\\bdsl\\s+de\\s+grand\\s+sault\\s+falls\\s+grand\\s+sault\\s+grand\\s+falls\\b\000grand falls\000"
+"\\bsainte\\s+catherine\\s+de\\s+la\\s+jacques\\s+cartier\\b\000ste catherine de la j cartier\000"
+"\\bmadawaska\\s+maliseet\\s+frst\\s+nation\\b\000madawaska\000"
+"\\bregional\\s+county\\s+municipality\\b\000\000"
+"\\bshediac\\s+bridge\\s+shediac\\s+river\\b\000shediac bridge\000"
+"\\bnewfoundland\\s+and\\s+labrador\\b\000nl\000"
+"\\bterritoires\\s+du\\s+nord\\s+ouest\\b\000nt\000"
+"\\bdsl\\s+de\\s+grand\\s+sault\\s+falls\\b\000grand falls\000"
+"\\bregional\\s+municipality\\s+of\\b\000\000"
+"\\bgrand\\s+sault\\s+grand\\s+falls\\b\000grand falls\000"
+"\\bterre\\s+neuve\\s+et\\s+labrador\\b\000nl\000"
+"\\bbay\\s+de\\s+verde\\s+peninsula\\b\000bvd\000"
+"\\bile\\s+du\\s+prince\\s+edouard\\b\000pe\000"
+"\\bnorthwest\\s+territories\\b\000nt\000"
+"\\bregional\\s+municipality\\b\000\000"
+"\\bcolombie\\s+britannique\\b\000bc\000"
+"\\bprince\\s+edward\\s+island\\b\000pe\000"
+"\\bregional\\s+district\\s+of\\b\000\000"
+"\\bfrench\\s+village\\s+york\\b\000french village\000"
+"\\bhead\\s+of\\s+bay\\s+despoir\\b\000head bay d\'espoir\000"
+"\\bterritoire\\s+du\\s+yukon\\b\000yt\000"
+"\\bnouveau\\s+brunswick\\b\000nb\000"
+"\\bregional\\s+district\\b\000\000"
+"\\bbritish\\s+columbia\\b\000bc\000"
+"\\bcanton\\s+stanstead\\b\000stanstead\000"
+"\\bmd\\s+of\\s+bonnyville\\b\000bonnyville\000"
+"\\bnouvelle\\s+ecosse\\b\000ns\000"
+"\\bst\\s+george\\s+brant\\b\000saint george\000"
+"\\byukon\\s+territory\\b\000yt\000"
+"\\bchisholm\\s+mills\\b\000chisholm\000"
+"\\bsackville\\s+road\\b\000sackville\000"
+"\\bnational\\s+park\\b\000\000"
+"\\bnew\\s+brunswick\\b\000nb\000"
+"\\bplacentia\\s+bay\\b\000pb\000"
+"\\bbeaver\\s+brook\\b\000beaverbrook\000"
+"\\bmetropolitan\\b\000\000"
+"\\bnewfoundland\\b\000nl\000"
+"\\brichibouctou\\b\000richibucto\000"
+"\\bsaskatchewan\\b\000sk\000"
+"\\bfortune\\s+bay\\b\000fb\000"
+"\\bnova\\s+scotia\\b\000ns\000"
+"\\bsubdivision\\b\000subdiv\000"
+"\\bsutton\\s+west\\b\000sutton\000"
+"\\bterre\\s+neuve\\b\000nl\000"
+"\\btownship\\s+of\\b\000\000"
+"\\btrinity\\s+bay\\b\000tb\000"
+"\\bbelliveaus\\b\000belliveau\000"
+"\\bconcession\\b\000conc\000"
+"\\bcul\\s+de\\s+sac\\b\000cds\000"
+"\\bcul\\-de\\-sac\\b\000cds\000"
+"\\bde\\s+riviere\\b\000riviere\000"
+"\\bexpressway\\b\000expy\000"
+"\\bmackinnons\\b\000mckinnons\000"
+"\\bnorth\\s+side\\b\000northside\000"
+"\\bpine\\s+ridge\\b\000pineridge\000"
+"\\brond\\s+point\\b\000rdpt\000"
+"\\brond\\-point\\b\000rdpt\000"
+"\\balternate\\b\000alt\000"
+"\\bautoroute\\b\000aut\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bcarrefour\\b\000carref\000"
+"\\bcounty\\s+of\\b\000\000"
+"\\bcroissant\\b\000crois\000"
+"\\bdiversion\\b\000divers\000"
+"\\bechangeur\\b\000ech\000"
+"\\besplanade\\b\000espl\000"
+"\\bextension\\b\000exten\000"
+"\\bhalf\\s+moon\\b\000halfmoon\000"
+"\\bhighlands\\b\000hghlds\000"
+"\\bkuskonook\\b\000kuskanook\000"
+"\\bpromenade\\b\000prom\000"
+"\\bturnabout\\b\000trnabt\000"
+"\\bbusiness\\b\000bus\000"
+"\\bcrescent\\b\000cres\000"
+"\\bcrossing\\b\000cross\000"
+"\\bjunction\\b\000\000"
+"\\bmanitoba\\b\000mb\000"
+"\\bmountain\\b\000mtn\000"
+"\\boak\\s+hill\\b\000oakhill\000"
+"\\bpleasent\\b\000pleasant\000"
+"\\bterrasse\\b\000tsse\000"
+"\\btownline\\b\000tline\000"
+"\\btownship\\b\000\000"
+"\\balberta\\b\000ab\000"
+"\\bby\\s+pass\\b\000bypass\000"
+"\\bcircuit\\b\000circt\000"
+"\\bcity\\s+of\\b\000\000"
+"\\bcorners\\b\000crnrs\000"
+"\\bestates\\b\000estate\000"
+"\\bfreeway\\b\000fwy\000"
+"\\bgardens\\b\000gdns\000"
+"\\bgrounds\\b\000grnds\000"
+"\\bharbour\\b\000harbr\000"
+"\\bheights\\b\000hts\000"
+"\\bherbert\\b\000hebert\000"
+"\\bhighway\\b\000hwy\000"
+"\\bimpasse\\b\000imp\000"
+"\\bkeenans\\b\000keenan\000"
+"\\bl\'islet\\b\000\000"
+"\\bla\\s+have\\b\000lahave\000"
+"\\blanding\\b\000landng\000"
+"\\blookout\\b\000lkout\000"
+"\\bnarrows\\b\000\000"
+"\\bnunavut\\b\000nu\000"
+"\\bontario\\b\000on\000"
+"\\borchard\\b\000orch\000"
+"\\bparkway\\b\000pky\000"
+"\\bpassage\\b\000pass\000"
+"\\bpathway\\b\000ptway\000"
+"\\bplateau\\b\000plat\000"
+"\\breserve\\b\000\000"
+"\\bsentier\\b\000sent\000"
+"\\bstation\\b\000\000"
+"\\bterrace\\b\000terr\000"
+"\\bthicket\\b\000thick\000"
+"\\btown\\s+of\\b\000\000"
+"\\bvillage\\b\000\000"
+"\\bavenue\\b\000av\000"
+"\\bbakers\\b\000baker\000"
+"\\bcanada\\b\000ca\000"
+"\\bcanton\\b\000\000"
+"\\bcenter\\b\000\000"
+"\\bcentre\\b\000\000"
+"\\bchemin\\b\000ch\000"
+"\\bcircle\\b\000cir\000"
+"\\bcounty\\b\000\000"
+"\\bharbor\\b\000harbr\000"
+"\\bisland\\b\000\000"
+"\\bl\'isle\\b\000isle\000"
+"\\blimits\\b\000lmts\000"
+"\\bmackay\\b\000mckay\000"
+"\\bmcgrey\\b\000mcgray\000"
+"\\bpointe\\b\000pte\000"
+"\\bquebec\\b\000qc\000"
+"\\bruelle\\b\000rle\000"
+"\\bsainte\\b\000\000"
+"\\bsiding\\b\000\000"
+"\\bsmiths\\b\000smith\000"
+"\\bsquare\\b\000sq\000"
+"\\bstreet\\b\000\000"
+"\\bvalley\\b\000\000"
+"\\bcarre\\b\000car\000"
+"\\bclose\\b\000cl\000"
+"\\bcourt\\b\000crt\000"
+"\\bdrive\\b\000dr\000"
+"\\bfirst\\b\000fst\000"
+"\\bforks\\b\000\000"
+"\\bgrove\\b\000grv\000"
+"\\bmanns\\b\000mann\000"
+"\\bmetro\\b\000\000"
+"\\bmount\\b\000mt\000"
+"\\bnorth\\b\000n\000"
+"\\bouest\\b\000o\000"
+"\\bplace\\b\000pl\000"
+"\\bpoint\\b\000pt\000"
+"\\brange\\b\000rg\000"
+"\\broute\\b\000rt\000"
+"\\bsaint\\b\000\000"
+"\\bsouth\\b\000s\000"
+"\\btrail\\b\000trl\000"
+"\\byukon\\b\000yt\000"
+"\\bboul\\b\000blvd\000"
+"\\bcity\\b\000\000"
+"\\bcove\\b\000\000"
+"\\beast\\b\000\000"
+"\\bfrst\\b\000fst\000"
+"\\blake\\b\000\000"
+"\\blane\\b\000ln\000"
+"\\bnord\\b\000n\000"
+"\\bpark\\b\000\000"
+"\\bpkwy\\b\000pky\000"
+"\\broad\\b\000\000"
+"\\bwest\\b\000o\000"
+"\\bave\\b\000av\000"
+"\\bbay\\b\000\000"
+"\\bbdv\\b\000\000"
+"\\bblp\\b\000\000"
+"\\bcan\\b\000ca\000"
+"\\bcbd\\b\000\000"
+"\\bctr\\b\000\000"
+"\\bdes\\b\000\000"
+"\\bere\\b\000\000"
+"\\best\\b\000\000"
+"\\bile\\b\000\000"
+"\\blab\\b\000\000"
+"\\bndb\\b\000\000"
+"\\bnth\\b\000n\000"
+"\\bont\\b\000on\000"
+"\\bpei\\b\000pe\000"
+"\\brte\\b\000rt\000"
+"\\bsal\\b\000\000"
+"\\bsmb\\b\000\000"
+"\\bste\\b\000\000"
+"\\bsth\\b\000s\000"
+"\\bsud\\b\000s\000"
+"\\bbb\\b\000\000"
+"\\bcb\\b\000\000"
+"\\bco\\b\000\000"
+"\\bd\'\\b\000\000"
+"\\bde\\b\000\000"
+"\\bdu\\b\000\000"
+"\\ber\\b\000\000"
+"\\bfn\\b\000\000"
+"\\bgb\\b\000\000"
+"\\bnd\\b\000\000"
+"\\bpk\\b\000\000"
+"\\brd\\b\000\000"
+"\\bre\\b\000\000"
+"\\bst\\b\000\000"
+"\\bth\\b\000\000"
+"\\bwb\\b\000\000"
+"\\bc\\b\000\000"
+"\\bd\\b\000\000"
+"\\be\\b\000\000"
+"\\bw\\b\000o\000"
+;
+int kNumRules_CA = 215;
 
-const Rule kRules_CH[] = {
-    {"\\bappenzell\\s+rhodes\\s+exterieures\\b", "ar"},
-    {"\\bappenzell\\s+ausserrhoden\\b", "ar"},
-    {"\\bappenzell\\s+innerrhoden\\b", "ai"},
-    {"\\bjura\\s+north\\s+vaudois\\b", "jura nord vaudois"},
-    {"\\bprettigovia\\s+davos\\b", "davos"},
-    {"\\bbasel\\s+landschaft\\b", "bl"},
-    {"\\bprattigau\\s+davos\\b", "davos"},
-    {"\\bsankt\\s+silvester\\b", "st silvester"},
-    {"\\bbale\\s+campagne\\b", "bl"},
-    {"\\bbasilea\\s+citta\\b", "bs"},
-    {"\\bsankt\\s+stephan\\b", "st stephan"},
-    {"\\bwallis\\s+valais\\b", "vs"},
-    {"\\bdix\\s+huitieme\\b", "18"},
-    {"\\bdix\\s+neuvieme\\b", "19"},
-    {"\\bdix\\s+septieme\\b", "17"},
-    {"\\bsaint\\s+gallen\\b", "sg"},
-    {"\\bsankt\\s+gallen\\b", "sg"},
-    {"\\bschaffhausen\\b", "sh"},
-    {"\\bbasel\\s+stadt\\b", "bs"},
-    {"\\bbelinzonese\\b", "bellinzona"},
-    {"\\bquatorzieme\\b", "14"},
-    {"\\bsaint\\s+gallo\\b", "sg"},
-    {"\\bsan\\s+nazzaro\\b", "s nazzaro"},
-    {"\\bsan\\s+vittore\\b", "s vittore"},
-    {"\\bsankt\\s+gallo\\b", "sg"},
-    {"\\bschaffhouse\\b", "sh"},
-    {"\\bswitzerland\\b", "ch"},
-    {"\\bwinterthour\\b", "winterthur"},
-    {"\\bbale\\s+ville\\b", "bs"},
-    {"\\bbasel\\s+city\\b", "bs"},
-    {"\\bbasel\\s+land\\b", "bl"},
-    {"\\bbasel\\s+stad\\b", "bs"},
-    {"\\bbazel\\s+stad\\b", "bs"},
-    {"\\bbellinzone\\b", "bellinzona"},
-    {"\\benclave\\s+de\\b", ""},
-    {"\\bgraubunden\\b", "gr"},
-    {"\\bsaint\\s+gall\\b", "sg"},
-    {"\\bsan\\s+gallen\\b", "sg"},
-    {"\\bsankt\\s+gall\\b", "sg"},
-    {"\\bst\\.\\s+gallen\\b", "sg"},
-    {"\\bvaud\\s+waadt\\b", "vd"},
-    {"\\bwaadt\\s+vaud\\b", "vd"},
-    {"\\bcinquieme\\b", "5"},
-    {"\\blaufental\\b", "laufen"},
-    {"\\bneuchatel\\b", "ne"},
-    {"\\bneuenburg\\b", "ne"},
-    {"\\bnidwalden\\b", "nw"},
-    {"\\bquatrieme\\b", "4"},
-    {"\\bquinzieme\\b", "15"},
-    {"\\bsan\\s+gallo\\b", "sg"},
-    {"\\bsciaffusa\\b", "sh"},
-    {"\\bsolothurn\\b", "so"},
-    {"\\bst\\s+gallen\\b", "sg"},
-    {"\\bst\\.\\s+gallo\\b", "sg"},
-    {"\\bthurgovia\\b", "tg"},
-    {"\\bthurgovie\\b", "tg"},
-    {"\\btreizieme\\b", "13"},
-    {"\\btroisieme\\b", "3"},
-    {"\\bvingtieme\\b", "20"},
-    {"\\bd\\\\\'uster\\b", "uster"},
-    {"\\bdeuxieme\\b", "2"},
-    {"\\bdouzieme\\b", "12"},
-    {"\\bfreiburg\\b", "fr"},
-    {"\\bfribourg\\b", "fr"},
-    {"\\bfriburgo\\b", "fr"},
-    {"\\bgessenay\\b", "saanen"},
-    {"\\bgrigioni\\b", "gr"},
-    {"\\bhuitieme\\b", "8"},
-    {"\\bmaloggia\\b", "maloja"},
-    {"\\bneuvieme\\b", "9"},
-    {"\\bnidvaldo\\b", "nw"},
-    {"\\bobwalden\\b", "ow"},
-    {"\\bpremiere\\b", "1"},
-    {"\\bsan\\s+gall\\b", "sg"},
-    {"\\bseizieme\\b", "16"},
-    {"\\bseptieme\\b", "7"},
-    {"\\bst\\s+gallo\\b", "sg"},
-    {"\\bst\\.\\s+gall\\b", "sg"},
-    {"\\bturgovia\\b", "tg"},
-    {"\\bzofingue\\b", "zofingen"},
-    {"\\bargovia\\b", "ag"},
-    {"\\bargovie\\b", "ag"},
-    {"\\bdixieme\\b", "x"},
-    {"\\bfriburg\\b", "fr"},
-    {"\\bginevra\\b", "ge"},
-    {"\\bglarona\\b", "gl"},
-    {"\\bgrisons\\b", "gr"},
-    {"\\blucerna\\b", "lu"},
-    {"\\blucerne\\b", "lu"},
-    {"\\bnidwald\\b", "nw"},
-    {"\\bobvaldo\\b", "ow"},
-    {"\\bonzieme\\b", "11"},
-    {"\\bschweiz\\b", "ch"},
-    {"\\bschwytz\\b", "sz"},
-    {"\\bsixieme\\b", "6"},
-    {"\\bsoletta\\b", "so"},
-    {"\\bsoleure\\b", "so"},
-    {"\\bst\\s+gall\\b", "sg"},
-    {"\\bthurgau\\b", "tg"},
-    {"\\bturicum\\b", "zh"},
-    {"\\bvallais\\b", "vs"},
-    {"\\bvallese\\b", "vs"},
-    {"\\bzuerich\\b", "zh"},
-    {"\\baargau\\b", "ag"},
-    {"\\bbienna\\b", "biel"},
-    {"\\bbienne\\b", "biel"},
-    {"\\bbrigue\\b", "brig"},
-    {"\\bgeneva\\b", "ge"},
-    {"\\bgeneve\\b", "ge"},
-    {"\\bglaris\\b", "gl"},
-    {"\\bglarus\\b", "gl"},
-    {"\\blaufon\\b", "laufen"},
-    {"\\bluzern\\b", "lu"},
-    {"\\bobwald\\b", "ow"},
-    {"\\bregion\\b", ""},
-    {"\\bsainte\\b", ""},
-    {"\\bschwyz\\b", "sz"},
-    {"\\bsvitto\\b", "sz"},
-    {"\\btessin\\b", "ti"},
-    {"\\bthoune\\b", "thun"},
-    {"\\bticino\\b", "ti"},
-    {"\\bvalais\\b", "vs"},
-    {"\\bwallis\\b", "vs"},
-    {"\\bzurich\\b", "zh"},
-    {"\\bzurigo\\b", "zh"},
-    {"\\baaray\\b", "aarau"},
-    {"\\bberna\\b", "be"},
-    {"\\bberne\\b", "be"},
-    {"\\bbriga\\b", "brig"},
-    {"\\bde\\s+l\'\\b", ""},
-    {"\\bde\\s+la\\b", ""},
-    {"\\bet\\s+du\\b", ""},
-    {"\\bgiura\\b", "ju"},
-    {"\\bmount\\b", "mt"},
-    {"\\bnorth\\b", "n"},
-    {"\\bouest\\b", "o"},
-    {"\\bsaint\\b", ""},
-    {"\\bsouth\\b", "s"},
-    {"\\bstadt\\b", ""},
-    {"\\bviege\\b", "visp"},
-    {"\\bwaadt\\b", "vd"},
-    {"\\bxviii\\b", "18"},
-    {"\\bbern\\b", "be"},
-    {"\\bgenf\\b", "ge"},
-    {"\\bieme\\b", ""},
-    {"\\bjura\\b", "ju"},
-    {"\\bnord\\b", "n"},
-    {"\\bstad\\b", ""},
-    {"\\bvaud\\b", "vd"},
-    {"\\bviii\\b", "8"},
-    {"\\bwest\\b", "o"},
-    {"\\bxiii\\b", "13"},
-    {"\\bxvii\\b", "17"},
-    {"\\bzoug\\b", "zg"},
-    {"\\bzugo\\b", "zg"},
-    {"\\bdes\\b", ""},
-    {"\\beme\\b", ""},
-    {"\\bere\\b", ""},
-    {"\\best\\b", ""},
-    {"\\biii\\b", "3"},
-    {"\\bles\\b", ""},
-    {"\\bmte\\b", "mt"},
-    {"\\bste\\b", ""},
-    {"\\bsud\\b", "s"},
-    {"\\bsur\\b", ""},
-    {"\\buri\\b", "ur"},
-    {"\\bvii\\b", "7"},
-    {"\\bxii\\b", "12"},
-    {"\\bxiv\\b", "14"},
-    {"\\bxix\\b", "19"},
-    {"\\bxvi\\b", "16"},
-    {"\\bzug\\b", "zg"},
-    {"\\b10\\b", "x"},
-    {"\\bd\'\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bdu\\b", ""},
-    {"\\ben\\b", ""},
-    {"\\ber\\b", ""},
-    {"\\bii\\b", "2"},
-    {"\\bin\\b", ""},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bl\'\\b", ""},
-    {"\\bla\\b", ""},
-    {"\\ble\\b", ""},
-    {"\\bnd\\b", ""},
-    {"\\bof\\b", ""},
-    {"\\brd\\b", ""},
-    {"\\bre\\b", ""},
-    {"\\bst\\b", ""},
-    {"\\bth\\b", ""},
-    {"\\bvi\\b", "6"},
-    {"\\bxi\\b", "11"},
-    {"\\bxv\\b", "15"},
-    {"\\bxx\\b", "20"},
-    {"\\be\\b", ""},
-    {"\\bi\\b", "1"},
-    {"\\bv\\b", "5"},
-    {"\\bw\\b", "o"},
-};
+const char* kRules_CH =
+"\\bappenzell\\s+rhodes\\s+exterieures\\b\000ar\000"
+"\\bappenzell\\s+ausserrhoden\\b\000ar\000"
+"\\bappenzell\\s+innerrhoden\\b\000ai\000"
+"\\bjura\\s+north\\s+vaudois\\b\000jura nord vaudois\000"
+"\\bprettigovia\\s+davos\\b\000davos\000"
+"\\bbasel\\s+landschaft\\b\000bl\000"
+"\\bprattigau\\s+davos\\b\000davos\000"
+"\\bsankt\\s+silvester\\b\000st silvester\000"
+"\\bbale\\s+campagne\\b\000bl\000"
+"\\bbasilea\\s+citta\\b\000bs\000"
+"\\bsankt\\s+stephan\\b\000st stephan\000"
+"\\bwallis\\s+valais\\b\000vs\000"
+"\\bdix\\s+huitieme\\b\00018\000"
+"\\bdix\\s+neuvieme\\b\00019\000"
+"\\bdix\\s+septieme\\b\00017\000"
+"\\bsaint\\s+gallen\\b\000sg\000"
+"\\bsankt\\s+gallen\\b\000sg\000"
+"\\bschaffhausen\\b\000sh\000"
+"\\bbasel\\s+stadt\\b\000bs\000"
+"\\bbelinzonese\\b\000bellinzona\000"
+"\\bquatorzieme\\b\00014\000"
+"\\bsaint\\s+gallo\\b\000sg\000"
+"\\bsan\\s+nazzaro\\b\000s nazzaro\000"
+"\\bsan\\s+vittore\\b\000s vittore\000"
+"\\bsankt\\s+gallo\\b\000sg\000"
+"\\bschaffhouse\\b\000sh\000"
+"\\bswitzerland\\b\000ch\000"
+"\\bwinterthour\\b\000winterthur\000"
+"\\bbale\\s+ville\\b\000bs\000"
+"\\bbasel\\s+city\\b\000bs\000"
+"\\bbasel\\s+land\\b\000bl\000"
+"\\bbasel\\s+stad\\b\000bs\000"
+"\\bbazel\\s+stad\\b\000bs\000"
+"\\bbellinzone\\b\000bellinzona\000"
+"\\benclave\\s+de\\b\000\000"
+"\\bgraubunden\\b\000gr\000"
+"\\bsaint\\s+gall\\b\000sg\000"
+"\\bsan\\s+gallen\\b\000sg\000"
+"\\bsankt\\s+gall\\b\000sg\000"
+"\\bst\\.\\s+gallen\\b\000sg\000"
+"\\bvaud\\s+waadt\\b\000vd\000"
+"\\bwaadt\\s+vaud\\b\000vd\000"
+"\\bcinquieme\\b\0005\000"
+"\\blaufental\\b\000laufen\000"
+"\\bneuchatel\\b\000ne\000"
+"\\bneuenburg\\b\000ne\000"
+"\\bnidwalden\\b\000nw\000"
+"\\bquatrieme\\b\0004\000"
+"\\bquinzieme\\b\00015\000"
+"\\bsan\\s+gallo\\b\000sg\000"
+"\\bsciaffusa\\b\000sh\000"
+"\\bsolothurn\\b\000so\000"
+"\\bst\\s+gallen\\b\000sg\000"
+"\\bst\\.\\s+gallo\\b\000sg\000"
+"\\bthurgovia\\b\000tg\000"
+"\\bthurgovie\\b\000tg\000"
+"\\btreizieme\\b\00013\000"
+"\\btroisieme\\b\0003\000"
+"\\bvingtieme\\b\00020\000"
+"\\bd\\\\\'uster\\b\000uster\000"
+"\\bdeuxieme\\b\0002\000"
+"\\bdouzieme\\b\00012\000"
+"\\bfreiburg\\b\000fr\000"
+"\\bfribourg\\b\000fr\000"
+"\\bfriburgo\\b\000fr\000"
+"\\bgessenay\\b\000saanen\000"
+"\\bgrigioni\\b\000gr\000"
+"\\bhuitieme\\b\0008\000"
+"\\bmaloggia\\b\000maloja\000"
+"\\bneuvieme\\b\0009\000"
+"\\bnidvaldo\\b\000nw\000"
+"\\bobwalden\\b\000ow\000"
+"\\bpremiere\\b\0001\000"
+"\\bsan\\s+gall\\b\000sg\000"
+"\\bseizieme\\b\00016\000"
+"\\bseptieme\\b\0007\000"
+"\\bst\\s+gallo\\b\000sg\000"
+"\\bst\\.\\s+gall\\b\000sg\000"
+"\\bturgovia\\b\000tg\000"
+"\\bzofingue\\b\000zofingen\000"
+"\\bargovia\\b\000ag\000"
+"\\bargovie\\b\000ag\000"
+"\\bdixieme\\b\000x\000"
+"\\bfriburg\\b\000fr\000"
+"\\bginevra\\b\000ge\000"
+"\\bglarona\\b\000gl\000"
+"\\bgrisons\\b\000gr\000"
+"\\blucerna\\b\000lu\000"
+"\\blucerne\\b\000lu\000"
+"\\bnidwald\\b\000nw\000"
+"\\bobvaldo\\b\000ow\000"
+"\\bonzieme\\b\00011\000"
+"\\bschweiz\\b\000ch\000"
+"\\bschwytz\\b\000sz\000"
+"\\bsixieme\\b\0006\000"
+"\\bsoletta\\b\000so\000"
+"\\bsoleure\\b\000so\000"
+"\\bst\\s+gall\\b\000sg\000"
+"\\bthurgau\\b\000tg\000"
+"\\bturicum\\b\000zh\000"
+"\\bvallais\\b\000vs\000"
+"\\bvallese\\b\000vs\000"
+"\\bzuerich\\b\000zh\000"
+"\\baargau\\b\000ag\000"
+"\\bbienna\\b\000biel\000"
+"\\bbienne\\b\000biel\000"
+"\\bbrigue\\b\000brig\000"
+"\\bgeneva\\b\000ge\000"
+"\\bgeneve\\b\000ge\000"
+"\\bglaris\\b\000gl\000"
+"\\bglarus\\b\000gl\000"
+"\\blaufon\\b\000laufen\000"
+"\\bluzern\\b\000lu\000"
+"\\bobwald\\b\000ow\000"
+"\\bregion\\b\000\000"
+"\\bsainte\\b\000\000"
+"\\bschwyz\\b\000sz\000"
+"\\bsvitto\\b\000sz\000"
+"\\btessin\\b\000ti\000"
+"\\bthoune\\b\000thun\000"
+"\\bticino\\b\000ti\000"
+"\\bvalais\\b\000vs\000"
+"\\bwallis\\b\000vs\000"
+"\\bzurich\\b\000zh\000"
+"\\bzurigo\\b\000zh\000"
+"\\baaray\\b\000aarau\000"
+"\\bberna\\b\000be\000"
+"\\bberne\\b\000be\000"
+"\\bbriga\\b\000brig\000"
+"\\bde\\s+l\'\\b\000\000"
+"\\bde\\s+la\\b\000\000"
+"\\bet\\s+du\\b\000\000"
+"\\bgiura\\b\000ju\000"
+"\\bmount\\b\000mt\000"
+"\\bnorth\\b\000n\000"
+"\\bouest\\b\000o\000"
+"\\bsaint\\b\000\000"
+"\\bsouth\\b\000s\000"
+"\\bstadt\\b\000\000"
+"\\bviege\\b\000visp\000"
+"\\bwaadt\\b\000vd\000"
+"\\bxviii\\b\00018\000"
+"\\bbern\\b\000be\000"
+"\\bgenf\\b\000ge\000"
+"\\bieme\\b\000\000"
+"\\bjura\\b\000ju\000"
+"\\bnord\\b\000n\000"
+"\\bstad\\b\000\000"
+"\\bvaud\\b\000vd\000"
+"\\bviii\\b\0008\000"
+"\\bwest\\b\000o\000"
+"\\bxiii\\b\00013\000"
+"\\bxvii\\b\00017\000"
+"\\bzoug\\b\000zg\000"
+"\\bzugo\\b\000zg\000"
+"\\bdes\\b\000\000"
+"\\beme\\b\000\000"
+"\\bere\\b\000\000"
+"\\best\\b\000\000"
+"\\biii\\b\0003\000"
+"\\bles\\b\000\000"
+"\\bmte\\b\000mt\000"
+"\\bste\\b\000\000"
+"\\bsud\\b\000s\000"
+"\\bsur\\b\000\000"
+"\\buri\\b\000ur\000"
+"\\bvii\\b\0007\000"
+"\\bxii\\b\00012\000"
+"\\bxiv\\b\00014\000"
+"\\bxix\\b\00019\000"
+"\\bxvi\\b\00016\000"
+"\\bzug\\b\000zg\000"
+"\\b10\\b\000x\000"
+"\\bd\'\\b\000\000"
+"\\bde\\b\000\000"
+"\\bdu\\b\000\000"
+"\\ben\\b\000\000"
+"\\ber\\b\000\000"
+"\\bii\\b\0002\000"
+"\\bin\\b\000\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bl\'\\b\000\000"
+"\\bla\\b\000\000"
+"\\ble\\b\000\000"
+"\\bnd\\b\000\000"
+"\\bof\\b\000\000"
+"\\brd\\b\000\000"
+"\\bre\\b\000\000"
+"\\bst\\b\000\000"
+"\\bth\\b\000\000"
+"\\bvi\\b\0006\000"
+"\\bxi\\b\00011\000"
+"\\bxv\\b\00015\000"
+"\\bxx\\b\00020\000"
+"\\be\\b\000\000"
+"\\bi\\b\0001\000"
+"\\bv\\b\0005\000"
+"\\bw\\b\000o\000"
+;
+int kNumRules_CH = 199;
 
-const Rule kRules_CL[] = {
-    {"\\baisen\\s+del\\s+general\\s+carlos\\s+ibanez\\s+del\\s+campo\\b", "11"},
-    {"\\blibertador\\s+general\\s+bernardo\\s+o\'higgins\\b", "6"},
-    {"\\bmetropolitana\\s+de\\s+santiago\\s+de\\s+chile\\b", "rm"},
-    {"\\bmagallanes\\s+y\\s+la\\s+antartica\\s+chilena\\b", "12"},
-    {"\\bmetropolitana\\s+de\\s+santiago\\b", "rm"},
-    {"\\barica\\s+y\\s+parinacota\\b", "15"},
-    {"\\bmetropolitana\\b", "rm"},
-    {"\\bla\\s+araucania\\b", "9"},
-    {"\\bantofagasta\\b", "2"},
-    {"\\bvalparaiso\\b", "5"},
-    {"\\blos\\s+lagos\\b", "x"},
-    {"\\bcoquimbo\\b", "4"},
-    {"\\blos\\s+rios\\b", "14"},
-    {"\\btarapaca\\b", "1"},
-    {"\\batacama\\b", "3"},
-    {"\\bbio\\s+bio\\b", "8"},
-    {"\\bchile\\b", "cl"},
-    {"\\bmaule\\b", "7"},
-    {"\\bviii\\b", "8"},
-    {"\\biii\\b", "3"},
-    {"\\bvii\\b", "7"},
-    {"\\bxii\\b", "12"},
-    {"\\bxiv\\b", "14"},
-    {"\\b10\\b", "x"},
-    {"\\bii\\b", "2"},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bvi\\b", "6"},
-    {"\\bxi\\b", "11"},
-    {"\\bxv\\b", "15"},
-    {"\\bi\\b", "1"},
-    {"\\bv\\b", "5"},
-};
+const char* kRules_CL =
+"\\baisen\\s+del\\s+general\\s+carlos\\s+ibanez\\s+del\\s+campo\\b\00011\000"
+"\\blibertador\\s+general\\s+bernardo\\s+o\'higgins\\b\0006\000"
+"\\bmetropolitana\\s+de\\s+santiago\\s+de\\s+chile\\b\000rm\000"
+"\\bmagallanes\\s+y\\s+la\\s+antartica\\s+chilena\\b\00012\000"
+"\\bmetropolitana\\s+de\\s+santiago\\b\000rm\000"
+"\\barica\\s+y\\s+parinacota\\b\00015\000"
+"\\bmetropolitana\\b\000rm\000"
+"\\bla\\s+araucania\\b\0009\000"
+"\\bantofagasta\\b\0002\000"
+"\\bvalparaiso\\b\0005\000"
+"\\blos\\s+lagos\\b\000x\000"
+"\\bcoquimbo\\b\0004\000"
+"\\blos\\s+rios\\b\00014\000"
+"\\btarapaca\\b\0001\000"
+"\\batacama\\b\0003\000"
+"\\bbio\\s+bio\\b\0008\000"
+"\\bchile\\b\000cl\000"
+"\\bmaule\\b\0007\000"
+"\\bviii\\b\0008\000"
+"\\biii\\b\0003\000"
+"\\bvii\\b\0007\000"
+"\\bxii\\b\00012\000"
+"\\bxiv\\b\00014\000"
+"\\b10\\b\000x\000"
+"\\bii\\b\0002\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bvi\\b\0006\000"
+"\\bxi\\b\00011\000"
+"\\bxv\\b\00015\000"
+"\\bi\\b\0001\000"
+"\\bv\\b\0005\000"
+;
+int kNumRules_CL = 32;
 
-const Rule kRules_CO[] = {
-    {"\\bcolombia\\b", "co"},
-    {"\\bcolumbia\\b", "co"},
-};
+const char* kRules_CO =
+"\\bcolombia\\b\000co\000"
+"\\bcolumbia\\b\000co\000"
+;
+int kNumRules_CO = 2;
 
-const Rule kRules_DE[] = {
-    {"\\bfederal\\s+republic\\s+of\\s+germany\\b", "de"},
-    {"\\bbundesrepublik\\s+deutschland\\b", "de"},
-    {"\\bfreie\\s+hansestadt\\s+bremen\\b", "hb"},
-    {"\\bmecklenburg\\s+vorpommern\\b", "mv"},
-    {"\\bnorth\\s+rhine\\s+westphalia\\b", "nw"},
-    {"\\brhineland\\s+palatinate\\b", "rp"},
-    {"\\bnordrhein\\s+westfalen\\b", "nw"},
-    {"\\bschleswig\\s+holstein\\b", "sh"},
-    {"\\bbaden\\s+wurttemberg\\b", "bw"},
-    {"\\bregionalverband\\b", ""},
-    {"\\brheinland\\s+pfalz\\b", "rp"},
-    {"\\bsachsen\\s+anhalt\\b", "st"},
-    {"\\bniedersachsen\\b", "ni"},
-    {"\\bsaxony\\s+anhalt\\b", "st"},
-    {"\\blower\\s+saxony\\b", "ni"},
-    {"\\bstadtverband\\b", ""},
-    {"\\bbrandenburg\\b", "bb"},
-    {"\\bdeutschland\\b", "de"},
-    {"\\blandkreis\\b", ""},
-    {"\\bthuringen\\b", "th"},
-    {"\\bthuringia\\b", "th"},
-    {"\\bsaarland\\b", "sl"},
-    {"\\bbavaria\\b", "by"},
-    {"\\bcologne\\b", "koln"},
-    {"\\bgermany\\b", "de"},
-    {"\\bhamburg\\b", "hh"},
-    {"\\bsachsen\\b", "sn"},
-    {"\\bstrasse\\b", "str"},
-    {"\\bbayern\\b", "by"},
-    {"\\bberlin\\b", "be"},
-    {"\\bbremen\\b", "hb"},
-    {"\\bhessen\\b", "he"},
-    {"\\bsaxony\\b", "sn"},
-    {"\\bsudost\\b", "se"},
-    {"\\bhesse\\b", "he"},
-    {"\\bsankt\\b", "st"},
-    {"\\bstadt\\b", ""},
-    {"\\bnord\\b", "n"},
-    {"\\bwest\\b", "w"},
-    {"\\bost\\b", "o"},
-    {"\\bsud\\b", "s"},
-};
+const char* kRules_DE =
+"\\bfederal\\s+republic\\s+of\\s+germany\\b\000de\000"
+"\\bbundesrepublik\\s+deutschland\\b\000de\000"
+"\\bfreie\\s+hansestadt\\s+bremen\\b\000hb\000"
+"\\bmecklenburg\\s+vorpommern\\b\000mv\000"
+"\\bnorth\\s+rhine\\s+westphalia\\b\000nw\000"
+"\\brhineland\\s+palatinate\\b\000rp\000"
+"\\bnordrhein\\s+westfalen\\b\000nw\000"
+"\\bschleswig\\s+holstein\\b\000sh\000"
+"\\bbaden\\s+wurttemberg\\b\000bw\000"
+"\\bregionalverband\\b\000\000"
+"\\brheinland\\s+pfalz\\b\000rp\000"
+"\\bsachsen\\s+anhalt\\b\000st\000"
+"\\bniedersachsen\\b\000ni\000"
+"\\bsaxony\\s+anhalt\\b\000st\000"
+"\\blower\\s+saxony\\b\000ni\000"
+"\\bstadtverband\\b\000\000"
+"\\bbrandenburg\\b\000bb\000"
+"\\bdeutschland\\b\000de\000"
+"\\blandkreis\\b\000\000"
+"\\bthuringen\\b\000th\000"
+"\\bthuringia\\b\000th\000"
+"\\bsaarland\\b\000sl\000"
+"\\bbavaria\\b\000by\000"
+"\\bcologne\\b\000koln\000"
+"\\bgermany\\b\000de\000"
+"\\bhamburg\\b\000hh\000"
+"\\bsachsen\\b\000sn\000"
+"\\bstrasse\\b\000str\000"
+"\\bbayern\\b\000by\000"
+"\\bberlin\\b\000be\000"
+"\\bbremen\\b\000hb\000"
+"\\bhessen\\b\000he\000"
+"\\bsaxony\\b\000sn\000"
+"\\bsudost\\b\000se\000"
+"\\bhesse\\b\000he\000"
+"\\bsankt\\b\000st\000"
+"\\bstadt\\b\000\000"
+"\\bnord\\b\000n\000"
+"\\bwest\\b\000w\000"
+"\\bost\\b\000o\000"
+"\\bsud\\b\000s\000"
+;
+int kNumRules_DE = 41;
 
-const Rule kRules_DK[] = {
-    {"\\bgrabrodrestraede\\b", "grabrodrestr"},
-    {"\\barnold\\s+nielsens\\b", "arn nielsens"},
-    {"\\bhaveforeningen\\b", "haveforening"},
-    {"\\bmunicipality\\b", ""},
-    {"\\bbispebjergs\\b", "bispebjerg"},
-    {"\\btengslemark\\b", "tengslemrk"},
-    {"\\bboulevard\\b", "boul"},
-    {"\\blillerod\\b", "allerod"},
-    {"\\bdanmark\\b", "dk"},
-    {"\\bdenmark\\b", "dk"},
-    {"\\bkommune\\b", ""},
-    {"\\bkvarter\\b", "kvater"},
-    {"\\bpladsen\\b", "plads"},
-    {"\\bboulev\\b", "boul"},
-    {"\\bgammel\\b", "gl"},
-    {"\\blokken\\b", "lokke"},
-    {"\\bnummer\\b", "nr"},
-    {"\\bsondre\\b", "s"},
-    {"\\bgamle\\b", "gl"},
-    {"\\bnorre\\b", "n"},
-    {"\\bsankt\\b", "sct"},
-    {"\\bnord\\b", "n"},
-    {"\\bvest\\b", "v"},
-    {"\\bndr\\b", "n"},
-    {"\\bost\\b", "o"},
-    {"\\bsdr\\b", "s"},
-    {"\\bskt\\b", "sct"},
-    {"\\bsyd\\b", "s"},
-};
+const char* kRules_DK =
+"\\bgrabrodrestraede\\b\000grabrodrestr\000"
+"\\barnold\\s+nielsens\\b\000arn nielsens\000"
+"\\bhaveforeningen\\b\000haveforening\000"
+"\\bmunicipality\\b\000\000"
+"\\bbispebjergs\\b\000bispebjerg\000"
+"\\btengslemark\\b\000tengslemrk\000"
+"\\bboulevard\\b\000boul\000"
+"\\blillerod\\b\000allerod\000"
+"\\bdanmark\\b\000dk\000"
+"\\bdenmark\\b\000dk\000"
+"\\bkommune\\b\000\000"
+"\\bkvarter\\b\000kvater\000"
+"\\bpladsen\\b\000plads\000"
+"\\bboulev\\b\000boul\000"
+"\\bgammel\\b\000gl\000"
+"\\blokken\\b\000lokke\000"
+"\\bnummer\\b\000nr\000"
+"\\bsondre\\b\000s\000"
+"\\bgamle\\b\000gl\000"
+"\\bnorre\\b\000n\000"
+"\\bsankt\\b\000sct\000"
+"\\bnord\\b\000n\000"
+"\\bvest\\b\000v\000"
+"\\bndr\\b\000n\000"
+"\\bost\\b\000o\000"
+"\\bsdr\\b\000s\000"
+"\\bskt\\b\000sct\000"
+"\\bsyd\\b\000s\000"
+;
+int kNumRules_DK = 28;
 
-const Rule kRules_ES[] = {
-    {"\\bsanta\\s+cruz\\s+de\\s+tenerife\\b", "tf"},
-    {"\\bbalearic\\s+islands\\b", "pm"},
-    {"\\bislas\\s+baleares\\b", "pm"},
-    {"\\billes\\s+balears\\b", "pm"},
-    {"\\bciudad\\s+real\\b", "cr"},
-    {"\\bguadalajara\\b", "gu"},
-    {"\\bla\\s+corunna\\b", "c"},
-    {"\\bla\\s+corunya\\b", "c"},
-    {"\\blas\\s+palmas\\b", "gc"},
-    {"\\bpontevedra\\b", "po"},
-    {"\\bvalladolid\\b", "va"},
-    {"\\bbarcelona\\b", "b"},
-    {"\\bcantabria\\b", "s"},
-    {"\\bcastellon\\b", "cs"},
-    {"\\besplugues\\b", "esplugas"},
-    {"\\bguipuscoa\\b", "ss"},
-    {"\\bguipuzcoa\\b", "ss"},
-    {"\\bla\\s+coruna\\b", "c"},
-    {"\\bsalamanca\\b", "sa"},
-    {"\\bsaragossa\\b", "z"},
-    {"\\btarragona\\b", "t"},
-    {"\\ba\\s+coruna\\b", "c"},
-    {"\\balbacete\\b", "ab"},
-    {"\\balicante\\b", ""},
-    {"\\basturias\\b", "o"},
-    {"\\bcastello\\b", "cs"},
-    {"\\bgipuzkoa\\b", "ss"},
-    {"\\bla\\s+rioja\\b", "lo"},
-    {"\\bnafarroa\\b", "na"},
-    {"\\bpalencia\\b", "p"},
-    {"\\bvalencia\\b", "v"},
-    {"\\bzaragoza\\b", "z"},
-    {"\\balacant\\b", ""},
-    {"\\balmeria\\b", ""},
-    {"\\bavenida\\b", "av"},
-    {"\\bbadajoz\\b", "ba"},
-    {"\\bbizkaia\\b", "bi"},
-    {"\\bcaceres\\b", "cc"},
-    {"\\bcordoba\\b", "co"},
-    {"\\bcordova\\b", "co"},
-    {"\\bgranada\\b", "gr"},
-    {"\\bnavarra\\b", "na"},
-    {"\\bnavarre\\b", "na"},
-    {"\\bourense\\b", "or"},
-    {"\\bsegovia\\b", "sg"},
-    {"\\bsevilla\\b", "se"},
-    {"\\bseville\\b", "se"},
-    {"\\bvizcaya\\b", "bi"},
-    {"\\bbiscay\\b", "bi"},
-    {"\\bburgos\\b", "bu"},
-    {"\\bcoruna\\b", "c"},
-    {"\\bcuenca\\b", "cu"},
-    {"\\bespana\\b", "es"},
-    {"\\bgerona\\b", "gi"},
-    {"\\bgirona\\b", "gi"},
-    {"\\bhuelva\\b", "h"},
-    {"\\bhuesca\\b", "hu"},
-    {"\\blerida\\b", ""},
-    {"\\blleida\\b", ""},
-    {"\\bmadrid\\b", "m"},
-    {"\\bmalaga\\b", "ma"},
-    {"\\bmurcia\\b", "mu"},
-    {"\\borense\\b", "or"},
-    {"\\bteruel\\b", "te"},
-    {"\\btoledo\\b", "to"},
-    {"\\bzamora\\b", "za"},
-    {"\\balava\\b", "vi"},
-    {"\\baraba\\b", "vi"},
-    {"\\bavila\\b", "av"},
-    {"\\bcadiz\\b", "ca"},
-    {"\\bnorte\\b", "n"},
-    {"\\bnorth\\b", "n"},
-    {"\\boeste\\b", "o"},
-    {"\\bsoria\\b", "so"},
-    {"\\bsouth\\b", "s"},
-    {"\\bspain\\b", "es"},
-    {"\\beast\\b", "e"},
-    {"\\beste\\b", "e"},
-    {"\\bjaen\\b", "j"},
-    {"\\bleon\\b", "le"},
-    {"\\blugo\\b", "lu"},
-    {"\\bwest\\b", "o"},
-    {"\\bc\\.\\/\\b", "c"},
-    {"\\bc\\/\\.\\b", "c"},
-    {"\\bdal\\b", ""},
-    {"\\bdel\\b", ""},
-    {"\\blas\\b", ""},
-    {"\\bles\\b", ""},
-    {"\\blos\\b", ""},
-    {"\\bsur\\b", "s"},
-    {"\\bal\\b", ""},
-    {"\\bc\\/\\b", "c"},
-    {"\\bde\\b", ""},
-    {"\\bel\\b", ""},
-    {"\\ben\\b", ""},
-    {"\\bla\\b", ""},
-    {"\\bof\\b", ""},
-    {"\\ba\\b", ""},
-    {"\\bd\\b", ""},
-    {"\\bl\\b", ""},
-};
+const char* kRules_ES =
+"\\bsanta\\s+cruz\\s+de\\s+tenerife\\b\000tf\000"
+"\\bbalearic\\s+islands\\b\000pm\000"
+"\\bislas\\s+baleares\\b\000pm\000"
+"\\billes\\s+balears\\b\000pm\000"
+"\\bciudad\\s+real\\b\000cr\000"
+"\\bguadalajara\\b\000gu\000"
+"\\bla\\s+corunna\\b\000c\000"
+"\\bla\\s+corunya\\b\000c\000"
+"\\blas\\s+palmas\\b\000gc\000"
+"\\bpontevedra\\b\000po\000"
+"\\bvalladolid\\b\000va\000"
+"\\bbarcelona\\b\000b\000"
+"\\bcantabria\\b\000s\000"
+"\\bcastellon\\b\000cs\000"
+"\\besplugues\\b\000esplugas\000"
+"\\bguipuscoa\\b\000ss\000"
+"\\bguipuzcoa\\b\000ss\000"
+"\\bla\\s+coruna\\b\000c\000"
+"\\bsalamanca\\b\000sa\000"
+"\\bsaragossa\\b\000z\000"
+"\\btarragona\\b\000t\000"
+"\\ba\\s+coruna\\b\000c\000"
+"\\balbacete\\b\000ab\000"
+"\\balicante\\b\000\000"
+"\\basturias\\b\000o\000"
+"\\bcastello\\b\000cs\000"
+"\\bgipuzkoa\\b\000ss\000"
+"\\bla\\s+rioja\\b\000lo\000"
+"\\bnafarroa\\b\000na\000"
+"\\bpalencia\\b\000p\000"
+"\\bvalencia\\b\000v\000"
+"\\bzaragoza\\b\000z\000"
+"\\balacant\\b\000\000"
+"\\balmeria\\b\000\000"
+"\\bavenida\\b\000av\000"
+"\\bbadajoz\\b\000ba\000"
+"\\bbizkaia\\b\000bi\000"
+"\\bcaceres\\b\000cc\000"
+"\\bcordoba\\b\000co\000"
+"\\bcordova\\b\000co\000"
+"\\bgranada\\b\000gr\000"
+"\\bnavarra\\b\000na\000"
+"\\bnavarre\\b\000na\000"
+"\\bourense\\b\000or\000"
+"\\bsegovia\\b\000sg\000"
+"\\bsevilla\\b\000se\000"
+"\\bseville\\b\000se\000"
+"\\bvizcaya\\b\000bi\000"
+"\\bbiscay\\b\000bi\000"
+"\\bburgos\\b\000bu\000"
+"\\bcoruna\\b\000c\000"
+"\\bcuenca\\b\000cu\000"
+"\\bespana\\b\000es\000"
+"\\bgerona\\b\000gi\000"
+"\\bgirona\\b\000gi\000"
+"\\bhuelva\\b\000h\000"
+"\\bhuesca\\b\000hu\000"
+"\\blerida\\b\000\000"
+"\\blleida\\b\000\000"
+"\\bmadrid\\b\000m\000"
+"\\bmalaga\\b\000ma\000"
+"\\bmurcia\\b\000mu\000"
+"\\borense\\b\000or\000"
+"\\bteruel\\b\000te\000"
+"\\btoledo\\b\000to\000"
+"\\bzamora\\b\000za\000"
+"\\balava\\b\000vi\000"
+"\\baraba\\b\000vi\000"
+"\\bavila\\b\000av\000"
+"\\bcadiz\\b\000ca\000"
+"\\bnorte\\b\000n\000"
+"\\bnorth\\b\000n\000"
+"\\boeste\\b\000o\000"
+"\\bsoria\\b\000so\000"
+"\\bsouth\\b\000s\000"
+"\\bspain\\b\000es\000"
+"\\beast\\b\000e\000"
+"\\beste\\b\000e\000"
+"\\bjaen\\b\000j\000"
+"\\bleon\\b\000le\000"
+"\\blugo\\b\000lu\000"
+"\\bwest\\b\000o\000"
+"\\bc\\.\\/\\b\000c\000"
+"\\bc\\/\\.\\b\000c\000"
+"\\bdal\\b\000\000"
+"\\bdel\\b\000\000"
+"\\blas\\b\000\000"
+"\\bles\\b\000\000"
+"\\blos\\b\000\000"
+"\\bsur\\b\000s\000"
+"\\bal\\b\000\000"
+"\\bc\\/\\b\000c\000"
+"\\bde\\b\000\000"
+"\\bel\\b\000\000"
+"\\ben\\b\000\000"
+"\\bla\\b\000\000"
+"\\bof\\b\000\000"
+"\\ba\\b\000\000"
+"\\bd\\b\000\000"
+"\\bl\\b\000\000"
+;
+int kNumRules_ES = 100;
 
-const Rule kRules_FR[] = {
-    {"\\bprovence\\s+alpes\\s+cote\\s+d\\s+azur\\b", "u"},
-    {"\\balpes\\s+de\\s+haute\\s+provence\\b", "04"},
-    {"\\barnouville\\s+les\\s+gonesse\\b", "arnouville"},
-    {"\\bterritoire\\s+de\\s+belfort\\b", "90"},
-    {"\\blanguedoc\\s+roussillon\\b", "k"},
-    {"\\bpyrenees\\s+atlantiques\\b", "64"},
-    {"\\bpyrenees\\s+orientales\\b", "66"},
-    {"\\bmeurthe\\s+et\\s+moselle\\b", "54"},
-    {"\\bnord\\s+pas\\s+de\\s+calais\\b", "o"},
-    {"\\bchampagne\\s+ardenne\\b", "g"},
-    {"\\bcharente\\s+maritime\\b", "17"},
-    {"\\bseine\\s+saint\\s+denis\\b", "93"},
-    {"\\bbouches\\s+du\\s+rhone\\b", "13"},
-    {"\\bloire\\s+atlantique\\b", "44"},
-    {"\\bpays\\s+de\\s+la\\s+loire\\b", "r"},
-    {"\\bpoitou\\s+charentes\\b", "t"},
-    {"\\balpes\\s+maritimes\\b", "06"},
-    {"\\bbasse\\s+normandie\\b", "p"},
-    {"\\bhaute\\s+normandie\\b", "q"},
-    {"\\bille\\s+et\\s+vilaine\\b", "35"},
-    {"\\btarn\\s+et\\s+garonne\\b", "82"},
-    {"\\bdepartementale\\b", "d"},
-    {"\\bhaute\\s+pyrenees\\b", "65"},
-    {"\\bhauts\\s+de\\s+seine\\b", "92"},
-    {"\\bindre\\s+et\\s+loire\\b", "37"},
-    {"\\blot\\s+et\\s+garonne\\b", "47"},
-    {"\\blower\\s+normandy\\b", "p"},
-    {"\\bmaine\\s+et\\s+loire\\b", "49"},
-    {"\\bsaone\\s+et\\s+loire\\b", "71"},
-    {"\\bseine\\s+maritime\\b", "76"},
-    {"\\bupper\\s+normandy\\b", "q"},
-    {"\\bcotes\\s+d\\s+armor\\b", "22"},
-    {"\\bdepartemental\\b", "d"},
-    {"\\bfranche\\s+comte\\b", "1"},
-    {"\\bhaute\\s+garonne\\b", "31"},
-    {"\\bile\\s+de\\s+france\\b", "j"},
-    {"\\bmidi\\s+pyrenees\\b", "n"},
-    {"\\bpas\\s+de\\s+calais\\b", "62"},
-    {"\\bseine\\s+et\\s+mame\\b", "77"},
-    {"\\bcorse\\s+du\\s+sud\\b", "2a"},
-    {"\\bdix\\s+huitieme\\b", "18"},
-    {"\\bdix\\s+neuvieme\\b", "19"},
-    {"\\bdix\\s+septieme\\b", "17"},
-    {"\\beure\\s+et\\s+loir\\b", "28"},
-    {"\\bhaute\\s+savoie\\b", "74"},
-    {"\\bhaute\\s+vienne\\b", "87"},
-    {"\\bloir\\s+et\\s+cher\\b", "41"},
-    {"\\bval\\s+de\\s+marne\\b", "94"},
-    {"\\bcouffouleux\\b", "coufouleux"},
-    {"\\bdeux\\s+sevres\\b", "79"},
-    {"\\bhaute\\s+alpes\\b", "05"},
-    {"\\bhaute\\s+corse\\b", "2b"},
-    {"\\bhaute\\s+loire\\b", "43"},
-    {"\\bhaute\\s+marne\\b", "52"},
-    {"\\bhaute\\s+saone\\b", "70"},
-    {"\\bpuy\\s+de\\s+dome\\b", "63"},
-    {"\\bquatorzieme\\b", "14"},
-    {"\\brhone\\s+alpes\\b", "5"},
-    {"\\bacquitaine\\b", "b"},
-    {"\\benclave\\s+de\\b", ""},
-    {"\\bval\\s+d\\s+oise\\b", "95"},
-    {"\\baquitaine\\b", "b"},
-    {"\\bboulevard\\b", "bd"},
-    {"\\bbourgogne\\b", "d"},
-    {"\\bcinquieme\\b", "5"},
-    {"\\bcote\\s+d\\s+or\\b", "21"},
-    {"\\bfinistere\\b", "29"},
-    {"\\bhaut\\s+rhin\\b", "68"},
-    {"\\bmoribihan\\b", "56"},
-    {"\\bnationale\\b", "n"},
-    {"\\bquatrieme\\b", "4"},
-    {"\\bquinzieme\\b", "15"},
-    {"\\btreizieme\\b", "13"},
-    {"\\btroisieme\\b", "3"},
-    {"\\bvingtieme\\b", "20"},
-    {"\\ballemont\\b", "allemond"},
-    {"\\bardennes\\b", "08"},
-    {"\\bauvergne\\b", "c"},
-    {"\\baveryron\\b", "12"},
-    {"\\bbas\\s+rhin\\b", "67"},
-    {"\\bbretagne\\b", ""},
-    {"\\bbrittany\\b", ""},
-    {"\\bburgundy\\b", "d"},
-    {"\\bcalvados\\b", "14"},
-    {"\\bcharente\\b", "16"},
-    {"\\bdeuxieme\\b", "2"},
-    {"\\bdordogne\\b", "24"},
-    {"\\bdouzieme\\b", "12"},
-    {"\\bhuitieme\\b", "8"},
-    {"\\bla\\s+croix\\b", "lacroix"},
-    {"\\blimousin\\b", "l"},
-    {"\\blorraine\\b", "m"},
-    {"\\bneuvieme\\b", "9"},
-    {"\\bpicardie\\b", "s"},
-    {"\\bpremiere\\b", "1"},
-    {"\\bseizieme\\b", "16"},
-    {"\\bseptieme\\b", "7"},
-    {"\\bvaucluse\\b", "84"},
-    {"\\byvelines\\b", "78"},
-    {"\\bardeche\\b", "07"},
-    {"\\bcorreze\\b", "19"},
-    {"\\bcorsica\\b", "h"},
-    {"\\bdixieme\\b", "x"},
-    {"\\bessonne\\b", "91"},
-    {"\\bgironde\\b", "33"},
-    {"\\bherault\\b", "34"},
-    {"\\bmayenne\\b", "53"},
-    {"\\bmoselle\\b", "57"},
-    {"\\bonzieme\\b", "11"},
-    {"\\bpicardy\\b", "s"},
-    {"\\bsixieme\\b", "6"},
-    {"\\ballier\\b", "03"},
-    {"\\balsace\\b", "a"},
-    {"\\bariege\\b", "09"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcantal\\b", "15"},
-    {"\\bcentre\\b", "f"},
-    {"\\bcreuse\\b", "23"},
-    {"\\bfrance\\b", "fr"},
-    {"\\bgrande\\b", "gd"},
-    {"\\blandes\\b", "40"},
-    {"\\bloiret\\b", "45"},
-    {"\\blozere\\b", "48"},
-    {"\\bmanche\\b", "50"},
-    {"\\bnievre\\b", "58"},
-    {"\\bregion\\b", ""},
-    {"\\bsainte\\b", ""},
-    {"\\bsarthe\\b", "72"},
-    {"\\bsavoie\\b", "73"},
-    {"\\bvendee\\b", "85"},
-    {"\\bvienne\\b", "86"},
-    {"\\bvosges\\b", "88"},
-    {"\\baisne\\b", "02"},
-    {"\\bcorse\\b", "h"},
-    {"\\bde\\s+l\'\\b", ""},
-    {"\\bde\\s+la\\b", ""},
-    {"\\bdoubs\\b", "25"},
-    {"\\bdrome\\b", "26"},
-    {"\\bet\\s+du\\b", ""},
-    {"\\bgrand\\b", "gd"},
-    {"\\bindre\\b", "36"},
-    {"\\bisere\\b", "38"},
-    {"\\bloire\\b", "42"},
-    {"\\bmarne\\b", "51"},
-    {"\\bmeuse\\b", "55"},
-    {"\\bmount\\b", "mt"},
-    {"\\bnorth\\b", "n"},
-    {"\\bouest\\b", "o"},
-    {"\\bparis\\b", ""},
-    {"\\brhone\\b", "69"},
-    {"\\bsaint\\b", ""},
-    {"\\bsomme\\b", "80"},
-    {"\\bsouth\\b", "s"},
-    {"\\bvilla\\b", "vil"},
-    {"\\bxviii\\b", "18"},
-    {"\\byonne\\b", "89"},
-    {"\\baude\\b", "11"},
-    {"\\bcher\\b", "18"},
-    {"\\beure\\b", "27"},
-    {"\\bgard\\b", "30"},
-    {"\\bgers\\b", "32"},
-    {"\\bieme\\b", ""},
-    {"\\bjura\\b", "39"},
-    {"\\bnord\\b", "n"},
-    {"\\boise\\b", "60"},
-    {"\\borne\\b", "61"},
-    {"\\btarn\\b", "81"},
-    {"\\bviii\\b", "8"},
-    {"\\bwest\\b", "o"},
-    {"\\bxiii\\b", "13"},
-    {"\\bxvii\\b", "17"},
-    {"\\bain\\b", "01"},
-    {"\\bdes\\b", ""},
-    {"\\beme\\b", ""},
-    {"\\bere\\b", ""},
-    {"\\best\\b", ""},
-    {"\\bgde\\b", "gd"},
-    {"\\biii\\b", "3"},
-    {"\\bles\\b", ""},
-    {"\\blot\\b", "46"},
-    {"\\bmte\\b", "mt"},
-    {"\\bste\\b", ""},
-    {"\\bsud\\b", "s"},
-    {"\\bsur\\b", ""},
-    {"\\bvar\\b", "83"},
-    {"\\bvii\\b", "7"},
-    {"\\bxii\\b", "12"},
-    {"\\bxiv\\b", "14"},
-    {"\\bxix\\b", "19"},
-    {"\\bxvi\\b", "16"},
-    {"\\b10\\b", "x"},
-    {"\\b59\\b", "n"},
-    {"\\b75\\b", ""},
-    {"\\bd\'\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bdu\\b", ""},
-    {"\\ben\\b", ""},
-    {"\\ber\\b", ""},
-    {"\\bgr\\b", "gd"},
-    {"\\bii\\b", "2"},
-    {"\\bin\\b", ""},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bl\'\\b", ""},
-    {"\\bla\\b", ""},
-    {"\\ble\\b", ""},
-    {"\\bnd\\b", ""},
-    {"\\bof\\b", ""},
-    {"\\brd\\b", ""},
-    {"\\bre\\b", ""},
-    {"\\bst\\b", ""},
-    {"\\bth\\b", ""},
-    {"\\bvi\\b", "6"},
-    {"\\bxi\\b", "11"},
-    {"\\bxv\\b", "15"},
-    {"\\bxx\\b", "20"},
-    {"\\be\\b", ""},
-    {"\\bi\\b", "1"},
-    {"\\bv\\b", "5"},
-    {"\\bw\\b", "o"},
-};
+const char* kRules_FR =
+"\\bprovence\\s+alpes\\s+cote\\s+d\\s+azur\\b\000u\000"
+"\\balpes\\s+de\\s+haute\\s+provence\\b\00004\000"
+"\\barnouville\\s+les\\s+gonesse\\b\000arnouville\000"
+"\\bterritoire\\s+de\\s+belfort\\b\00090\000"
+"\\blanguedoc\\s+roussillon\\b\000k\000"
+"\\bpyrenees\\s+atlantiques\\b\00064\000"
+"\\bpyrenees\\s+orientales\\b\00066\000"
+"\\bmeurthe\\s+et\\s+moselle\\b\00054\000"
+"\\bnord\\s+pas\\s+de\\s+calais\\b\000o\000"
+"\\bchampagne\\s+ardenne\\b\000g\000"
+"\\bcharente\\s+maritime\\b\00017\000"
+"\\bseine\\s+saint\\s+denis\\b\00093\000"
+"\\bbouches\\s+du\\s+rhone\\b\00013\000"
+"\\bloire\\s+atlantique\\b\00044\000"
+"\\bpays\\s+de\\s+la\\s+loire\\b\000r\000"
+"\\bpoitou\\s+charentes\\b\000t\000"
+"\\balpes\\s+maritimes\\b\00006\000"
+"\\bbasse\\s+normandie\\b\000p\000"
+"\\bhaute\\s+normandie\\b\000q\000"
+"\\bille\\s+et\\s+vilaine\\b\00035\000"
+"\\btarn\\s+et\\s+garonne\\b\00082\000"
+"\\bdepartementale\\b\000d\000"
+"\\bhaute\\s+pyrenees\\b\00065\000"
+"\\bhauts\\s+de\\s+seine\\b\00092\000"
+"\\bindre\\s+et\\s+loire\\b\00037\000"
+"\\blot\\s+et\\s+garonne\\b\00047\000"
+"\\blower\\s+normandy\\b\000p\000"
+"\\bmaine\\s+et\\s+loire\\b\00049\000"
+"\\bsaone\\s+et\\s+loire\\b\00071\000"
+"\\bseine\\s+maritime\\b\00076\000"
+"\\bupper\\s+normandy\\b\000q\000"
+"\\bcotes\\s+d\\s+armor\\b\00022\000"
+"\\bdepartemental\\b\000d\000"
+"\\bfranche\\s+comte\\b\0001\000"
+"\\bhaute\\s+garonne\\b\00031\000"
+"\\bile\\s+de\\s+france\\b\000j\000"
+"\\bmidi\\s+pyrenees\\b\000n\000"
+"\\bpas\\s+de\\s+calais\\b\00062\000"
+"\\bseine\\s+et\\s+mame\\b\00077\000"
+"\\bcorse\\s+du\\s+sud\\b\0002a\000"
+"\\bdix\\s+huitieme\\b\00018\000"
+"\\bdix\\s+neuvieme\\b\00019\000"
+"\\bdix\\s+septieme\\b\00017\000"
+"\\beure\\s+et\\s+loir\\b\00028\000"
+"\\bhaute\\s+savoie\\b\00074\000"
+"\\bhaute\\s+vienne\\b\00087\000"
+"\\bloir\\s+et\\s+cher\\b\00041\000"
+"\\bval\\s+de\\s+marne\\b\00094\000"
+"\\bcouffouleux\\b\000coufouleux\000"
+"\\bdeux\\s+sevres\\b\00079\000"
+"\\bhaute\\s+alpes\\b\00005\000"
+"\\bhaute\\s+corse\\b\0002b\000"
+"\\bhaute\\s+loire\\b\00043\000"
+"\\bhaute\\s+marne\\b\00052\000"
+"\\bhaute\\s+saone\\b\00070\000"
+"\\bpuy\\s+de\\s+dome\\b\00063\000"
+"\\bquatorzieme\\b\00014\000"
+"\\brhone\\s+alpes\\b\0005\000"
+"\\bacquitaine\\b\000b\000"
+"\\benclave\\s+de\\b\000\000"
+"\\bval\\s+d\\s+oise\\b\00095\000"
+"\\baquitaine\\b\000b\000"
+"\\bboulevard\\b\000bd\000"
+"\\bbourgogne\\b\000d\000"
+"\\bcinquieme\\b\0005\000"
+"\\bcote\\s+d\\s+or\\b\00021\000"
+"\\bfinistere\\b\00029\000"
+"\\bhaut\\s+rhin\\b\00068\000"
+"\\bmoribihan\\b\00056\000"
+"\\bnationale\\b\000n\000"
+"\\bquatrieme\\b\0004\000"
+"\\bquinzieme\\b\00015\000"
+"\\btreizieme\\b\00013\000"
+"\\btroisieme\\b\0003\000"
+"\\bvingtieme\\b\00020\000"
+"\\ballemont\\b\000allemond\000"
+"\\bardennes\\b\00008\000"
+"\\bauvergne\\b\000c\000"
+"\\baveryron\\b\00012\000"
+"\\bbas\\s+rhin\\b\00067\000"
+"\\bbretagne\\b\000\000"
+"\\bbrittany\\b\000\000"
+"\\bburgundy\\b\000d\000"
+"\\bcalvados\\b\00014\000"
+"\\bcharente\\b\00016\000"
+"\\bdeuxieme\\b\0002\000"
+"\\bdordogne\\b\00024\000"
+"\\bdouzieme\\b\00012\000"
+"\\bhuitieme\\b\0008\000"
+"\\bla\\s+croix\\b\000lacroix\000"
+"\\blimousin\\b\000l\000"
+"\\blorraine\\b\000m\000"
+"\\bneuvieme\\b\0009\000"
+"\\bpicardie\\b\000s\000"
+"\\bpremiere\\b\0001\000"
+"\\bseizieme\\b\00016\000"
+"\\bseptieme\\b\0007\000"
+"\\bvaucluse\\b\00084\000"
+"\\byvelines\\b\00078\000"
+"\\bardeche\\b\00007\000"
+"\\bcorreze\\b\00019\000"
+"\\bcorsica\\b\000h\000"
+"\\bdixieme\\b\000x\000"
+"\\bessonne\\b\00091\000"
+"\\bgironde\\b\00033\000"
+"\\bherault\\b\00034\000"
+"\\bmayenne\\b\00053\000"
+"\\bmoselle\\b\00057\000"
+"\\bonzieme\\b\00011\000"
+"\\bpicardy\\b\000s\000"
+"\\bsixieme\\b\0006\000"
+"\\ballier\\b\00003\000"
+"\\balsace\\b\000a\000"
+"\\bariege\\b\00009\000"
+"\\bavenue\\b\000ave\000"
+"\\bcantal\\b\00015\000"
+"\\bcentre\\b\000f\000"
+"\\bcreuse\\b\00023\000"
+"\\bfrance\\b\000fr\000"
+"\\bgrande\\b\000gd\000"
+"\\blandes\\b\00040\000"
+"\\bloiret\\b\00045\000"
+"\\blozere\\b\00048\000"
+"\\bmanche\\b\00050\000"
+"\\bnievre\\b\00058\000"
+"\\bregion\\b\000\000"
+"\\bsainte\\b\000\000"
+"\\bsarthe\\b\00072\000"
+"\\bsavoie\\b\00073\000"
+"\\bvendee\\b\00085\000"
+"\\bvienne\\b\00086\000"
+"\\bvosges\\b\00088\000"
+"\\baisne\\b\00002\000"
+"\\bcorse\\b\000h\000"
+"\\bde\\s+l\'\\b\000\000"
+"\\bde\\s+la\\b\000\000"
+"\\bdoubs\\b\00025\000"
+"\\bdrome\\b\00026\000"
+"\\bet\\s+du\\b\000\000"
+"\\bgrand\\b\000gd\000"
+"\\bindre\\b\00036\000"
+"\\bisere\\b\00038\000"
+"\\bloire\\b\00042\000"
+"\\bmarne\\b\00051\000"
+"\\bmeuse\\b\00055\000"
+"\\bmount\\b\000mt\000"
+"\\bnorth\\b\000n\000"
+"\\bouest\\b\000o\000"
+"\\bparis\\b\000\000"
+"\\brhone\\b\00069\000"
+"\\bsaint\\b\000\000"
+"\\bsomme\\b\00080\000"
+"\\bsouth\\b\000s\000"
+"\\bvilla\\b\000vil\000"
+"\\bxviii\\b\00018\000"
+"\\byonne\\b\00089\000"
+"\\baude\\b\00011\000"
+"\\bcher\\b\00018\000"
+"\\beure\\b\00027\000"
+"\\bgard\\b\00030\000"
+"\\bgers\\b\00032\000"
+"\\bieme\\b\000\000"
+"\\bjura\\b\00039\000"
+"\\bnord\\b\000n\000"
+"\\boise\\b\00060\000"
+"\\borne\\b\00061\000"
+"\\btarn\\b\00081\000"
+"\\bviii\\b\0008\000"
+"\\bwest\\b\000o\000"
+"\\bxiii\\b\00013\000"
+"\\bxvii\\b\00017\000"
+"\\bain\\b\00001\000"
+"\\bdes\\b\000\000"
+"\\beme\\b\000\000"
+"\\bere\\b\000\000"
+"\\best\\b\000\000"
+"\\bgde\\b\000gd\000"
+"\\biii\\b\0003\000"
+"\\bles\\b\000\000"
+"\\blot\\b\00046\000"
+"\\bmte\\b\000mt\000"
+"\\bste\\b\000\000"
+"\\bsud\\b\000s\000"
+"\\bsur\\b\000\000"
+"\\bvar\\b\00083\000"
+"\\bvii\\b\0007\000"
+"\\bxii\\b\00012\000"
+"\\bxiv\\b\00014\000"
+"\\bxix\\b\00019\000"
+"\\bxvi\\b\00016\000"
+"\\b10\\b\000x\000"
+"\\b59\\b\000n\000"
+"\\b75\\b\000\000"
+"\\bd\'\\b\000\000"
+"\\bde\\b\000\000"
+"\\bdu\\b\000\000"
+"\\ben\\b\000\000"
+"\\ber\\b\000\000"
+"\\bgr\\b\000gd\000"
+"\\bii\\b\0002\000"
+"\\bin\\b\000\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bl\'\\b\000\000"
+"\\bla\\b\000\000"
+"\\ble\\b\000\000"
+"\\bnd\\b\000\000"
+"\\bof\\b\000\000"
+"\\brd\\b\000\000"
+"\\bre\\b\000\000"
+"\\bst\\b\000\000"
+"\\bth\\b\000\000"
+"\\bvi\\b\0006\000"
+"\\bxi\\b\00011\000"
+"\\bxv\\b\00015\000"
+"\\bxx\\b\00020\000"
+"\\be\\b\000\000"
+"\\bi\\b\0001\000"
+"\\bv\\b\0005\000"
+"\\bw\\b\000o\000"
+;
+int kNumRules_FR = 220;
 
-const Rule kRules_GB[] = {
-    {"\\bbath\\s+and\\s+north\\s+east\\s+somerset\\b", "gb-bas"},
-    {"\\bdungannon\\s+and\\s+south\\s+tyrone\\b", "gb-dgn"},
-    {"\\bcheshire\\s+west\\s+and\\s+chester\\b", "gb-chw"},
-    {"\\bnewry\\s+and\\s+mourne\\s+district\\b", "gb-nym"},
-    {"\\beast\\s+riding\\s+of\\s+yorkshire\\b", "gb-ery"},
-    {"\\bmetropolitan\\s+borough\\s+of\\b", ""},
-    {"\\bnorth\\s+east\\s+lincolnshire\\b", "gb-nel"},
-    {"\\bhammersmith\\s+and\\s+fulham\\b", "gb-hmf"},
-    {"\\bkensington\\s+and\\s+chelsea\\b", "gb-kec"},
-    {"\\bwindsor\\s+and\\s+maidenhead\\b", "gb-wnm"},
-    {"\\bblackburn\\s+with\\s+darwen\\b", "gb-bbd"},
-    {"\\bdumfries\\s+and\\s+galloway\\b", "gb-dgy"},
-    {"\\bsouth\\s+gloucestershire\\b", "gb-sgc"},
-    {"\\bthe\\s+vale\\s+of\\s+glamorgan\\b", "gb-vgl"},
-    {"\\bbarking\\s+and\\s+dagenham\\b", "gb-bdg"},
-    {"\\bcentral\\s+bedfordshire\\b", "gb-cbf"},
-    {"\\bkingston\\s+upon\\s+thames\\b", "gb-ktt"},
-    {"\\bredcar\\s+and\\s+cleveland\\b", "gb-rcc"},
-    {"\\brhondda\\,\\s+cynon\\,\\s+taff\\b", "gb-rct"},
-    {"\\brichmond\\s+upon\\s+thames\\b", "gb-ric"},
-    {"\\bthe\\s+scottish\\s+borders\\b", "gb-scb"},
-    {"\\beast\\s+dunbartonshire\\b", "gb-edu"},
-    {"\\bnewcastle\\s+upon\\s+tyne\\b", "gb-net"},
-    {"\\bwest\\s+dunbartonshire\\b", "gb-wdu"},
-    {"\\bkingston\\s+upon\\s+hull\\b", "gb-khl"},
-    {"\\bliverpool\\s+district\\b", "gb-liv"},
-    {"\\bnorth\\s+lincolnshire\\b", "gb-nln"},
-    {"\\btelford\\s+and\\s+wrekin\\b", "gb-tfw"},
-    {"\\bbrighton\\s+and\\s+hove\\b", "gb-bnh"},
-    {"\\bcity\\s+of\\s+edinburgh\\b", "gb-edh"},
-    {"\\beast\\s+renfrewshire\\b", "gb-erw"},
-    {"\\bkirklees\\s+district\\b", "gb-kir"},
-    {"\\blondon\\s+borough\\s+of\\b", ""},
-    {"\\bneath\\s+port\\s+talbot\\b", "gb-ntl"},
-    {"\\bnorth\\s+lanarkshire\\b", "gb-nlk"},
-    {"\\bperth\\s+and\\s+kinross\\b", "gb-pkn"},
-    {"\\bsouth\\s+lanarkshire\\b", "gb-slk"},
-    {"\\bbracknell\\s+forest\\b", "gb-brc"},
-    {"\\bclackmannanshire\\b", "gb-clk"},
-    {"\\bisle\\s+of\\s+anglesey\\b", "gb-agy"},
-    {"\\bnorthamptonshire\\b", "gb-nth"},
-    {"\\bnorthern\\s+ireland\\b", "n.i."},
-    {"\\bshetland\\s+islands\\b", "gb-zet"},
-    {"\\bstockton\\-on\\-tees\\b", "gb-stt"},
-    {"\\bargyll\\s+and\\s+bute\\b", "gb-agb"},
-    {"\\bbuckinghamshire\\b", "gb-bkm"},
-    {"\\bcarmarthenshire\\b", "gb-cmn"},
-    {"\\bcity\\s+of\\s+bristol\\b", "gb-bst"},
-    {"\\bgloucestershire\\b", "gb-gls"},
-    {"\\bnorth\\s+yorkshire\\b", "gb-nyk"},
-    {"\\bnottinghamshire\\b", "gb-ntt"},
-    {"\\bsefton\\s+district\\b", "gb-sft"},
-    {"\\bsouthend\\-on\\-sea\\b", "gb-sos"},
-    {"\\bcambridgeshire\\b", "gb-cam"},
-    {"\\bcity\\s+of\\s+london\\b", "gb-lnd"},
-    {"\\bleeds\\s+district\\b", "gb-lds"},
-    {"\\bleicestershire\\b", "gb-lec"},
-    {"\\bmerthyr\\s+tydfil\\b", "gb-mty"},
-    {"\\bnorth\\s+ayrshire\\b", "gb-nay"},
-    {"\\bnorth\\s+somerset\\b", "gb-nsm"},
-    {"\\bnorth\\s+tyneside\\b", "gb-nty"},
-    {"\\bnorthumberland\\b", "gb-nbl"},
-    {"\\borkney\\s+islands\\b", "gb-ork"},
-    {"\\bsouth\\s+ayrshire\\b", "gb-say"},
-    {"\\bsouth\\s+tyneside\\b", "gb-sty"},
-    {"\\bstoke\\-on\\-trent\\b", "gb-ste"},
-    {"\\bwaltham\\s+forest\\b", "gb-wft"},
-    {"\\bwest\\s+berkshire\\b", "gb-wbk"},
-    {"\\bworcestershire\\b", "gb-wor"},
-    {"\\baberdeen\\s+city\\b", "gb-abe"},
-    {"\\baberdeenshire\\b", "gb-abd"},
-    {"\\bblaenau\\s+gwent\\b", "gb-bgw"},
-    {"\\bcarrickfergus\\b", "gb-ckf"},
-    {"\\bcheshire\\s+east\\b", "gb-che"},
-    {"\\bcounty\\s+durham\\b", "gb-dur"},
-    {"\\beast\\s+ayrshire\\b", "gb-eay"},
-    {"\\bherefordshire\\b", "gb-hef"},
-    {"\\bhertfordshire\\b", "gb-hrt"},
-    {"\\bisle\\s+of\\s+wight\\b", "gb-iow"},
-    {"\\bmiddlesbrough\\b", "gb-mdb"},
-    {"\\bmilton\\s+keynes\\b", "gb-mik"},
-    {"\\bmonmouthshire\\b", "gb-mon"},
-    {"\\bpembrokeshire\\b", "gb-pem"},
-    {"\\bstaffordshire\\b", "gb-sts"},
-    {"\\btower\\s+hamlets\\b", "gb-twh"},
-    {"\\bwolverhampton\\b", "gb-wlv"},
-    {"\\bdenbighshire\\b", "gb-den"},
-    {"\\beast\\s+lothian\\b", "gb-eln"},
-    {"\\bfulmodestone\\b", "fulmodeston"},
-    {"\\bglasgow\\s+city\\b", "gb-glg"},
-    {"\\blincolnshire\\b", "gb-lin"},
-    {"\\bnewtownabbey\\b", "gb-nta"},
-    {"\\bpeterborough\\b", "gb-pte"},
-    {"\\brenfrewshire\\b", "gb-rfw"},
-    {"\\bwarwickshire\\b", "gb-war"},
-    {"\\bwest\\s+lothian\\b", "gb-wln"},
-    {"\\bbournemouth\\b", "gb-bmh"},
-    {"\\bcastlereagh\\b", "gb-csr"},
-    {"\\bdundee\\s+city\\b", "gb-dnd"},
-    {"\\bdunnamanagh\\b", "dunamanagh"},
-    {"\\beast\\s+sussex\\b", "gb-esx"},
-    {"\\beilean\\s+siar\\b", "gb-els"},
-    {"\\bking\'s\\s+stag\\b", "king stag"},
-    {"\\bmagherafelt\\b", "gb-mft"},
-    {"\\boxfordshire\\b", "gb-oxf"},
-    {"\\bsouthampton\\b", "gb-sth"},
-    {"\\bwest\\s+sussex\\b", "gb-wsx"},
-    {"\\bwestminster\\b", "gb-wsm"},
-    {"\\bballymoney\\b", "gb-bly"},
-    {"\\bbirmingham\\b", "gb-bir"},
-    {"\\bborough\\s+of\\b", ""},
-    {"\\bcaerphilly\\b", "gb-cay"},
-    {"\\bcalderdale\\b", "gb-cld"},
-    {"\\bceredigion\\b", "gb-cgn"},
-    {"\\bculnacnock\\b", "culnacnoc"},
-    {"\\bdarlington\\b", "gb-dal"},
-    {"\\bderbyshire\\b", "gb-dby"},
-    {"\\bflintshire\\b", "gb-fln"},
-    {"\\bgroesllwyd\\b", "groes-lwyd"},
-    {"\\bhartlepool\\b", "gb-hpl"},
-    {"\\bhillingdon\\b", "gb-hil"},
-    {"\\binverclyde\\b", "gb-ivc"},
-    {"\\blancashire\\b", "gb-lan"},
-    {"\\bmanchester\\b", "gb-man"},
-    {"\\bmidlothian\\b", "gb-mln"},
-    {"\\bn\\.\\s+ireland\\b", "n.i."},
-    {"\\bnorth\\s+down\\b", "gb-ndn"},
-    {"\\bnottingham\\b", "gb-ngm"},
-    {"\\bportsmouth\\b", "gb-por"},
-    {"\\bshropshire\\b", "gb-shr"},
-    {"\\bst\\.\\s+helens\\b", "gb-shn"},
-    {"\\bsunderland\\b", "gb-snd"},
-    {"\\bwandsworth\\b", "gb-wnd"},
-    {"\\bwarrington\\b", "gb-wrt"},
-    {"\\bballymena\\b", "gb-bla"},
-    {"\\bbanbridge\\b", "gb-bnb"},
-    {"\\bblackpool\\b", "gb-bpl"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bcoleraine\\b", "gb-clr"},
-    {"\\bcookstown\\b", "gb-ckt"},
-    {"\\bcraigavon\\b", "gb-cgv"},
-    {"\\bdoncaster\\b", "gb-dnc"},
-    {"\\bfermanagh\\b", "gb-fer"},
-    {"\\bgateshead\\b", "gb-gat"},
-    {"\\bgreenwich\\b", "gb-gre"},
-    {"\\bhampshire\\b", "gb-ham"},
-    {"\\bislington\\b", "gb-isl"},
-    {"\\bleicester\\b", "gb-lce"},
-    {"\\bn\\s+ireland\\b", "n.i."},
-    {"\\bn\\.ireland\\b", "n.i."},
-    {"\\bredbridge\\b", "gb-rdb"},
-    {"\\brotherham\\b", "gb-rot"},
-    {"\\bsheffield\\b", "gb-shf"},
-    {"\\bsouthwark\\b", "gb-swk"},
-    {"\\bstockport\\b", "gb-skp"},
-    {"\\bwakefield\\b", "gb-wkf"},
-    {"\\bwiltshire\\b", "gb-wil"},
-    {"\\bwokingham\\b", "gb-wok"},
-    {"\\bbarnsley\\b", "gb-bns"},
-    {"\\bbradford\\b", "gb-brd"},
-    {"\\bbridgend\\b", "gb-bge"},
-    {"\\bcheshire\\b", "gb-chs"},
-    {"\\bcornwall\\b", "gb-con"},
-    {"\\bcoventry\\b", "gb-cov"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\bdistrict\\b", ""},
-    {"\\bhare\\s+law\\b", "harelaw"},
-    {"\\bharingey\\b", "gb-hry"},
-    {"\\bhavering\\b", "gb-hav"},
-    {"\\bhighland\\b", "gb-hld"},
-    {"\\bhounslow\\b", "gb-hns"},
-    {"\\bknowsley\\b", "gb-kwl"},
-    {"\\blewisham\\b", "gb-lew"},
-    {"\\blimavady\\b", "gb-lmv"},
-    {"\\bplymouth\\b", "gb-ply"},
-    {"\\brochdale\\b", "gb-rch"},
-    {"\\bsandwell\\b", "gb-saw"},
-    {"\\bscotland\\b", "gb-sct"},
-    {"\\bsolihull\\b", "gb-sol"},
-    {"\\bsomerset\\b", "gb-som"},
-    {"\\bstirling\\b", "gb-stg"},
-    {"\\bstrabane\\b", "gb-stb"},
-    {"\\btameside\\b", "gb-tam"},
-    {"\\bthurrock\\b", "gb-thr"},
-    {"\\btrafford\\b", "gb-trf"},
-    {"\\bbedford\\b", "gb-bdf"},
-    {"\\bbelfast\\b", "gb-bfs"},
-    {"\\bbromley\\b", "gb-bry"},
-    {"\\bcardiff\\b", "gb-crf"},
-    {"\\bcity\\s+of\\b", ""},
-    {"\\bcroydon\\b", "gb-cry"},
-    {"\\bcumbria\\b", "gb-cma"},
-    {"\\benfield\\b", "gb-enf"},
-    {"\\bengland\\b", "eng"},
-    {"\\bfalkirk\\b", "gb-fal"},
-    {"\\bgwynedd\\b", "gb-gwn"},
-    {"\\bhackney\\b", "gb-hck"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\blambeth\\b", "gb-lbh"},
-    {"\\blisburn\\b", "gb-lsb"},
-    {"\\bnewport\\b", "gb-nwp"},
-    {"\\bnorfolk\\b", "gb-nfk"},
-    {"\\bparkway\\b", "pkwy"},
-    {"\\breading\\b", "gb-rdg"},
-    {"\\brutland\\b", "gb-rut"},
-    {"\\bsalford\\b", "gb-slf"},
-    {"\\bsuffolk\\b", "gb-sfk"},
-    {"\\bswansea\\b", "gb-swa"},
-    {"\\bswindon\\b", "gb-swd"},
-    {"\\btorfaen\\b", "gb-tof"},
-    {"\\bwalsall\\b", "gb-wll"},
-    {"\\bwrexham\\b", "gb-wrx"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcommon\\b", "comm"},
-    {"\\bgb\\-ans\\b", "angus"},
-    {"\\bgb\\-ant\\b", "antrim"},
-    {"\\bgb\\-ard\\b", "ards"},
-    {"\\bgb\\-arm\\b", "armagh"},
-    {"\\bgb\\-ben\\b", "brent"},
-    {"\\bgb\\-bex\\b", "bexley"},
-    {"\\bgb\\-bne\\b", "barnet"},
-    {"\\bgb\\-bol\\b", "bolton"},
-    {"\\bgb\\-bur\\b", "bury"},
-    {"\\bgb\\-cmd\\b", "camden"},
-    {"\\bgb\\-cwy\\b", "conwy"},
-    {"\\bgb\\-der\\b", "derby"},
-    {"\\bgb\\-dev\\b", "devon"},
-    {"\\bgb\\-dor\\b", "dorset"},
-    {"\\bgb\\-dow\\b", "down"},
-    {"\\bgb\\-dry\\b", "derry"},
-    {"\\bgb\\-dud\\b", "dudley"},
-    {"\\bgb\\-eal\\b", "ealing"},
-    {"\\bgb\\-eng\\b", "eng"},
-    {"\\bgb\\-ess\\b", "essex"},
-    {"\\bgb\\-fif\\b", "fife"},
-    {"\\bgb\\-ken\\b", "kent"},
-    {"\\bgb\\-lrn\\b", "larne"},
-    {"\\bgb\\-lut\\b", "luton"},
-    {"\\bgb\\-mry\\b", "moray"},
-    {"\\bgb\\-myl\\b", "moyle"},
-    {"\\bgb\\-nir\\b", "n.i."},
-    {"\\bgb\\-omh\\b", "omagh"},
-    {"\\bgb\\-pol\\b", "poole"},
-    {"\\bgb\\-pow\\b", "powys"},
-    {"\\bgb\\-wgn\\b", "wigan"},
-    {"\\bgb\\-wls\\b", "wales"},
-    {"\\bgb\\-yor\\b", "york"},
-    {"\\bhalton\\b", "gb-hal"},
-    {"\\bharrow\\b", "gb-hrw"},
-    {"\\bmedway\\b", "gb-mdw"},
-    {"\\bmerton\\b", "gb-mrt"},
-    {"\\bnewham\\b", "gb-nwm"},
-    {"\\boldham\\b", "gb-old"},
-    {"\\bparade\\b", "pde"},
-    {"\\bslough\\b", "gb-slg"},
-    {"\\bstreet\\b", "st"},
-    {"\\bsurrey\\b", "gb-sry"},
-    {"\\bsutton\\b", "gb-stn"},
-    {"\\btorbay\\b", "gb-tob"},
-    {"\\bwirral\\b", "gb-wrl"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bmount\\b", "mt"},
-    {"\\bnorth\\b", "n"},
-    {"\\bplace\\b", "pl"},
-    {"\\bpoint\\b", "pt"},
-    {"\\bsaint\\b", "st"},
-    {"\\bsouth\\b", "s"},
-    {"\\beast\\b", "e"},
-    {"\\bg\\.b\\.\\b", "gb"},
-    {"\\blane\\b", "ln"},
-    {"\\broad\\b", "rd"},
-    {"\\bu\\.k\\.\\b", "gb"},
-    {"\\bwest\\b", "w"},
-    {"\\bg\\.b\\b", "gb"},
-    {"\\bmt\\.\\b", "mt"},
-    {"\\bnth\\b", "n"},
-    {"\\bpt\\.\\b", "pt"},
-    {"\\bst\\.\\b", "st"},
-    {"\\bsth\\b", "s"},
-    {"\\bu\\.k\\b", "gb"},
-    {"\\be\\.\\b", "e"},
-    {"\\bn\\.\\b", "n"},
-    {"\\bs\\.\\b", "s"},
-    {"\\buk\\b", "gb"},
-    {"\\bw\\.\\b", "w"},
-};
+const char* kRules_GB =
+"\\bbath\\s+and\\s+north\\s+east\\s+somerset\\b\000gb-bas\000"
+"\\bdungannon\\s+and\\s+south\\s+tyrone\\b\000gb-dgn\000"
+"\\bcheshire\\s+west\\s+and\\s+chester\\b\000gb-chw\000"
+"\\bnewry\\s+and\\s+mourne\\s+district\\b\000gb-nym\000"
+"\\beast\\s+riding\\s+of\\s+yorkshire\\b\000gb-ery\000"
+"\\bmetropolitan\\s+borough\\s+of\\b\000\000"
+"\\bnorth\\s+east\\s+lincolnshire\\b\000gb-nel\000"
+"\\bhammersmith\\s+and\\s+fulham\\b\000gb-hmf\000"
+"\\bkensington\\s+and\\s+chelsea\\b\000gb-kec\000"
+"\\bwindsor\\s+and\\s+maidenhead\\b\000gb-wnm\000"
+"\\bblackburn\\s+with\\s+darwen\\b\000gb-bbd\000"
+"\\bdumfries\\s+and\\s+galloway\\b\000gb-dgy\000"
+"\\bsouth\\s+gloucestershire\\b\000gb-sgc\000"
+"\\bthe\\s+vale\\s+of\\s+glamorgan\\b\000gb-vgl\000"
+"\\bbarking\\s+and\\s+dagenham\\b\000gb-bdg\000"
+"\\bcentral\\s+bedfordshire\\b\000gb-cbf\000"
+"\\bkingston\\s+upon\\s+thames\\b\000gb-ktt\000"
+"\\bredcar\\s+and\\s+cleveland\\b\000gb-rcc\000"
+"\\brhondda\\,\\s+cynon\\,\\s+taff\\b\000gb-rct\000"
+"\\brichmond\\s+upon\\s+thames\\b\000gb-ric\000"
+"\\bthe\\s+scottish\\s+borders\\b\000gb-scb\000"
+"\\beast\\s+dunbartonshire\\b\000gb-edu\000"
+"\\bnewcastle\\s+upon\\s+tyne\\b\000gb-net\000"
+"\\bwest\\s+dunbartonshire\\b\000gb-wdu\000"
+"\\bkingston\\s+upon\\s+hull\\b\000gb-khl\000"
+"\\bliverpool\\s+district\\b\000gb-liv\000"
+"\\bnorth\\s+lincolnshire\\b\000gb-nln\000"
+"\\btelford\\s+and\\s+wrekin\\b\000gb-tfw\000"
+"\\bbrighton\\s+and\\s+hove\\b\000gb-bnh\000"
+"\\bcity\\s+of\\s+edinburgh\\b\000gb-edh\000"
+"\\beast\\s+renfrewshire\\b\000gb-erw\000"
+"\\bkirklees\\s+district\\b\000gb-kir\000"
+"\\blondon\\s+borough\\s+of\\b\000\000"
+"\\bneath\\s+port\\s+talbot\\b\000gb-ntl\000"
+"\\bnorth\\s+lanarkshire\\b\000gb-nlk\000"
+"\\bperth\\s+and\\s+kinross\\b\000gb-pkn\000"
+"\\bsouth\\s+lanarkshire\\b\000gb-slk\000"
+"\\bbracknell\\s+forest\\b\000gb-brc\000"
+"\\bclackmannanshire\\b\000gb-clk\000"
+"\\bisle\\s+of\\s+anglesey\\b\000gb-agy\000"
+"\\bnorthamptonshire\\b\000gb-nth\000"
+"\\bnorthern\\s+ireland\\b\000n.i.\000"
+"\\bshetland\\s+islands\\b\000gb-zet\000"
+"\\bstockton\\-on\\-tees\\b\000gb-stt\000"
+"\\bargyll\\s+and\\s+bute\\b\000gb-agb\000"
+"\\bbuckinghamshire\\b\000gb-bkm\000"
+"\\bcarmarthenshire\\b\000gb-cmn\000"
+"\\bcity\\s+of\\s+bristol\\b\000gb-bst\000"
+"\\bgloucestershire\\b\000gb-gls\000"
+"\\bnorth\\s+yorkshire\\b\000gb-nyk\000"
+"\\bnottinghamshire\\b\000gb-ntt\000"
+"\\bsefton\\s+district\\b\000gb-sft\000"
+"\\bsouthend\\-on\\-sea\\b\000gb-sos\000"
+"\\bcambridgeshire\\b\000gb-cam\000"
+"\\bcity\\s+of\\s+london\\b\000gb-lnd\000"
+"\\bleeds\\s+district\\b\000gb-lds\000"
+"\\bleicestershire\\b\000gb-lec\000"
+"\\bmerthyr\\s+tydfil\\b\000gb-mty\000"
+"\\bnorth\\s+ayrshire\\b\000gb-nay\000"
+"\\bnorth\\s+somerset\\b\000gb-nsm\000"
+"\\bnorth\\s+tyneside\\b\000gb-nty\000"
+"\\bnorthumberland\\b\000gb-nbl\000"
+"\\borkney\\s+islands\\b\000gb-ork\000"
+"\\bsouth\\s+ayrshire\\b\000gb-say\000"
+"\\bsouth\\s+tyneside\\b\000gb-sty\000"
+"\\bstoke\\-on\\-trent\\b\000gb-ste\000"
+"\\bwaltham\\s+forest\\b\000gb-wft\000"
+"\\bwest\\s+berkshire\\b\000gb-wbk\000"
+"\\bworcestershire\\b\000gb-wor\000"
+"\\baberdeen\\s+city\\b\000gb-abe\000"
+"\\baberdeenshire\\b\000gb-abd\000"
+"\\bblaenau\\s+gwent\\b\000gb-bgw\000"
+"\\bcarrickfergus\\b\000gb-ckf\000"
+"\\bcheshire\\s+east\\b\000gb-che\000"
+"\\bcounty\\s+durham\\b\000gb-dur\000"
+"\\beast\\s+ayrshire\\b\000gb-eay\000"
+"\\bherefordshire\\b\000gb-hef\000"
+"\\bhertfordshire\\b\000gb-hrt\000"
+"\\bisle\\s+of\\s+wight\\b\000gb-iow\000"
+"\\bmiddlesbrough\\b\000gb-mdb\000"
+"\\bmilton\\s+keynes\\b\000gb-mik\000"
+"\\bmonmouthshire\\b\000gb-mon\000"
+"\\bpembrokeshire\\b\000gb-pem\000"
+"\\bstaffordshire\\b\000gb-sts\000"
+"\\btower\\s+hamlets\\b\000gb-twh\000"
+"\\bwolverhampton\\b\000gb-wlv\000"
+"\\bdenbighshire\\b\000gb-den\000"
+"\\beast\\s+lothian\\b\000gb-eln\000"
+"\\bfulmodestone\\b\000fulmodeston\000"
+"\\bglasgow\\s+city\\b\000gb-glg\000"
+"\\blincolnshire\\b\000gb-lin\000"
+"\\bnewtownabbey\\b\000gb-nta\000"
+"\\bpeterborough\\b\000gb-pte\000"
+"\\brenfrewshire\\b\000gb-rfw\000"
+"\\bwarwickshire\\b\000gb-war\000"
+"\\bwest\\s+lothian\\b\000gb-wln\000"
+"\\bbournemouth\\b\000gb-bmh\000"
+"\\bcastlereagh\\b\000gb-csr\000"
+"\\bdundee\\s+city\\b\000gb-dnd\000"
+"\\bdunnamanagh\\b\000dunamanagh\000"
+"\\beast\\s+sussex\\b\000gb-esx\000"
+"\\beilean\\s+siar\\b\000gb-els\000"
+"\\bking\'s\\s+stag\\b\000king stag\000"
+"\\bmagherafelt\\b\000gb-mft\000"
+"\\boxfordshire\\b\000gb-oxf\000"
+"\\bsouthampton\\b\000gb-sth\000"
+"\\bwest\\s+sussex\\b\000gb-wsx\000"
+"\\bwestminster\\b\000gb-wsm\000"
+"\\bballymoney\\b\000gb-bly\000"
+"\\bbirmingham\\b\000gb-bir\000"
+"\\bborough\\s+of\\b\000\000"
+"\\bcaerphilly\\b\000gb-cay\000"
+"\\bcalderdale\\b\000gb-cld\000"
+"\\bceredigion\\b\000gb-cgn\000"
+"\\bculnacnock\\b\000culnacnoc\000"
+"\\bdarlington\\b\000gb-dal\000"
+"\\bderbyshire\\b\000gb-dby\000"
+"\\bflintshire\\b\000gb-fln\000"
+"\\bgroesllwyd\\b\000groes-lwyd\000"
+"\\bhartlepool\\b\000gb-hpl\000"
+"\\bhillingdon\\b\000gb-hil\000"
+"\\binverclyde\\b\000gb-ivc\000"
+"\\blancashire\\b\000gb-lan\000"
+"\\bmanchester\\b\000gb-man\000"
+"\\bmidlothian\\b\000gb-mln\000"
+"\\bn\\.\\s+ireland\\b\000n.i.\000"
+"\\bnorth\\s+down\\b\000gb-ndn\000"
+"\\bnottingham\\b\000gb-ngm\000"
+"\\bportsmouth\\b\000gb-por\000"
+"\\bshropshire\\b\000gb-shr\000"
+"\\bst\\.\\s+helens\\b\000gb-shn\000"
+"\\bsunderland\\b\000gb-snd\000"
+"\\bwandsworth\\b\000gb-wnd\000"
+"\\bwarrington\\b\000gb-wrt\000"
+"\\bballymena\\b\000gb-bla\000"
+"\\bbanbridge\\b\000gb-bnb\000"
+"\\bblackpool\\b\000gb-bpl\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bcoleraine\\b\000gb-clr\000"
+"\\bcookstown\\b\000gb-ckt\000"
+"\\bcraigavon\\b\000gb-cgv\000"
+"\\bdoncaster\\b\000gb-dnc\000"
+"\\bfermanagh\\b\000gb-fer\000"
+"\\bgateshead\\b\000gb-gat\000"
+"\\bgreenwich\\b\000gb-gre\000"
+"\\bhampshire\\b\000gb-ham\000"
+"\\bislington\\b\000gb-isl\000"
+"\\bleicester\\b\000gb-lce\000"
+"\\bn\\s+ireland\\b\000n.i.\000"
+"\\bn\\.ireland\\b\000n.i.\000"
+"\\bredbridge\\b\000gb-rdb\000"
+"\\brotherham\\b\000gb-rot\000"
+"\\bsheffield\\b\000gb-shf\000"
+"\\bsouthwark\\b\000gb-swk\000"
+"\\bstockport\\b\000gb-skp\000"
+"\\bwakefield\\b\000gb-wkf\000"
+"\\bwiltshire\\b\000gb-wil\000"
+"\\bwokingham\\b\000gb-wok\000"
+"\\bbarnsley\\b\000gb-bns\000"
+"\\bbradford\\b\000gb-brd\000"
+"\\bbridgend\\b\000gb-bge\000"
+"\\bcheshire\\b\000gb-chs\000"
+"\\bcornwall\\b\000gb-con\000"
+"\\bcoventry\\b\000gb-cov\000"
+"\\bcrescent\\b\000cres\000"
+"\\bdistrict\\b\000\000"
+"\\bhare\\s+law\\b\000harelaw\000"
+"\\bharingey\\b\000gb-hry\000"
+"\\bhavering\\b\000gb-hav\000"
+"\\bhighland\\b\000gb-hld\000"
+"\\bhounslow\\b\000gb-hns\000"
+"\\bknowsley\\b\000gb-kwl\000"
+"\\blewisham\\b\000gb-lew\000"
+"\\blimavady\\b\000gb-lmv\000"
+"\\bplymouth\\b\000gb-ply\000"
+"\\brochdale\\b\000gb-rch\000"
+"\\bsandwell\\b\000gb-saw\000"
+"\\bscotland\\b\000gb-sct\000"
+"\\bsolihull\\b\000gb-sol\000"
+"\\bsomerset\\b\000gb-som\000"
+"\\bstirling\\b\000gb-stg\000"
+"\\bstrabane\\b\000gb-stb\000"
+"\\btameside\\b\000gb-tam\000"
+"\\bthurrock\\b\000gb-thr\000"
+"\\btrafford\\b\000gb-trf\000"
+"\\bbedford\\b\000gb-bdf\000"
+"\\bbelfast\\b\000gb-bfs\000"
+"\\bbromley\\b\000gb-bry\000"
+"\\bcardiff\\b\000gb-crf\000"
+"\\bcity\\s+of\\b\000\000"
+"\\bcroydon\\b\000gb-cry\000"
+"\\bcumbria\\b\000gb-cma\000"
+"\\benfield\\b\000gb-enf\000"
+"\\bengland\\b\000eng\000"
+"\\bfalkirk\\b\000gb-fal\000"
+"\\bgwynedd\\b\000gb-gwn\000"
+"\\bhackney\\b\000gb-hck\000"
+"\\bhighway\\b\000hwy\000"
+"\\blambeth\\b\000gb-lbh\000"
+"\\blisburn\\b\000gb-lsb\000"
+"\\bnewport\\b\000gb-nwp\000"
+"\\bnorfolk\\b\000gb-nfk\000"
+"\\bparkway\\b\000pkwy\000"
+"\\breading\\b\000gb-rdg\000"
+"\\brutland\\b\000gb-rut\000"
+"\\bsalford\\b\000gb-slf\000"
+"\\bsuffolk\\b\000gb-sfk\000"
+"\\bswansea\\b\000gb-swa\000"
+"\\bswindon\\b\000gb-swd\000"
+"\\btorfaen\\b\000gb-tof\000"
+"\\bwalsall\\b\000gb-wll\000"
+"\\bwrexham\\b\000gb-wrx\000"
+"\\bavenue\\b\000ave\000"
+"\\bcommon\\b\000comm\000"
+"\\bgb\\-ans\\b\000angus\000"
+"\\bgb\\-ant\\b\000antrim\000"
+"\\bgb\\-ard\\b\000ards\000"
+"\\bgb\\-arm\\b\000armagh\000"
+"\\bgb\\-ben\\b\000brent\000"
+"\\bgb\\-bex\\b\000bexley\000"
+"\\bgb\\-bne\\b\000barnet\000"
+"\\bgb\\-bol\\b\000bolton\000"
+"\\bgb\\-bur\\b\000bury\000"
+"\\bgb\\-cmd\\b\000camden\000"
+"\\bgb\\-cwy\\b\000conwy\000"
+"\\bgb\\-der\\b\000derby\000"
+"\\bgb\\-dev\\b\000devon\000"
+"\\bgb\\-dor\\b\000dorset\000"
+"\\bgb\\-dow\\b\000down\000"
+"\\bgb\\-dry\\b\000derry\000"
+"\\bgb\\-dud\\b\000dudley\000"
+"\\bgb\\-eal\\b\000ealing\000"
+"\\bgb\\-eng\\b\000eng\000"
+"\\bgb\\-ess\\b\000essex\000"
+"\\bgb\\-fif\\b\000fife\000"
+"\\bgb\\-ken\\b\000kent\000"
+"\\bgb\\-lrn\\b\000larne\000"
+"\\bgb\\-lut\\b\000luton\000"
+"\\bgb\\-mry\\b\000moray\000"
+"\\bgb\\-myl\\b\000moyle\000"
+"\\bgb\\-nir\\b\000n.i.\000"
+"\\bgb\\-omh\\b\000omagh\000"
+"\\bgb\\-pol\\b\000poole\000"
+"\\bgb\\-pow\\b\000powys\000"
+"\\bgb\\-wgn\\b\000wigan\000"
+"\\bgb\\-wls\\b\000wales\000"
+"\\bgb\\-yor\\b\000york\000"
+"\\bhalton\\b\000gb-hal\000"
+"\\bharrow\\b\000gb-hrw\000"
+"\\bmedway\\b\000gb-mdw\000"
+"\\bmerton\\b\000gb-mrt\000"
+"\\bnewham\\b\000gb-nwm\000"
+"\\boldham\\b\000gb-old\000"
+"\\bparade\\b\000pde\000"
+"\\bslough\\b\000gb-slg\000"
+"\\bstreet\\b\000st\000"
+"\\bsurrey\\b\000gb-sry\000"
+"\\bsutton\\b\000gb-stn\000"
+"\\btorbay\\b\000gb-tob\000"
+"\\bwirral\\b\000gb-wrl\000"
+"\\bcourt\\b\000ct\000"
+"\\bdrive\\b\000dr\000"
+"\\bmount\\b\000mt\000"
+"\\bnorth\\b\000n\000"
+"\\bplace\\b\000pl\000"
+"\\bpoint\\b\000pt\000"
+"\\bsaint\\b\000st\000"
+"\\bsouth\\b\000s\000"
+"\\beast\\b\000e\000"
+"\\bg\\.b\\.\\b\000gb\000"
+"\\blane\\b\000ln\000"
+"\\broad\\b\000rd\000"
+"\\bu\\.k\\.\\b\000gb\000"
+"\\bwest\\b\000w\000"
+"\\bg\\.b\\b\000gb\000"
+"\\bmt\\.\\b\000mt\000"
+"\\bnth\\b\000n\000"
+"\\bpt\\.\\b\000pt\000"
+"\\bst\\.\\b\000st\000"
+"\\bsth\\b\000s\000"
+"\\bu\\.k\\b\000gb\000"
+"\\be\\.\\b\000e\000"
+"\\bn\\.\\b\000n\000"
+"\\bs\\.\\b\000s\000"
+"\\buk\\b\000gb\000"
+"\\bw\\.\\b\000w\000"
+;
+int kNumRules_GB = 286;
 
-const Rule kRules_GR[] = {
-    {"\\banatoliki\\s+makedonia\\s+kai\\s+thraki\\b", "a"},
-    {"\\baitolia\\s+kai\\s+akarnania\\b", "01"},
-    {"\\bkentriki\\s+makedonia\\b", "b"},
-    {"\\bdytiki\\s+makedonia\\b", "c"},
-    {"\\baitoloakarnania\\b", "01"},
-    {"\\bdytiki\\s+ellada\\b", "g"},
-    {"\\bsterea\\s+ellada\\b", "h"},
-    {"\\bvoreio\\s+aigaio\\b", "k"},
-    {"\\bmetamorfossi\\b", "metamorfosi"},
-    {"\\bnotio\\s+aigaio\\b", "l"},
-    {"\\bpeloponnisos\\b", "j"},
-    {"\\bthessaloniki\\b", "54"},
-    {"\\bdodekanisos\\b", "81"},
-    {"\\bionia\\s+nisia\\b", "f"},
-    {"\\bkaissariani\\b", "kesariani"},
-    {"\\banatolikos\\b", "e"},
-    {"\\bchalkidiki\\b", "64"},
-    {"\\bkefallonia\\b", "23"},
-    {"\\bperifereia\\b", "periphery"},
-    {"\\bthesprotia\\b", "32"},
-    {"\\bagio\\s+oros\\b", "69"},
-    {"\\bcholargos\\b", "holargos"},
-    {"\\bevrytania\\b", "05"},
-    {"\\bfthiotida\\b", "06"},
-    {"\\bkorinthia\\b", "15"},
-    {"\\bnomarchia\\b", "nomo"},
-    {"\\bthessalia\\b", "e"},
-    {"\\bzakynthos\\b", "21"},
-    {"\\bargolida\\b", "11"},
-    {"\\bchaidari\\b", "haidari"},
-    {"\\bchalkida\\b", "halkida"},
-    {"\\bioannina\\b", "33"},
-    {"\\birakleio\\b", "91"},
-    {"\\bkarditsa\\b", "41"},
-    {"\\bkastoria\\b", "56"},
-    {"\\bkifissia\\b", "kifisia"},
-    {"\\bkyklades\\b", "82"},
-    {"\\bmagnisia\\b", "43"},
-    {"\\bmaroussi\\b", "marousi"},
-    {"\\bmessinia\\b", "17"},
-    {"\\brethymni\\b", "93"},
-    {"\\brethymno\\b", "93"},
-    {"\\banatoli\\b", "e"},
-    {"\\barkadia\\b", "12"},
-    {"\\bdytikos\\b", "w"},
-    {"\\bflorina\\b", "63"},
-    {"\\bgrevena\\b", "51"},
-    {"\\bimathia\\b", "53"},
-    {"\\bipeiros\\b", "d"},
-    {"\\bkerkyra\\b", "22"},
-    {"\\blakonia\\b", "16"},
-    {"\\blasithi\\b", "92"},
-    {"\\blefkada\\b", "24"},
-    {"\\bpapagou\\b", "papagos"},
-    {"\\bpiraeus\\b", "pireas"},
-    {"\\bpreveza\\b", "34"},
-    {"\\btrikala\\b", "44"},
-    {"\\bvoiotia\\b", "03"},
-    {"\\bvoreioy\\b", "n"},
-    {"\\bachaia\\b", "13"},
-    {"\\battiki\\b", "i"},
-    {"\\bchania\\b", "94"},
-    {"\\bevvoia\\b", "04"},
-    {"\\bfokida\\b", "07"},
-    {"\\bkavala\\b", "55"},
-    {"\\bkilkis\\b", "57"},
-    {"\\bkozani\\b", "58"},
-    {"\\blarisa\\b", "42"},
-    {"\\blesvos\\b", "83"},
-    {"\\bnotioy\\b", "s"},
-    {"\\bpieria\\b", "61"},
-    {"\\brodopi\\b", "73"},
-    {"\\bserres\\b", "62"},
-    {"\\bvoreio\\b", "n"},
-    {"\\bxanthi\\b", "72"},
-    {"\\bchios\\b", "85"},
-    {"\\bdrama\\b", "52"},
-    {"\\bevros\\b", "71"},
-    {"\\bhania\\b", "94"},
-    {"\\bileia\\b", "14"},
-    {"\\bkriti\\b", "m"},
-    {"\\bnorth\\b", "n"},
-    {"\\bnotio\\b", "s"},
-    {"\\bpella\\b", "59"},
-    {"\\bsamos\\b", "84"},
-    {"\\bsouth\\b", "s"},
-    {"\\barta\\b", "31"},
-    {"\\bdysi\\b", "w"},
-    {"\\beast\\b", "e"},
-    {"\\bhios\\b", "85"},
-    {"\\bkato\\b", "s"},
-    {"\\bwest\\b", "w"},
-    {"\\ba\\s+1\\b", "i"},
-    {"\\bano\\b", "n"},
-};
+const char* kRules_GR =
+"\\banatoliki\\s+makedonia\\s+kai\\s+thraki\\b\000a\000"
+"\\baitolia\\s+kai\\s+akarnania\\b\00001\000"
+"\\bkentriki\\s+makedonia\\b\000b\000"
+"\\bdytiki\\s+makedonia\\b\000c\000"
+"\\baitoloakarnania\\b\00001\000"
+"\\bdytiki\\s+ellada\\b\000g\000"
+"\\bsterea\\s+ellada\\b\000h\000"
+"\\bvoreio\\s+aigaio\\b\000k\000"
+"\\bmetamorfossi\\b\000metamorfosi\000"
+"\\bnotio\\s+aigaio\\b\000l\000"
+"\\bpeloponnisos\\b\000j\000"
+"\\bthessaloniki\\b\00054\000"
+"\\bdodekanisos\\b\00081\000"
+"\\bionia\\s+nisia\\b\000f\000"
+"\\bkaissariani\\b\000kesariani\000"
+"\\banatolikos\\b\000e\000"
+"\\bchalkidiki\\b\00064\000"
+"\\bkefallonia\\b\00023\000"
+"\\bperifereia\\b\000periphery\000"
+"\\bthesprotia\\b\00032\000"
+"\\bagio\\s+oros\\b\00069\000"
+"\\bcholargos\\b\000holargos\000"
+"\\bevrytania\\b\00005\000"
+"\\bfthiotida\\b\00006\000"
+"\\bkorinthia\\b\00015\000"
+"\\bnomarchia\\b\000nomo\000"
+"\\bthessalia\\b\000e\000"
+"\\bzakynthos\\b\00021\000"
+"\\bargolida\\b\00011\000"
+"\\bchaidari\\b\000haidari\000"
+"\\bchalkida\\b\000halkida\000"
+"\\bioannina\\b\00033\000"
+"\\birakleio\\b\00091\000"
+"\\bkarditsa\\b\00041\000"
+"\\bkastoria\\b\00056\000"
+"\\bkifissia\\b\000kifisia\000"
+"\\bkyklades\\b\00082\000"
+"\\bmagnisia\\b\00043\000"
+"\\bmaroussi\\b\000marousi\000"
+"\\bmessinia\\b\00017\000"
+"\\brethymni\\b\00093\000"
+"\\brethymno\\b\00093\000"
+"\\banatoli\\b\000e\000"
+"\\barkadia\\b\00012\000"
+"\\bdytikos\\b\000w\000"
+"\\bflorina\\b\00063\000"
+"\\bgrevena\\b\00051\000"
+"\\bimathia\\b\00053\000"
+"\\bipeiros\\b\000d\000"
+"\\bkerkyra\\b\00022\000"
+"\\blakonia\\b\00016\000"
+"\\blasithi\\b\00092\000"
+"\\blefkada\\b\00024\000"
+"\\bpapagou\\b\000papagos\000"
+"\\bpiraeus\\b\000pireas\000"
+"\\bpreveza\\b\00034\000"
+"\\btrikala\\b\00044\000"
+"\\bvoiotia\\b\00003\000"
+"\\bvoreioy\\b\000n\000"
+"\\bachaia\\b\00013\000"
+"\\battiki\\b\000i\000"
+"\\bchania\\b\00094\000"
+"\\bevvoia\\b\00004\000"
+"\\bfokida\\b\00007\000"
+"\\bkavala\\b\00055\000"
+"\\bkilkis\\b\00057\000"
+"\\bkozani\\b\00058\000"
+"\\blarisa\\b\00042\000"
+"\\blesvos\\b\00083\000"
+"\\bnotioy\\b\000s\000"
+"\\bpieria\\b\00061\000"
+"\\brodopi\\b\00073\000"
+"\\bserres\\b\00062\000"
+"\\bvoreio\\b\000n\000"
+"\\bxanthi\\b\00072\000"
+"\\bchios\\b\00085\000"
+"\\bdrama\\b\00052\000"
+"\\bevros\\b\00071\000"
+"\\bhania\\b\00094\000"
+"\\bileia\\b\00014\000"
+"\\bkriti\\b\000m\000"
+"\\bnorth\\b\000n\000"
+"\\bnotio\\b\000s\000"
+"\\bpella\\b\00059\000"
+"\\bsamos\\b\00084\000"
+"\\bsouth\\b\000s\000"
+"\\barta\\b\00031\000"
+"\\bdysi\\b\000w\000"
+"\\beast\\b\000e\000"
+"\\bhios\\b\00085\000"
+"\\bkato\\b\000s\000"
+"\\bwest\\b\000w\000"
+"\\ba\\s+1\\b\000i\000"
+"\\bano\\b\000n\000"
+;
+int kNumRules_GR = 94;
 
-const Rule kRules_HK[] = {
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bhong\\s+kong\\b", "hk"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\bdistrict\\b", ""},
-    {"\\bhongkong\\b", "hk"},
-    {"\\bjunction\\b", "jct"},
-    {"\\bcentral\\b", "c"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\bparkway\\b", "pkwy"},
-    {"\\bseventh\\b", "7"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcentre\\b", "center"},
-    {"\\bcommon\\b", "comm"},
-    {"\\beighth\\b", "8"},
-    {"\\bfourth\\b", "4"},
-    {"\\bparade\\b", "pde"},
-    {"\\bsecond\\b", "2"},
-    {"\\bstreet\\b", "st"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bdrive\\b", "dr"},
-    {"\\beight\\b", "8"},
-    {"\\bfifth\\b", "5"},
-    {"\\bfirst\\b", "1"},
-    {"\\bmount\\b", "mt"},
-    {"\\bninth\\b", "9"},
-    {"\\bnorth\\b", "n"},
-    {"\\bplace\\b", "pl"},
-    {"\\bpoint\\b", "pt"},
-    {"\\bsaint\\b", "st"},
-    {"\\bseven\\b", "7"},
-    {"\\bsixth\\b", "6"},
-    {"\\bsouth\\b", "s"},
-    {"\\btenth\\b", "10"},
-    {"\\bthird\\b", "3"},
-    {"\\bthree\\b", "3"},
-    {"\\beast\\b", "e"},
-    {"\\bfive\\b", "5"},
-    {"\\bfour\\b", "4"},
-    {"\\blane\\b", "ln"},
-    {"\\bnine\\b", "9"},
-    {"\\broad\\b", "rd"},
-    {"\\bwest\\b", "w"},
-    {"\\bh\\s+k\\b", "hk"},
-    {"\\bnth\\b", "n"},
-    {"\\bone\\b", "1"},
-    {"\\bsix\\b", "6"},
-    {"\\bsth\\b", "s"},
-    {"\\bten\\b", "10"},
-    {"\\btwo\\b", "2"},
-};
+const char* kRules_HK =
+"\\bboulevard\\b\000blvd\000"
+"\\bhong\\s+kong\\b\000hk\000"
+"\\bcrescent\\b\000cres\000"
+"\\bdistrict\\b\000\000"
+"\\bhongkong\\b\000hk\000"
+"\\bjunction\\b\000jct\000"
+"\\bcentral\\b\000c\000"
+"\\bhighway\\b\000hwy\000"
+"\\bparkway\\b\000pkwy\000"
+"\\bseventh\\b\0007\000"
+"\\bavenue\\b\000ave\000"
+"\\bcentre\\b\000center\000"
+"\\bcommon\\b\000comm\000"
+"\\beighth\\b\0008\000"
+"\\bfourth\\b\0004\000"
+"\\bparade\\b\000pde\000"
+"\\bsecond\\b\0002\000"
+"\\bstreet\\b\000st\000"
+"\\bcourt\\b\000ct\000"
+"\\bdrive\\b\000dr\000"
+"\\beight\\b\0008\000"
+"\\bfifth\\b\0005\000"
+"\\bfirst\\b\0001\000"
+"\\bmount\\b\000mt\000"
+"\\bninth\\b\0009\000"
+"\\bnorth\\b\000n\000"
+"\\bplace\\b\000pl\000"
+"\\bpoint\\b\000pt\000"
+"\\bsaint\\b\000st\000"
+"\\bseven\\b\0007\000"
+"\\bsixth\\b\0006\000"
+"\\bsouth\\b\000s\000"
+"\\btenth\\b\00010\000"
+"\\bthird\\b\0003\000"
+"\\bthree\\b\0003\000"
+"\\beast\\b\000e\000"
+"\\bfive\\b\0005\000"
+"\\bfour\\b\0004\000"
+"\\blane\\b\000ln\000"
+"\\bnine\\b\0009\000"
+"\\broad\\b\000rd\000"
+"\\bwest\\b\000w\000"
+"\\bh\\s+k\\b\000hk\000"
+"\\bnth\\b\000n\000"
+"\\bone\\b\0001\000"
+"\\bsix\\b\0006\000"
+"\\bsth\\b\000s\000"
+"\\bten\\b\00010\000"
+"\\btwo\\b\0002\000"
+;
+int kNumRules_HK = 49;
 
-const Rule kRules_ID[] = {
-    {"\\bspecial\\s+region\\s+of\\s+yogyakarta\\b", "yo"},
-    {"\\bnanggroe\\s+aceh\\s+darussalam\\b", "ac"},
-    {"\\bbangka\\s+belitung\\s+islands\\b", "bb"},
-    {"\\bnaggroe\\s+aceh\\s+darussalam\\b", "ac"},
-    {"\\bspecial\\s+region\\s+of\\s+papua\\b", "pa"},
-    {"\\bspecial\\s+region\\s+of\\s+aceh\\b", "ac"},
-    {"\\bcentral\\s+kalimantan\\b", "kt"},
-    {"\\bsoutheast\\s+sulawesi\\b", "sg"},
-    {"\\bcentral\\s+sulawesi\\b", "st"},
-    {"\\bbangka\\s+belitung\\b", "bb"},
-    {"\\bjakarta\\s+pusat\\b", "jk"},
-    {"\\bjakarta\\s+utara\\b", "jk"},
-    {"\\bcentral\\s+java\\b", "jt"},
-    {"\\briau\\s+islands\\b", "kr"},
-    {"\\bdki\\s+jakarta\\b", "jk"},
-    {"\\bjawa\\s+tengah\\b", "jt"},
-    {"\\byogyakarta\\b", "yo"},
-    {"\\bgorontalo\\b", "go"},
-    {"\\bindonesia\\b", "id"},
-    {"\\bbengkulu\\b", "be"},
-    {"\\bnational\\b", "nasional"},
-    {"\\bjakarta\\b", "jk"},
-    {"\\blampung\\b", "la"},
-    {"\\bselatan\\b", "s"},
-    {"\\bbanten\\b", "bt"},
-    {"\\bmaluku\\b", "ma"},
-    {"\\bnumber\\b", "#"},
-    {"\\bbarat\\b", "w"},
-    {"\\bblock\\b", "blk"},
-    {"\\bjalan\\b", "jl"},
-    {"\\bjambi\\b", "ja"},
-    {"\\bnorth\\b", "n"},
-    {"\\bpapua\\b", "pa"},
-    {"\\bsouth\\b", "s"},
-    {"\\btimur\\b", "e"},
-    {"\\butara\\b", "n"},
-    {"\\bxviii\\b", "18"},
-    {"\\baceh\\b", "ac"},
-    {"\\bbali\\b", "ba"},
-    {"\\bblk\\.\\b", "blk"},
-    {"\\bblok\\b", "blk"},
-    {"\\beast\\b", "e"},
-    {"\\bjln\\.\\b", "jl"},
-    {"\\briau\\b", "ri"},
-    {"\\broad\\b", "rd"},
-    {"\\bviii\\b", "8"},
-    {"\\bwest\\b", "w"},
-    {"\\bxiii\\b", "13"},
-    {"\\bxvii\\b", "17"},
-    {"\\biii\\b", "3"},
-    {"\\bjl\\.\\b", "jl"},
-    {"\\bjln\\b", "jl"},
-    {"\\bno\\.\\b", "#"},
-    {"\\bnum\\b", "#"},
-    {"\\bvii\\b", "7"},
-    {"\\bxii\\b", "12"},
-    {"\\bxiv\\b", "14"},
-    {"\\bxix\\b", "19"},
-    {"\\bxvi\\b", "16"},
-    {"\\b10\\b", "x"},
-    {"\\bii\\b", "2"},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bno\\b", "#"},
-    {"\\bvi\\b", "6"},
-    {"\\bxi\\b", "11"},
-    {"\\bxv\\b", "15"},
-    {"\\bxx\\b", "20"},
-    {"\\bi\\b", "1"},
-    {"\\bv\\b", "5"},
-};
+const char* kRules_ID =
+"\\bspecial\\s+region\\s+of\\s+yogyakarta\\b\000yo\000"
+"\\bnanggroe\\s+aceh\\s+darussalam\\b\000ac\000"
+"\\bbangka\\s+belitung\\s+islands\\b\000bb\000"
+"\\bnaggroe\\s+aceh\\s+darussalam\\b\000ac\000"
+"\\bspecial\\s+region\\s+of\\s+papua\\b\000pa\000"
+"\\bspecial\\s+region\\s+of\\s+aceh\\b\000ac\000"
+"\\bcentral\\s+kalimantan\\b\000kt\000"
+"\\bsoutheast\\s+sulawesi\\b\000sg\000"
+"\\bcentral\\s+sulawesi\\b\000st\000"
+"\\bbangka\\s+belitung\\b\000bb\000"
+"\\bjakarta\\s+pusat\\b\000jk\000"
+"\\bjakarta\\s+utara\\b\000jk\000"
+"\\bcentral\\s+java\\b\000jt\000"
+"\\briau\\s+islands\\b\000kr\000"
+"\\bdki\\s+jakarta\\b\000jk\000"
+"\\bjawa\\s+tengah\\b\000jt\000"
+"\\byogyakarta\\b\000yo\000"
+"\\bgorontalo\\b\000go\000"
+"\\bindonesia\\b\000id\000"
+"\\bbengkulu\\b\000be\000"
+"\\bnational\\b\000nasional\000"
+"\\bjakarta\\b\000jk\000"
+"\\blampung\\b\000la\000"
+"\\bselatan\\b\000s\000"
+"\\bbanten\\b\000bt\000"
+"\\bmaluku\\b\000ma\000"
+"\\bnumber\\b\000#\000"
+"\\bbarat\\b\000w\000"
+"\\bblock\\b\000blk\000"
+"\\bjalan\\b\000jl\000"
+"\\bjambi\\b\000ja\000"
+"\\bnorth\\b\000n\000"
+"\\bpapua\\b\000pa\000"
+"\\bsouth\\b\000s\000"
+"\\btimur\\b\000e\000"
+"\\butara\\b\000n\000"
+"\\bxviii\\b\00018\000"
+"\\baceh\\b\000ac\000"
+"\\bbali\\b\000ba\000"
+"\\bblk\\.\\b\000blk\000"
+"\\bblok\\b\000blk\000"
+"\\beast\\b\000e\000"
+"\\bjln\\.\\b\000jl\000"
+"\\briau\\b\000ri\000"
+"\\broad\\b\000rd\000"
+"\\bviii\\b\0008\000"
+"\\bwest\\b\000w\000"
+"\\bxiii\\b\00013\000"
+"\\bxvii\\b\00017\000"
+"\\biii\\b\0003\000"
+"\\bjl\\.\\b\000jl\000"
+"\\bjln\\b\000jl\000"
+"\\bno\\.\\b\000#\000"
+"\\bnum\\b\000#\000"
+"\\bvii\\b\0007\000"
+"\\bxii\\b\00012\000"
+"\\bxiv\\b\00014\000"
+"\\bxix\\b\00019\000"
+"\\bxvi\\b\00016\000"
+"\\b10\\b\000x\000"
+"\\bii\\b\0002\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bno\\b\000#\000"
+"\\bvi\\b\0006\000"
+"\\bxi\\b\00011\000"
+"\\bxv\\b\00015\000"
+"\\bxx\\b\00020\000"
+"\\bi\\b\0001\000"
+"\\bv\\b\0005\000"
+;
+int kNumRules_ID = 70;
 
-const Rule kRules_IE[] = {
-    {"\\broscommon\\b", "rn"},
-    {"\\btipperary\\b", "ta"},
-    {"\\bwaterford\\b", "wd"},
-    {"\\bwestmeath\\b", "wh"},
-    {"\\bkilkenny\\b", "kk"},
-    {"\\blimerick\\b", "lk"},
-    {"\\blongford\\b", "ld"},
-    {"\\bmonaghan\\b", "mn"},
-    {"\\bdonegal\\b", "dl"},
-    {"\\bireland\\b", "ie"},
-    {"\\bkildare\\b", "ke"},
-    {"\\bleitrim\\b", "lm"},
-    {"\\bterrace\\b", "tce"},
-    {"\\bwexford\\b", "wx"},
-    {"\\bwicklow\\b", "ww"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcarlow\\b", "cw"},
-    {"\\bcenter\\b", "cntr"},
-    {"\\bcounty\\b", "ck"},
-    {"\\bdublin\\b", "d"},
-    {"\\bgalway\\b", "g"},
-    {"\\blaoise\\b", "ls"},
-    {"\\boffaly\\b", "oy"},
-    {"\\bstreet\\b", "st"},
-    {"\\bcavan\\b", "cn"},
-    {"\\bclare\\b", "ce"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bkerry\\b", "ky"},
-    {"\\blaois\\b", "ls"},
-    {"\\blouth\\b", "lh"},
-    {"\\bmeath\\b", "mh"},
-    {"\\bnorth\\b", "n"},
-    {"\\bplace\\b", "pl"},
-    {"\\bsaint\\b", "st"},
-    {"\\bsligo\\b", "so"},
-    {"\\bsouth\\b", "s"},
-    {"\\bcork\\b", "ck"},
-    {"\\beast\\b", "e"},
-    {"\\blane\\b", "ln"},
-    {"\\bmayo\\b", "mo"},
-    {"\\broad\\b", "rd"},
-    {"\\bwalk\\b", "wk"},
-    {"\\bwest\\b", "w"},
-    {"\\byard\\b", "yd"},
-    {"\\bway\\b", "wy"},
-    {"\\bco\\b", "ck"},
-    {"\\bdn\\b", "d"},
-    {"\\bgy\\b", "g"},
-    {"\\bty\\b", "ta"},
-};
+const char* kRules_IE =
+"\\broscommon\\b\000rn\000"
+"\\btipperary\\b\000ta\000"
+"\\bwaterford\\b\000wd\000"
+"\\bwestmeath\\b\000wh\000"
+"\\bkilkenny\\b\000kk\000"
+"\\blimerick\\b\000lk\000"
+"\\blongford\\b\000ld\000"
+"\\bmonaghan\\b\000mn\000"
+"\\bdonegal\\b\000dl\000"
+"\\bireland\\b\000ie\000"
+"\\bkildare\\b\000ke\000"
+"\\bleitrim\\b\000lm\000"
+"\\bterrace\\b\000tce\000"
+"\\bwexford\\b\000wx\000"
+"\\bwicklow\\b\000ww\000"
+"\\bavenue\\b\000ave\000"
+"\\bcarlow\\b\000cw\000"
+"\\bcenter\\b\000cntr\000"
+"\\bcounty\\b\000ck\000"
+"\\bdublin\\b\000d\000"
+"\\bgalway\\b\000g\000"
+"\\blaoise\\b\000ls\000"
+"\\boffaly\\b\000oy\000"
+"\\bstreet\\b\000st\000"
+"\\bcavan\\b\000cn\000"
+"\\bclare\\b\000ce\000"
+"\\bcourt\\b\000ct\000"
+"\\bdrive\\b\000dr\000"
+"\\bkerry\\b\000ky\000"
+"\\blaois\\b\000ls\000"
+"\\blouth\\b\000lh\000"
+"\\bmeath\\b\000mh\000"
+"\\bnorth\\b\000n\000"
+"\\bplace\\b\000pl\000"
+"\\bsaint\\b\000st\000"
+"\\bsligo\\b\000so\000"
+"\\bsouth\\b\000s\000"
+"\\bcork\\b\000ck\000"
+"\\beast\\b\000e\000"
+"\\blane\\b\000ln\000"
+"\\bmayo\\b\000mo\000"
+"\\broad\\b\000rd\000"
+"\\bwalk\\b\000wk\000"
+"\\bwest\\b\000w\000"
+"\\byard\\b\000yd\000"
+"\\bway\\b\000wy\000"
+"\\bco\\b\000ck\000"
+"\\bdn\\b\000d\000"
+"\\bgy\\b\000g\000"
+"\\bty\\b\000ta\000"
+;
+int kNumRules_IE = 50;
 
-const Rule kRules_IN[] = {
-    {"\\bthiruvananthapuram\\b", "tvpm"},
-    {"\\bazimabad\\s+kusumpur\\b", "patna"},
-    {"\\bjammu\\s+and\\s+kashmir\\b", "j&k"},
-    {"\\btiruvananthapuram\\b", "tvpm"},
-    {"\\bchandigarh\\s+city\\b", "ch"},
-    {"\\bjammu\\s+\\&\\s+kashmir\\b", "j&k"},
-    {"\\bgovt\\s+of\\s+india\\b", "goi"},
-    {"\\binternational\\b", "intl"},
-    {"\\bvisakhapatnam\\b", "vskp"},
-    {"\\bchickmagalur\\b", "chicmagalur"},
-    {"\\bchikmagaluru\\b", "chicmagalur"},
-    {"\\bchikmagalur\\b", "chicmagalur"},
-    {"\\bcross\\-roads\\b", "xrd"},
-    {"\\bpataliputra\\b", "patna"},
-    {"\\branga\\s+reddy\\b", "rangareddi"},
-    {"\\bchandigarh\\b", "ch"},
-    {"\\bcross\\-road\\b", "xrd"},
-    {"\\bcrossroads\\b", "xrd"},
-    {"\\bgovernment\\b", "goi"},
-    {"\\bpatliputra\\b", "patna"},
-    {"\\buniversity\\b", "uni"},
-    {"\\bvijayawada\\b", "bza"},
-    {"\\bahmedabad\\b", "ahd"},
-    {"\\bbangalore\\b", "blr"},
-    {"\\bbengaluru\\b", "blr"},
-    {"\\bchar\\-rast\\b", "chaurah"},
-    {"\\bchaurasta\\b", "chaurah"},
-    {"\\bchourasta\\b", "chaurah"},
-    {"\\bcrossroad\\b", "xrd"},
-    {"\\bhyderabad\\b", "hyd"},
-    {"\\bi\\.n\\.d\\.i\\.a\\b", "in"},
-    {"\\bvijaywada\\b", "bza"},
-    {"\\bcalcutta\\b", "kol"},
-    {"\\bchourast\\b", "chaurah"},
-    {"\\bchowrast\\b", "chaurah"},
-    {"\\bcrossing\\b", "xrd"},
-    {"\\bcrossrds\\b", "xrd"},
-    {"\\bjunction\\b", "jn."},
-    {"\\bkolkatta\\b", "kol"},
-    {"\\bvaranasi\\b", "banaras"},
-    {"\\bamdavad\\b", "ahd"},
-    {"\\bbenaras\\b", "banaras"},
-    {"\\bchennai\\b", "che"},
-    {"\\bcollege\\b", "clg"},
-    {"\\bcrossrd\\b", "xrd"},
-    {"\\bgateway\\b", "gtwy"},
-    {"\\bheights\\b", "hts"},
-    {"\\bkeralam\\b", "kl"},
-    {"\\bkolkata\\b", "kol"},
-    {"\\bkolkota\\b", "kol"},
-    {"\\bseventh\\b", "7"},
-    {"\\bvruttha\\b", "cir."},
-    {"\\bx\\s+roads\\b", "xrd"},
-    {"\\bbombay\\b", "bom"},
-    {"\\bcenter\\b", "cen"},
-    {"\\bcentre\\b", "cen"},
-    {"\\bchowdi\\b", "chok"},
-    {"\\bcircle\\b", "cir."},
-    {"\\beighth\\b", "8"},
-    {"\\bforest\\b", "frst"},
-    {"\\bfourth\\b", "4"},
-    {"\\bgarden\\b", "gdn"},
-    {"\\bgatewy\\b", "gtwy"},
-    {"\\bgatway\\b", "gtwy"},
-    {"\\bheight\\b", "hts"},
-    {"\\bkavala\\b", "jn."},
-    {"\\bkerala\\b", "kl"},
-    {"\\bmadras\\b", "che"},
-    {"\\bmumbai\\b", "bom"},
-    {"\\bnumber\\b", "#"},
-    {"\\braasta\\b", "rasta"},
-    {"\\bsecond\\b", "2"},
-    {"\\bstreet\\b", "st"},
-    {"\\bx\\s+road\\b", "xrd"},
-    {"\\bxroads\\b", "xrd"},
-    {"\\bcentr\\b", "cen"},
-    {"\\bchauk\\b", "chok"},
-    {"\\bchouk\\b", "chok"},
-    {"\\bchowk\\b", "chok"},
-    {"\\bcnter\\b", "cen"},
-    {"\\bdelhi\\b", "del"},
-    {"\\bfifth\\b", "5"},
-    {"\\bfirst\\b", "1"},
-    {"\\bgalli\\b", "gali"},
-    {"\\bgardn\\b", "gdn"},
-    {"\\bgrden\\b", "gdn"},
-    {"\\bgtway\\b", "gtwy"},
-    {"\\bindia\\b", "in"},
-    {"\\bj\\s+\\&\\s+k\\b", "j&k"},
-    {"\\bmukku\\b", "jn."},
-    {"\\bnaaka\\b", "jn."},
-    {"\\bninth\\b", "9"},
-    {"\\bnorth\\b", "n"},
-    {"\\bpally\\b", "palli"},
-    {"\\bround\\b", "cir."},
-    {"\\broute\\b", "rt"},
-    {"\\bsixth\\b", "6"},
-    {"\\bsouth\\b", "s"},
-    {"\\btenth\\b", "10"},
-    {"\\bthird\\b", "3"},
-    {"\\bvizag\\b", "vskp"},
-    {"\\bxroad\\b", "xrd"},
-    {"\\bcent\\b", "cen"},
-    {"\\bcntr\\b", "cen"},
-    {"\\beast\\b", "e"},
-    {"\\bgarh\\b", "gad"},
-    {"\\bgrdn\\b", "gdn"},
-    {"\\bhght\\b", "hts"},
-    {"\\bhgts\\b", "hts"},
-    {"\\bj\\s+\\&k\\b", "j&k"},
-    {"\\bjct\\.\\b", "jn."},
-    {"\\bjnct\\b", "jn."},
-    {"\\bpeth\\b", "pet"},
-    {"\\brnd\\.\\b", "cir."},
-    {"\\broad\\b", "rd"},
-    {"\\bstr\\.\\b", "st"},
-    {"\\buniv\\b", "uni"},
-    {"\\bwest\\b", "w"},
-    {"\\bx\\-rd\\b", "xrd"},
-    {"\\bxrds\\b", "xrd"},
-    {"\\bcha\\b", "ch"},
-    {"\\bctr\\b", "cen"},
-    {"\\bmum\\b", "bom"},
-    {"\\bno\\.\\b", "#"},
-    {"\\bnum\\b", "#"},
-    {"\\brte\\b", "rt"},
-    {"\\bst\\.\\b", "st"},
-    {"\\bstr\\b", "st"},
-    {"\\bno\\b", "#"},
-};
+const char* kRules_IN =
+"\\bthiruvananthapuram\\b\000tvpm\000"
+"\\bazimabad\\s+kusumpur\\b\000patna\000"
+"\\bjammu\\s+and\\s+kashmir\\b\000j&k\000"
+"\\btiruvananthapuram\\b\000tvpm\000"
+"\\bchandigarh\\s+city\\b\000ch\000"
+"\\bjammu\\s+\\&\\s+kashmir\\b\000j&k\000"
+"\\bgovt\\s+of\\s+india\\b\000goi\000"
+"\\binternational\\b\000intl\000"
+"\\bvisakhapatnam\\b\000vskp\000"
+"\\bchickmagalur\\b\000chicmagalur\000"
+"\\bchikmagaluru\\b\000chicmagalur\000"
+"\\bchikmagalur\\b\000chicmagalur\000"
+"\\bcross\\-roads\\b\000xrd\000"
+"\\bpataliputra\\b\000patna\000"
+"\\branga\\s+reddy\\b\000rangareddi\000"
+"\\bchandigarh\\b\000ch\000"
+"\\bcross\\-road\\b\000xrd\000"
+"\\bcrossroads\\b\000xrd\000"
+"\\bgovernment\\b\000goi\000"
+"\\bpatliputra\\b\000patna\000"
+"\\buniversity\\b\000uni\000"
+"\\bvijayawada\\b\000bza\000"
+"\\bahmedabad\\b\000ahd\000"
+"\\bbangalore\\b\000blr\000"
+"\\bbengaluru\\b\000blr\000"
+"\\bchar\\-rast\\b\000chaurah\000"
+"\\bchaurasta\\b\000chaurah\000"
+"\\bchourasta\\b\000chaurah\000"
+"\\bcrossroad\\b\000xrd\000"
+"\\bhyderabad\\b\000hyd\000"
+"\\bi\\.n\\.d\\.i\\.a\\b\000in\000"
+"\\bvijaywada\\b\000bza\000"
+"\\bcalcutta\\b\000kol\000"
+"\\bchourast\\b\000chaurah\000"
+"\\bchowrast\\b\000chaurah\000"
+"\\bcrossing\\b\000xrd\000"
+"\\bcrossrds\\b\000xrd\000"
+"\\bjunction\\b\000jn.\000"
+"\\bkolkatta\\b\000kol\000"
+"\\bvaranasi\\b\000banaras\000"
+"\\bamdavad\\b\000ahd\000"
+"\\bbenaras\\b\000banaras\000"
+"\\bchennai\\b\000che\000"
+"\\bcollege\\b\000clg\000"
+"\\bcrossrd\\b\000xrd\000"
+"\\bgateway\\b\000gtwy\000"
+"\\bheights\\b\000hts\000"
+"\\bkeralam\\b\000kl\000"
+"\\bkolkata\\b\000kol\000"
+"\\bkolkota\\b\000kol\000"
+"\\bseventh\\b\0007\000"
+"\\bvruttha\\b\000cir.\000"
+"\\bx\\s+roads\\b\000xrd\000"
+"\\bbombay\\b\000bom\000"
+"\\bcenter\\b\000cen\000"
+"\\bcentre\\b\000cen\000"
+"\\bchowdi\\b\000chok\000"
+"\\bcircle\\b\000cir.\000"
+"\\beighth\\b\0008\000"
+"\\bforest\\b\000frst\000"
+"\\bfourth\\b\0004\000"
+"\\bgarden\\b\000gdn\000"
+"\\bgatewy\\b\000gtwy\000"
+"\\bgatway\\b\000gtwy\000"
+"\\bheight\\b\000hts\000"
+"\\bkavala\\b\000jn.\000"
+"\\bkerala\\b\000kl\000"
+"\\bmadras\\b\000che\000"
+"\\bmumbai\\b\000bom\000"
+"\\bnumber\\b\000#\000"
+"\\braasta\\b\000rasta\000"
+"\\bsecond\\b\0002\000"
+"\\bstreet\\b\000st\000"
+"\\bx\\s+road\\b\000xrd\000"
+"\\bxroads\\b\000xrd\000"
+"\\bcentr\\b\000cen\000"
+"\\bchauk\\b\000chok\000"
+"\\bchouk\\b\000chok\000"
+"\\bchowk\\b\000chok\000"
+"\\bcnter\\b\000cen\000"
+"\\bdelhi\\b\000del\000"
+"\\bfifth\\b\0005\000"
+"\\bfirst\\b\0001\000"
+"\\bgalli\\b\000gali\000"
+"\\bgardn\\b\000gdn\000"
+"\\bgrden\\b\000gdn\000"
+"\\bgtway\\b\000gtwy\000"
+"\\bindia\\b\000in\000"
+"\\bj\\s+\\&\\s+k\\b\000j&k\000"
+"\\bmukku\\b\000jn.\000"
+"\\bnaaka\\b\000jn.\000"
+"\\bninth\\b\0009\000"
+"\\bnorth\\b\000n\000"
+"\\bpally\\b\000palli\000"
+"\\bround\\b\000cir.\000"
+"\\broute\\b\000rt\000"
+"\\bsixth\\b\0006\000"
+"\\bsouth\\b\000s\000"
+"\\btenth\\b\00010\000"
+"\\bthird\\b\0003\000"
+"\\bvizag\\b\000vskp\000"
+"\\bxroad\\b\000xrd\000"
+"\\bcent\\b\000cen\000"
+"\\bcntr\\b\000cen\000"
+"\\beast\\b\000e\000"
+"\\bgarh\\b\000gad\000"
+"\\bgrdn\\b\000gdn\000"
+"\\bhght\\b\000hts\000"
+"\\bhgts\\b\000hts\000"
+"\\bj\\s+\\&k\\b\000j&k\000"
+"\\bjct\\.\\b\000jn.\000"
+"\\bjnct\\b\000jn.\000"
+"\\bpeth\\b\000pet\000"
+"\\brnd\\.\\b\000cir.\000"
+"\\broad\\b\000rd\000"
+"\\bstr\\.\\b\000st\000"
+"\\buniv\\b\000uni\000"
+"\\bwest\\b\000w\000"
+"\\bx\\-rd\\b\000xrd\000"
+"\\bxrds\\b\000xrd\000"
+"\\bcha\\b\000ch\000"
+"\\bctr\\b\000cen\000"
+"\\bmum\\b\000bom\000"
+"\\bno\\.\\b\000#\000"
+"\\bnum\\b\000#\000"
+"\\brte\\b\000rt\000"
+"\\bst\\.\\b\000st\000"
+"\\bstr\\b\000st\000"
+"\\bno\\b\000#\000"
+;
+int kNumRules_IN = 129;
 
-const Rule kRules_IT[] = {
-    {"\\bbarletta\\s+andria\\s+trani\\b", "bt"},
-    {"\\bfriuli\\s+venezia\\s+giulia\\b", "36"},
-    {"\\bverbano\\s+cusio\\s+ossola\\b", "vb"},
-    {"\\btrentino\\s+alto\\s+adige\\b", "32"},
-    {"\\bstrada\\s+provinciale\\b", "sp"},
-    {"\\bcarbonia\\s+iglesias\\b", "ci"},
-    {"\\btrentino\\s+sudtirol\\b", "32"},
-    {"\\bstrada\\s+regionale\\b", "sr"},
-    {"\\bventiquattresimo\\b", "24"},
-    {"\\bdiciassettesimo\\b", "17"},
-    {"\\bmedio\\s+campidano\\b", "vs"},
-    {"\\bmonza\\s+e\\s+brianza\\b", "mb"},
-    {"\\bpesaro\\s+e\\s+urbino\\b", "pu"},
-    {"\\bquattordicesimo\\b", "14"},
-    {"\\breggio\\s+calabria\\b", "rc"},
-    {"\\bstrada\\s+comunale\\b", "sc"},
-    {"\\bventicinquesimo\\b", "25"},
-    {"\\bdiciannovesimo\\b", "19"},
-    {"\\bemilia\\s+romagna\\b", "45"},
-    {"\\bstrada\\s+statali\\b", "ss"},
-    {"\\bvallee\\s+d\\s+aoste\\b", "23"},
-    {"\\bventisettesimo\\b", "27"},
-    {"\\bascoli\\s+piceno\\b", "ap"},
-    {"\\bcaltanissetta\\b", "cl"},
-    {"\\bmassa\\s+carrara\\b", "ms"},
-    {"\\breggio\\s+emilia\\b", "re"},
-    {"\\bvalle\\s+d\\s+aosta\\b", "23"},
-    {"\\bventinovesimo\\b", "29"},
-    {"\\bventitreesimo\\b", "23"},
-    {"\\bvibo\\s+valentia\\b", "vv"},
-    {"\\bdiciottesimo\\b", "18"},
-    {"\\bforli\\s+cesena\\b", "fc"},
-    {"\\bolbia\\s+tempio\\b", "ot"},
-    {"\\bquindicesimo\\b", "15"},
-    {"\\bventiduesimo\\b", "22"},
-    {"\\bventiquattro\\b", "24"},
-    {"\\bventottesimo\\b", "28"},
-    {"\\balessandria\\b", ""},
-    {"\\bdiciassette\\b", "17"},
-    {"\\bquattordici\\b", "14"},
-    {"\\btredicesimo\\b", "13"},
-    {"\\bvalle\\s+aosta\\b", "23"},
-    {"\\bventicinque\\b", "25"},
-    {"\\bventisesimo\\b", "26"},
-    {"\\bventunesimo\\b", "21"},
-    {"\\bbasilicata\\b", "77"},
-    {"\\bcampobasso\\b", "cb"},
-    {"\\bdiciannove\\b", "19"},
-    {"\\bdodicesimo\\b", "12"},
-    {"\\breggimento\\b", "rgt"},
-    {"\\bsedicesimo\\b", "16"},
-    {"\\btrentesimo\\b", "30"},
-    {"\\bundicesimo\\b", "11"},
-    {"\\bventisette\\b", "27"},
-    {"\\bagrigento\\b", "ag"},
-    {"\\bbenevento\\b", "bn"},
-    {"\\bcatanzaro\\b", "cz"},
-    {"\\bfrosinone\\b", "fr"},
-    {"\\bla\\s+spezia\\b", "sp"},
-    {"\\blombardia\\b", "25"},
-    {"\\bogliastra\\b", "og"},
-    {"\\bpordenone\\b", "pn"},
-    {"\\bventesimo\\b", "20"},
-    {"\\bventinove\\b", "29"},
-    {"\\bavellino\\b", "av"},
-    {"\\bbrindisi\\b", "br"},
-    {"\\bcagliari\\b", "ca"},
-    {"\\bcalabria\\b", "78"},
-    {"\\bcampania\\b", "72"},
-    {"\\bdiciotto\\b", "18"},
-    {"\\bgrosseto\\b", "gr"},
-    {"\\bl\\s+aquila\\b", "aq"},
-    {"\\bmacerata\\b", "mc"},
-    {"\\boristano\\b", "or"},
-    {"\\bpiacenza\\b", "pc"},
-    {"\\bpiemonte\\b", "21"},
-    {"\\bquindici\\b", "15"},
-    {"\\bsardegna\\b", "88"},
-    {"\\bsiracusa\\b", "sr"},
-    {"\\btraversa\\b", "trav"},
-    {"\\bventidue\\b", "22"},
-    {"\\bventisei\\b", "26"},
-    {"\\bventitre\\b", "23"},
-    {"\\bventotto\\b", "28"},
-    {"\\bvercelli\\b", "vc"},
-    {"\\babruzzo\\b", "65"},
-    {"\\bbelluno\\b", "bl"},
-    {"\\bbergamo\\b", "bg"},
-    {"\\bbologna\\b", "bo"},
-    {"\\bbolzano\\b", "bz"},
-    {"\\bbrescia\\b", "bs"},
-    {"\\bcaserta\\b", "ce"},
-    {"\\bcatania\\b", "ct"},
-    {"\\bcosenza\\b", "cs"},
-    {"\\bcremona\\b", "cr"},
-    {"\\bcrotone\\b", "kr"},
-    {"\\bferrara\\b", "fe"},
-    {"\\bfirenze\\b", "fi"},
-    {"\\bgorizia\\b", "go"},
-    {"\\bimperia\\b", "im"},
-    {"\\bisernia\\b", "is"},
-    {"\\bliguria\\b", "42"},
-    {"\\blivorno\\b", "li"},
-    {"\\bmantova\\b", "mn"},
-    {"\\bmessina\\b", "me"},
-    {"\\bpalermo\\b", "pa"},
-    {"\\bperugia\\b", "pg"},
-    {"\\bpescara\\b", "pe"},
-    {"\\bpistoia\\b", "pt"},
-    {"\\bpotenza\\b", "pz"},
-    {"\\bquattro\\b", "4"},
-    {"\\bravenna\\b", "ra"},
-    {"\\bsalerno\\b", "sa"},
-    {"\\bsassari\\b", "ss"},
-    {"\\bsecondo\\b", "2"},
-    {"\\bsettimo\\b", "7"},
-    {"\\bsicilia\\b", "82"},
-    {"\\bsondrio\\b", "so"},
-    {"\\btaranto\\b", "ta"},
-    {"\\btoscana\\b", "52"},
-    {"\\btrapani\\b", "tp"},
-    {"\\btredici\\b", "13"},
-    {"\\btreviso\\b", "tv"},
-    {"\\btrieste\\b", "ts"},
-    {"\\bvenezia\\b", "ve"},
-    {"\\bventuno\\b", "21"},
-    {"\\bvicenza\\b", "6"},
-    {"\\bviterbo\\b", "vt"},
-    {"\\bancona\\b", "an"},
-    {"\\barezzo\\b", "ar"},
-    {"\\bbiella\\b", "bi"},
-    {"\\bchieti\\b", "ch"},
-    {"\\bcinque\\b", "5"},
-    {"\\bdecimo\\b", "x"},
-    {"\\bdodici\\b", "12"},
-    {"\\bfoggia\\b", "fg"},
-    {"\\bgenova\\b", "ge"},
-    {"\\bitalia\\b", "it"},
-    {"\\blatina\\b", "lt"},
-    {"\\bmarche\\b", "57"},
-    {"\\bmatera\\b", "mt"},
-    {"\\bmilano\\b", "mi"},
-    {"\\bmodena\\b", "mo"},
-    {"\\bmolise\\b", "67"},
-    {"\\bnapoli\\b", "na"},
-    {"\\bnovara\\b", "no"},
-    {"\\bottavo\\b", "8"},
-    {"\\bpadova\\b", "pd"},
-    {"\\bpuglia\\b", "75"},
-    {"\\bquarto\\b", "4"},
-    {"\\bquinto\\b", "5"},
-    {"\\bragusa\\b", "rg"},
-    {"\\brimini\\b", "rn"},
-    {"\\brovigo\\b", "ro"},
-    {"\\bsavona\\b", "sv"},
-    {"\\bsedici\\b", "16"},
-    {"\\bteramo\\b", "te"},
-    {"\\btorino\\b", "to"},
-    {"\\btrenta\\b", "30"},
-    {"\\btrento\\b", "tn"},
-    {"\\bumbria\\b", "55"},
-    {"\\bundici\\b", "11"},
-    {"\\bvarese\\b", "va"},
-    {"\\bveneto\\b", "34"},
-    {"\\bverona\\b", "vr"},
-    {"\\bxxviii\\b", "28"},
-    {"\\baosta\\b", "ao"},
-    {"\\baoste\\b", "ao"},
-    {"\\bbozen\\b", "bz"},
-    {"\\bcuneo\\b", "cn"},
-    {"\\bdagli\\b", ""},
-    {"\\bdalla\\b", ""},
-    {"\\bdalle\\b", ""},
-    {"\\bdallo\\b", ""},
-    {"\\bdegli\\b", ""},
-    {"\\bdella\\b", ""},
-    {"\\bdelle\\b", ""},
-    {"\\bdello\\b", ""},
-    {"\\bdieci\\b", "x"},
-    {"\\bfermo\\b", "fm"},
-    {"\\bitaly\\b", "it"},
-    {"\\blazio\\b", "62"},
-    {"\\blecce\\b", ""},
-    {"\\blecco\\b", "lc"},
-    {"\\blucca\\b", "lu"},
-    {"\\bnegli\\b", ""},
-    {"\\bnella\\b", ""},
-    {"\\bnelle\\b", ""},
-    {"\\bnello\\b", ""},
-    {"\\bnorth\\b", "n"},
-    {"\\bnuoro\\b", "nu"},
-    {"\\bovest\\b", "o"},
-    {"\\bparma\\b", "pr"},
-    {"\\bpavia\\b", "pv"},
-    {"\\bprato\\b", "po"},
-    {"\\bprimo\\b", ""},
-    {"\\brieti\\b", "ri"},
-    {"\\bsesto\\b", "6"},
-    {"\\bsette\\b", "7"},
-    {"\\bsiena\\b", "si"},
-    {"\\bsouth\\b", "s"},
-    {"\\bsugli\\b", ""},
-    {"\\bsulla\\b", ""},
-    {"\\bsulle\\b", ""},
-    {"\\bsullo\\b", ""},
-    {"\\bterni\\b", "tr"},
-    {"\\bterzo\\b", "3"},
-    {"\\budine\\b", "ud"},
-    {"\\bventi\\b", "20"},
-    {"\\bxviii\\b", "18"},
-    {"\\bxxiii\\b", "23"},
-    {"\\bxxvii\\b", "27"},
-    {"\\bagli\\b", ""},
-    {"\\balla\\b", ""},
-    {"\\balle\\b", ""},
-    {"\\ballo\\b", ""},
-    {"\\basti\\b", "at"},
-    {"\\bbari\\b", "ba"},
-    {"\\bcomo\\b", "co"},
-    {"\\bdall\\b", ""},
-    {"\\bdell\\b", ""},
-    {"\\beast\\b", "e"},
-    {"\\benna\\b", ""},
-    {"\\blodi\\b", ""},
-    {"\\bnell\\b", ""},
-    {"\\bnono\\b", "9"},
-    {"\\bnord\\b", "n"},
-    {"\\bnove\\b", "9"},
-    {"\\botto\\b", "8"},
-    {"\\bpisa\\b", "pi"},
-    {"\\broma\\b", "rm"},
-    {"\\bsull\\b", ""},
-    {"\\bviii\\b", "8"},
-    {"\\bwest\\b", "o"},
-    {"\\bxiii\\b", "13"},
-    {"\\bxvii\\b", "17"},
-    {"\\bxxii\\b", "22"},
-    {"\\bxxiv\\b", "24"},
-    {"\\bxxix\\b", "29"},
-    {"\\bxxvi\\b", "26"},
-    {"\\ball\\b", ""},
-    {"\\bdai\\b", ""},
-    {"\\bdal\\b", ""},
-    {"\\bdei\\b", ""},
-    {"\\bdel\\b", ""},
-    {"\\bdue\\b", "2"},
-    {"\\best\\b", "e"},
-    {"\\bgli\\b", ""},
-    {"\\biii\\b", "3"},
-    {"\\bles\\b", ""},
-    {"\\bnei\\b", ""},
-    {"\\bnel\\b", ""},
-    {"\\bsei\\b", "6"},
-    {"\\bsud\\b", "s"},
-    {"\\bsui\\b", ""},
-    {"\\bsul\\b", ""},
-    {"\\btre\\b", "3"},
-    {"\\buno\\b", ""},
-    {"\\bvii\\b", "7"},
-    {"\\bxii\\b", "12"},
-    {"\\bxiv\\b", "14"},
-    {"\\bxix\\b", "19"},
-    {"\\bxvi\\b", "16"},
-    {"\\bxxi\\b", "21"},
-    {"\\bxxv\\b", "25"},
-    {"\\bxxx\\b", "30"},
-    {"\\b10\\b", "x"},
-    {"\\bai\\b", ""},
-    {"\\bal\\b", ""},
-    {"\\bda\\b", ""},
-    {"\\bdi\\b", ""},
-    {"\\ben\\b", ""},
-    {"\\bii\\b", "2"},
-    {"\\bil\\b", ""},
-    {"\\bin\\b", ""},
-    {"\\biv\\b", "4"},
-    {"\\bix\\b", "9"},
-    {"\\bla\\b", ""},
-    {"\\ble\\b", ""},
-    {"\\blo\\b", ""},
-    {"\\bsu\\b", ""},
-    {"\\bvi\\b", "6"},
-    {"\\bxi\\b", "11"},
-    {"\\bxv\\b", "15"},
-    {"\\bxx\\b", "20"},
-    {"\\ba\\b", ""},
-    {"\\bd\\b", ""},
-    {"\\bi\\b", ""},
-    {"\\bl\\b", ""},
-    {"\\bv\\b", "5"},
-    {"\\bw\\b", "o"},
-};
+const char* kRules_IT =
+"\\bbarletta\\s+andria\\s+trani\\b\000bt\000"
+"\\bfriuli\\s+venezia\\s+giulia\\b\00036\000"
+"\\bverbano\\s+cusio\\s+ossola\\b\000vb\000"
+"\\btrentino\\s+alto\\s+adige\\b\00032\000"
+"\\bstrada\\s+provinciale\\b\000sp\000"
+"\\bcarbonia\\s+iglesias\\b\000ci\000"
+"\\btrentino\\s+sudtirol\\b\00032\000"
+"\\bstrada\\s+regionale\\b\000sr\000"
+"\\bventiquattresimo\\b\00024\000"
+"\\bdiciassettesimo\\b\00017\000"
+"\\bmedio\\s+campidano\\b\000vs\000"
+"\\bmonza\\s+e\\s+brianza\\b\000mb\000"
+"\\bpesaro\\s+e\\s+urbino\\b\000pu\000"
+"\\bquattordicesimo\\b\00014\000"
+"\\breggio\\s+calabria\\b\000rc\000"
+"\\bstrada\\s+comunale\\b\000sc\000"
+"\\bventicinquesimo\\b\00025\000"
+"\\bdiciannovesimo\\b\00019\000"
+"\\bemilia\\s+romagna\\b\00045\000"
+"\\bstrada\\s+statali\\b\000ss\000"
+"\\bvallee\\s+d\\s+aoste\\b\00023\000"
+"\\bventisettesimo\\b\00027\000"
+"\\bascoli\\s+piceno\\b\000ap\000"
+"\\bcaltanissetta\\b\000cl\000"
+"\\bmassa\\s+carrara\\b\000ms\000"
+"\\breggio\\s+emilia\\b\000re\000"
+"\\bvalle\\s+d\\s+aosta\\b\00023\000"
+"\\bventinovesimo\\b\00029\000"
+"\\bventitreesimo\\b\00023\000"
+"\\bvibo\\s+valentia\\b\000vv\000"
+"\\bdiciottesimo\\b\00018\000"
+"\\bforli\\s+cesena\\b\000fc\000"
+"\\bolbia\\s+tempio\\b\000ot\000"
+"\\bquindicesimo\\b\00015\000"
+"\\bventiduesimo\\b\00022\000"
+"\\bventiquattro\\b\00024\000"
+"\\bventottesimo\\b\00028\000"
+"\\balessandria\\b\000\000"
+"\\bdiciassette\\b\00017\000"
+"\\bquattordici\\b\00014\000"
+"\\btredicesimo\\b\00013\000"
+"\\bvalle\\s+aosta\\b\00023\000"
+"\\bventicinque\\b\00025\000"
+"\\bventisesimo\\b\00026\000"
+"\\bventunesimo\\b\00021\000"
+"\\bbasilicata\\b\00077\000"
+"\\bcampobasso\\b\000cb\000"
+"\\bdiciannove\\b\00019\000"
+"\\bdodicesimo\\b\00012\000"
+"\\breggimento\\b\000rgt\000"
+"\\bsedicesimo\\b\00016\000"
+"\\btrentesimo\\b\00030\000"
+"\\bundicesimo\\b\00011\000"
+"\\bventisette\\b\00027\000"
+"\\bagrigento\\b\000ag\000"
+"\\bbenevento\\b\000bn\000"
+"\\bcatanzaro\\b\000cz\000"
+"\\bfrosinone\\b\000fr\000"
+"\\bla\\s+spezia\\b\000sp\000"
+"\\blombardia\\b\00025\000"
+"\\bogliastra\\b\000og\000"
+"\\bpordenone\\b\000pn\000"
+"\\bventesimo\\b\00020\000"
+"\\bventinove\\b\00029\000"
+"\\bavellino\\b\000av\000"
+"\\bbrindisi\\b\000br\000"
+"\\bcagliari\\b\000ca\000"
+"\\bcalabria\\b\00078\000"
+"\\bcampania\\b\00072\000"
+"\\bdiciotto\\b\00018\000"
+"\\bgrosseto\\b\000gr\000"
+"\\bl\\s+aquila\\b\000aq\000"
+"\\bmacerata\\b\000mc\000"
+"\\boristano\\b\000or\000"
+"\\bpiacenza\\b\000pc\000"
+"\\bpiemonte\\b\00021\000"
+"\\bquindici\\b\00015\000"
+"\\bsardegna\\b\00088\000"
+"\\bsiracusa\\b\000sr\000"
+"\\btraversa\\b\000trav\000"
+"\\bventidue\\b\00022\000"
+"\\bventisei\\b\00026\000"
+"\\bventitre\\b\00023\000"
+"\\bventotto\\b\00028\000"
+"\\bvercelli\\b\000vc\000"
+"\\babruzzo\\b\00065\000"
+"\\bbelluno\\b\000bl\000"
+"\\bbergamo\\b\000bg\000"
+"\\bbologna\\b\000bo\000"
+"\\bbolzano\\b\000bz\000"
+"\\bbrescia\\b\000bs\000"
+"\\bcaserta\\b\000ce\000"
+"\\bcatania\\b\000ct\000"
+"\\bcosenza\\b\000cs\000"
+"\\bcremona\\b\000cr\000"
+"\\bcrotone\\b\000kr\000"
+"\\bferrara\\b\000fe\000"
+"\\bfirenze\\b\000fi\000"
+"\\bgorizia\\b\000go\000"
+"\\bimperia\\b\000im\000"
+"\\bisernia\\b\000is\000"
+"\\bliguria\\b\00042\000"
+"\\blivorno\\b\000li\000"
+"\\bmantova\\b\000mn\000"
+"\\bmessina\\b\000me\000"
+"\\bpalermo\\b\000pa\000"
+"\\bperugia\\b\000pg\000"
+"\\bpescara\\b\000pe\000"
+"\\bpistoia\\b\000pt\000"
+"\\bpotenza\\b\000pz\000"
+"\\bquattro\\b\0004\000"
+"\\bravenna\\b\000ra\000"
+"\\bsalerno\\b\000sa\000"
+"\\bsassari\\b\000ss\000"
+"\\bsecondo\\b\0002\000"
+"\\bsettimo\\b\0007\000"
+"\\bsicilia\\b\00082\000"
+"\\bsondrio\\b\000so\000"
+"\\btaranto\\b\000ta\000"
+"\\btoscana\\b\00052\000"
+"\\btrapani\\b\000tp\000"
+"\\btredici\\b\00013\000"
+"\\btreviso\\b\000tv\000"
+"\\btrieste\\b\000ts\000"
+"\\bvenezia\\b\000ve\000"
+"\\bventuno\\b\00021\000"
+"\\bvicenza\\b\0006\000"
+"\\bviterbo\\b\000vt\000"
+"\\bancona\\b\000an\000"
+"\\barezzo\\b\000ar\000"
+"\\bbiella\\b\000bi\000"
+"\\bchieti\\b\000ch\000"
+"\\bcinque\\b\0005\000"
+"\\bdecimo\\b\000x\000"
+"\\bdodici\\b\00012\000"
+"\\bfoggia\\b\000fg\000"
+"\\bgenova\\b\000ge\000"
+"\\bitalia\\b\000it\000"
+"\\blatina\\b\000lt\000"
+"\\bmarche\\b\00057\000"
+"\\bmatera\\b\000mt\000"
+"\\bmilano\\b\000mi\000"
+"\\bmodena\\b\000mo\000"
+"\\bmolise\\b\00067\000"
+"\\bnapoli\\b\000na\000"
+"\\bnovara\\b\000no\000"
+"\\bottavo\\b\0008\000"
+"\\bpadova\\b\000pd\000"
+"\\bpuglia\\b\00075\000"
+"\\bquarto\\b\0004\000"
+"\\bquinto\\b\0005\000"
+"\\bragusa\\b\000rg\000"
+"\\brimini\\b\000rn\000"
+"\\brovigo\\b\000ro\000"
+"\\bsavona\\b\000sv\000"
+"\\bsedici\\b\00016\000"
+"\\bteramo\\b\000te\000"
+"\\btorino\\b\000to\000"
+"\\btrenta\\b\00030\000"
+"\\btrento\\b\000tn\000"
+"\\bumbria\\b\00055\000"
+"\\bundici\\b\00011\000"
+"\\bvarese\\b\000va\000"
+"\\bveneto\\b\00034\000"
+"\\bverona\\b\000vr\000"
+"\\bxxviii\\b\00028\000"
+"\\baosta\\b\000ao\000"
+"\\baoste\\b\000ao\000"
+"\\bbozen\\b\000bz\000"
+"\\bcuneo\\b\000cn\000"
+"\\bdagli\\b\000\000"
+"\\bdalla\\b\000\000"
+"\\bdalle\\b\000\000"
+"\\bdallo\\b\000\000"
+"\\bdegli\\b\000\000"
+"\\bdella\\b\000\000"
+"\\bdelle\\b\000\000"
+"\\bdello\\b\000\000"
+"\\bdieci\\b\000x\000"
+"\\bfermo\\b\000fm\000"
+"\\bitaly\\b\000it\000"
+"\\blazio\\b\00062\000"
+"\\blecce\\b\000\000"
+"\\blecco\\b\000lc\000"
+"\\blucca\\b\000lu\000"
+"\\bnegli\\b\000\000"
+"\\bnella\\b\000\000"
+"\\bnelle\\b\000\000"
+"\\bnello\\b\000\000"
+"\\bnorth\\b\000n\000"
+"\\bnuoro\\b\000nu\000"
+"\\bovest\\b\000o\000"
+"\\bparma\\b\000pr\000"
+"\\bpavia\\b\000pv\000"
+"\\bprato\\b\000po\000"
+"\\bprimo\\b\000\000"
+"\\brieti\\b\000ri\000"
+"\\bsesto\\b\0006\000"
+"\\bsette\\b\0007\000"
+"\\bsiena\\b\000si\000"
+"\\bsouth\\b\000s\000"
+"\\bsugli\\b\000\000"
+"\\bsulla\\b\000\000"
+"\\bsulle\\b\000\000"
+"\\bsullo\\b\000\000"
+"\\bterni\\b\000tr\000"
+"\\bterzo\\b\0003\000"
+"\\budine\\b\000ud\000"
+"\\bventi\\b\00020\000"
+"\\bxviii\\b\00018\000"
+"\\bxxiii\\b\00023\000"
+"\\bxxvii\\b\00027\000"
+"\\bagli\\b\000\000"
+"\\balla\\b\000\000"
+"\\balle\\b\000\000"
+"\\ballo\\b\000\000"
+"\\basti\\b\000at\000"
+"\\bbari\\b\000ba\000"
+"\\bcomo\\b\000co\000"
+"\\bdall\\b\000\000"
+"\\bdell\\b\000\000"
+"\\beast\\b\000e\000"
+"\\benna\\b\000\000"
+"\\blodi\\b\000\000"
+"\\bnell\\b\000\000"
+"\\bnono\\b\0009\000"
+"\\bnord\\b\000n\000"
+"\\bnove\\b\0009\000"
+"\\botto\\b\0008\000"
+"\\bpisa\\b\000pi\000"
+"\\broma\\b\000rm\000"
+"\\bsull\\b\000\000"
+"\\bviii\\b\0008\000"
+"\\bwest\\b\000o\000"
+"\\bxiii\\b\00013\000"
+"\\bxvii\\b\00017\000"
+"\\bxxii\\b\00022\000"
+"\\bxxiv\\b\00024\000"
+"\\bxxix\\b\00029\000"
+"\\bxxvi\\b\00026\000"
+"\\ball\\b\000\000"
+"\\bdai\\b\000\000"
+"\\bdal\\b\000\000"
+"\\bdei\\b\000\000"
+"\\bdel\\b\000\000"
+"\\bdue\\b\0002\000"
+"\\best\\b\000e\000"
+"\\bgli\\b\000\000"
+"\\biii\\b\0003\000"
+"\\bles\\b\000\000"
+"\\bnei\\b\000\000"
+"\\bnel\\b\000\000"
+"\\bsei\\b\0006\000"
+"\\bsud\\b\000s\000"
+"\\bsui\\b\000\000"
+"\\bsul\\b\000\000"
+"\\btre\\b\0003\000"
+"\\buno\\b\000\000"
+"\\bvii\\b\0007\000"
+"\\bxii\\b\00012\000"
+"\\bxiv\\b\00014\000"
+"\\bxix\\b\00019\000"
+"\\bxvi\\b\00016\000"
+"\\bxxi\\b\00021\000"
+"\\bxxv\\b\00025\000"
+"\\bxxx\\b\00030\000"
+"\\b10\\b\000x\000"
+"\\bai\\b\000\000"
+"\\bal\\b\000\000"
+"\\bda\\b\000\000"
+"\\bdi\\b\000\000"
+"\\ben\\b\000\000"
+"\\bii\\b\0002\000"
+"\\bil\\b\000\000"
+"\\bin\\b\000\000"
+"\\biv\\b\0004\000"
+"\\bix\\b\0009\000"
+"\\bla\\b\000\000"
+"\\ble\\b\000\000"
+"\\blo\\b\000\000"
+"\\bsu\\b\000\000"
+"\\bvi\\b\0006\000"
+"\\bxi\\b\00011\000"
+"\\bxv\\b\00015\000"
+"\\bxx\\b\00020\000"
+"\\ba\\b\000\000"
+"\\bd\\b\000\000"
+"\\bi\\b\000\000"
+"\\bl\\b\000\000"
+"\\bv\\b\0005\000"
+"\\bw\\b\000o\000"
+;
+int kNumRules_IT = 291;
 
-const Rule kRules_LU[] = {
-    {"\\berpeldange\\s+\\-\\s+lez\\s+\\-\\s+bous\\b", "erpeldange"},
-    {"\\bhostert\\s+niederanven\\b", "hostert"},
-    {"\\bgoebelsmuehle\\b", "goebelsmuhle"},
-    {"\\bbuederscheid\\b", "buderscheid"},
-    {"\\bschwebsingen\\b", "schwebsange"},
-    {"\\brammeldange\\b", "rameldange"},
-    {"\\bcul\\s+de\\s+sac\\b", "cds"},
-    {"\\bcul\\-de\\-sac\\b", "cds"},
-    {"\\bgeyershaff\\b", "geyershof"},
-    {"\\blexembourg\\b", "lu"},
-    {"\\bluxembourg\\b", "lu"},
-    {"\\brond\\-point\\b", "rdpt"},
-    {"\\bboulevard\\b", "boul"},
-    {"\\bcarrefour\\b", "carref"},
-    {"\\bcroissant\\b", "crois"},
-    {"\\bdiversion\\b", "divers"},
-    {"\\bechangeur\\b", "ech"},
-    {"\\besplanade\\b", "esp"},
-    {"\\bluxemburg\\b", "lu"},
-    {"\\bpromenade\\b", "prom"},
-    {"\\bcapellen\\b", "cap"},
-    {"\\bterrasse\\b", "tsse"},
-    {"\\bcircuit\\b", "circt"},
-    {"\\bimpasse\\b", "imp"},
-    {"\\bplateau\\b", "plat"},
-    {"\\bsentier\\b", "sent"},
-    {"\\bstrasse\\b", "str"},
-    {"\\bavenue\\b", "av"},
-    {"\\bcenter\\b", "c"},
-    {"\\bcentre\\b", "c"},
-    {"\\bchemin\\b", "ch"},
-    {"\\bpointe\\b", "pte"},
-    {"\\bruelle\\b", "rle"},
-    {"\\bcarre\\b", "car"},
-    {"\\bcourt\\b", "crt"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bpoint\\b", "pt"},
-    {"\\broute\\b", "rte"},
-    {"\\bespl\\b", "esp"},
-    {"\\bave\\b", "av"},
-    {"\\bctr\\b", "c"},
-    {"\\bdes\\b", ""},
-    {"\\blux\\b", "lu"},
-    {"\\brue\\b", "r"},
-    {"\\bde\\b", ""},
-    {"\\bdu\\b", ""},
-    {"\\bd\\b", ""},
-};
+const char* kRules_LU =
+"\\berpeldange\\s+\\-\\s+lez\\s+\\-\\s+bous\\b\000erpeldange\000"
+"\\bhostert\\s+niederanven\\b\000hostert\000"
+"\\bgoebelsmuehle\\b\000goebelsmuhle\000"
+"\\bbuederscheid\\b\000buderscheid\000"
+"\\bschwebsingen\\b\000schwebsange\000"
+"\\brammeldange\\b\000rameldange\000"
+"\\bcul\\s+de\\s+sac\\b\000cds\000"
+"\\bcul\\-de\\-sac\\b\000cds\000"
+"\\bgeyershaff\\b\000geyershof\000"
+"\\blexembourg\\b\000lu\000"
+"\\bluxembourg\\b\000lu\000"
+"\\brond\\-point\\b\000rdpt\000"
+"\\bboulevard\\b\000boul\000"
+"\\bcarrefour\\b\000carref\000"
+"\\bcroissant\\b\000crois\000"
+"\\bdiversion\\b\000divers\000"
+"\\bechangeur\\b\000ech\000"
+"\\besplanade\\b\000esp\000"
+"\\bluxemburg\\b\000lu\000"
+"\\bpromenade\\b\000prom\000"
+"\\bcapellen\\b\000cap\000"
+"\\bterrasse\\b\000tsse\000"
+"\\bcircuit\\b\000circt\000"
+"\\bimpasse\\b\000imp\000"
+"\\bplateau\\b\000plat\000"
+"\\bsentier\\b\000sent\000"
+"\\bstrasse\\b\000str\000"
+"\\bavenue\\b\000av\000"
+"\\bcenter\\b\000c\000"
+"\\bcentre\\b\000c\000"
+"\\bchemin\\b\000ch\000"
+"\\bpointe\\b\000pte\000"
+"\\bruelle\\b\000rle\000"
+"\\bcarre\\b\000car\000"
+"\\bcourt\\b\000crt\000"
+"\\bdrive\\b\000dr\000"
+"\\bpoint\\b\000pt\000"
+"\\broute\\b\000rte\000"
+"\\bespl\\b\000esp\000"
+"\\bave\\b\000av\000"
+"\\bctr\\b\000c\000"
+"\\bdes\\b\000\000"
+"\\blux\\b\000lu\000"
+"\\brue\\b\000r\000"
+"\\bde\\b\000\000"
+"\\bdu\\b\000\000"
+"\\bd\\b\000\000"
+;
+int kNumRules_LU = 47;
 
-const Rule kRules_MX[] = {
-    {"\\bcoahuila\\s+de\\s+zaragoza\\b", "coahuila"},
-    {"\\bbaja\\s+california\\s+sur\\b", "b c s"},
-    {"\\bestado\\s+de\\s+mexico\\b", "me"},
-    {"\\bbaja\\s+california\\b", "b c"},
-    {"\\baguascalientes\\b", "ag"},
-    {"\\bveracruz\\s+llave\\b", "veracruz"},
-    {"\\bprolongacion\\b", "prol"},
-    {"\\bquintana\\s+roo\\b", "qr"},
-    {"\\bdiecinueve\\b", "19"},
-    {"\\bdiecisiete\\b", "17"},
-    {"\\bgobernador\\b", "gob"},
-    {"\\bguanajuato\\b", "gt"},
-    {"\\blicenciado\\b", "lic"},
-    {"\\bpresbitero\\b", "pbro"},
-    {"\\bsan\\s+isidro\\b", "s isidro"},
-    {"\\bseptiembre\\b", "sept"},
-    {"\\bdieciocho\\b", "18"},
-    {"\\bdieciseis\\b", "16"},
-    {"\\bfrancisco\\b", "fco"},
-    {"\\bingeniero\\b", "ing"},
-    {"\\brepublica\\b", "rep"},
-    {"\\barticulo\\b", "art"},
-    {"\\bguerrero\\b", "gr"},
-    {"\\bhacienda\\b", "hda"},
-    {"\\bponiente\\b", "pte"},
-    {"\\bprofesor\\b", "prof"},
-    {"\\bsan\\s+juan\\b", "s juan"},
-    {"\\bavenida\\b", "av"},
-    {"\\bcaptain\\b", "cap"},
-    {"\\bcatorce\\b", "14"},
-    {"\\bfebrero\\b", "feb"},
-    {"\\bgeneral\\b", "gral"},
-    {"\\bhidalgo\\b", "hg"},
-    {"\\bjalisco\\b", "ja"},
-    {"\\boriente\\b", "ote"},
-    {"\\bprimera\\b", "1a"},
-    {"\\bprivada\\b", "priv"},
-    {"\\bsegunda\\b", "2a"},
-    {"\\bseptima\\b", "7a"},
-    {"\\bsinaloa\\b", "si"},
-    {"\\btercera\\b", "3a"},
-    {"\\bciudad\\b", "cd"},
-    {"\\bcuarta\\b", "4a"},
-    {"\\bcuatro\\b", "4"},
-    {"\\bdoctor\\b", "dr"},
-    {"\\bmexico\\b", "me"},
-    {"\\bmx\\s+mex\\b", "me"},
-    {"\\boaxaca\\b", "oa"},
-    {"\\boctava\\b", "8a"},
-    {"\\bpuebla\\b", "pu"},
-    {"\\bpuerto\\b", "pto"},
-    {"\\bquince\\b", "15"},
-    {"\\bquinta\\b", "5a"},
-    {"\\bveinte\\b", "20"},
-    {"\\bcinco\\b", "5"},
-    {"\\bmaria\\b", "ma"},
-    {"\\bnorte\\b", "nte"},
-    {"\\bnueve\\b", "9"},
-    {"\\boeste\\b", "pte"},
-    {"\\bq\\s+roo\\b", "qr"},
-    {"\\bsanta\\b", "sta"},
-    {"\\bsexta\\b", "6a"},
-    {"\\bsiete\\b", "7"},
-    {"\\btrece\\b", "13"},
-    {"\\bdiez\\b", "10"},
-    {"\\bdoce\\b", "12"},
-    {"\\beste\\b", "ote"},
-    {"\\bocho\\b", "8"},
-    {"\\bonce\\b", "11"},
-    {"\\bseis\\b", "6"},
-    {"\\btres\\b", "3"},
-    {"\\bags\\b", "ag"},
-    {"\\bdel\\b", ""},
-    {"\\bdos\\b", "2"},
-    {"\\blas\\b", ""},
-    {"\\blos\\b", ""},
-    {"\\bq\\s+r\\b", "qr"},
-    {"\\buno\\b", "1"},
-    {"\\bde\\b", ""},
-    {"\\bel\\b", ""},
-    {"\\ble\\b", ""},
-    {"\\bmx\\b", "me"},
-};
+const char* kRules_MX =
+"\\bcoahuila\\s+de\\s+zaragoza\\b\000coahuila\000"
+"\\bbaja\\s+california\\s+sur\\b\000b c s\000"
+"\\bestado\\s+de\\s+mexico\\b\000me\000"
+"\\bbaja\\s+california\\b\000b c\000"
+"\\baguascalientes\\b\000ag\000"
+"\\bveracruz\\s+llave\\b\000veracruz\000"
+"\\bprolongacion\\b\000prol\000"
+"\\bquintana\\s+roo\\b\000qr\000"
+"\\bdiecinueve\\b\00019\000"
+"\\bdiecisiete\\b\00017\000"
+"\\bgobernador\\b\000gob\000"
+"\\bguanajuato\\b\000gt\000"
+"\\blicenciado\\b\000lic\000"
+"\\bpresbitero\\b\000pbro\000"
+"\\bsan\\s+isidro\\b\000s isidro\000"
+"\\bseptiembre\\b\000sept\000"
+"\\bdieciocho\\b\00018\000"
+"\\bdieciseis\\b\00016\000"
+"\\bfrancisco\\b\000fco\000"
+"\\bingeniero\\b\000ing\000"
+"\\brepublica\\b\000rep\000"
+"\\barticulo\\b\000art\000"
+"\\bguerrero\\b\000gr\000"
+"\\bhacienda\\b\000hda\000"
+"\\bponiente\\b\000pte\000"
+"\\bprofesor\\b\000prof\000"
+"\\bsan\\s+juan\\b\000s juan\000"
+"\\bavenida\\b\000av\000"
+"\\bcaptain\\b\000cap\000"
+"\\bcatorce\\b\00014\000"
+"\\bfebrero\\b\000feb\000"
+"\\bgeneral\\b\000gral\000"
+"\\bhidalgo\\b\000hg\000"
+"\\bjalisco\\b\000ja\000"
+"\\boriente\\b\000ote\000"
+"\\bprimera\\b\0001a\000"
+"\\bprivada\\b\000priv\000"
+"\\bsegunda\\b\0002a\000"
+"\\bseptima\\b\0007a\000"
+"\\bsinaloa\\b\000si\000"
+"\\btercera\\b\0003a\000"
+"\\bciudad\\b\000cd\000"
+"\\bcuarta\\b\0004a\000"
+"\\bcuatro\\b\0004\000"
+"\\bdoctor\\b\000dr\000"
+"\\bmexico\\b\000me\000"
+"\\bmx\\s+mex\\b\000me\000"
+"\\boaxaca\\b\000oa\000"
+"\\boctava\\b\0008a\000"
+"\\bpuebla\\b\000pu\000"
+"\\bpuerto\\b\000pto\000"
+"\\bquince\\b\00015\000"
+"\\bquinta\\b\0005a\000"
+"\\bveinte\\b\00020\000"
+"\\bcinco\\b\0005\000"
+"\\bmaria\\b\000ma\000"
+"\\bnorte\\b\000nte\000"
+"\\bnueve\\b\0009\000"
+"\\boeste\\b\000pte\000"
+"\\bq\\s+roo\\b\000qr\000"
+"\\bsanta\\b\000sta\000"
+"\\bsexta\\b\0006a\000"
+"\\bsiete\\b\0007\000"
+"\\btrece\\b\00013\000"
+"\\bdiez\\b\00010\000"
+"\\bdoce\\b\00012\000"
+"\\beste\\b\000ote\000"
+"\\bocho\\b\0008\000"
+"\\bonce\\b\00011\000"
+"\\bseis\\b\0006\000"
+"\\btres\\b\0003\000"
+"\\bags\\b\000ag\000"
+"\\bdel\\b\000\000"
+"\\bdos\\b\0002\000"
+"\\blas\\b\000\000"
+"\\blos\\b\000\000"
+"\\bq\\s+r\\b\000qr\000"
+"\\buno\\b\0001\000"
+"\\bde\\b\000\000"
+"\\bel\\b\000\000"
+"\\ble\\b\000\000"
+"\\bmx\\b\000me\000"
+;
+int kNumRules_MX = 82;
 
-const Rule kRules_MY[] = {
-    {"\\bmalaysia\\b", "my"},
-};
+const char* kRules_MY =
+"\\bmalaysia\\b\000my\000"
+;
+int kNumRules_MY = 1;
 
-const Rule kRules_NL[] = {
-    {"\\bwesterhaar\\s+vriezenveensewijk\\b", "westerhaar-vriezenv wijk"},
-    {"\\bnoord\\s+brabant\\b", "nb"},
-    {"\\bnoord\\s+holland\\b", "nh"},
-    {"\\bnoord\\-brabant\\b", "nb"},
-    {"\\bnoord\\-holland\\b", "nh"},
-    {"\\balphen\\s+chaam\\b", "ac"},
-    {"\\bburgemeester\\b", "burg"},
-    {"\\bnoordbrabant\\b", "nb"},
-    {"\\bs\\s+gravenhage\\b", "sgravenhage"},
-    {"\\bzuid\\s+holland\\b", "zh"},
-    {"\\bzuid\\-holland\\b", "zh"},
-    {"\\bmonseigneur\\b", "mgr"},
-    {"\\bnetherlands\\b", "nl"},
-    {"\\bnordholland\\b", "nh"},
-    {"\\bzuidholland\\b", "zh"},
-    {"\\bgelderland\\b", "ge"},
-    {"\\bnoordzijde\\b", "nz"},
-    {"\\boverijssel\\b", "ov"},
-    {"\\bflevoland\\b", "fl"},
-    {"\\bfriesland\\b", "fr"},
-    {"\\bgroningen\\b", "gn"},
-    {"\\bnederland\\b", "nl"},
-    {"\\boostzijde\\b", "oz"},
-    {"\\bprofessor\\b", "prof"},
-    {"\\brotterdam\\b", "rt"},
-    {"\\bwestzijde\\b", "wz"},
-    {"\\bzuidzijde\\b", "zz"},
-    {"\\baan\\s+den\\b", "ad"},
-    {"\\bachtste\\b", "8"},
-    {"\\bdominee\\b", "ds"},
-    {"\\bdrenthe\\b", "dr"},
-    {"\\blimburg\\b", "l"},
-    {"\\bmeester\\b", "mr"},
-    {"\\bnegende\\b", "9"},
-    {"\\butrecht\\b", "u"},
-    {"\\bzeeland\\b", "z"},
-    {"\\bzevende\\b", "7"},
-    {"\\baan\\s+de\\b", "ad"},
-    {"\\bdoctor\\b", "dr"},
-    {"\\beerste\\b", "1"},
-    {"\\bstraat\\b", "str"},
-    {"\\btweede\\b", "2"},
-    {"\\bvierde\\b", "4"},
-    {"\\bvijfde\\b", "5"},
-    {"\\bderde\\b", "3"},
-    {"\\bnl\\-dr\\b", "dr"},
-    {"\\bnl\\-fl\\b", "fl"},
-    {"\\bnl\\-fr\\b", "fr"},
-    {"\\bnl\\-ge\\b", "ge"},
-    {"\\bnl\\-gr\\b", "gn"},
-    {"\\bnl\\-li\\b", "l"},
-    {"\\bnl\\-nb\\b", "nb"},
-    {"\\bnl\\-nh\\b", "nh"},
-    {"\\bnl\\-ov\\b", "ov"},
-    {"\\bnl\\-ut\\b", "u"},
-    {"\\bnl\\-ze\\b", "z"},
-    {"\\bnl\\-zh\\b", "zh"},
-    {"\\bzesde\\b", "6"},
-    {"\\bsint\\b", "st"},
-    {"\\ba\\s+d\\b", "ad"},
-    {"\\bgld\\b", "ge"},
-    {"\\bn\\s+z\\b", "nz"},
-    {"\\bo\\s+z\\b", "oz"},
-    {"\\bw\\s+z\\b", "wz"},
-    {"\\bz\\s+z\\b", "zz"},
-    {"\\bzld\\b", "z"},
-    {"\\bgl\\b", "ge"},
-    {"\\bgr\\b", "gn"},
-    {"\\blb\\b", "l"},
-    {"\\bli\\b", "l"},
-    {"\\but\\b", "u"},
-    {"\\bze\\b", "z"},
-    {"\\bzl\\b", "z"},
-    {"\\b\\#\\b", ""},
-};
+const char* kRules_NL =
+"\\bwesterhaar\\s+vriezenveensewijk\\b\000westerhaar-vriezenv wijk\000"
+"\\bnoord\\s+brabant\\b\000nb\000"
+"\\bnoord\\s+holland\\b\000nh\000"
+"\\bnoord\\-brabant\\b\000nb\000"
+"\\bnoord\\-holland\\b\000nh\000"
+"\\balphen\\s+chaam\\b\000ac\000"
+"\\bburgemeester\\b\000burg\000"
+"\\bnoordbrabant\\b\000nb\000"
+"\\bs\\s+gravenhage\\b\000sgravenhage\000"
+"\\bzuid\\s+holland\\b\000zh\000"
+"\\bzuid\\-holland\\b\000zh\000"
+"\\bmonseigneur\\b\000mgr\000"
+"\\bnetherlands\\b\000nl\000"
+"\\bnordholland\\b\000nh\000"
+"\\bzuidholland\\b\000zh\000"
+"\\bgelderland\\b\000ge\000"
+"\\bnoordzijde\\b\000nz\000"
+"\\boverijssel\\b\000ov\000"
+"\\bflevoland\\b\000fl\000"
+"\\bfriesland\\b\000fr\000"
+"\\bgroningen\\b\000gn\000"
+"\\bnederland\\b\000nl\000"
+"\\boostzijde\\b\000oz\000"
+"\\bprofessor\\b\000prof\000"
+"\\brotterdam\\b\000rt\000"
+"\\bwestzijde\\b\000wz\000"
+"\\bzuidzijde\\b\000zz\000"
+"\\baan\\s+den\\b\000ad\000"
+"\\bachtste\\b\0008\000"
+"\\bdominee\\b\000ds\000"
+"\\bdrenthe\\b\000dr\000"
+"\\blimburg\\b\000l\000"
+"\\bmeester\\b\000mr\000"
+"\\bnegende\\b\0009\000"
+"\\butrecht\\b\000u\000"
+"\\bzeeland\\b\000z\000"
+"\\bzevende\\b\0007\000"
+"\\baan\\s+de\\b\000ad\000"
+"\\bdoctor\\b\000dr\000"
+"\\beerste\\b\0001\000"
+"\\bstraat\\b\000str\000"
+"\\btweede\\b\0002\000"
+"\\bvierde\\b\0004\000"
+"\\bvijfde\\b\0005\000"
+"\\bderde\\b\0003\000"
+"\\bnl\\-dr\\b\000dr\000"
+"\\bnl\\-fl\\b\000fl\000"
+"\\bnl\\-fr\\b\000fr\000"
+"\\bnl\\-ge\\b\000ge\000"
+"\\bnl\\-gr\\b\000gn\000"
+"\\bnl\\-li\\b\000l\000"
+"\\bnl\\-nb\\b\000nb\000"
+"\\bnl\\-nh\\b\000nh\000"
+"\\bnl\\-ov\\b\000ov\000"
+"\\bnl\\-ut\\b\000u\000"
+"\\bnl\\-ze\\b\000z\000"
+"\\bnl\\-zh\\b\000zh\000"
+"\\bzesde\\b\0006\000"
+"\\bsint\\b\000st\000"
+"\\ba\\s+d\\b\000ad\000"
+"\\bgld\\b\000ge\000"
+"\\bn\\s+z\\b\000nz\000"
+"\\bo\\s+z\\b\000oz\000"
+"\\bw\\s+z\\b\000wz\000"
+"\\bz\\s+z\\b\000zz\000"
+"\\bzld\\b\000z\000"
+"\\bgl\\b\000ge\000"
+"\\bgr\\b\000gn\000"
+"\\blb\\b\000l\000"
+"\\bli\\b\000l\000"
+"\\but\\b\000u\000"
+"\\bze\\b\000z\000"
+"\\bzl\\b\000z\000"
+"\\b\\#\\b\000\000"
+;
+int kNumRules_NL = 74;
 
-const Rule kRules_NZ[] = {
-    {"\\brural\\s+delivery\\b", ""},
-    {"\\bocean\\s+beach\\b", "oceanbeach"},
-    {"\\blong\\s+beach\\b", "longbeach"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\bheights\\b", "hts"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\bparkway\\b", "pkwy"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bcommon\\b", "comm"},
-    {"\\bparade\\b", "pde"},
-    {"\\bstreet\\b", "st"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bmount\\b", "mt"},
-    {"\\bnorth\\b", "n"},
-    {"\\bplace\\b", "pl"},
-    {"\\bpoint\\b", "pt"},
-    {"\\bsaint\\b", "st"},
-    {"\\bsouth\\b", "s"},
-    {"\\beast\\b", "e"},
-    {"\\blane\\b", "ln"},
-    {"\\bn\\.z\\.\\b", "nz"},
-    {"\\broad\\b", "rd"},
-    {"\\bwest\\b", "w"},
-    {"\\bmt\\.\\b", "mt"},
-    {"\\bn\\.z\\b", "nz"},
-    {"\\bnth\\b", "n"},
-    {"\\bpt\\.\\b", "pt"},
-    {"\\bst\\.\\b", "st"},
-    {"\\bsth\\b", "s"},
-    {"\\be\\.\\b", "e"},
-    {"\\bn\\.\\b", "n"},
-    {"\\bs\\.\\b", "s"},
-    {"\\bw\\.\\b", "w"},
-};
+const char* kRules_NZ =
+"\\brural\\s+delivery\\b\000\000"
+"\\bocean\\s+beach\\b\000oceanbeach\000"
+"\\blong\\s+beach\\b\000longbeach\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bcrescent\\b\000cres\000"
+"\\bheights\\b\000hts\000"
+"\\bhighway\\b\000hwy\000"
+"\\bparkway\\b\000pkwy\000"
+"\\bavenue\\b\000ave\000"
+"\\bcommon\\b\000comm\000"
+"\\bparade\\b\000pde\000"
+"\\bstreet\\b\000st\000"
+"\\bcourt\\b\000ct\000"
+"\\bdrive\\b\000dr\000"
+"\\bmount\\b\000mt\000"
+"\\bnorth\\b\000n\000"
+"\\bplace\\b\000pl\000"
+"\\bpoint\\b\000pt\000"
+"\\bsaint\\b\000st\000"
+"\\bsouth\\b\000s\000"
+"\\beast\\b\000e\000"
+"\\blane\\b\000ln\000"
+"\\bn\\.z\\.\\b\000nz\000"
+"\\broad\\b\000rd\000"
+"\\bwest\\b\000w\000"
+"\\bmt\\.\\b\000mt\000"
+"\\bn\\.z\\b\000nz\000"
+"\\bnth\\b\000n\000"
+"\\bpt\\.\\b\000pt\000"
+"\\bst\\.\\b\000st\000"
+"\\bsth\\b\000s\000"
+"\\be\\.\\b\000e\000"
+"\\bn\\.\\b\000n\000"
+"\\bs\\.\\b\000s\000"
+"\\bw\\.\\b\000w\000"
+;
+int kNumRules_NZ = 35;
 
-const Rule kRules_PE[] = {
-    {"\\bavenida\\b", "av"},
-    {"\\bperu\\b", "pe"},
-    {"\\bdel\\b", ""},
-    {"\\blas\\b", ""},
-    {"\\blos\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bel\\b", ""},
-    {"\\ble\\b", ""},
-};
+const char* kRules_PE =
+"\\bavenida\\b\000av\000"
+"\\bperu\\b\000pe\000"
+"\\bdel\\b\000\000"
+"\\blas\\b\000\000"
+"\\blos\\b\000\000"
+"\\bde\\b\000\000"
+"\\bel\\b\000\000"
+"\\ble\\b\000\000"
+;
+int kNumRules_PE = 8;
 
-const Rule kRules_PH[] = {
-    {"\\bphilippines\\b", "ph"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bextension\\b", "ext"},
-    {"\\bbarangay\\b", ""},
-    {"\\bcaptain\\b", "cap"},
-    {"\\bgeneral\\b", "gen"},
-    {"\\bavenue\\b", "av"},
-    {"\\bdoctor\\b", "dr"},
-    {"\\bstreet\\b", "st"},
-    {"\\bnorth\\b", "n"},
-    {"\\bsouth\\b", "s"},
-    {"\\bbrgy\\b", ""},
-    {"\\beast\\b", "e"},
-    {"\\bextn\\b", "ext"},
-    {"\\broad\\b", "rd"},
-    {"\\bwest\\b", "w"},
-    {"\\bave\\b", "av"},
-    {"\\bbgy\\b", ""},
-};
+const char* kRules_PH =
+"\\bphilippines\\b\000ph\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bextension\\b\000ext\000"
+"\\bbarangay\\b\000\000"
+"\\bcaptain\\b\000cap\000"
+"\\bgeneral\\b\000gen\000"
+"\\bavenue\\b\000av\000"
+"\\bdoctor\\b\000dr\000"
+"\\bstreet\\b\000st\000"
+"\\bnorth\\b\000n\000"
+"\\bsouth\\b\000s\000"
+"\\bbrgy\\b\000\000"
+"\\beast\\b\000e\000"
+"\\bextn\\b\000ext\000"
+"\\broad\\b\000rd\000"
+"\\bwest\\b\000w\000"
+"\\bave\\b\000av\000"
+"\\bbgy\\b\000\000"
+;
+int kNumRules_PH = 18;
 
-const Rule kRules_PL[] = {
-    {"\\bkuyavian\\s+pomeranian\\b", "kp"},
-    {"\\bzachodniopomorskie\\b", "zp"},
-    {"\\bwarmian\\s+masurian\\b", "wn"},
-    {"\\bwest\\s+pomeranian\\b", "zp"},
-    {"\\bgreater\\s+poland\\b", "wp"},
-    {"\\blower\\s+silesian\\b", "ds"},
-    {"\\bswietokrzyskie\\b", "sk"},
-    {"\\blesser\\s+poland\\b", "mp"},
-    {"\\bsubcarpathian\\b", "pk"},
-    {"\\bwielkopolskie\\b", "wp"},
-    {"\\bdolnoslaskie\\b", "ds"},
-    {"\\bpodkarpackie\\b", "pk"},
-    {"\\bmalopolskie\\b", "mp"},
-    {"\\bmazowieckie\\b", "ma"},
-    {"\\bpomeranian\\b", "pm"},
-    {"\\blubelskie\\b", "lu"},
-    {"\\bmarszalek\\b", "marsz"},
-    {"\\bpodlaskie\\b", "pd"},
-    {"\\bpomorskie\\b", "pm"},
-    {"\\bwarminsko\\b", "wn"},
-    {"\\bkujawsko\\b", "kp"},
-    {"\\blubuskie\\b", "lb"},
-    {"\\bmasovian\\b", "ma"},
-    {"\\bopolskie\\b", "op"},
-    {"\\bpoludnie\\b", "south"},
-    {"\\bsilesian\\b", "sl"},
-    {"\\bwschodni\\b", "w"},
-    {"\\bzachodni\\b", "z"},
-    {"\\blodzkie\\b", "ld"},
-    {"\\bosiedle\\b", "os"},
-    {"\\bsilesia\\b", "sl"},
-    {"\\bslaskie\\b", "sl"},
-    {"\\blublin\\b", "lu"},
-    {"\\blubusz\\b", "lb"},
-    {"\\bpoland\\b", "pl"},
-    {"\\bpolnoc\\b", "north"},
-    {"\\bwschod\\b", "w"},
-    {"\\bzachod\\b", "z"},
-    {"\\bopole\\b", "op"},
-    {"\\beast\\b", "w"},
-    {"\\blodz\\b", "ld"},
-    {"\\bwest\\b", "z"},
-    {"\\bwlkp\\b", "wp"},
-};
+const char* kRules_PL =
+"\\bkuyavian\\s+pomeranian\\b\000kp\000"
+"\\bzachodniopomorskie\\b\000zp\000"
+"\\bwarmian\\s+masurian\\b\000wn\000"
+"\\bwest\\s+pomeranian\\b\000zp\000"
+"\\bgreater\\s+poland\\b\000wp\000"
+"\\blower\\s+silesian\\b\000ds\000"
+"\\bswietokrzyskie\\b\000sk\000"
+"\\blesser\\s+poland\\b\000mp\000"
+"\\bsubcarpathian\\b\000pk\000"
+"\\bwielkopolskie\\b\000wp\000"
+"\\bdolnoslaskie\\b\000ds\000"
+"\\bpodkarpackie\\b\000pk\000"
+"\\bmalopolskie\\b\000mp\000"
+"\\bmazowieckie\\b\000ma\000"
+"\\bpomeranian\\b\000pm\000"
+"\\blubelskie\\b\000lu\000"
+"\\bmarszalek\\b\000marsz\000"
+"\\bpodlaskie\\b\000pd\000"
+"\\bpomorskie\\b\000pm\000"
+"\\bwarminsko\\b\000wn\000"
+"\\bkujawsko\\b\000kp\000"
+"\\blubuskie\\b\000lb\000"
+"\\bmasovian\\b\000ma\000"
+"\\bopolskie\\b\000op\000"
+"\\bpoludnie\\b\000south\000"
+"\\bsilesian\\b\000sl\000"
+"\\bwschodni\\b\000w\000"
+"\\bzachodni\\b\000z\000"
+"\\blodzkie\\b\000ld\000"
+"\\bosiedle\\b\000os\000"
+"\\bsilesia\\b\000sl\000"
+"\\bslaskie\\b\000sl\000"
+"\\blublin\\b\000lu\000"
+"\\blubusz\\b\000lb\000"
+"\\bpoland\\b\000pl\000"
+"\\bpolnoc\\b\000north\000"
+"\\bwschod\\b\000w\000"
+"\\bzachod\\b\000z\000"
+"\\bopole\\b\000op\000"
+"\\beast\\b\000w\000"
+"\\blodz\\b\000ld\000"
+"\\bwest\\b\000z\000"
+"\\bwlkp\\b\000wp\000"
+;
+int kNumRules_PL = 43;
 
-const Rule kRules_PR[] = {
-    {"\\bsan\\s+juan\\s+antiguo\\b", "old san juan"},
-    {"\\bpuerto\\s+rico\\b", "pr"},
-    {"\\bcarretera\\b", "carr"},
-    {"\\bmal\\s+paso\\b", "malpaso"},
-    {"\\bavenida\\b", "av"},
-    {"\\bbulevar\\b", "blvd"},
-    {"\\bcamino\\b", "cm"},
-    {"\\bcalle\\b", "cll"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bnorth\\b", "n"},
-    {"\\bpaseo\\b", "pso"},
-    {"\\bplaza\\b", "plz"},
-    {"\\bsaint\\b", "st"},
-    {"\\bsouth\\b", "s"},
-    {"\\bave\\.\\b", "av"},
-    {"\\beast\\b", "e"},
-    {"\\blane\\b", "ln"},
-    {"\\bp\\.r\\.\\b", "pr"},
-    {"\\broad\\b", "rd"},
-    {"\\bwest\\b", "w"},
-    {"\\bave\\b", "av"},
-    {"\\bcam\\b", "cm"},
-    {"\\bnth\\b", "n"},
-    {"\\bp\\.r\\b", "pr"},
-    {"\\bst\\.\\b", "st"},
-    {"\\bsth\\b", "s"},
-    {"\\be\\.\\b", "e"},
-    {"\\bn\\.\\b", "n"},
-    {"\\bs\\.\\b", "s"},
-    {"\\bw\\.\\b", "w"},
-};
+const char* kRules_PR =
+"\\bsan\\s+juan\\s+antiguo\\b\000old san juan\000"
+"\\bpuerto\\s+rico\\b\000pr\000"
+"\\bcarretera\\b\000carr\000"
+"\\bmal\\s+paso\\b\000malpaso\000"
+"\\bavenida\\b\000av\000"
+"\\bbulevar\\b\000blvd\000"
+"\\bcamino\\b\000cm\000"
+"\\bcalle\\b\000cll\000"
+"\\bcourt\\b\000ct\000"
+"\\bnorth\\b\000n\000"
+"\\bpaseo\\b\000pso\000"
+"\\bplaza\\b\000plz\000"
+"\\bsaint\\b\000st\000"
+"\\bsouth\\b\000s\000"
+"\\bave\\.\\b\000av\000"
+"\\beast\\b\000e\000"
+"\\blane\\b\000ln\000"
+"\\bp\\.r\\.\\b\000pr\000"
+"\\broad\\b\000rd\000"
+"\\bwest\\b\000w\000"
+"\\bave\\b\000av\000"
+"\\bcam\\b\000cm\000"
+"\\bnth\\b\000n\000"
+"\\bp\\.r\\b\000pr\000"
+"\\bst\\.\\b\000st\000"
+"\\bsth\\b\000s\000"
+"\\be\\.\\b\000e\000"
+"\\bn\\.\\b\000n\000"
+"\\bs\\.\\b\000s\000"
+"\\bw\\.\\b\000w\000"
+;
+int kNumRules_PR = 30;
 
-const Rule kRules_PT[] = {
-    {"\\bestrada\\s+nacional\\b", "n"},
-    {"\\bviana\\s+do\\s+castelo\\b", "18"},
-    {"\\bcastelo\\s+branco\\b", "09"},
-    {"\\bportalegre\\b", "08"},
-    {"\\bvila\\s+real\\b", "15"},
-    {"\\bbraganca\\b", "14"},
-    {"\\bportugal\\b", "pt"},
-    {"\\bsantarem\\b", "03"},
-    {"\\bcoimbra\\b", "11"},
-    {"\\bsetubal\\b", "04"},
-    {"\\baveiro\\b", "12"},
-    {"\\bdoctor\\b", "dr"},
-    {"\\bdoutor\\b", "dr"},
-    {"\\bguarda\\b", "10"},
-    {"\\bleiria\\b", "02"},
-    {"\\blisbon\\b", "01"},
-    {"\\bbraga\\b", "17"},
-    {"\\bevora\\b", "07"},
-    {"\\bnorth\\b", "n"},
-    {"\\bporto\\b", "16"},
-    {"\\bsouth\\b", "s"},
-    {"\\bviseu\\b", "13"},
-    {"\\bbeja\\b", "05"},
-    {"\\bfaro\\b", "06"},
-    {"\\bwest\\b", "w"},
-    {"\\bdas\\b", ""},
-    {"\\bdos\\b", ""},
-    {"\\bsao\\b", "s"},
-    {"\\bda\\b", ""},
-    {"\\bde\\b", ""},
-    {"\\bdo\\b", ""},
-    {"\\bem\\b", "m"},
-    {"\\ben\\b", "n"},
-    {"\\be\\b", ""},
-};
+const char* kRules_PT =
+"\\bestrada\\s+nacional\\b\000n\000"
+"\\bviana\\s+do\\s+castelo\\b\00018\000"
+"\\bcastelo\\s+branco\\b\00009\000"
+"\\bportalegre\\b\00008\000"
+"\\bvila\\s+real\\b\00015\000"
+"\\bbraganca\\b\00014\000"
+"\\bportugal\\b\000pt\000"
+"\\bsantarem\\b\00003\000"
+"\\bcoimbra\\b\00011\000"
+"\\bsetubal\\b\00004\000"
+"\\baveiro\\b\00012\000"
+"\\bdoctor\\b\000dr\000"
+"\\bdoutor\\b\000dr\000"
+"\\bguarda\\b\00010\000"
+"\\bleiria\\b\00002\000"
+"\\blisbon\\b\00001\000"
+"\\bbraga\\b\00017\000"
+"\\bevora\\b\00007\000"
+"\\bnorth\\b\000n\000"
+"\\bporto\\b\00016\000"
+"\\bsouth\\b\000s\000"
+"\\bviseu\\b\00013\000"
+"\\bbeja\\b\00005\000"
+"\\bfaro\\b\00006\000"
+"\\bwest\\b\000w\000"
+"\\bdas\\b\000\000"
+"\\bdos\\b\000\000"
+"\\bsao\\b\000s\000"
+"\\bda\\b\000\000"
+"\\bde\\b\000\000"
+"\\bdo\\b\000\000"
+"\\bem\\b\000m\000"
+"\\ben\\b\000n\000"
+"\\be\\b\000\000"
+;
+int kNumRules_PT = 34;
 
-const Rule kRules_RO[] = {
-    {"\\bromania\\b", "ro"},
-};
+const char* kRules_RO =
+"\\bromania\\b\000ro\000"
+;
+int kNumRules_RO = 1;
 
-const Rule kRules_RU[] = {
-    {"\\bавтодорога\\b", "а/д"},
-    {"\\bнабережная\\b", "наб"},
-    {"\\bтерритория\\b", "тер"},
-    {"\\bпереулок\\b", "пер"},
-    {"\\bпроспект\\b", "пр"},
-    {"\\bбульвар\\b", "б-р"},
-    {"\\bквартал\\b", "кв-л"},
-    {"\\bплощадь\\b", "пл"},
-    {"\\brussia\\b", "ru"},
-    {"\\bдорога\\b", "дор"},
-    {"\\bпроезд\\b", "пр-д"},
-    {"\\bроссия\\b", "ru"},
-    {"\\bбульв\\b", "б-р"},
-    {"\\bлиния\\b", "лин"},
-    {"\\bпр\\-кт\\b", "пр"},
-    {"\\bпросп\\b", "пр"},
-    {"\\bтупик\\b", "туп"},
-    {"\\bулица\\b", "ул"},
-    {"\\bшоссе\\b", "ш"},
-    {"\\bпрот\\b", "пр"},
-    {"\\bбул\\b", "б-р"},
-};
+const char* kRules_RU =
+"\\bавтодорога\\b\000а/д\000"
+"\\bнабережная\\b\000наб\000"
+"\\bтерритория\\b\000тер\000"
+"\\bпереулок\\b\000пер\000"
+"\\bпроспект\\b\000пр\000"
+"\\bбульвар\\b\000б-р\000"
+"\\bквартал\\b\000кв-л\000"
+"\\bплощадь\\b\000пл\000"
+"\\brussia\\b\000ru\000"
+"\\bдорога\\b\000дор\000"
+"\\bпроезд\\b\000пр-д\000"
+"\\bроссия\\b\000ru\000"
+"\\bбульв\\b\000б-р\000"
+"\\bлиния\\b\000лин\000"
+"\\bпр\\-кт\\b\000пр\000"
+"\\bпросп\\b\000пр\000"
+"\\bтупик\\b\000туп\000"
+"\\bулица\\b\000ул\000"
+"\\bшоссе\\b\000ш\000"
+"\\bпрот\\b\000пр\000"
+"\\bбул\\b\000б-р\000"
+;
+int kNumRules_RU = 21;
 
-const Rule kRules_SE[] = {
-    {"\\bvastra\\s+goetalands\\b", "o"},
-    {"\\bvastra\\s+goetaland\\b", "o"},
-    {"\\boestergoetlands\\b", "e"},
-    {"\\bvasternorrlands\\b", "y"},
-    {"\\boestergoetland\\b", "e"},
-    {"\\bvastergoetland\\b", "e"},
-    {"\\bvasternorrland\\b", "y"},
-    {"\\bsodermanlands\\b", "d"},
-    {"\\bvasterbottens\\b", "ac"},
-    {"\\bjoenkoepings\\b", "f"},
-    {"\\bsodermanland\\b", "d"},
-    {"\\bvasterbotten\\b", "ac"},
-    {"\\bvastmanlands\\b", "u"},
-    {"\\bjoenkoeping\\b", "f"},
-    {"\\bnorrbottens\\b", "bd"},
-    {"\\bvastmanland\\b", "u"},
-    {"\\bgavleborgs\\b", "x"},
-    {"\\bkronobergs\\b", "g"},
-    {"\\bnorrbotten\\b", "bd"},
-    {"\\bstockholms\\b", "ab"},
-    {"\\bgavleborg\\b", "x"},
-    {"\\bjamtlands\\b", "z"},
-    {"\\bkronoberg\\b", "g"},
-    {"\\bstockholm\\b", "ab"},
-    {"\\bvarmlands\\b", "s"},
-    {"\\bblekinge\\b", "k"},
-    {"\\bdalarnas\\b", "w"},
-    {"\\bgotlands\\b", "i"},
-    {"\\bhallands\\b", "n"},
-    {"\\bjamtland\\b", "z"},
-    {"\\boerebros\\b", "t"},
-    {"\\bvarmland\\b", "s"},
-    {"\\bdalarna\\b", "w"},
-    {"\\bgotland\\b", "i"},
-    {"\\bhalland\\b", "n"},
-    {"\\boerebro\\b", "t"},
-    {"\\bsverige\\b", "se"},
-    {"\\buppsala\\b", "c"},
-    {"\\bkalmar\\b", "h"},
-    {"\\bsoeder\\b", "s"},
-    {"\\bsweden\\b", "se"},
-    {"\\bskane\\b", "m"},
-    {"\\bnorr\\b", "n"},
-    {"\\boest\\b", "o"},
-    {"\\bvast\\b", "v"},
-};
+const char* kRules_SE =
+"\\bvastra\\s+goetalands\\b\000o\000"
+"\\bvastra\\s+goetaland\\b\000o\000"
+"\\boestergoetlands\\b\000e\000"
+"\\bvasternorrlands\\b\000y\000"
+"\\boestergoetland\\b\000e\000"
+"\\bvastergoetland\\b\000e\000"
+"\\bvasternorrland\\b\000y\000"
+"\\bsodermanlands\\b\000d\000"
+"\\bvasterbottens\\b\000ac\000"
+"\\bjoenkoepings\\b\000f\000"
+"\\bsodermanland\\b\000d\000"
+"\\bvasterbotten\\b\000ac\000"
+"\\bvastmanlands\\b\000u\000"
+"\\bjoenkoeping\\b\000f\000"
+"\\bnorrbottens\\b\000bd\000"
+"\\bvastmanland\\b\000u\000"
+"\\bgavleborgs\\b\000x\000"
+"\\bkronobergs\\b\000g\000"
+"\\bnorrbotten\\b\000bd\000"
+"\\bstockholms\\b\000ab\000"
+"\\bgavleborg\\b\000x\000"
+"\\bjamtlands\\b\000z\000"
+"\\bkronoberg\\b\000g\000"
+"\\bstockholm\\b\000ab\000"
+"\\bvarmlands\\b\000s\000"
+"\\bblekinge\\b\000k\000"
+"\\bdalarnas\\b\000w\000"
+"\\bgotlands\\b\000i\000"
+"\\bhallands\\b\000n\000"
+"\\bjamtland\\b\000z\000"
+"\\boerebros\\b\000t\000"
+"\\bvarmland\\b\000s\000"
+"\\bdalarna\\b\000w\000"
+"\\bgotland\\b\000i\000"
+"\\bhalland\\b\000n\000"
+"\\boerebro\\b\000t\000"
+"\\bsverige\\b\000se\000"
+"\\buppsala\\b\000c\000"
+"\\bkalmar\\b\000h\000"
+"\\bsoeder\\b\000s\000"
+"\\bsweden\\b\000se\000"
+"\\bskane\\b\000m\000"
+"\\bnorr\\b\000n\000"
+"\\boest\\b\000o\000"
+"\\bvast\\b\000v\000"
+;
+int kNumRules_SE = 45;
 
-const Rule kRules_TH[] = {
-    {"\\bประเทศไทย\\b", "th"},
-    {"\\bthailand\\b", "th"},
-};
+const char* kRules_TH =
+"\\bประเทศไทย\\b\000th\000"
+"\\bthailand\\b\000th\000"
+;
+int kNumRules_TH = 2;
 
-const Rule kRules_TR[] = {
-    {"\\bturkiye\\b", "tr"},
-    {"\\bturkey\\b", "tr"},
-};
+const char* kRules_TR =
+"\\bturkiye\\b\000tr\000"
+"\\bturkey\\b\000tr\000"
+;
+int kNumRules_TR = 2;
 
-const Rule kRules_US[] = {
-    {"\\bjoint\\s+base\\s+elmendorf\\s+richardson\\b", "jber"},
-    {"\\bwashington\\s+district\\s+of\\s+columbia\\b", "dc"},
-    {"\\bfederated\\s+states\\s+of\\s+micronesia\\b", "fm"},
-    {"\\bjoint\\s+base\\s+pearl\\s+harbor\\s+hickam\\b", "jbphh"},
-    {"\\bnational\\s+forest\\s+development\\b", "nat for dev"},
-    {"\\bmartin\\s+luther\\s+king\\s+junior\\b", "mlk"},
-    {"\\barmed\\s+forces\\s+middle\\s+east\\b", "ae"},
-    {"\\bmarine\\s+corps\\s+base\\s+hawaii\\b", "mcbh kanehoe bay"},
-    {"\\bnational\\s+for\\s+development\\b", "nat for dev"},
-    {"\\bnorthern\\s+mariana\\s+islands\\b", "mp"},
-    {"\\bunited\\s+states\\s+of\\s+america\\b", "us"},
-    {"\\bmartin\\s+luther\\s+king\\s+jnr\\b", "mlk"},
-    {"\\bnat\\s+forest\\s+development\\b", "nat for dev"},
-    {"\\barmed\\s+forces\\s+americas\\b", "aa"},
-    {"\\bmartin\\s+luther\\s+king\\s+jr\\b", "mlk"},
-    {"\\barmed\\s+forces\\s+pacific\\b", "ap"},
-    {"\\bdistrict\\s+of\\s+columbia\\b", "dc"},
-    {"\\barmed\\s+forces\\s+africa\\b", "ae"},
-    {"\\barmed\\s+forces\\s+canada\\b", "ae"},
-    {"\\barmed\\s+forces\\s+europe\\b", "ae"},
-    {"\\bnat\\s+for\\s+development\\b", "nat for dev"},
-    {"\\bnational\\s+forest\\s+dev\\b", "nat for dev"},
-    {"\\bjoint\\s+reserve\\s+base\\b", "jrb"},
-    {"\\blincolns\\s+new\\s+salem\\b", "lincoln nw sl"},
-    {"\\bmartin\\s+luther\\s+king\\b", "mlk"},
-    {"\\bmetropolitan\\s+area\\b", ""},
-    {"\\bnational\\s+monument\\b", "national mo"},
-    {"\\bcolorado\\s+springs\\b", "co spgs"},
-    {"\\bdist\\s+of\\s+columbia\\b", "dc"},
-    {"\\bfrancis\\s+e\\s+warren\\b", "fe warren"},
-    {"\\bmarshall\\s+islands\\b", "mh"},
-    {"\\bnational\\s+for\\s+dev\\b", "nat for dev"},
-    {"\\bwashington\\s+state\\b", "wa"},
-    {"\\bcharlottesville\\b", "charlottesvle"},
-    {"\\badministration\\b", "admn"},
-    {"\\bair\\s+force\\s+base\\b", "afb"},
-    {"\\bamerican\\s+samoa\\b", "as"},
-    {"\\bbradford\\s+woods\\b", "bradfordwoods"},
-    {"\\bchristiansberg\\b", "christiansbrg"},
-    {"\\bcrawfordsville\\b", "crawfordsvlle"},
-    {"\\bfarm\\s+to\\s+market\\b", "fm"},
-    {"\\bforest\\s+service\\b", "frst srvc"},
-    {"\\bfredericksburg\\b", "fredericksbrg"},
-    {"\\bhendersonville\\b", "hendersonvlle"},
-    {"\\bjeffersonville\\b", "jeffersonvlle"},
-    {"\\bjohn\\s+f\\s+kennedy\\b", "jfk"},
-    {"\\blittle\\s+diomede\\b", "diomede"},
-    {"\\bmechanicsville\\b", "mechanicsvlle"},
-    {"\\bnat\\s+forest\\s+dev\\b", "nat for dev"},
-    {"\\bnew\\s+york\\s+state\\b", "ny"},
-    {"\\bnorth\\s+carolina\\b", "nc"},
-    {"\\bnorthumberland\\b", "northumberlnd"},
-    {"\\bsalt\\s+lake\\s+city\\b", "slc"},
-    {"\\bsouth\\s+carolina\\b", "sc"},
-    {"\\bvirgin\\s+islands\\b", "vi"},
-    {"\\bwashington\\s+d\\s+c\\b", "dc"},
-    {"\\barmy\\s+airfield\\b", "army af"},
-    {"\\binternational\\b", "intl"},
-    {"\\bjf\\s+kennedy\\s+ap\\b", "jfk airport"},
-    {"\\bmassachusetts\\b", "ma"},
-    {"\\bnational\\s+park\\b", "ntpk"},
-    {"\\bnew\\s+hampshire\\b", "nh"},
-    {"\\bnew\\s+york\\s+city\\b", "ny"},
-    {"\\bunited\\s+states\\b", "us"},
-    {"\\bwashington\\s+dc\\b", "dc"},
-    {"\\bwest\\s+virginia\\b", "wv"},
-    {"\\bbristle\\s+cone\\b", "bristlecone"},
-    {"\\bfrst\\s+service\\b", "frst srvc"},
-    {"\\bminers\\s+mills\\b", "miners mill"},
-    {"\\bnorth\\s+dakota\\b", "nd"},
-    {"\\bpennsylvania\\b", "pa"},
-    {"\\brhode\\s+island\\b", "ri"},
-    {"\\bservice\\s+road\\b", "service rd"},
-    {"\\bsouth\\s+dakota\\b", "sd"},
-    {"\\bswan\\s+quarter\\b", "swanquarter"},
-    {"\\bbloomington\\b", "blmngtn"},
-    {"\\bchevy\\s+chase\\b", "chevy chs"},
-    {"\\bclutch\\s+city\\b", "houston"},
-    {"\\bconnecticut\\b", "ct"},
-    {"\\bforest\\s+srvc\\b", "frst srvc"},
-    {"\\bfrenchville\\b", "frnchvl"},
-    {"\\bgood\\s+fellow\\b", "goodfellow"},
-    {"\\bhigh\\s+bridge\\b", "highbridge"},
-    {"\\blos\\s+angeles\\b", "la"},
-    {"\\bloxahatchee\\b", "lox"},
-    {"\\bmississippi\\b", "ms"},
-    {"\\bobservatory\\b", "obs"},
-    {"\\bpuerto\\s+rico\\b", "pr"},
-    {"\\brural\\s+route\\b", "rr"},
-    {"\\bspringfield\\b", "spfld"},
-    {"\\byellowstone\\b", "yelwstn"},
-    {"\\balpen\\s+glow\\b", "alpenglow"},
-    {"\\bambassador\\b", "amb"},
-    {"\\bbernardino\\b", "bernrdno"},
-    {"\\bbloomfield\\b", "bloomfld"},
-    {"\\bbrownstown\\b", "brownstwn"},
-    {"\\bburlington\\b", "burlngtn"},
-    {"\\bcalifornia\\b", "ca"},
-    {"\\bcapistrano\\b", "capo"},
-    {"\\bchristmass\\b", "chirstmas"},
-    {"\\bcincinnati\\b", "cin"},
-    {"\\bcottonwood\\b", "ctwd"},
-    {"\\bcrossroads\\b", "xrds"},
-    {"\\bexpressway\\b", "exp"},
-    {"\\bextensions\\b", "exts"},
-    {"\\bfarmington\\b", "farmingtn"},
-    {"\\bnew\\s+jersey\\b", "nj"},
-    {"\\bnew\\s+mexico\\b", "nm"},
-    {"\\bpittsburgh\\b", "pgh"},
-    {"\\bplantation\\b", "plt"},
-    {"\\bprovidence\\b", "providnce"},
-    {"\\bsouth\\s+lake\\b", "southlake"},
-    {"\\bthroughway\\b", "trwy"},
-    {"\\btrafficway\\b", "trfy"},
-    {"\\buniversity\\b", "univ"},
-    {"\\bwashington\\b", "wa"},
-    {"\\bwest\\s+point\\b", "westpoint"},
-    {"\\bbellerose\\b", "bellrs"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bburlingtn\\b", "burlngtn"},
-    {"\\bchair\\s+bar\\b", "chairbar"},
-    {"\\bchicester\\b", "chicstr"},
-    {"\\bcity\\s+base\\b", "cb"},
-    {"\\bcleveland\\b", "cleve"},
-    {"\\bcommunity\\b", "cmnty"},
-    {"\\bcrossroad\\b", "xrd"},
-    {"\\bextension\\b", "ext"},
-    {"\\bfairmount\\b", "fairmt"},
-    {"\\bfernandez\\b", "fdez"},
-    {"\\bfrancisco\\b", "fran"},
-    {"\\bhighlands\\b", "hlds"},
-    {"\\bho\'olehua\\b", "hoolehua"},
-    {"\\bhomestead\\b", "hmstd"},
-    {"\\bjunctions\\b", "jcts"},
-    {"\\blexington\\b", "lxngtn"},
-    {"\\blouisiana\\b", "la"},
-    {"\\bmilwaukee\\b", "milw"},
-    {"\\bminnesota\\b", "mn"},
-    {"\\bmountains\\b", "mtns"},
-    {"\\brichfield\\b", "richfld"},
-    {"\\bstravenue\\b", "stra"},
-    {"\\btennessee\\b", ""},
-    {"\\bterritory\\b", ""},
-    {"\\btown\\s+line\\b", "t l"},
-    {"\\bunderpass\\b", "upas"},
-    {"\\bwashingtn\\b", "wa"},
-    {"\\bwisconsin\\b", "wi"},
-    {"\\barkansas\\b", "ar"},
-    {"\\bbig\\s+bend\\b", "bg bnd"},
-    {"\\bblooming\\b", "blmng"},
-    {"\\bbullrush\\b", "bulrush"},
-    {"\\bcauseway\\b", "cswy"},
-    {"\\bcolorado\\b", "co"},
-    {"\\bcottonwd\\b", "ctwd"},
-    {"\\bcrescent\\b", "cres"},
-    {"\\bcrossing\\b", "xing"},
-    {"\\bcrossrds\\b", "xrds"},
-    {"\\bdelaware\\b", "de"},
-    {"\\bdowntown\\b", ""},
-    {"\\bhartford\\b", "hartfrd"},
-    {"\\billinois\\b", "il"},
-    {"\\bjunction\\b", "jt"},
-    {"\\bkentucky\\b", "ky"},
-    {"\\bla\\s+salle\\b", "lasalle"},
-    {"\\bmaryland\\b", "md"},
-    {"\\bmichelle\\b", "michele"},
-    {"\\bmichigan\\b", "mi"},
-    {"\\bmissouri\\b", "mo"},
-    {"\\bmotorway\\b", "mtwy"},
-    {"\\bmountain\\b", "mnt"},
-    {"\\bnational\\b", "nl"},
-    {"\\bnebraska\\b", "ne"},
-    {"\\bnew\\s+york\\b", "ny"},
-    {"\\boklahoma\\b", "ok"},
-    {"\\boverpass\\b", "opas"},
-    {"\\bparkways\\b", "pkwys"},
-    {"\\brichland\\b", "richlnd"},
-    {"\\btownline\\b", "t l"},
-    {"\\btownship\\b", "tp"},
-    {"\\bturnpike\\b", "tpk"},
-    {"\\bvillages\\b", "vlgs"},
-    {"\\bvilliage\\b", "vil"},
-    {"\\bvirginia\\b", "va"},
-    {"\\balabama\\b", "al"},
-    {"\\bamerica\\b", "us"},
-    {"\\barizona\\b", "az"},
-    {"\\bavenida\\b", "av"},
-    {"\\bcapitol\\b", "capital"},
-    {"\\bcausway\\b", "cswy"},
-    {"\\bcenters\\b", "ctrs"},
-    {"\\bcentral\\b", ""},
-    {"\\bchicago\\b", "chgo"},
-    {"\\bcircles\\b", "cirs"},
-    {"\\bcollege\\b", "clg"},
-    {"\\bcolonel\\b", "col"},
-    {"\\bcorners\\b", "cors"},
-    {"\\bcountry\\b", "cntry"},
-    {"\\bcrecent\\b", "cres"},
-    {"\\bcresent\\b", "cres"},
-    {"\\bcrossrd\\b", "xrd"},
-    {"\\bcrssing\\b", "xing"},
-    {"\\bestates\\b", "ests"},
-    {"\\bexpress\\b", "exp"},
-    {"\\bflorida\\b", "fl"},
-    {"\\bfreeway\\b", "fwy"},
-    {"\\bgardens\\b", "gdns"},
-    {"\\bgateway\\b", "gtwy"},
-    {"\\bgeorgia\\b", "ga"},
-    {"\\bharbors\\b", "hbrs"},
-    {"\\bheights\\b", "ht"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\bhollows\\b", "hllw"},
-    {"\\bindiana\\b", "in"},
-    {"\\bislands\\b", "is"},
-    {"\\bjohnson\\b", "jhnsn"},
-    {"\\bjuncton\\b", "jt"},
-    {"\\blanding\\b", "lndg"},
-    {"\\bmeadows\\b", "mdws"},
-    {"\\bmission\\b", "msn"},
-    {"\\bmontana\\b", "mt"},
-    {"\\bmountin\\b", "mnt"},
-    {"\\borchard\\b", "orch"},
-    {"\\bparkway\\b", "pky"},
-    {"\\bpassage\\b", "psge"},
-    {"\\bphoenix\\b", "phx"},
-    {"\\bplaines\\b", "plns"},
-    {"\\bpotsdam\\b", "potsdm"},
-    {"\\bprairie\\b", "pr"},
-    {"\\branches\\b", "rnchs"},
-    {"\\branchos\\b", "rnchs"},
-    {"\\bseventh\\b", "7"},
-    {"\\bsprings\\b", "spg"},
-    {"\\bsquares\\b", "sqs"},
-    {"\\bstation\\b", "sta"},
-    {"\\bstraven\\b", "stra"},
-    {"\\bstreets\\b", "sts"},
-    {"\\bstrvnue\\b", "stra"},
-    {"\\bterrace\\b", "ter"},
-    {"\\btownshp\\b", "tp"},
-    {"\\btunnels\\b", "tunl"},
-    {"\\bvalleys\\b", "vlys"},
-    {"\\bvermont\\b", "vt"},
-    {"\\bviaduct\\b", "via"},
-    {"\\bvillage\\b", "vil"},
-    {"\\bwilliam\\b", "wm"},
-    {"\\bwshngtn\\b", "wa"},
-    {"\\bwyoming\\b", "wy"},
-    {"\\balaska\\b", "ak"},
-    {"\\barcade\\b", "arc"},
-    {"\\bavenue\\b", "av"},
-    {"\\bbarrio\\b", "bo"},
-    {"\\bbluffs\\b", "blfs"},
-    {"\\bbottom\\b", "bot"},
-    {"\\bbranch\\b", "br"},
-    {"\\bbridge\\b", "brg"},
-    {"\\bbrooks\\b", "brks"},
-    {"\\bbypass\\b", "byp"},
-    {"\\bcamino\\b", "cm"},
-    {"\\bcanyon\\b", "cyn"},
-    {"\\bcarlin\\b", "carlan"},
-    {"\\bcenter\\b", "cen"},
-    {"\\bcentre\\b", "cen"},
-    {"\\bcircle\\b", "cir"},
-    {"\\bcliffs\\b", "clfs"},
-    {"\\bcommon\\b", "cmn"},
-    {"\\bcorner\\b", "cor"},
-    {"\\bcorpus\\b", "crp"},
-    {"\\bcounty\\b", ""},
-    {"\\bcourse\\b", "crse"},
-    {"\\bcourts\\b", "cts"},
-    {"\\bcrscnt\\b", "cres"},
-    {"\\bcrsent\\b", "cres"},
-    {"\\bcrssng\\b", "xing"},
-    {"\\bdesert\\b", "dsrt"},
-    {"\\bdivide\\b", "dv"},
-    {"\\bdrives\\b", "drs"},
-    {"\\beighth\\b", "8"},
-    {"\\bestate\\b", "est"},
-    {"\\bextnsn\\b", "ext"},
-    {"\\bfields\\b", "flds"},
-    {"\\bforest\\b", "frst"},
-    {"\\bforges\\b", "frgs"},
-    {"\\bfourth\\b", "4"},
-    {"\\bfreewy\\b", "fwy"},
-    {"\\bgarden\\b", "gdn"},
-    {"\\bgatewy\\b", "gtwy"},
-    {"\\bgatway\\b", "gtwy"},
-    {"\\bgreens\\b", "grns"},
-    {"\\bgroves\\b", "grvs"},
-    {"\\bharbor\\b", "hbr"},
-    {"\\bhawaii\\b", "hi"},
-    {"\\bheight\\b", "ht"},
-    {"\\bhighwy\\b", "hwy"},
-    {"\\bhollow\\b", "hllw"},
-    {"\\bisland\\b", "is"},
-    {"\\bislnds\\b", "is"},
-    {"\\bjction\\b", "jt"},
-    {"\\bjunctn\\b", "jt"},
-    {"\\bkansas\\b", "ks"},
-    {"\\bknolls\\b", "knls"},
-    {"\\blagoon\\b", "lagn"},
-    {"\\blights\\b", "lgts"},
-    {"\\blittle\\b", "ltl"},
-    {"\\bmanors\\b", "mnrs"},
-    {"\\bmeadow\\b", "mdw"},
-    {"\\bmedows\\b", "mdws"},
-    {"\\bmiddle\\b", "mid"},
-    {"\\bmntain\\b", "mnt"},
-    {"\\bnevada\\b", "nv"},
-    {"\\bobispo\\b", "obisp"},
-    {"\\borchrd\\b", "orch"},
-    {"\\boregon\\b", "or"},
-    {"\\bparish\\b", ""},
-    {"\\bparkwy\\b", "pky"},
-    {"\\bplains\\b", "plns"},
-    {"\\bpoints\\b", "pts"},
-    {"\\bpuerto\\b", "pto"},
-    {"\\bquarry\\b", "qry"},
-    {"\\bradial\\b", "rad"},
-    {"\\bradiel\\b", "rad"},
-    {"\\brancho\\b", "rncho"},
-    {"\\branchs\\b", "rnchs"},
-    {"\\brapids\\b", "rpds"},
-    {"\\bridges\\b", "rdgs"},
-    {"\\bschool\\b", "sch"},
-    {"\\bsecond\\b", "2"},
-    {"\\bsenior\\b", "sr"},
-    {"\\bshoals\\b", "shls"},
-    {"\\bshoars\\b", "shrs"},
-    {"\\bshores\\b", "shrs"},
-    {"\\bskyway\\b", "skwy"},
-    {"\\bspring\\b", "spg"},
-    {"\\bsprngs\\b", "spg"},
-    {"\\bsquare\\b", "sq"},
-    {"\\bstrave\\b", "stra"},
-    {"\\bstravn\\b", "stra"},
-    {"\\bstream\\b", "strm"},
-    {"\\bstreet\\b", "st"},
-    {"\\bstreme\\b", "strm"},
-    {"\\bsumitt\\b", "smt"},
-    {"\\bsummit\\b", "smt"},
-    {"\\bsydney\\b", "sidney"},
-    {"\\btraces\\b", "trce"},
-    {"\\btracks\\b", "trk"},
-    {"\\btrails\\b", "tr"},
-    {"\\btunnel\\b", "tunl"},
-    {"\\bturnpk\\b", "tpk"},
-    {"\\btwnshp\\b", "tp"},
-    {"\\bunions\\b", "uns"},
-    {"\\bvalley\\b", "vl"},
-    {"\\bviadct\\b", "via"},
-    {"\\bvillag\\b", "vil"},
-    {"\\bwaters\\b", "wtr"},
-    {"\\bxroads\\b", "xrds"},
-    {"\\ba\\s+f\\s+b\\b", "afb"},
-    {"\\ballee\\b", "aly"},
-    {"\\balley\\b", "aly"},
-    {"\\bannex\\b", "anx"},
-    {"\\bavenu\\b", "av"},
-    {"\\bavnue\\b", "av"},
-    {"\\bbayoo\\b", "byu"},
-    {"\\bbayou\\b", "byu"},
-    {"\\bbeach\\b", "bch"},
-    {"\\bblack\\b", "blk"},
-    {"\\bbluff\\b", "blf"},
-    {"\\bbottm\\b", "bot"},
-    {"\\bboulv\\b", "blvd"},
-    {"\\bbrdge\\b", "brg"},
-    {"\\bbrnch\\b", "br"},
-    {"\\bbrook\\b", "brk"},
-    {"\\bburgs\\b", "bgs"},
-    {"\\bbypas\\b", "byp"},
-    {"\\bcalif\\b", "ca"},
-    {"\\bcalle\\b", "cll"},
-    {"\\bcanyn\\b", "cyn"},
-    {"\\bcentr\\b", "cen"},
-    {"\\bcircl\\b", "cir"},
-    {"\\bcliff\\b", "clf"},
-    {"\\bcnter\\b", "cen"},
-    {"\\bcourt\\b", "ct"},
-    {"\\bcoves\\b", "cvs"},
-    {"\\bcrcle\\b", "cir"},
-    {"\\bcreek\\b", "ck"},
-    {"\\bcrest\\b", "crst"},
-    {"\\bcrsnt\\b", "cres"},
-    {"\\bcurve\\b", "curv"},
-    {"\\bdepot\\b", "dep"},
-    {"\\bdrive\\b", "dr"},
-    {"\\beight\\b", "8"},
-    {"\\bfalls\\b", "fls"},
-    {"\\bferry\\b", "fry"},
-    {"\\bfield\\b", "fld"},
-    {"\\bfifth\\b", "5"},
-    {"\\bfirst\\b", "1"},
-    {"\\bflats\\b", "flts"},
-    {"\\bfords\\b", "frds"},
-    {"\\bforge\\b", "frg"},
-    {"\\bforks\\b", "fks"},
-    {"\\bfrway\\b", "fwy"},
-    {"\\bgardn\\b", "gdn"},
-    {"\\bglens\\b", "glns"},
-    {"\\bgrand\\b", "grnd"},
-    {"\\bgrden\\b", "gdn"},
-    {"\\bgrdns\\b", "gdns"},
-    {"\\bgreen\\b", "grn"},
-    {"\\bgrove\\b", "grv"},
-    {"\\bgtway\\b", "gtwy"},
-    {"\\bharbr\\b", "hbr"},
-    {"\\bhaven\\b", "hvn"},
-    {"\\bhills\\b", "hl"},
-    {"\\bhiway\\b", "hwy"},
-    {"\\bholws\\b", "hllw"},
-    {"\\bhouse\\b", "hse"},
-    {"\\bhrbor\\b", "hbr"},
-    {"\\bidaho\\b", "id"},
-    {"\\binlet\\b", "inlt"},
-    {"\\bisles\\b", "isle"},
-    {"\\bislnd\\b", "is"},
-    {"\\bjctns\\b", "jcts"},
-    {"\\bknoll\\b", "knl"},
-    {"\\blakes\\b", "lks"},
-    {"\\blanes\\b", "la"},
-    {"\\blight\\b", "lgt"},
-    {"\\blndng\\b", "lndg"},
-    {"\\blocks\\b", "lcks"},
-    {"\\blodge\\b", "ldg"},
-    {"\\bloops\\b", "loop"},
-    {"\\blower\\b", "lo"},
-    {"\\bm\\s+l\\s+k\\b", "mlk"},
-    {"\\bmaine\\b", "me"},
-    {"\\bmanor\\b", "mnr"},
-    {"\\bmills\\b", "mls"},
-    {"\\bmissn\\b", "msn"},
-    {"\\bmntns\\b", "mtns"},
-    {"\\bmount\\b", "mt"},
-    {"\\bn\\s+y\\s+c\\b", "ny"},
-    {"\\bninth\\b", "9"},
-    {"\\bnorth\\b", "n"},
-    {"\\bpalau\\b", "pw"},
-    {"\\bpalms\\b", "plms"},
-    {"\\bpaseo\\b", "pso"},
-    {"\\bpaths\\b", "path"},
-    {"\\bpikes\\b", "pike"},
-    {"\\bpines\\b", "pnes"},
-    {"\\bpkway\\b", "pky"},
-    {"\\bplace\\b", "pl"},
-    {"\\bplain\\b", "pln"},
-    {"\\bplaza\\b", "plz"},
-    {"\\bpoint\\b", "pt"},
-    {"\\bponds\\b", "pnds"},
-    {"\\bports\\b", "prts"},
-    {"\\branch\\b", "rch"},
-    {"\\brapid\\b", "rpd"},
-    {"\\bridge\\b", "rdg"},
-    {"\\briver\\b", "riv"},
-    {"\\broads\\b", "rds"},
-    {"\\broute\\b", "rt"},
-    {"\\bsaint\\b", "st"},
-    {"\\bseven\\b", "7"},
-    {"\\bshoal\\b", "shl"},
-    {"\\bshoar\\b", "shr"},
-    {"\\bshore\\b", "shr"},
-    {"\\bsixth\\b", "6"},
-    {"\\bsouth\\b", "s"},
-    {"\\bspace\\b", "sp"},
-    {"\\bspngs\\b", "spg"},
-    {"\\bsprgs\\b", "spg"},
-    {"\\bsprng\\b", "spg"},
-    {"\\bstatn\\b", "sta"},
-    {"\\bstrav\\b", "stra"},
-    {"\\bstrvn\\b", "stra"},
-    {"\\bsumit\\b", "smt"},
-    {"\\btenth\\b", "10"},
-    {"\\btexas\\b", "tx"},
-    {"\\bthird\\b", "3"},
-    {"\\bthree\\b", "3"},
-    {"\\btrace\\b", "trce"},
-    {"\\btrack\\b", "trk"},
-    {"\\btrail\\b", "tr"},
-    {"\\btrnpk\\b", "tpk"},
-    {"\\btunel\\b", "tunl"},
-    {"\\btunls\\b", "tunl"},
-    {"\\btunnl\\b", "tunl"},
-    {"\\bu\\s+s\\s+a\\b", "us"},
-    {"\\bunion\\b", "un"},
-    {"\\bvally\\b", "vl"},
-    {"\\bverdi\\b", "verde"},
-    {"\\bviews\\b", "vws"},
-    {"\\bville\\b", "vl"},
-    {"\\bvillg\\b", "vil"},
-    {"\\bvista\\b", "vis"},
-    {"\\bwells\\b", "wls"},
-    {"\\bwoods\\b", "wds"},
-    {"\\bworks\\b", "wks"},
-    {"\\bxroad\\b", "xrd"},
-    {"\\bally\\b", "aly"},
-    {"\\banex\\b", "anx"},
-    {"\\bariz\\b", "az"},
-    {"\\baven\\b", "av"},
-    {"\\bbend\\b", "bnd"},
-    {"\\bbluf\\b", "blf"},
-    {"\\bboul\\b", "blvd"},
-    {"\\bburg\\b", "bg"},
-    {"\\bbyng\\b", "bing"},
-    {"\\bbypa\\b", "byp"},
-    {"\\bbyps\\b", "byp"},
-    {"\\bcamp\\b", "cp"},
-    {"\\bcape\\b", "cpe"},
-    {"\\bcent\\b", "cen"},
-    {"\\bcirc\\b", "cir"},
-    {"\\bcity\\b", "cy"},
-    {"\\bclub\\b", "clb"},
-    {"\\bcntr\\b", "cen"},
-    {"\\bcnyn\\b", "cyn"},
-    {"\\bcolo\\b", "co"},
-    {"\\bconn\\b", "ct"},
-    {"\\bcove\\b", "cv"},
-    {"\\bcrcl\\b", "cir"},
-    {"\\bdale\\b", "dl"},
-    {"\\bdriv\\b", "dr"},
-    {"\\beast\\b", "e"},
-    {"\\bexpr\\b", "exp"},
-    {"\\bexpw\\b", "exp"},
-    {"\\bexpy\\b", "exp"},
-    {"\\bextn\\b", "ext"},
-    {"\\bfarm\\b", "frm"},
-    {"\\bfive\\b", "5"},
-    {"\\bflat\\b", "flt"},
-    {"\\bford\\b", "frd"},
-    {"\\bforg\\b", "frg"},
-    {"\\bfork\\b", "frk"},
-    {"\\bfort\\b", "ft"},
-    {"\\bfour\\b", "4"},
-    {"\\bfrks\\b", "fks"},
-    {"\\bfrry\\b", "fry"},
-    {"\\bfrwy\\b", "fwy"},
-    {"\\bglen\\b", "gln"},
-    {"\\bgrdn\\b", "gdn"},
-    {"\\bgrov\\b", "grv"},
-    {"\\bguam\\b", "gu"},
-    {"\\bharb\\b", "hbr"},
-    {"\\bhavn\\b", "hvn"},
-    {"\\bhght\\b", "ht"},
-    {"\\bhgts\\b", "ht"},
-    {"\\bhill\\b", "hl"},
-    {"\\bhiwy\\b", "hwy"},
-    {"\\bholw\\b", "hllw"},
-    {"\\bhway\\b", "hwy"},
-    {"\\biowa\\b", "ia"},
-    {"\\bjctn\\b", "jt"},
-    {"\\bjnct\\b", "jt"},
-    {"\\bkans\\b", "ks"},
-    {"\\bkeys\\b", "kys"},
-    {"\\bknol\\b", "knl"},
-    {"\\blake\\b", "lk"},
-    {"\\blane\\b", "la"},
-    {"\\bldge\\b", "ldg"},
-    {"\\blitl\\b", "ltl"},
-    {"\\bloaf\\b", "lf"},
-    {"\\block\\b", "lck"},
-    {"\\blodg\\b", "ldg"},
-    {"\\bmass\\b", "ma"},
-    {"\\bmich\\b", "mi"},
-    {"\\bmile\\b", "mle"},
-    {"\\bmill\\b", "ml"},
-    {"\\bminn\\b", "mn"},
-    {"\\bmiss\\b", "ms"},
-    {"\\bmntn\\b", "mnt"},
-    {"\\bmssn\\b", "msn"},
-    {"\\bmtin\\b", "mnt"},
-    {"\\bnebr\\b", "ne"},
-    {"\\bneck\\b", "nck"},
-    {"\\bnine\\b", "9"},
-    {"\\bohio\\b", "oh"},
-    {"\\bokla\\b", "ok"},
-    {"\\boreg\\b", "or"},
-    {"\\boval\\b", "ovl"},
-    {"\\bpalm\\b", "plm"},
-    {"\\bpark\\b", "pk"},
-    {"\\bpass\\b", "ps"},
-    {"\\bpine\\b", "pne"},
-    {"\\bpkwy\\b", "pky"},
-    {"\\bplza\\b", "plz"},
-    {"\\bport\\b", "prt"},
-    {"\\bradl\\b", "rad"},
-    {"\\brdge\\b", "rdg"},
-    {"\\brest\\b", "rst"},
-    {"\\brivr\\b", "riv"},
-    {"\\brnch\\b", "rch"},
-    {"\\broad\\b", "rd"},
-    {"\\bspgs\\b", "spg"},
-    {"\\bspng\\b", "spg"},
-    {"\\bsprg\\b", "spg"},
-    {"\\bsqre\\b", "sq"},
-    {"\\bsqrs\\b", "sqs"},
-    {"\\bstrt\\b", "st"},
-    {"\\btenn\\b", ""},
-    {"\\bterr\\b", "ter"},
-    {"\\btown\\b", ""},
-    {"\\btpke\\b", "tpk"},
-    {"\\btrak\\b", "trk"},
-    {"\\btrks\\b", "trk"},
-    {"\\btrls\\b", "tr"},
-    {"\\btrpk\\b", "tpk"},
-    {"\\btwln\\b", "t l"},
-    {"\\btwsp\\b", "tp"},
-    {"\\butah\\b", "ut"},
-    {"\\bvdct\\b", "via"},
-    {"\\bview\\b", "vw"},
-    {"\\bvill\\b", "vil"},
-    {"\\bvist\\b", "vis"},
-    {"\\bvlly\\b", "vl"},
-    {"\\bvsta\\b", "vis"},
-    {"\\bwash\\b", "wa"},
-    {"\\bwell\\b", "wl"},
-    {"\\bwest\\b", "w"},
-    {"\\bx\\s+rd\\b", "xrd"},
-    {"\\bala\\b", "al"},
-    {"\\bave\\b", "av"},
-    {"\\bavn\\b", "av"},
-    {"\\bbtm\\b", "bot"},
-    {"\\bcam\\b", "cm"},
-    {"\\bcmp\\b", "cp"},
-    {"\\bcrk\\b", "ck"},
-    {"\\bcrt\\b", "ct"},
-    {"\\bctr\\b", "cen"},
-    {"\\bcty\\b", "cy"},
-    {"\\bd\\s+c\\b", "dc"},
-    {"\\bdam\\b", "dm"},
-    {"\\bdiv\\b", "dv"},
-    {"\\bdpt\\b", "dep"},
-    {"\\bdrv\\b", "dr"},
-    {"\\bdvd\\b", "dv"},
-    {"\\bfla\\b", "fl"},
-    {"\\bfrt\\b", "ft"},
-    {"\\bhei\\b", "ht"},
-    {"\\bhls\\b", "hl"},
-    {"\\bhts\\b", "ht"},
-    {"\\bill\\b", "il"},
-    {"\\bind\\b", "in"},
-    {"\\bisl\\b", "is"},
-    {"\\biss\\b", "is"},
-    {"\\bjct\\b", "jt"},
-    {"\\bkan\\b", "ks"},
-    {"\\bkey\\b", "ky"},
-    {"\\bl\\s+a\\b", "la"},
-    {"\\blke\\b", "lk"},
-    {"\\blwr\\b", "lo"},
-    {"\\bmtn\\b", "mnt"},
-    {"\\bn\\s+c\\b", "nc"},
-    {"\\bn\\s+d\\b", "nd"},
-    {"\\bn\\s+h\\b", "nh"},
-    {"\\bn\\s+j\\b", "nj"},
-    {"\\bn\\s+m\\b", "nm"},
-    {"\\bn\\s+y\\b", "ny"},
-    {"\\bneb\\b", "ne"},
-    {"\\bnev\\b", "nv"},
-    {"\\bnth\\b", "n"},
-    {"\\bntl\\b", "nl"},
-    {"\\bnyc\\b", "ny"},
-    {"\\bnys\\b", "ny"},
-    {"\\bone\\b", "1"},
-    {"\\bore\\b", "or"},
-    {"\\bp\\s+r\\b", "pr"},
-    {"\\bprk\\b", "pk"},
-    {"\\bprr\\b", "pr"},
-    {"\\br\\s+i\\b", "ri"},
-    {"\\brte\\b", "rt"},
-    {"\\brvr\\b", "riv"},
-    {"\\bs\\s+c\\b", "sc"},
-    {"\\bs\\s+d\\b", "sd"},
-    {"\\bsan\\b", "sn"},
-    {"\\bsix\\b", "6"},
-    {"\\bspr\\b", "spg"},
-    {"\\bsqr\\b", "sq"},
-    {"\\bsqu\\b", "sq"},
-    {"\\bsth\\b", "s"},
-    {"\\bstn\\b", "sta"},
-    {"\\bstr\\b", "st"},
-    {"\\bten\\b", "10"},
-    {"\\btrl\\b", "tr"},
-    {"\\btwo\\b", "2"},
-    {"\\btwp\\b", "tp"},
-    {"\\bu\\s+s\\b", "us"},
-    {"\\busa\\b", "us"},
-    {"\\bv\\s+i\\b", "vi"},
-    {"\\bvlg\\b", "vil"},
-    {"\\bvly\\b", "vl"},
-    {"\\bvst\\b", "vis"},
-    {"\\bw\\s+v\\b", "wv"},
-    {"\\bway\\b", "wy"},
-    {"\\bwis\\b", "wi"},
-    {"\\bwva\\b", "wv"},
-    {"\\bcr\\b", "ck"},
-    {"\\bln\\b", "la"},
-    {"\\btn\\b", ""},
-    {"\\btw\\b", "tp"},
-    {"\\bvy\\b", "vl"},
-    {"\\b\\#\\b", ""},
-};
+const char* kRules_US =
+"\\bjoint\\s+base\\s+elmendorf\\s+richardson\\b\000jber\000"
+"\\bwashington\\s+district\\s+of\\s+columbia\\b\000dc\000"
+"\\bfederated\\s+states\\s+of\\s+micronesia\\b\000fm\000"
+"\\bjoint\\s+base\\s+pearl\\s+harbor\\s+hickam\\b\000jbphh\000"
+"\\bnational\\s+forest\\s+development\\b\000nat for dev\000"
+"\\bmartin\\s+luther\\s+king\\s+junior\\b\000mlk\000"
+"\\barmed\\s+forces\\s+middle\\s+east\\b\000ae\000"
+"\\bmarine\\s+corps\\s+base\\s+hawaii\\b\000mcbh kanehoe bay\000"
+"\\bnational\\s+for\\s+development\\b\000nat for dev\000"
+"\\bnorthern\\s+mariana\\s+islands\\b\000mp\000"
+"\\bunited\\s+states\\s+of\\s+america\\b\000us\000"
+"\\bmartin\\s+luther\\s+king\\s+jnr\\b\000mlk\000"
+"\\bnat\\s+forest\\s+development\\b\000nat for dev\000"
+"\\barmed\\s+forces\\s+americas\\b\000aa\000"
+"\\bmartin\\s+luther\\s+king\\s+jr\\b\000mlk\000"
+"\\barmed\\s+forces\\s+pacific\\b\000ap\000"
+"\\bdistrict\\s+of\\s+columbia\\b\000dc\000"
+"\\barmed\\s+forces\\s+africa\\b\000ae\000"
+"\\barmed\\s+forces\\s+canada\\b\000ae\000"
+"\\barmed\\s+forces\\s+europe\\b\000ae\000"
+"\\bnat\\s+for\\s+development\\b\000nat for dev\000"
+"\\bnational\\s+forest\\s+dev\\b\000nat for dev\000"
+"\\bjoint\\s+reserve\\s+base\\b\000jrb\000"
+"\\blincolns\\s+new\\s+salem\\b\000lincoln nw sl\000"
+"\\bmartin\\s+luther\\s+king\\b\000mlk\000"
+"\\bmetropolitan\\s+area\\b\000\000"
+"\\bnational\\s+monument\\b\000national mo\000"
+"\\bcolorado\\s+springs\\b\000co spgs\000"
+"\\bdist\\s+of\\s+columbia\\b\000dc\000"
+"\\bfrancis\\s+e\\s+warren\\b\000fe warren\000"
+"\\bmarshall\\s+islands\\b\000mh\000"
+"\\bnational\\s+for\\s+dev\\b\000nat for dev\000"
+"\\bwashington\\s+state\\b\000wa\000"
+"\\bcharlottesville\\b\000charlottesvle\000"
+"\\badministration\\b\000admn\000"
+"\\bair\\s+force\\s+base\\b\000afb\000"
+"\\bamerican\\s+samoa\\b\000as\000"
+"\\bbradford\\s+woods\\b\000bradfordwoods\000"
+"\\bchristiansberg\\b\000christiansbrg\000"
+"\\bcrawfordsville\\b\000crawfordsvlle\000"
+"\\bfarm\\s+to\\s+market\\b\000fm\000"
+"\\bforest\\s+service\\b\000frst srvc\000"
+"\\bfredericksburg\\b\000fredericksbrg\000"
+"\\bhendersonville\\b\000hendersonvlle\000"
+"\\bjeffersonville\\b\000jeffersonvlle\000"
+"\\bjohn\\s+f\\s+kennedy\\b\000jfk\000"
+"\\blittle\\s+diomede\\b\000diomede\000"
+"\\bmechanicsville\\b\000mechanicsvlle\000"
+"\\bnat\\s+forest\\s+dev\\b\000nat for dev\000"
+"\\bnew\\s+york\\s+state\\b\000ny\000"
+"\\bnorth\\s+carolina\\b\000nc\000"
+"\\bnorthumberland\\b\000northumberlnd\000"
+"\\bsalt\\s+lake\\s+city\\b\000slc\000"
+"\\bsouth\\s+carolina\\b\000sc\000"
+"\\bvirgin\\s+islands\\b\000vi\000"
+"\\bwashington\\s+d\\s+c\\b\000dc\000"
+"\\barmy\\s+airfield\\b\000army af\000"
+"\\binternational\\b\000intl\000"
+"\\bjf\\s+kennedy\\s+ap\\b\000jfk airport\000"
+"\\bmassachusetts\\b\000ma\000"
+"\\bnational\\s+park\\b\000ntpk\000"
+"\\bnew\\s+hampshire\\b\000nh\000"
+"\\bnew\\s+york\\s+city\\b\000ny\000"
+"\\bunited\\s+states\\b\000us\000"
+"\\bwashington\\s+dc\\b\000dc\000"
+"\\bwest\\s+virginia\\b\000wv\000"
+"\\bbristle\\s+cone\\b\000bristlecone\000"
+"\\bfrst\\s+service\\b\000frst srvc\000"
+"\\bminers\\s+mills\\b\000miners mill\000"
+"\\bnorth\\s+dakota\\b\000nd\000"
+"\\bpennsylvania\\b\000pa\000"
+"\\brhode\\s+island\\b\000ri\000"
+"\\bservice\\s+road\\b\000service rd\000"
+"\\bsouth\\s+dakota\\b\000sd\000"
+"\\bswan\\s+quarter\\b\000swanquarter\000"
+"\\bbloomington\\b\000blmngtn\000"
+"\\bchevy\\s+chase\\b\000chevy chs\000"
+"\\bclutch\\s+city\\b\000houston\000"
+"\\bconnecticut\\b\000ct\000"
+"\\bforest\\s+srvc\\b\000frst srvc\000"
+"\\bfrenchville\\b\000frnchvl\000"
+"\\bgood\\s+fellow\\b\000goodfellow\000"
+"\\bhigh\\s+bridge\\b\000highbridge\000"
+"\\blos\\s+angeles\\b\000la\000"
+"\\bloxahatchee\\b\000lox\000"
+"\\bmississippi\\b\000ms\000"
+"\\bobservatory\\b\000obs\000"
+"\\bpuerto\\s+rico\\b\000pr\000"
+"\\brural\\s+route\\b\000rr\000"
+"\\bspringfield\\b\000spfld\000"
+"\\byellowstone\\b\000yelwstn\000"
+"\\balpen\\s+glow\\b\000alpenglow\000"
+"\\bambassador\\b\000amb\000"
+"\\bbernardino\\b\000bernrdno\000"
+"\\bbloomfield\\b\000bloomfld\000"
+"\\bbrownstown\\b\000brownstwn\000"
+"\\bburlington\\b\000burlngtn\000"
+"\\bcalifornia\\b\000ca\000"
+"\\bcapistrano\\b\000capo\000"
+"\\bchristmass\\b\000chirstmas\000"
+"\\bcincinnati\\b\000cin\000"
+"\\bcottonwood\\b\000ctwd\000"
+"\\bcrossroads\\b\000xrds\000"
+"\\bexpressway\\b\000exp\000"
+"\\bextensions\\b\000exts\000"
+"\\bfarmington\\b\000farmingtn\000"
+"\\bnew\\s+jersey\\b\000nj\000"
+"\\bnew\\s+mexico\\b\000nm\000"
+"\\bpittsburgh\\b\000pgh\000"
+"\\bplantation\\b\000plt\000"
+"\\bprovidence\\b\000providnce\000"
+"\\bsouth\\s+lake\\b\000southlake\000"
+"\\bthroughway\\b\000trwy\000"
+"\\btrafficway\\b\000trfy\000"
+"\\buniversity\\b\000univ\000"
+"\\bwashington\\b\000wa\000"
+"\\bwest\\s+point\\b\000westpoint\000"
+"\\bbellerose\\b\000bellrs\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bburlingtn\\b\000burlngtn\000"
+"\\bchair\\s+bar\\b\000chairbar\000"
+"\\bchicester\\b\000chicstr\000"
+"\\bcity\\s+base\\b\000cb\000"
+"\\bcleveland\\b\000cleve\000"
+"\\bcommunity\\b\000cmnty\000"
+"\\bcrossroad\\b\000xrd\000"
+"\\bextension\\b\000ext\000"
+"\\bfairmount\\b\000fairmt\000"
+"\\bfernandez\\b\000fdez\000"
+"\\bfrancisco\\b\000fran\000"
+"\\bhighlands\\b\000hlds\000"
+"\\bho\'olehua\\b\000hoolehua\000"
+"\\bhomestead\\b\000hmstd\000"
+"\\bjunctions\\b\000jcts\000"
+"\\blexington\\b\000lxngtn\000"
+"\\blouisiana\\b\000la\000"
+"\\bmilwaukee\\b\000milw\000"
+"\\bminnesota\\b\000mn\000"
+"\\bmountains\\b\000mtns\000"
+"\\brichfield\\b\000richfld\000"
+"\\bstravenue\\b\000stra\000"
+"\\btennessee\\b\000\000"
+"\\bterritory\\b\000\000"
+"\\btown\\s+line\\b\000t l\000"
+"\\bunderpass\\b\000upas\000"
+"\\bwashingtn\\b\000wa\000"
+"\\bwisconsin\\b\000wi\000"
+"\\barkansas\\b\000ar\000"
+"\\bbig\\s+bend\\b\000bg bnd\000"
+"\\bblooming\\b\000blmng\000"
+"\\bbullrush\\b\000bulrush\000"
+"\\bcauseway\\b\000cswy\000"
+"\\bcolorado\\b\000co\000"
+"\\bcottonwd\\b\000ctwd\000"
+"\\bcrescent\\b\000cres\000"
+"\\bcrossing\\b\000xing\000"
+"\\bcrossrds\\b\000xrds\000"
+"\\bdelaware\\b\000de\000"
+"\\bdowntown\\b\000\000"
+"\\bhartford\\b\000hartfrd\000"
+"\\billinois\\b\000il\000"
+"\\bjunction\\b\000jt\000"
+"\\bkentucky\\b\000ky\000"
+"\\bla\\s+salle\\b\000lasalle\000"
+"\\bmaryland\\b\000md\000"
+"\\bmichelle\\b\000michele\000"
+"\\bmichigan\\b\000mi\000"
+"\\bmissouri\\b\000mo\000"
+"\\bmotorway\\b\000mtwy\000"
+"\\bmountain\\b\000mnt\000"
+"\\bnational\\b\000nl\000"
+"\\bnebraska\\b\000ne\000"
+"\\bnew\\s+york\\b\000ny\000"
+"\\boklahoma\\b\000ok\000"
+"\\boverpass\\b\000opas\000"
+"\\bparkways\\b\000pkwys\000"
+"\\brichland\\b\000richlnd\000"
+"\\btownline\\b\000t l\000"
+"\\btownship\\b\000tp\000"
+"\\bturnpike\\b\000tpk\000"
+"\\bvillages\\b\000vlgs\000"
+"\\bvilliage\\b\000vil\000"
+"\\bvirginia\\b\000va\000"
+"\\balabama\\b\000al\000"
+"\\bamerica\\b\000us\000"
+"\\barizona\\b\000az\000"
+"\\bavenida\\b\000av\000"
+"\\bcapitol\\b\000capital\000"
+"\\bcausway\\b\000cswy\000"
+"\\bcenters\\b\000ctrs\000"
+"\\bcentral\\b\000\000"
+"\\bchicago\\b\000chgo\000"
+"\\bcircles\\b\000cirs\000"
+"\\bcollege\\b\000clg\000"
+"\\bcolonel\\b\000col\000"
+"\\bcorners\\b\000cors\000"
+"\\bcountry\\b\000cntry\000"
+"\\bcrecent\\b\000cres\000"
+"\\bcresent\\b\000cres\000"
+"\\bcrossrd\\b\000xrd\000"
+"\\bcrssing\\b\000xing\000"
+"\\bestates\\b\000ests\000"
+"\\bexpress\\b\000exp\000"
+"\\bflorida\\b\000fl\000"
+"\\bfreeway\\b\000fwy\000"
+"\\bgardens\\b\000gdns\000"
+"\\bgateway\\b\000gtwy\000"
+"\\bgeorgia\\b\000ga\000"
+"\\bharbors\\b\000hbrs\000"
+"\\bheights\\b\000ht\000"
+"\\bhighway\\b\000hwy\000"
+"\\bhollows\\b\000hllw\000"
+"\\bindiana\\b\000in\000"
+"\\bislands\\b\000is\000"
+"\\bjohnson\\b\000jhnsn\000"
+"\\bjuncton\\b\000jt\000"
+"\\blanding\\b\000lndg\000"
+"\\bmeadows\\b\000mdws\000"
+"\\bmission\\b\000msn\000"
+"\\bmontana\\b\000mt\000"
+"\\bmountin\\b\000mnt\000"
+"\\borchard\\b\000orch\000"
+"\\bparkway\\b\000pky\000"
+"\\bpassage\\b\000psge\000"
+"\\bphoenix\\b\000phx\000"
+"\\bplaines\\b\000plns\000"
+"\\bpotsdam\\b\000potsdm\000"
+"\\bprairie\\b\000pr\000"
+"\\branches\\b\000rnchs\000"
+"\\branchos\\b\000rnchs\000"
+"\\bseventh\\b\0007\000"
+"\\bsprings\\b\000spg\000"
+"\\bsquares\\b\000sqs\000"
+"\\bstation\\b\000sta\000"
+"\\bstraven\\b\000stra\000"
+"\\bstreets\\b\000sts\000"
+"\\bstrvnue\\b\000stra\000"
+"\\bterrace\\b\000ter\000"
+"\\btownshp\\b\000tp\000"
+"\\btunnels\\b\000tunl\000"
+"\\bvalleys\\b\000vlys\000"
+"\\bvermont\\b\000vt\000"
+"\\bviaduct\\b\000via\000"
+"\\bvillage\\b\000vil\000"
+"\\bwilliam\\b\000wm\000"
+"\\bwshngtn\\b\000wa\000"
+"\\bwyoming\\b\000wy\000"
+"\\balaska\\b\000ak\000"
+"\\barcade\\b\000arc\000"
+"\\bavenue\\b\000av\000"
+"\\bbarrio\\b\000bo\000"
+"\\bbluffs\\b\000blfs\000"
+"\\bbottom\\b\000bot\000"
+"\\bbranch\\b\000br\000"
+"\\bbridge\\b\000brg\000"
+"\\bbrooks\\b\000brks\000"
+"\\bbypass\\b\000byp\000"
+"\\bcamino\\b\000cm\000"
+"\\bcanyon\\b\000cyn\000"
+"\\bcarlin\\b\000carlan\000"
+"\\bcenter\\b\000cen\000"
+"\\bcentre\\b\000cen\000"
+"\\bcircle\\b\000cir\000"
+"\\bcliffs\\b\000clfs\000"
+"\\bcommon\\b\000cmn\000"
+"\\bcorner\\b\000cor\000"
+"\\bcorpus\\b\000crp\000"
+"\\bcounty\\b\000\000"
+"\\bcourse\\b\000crse\000"
+"\\bcourts\\b\000cts\000"
+"\\bcrscnt\\b\000cres\000"
+"\\bcrsent\\b\000cres\000"
+"\\bcrssng\\b\000xing\000"
+"\\bdesert\\b\000dsrt\000"
+"\\bdivide\\b\000dv\000"
+"\\bdrives\\b\000drs\000"
+"\\beighth\\b\0008\000"
+"\\bestate\\b\000est\000"
+"\\bextnsn\\b\000ext\000"
+"\\bfields\\b\000flds\000"
+"\\bforest\\b\000frst\000"
+"\\bforges\\b\000frgs\000"
+"\\bfourth\\b\0004\000"
+"\\bfreewy\\b\000fwy\000"
+"\\bgarden\\b\000gdn\000"
+"\\bgatewy\\b\000gtwy\000"
+"\\bgatway\\b\000gtwy\000"
+"\\bgreens\\b\000grns\000"
+"\\bgroves\\b\000grvs\000"
+"\\bharbor\\b\000hbr\000"
+"\\bhawaii\\b\000hi\000"
+"\\bheight\\b\000ht\000"
+"\\bhighwy\\b\000hwy\000"
+"\\bhollow\\b\000hllw\000"
+"\\bisland\\b\000is\000"
+"\\bislnds\\b\000is\000"
+"\\bjction\\b\000jt\000"
+"\\bjunctn\\b\000jt\000"
+"\\bkansas\\b\000ks\000"
+"\\bknolls\\b\000knls\000"
+"\\blagoon\\b\000lagn\000"
+"\\blights\\b\000lgts\000"
+"\\blittle\\b\000ltl\000"
+"\\bmanors\\b\000mnrs\000"
+"\\bmeadow\\b\000mdw\000"
+"\\bmedows\\b\000mdws\000"
+"\\bmiddle\\b\000mid\000"
+"\\bmntain\\b\000mnt\000"
+"\\bnevada\\b\000nv\000"
+"\\bobispo\\b\000obisp\000"
+"\\borchrd\\b\000orch\000"
+"\\boregon\\b\000or\000"
+"\\bparish\\b\000\000"
+"\\bparkwy\\b\000pky\000"
+"\\bplains\\b\000plns\000"
+"\\bpoints\\b\000pts\000"
+"\\bpuerto\\b\000pto\000"
+"\\bquarry\\b\000qry\000"
+"\\bradial\\b\000rad\000"
+"\\bradiel\\b\000rad\000"
+"\\brancho\\b\000rncho\000"
+"\\branchs\\b\000rnchs\000"
+"\\brapids\\b\000rpds\000"
+"\\bridges\\b\000rdgs\000"
+"\\bschool\\b\000sch\000"
+"\\bsecond\\b\0002\000"
+"\\bsenior\\b\000sr\000"
+"\\bshoals\\b\000shls\000"
+"\\bshoars\\b\000shrs\000"
+"\\bshores\\b\000shrs\000"
+"\\bskyway\\b\000skwy\000"
+"\\bspring\\b\000spg\000"
+"\\bsprngs\\b\000spg\000"
+"\\bsquare\\b\000sq\000"
+"\\bstrave\\b\000stra\000"
+"\\bstravn\\b\000stra\000"
+"\\bstream\\b\000strm\000"
+"\\bstreet\\b\000st\000"
+"\\bstreme\\b\000strm\000"
+"\\bsumitt\\b\000smt\000"
+"\\bsummit\\b\000smt\000"
+"\\bsydney\\b\000sidney\000"
+"\\btraces\\b\000trce\000"
+"\\btracks\\b\000trk\000"
+"\\btrails\\b\000tr\000"
+"\\btunnel\\b\000tunl\000"
+"\\bturnpk\\b\000tpk\000"
+"\\btwnshp\\b\000tp\000"
+"\\bunions\\b\000uns\000"
+"\\bvalley\\b\000vl\000"
+"\\bviadct\\b\000via\000"
+"\\bvillag\\b\000vil\000"
+"\\bwaters\\b\000wtr\000"
+"\\bxroads\\b\000xrds\000"
+"\\ba\\s+f\\s+b\\b\000afb\000"
+"\\ballee\\b\000aly\000"
+"\\balley\\b\000aly\000"
+"\\bannex\\b\000anx\000"
+"\\bavenu\\b\000av\000"
+"\\bavnue\\b\000av\000"
+"\\bbayoo\\b\000byu\000"
+"\\bbayou\\b\000byu\000"
+"\\bbeach\\b\000bch\000"
+"\\bblack\\b\000blk\000"
+"\\bbluff\\b\000blf\000"
+"\\bbottm\\b\000bot\000"
+"\\bboulv\\b\000blvd\000"
+"\\bbrdge\\b\000brg\000"
+"\\bbrnch\\b\000br\000"
+"\\bbrook\\b\000brk\000"
+"\\bburgs\\b\000bgs\000"
+"\\bbypas\\b\000byp\000"
+"\\bcalif\\b\000ca\000"
+"\\bcalle\\b\000cll\000"
+"\\bcanyn\\b\000cyn\000"
+"\\bcentr\\b\000cen\000"
+"\\bcircl\\b\000cir\000"
+"\\bcliff\\b\000clf\000"
+"\\bcnter\\b\000cen\000"
+"\\bcourt\\b\000ct\000"
+"\\bcoves\\b\000cvs\000"
+"\\bcrcle\\b\000cir\000"
+"\\bcreek\\b\000ck\000"
+"\\bcrest\\b\000crst\000"
+"\\bcrsnt\\b\000cres\000"
+"\\bcurve\\b\000curv\000"
+"\\bdepot\\b\000dep\000"
+"\\bdrive\\b\000dr\000"
+"\\beight\\b\0008\000"
+"\\bfalls\\b\000fls\000"
+"\\bferry\\b\000fry\000"
+"\\bfield\\b\000fld\000"
+"\\bfifth\\b\0005\000"
+"\\bfirst\\b\0001\000"
+"\\bflats\\b\000flts\000"
+"\\bfords\\b\000frds\000"
+"\\bforge\\b\000frg\000"
+"\\bforks\\b\000fks\000"
+"\\bfrway\\b\000fwy\000"
+"\\bgardn\\b\000gdn\000"
+"\\bglens\\b\000glns\000"
+"\\bgrand\\b\000grnd\000"
+"\\bgrden\\b\000gdn\000"
+"\\bgrdns\\b\000gdns\000"
+"\\bgreen\\b\000grn\000"
+"\\bgrove\\b\000grv\000"
+"\\bgtway\\b\000gtwy\000"
+"\\bharbr\\b\000hbr\000"
+"\\bhaven\\b\000hvn\000"
+"\\bhills\\b\000hl\000"
+"\\bhiway\\b\000hwy\000"
+"\\bholws\\b\000hllw\000"
+"\\bhouse\\b\000hse\000"
+"\\bhrbor\\b\000hbr\000"
+"\\bidaho\\b\000id\000"
+"\\binlet\\b\000inlt\000"
+"\\bisles\\b\000isle\000"
+"\\bislnd\\b\000is\000"
+"\\bjctns\\b\000jcts\000"
+"\\bknoll\\b\000knl\000"
+"\\blakes\\b\000lks\000"
+"\\blanes\\b\000la\000"
+"\\blight\\b\000lgt\000"
+"\\blndng\\b\000lndg\000"
+"\\blocks\\b\000lcks\000"
+"\\blodge\\b\000ldg\000"
+"\\bloops\\b\000loop\000"
+"\\blower\\b\000lo\000"
+"\\bm\\s+l\\s+k\\b\000mlk\000"
+"\\bmaine\\b\000me\000"
+"\\bmanor\\b\000mnr\000"
+"\\bmills\\b\000mls\000"
+"\\bmissn\\b\000msn\000"
+"\\bmntns\\b\000mtns\000"
+"\\bmount\\b\000mt\000"
+"\\bn\\s+y\\s+c\\b\000ny\000"
+"\\bninth\\b\0009\000"
+"\\bnorth\\b\000n\000"
+"\\bpalau\\b\000pw\000"
+"\\bpalms\\b\000plms\000"
+"\\bpaseo\\b\000pso\000"
+"\\bpaths\\b\000path\000"
+"\\bpikes\\b\000pike\000"
+"\\bpines\\b\000pnes\000"
+"\\bpkway\\b\000pky\000"
+"\\bplace\\b\000pl\000"
+"\\bplain\\b\000pln\000"
+"\\bplaza\\b\000plz\000"
+"\\bpoint\\b\000pt\000"
+"\\bponds\\b\000pnds\000"
+"\\bports\\b\000prts\000"
+"\\branch\\b\000rch\000"
+"\\brapid\\b\000rpd\000"
+"\\bridge\\b\000rdg\000"
+"\\briver\\b\000riv\000"
+"\\broads\\b\000rds\000"
+"\\broute\\b\000rt\000"
+"\\bsaint\\b\000st\000"
+"\\bseven\\b\0007\000"
+"\\bshoal\\b\000shl\000"
+"\\bshoar\\b\000shr\000"
+"\\bshore\\b\000shr\000"
+"\\bsixth\\b\0006\000"
+"\\bsouth\\b\000s\000"
+"\\bspace\\b\000sp\000"
+"\\bspngs\\b\000spg\000"
+"\\bsprgs\\b\000spg\000"
+"\\bsprng\\b\000spg\000"
+"\\bstatn\\b\000sta\000"
+"\\bstrav\\b\000stra\000"
+"\\bstrvn\\b\000stra\000"
+"\\bsumit\\b\000smt\000"
+"\\btenth\\b\00010\000"
+"\\btexas\\b\000tx\000"
+"\\bthird\\b\0003\000"
+"\\bthree\\b\0003\000"
+"\\btrace\\b\000trce\000"
+"\\btrack\\b\000trk\000"
+"\\btrail\\b\000tr\000"
+"\\btrnpk\\b\000tpk\000"
+"\\btunel\\b\000tunl\000"
+"\\btunls\\b\000tunl\000"
+"\\btunnl\\b\000tunl\000"
+"\\bu\\s+s\\s+a\\b\000us\000"
+"\\bunion\\b\000un\000"
+"\\bvally\\b\000vl\000"
+"\\bverdi\\b\000verde\000"
+"\\bviews\\b\000vws\000"
+"\\bville\\b\000vl\000"
+"\\bvillg\\b\000vil\000"
+"\\bvista\\b\000vis\000"
+"\\bwells\\b\000wls\000"
+"\\bwoods\\b\000wds\000"
+"\\bworks\\b\000wks\000"
+"\\bxroad\\b\000xrd\000"
+"\\bally\\b\000aly\000"
+"\\banex\\b\000anx\000"
+"\\bariz\\b\000az\000"
+"\\baven\\b\000av\000"
+"\\bbend\\b\000bnd\000"
+"\\bbluf\\b\000blf\000"
+"\\bboul\\b\000blvd\000"
+"\\bburg\\b\000bg\000"
+"\\bbyng\\b\000bing\000"
+"\\bbypa\\b\000byp\000"
+"\\bbyps\\b\000byp\000"
+"\\bcamp\\b\000cp\000"
+"\\bcape\\b\000cpe\000"
+"\\bcent\\b\000cen\000"
+"\\bcirc\\b\000cir\000"
+"\\bcity\\b\000cy\000"
+"\\bclub\\b\000clb\000"
+"\\bcntr\\b\000cen\000"
+"\\bcnyn\\b\000cyn\000"
+"\\bcolo\\b\000co\000"
+"\\bconn\\b\000ct\000"
+"\\bcove\\b\000cv\000"
+"\\bcrcl\\b\000cir\000"
+"\\bdale\\b\000dl\000"
+"\\bdriv\\b\000dr\000"
+"\\beast\\b\000e\000"
+"\\bexpr\\b\000exp\000"
+"\\bexpw\\b\000exp\000"
+"\\bexpy\\b\000exp\000"
+"\\bextn\\b\000ext\000"
+"\\bfarm\\b\000frm\000"
+"\\bfive\\b\0005\000"
+"\\bflat\\b\000flt\000"
+"\\bford\\b\000frd\000"
+"\\bforg\\b\000frg\000"
+"\\bfork\\b\000frk\000"
+"\\bfort\\b\000ft\000"
+"\\bfour\\b\0004\000"
+"\\bfrks\\b\000fks\000"
+"\\bfrry\\b\000fry\000"
+"\\bfrwy\\b\000fwy\000"
+"\\bglen\\b\000gln\000"
+"\\bgrdn\\b\000gdn\000"
+"\\bgrov\\b\000grv\000"
+"\\bguam\\b\000gu\000"
+"\\bharb\\b\000hbr\000"
+"\\bhavn\\b\000hvn\000"
+"\\bhght\\b\000ht\000"
+"\\bhgts\\b\000ht\000"
+"\\bhill\\b\000hl\000"
+"\\bhiwy\\b\000hwy\000"
+"\\bholw\\b\000hllw\000"
+"\\bhway\\b\000hwy\000"
+"\\biowa\\b\000ia\000"
+"\\bjctn\\b\000jt\000"
+"\\bjnct\\b\000jt\000"
+"\\bkans\\b\000ks\000"
+"\\bkeys\\b\000kys\000"
+"\\bknol\\b\000knl\000"
+"\\blake\\b\000lk\000"
+"\\blane\\b\000la\000"
+"\\bldge\\b\000ldg\000"
+"\\blitl\\b\000ltl\000"
+"\\bloaf\\b\000lf\000"
+"\\block\\b\000lck\000"
+"\\blodg\\b\000ldg\000"
+"\\bmass\\b\000ma\000"
+"\\bmich\\b\000mi\000"
+"\\bmile\\b\000mle\000"
+"\\bmill\\b\000ml\000"
+"\\bminn\\b\000mn\000"
+"\\bmiss\\b\000ms\000"
+"\\bmntn\\b\000mnt\000"
+"\\bmssn\\b\000msn\000"
+"\\bmtin\\b\000mnt\000"
+"\\bnebr\\b\000ne\000"
+"\\bneck\\b\000nck\000"
+"\\bnine\\b\0009\000"
+"\\bohio\\b\000oh\000"
+"\\bokla\\b\000ok\000"
+"\\boreg\\b\000or\000"
+"\\boval\\b\000ovl\000"
+"\\bpalm\\b\000plm\000"
+"\\bpark\\b\000pk\000"
+"\\bpass\\b\000ps\000"
+"\\bpine\\b\000pne\000"
+"\\bpkwy\\b\000pky\000"
+"\\bplza\\b\000plz\000"
+"\\bport\\b\000prt\000"
+"\\bradl\\b\000rad\000"
+"\\brdge\\b\000rdg\000"
+"\\brest\\b\000rst\000"
+"\\brivr\\b\000riv\000"
+"\\brnch\\b\000rch\000"
+"\\broad\\b\000rd\000"
+"\\bspgs\\b\000spg\000"
+"\\bspng\\b\000spg\000"
+"\\bsprg\\b\000spg\000"
+"\\bsqre\\b\000sq\000"
+"\\bsqrs\\b\000sqs\000"
+"\\bstrt\\b\000st\000"
+"\\btenn\\b\000\000"
+"\\bterr\\b\000ter\000"
+"\\btown\\b\000\000"
+"\\btpke\\b\000tpk\000"
+"\\btrak\\b\000trk\000"
+"\\btrks\\b\000trk\000"
+"\\btrls\\b\000tr\000"
+"\\btrpk\\b\000tpk\000"
+"\\btwln\\b\000t l\000"
+"\\btwsp\\b\000tp\000"
+"\\butah\\b\000ut\000"
+"\\bvdct\\b\000via\000"
+"\\bview\\b\000vw\000"
+"\\bvill\\b\000vil\000"
+"\\bvist\\b\000vis\000"
+"\\bvlly\\b\000vl\000"
+"\\bvsta\\b\000vis\000"
+"\\bwash\\b\000wa\000"
+"\\bwell\\b\000wl\000"
+"\\bwest\\b\000w\000"
+"\\bx\\s+rd\\b\000xrd\000"
+"\\bala\\b\000al\000"
+"\\bave\\b\000av\000"
+"\\bavn\\b\000av\000"
+"\\bbtm\\b\000bot\000"
+"\\bcam\\b\000cm\000"
+"\\bcmp\\b\000cp\000"
+"\\bcrk\\b\000ck\000"
+"\\bcrt\\b\000ct\000"
+"\\bctr\\b\000cen\000"
+"\\bcty\\b\000cy\000"
+"\\bd\\s+c\\b\000dc\000"
+"\\bdam\\b\000dm\000"
+"\\bdiv\\b\000dv\000"
+"\\bdpt\\b\000dep\000"
+"\\bdrv\\b\000dr\000"
+"\\bdvd\\b\000dv\000"
+"\\bfla\\b\000fl\000"
+"\\bfrt\\b\000ft\000"
+"\\bhei\\b\000ht\000"
+"\\bhls\\b\000hl\000"
+"\\bhts\\b\000ht\000"
+"\\bill\\b\000il\000"
+"\\bind\\b\000in\000"
+"\\bisl\\b\000is\000"
+"\\biss\\b\000is\000"
+"\\bjct\\b\000jt\000"
+"\\bkan\\b\000ks\000"
+"\\bkey\\b\000ky\000"
+"\\bl\\s+a\\b\000la\000"
+"\\blke\\b\000lk\000"
+"\\blwr\\b\000lo\000"
+"\\bmtn\\b\000mnt\000"
+"\\bn\\s+c\\b\000nc\000"
+"\\bn\\s+d\\b\000nd\000"
+"\\bn\\s+h\\b\000nh\000"
+"\\bn\\s+j\\b\000nj\000"
+"\\bn\\s+m\\b\000nm\000"
+"\\bn\\s+y\\b\000ny\000"
+"\\bneb\\b\000ne\000"
+"\\bnev\\b\000nv\000"
+"\\bnth\\b\000n\000"
+"\\bntl\\b\000nl\000"
+"\\bnyc\\b\000ny\000"
+"\\bnys\\b\000ny\000"
+"\\bone\\b\0001\000"
+"\\bore\\b\000or\000"
+"\\bp\\s+r\\b\000pr\000"
+"\\bprk\\b\000pk\000"
+"\\bprr\\b\000pr\000"
+"\\br\\s+i\\b\000ri\000"
+"\\brte\\b\000rt\000"
+"\\brvr\\b\000riv\000"
+"\\bs\\s+c\\b\000sc\000"
+"\\bs\\s+d\\b\000sd\000"
+"\\bsan\\b\000sn\000"
+"\\bsix\\b\0006\000"
+"\\bspr\\b\000spg\000"
+"\\bsqr\\b\000sq\000"
+"\\bsqu\\b\000sq\000"
+"\\bsth\\b\000s\000"
+"\\bstn\\b\000sta\000"
+"\\bstr\\b\000st\000"
+"\\bten\\b\00010\000"
+"\\btrl\\b\000tr\000"
+"\\btwo\\b\0002\000"
+"\\btwp\\b\000tp\000"
+"\\bu\\s+s\\b\000us\000"
+"\\busa\\b\000us\000"
+"\\bv\\s+i\\b\000vi\000"
+"\\bvlg\\b\000vil\000"
+"\\bvly\\b\000vl\000"
+"\\bvst\\b\000vis\000"
+"\\bw\\s+v\\b\000wv\000"
+"\\bway\\b\000wy\000"
+"\\bwis\\b\000wi\000"
+"\\bwva\\b\000wv\000"
+"\\bcr\\b\000ck\000"
+"\\bln\\b\000la\000"
+"\\btn\\b\000\000"
+"\\btw\\b\000tp\000"
+"\\bvy\\b\000vl\000"
+"\\b\\#\\b\000\000"
+;
+int kNumRules_US = 699;
 
-const Rule kRules_VN[] = {
-    {"\\bthi\\s+tran\\s+van\\s+dien\\b", "ttvan dien"},
-    {"\\bho\\s+chi\\s+minh\\s+city\\b", "hcm"},
-    {"\\bho\\s+chi\\s+minh\\b", "hcm"},
-    {"\\bthanh\\s+pho\\b", "tp"},
-    {"\\bthi\\s+tran\\b", "tt"},
-    {"\\btpha\\s+noi\\b", "ha noi"},
-    {"\\bviet\\s+nam\\b", "vn"},
-    {"\\bvietnam\\b", "vn"},
-    {"\\bphuong\\b", "p"},
-    {"\\bthi\\s+xa\\b", "tx"},
-    {"\\bhuyen\\b", "h."},
-    {"\\bhcmc\\b", "hcm"},
-    {"\\bquan\\b", "q."},
-    {"\\bph\\.\\b", "p"},
-    {"\\btp\\.\\b", "tp"},
-    {"\\btt\\.\\b", "tt"},
-    {"\\btx\\.\\b", "tx"},
-    {"\\bp\\.\\b", "p"},
-    {"\\bxa\\b", "x."},
-};
+const char* kRules_VN =
+"\\bthi\\s+tran\\s+van\\s+dien\\b\000ttvan dien\000"
+"\\bho\\s+chi\\s+minh\\s+city\\b\000hcm\000"
+"\\bho\\s+chi\\s+minh\\b\000hcm\000"
+"\\bthanh\\s+pho\\b\000tp\000"
+"\\bthi\\s+tran\\b\000tt\000"
+"\\btpha\\s+noi\\b\000ha noi\000"
+"\\bviet\\s+nam\\b\000vn\000"
+"\\bvietnam\\b\000vn\000"
+"\\bphuong\\b\000p\000"
+"\\bthi\\s+xa\\b\000tx\000"
+"\\bhuyen\\b\000h.\000"
+"\\bhcmc\\b\000hcm\000"
+"\\bquan\\b\000q.\000"
+"\\bph\\.\\b\000p\000"
+"\\btp\\.\\b\000tp\000"
+"\\btt\\.\\b\000tt\000"
+"\\btx\\.\\b\000tx\000"
+"\\bp\\.\\b\000p\000"
+"\\bxa\\b\000x.\000"
+;
+int kNumRules_VN = 19;
 
-const Rule kRules_ZA[] = {
-    {"\\brepublic\\s+of\\s+south\\s+africa\\b", "sa"},
-    {"\\bkwazulu\\s+natal\\b", "nl"},
-    {"\\bnorthern\\s+cape\\b", "nc"},
-    {"\\beastern\\s+cape\\b", "ec"},
-    {"\\bkwazulunatal\\b", "nl"},
-    {"\\bsouth\\s+africa\\b", "sa"},
-    {"\\bwestern\\s+cape\\b", "wc"},
-    {"\\bfree\\s+state\\b", "fs"},
-    {"\\bmpumalanga\\b", "mp"},
-    {"\\bnoord\\s+kaap\\b", "nc"},
-    {"\\bnorth\\s+west\\b", "nw"},
-    {"\\bboulevard\\b", "blvd"},
-    {"\\bfreestate\\b", "fs"},
-    {"\\bnoordwes\\b", "nw"},
-    {"\\boos\\s+kaap\\b", "ec"},
-    {"\\bvrystaat\\b", "fs"},
-    {"\\bwes\\s+kaap\\b", "wc"},
-    {"\\bgauteng\\b", "gp"},
-    {"\\bhighway\\b", "hwy"},
-    {"\\blimpopo\\b", "lp"},
-    {"\\bavenue\\b", "ave"},
-    {"\\bstreet\\b", "st"},
-    {"\\bdrive\\b", "dr"},
-    {"\\bnatal\\b", "nl"},
-    {"\\bsaint\\b", "st"},
-    {"\\broad\\b", "rd"},
-    {"\\bkzn\\b", "nl"},
-    {"\\bgt\\b", "gp"},
-    {"\\bza\\b", "sa"},
-    {"\\bzn\\b", "nl"},
-};
+const char* kRules_ZA =
+"\\brepublic\\s+of\\s+south\\s+africa\\b\000sa\000"
+"\\bkwazulu\\s+natal\\b\000nl\000"
+"\\bnorthern\\s+cape\\b\000nc\000"
+"\\beastern\\s+cape\\b\000ec\000"
+"\\bkwazulunatal\\b\000nl\000"
+"\\bsouth\\s+africa\\b\000sa\000"
+"\\bwestern\\s+cape\\b\000wc\000"
+"\\bfree\\s+state\\b\000fs\000"
+"\\bmpumalanga\\b\000mp\000"
+"\\bnoord\\s+kaap\\b\000nc\000"
+"\\bnorth\\s+west\\b\000nw\000"
+"\\bboulevard\\b\000blvd\000"
+"\\bfreestate\\b\000fs\000"
+"\\bnoordwes\\b\000nw\000"
+"\\boos\\s+kaap\\b\000ec\000"
+"\\bvrystaat\\b\000fs\000"
+"\\bwes\\s+kaap\\b\000wc\000"
+"\\bgauteng\\b\000gp\000"
+"\\bhighway\\b\000hwy\000"
+"\\blimpopo\\b\000lp\000"
+"\\bavenue\\b\000ave\000"
+"\\bstreet\\b\000st\000"
+"\\bdrive\\b\000dr\000"
+"\\bnatal\\b\000nl\000"
+"\\bsaint\\b\000st\000"
+"\\broad\\b\000rd\000"
+"\\bkzn\\b\000nl\000"
+"\\bgt\\b\000gp\000"
+"\\bza\\b\000sa\000"
+"\\bzn\\b\000nl\000"
+;
+int kNumRules_ZA = 30;
 
 }  // namespace
 
 const RegionInfo kRuleTable[] = {
-   {"AD", kRules_AD, sizeof(kRules_AD)/sizeof(kRules_AD[0])},
-   {"AR", kRules_AR, sizeof(kRules_AR)/sizeof(kRules_AR[0])},
-   {"AU", kRules_AU, sizeof(kRules_AU)/sizeof(kRules_AU[0])},
-   {"BE", kRules_BE, sizeof(kRules_BE)/sizeof(kRules_BE[0])},
-   {"BR", kRules_BR, sizeof(kRules_BR)/sizeof(kRules_BR[0])},
-   {"CA", kRules_CA, sizeof(kRules_CA)/sizeof(kRules_CA[0])},
-   {"CH", kRules_CH, sizeof(kRules_CH)/sizeof(kRules_CH[0])},
-   {"CL", kRules_CL, sizeof(kRules_CL)/sizeof(kRules_CL[0])},
-   {"CO", kRules_CO, sizeof(kRules_CO)/sizeof(kRules_CO[0])},
-   {"DE", kRules_DE, sizeof(kRules_DE)/sizeof(kRules_DE[0])},
-   {"DK", kRules_DK, sizeof(kRules_DK)/sizeof(kRules_DK[0])},
-   {"ES", kRules_ES, sizeof(kRules_ES)/sizeof(kRules_ES[0])},
-   {"FR", kRules_FR, sizeof(kRules_FR)/sizeof(kRules_FR[0])},
-   {"GB", kRules_GB, sizeof(kRules_GB)/sizeof(kRules_GB[0])},
-   {"GR", kRules_GR, sizeof(kRules_GR)/sizeof(kRules_GR[0])},
-   {"HK", kRules_HK, sizeof(kRules_HK)/sizeof(kRules_HK[0])},
-   {"ID", kRules_ID, sizeof(kRules_ID)/sizeof(kRules_ID[0])},
-   {"IE", kRules_IE, sizeof(kRules_IE)/sizeof(kRules_IE[0])},
-   {"IN", kRules_IN, sizeof(kRules_IN)/sizeof(kRules_IN[0])},
-   {"IT", kRules_IT, sizeof(kRules_IT)/sizeof(kRules_IT[0])},
-   {"LU", kRules_LU, sizeof(kRules_LU)/sizeof(kRules_LU[0])},
-   {"MX", kRules_MX, sizeof(kRules_MX)/sizeof(kRules_MX[0])},
-   {"MY", kRules_MY, sizeof(kRules_MY)/sizeof(kRules_MY[0])},
-   {"NL", kRules_NL, sizeof(kRules_NL)/sizeof(kRules_NL[0])},
-   {"NZ", kRules_NZ, sizeof(kRules_NZ)/sizeof(kRules_NZ[0])},
-   {"PE", kRules_PE, sizeof(kRules_PE)/sizeof(kRules_PE[0])},
-   {"PH", kRules_PH, sizeof(kRules_PH)/sizeof(kRules_PH[0])},
-   {"PL", kRules_PL, sizeof(kRules_PL)/sizeof(kRules_PL[0])},
-   {"PR", kRules_PR, sizeof(kRules_PR)/sizeof(kRules_PR[0])},
-   {"PT", kRules_PT, sizeof(kRules_PT)/sizeof(kRules_PT[0])},
-   {"RO", kRules_RO, sizeof(kRules_RO)/sizeof(kRules_RO[0])},
-   {"RU", kRules_RU, sizeof(kRules_RU)/sizeof(kRules_RU[0])},
-   {"SE", kRules_SE, sizeof(kRules_SE)/sizeof(kRules_SE[0])},
-   {"TH", kRules_TH, sizeof(kRules_TH)/sizeof(kRules_TH[0])},
-   {"TR", kRules_TR, sizeof(kRules_TR)/sizeof(kRules_TR[0])},
-   {"US", kRules_US, sizeof(kRules_US)/sizeof(kRules_US[0])},
-   {"VN", kRules_VN, sizeof(kRules_VN)/sizeof(kRules_VN[0])},
-   {"ZA", kRules_ZA, sizeof(kRules_ZA)/sizeof(kRules_ZA[0])},
+   {"AD", kRules_AD, kNumRules_AD},
+   {"AR", kRules_AR, kNumRules_AR},
+   {"AU", kRules_AU, kNumRules_AU},
+   {"BE", kRules_BE, kNumRules_BE},
+   {"BR", kRules_BR, kNumRules_BR},
+   {"CA", kRules_CA, kNumRules_CA},
+   {"CH", kRules_CH, kNumRules_CH},
+   {"CL", kRules_CL, kNumRules_CL},
+   {"CO", kRules_CO, kNumRules_CO},
+   {"DE", kRules_DE, kNumRules_DE},
+   {"DK", kRules_DK, kNumRules_DK},
+   {"ES", kRules_ES, kNumRules_ES},
+   {"FR", kRules_FR, kNumRules_FR},
+   {"GB", kRules_GB, kNumRules_GB},
+   {"GR", kRules_GR, kNumRules_GR},
+   {"HK", kRules_HK, kNumRules_HK},
+   {"ID", kRules_ID, kNumRules_ID},
+   {"IE", kRules_IE, kNumRules_IE},
+   {"IN", kRules_IN, kNumRules_IN},
+   {"IT", kRules_IT, kNumRules_IT},
+   {"LU", kRules_LU, kNumRules_LU},
+   {"MX", kRules_MX, kNumRules_MX},
+   {"MY", kRules_MY, kNumRules_MY},
+   {"NL", kRules_NL, kNumRules_NL},
+   {"NZ", kRules_NZ, kNumRules_NZ},
+   {"PE", kRules_PE, kNumRules_PE},
+   {"PH", kRules_PH, kNumRules_PH},
+   {"PL", kRules_PL, kNumRules_PL},
+   {"PR", kRules_PR, kNumRules_PR},
+   {"PT", kRules_PT, kNumRules_PT},
+   {"RO", kRules_RO, kNumRules_RO},
+   {"RU", kRules_RU, kNumRules_RU},
+   {"SE", kRules_SE, kNumRules_SE},
+   {"TH", kRules_TH, kNumRules_TH},
+   {"TR", kRules_TR, kNumRules_TR},
+   {"US", kRules_US, kNumRules_US},
+   {"VN", kRules_VN, kNumRules_VN},
+   {"ZA", kRules_ZA, kNumRules_ZA},
 };
 
 const size_t kRuleTableSize = sizeof(kRuleTable)/sizeof(kRuleTable[0]);

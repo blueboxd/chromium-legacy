@@ -105,7 +105,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   RegisterDebugRecordingSourceCallback
       register_debug_recording_source_callback_;
 
-  base::WeakPtrFactory<AudioOutputResampler> weak_factory_;
+  base::WeakPtrFactory<AudioOutputResampler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AudioOutputResampler);
 };
 

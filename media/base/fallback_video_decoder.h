@@ -50,7 +50,7 @@ class MEDIA_EXPORT FallbackVideoDecoder : public VideoDecoder {
   media::VideoDecoder* selected_decoder_ = nullptr;
   bool did_fallback_ = false;
 
-  base::WeakPtrFactory<FallbackVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<FallbackVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FallbackVideoDecoder);
 };

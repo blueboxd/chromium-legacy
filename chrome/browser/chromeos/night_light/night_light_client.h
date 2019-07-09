@@ -7,14 +7,14 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/night_light_controller.mojom.h"
+#include "ash/public/cpp/night_light_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class Clock;
@@ -26,7 +26,7 @@ class SharedURLLoaderFactory;
 
 // Periodically requests the IP-based geolocation and provides it to the
 // NightLightController running in ash.
-class NightLightClient : public ash::mojom::NightLightClient,
+class NightLightClient : public ash::NightLightController::Observer,
                          public chromeos::system::TimezoneSettings::Observer {
  public:
   explicit NightLightClient(
@@ -38,9 +38,9 @@ class NightLightClient : public ash::mojom::NightLightClient,
   // long as the type is set to "sunset to sunrise".
   void Start();
 
-  // ash::mojom::NightLightClient:
+  // ash::NightLightController::Observer:
   void OnScheduleTypeChanged(
-      ash::mojom::NightLightController::ScheduleType new_type) override;
+      ash::NightLightController::ScheduleType new_type) override;
 
   // chromeos::system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
@@ -58,11 +58,6 @@ class NightLightClient : public ash::mojom::NightLightClient,
   bool using_geoposition() const { return using_geoposition_; }
 
   static base::TimeDelta GetNextRequestDelayAfterSuccessForTesting();
-
-  void SetNightLightControllerPtrForTesting(
-      ash::mojom::NightLightControllerPtr controller);
-
-  void FlushNightLightControllerForTesting();
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
@@ -90,8 +85,7 @@ class NightLightClient : public ash::mojom::NightLightClient,
   // The IP-based geolocation provider.
   chromeos::SimpleGeolocationProvider provider_;
 
-  ash::mojom::NightLightControllerPtr night_light_controller_;
-  mojo::Binding<ash::mojom::NightLightClient> binding_;
+  ash::NightLightController* night_light_controller_ = nullptr;
 
   // Delay after which a new request is retried after a failed one.
   base::TimeDelta backoff_delay_;

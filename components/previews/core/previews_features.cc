@@ -40,29 +40,6 @@ const base::Feature kNoScriptPreviews {
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the syncing of the Optimization Hints component, which provides
-// hints for what Previews can be applied on a page load.
-const base::Feature kOptimizationHints {
-  "OptimizationHints",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
-
-// Enables Optimization Hints that are marked as experimental. Optimizations are
-// marked experimental by setting an experiment name in the "experiment_name"
-// field of the Optimization proto. This allows experiments at the granularity
-// of a single PreviewType for a single host (or host suffix). The intent is
-// that optimizations that may not work properly for certain sites can be tried
-// at a small scale via Finch experiments. Experimental optimizations can be
-// activated by enabling this feature and passing an experiment name as a
-// parameter called "experiment_name" that matches the experiment name in the
-// Optimization proto.
-const base::Feature kOptimizationHintsExperiments{
-    "OptimizationHintsExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the application of the resource loading hints when loading resources.
 const base::Feature kResourceLoadingHints {
   "ResourceLoadingHints",
@@ -85,10 +62,6 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 // enabled.
 const base::Feature kHTTPSServerPreviewsUsingURLLoader{
     "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables fetching optimization hints from a remote Optimization Guide Service.
-const base::Feature kOptimizationHintsFetching{
-    "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the use of a pref to only trigger Offline Previews when there is a
 // high chance that there is one to serve.

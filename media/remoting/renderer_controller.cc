@@ -110,8 +110,7 @@ RendererController::RendererController(
 #endif
       binding_(this, std::move(source_request)),
       remoter_(std::move(remoter)),
-      clock_(base::DefaultTickClock::GetInstance()),
-      weak_factory_(this) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(remoter_);
 }
 

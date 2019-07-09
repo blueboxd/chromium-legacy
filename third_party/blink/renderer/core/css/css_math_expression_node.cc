@@ -116,17 +116,9 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kFraction:
     case CSSPrimitiveValue::UnitType::kInteger:
       return true;
-    case CSSPrimitiveValue::UnitType::kUnknown:
-    case CSSPrimitiveValue::UnitType::kCalc:
-    case CSSPrimitiveValue::UnitType::kCalcPercentageWithNumber:
-    case CSSPrimitiveValue::UnitType::kCalcPercentageWithLength:
-    case CSSPrimitiveValue::UnitType::kCalcLengthWithNumber:
-    case CSSPrimitiveValue::UnitType::kCalcPercentageWithLengthAndNumber:
-    case CSSPrimitiveValue::UnitType::kQuirkyEms:
+    default:
       return false;
-  };
-  NOTREACHED();
-  return false;
+  }
 }
 
 // ------ Start of CSSMathExpressionNumericLiteral member functions ------

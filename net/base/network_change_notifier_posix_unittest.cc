@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/system_dns_config_change_notifier.h"
 #include "net/dns/test_dns_config_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,7 +24,8 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
             NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {
     auto dns_config_service = std::make_unique<TestDnsConfigService>();
     dns_config_service_ = dns_config_service.get();
-    notifier_->SetDnsConfigServiceForTesting(std::move(dns_config_service));
+    notifier_->system_dns_config_notifier()->SetDnsConfigServiceForTesting(
+        std::move(dns_config_service));
   }
 
   void FastForwardUntilIdle() {

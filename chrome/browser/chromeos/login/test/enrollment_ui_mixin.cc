@@ -55,6 +55,9 @@ std::string StepElementID(const std::string& step) {
 const std::initializer_list<base::StringPiece> kEnrollmentErrorButtonPath = {
     kEnrollmentUI, "oauth-enroll-error-card", "submitButton"};
 
+const std::initializer_list<base::StringPiece> kEnrollmentSuccessButtonPath = {
+    kEnrollmentUI, "success-done-button"};
+
 }  // namespace
 
 EnrollmentUIMixin::EnrollmentUIMixin(InProcessBrowserTestMixinHost* host)
@@ -114,6 +117,10 @@ void EnrollmentUIMixin::RetryAfterError() {
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
   OobeJS().ClickOnPath(kEnrollmentErrorButtonPath);
+}
+
+void EnrollmentUIMixin::LeaveSuccessScreen() {
+  OobeJS().ClickOnPath(kEnrollmentSuccessButtonPath);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,

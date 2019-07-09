@@ -173,7 +173,7 @@ class VideoDecoderClient {
   SEQUENCE_CHECKER(decoder_client_sequence_checker_);
 
   base::WeakPtr<VideoDecoderClient> weak_this_;
-  base::WeakPtrFactory<VideoDecoderClient> weak_this_factory_;
+  base::WeakPtrFactory<VideoDecoderClient> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderClient);
 };

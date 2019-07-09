@@ -1821,7 +1821,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
 #endif
-      cookie_jar_(this),
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
@@ -1841,7 +1840,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       frame_binding_(this),
       host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
-      frame_navigation_control_binding_(this),
+      frame_navigation_control_receiver_(this),
       fullscreen_binding_(this),
       mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
@@ -2347,9 +2346,9 @@ void RenderFrameImpl::BindFrameBindingsControl(
 }
 
 void RenderFrameImpl::BindFrameNavigationControl(
-    mojom::FrameNavigationControlAssociatedRequest request) {
-  frame_navigation_control_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver) {
+  frame_navigation_control_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindNavigationClient(
@@ -3448,6 +3447,7 @@ void RenderFrameImpl::CommitNavigationInternal(
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations with the Network Service enabled.
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
+         common_params.url == GURL(url::kAboutSrcdocURL) ||
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
@@ -3588,9 +3588,34 @@ void RenderFrameImpl::CommitNavigationWithParams(
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
 
-  SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                           std::move(subresource_overrides),
-                           std::move(prefetch_loader_factory));
+  // Here, creator means either the parent frame or the window opener.
+  bool inherit_loaders_from_creator =
+      // Iframe with the about:srcdoc URL inherits subresource loaders from
+      // its parent. If its parent is able to use the FileUrlLoader, then its
+      // about:srcdoc iframe can use it too.
+      // TODO(arthursonzogni): Ideally, this decision should be made by the
+      // browser process. However, giving an iframe the FileUrlLoader mistakenly
+      // could have terrible consequences (e.g. give access to user's file from
+      // an unknown website). Inheriting from the parent in the renderer process
+      // is more conservative and feels more cautious for now.
+      // TODO(arthursonzogni): Something similar needs to be done for
+      // about:blank.
+      common_params.url == url::kAboutSrcdocURL;
+
+  if (inherit_loaders_from_creator) {
+    // The browser process didn't provide any way to fetch subresources, it
+    // expects this document to inherit loaders from its parent.
+    DCHECK(!subresource_loader_factories);
+    DCHECK(!subresource_overrides);
+    DCHECK(!prefetch_loader_factory);
+
+    loader_factories_ = nullptr;  // Will be lazily initialized in
+                                  // GetLoaderFactoryBundle().
+  } else {
+    SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
+                             std::move(subresource_overrides),
+                             std::move(prefetch_loader_factory));
+  }
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
   // in a special mode.
@@ -4196,10 +4221,6 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
 #endif
 }
 
-blink::WebCookieJar* RenderFrameImpl::CookieJar() {
-  return &cookie_jar_;
-}
-
 blink::BlameContext* RenderFrameImpl::GetFrameBlameContext() {
   DCHECK(blame_context_);
   return blame_context_.get();
@@ -4368,7 +4389,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
 RenderFrameImpl::CreatePortal(
     mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-    mojo::ScopedInterfaceEndpointHandle client_endpoint) {
+    mojo::ScopedInterfaceEndpointHandle client_endpoint,
+    const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
@@ -4379,18 +4401,21 @@ RenderFrameImpl::CreatePortal(
           std::move(client_endpoint), blink::mojom::PortalClient::Version_),
       &proxy_routing_id, &portal_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token);
+      this, proxy_routing_id, devtools_frame_token, portal_element);
   return std::make_pair(proxy->web_frame(), portal_token);
 }
 
 blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
-    const base::UnguessableToken& portal_token) {
+    const base::UnguessableToken& portal_token,
+    const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken devtools_frame_token;
+  FrameReplicationState replicated_state;
   GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id,
-                              &devtools_frame_token);
+                              &replicated_state, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token);
+      this, proxy_routing_id, devtools_frame_token, portal_element);
+  proxy->SetReplicatedState(replicated_state);
   return proxy->web_frame();
 }
 

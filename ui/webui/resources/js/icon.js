@@ -94,7 +94,7 @@ cr.define('cr.icon', function() {
    * A regular expression for identifying favicon URLs.
    * @const {!RegExp}
    */
-  const FAVICON_URL_REGEX = /\.ico$/i;
+  const FAVICON_URL_REGEX = /\.(ico|png)$/i;
 
   /**
    * Creates a CSS -webkit-image-set for a favicon request.

@@ -80,8 +80,7 @@ MojoCdmProxy::MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr,
                            cdm::CdmProxyClient* client)
     : cdm_proxy_ptr_(std::move(cdm_proxy_ptr)),
       client_(client),
-      client_binding_(this),
-      weak_factory_(this) {
+      client_binding_(this) {
   DVLOG(1) << __func__;
   DCHECK(client);
 }

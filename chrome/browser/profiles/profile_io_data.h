@@ -52,15 +52,12 @@ class InfoMap;
 
 namespace net {
 class ClientCertStore;
-class CookieStore;
-class HttpTransactionFactory;
 }  // namespace net
 
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
-// thread that is owned by a Profile, such as, but not limited to, network
-// objects like CookieMonster, HttpTransactionFactory, etc.  Profile owns
-// ProfileIOData, but will make sure to delete it on the IO thread (except
-// possibly in unit tests where there is no IO thread).
+// thread that is owned by a Profile.  Profile owns ProfileIOData, but will make
+// sure to delete it on the IO thread (except possibly in unit tests where there
+// is no IO thread).
 class ProfileIOData {
  public:
   virtual ~ProfileIOData();
@@ -80,8 +77,6 @@ class ProfileIOData {
 
   // Initializes the ProfileIOData object.
   void Init() const;
-
-  virtual net::CookieStore* GetExtensionsCookieStore() const = 0;
 
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for
@@ -258,15 +253,6 @@ class ProfileIOData {
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
-
-  // Called after the main URLRequestContext has been initialized, just after
-  // InitializeInternal().
-  virtual void OnMainRequestContextCreated(
-      ProfileParams* profile_params) const = 0;
-
-  // Initializes the cookie store for extensions.
-  virtual void InitializeExtensionsCookieStore(
-      ProfileParams* profile_params) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so
   // don't move them around unless you know what you're doing!

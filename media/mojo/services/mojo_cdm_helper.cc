@@ -16,7 +16,7 @@ namespace media {
 
 MojoCdmHelper::MojoCdmHelper(
     service_manager::mojom::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider), weak_factory_(this) {}
+    : interface_provider_(interface_provider) {}
 
 MojoCdmHelper::~MojoCdmHelper() = default;
 

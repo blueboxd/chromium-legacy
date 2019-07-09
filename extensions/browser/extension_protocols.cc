@@ -130,12 +130,7 @@ void ReadResourceFilePathAndLastModifiedTime(
   // tolerates blocking operations.
   *file_path = resource.GetFilePath();
   *last_modified_time = GetFileLastModifiedTime(*file_path);
-  // While we're here, log the delta between extension directory
-  // creation time and the resource's last modification time.
-  base::ElapsedTimer query_timer;
   base::Time dir_creation_time = GetFileCreationTime(directory);
-  UMA_HISTOGRAM_TIMES("Extensions.ResourceDirectoryTimestampQueryLatency",
-                      query_timer.Elapsed());
   int64_t delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
   if (delta_seconds >= 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",

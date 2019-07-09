@@ -116,10 +116,7 @@ html[dir=rtl] #edit-bg {
   }
 }
 
-/* If window height is less then the customization menu height, then hide the
- * 'customize' button.
- */
-@media (max-height: 528px) {
+@media (max-height: 100px) {
   #edit-bg {
     display: none;
   }

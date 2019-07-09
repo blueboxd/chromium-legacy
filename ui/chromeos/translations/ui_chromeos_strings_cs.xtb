@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351692861129622852">Importování <ph name="FILE_COUNT" /> souborů...</translation>
 <translation id="1352103415082130575">Thajská klávesnice (Pattachote)</translation>
-<translation id="1358032944105037487">Japonská klávesnice</translation>
 <translation id="1358735829858566124">Soubor nebo adresář nelze použít.</translation>
 <translation id="1363028406613469049">Stopa</translation>
 <translation id="1378727793141957596">Vítá vás Disk Google!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Počet fotek, které byly zálohovány na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopírování...</translation>
 <translation id="3475447146579922140">Tabulka Google</translation>
-<translation id="3494768541638400973">Zadávání japonštiny Google (pro japonskou klávesnici)</translation>
 <translation id="3495304270784461826">Chyby: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Přepis (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugalština</translation>
@@ -514,7 +512,6 @@
     <ph name="LINE_BREAK1" />
     Nalezeno: <ph name="FILE_COUNT" />.</translation>
 <translation id="6935521024859866267">Vzhůru nohama</translation>
-<translation id="6937152069980083337">Zadávání japonštiny Google (pro americkou klávesnici)</translation>
 <translation id="6939777852457331078">Americká klávesnice s rozložením Workman</translation>
 <translation id="696203921837389374">Aktivovat synchronizaci pomocí mobilního datového připojení</translation>
 <translation id="6965382102122355670">OK</translation>

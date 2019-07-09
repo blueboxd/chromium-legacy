@@ -124,56 +124,23 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
 
 void ScrollableAreaPainter::PaintOverflowControls(
     const PaintInfo& paint_info,
-    const IntPoint& paint_offset,
-    bool painting_overlay_controls) {
+    const IntPoint& paint_offset) {
   // Don't do anything if we have no overflow.
-  if (!GetScrollableArea().GetLayoutBox()->HasOverflowClip())
+  const auto& box = *GetScrollableArea().GetLayoutBox();
+  if (!box.HasOverflowClip() ||
+      box.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  IntPoint adjusted_paint_offset = paint_offset;
-  if (painting_overlay_controls)
-    adjusted_paint_offset = GetScrollableArea().CachedOverlayScrollbarOffset();
-
-  CullRect adjusted_cull_rect = paint_info.GetCullRect();
-  adjusted_cull_rect.MoveBy(-adjusted_paint_offset);
-  // Overlay scrollbars paint in a second pass through the layer tree so that
-  // they will paint on top of everything else. If this is the normal painting
-  // pass, paintingOverlayControls will be false, and we should just tell the
-  // root layer that there are overlay scrollbars that need to be painted. That
-  // will cause the second pass through the layer tree to run, and we'll paint
-  // the scrollbars then. In the meantime, cache tx and ty so that the second
-  // pass doesn't need to re-enter the LayoutTree to get it right.
-  if (GetScrollableArea().HasOverlayScrollbars() &&
-      !painting_overlay_controls) {
-    GetScrollableArea().SetCachedOverlayScrollbarOffset(paint_offset);
-    // It's not necessary to do the second pass if the scrollbars paint into
-    // layers.
-    if ((GetScrollableArea().HorizontalScrollbar() &&
-         GetScrollableArea().LayerForHorizontalScrollbar()) ||
-        (GetScrollableArea().VerticalScrollbar() &&
-         GetScrollableArea().LayerForVerticalScrollbar()))
+  // Overlay scrollbars are painted in the dedicated paint phase, and normal
+  // scrollbars are painted in the background paint phase.
+  if (GetScrollableArea().HasOverlayScrollbars()) {
+    if (paint_info.phase != PaintPhase::kOverlayScrollbars)
       return;
-    if (!OverflowControlsIntersectRect(adjusted_cull_rect))
-      return;
-
-    LayoutView* layout_view = GetScrollableArea().GetLayoutBox()->View();
-
-    PaintLayer* painting_root =
-        GetScrollableArea().Layer()->EnclosingLayerWithCompositedLayerMapping(
-            kIncludeSelf);
-    if (!painting_root)
-      painting_root = layout_view->Layer();
-
-    painting_root->SetContainsDirtyOverlayScrollbars(true);
+  } else if (!ShouldPaintSelfBlockBackground(paint_info.phase)) {
     return;
   }
 
-  // This check is required to avoid painting custom CSS scrollbars twice.
-  if (painting_overlay_controls && !GetScrollableArea().HasOverlayScrollbars())
-    return;
-
   GraphicsContext& context = paint_info.context;
-  const auto& box = *GetScrollableArea().GetLayoutBox();
   const auto* fragment = paint_info.FragmentToPaint(box);
   if (!fragment)
     return;
@@ -191,6 +158,9 @@ void ScrollableAreaPainter::PaintOverflowControls(
     }
   }
 
+  CullRect adjusted_cull_rect = paint_info.GetCullRect();
+  adjusted_cull_rect.MoveBy(-paint_offset);
+
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().LayerForHorizontalScrollbar()) {
     GetScrollableArea().HorizontalScrollbar()->Paint(context,
@@ -200,51 +170,27 @@ void ScrollableAreaPainter::PaintOverflowControls(
       !GetScrollableArea().LayerForVerticalScrollbar()) {
     GetScrollableArea().VerticalScrollbar()->Paint(context, adjusted_cull_rect);
   }
+
   if (!GetScrollableArea().LayerForScrollCorner()) {
     // We fill our scroll corner with white if we have a scrollbar that doesn't
     // run all the way up to the edge of the box.
-    PaintScrollCorner(context, adjusted_paint_offset, paint_info.GetCullRect());
+    PaintScrollCorner(context, paint_offset, paint_info.GetCullRect());
 
     // Paint our resizer last, since it sits on top of the scroll corner.
-    PaintResizer(context, adjusted_paint_offset, paint_info.GetCullRect());
+    PaintResizer(context, paint_offset, paint_info.GetCullRect());
   }
 }
 
-bool ScrollableAreaPainter::OverflowControlsIntersectRect(
-    const CullRect& cull_rect) const {
-  const IntRect border_box =
-      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
-          GetScrollableArea().Layer()->SubpixelAccumulation());
-
-  if (cull_rect.Intersects(
-          GetScrollableArea().RectForHorizontalScrollbar(border_box)))
-    return true;
-
-  if (cull_rect.Intersects(
-          GetScrollableArea().RectForVerticalScrollbar(border_box)))
-    return true;
-
-  if (cull_rect.Intersects(GetScrollableArea().ScrollCornerRect()))
-    return true;
-
-  if (cull_rect.Intersects(GetScrollableArea().ResizerCornerRect(
-          border_box, kResizerForPointer)))
-    return true;
-
-  return false;
-}
-
-void ScrollableAreaPainter::PaintScrollCorner(
-    GraphicsContext& context,
-    const IntPoint& paint_offset,
-    const CullRect& adjusted_cull_rect) {
+void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
+                                              const IntPoint& paint_offset,
+                                              const CullRect& cull_rect) {
   IntRect abs_rect = GetScrollableArea().ScrollCornerRect();
   if (abs_rect.IsEmpty())
     return;
   abs_rect.MoveBy(paint_offset);
 
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
-    if (!adjusted_cull_rect.Intersects(abs_rect))
+    if (!cull_rect.Intersects(abs_rect))
       return;
     ScrollbarPainter::PaintIntoRect(*scroll_corner, context,
                                     PhysicalOffset(paint_offset),

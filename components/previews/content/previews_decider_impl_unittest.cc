@@ -38,6 +38,7 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/hint_cache_store.h"
@@ -872,7 +873,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptNotAllowedWithoutOptimizationHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews},
-      {features::kOptimizationHints});
+      {optimization_guide::features::kOptimizationHints});
   InitializeUIService();
 
   for (const auto& test_ect :
@@ -898,7 +899,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -926,7 +927,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1093,7 +1094,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kLitePageServerPreviews},
-      {features::kOptimizationHints});
+      {optimization_guide::features::kOptimizationHints});
   InitializeUIService();
 
   base::HistogramTester histogram_tester;
@@ -1114,7 +1115,7 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kLitePageServerPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1151,7 +1152,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kLitePageServerPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1188,8 +1189,9 @@ TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kLitePageServerPreviews,
-       features::kOptimizationHints, features::kNoScriptPreviews,
-       features::kResourceLoadingHints, features::kDeferAllScriptPreviews},
+       optimization_guide::features::kOptimizationHints,
+       features::kNoScriptPreviews, features::kResourceLoadingHints,
+       features::kDeferAllScriptPreviews},
       {});
   InitializeUIService();
 
@@ -1240,7 +1242,8 @@ TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kOptimizationHints}, {});
+      {features::kPreviews, optimization_guide::features::kOptimizationHints},
+      {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
 
@@ -1263,7 +1266,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints},
-      {features::kOptimizationHints});
+      {optimization_guide::features::kOptimizationHints});
   InitializeUIService();
 
   base::HistogramTester histogram_tester;
@@ -1288,7 +1291,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1317,7 +1320,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1339,7 +1342,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1426,7 +1429,8 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
 TEST_F(PreviewsDeciderImplTest, DeferAllScriptNotAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kOptimizationHints}, {});
+      {features::kPreviews, optimization_guide::features::kOptimizationHints},
+      {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
 
@@ -1443,7 +1447,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kDeferAllScriptPreviews},
-      {features::kOptimizationHints});
+      {optimization_guide::features::kOptimizationHints});
   InitializeUIService();
 
   base::HistogramTester histogram_tester;
@@ -1467,7 +1471,7 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptAllowedByFeatureAndWhitelist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kDeferAllScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1496,7 +1500,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kDeferAllScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1518,7 +1522,7 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptCommitTimeWhitelistCheck) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kDeferAllScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -1727,7 +1731,7 @@ TEST_F(PreviewsDeciderImplTest, ShouldCommitPreviewBlacklistStatuses) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews},
-      {features::kOptimizationHints});
+      {optimization_guide::features::kOptimizationHints});
   InitializeUIService();
   auto expected_type = PreviewsType::NOSCRIPT;
   PreviewsUserData user_data(kDefaultPageId);
@@ -1806,7 +1810,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeMediaSuffixesAreExcluded) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   auto expected_reason = PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX;
@@ -1894,7 +1898,7 @@ TEST_F(PreviewsDeciderImplTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();
@@ -2109,7 +2113,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews,
-       features::kOptimizationHints},
+       optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
   InitializeOptimizationGuideHints();

@@ -68,8 +68,6 @@ class OffTheRecordProfileImpl : public Profile {
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
 #endif  // defined(OS_CHROMEOS)
   net::URLRequestContextGetter* GetRequestContext() override;
-  base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
-      override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,

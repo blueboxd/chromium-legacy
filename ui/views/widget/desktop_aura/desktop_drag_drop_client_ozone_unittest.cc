@@ -47,6 +47,8 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   ui::PlatformWindowState GetPlatformWindowState() const override {
     return ui::PlatformWindowState::kNormal;
   }
+  void Activate() override {}
+  void Deactivate() override {}
   void SetCursor(ui::PlatformCursor cursor) override {}
   void MoveCursorTo(const gfx::Point& location) override {}
   void ConfineCursorToBounds(const gfx::Rect& bounds) override {}

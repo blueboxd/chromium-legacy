@@ -24,7 +24,6 @@ namespace content {
 SynchronousCompositorProxy::SynchronousCompositorProxy(
     ui::SynchronousInputHandlerProxy* input_handler_proxy)
     : input_handler_proxy_(input_handler_proxy),
-      binding_(this),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
@@ -395,12 +394,13 @@ void SynchronousCompositorProxy::LayerTreeFrameSinkCreated() {
 }
 
 void SynchronousCompositorProxy::BindChannel(
-    mojom::SynchronousCompositorControlHostPtr control_host,
-    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
-  control_host_ = std::move(control_host);
+    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+        compositor_request) {
+  control_host_.Bind(std::move(control_host));
   host_.Bind(std::move(host));
-  binding_.Bind(std::move(compositor_request));
+  receiver_.Bind(std::move(compositor_request));
 
   if (layer_tree_frame_sink_)
     LayerTreeFrameSinkCreated();

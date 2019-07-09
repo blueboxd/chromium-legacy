@@ -22,7 +22,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -3490,16 +3489,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, AboutBlankFramesAreIgnored) {
 
   // Fill in the password and submit the form.  This shouldn't bring up a save
   // password prompt and shouldn't result in a renderer kill.
-  base::HistogramTester histogram_tester;
   SubmitInjectedPasswordForm(WebContents(), frame, submit_url);
   EXPECT_TRUE(frame->IsRenderFrameLive());
   EXPECT_EQ(submit_url, frame->GetLastCommittedURL());
   EXPECT_FALSE(prompt_observer->IsSavePromptAvailable());
-
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AboutBlankPasswordSubmission", false /* is_main_frame */,
-      1);
 }
 
 // Verify that password manager ignores passwords on forms injected into
@@ -3526,18 +3519,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, AboutBlankPopupsAreIgnored) {
 
   // Submit the password form and check that there was no renderer kill and no
   // prompt to save passwords.
-  base::HistogramTester histogram_tester;
   std::unique_ptr<BubbleObserver> prompt_observer(new BubbleObserver(newtab));
   SubmitInjectedPasswordForm(newtab, newtab->GetMainFrame(), submit_url);
   EXPECT_FALSE(prompt_observer->IsSavePromptAvailable());
   EXPECT_TRUE(newtab->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(submit_url, newtab->GetMainFrame()->GetLastCommittedURL());
-
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AboutBlankPasswordSubmission", true /* is_main_frame */,
-      1);
 }
 
 // Verify that previously saved passwords for about:blank frames are not used

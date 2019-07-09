@@ -577,7 +577,8 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
-    : context_(context),
+    : InspectorHelperMixin(context.Uuid()),
+      context_(context),
       deferred_task_handler_(&context.GetDeferredTaskHandler()),
       handler_(nullptr) {}
 

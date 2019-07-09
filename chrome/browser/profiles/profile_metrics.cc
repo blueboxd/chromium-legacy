@@ -560,7 +560,9 @@ void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
 
 void ProfileMetrics::LogTimeToOpenUserManager(
     const base::TimeDelta& time_to_open) {
-  UMA_HISTOGRAM_TIMES("Profile.TimeToOpenUserManager", time_to_open);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Profile.TimeToOpenUserManagerUpTo1min",
+                             time_to_open, base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(1), 50);
 }
 
 #if defined(OS_ANDROID)

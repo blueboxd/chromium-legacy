@@ -189,9 +189,9 @@ class DemuxerStreamAdapter {
   // WeakPtrFactory only for reading buffer from demuxer stream. This is used
   // for canceling all read callbacks provided to the |demuxer_stream_| before a
   // flush.
-  base::WeakPtrFactory<DemuxerStreamAdapter> request_buffer_weak_factory_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> request_buffer_weak_factory_{this};
   // WeakPtrFactory for normal usage.
-  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapter);
 };

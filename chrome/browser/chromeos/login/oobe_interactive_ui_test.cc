@@ -18,8 +18,10 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
@@ -38,6 +40,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
@@ -491,6 +494,11 @@ class OobeInteractiveUITest
     LOG(INFO) << "OobeInteractiveUITest: LoginDisplayHost is down.";
   }
 
+  void PerformStepsBeforeEnrollmentCheck();
+  void PerformSessionSignInSteps(
+      const ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver&
+          get_auth_token_observer);
+
   void SimpleEndToEnd();
 
   const OobeEndToEndTestSetupMixin* test_setup() const { return &setup_; }
@@ -505,9 +513,7 @@ class OobeInteractiveUITest
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 
-void OobeInteractiveUITest::SimpleEndToEnd() {
-  ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
-
+void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
   test::WaitForWelcomeScreen();
   RunWelcomeScreenChecks();
   test::TapWelcomeNext();
@@ -524,7 +530,11 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
 
   test::WaitForUpdateScreen();
   test::ExitUpdateScreenNoUpdate();
+}
 
+void OobeInteractiveUITest::PerformSessionSignInSteps(
+    const ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver&
+        get_auth_token_observer) {
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 
@@ -561,6 +571,12 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   }
 
   HandleAssistantOptInScreen();
+}
+
+void OobeInteractiveUITest::SimpleEndToEnd() {
+  ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
+  PerformStepsBeforeEnrollmentCheck();
+  PerformSessionSignInSteps(get_auth_token_observer);
 
   WaitForLoginDisplayHostShutdown();
 }
@@ -572,6 +588,64 @@ IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
 INSTANTIATE_TEST_SUITE_P(
     OobeInteractiveUITestImpl,
     OobeInteractiveUITest,
+    testing::Combine(testing::Bool(),
+                     testing::Bool(),
+                     testing::Values(ArcState::kNotAvailable,
+                                     ArcState::kAcceptTerms,
+                                     ArcState::kDeclineTerms)));
+
+class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
+ public:
+  OobeZeroTouchInteractiveUITest() = default;
+  ~OobeZeroTouchInteractiveUITest() override = default;
+
+  void SetUpOnMainThread() override {
+    OobeInteractiveUITest::SetUpOnMainThread();
+    policy_server_.ConfigureFakeStatisticsForZeroTouch(
+        &fake_statistics_provider_);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeInteractiveUITest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableInitialEnrollment,
+        AutoEnrollmentController::kInitialEnrollmentAlways);
+  }
+
+  void ZeroTouchEndToEnd();
+
+ private:
+  LocalPolicyTestServerMixin policy_server_{&mixin_host_};
+  test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(OobeZeroTouchInteractiveUITest);
+};
+
+void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
+  policy_server_.SetupZeroTouchForcedEnrollment();
+
+  ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
+
+  PerformStepsBeforeEnrollmentCheck();
+
+  test::WaitForEnrollmentScreen();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  enrollment_ui_.LeaveSuccessScreen();
+
+  PerformSessionSignInSteps(get_auth_token_observer);
+
+  WaitForLoginDisplayHostShutdown();
+}
+
+IN_PROC_BROWSER_TEST_P(OobeZeroTouchInteractiveUITest, EndToEnd) {
+  ZeroTouchEndToEnd();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    OobeZeroTouchInteractiveUITestImpl,
+    OobeZeroTouchInteractiveUITest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,

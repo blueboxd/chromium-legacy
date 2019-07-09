@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351692861129622852">Importujú sa súbory (počet: <ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Thajská klávesnica (Pattachote)</translation>
-<translation id="1358032944105037487">japonská klávesnica</translation>
 <translation id="1358735829858566124">Súbor alebo adresár nie je možné použiť.</translation>
 <translation id="1363028406613469049">Stopa</translation>
 <translation id="1378727793141957596">Vitajte v službe Disk Google!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Počet fotiek zálohovaných na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Prebieha kopírovanie...</translation>
 <translation id="3475447146579922140">Tabuľka Google</translation>
-<translation id="3494768541638400973">Japonská metóda vstupu Google (pre japonskú klávesnicu)</translation>
 <translation id="3495304270784461826">Počet chýb: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Prepis (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalčina</translation>
@@ -515,7 +513,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
     <ph name="LINE_BREAK1" />
     Počet nájdených súborov: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Hore nohami</translation>
-<translation id="6937152069980083337">Japonská metóda vstupu Google (pre americkú klávesnicu)</translation>
 <translation id="6939777852457331078">Klávesnica US Workman</translation>
 <translation id="696203921837389374">Povoliť synchronizáciu prostredníctvom mobilných dát</translation>
 <translation id="6965382102122355670">OK</translation>

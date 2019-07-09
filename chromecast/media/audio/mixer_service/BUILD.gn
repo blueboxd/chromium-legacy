@@ -13,7 +13,6 @@ proto_library("proto") {
   ]
 }
 
-use_unix_sockets = is_linux
 buildflag_header("buildflags") {
   header = "mixer_service_buildflags.h"
 

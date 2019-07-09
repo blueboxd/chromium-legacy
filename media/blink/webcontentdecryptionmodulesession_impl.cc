@@ -229,8 +229,7 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     : adapter_(adapter),
       has_close_been_called_(false),
       is_closed_(false),
-      is_persistent_session_(false),
-      weak_ptr_factory_(this) {}
+      is_persistent_session_(false) {}
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {

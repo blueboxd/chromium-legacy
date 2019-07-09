@@ -267,7 +267,7 @@ class CC_EXPORT ImageAnimationController {
     // The time at which the next animation is expected to run.
     base::TimeTicks next_animation_time_;
 
-    base::WeakPtrFactory<InvalidationScheduler> weak_factory_;
+    base::WeakPtrFactory<InvalidationScheduler> weak_factory_{this};
   };
 
   // The AnimationState for images is persisted until they are cleared on

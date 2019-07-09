@@ -18,7 +18,7 @@
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/vpn_list_view.h"
-#include "ash/system/night_light/night_light_controller.h"
+#include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/power_prefs.h"
@@ -43,7 +43,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MediaControllerImpl::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);
-  NightLightController::RegisterProfilePrefs(registry);
+  NightLightControllerImpl::RegisterProfilePrefs(registry);
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);

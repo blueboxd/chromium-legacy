@@ -172,12 +172,13 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
     RenderFrameImpl* parent,
     int proxy_routing_id,
-    const base::UnguessableToken& devtools_frame_token) {
+    const base::UnguessableToken& devtools_frame_token,
+    const blink::WebElement& portal_element) {
   std::unique_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(proxy_routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
-  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
-      blink::WebTreeScopeType::kDocument, proxy.get());
+  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
+      blink::WebTreeScopeType::kDocument, proxy.get(), portal_element);
   proxy->Init(web_frame, parent->render_view(),
               parent->GetLocalRootRenderWidget(), true);
   return proxy.release();

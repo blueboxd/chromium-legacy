@@ -66,8 +66,8 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
 template <typename Algorithm, typename Callback>
 NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
                                     const Callback& callback) {
-  std::unique_ptr<Algorithm> algorithm = std::make_unique<Algorithm>(params);
-  callback(algorithm.get());
+  Algorithm algorithm(params);
+  callback(&algorithm);
 }
 
 template <typename Callback>

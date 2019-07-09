@@ -89,9 +89,7 @@ enum {
 
 class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
  public:
-  MockWidgetInputHandlerHost(
-      mojo::InterfaceRequest<mojom::WidgetInputHandlerHost> request)
-      : binding_(this, std::move(request)) {}
+  MockWidgetInputHandlerHost() {}
 #if defined(OS_ANDROID)
   MOCK_METHOD4(FallbackCursorModeLockCursor, void(bool, bool, bool, bool));
 
@@ -116,8 +114,13 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
 
   MOCK_METHOD1(SetMouseCapture, void(bool));
 
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
  private:
-  mojo::Binding<mojom::WidgetInputHandlerHost> binding_;
+  mojo::Receiver<mojom::WidgetInputHandlerHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandlerHost);
 };
@@ -191,12 +194,11 @@ class InteractiveRenderWidget : public RenderWidget {
         always_overscroll_(false) {
     InitForPopup(base::NullCallback(), &mock_page_popup_);
 
-    mojom::WidgetInputHandlerHostPtr widget_input_handler;
-    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>(
-        mojo::MakeRequest(&widget_input_handler));
+    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
     widget_input_handler_manager_->AddInterface(
-        nullptr, std::move(widget_input_handler));
+        mojo::PendingReceiver<mojom::WidgetInputHandler>(),
+        mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
 
   void SendInputEvent(const blink::WebInputEvent& event,

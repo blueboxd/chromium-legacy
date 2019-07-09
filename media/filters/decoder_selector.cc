@@ -34,8 +34,7 @@ DecoderSelector<StreamType>::DecoderSelector(
     MediaLog* media_log)
     : task_runner_(std::move(task_runner)),
       create_decoders_cb_(std::move(create_decoders_cb)),
-      media_log_(media_log),
-      weak_this_factory_(this) {}
+      media_log_(media_log) {}
 
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::~DecoderSelector() {

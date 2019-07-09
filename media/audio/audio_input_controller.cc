@@ -184,8 +184,7 @@ AudioInputController::AudioInputController(
       stream_(nullptr),
       sync_writer_(sync_writer),
       type_(type),
-      user_input_monitor_(user_input_monitor),
-      weak_ptr_factory_(this) {
+      user_input_monitor_(user_input_monitor) {
   DCHECK(handler_);
   DCHECK(sync_writer_);
 }

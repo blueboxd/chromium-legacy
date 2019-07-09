@@ -1999,13 +1999,6 @@ RenderThreadImpl::GetPeerConnectionDependencyFactory() {
   return peer_connection_factory_.get();
 }
 
-mojom::RenderFrameMessageFilter*
-RenderThreadImpl::render_frame_message_filter() {
-  if (!render_frame_message_filter_)
-    GetChannel()->GetRemoteAssociatedInterface(&render_frame_message_filter_);
-  return render_frame_message_filter_.get();
-}
-
 mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
   if (!render_message_filter_)
     GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);

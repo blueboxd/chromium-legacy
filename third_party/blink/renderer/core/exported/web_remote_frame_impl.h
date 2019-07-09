@@ -35,6 +35,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
                                              WebRemoteFrameClient*,
                                              WebFrame* opener = nullptr);
+  static WebRemoteFrameImpl* CreateForPortal(WebTreeScopeType,
+                                             WebRemoteFrameClient*,
+                                             const WebElement& portal_element);
 
   WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
   ~WebRemoteFrameImpl() override;

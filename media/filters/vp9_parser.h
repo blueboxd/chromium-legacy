@@ -326,7 +326,7 @@ class MEDIA_EXPORT Vp9Parser {
       bool needs_client_update_ = false;
       Vp9FrameContext frame_context_;
 
-      base::WeakPtrFactory<Vp9FrameContextManager> weak_ptr_factory_;
+      base::WeakPtrFactory<Vp9FrameContextManager> weak_ptr_factory_{this};
     };
 
     void Reset();

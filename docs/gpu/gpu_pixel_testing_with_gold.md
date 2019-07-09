@@ -119,33 +119,48 @@ The current approach to getting the triage links for new images is:
 
 1. Navigate to the failed build.
 2. Search for the failed step for the `pixel_skia_gold_test` test.
-3. Click on the `shard #0 (failed)` link
-4. Search for `untriaged` on the page and follow any links to
-https://chrome-gpu-gold.skia.org/ that the search finds.
-5. Triage images at those links (typically by approving them, but you can also
+3. Look for either:
+    1. One or more links named `gold_triage_link for <test name>`. This will be
+    the case if there are fewer than 10 links.
+    2. A single link named
+    `Too many artifacts produced to link individually, click for links`. This
+    will be the case if there are 10 or more links.
+4. In either case, follow the link(s) to the triage page for the image the
+failing test produced.
+5. Triage images on those pages (typically by approving them, but you can also
 mark them as a negative if it is an image that should not be produced). In the
 case of a negative image, a bug should be filed on [crbug] to investigate and
 fix the cause of the that particular image being produced, as future
 occurrences of it will cause the test to fail. Such bugs should include the
 `Internals>GPU>Testing` component and whatever component is suitable for the
-type of failing test (likely `Blink>WebGL`).
+type of failing test (likely `Blink>WebGL` or `Blink>Canvas`). The test should
+also be marked as failing or skipped in
+`//content/test/gpu/gpu_tests/test_expectations/pixel_expectations.txt` so that
+the test failure doesn't show up as a builder failure. If the failure is
+consistent, prefer to skip instead of mark as failing so that the failure links
+don't pile up. If the failure occurs on the trybots, include the change to the
+expectations in your CL.
 
 [crbug]: https://crbug.com
 
-This is a known pain point about using Gold in Chromium, but should be
-alleviated in the future with several coming improvements:
+In the future, a comment will also be automatically posted to CLs that produce
+new images with a link to triage them.
 
-1. Links will be reported in a build's Milo output for a step, so you can skip
-digging through the task output.
-2. A comment will be automatically posted to CLs that produce new images with a
-link to triage them.
-
-In addition, you can see all currently untriaged images on master on the
-[GPU Gold instance's main page][gpu gold instance] and currently untriaged
-images for a CL by substituting the Gerrit CL number into
+In addition, you can see all currently untriaged images that are currently
+being produced on ToT on the [GPU Gold instance's main page][gpu gold instance]
+and currently untriaged images for a CL by substituting the Gerrit CL number
+into
 `https://chrome-gpu-gold.skia.org/search?issue=[CL Number]&unt=true&master=true`.
 
 [gpu gold instance]: https://chrome-gpu-gold.skia.org
+
+It's possible, particularly if a test is regularly producing multiple images,
+for an image to be untriaged but not show up on the front page of the Gold
+instance (for details, see [this crbug comment][non tot untriaged comment]). To
+see all such images, visit [this link][untriaged non tot].
+
+[untriaged non tot comment]: https://bugs.chromium.org/p/skia/issues/detail?id=9189#c4
+[untriaged non tot]: https://chrome-gpu-gold.skia.org/search?fdiffmax=-1&fref=false&frgbamax=255&frgbamin=0&head=false&include=false&limit=50&master=false&match=name&metric=combined&neg=false&offset=0&pos=false&query=source_type%3Dchrome-gpu&sort=desc&unt=true
 
 ### Triaging A Specific Image
 

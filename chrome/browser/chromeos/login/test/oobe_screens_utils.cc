@@ -137,6 +137,10 @@ void SkipToEnrollmentOnRecovery() {
   WaitFor(EnrollmentScreenView::kScreenId);
 }
 
+void WaitForEnrollmentScreen() {
+  WaitFor(EnrollmentScreenView::kScreenId);
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 void WaitForEulaScreen() {
   WaitFor(EulaView::kScreenId);

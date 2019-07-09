@@ -86,6 +86,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
 
+  // Configures |out| based on |params|. (This doesn't honor
+  // allow_file_scheme_cookies, which affects the cookie store rather than the
+  // settings).
+  static void ConfigureCookieSettings(
+      const network::mojom::CookieManagerParams& params,
+      CookieSettings* out);
+
   // Causes the next call to GetCookieList to crash the process.
   static void CrashOnGetCookieList();
 

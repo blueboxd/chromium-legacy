@@ -1055,6 +1055,7 @@ Document::Document(const DocumentInit& initializer,
                             : nullptr;
     if (registry && registration_context_)
       registry->Entangle(registration_context_);
+    cookie_jar_ = std::make_unique<CookieJar>(this);
   } else if (imports_controller_) {
     fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
@@ -3209,6 +3210,7 @@ void Document::Shutdown() {
   DocumentShutdownNotifier::NotifyContextDestroyed();
   SynchronousMutationNotifier::NotifyContextDestroyed();
 
+  cookie_jar_ = nullptr;  // Not accessible after navigated away.
   fetcher_->ClearContext();
   // If this document is the master for an HTMLImportsController, sever that
   // relationship. This ensures that we don't leave import loads in flight,
@@ -5651,11 +5653,10 @@ String Document::cookie(ExceptionState& exception_state) const {
     CountUse(WebFeature::kFileAccessedCookies);
   }
 
-  KURL cookie_url = CookieURL();
-  if (cookie_url.IsEmpty())
+  if (!cookie_jar_)
     return String();
 
-  return Cookies(this, cookie_url);
+  return cookie_jar_->Cookies();
 }
 
 void Document::setCookie(const String& value, ExceptionState& exception_state) {
@@ -5682,11 +5683,17 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
-  KURL cookie_url = CookieURL();
-  if (cookie_url.IsEmpty())
+  if (!cookie_jar_)
     return;
 
-  SetCookies(this, cookie_url, value);
+  cookie_jar_->SetCookie(value);
+}
+
+bool Document::CookiesEnabled() const {
+  if (!cookie_jar_)
+    return false;
+
+  return cookie_jar_->CookiesEnabled();
 }
 
 const AtomicString& Document::referrer() const {

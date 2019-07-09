@@ -247,7 +247,7 @@ public class ItemChooserDialog implements DeviceItemAdapter.Observer {
         mDialog.addContentView(view,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                               LinearLayout.LayoutParams.MATCH_PARENT));
-        mDialog.setOnDismissListener(dialog -> mItemSelectedCallback.onItemSelected(""));
+        mDialog.setOnCancelListener(dialog -> mItemSelectedCallback.onItemSelected(""));
 
         Window window = mDialog.getWindow();
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {

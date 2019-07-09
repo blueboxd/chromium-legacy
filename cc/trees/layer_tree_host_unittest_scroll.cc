@@ -1312,9 +1312,15 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
     }
   }
 
-  void DeliverInputForBeginFrame() override {
+  void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override {
     if (!task_runner_->BelongsToCurrentThread()) {
       ADD_FAILURE() << "DeliverInputForBeginFrame called on wrong thread";
+    }
+  }
+
+  void DeliverInputForHighLatencyMode() override {
+    if (!task_runner_->BelongsToCurrentThread()) {
+      ADD_FAILURE() << "DeliverInputForHighLatencyMode called on wrong thread";
     }
   }
 
@@ -1816,7 +1822,8 @@ class MockInputHandlerClient : public InputHandlerClient {
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) override {}
-  void DeliverInputForBeginFrame() override {}
+  void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override {}
+  void DeliverInputForHighLatencyMode() override {}
 };
 
 // This is a regression test, see crbug.com/639046.

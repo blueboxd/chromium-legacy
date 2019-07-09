@@ -360,8 +360,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
-      scroll_gesture_did_end_(false),
-      weak_factory_(this) {
+      scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -460,7 +459,7 @@ void LayerTreeHostImpl::CommitComplete() {
   // In high latency mode commit cannot finish within the same frame. We need to
   // flush input here to make sure they got picked up by |PrepareTiles()|.
   if (input_handler_client_ && impl_thread_phase_ == ImplThreadPhase::IDLE)
-    input_handler_client_->DeliverInputForBeginFrame();
+    input_handler_client_->DeliverInputForHighLatencyMode();
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
@@ -2433,7 +2432,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   }
 
   if (input_handler_client_)
-    input_handler_client_->DeliverInputForBeginFrame();
+    input_handler_client_->DeliverInputForBeginFrame(args);
 
   Animate();
 
@@ -3325,13 +3324,14 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   // If gpu compositing, then any resources created with the gpu context in the
   // LayerTreeFrameSink were exported to the display compositor may be modified
   // by it, and thus we would be unable to determine what state they are in, in
-  // order to reuse them, so they must be lost. Note that this includes resources
-  // created using the gpu context associated with |layer_tree_frame_sink_|
-  // internally by the compositor and any resources received from an external
-  // source (for instance, TextureLayers). This is because the API contract
-  // for releasing these external resources requires that the compositor return
-  // them with a valid sync token and no modifications to their GL state. Since
-  // that can not be guaranteed, these must also be marked lost.
+  // order to reuse them, so they must be lost. Note that this includes
+  // resources created using the gpu context associated with
+  // |layer_tree_frame_sink_| internally by the compositor and any resources
+  // received from an external source (for instance, TextureLayers). This is
+  // because the API contract for releasing these external resources requires
+  // that the compositor return them with a valid sync token and no
+  // modifications to their GL state. Since that can not be guaranteed, these
+  // must also be marked lost.
   //
   // In software compositing, the resources are not modified by the display
   // compositor (there is no stateful metadata for shared memory), so we do not
@@ -3339,9 +3339,9 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   //
   // In both cases, the resources that are exported to the display compositor
   // will have no means of being returned to this client without the
-  // LayerTreeFrameSink, so they should no longer be considered as exported.
-  // Do this *after* any interactions with the |layer_tree_frame_sink_| in case
-  // it tries to return resources during destruction.
+  // LayerTreeFrameSink, so they should no longer be considered as exported. Do
+  // this *after* any interactions with the |layer_tree_frame_sink_| in case it
+  // tries to return resources during destruction.
   //
   // The assumption being made here is that the display compositor WILL NOT use
   // any resources previously exported when the CompositorFrameSink is closed.

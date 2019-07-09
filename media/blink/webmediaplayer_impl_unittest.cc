@@ -60,6 +60,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
@@ -402,6 +403,8 @@ class WebMediaPlayerImplTest : public testing::Test {
       cc::UpdateSubmissionStateCB) {
     return std::move(surface_layer_bridge_);
   }
+
+  blink::WebLocalFrame* GetWebLocalFrame() { return web_local_frame_; }
 
   int64_t OnAdjustAllocatedMemory(int64_t delta) {
     reported_memory_ += delta;
@@ -1628,22 +1631,19 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture it does unlock the player.
-  {
-    blink::WebScopedUserGesture user_gesture(nullptr);
-    Play();
-    EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
-  }
+  blink::WebScopedUserGesture user_gesture1(GetWebLocalFrame());
+  Play();
+  EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // Pause without a user gesture doesn't lock the player.
+  blink::WebUserGestureIndicator::ConsumeUserGesture(GetWebLocalFrame());
   Pause();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture, pause does lock the player.
-  {
-    blink::WebScopedUserGesture user_gesture(nullptr);
-    Pause();
-    EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
-  }
+  blink::WebScopedUserGesture user_gesture2(GetWebLocalFrame());
+  Pause();
+  EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // Foregrounding the player unsets the lock.
   ForegroundPlayer();

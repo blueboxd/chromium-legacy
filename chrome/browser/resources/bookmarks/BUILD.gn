@@ -155,6 +155,7 @@ js_library("item") {
     ":command_manager",
     ":store_client",
     "//ui/webui/resources/js:icon",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }

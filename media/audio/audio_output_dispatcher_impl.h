@@ -88,7 +88,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   AudioLogMap audio_logs_;
   int audio_stream_id_;
 
-  base::WeakPtrFactory<AudioOutputDispatcherImpl> weak_factory_;
+  base::WeakPtrFactory<AudioOutputDispatcherImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcherImpl);
 };
 

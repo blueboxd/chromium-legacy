@@ -18,12 +18,6 @@ extern const char kForceEnablePreviews[];
 extern const char kLitePageServerPreviewHost[];
 extern const char kIgnoreLitePageRedirectOptimizationBlacklist[];
 extern const char kClearLitePageRedirectLocalBlacklist[];
-extern const char kHintsProtoOverride[];
-extern const char kFetchHintsOverride[];
-extern const char kFetchHintsOverrideTimer[];
-extern const char kOptimizationGuideServiceURL[];
-extern const char kOptimizationGuideServiceAPIKey[];
-extern const char kPurgeHintCacheStore[];
 extern const char kLitePageRedirectOverridesPageHints[];
 
 }  // namespace switches

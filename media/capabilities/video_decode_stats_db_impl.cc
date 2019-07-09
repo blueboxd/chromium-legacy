@@ -90,8 +90,7 @@ VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
     const base::FilePath& db_dir)
     : db_(std::move(db)),
       db_dir_(db_dir),
-      wall_clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      wall_clock_(base::DefaultClock::GetInstance()) {
   bool time_parsed =
       base::Time::FromString(kDefaultWriteTime, &default_write_time_);
   DCHECK(time_parsed);

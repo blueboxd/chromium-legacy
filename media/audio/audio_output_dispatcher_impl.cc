@@ -31,8 +31,7 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
                    close_delay,
                    this,
                    &AudioOutputDispatcherImpl::CloseAllIdleStreams),
-      audio_stream_id_(0),
-      weak_factory_(this) {
+      audio_stream_id_(0) {
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
 }
 

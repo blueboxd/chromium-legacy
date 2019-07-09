@@ -16,6 +16,8 @@ blink_modules_sources("serial") {
     "serial.h",
     "serial_port.cc",
     "serial_port.h",
+    "serial_port_underlying_sink.cc",
+    "serial_port_underlying_sink.h",
     "serial_port_underlying_source.cc",
     "serial_port_underlying_source.h",
     "worker_navigator_serial.cc",

@@ -67,7 +67,7 @@ class CC_BASE_EXPORT DelayedUniqueNotifier {
   base::TimeTicks next_notification_time_;
   bool notification_pending_;
 
-  base::WeakPtrFactory<DelayedUniqueNotifier> weak_ptr_factory_;
+  base::WeakPtrFactory<DelayedUniqueNotifier> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

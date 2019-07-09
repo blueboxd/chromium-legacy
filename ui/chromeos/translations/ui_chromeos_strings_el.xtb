@@ -37,7 +37,6 @@
 <translation id="1346748346194534595">Δεξιά</translation>
 <translation id="1351692861129622852">Εισαγωγή <ph name="FILE_COUNT" /> αρχείων…</translation>
 <translation id="1352103415082130575">Πληκτρολόγιο Ταϊλανδικών (Pattachote)</translation>
-<translation id="1358032944105037487">Πληκτρολόγιο με ιαπωνικούς χαρακτήρες</translation>
 <translation id="1358735829858566124">Το αρχείο ή ο κατάλογος δεν μπορούν να χρησιμοποιηθούν.</translation>
 <translation id="1363028406613469049">Κομμάτι</translation>
 <translation id="1378727793141957596">Καλώς ήρθατε στο Google Drive!</translation>
@@ -211,7 +210,6 @@
 <translation id="3468522857997926824">Δημιουργήθηκαν αντίγραφα ασφαλείας για <ph name="FILE_COUNT" /> φωτογραφίες στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Αντιγραφή…</translation>
 <translation id="3475447146579922140">Υπολογιστικό φύλλο Google</translation>
-<translation id="3494768541638400973">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο Ιαπωνικών)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> σφάλματα.</translation>
 <translation id="3519867315646775981">Μεταγραφή (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
@@ -529,7 +527,6 @@
     <ph name="LINE_BREAK1" />
     Βρέθηκαν <ph name="FILE_COUNT" /> αρχεία</translation>
 <translation id="6935521024859866267">Ανάποδα</translation>
-<translation id="6937152069980083337">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο ΗΠΑ)</translation>
 <translation id="6939777852457331078">Πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="696203921837389374">Ενεργοποίηση συγχρονισμού μέσω δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="6965382102122355670">OK</translation>

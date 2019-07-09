@@ -192,11 +192,13 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
     PaintObject(info, paint_offset);
   }
 
-  // Our scrollbar widgets paint exactly when we tell them to, so that they work
-  // properly with z-index. We paint after we painted the background/border, so
-  // that the scrollbars will sit above the background/border.
+  // We paint scrollbars after we painted other things, so that the scrollbars
+  // will sit above them.
   info.phase = original_phase;
-  PaintOverflowControlsIfNeeded(info, paint_offset);
+  if (box_fragment_.HasOverflowClip()) {
+    ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
+        .PaintOverflowControls(info, RoundedIntPoint(paint_offset));
+  }
 }
 
 void NGBoxFragmentPainter::RecordHitTestData(
@@ -888,19 +890,6 @@ bool NGBoxFragmentPainter::IsPaintingScrollingBackground(
          !(paint_info.PaintFlags() &
            kPaintLayerPaintingCompositingBackgroundPhase) &&
          box_fragment_.GetLayoutObject() == paint_info.PaintContainer();
-}
-
-// Clone of BlockPainter::PaintOverflowControlsIfNeeded
-void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  if (box_fragment_.HasOverflowClip() &&
-      box_fragment_.Style().Visibility() == EVisibility::kVisible &&
-      ShouldPaintSelfBlockBackground(paint_info.phase)) {
-    ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
-        .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
-                               false /* painting_overlay_controls */);
-  }
 }
 
 bool NGBoxFragmentPainter::ShouldPaint(

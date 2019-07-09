@@ -171,41 +171,38 @@ void WidgetInputHandlerManager::InitInputHandler() {
 WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
 
 void WidgetInputHandlerManager::AddAssociatedInterface(
-    mojom::WidgetInputHandlerAssociatedRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    associated_host_ =
-        mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-            host.PassInterface(), compositor_task_runner_);
+    associated_host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+        std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WidgetInputHandlerManager::BindAssociatedChannel, this,
-                       std::move(request)));
+                       std::move(receiver)));
   } else {
     associated_host_ =
-        mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-            std::move(host));
+        mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
     // Mojo channel bound on main thread.
-    BindAssociatedChannel(std::move(request));
+    BindAssociatedChannel(std::move(receiver));
   }
 }
 
 void WidgetInputHandlerManager::AddInterface(
-    mojom::WidgetInputHandlerRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    host_ = mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-        host.PassInterface(), compositor_task_runner_);
+    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+        std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WidgetInputHandlerManager::BindChannel, this,
-                                  std::move(request)));
+                                  std::move(receiver)));
   } else {
-    host_ = mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-        std::move(host));
+    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
     // Mojo channel bound on main thread.
-    BindChannel(std::move(request));
+    BindChannel(std::move(receiver));
   }
 }
 
@@ -290,16 +287,17 @@ void WidgetInputHandlerManager::ProcessTouchAction(
 mojom::WidgetInputHandlerHost*
 WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   if (associated_host_)
-    return associated_host_.get()->get();
+    return associated_host_.get();
   if (host_)
-    return host_.get()->get();
+    return host_.get();
   return nullptr;
 }
 
 void WidgetInputHandlerManager::AttachSynchronousCompositor(
-    mojom::SynchronousCompositorControlHostPtr control_host,
-    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+        compositor_request) {
 #if defined(OS_ANDROID)
   DCHECK(synchronous_compositor_registry_);
   synchronous_compositor_registry_->proxy()->BindChannel(
@@ -489,8 +487,8 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojom::WidgetInputHandlerAssociatedRequest request) {
-  if (!request.is_pending())
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request) {
+  if (!request.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
@@ -501,8 +499,8 @@ void WidgetInputHandlerManager::BindAssociatedChannel(
 }
 
 void WidgetInputHandlerManager::BindChannel(
-    mojom::WidgetInputHandlerRequest request) {
-  if (!request.is_pending())
+    mojo::PendingReceiver<mojom::WidgetInputHandler> request) {
+  if (!request.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.

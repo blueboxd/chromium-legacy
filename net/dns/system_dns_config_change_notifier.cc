@@ -65,16 +65,16 @@ class SystemDnsConfigChangeNotifier::Core {
  public:
   Core(scoped_refptr<base::SequencedTaskRunner> task_runner,
        std::unique_ptr<DnsConfigService> dns_config_service)
-      : task_runner_(std::move(task_runner)),
-        dns_config_service_(std::move(dns_config_service)) {
+      : task_runner_(std::move(task_runner)) {
     DCHECK(task_runner_);
-    DCHECK(dns_config_service_);
+    DCHECK(dns_config_service);
 
     DETACH_FROM_SEQUENCE(sequence_checker_);
 
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&Core::StartWatching, weak_ptr_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Core::SetAndStartDnsConfigService,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          std::move(dns_config_service)));
   }
 
   ~Core() {
@@ -122,10 +122,21 @@ class SystemDnsConfigChangeNotifier::Core {
                                           weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void SetDnsConfigServiceForTesting(
+      std::unique_ptr<DnsConfigService> dns_config_service) {
+    DCHECK(dns_config_service);
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Core::SetAndStartDnsConfigService,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          std::move(dns_config_service)));
+  }
+
  private:
-  void StartWatching() {
+  void SetAndStartDnsConfigService(
+      std::unique_ptr<DnsConfigService> dns_config_service) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+    dns_config_service_ = std::move(dns_config_service);
     dns_config_service_->WatchConfig(base::BindRepeating(
         &Core::OnConfigChanged, weak_ptr_factory_.GetWeakPtr()));
   }
@@ -181,21 +192,34 @@ SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier()
 SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<DnsConfigService> dns_config_service)
-    : core_(new Core(task_runner, std::move(dns_config_service)),
-            base::OnTaskRunnerDeleter(task_runner)) {}
+    : core_(nullptr, base::OnTaskRunnerDeleter(task_runner)) {
+  if (dns_config_service)
+    core_.reset(new Core(task_runner, std::move(dns_config_service)));
+}
 
 SystemDnsConfigChangeNotifier::~SystemDnsConfigChangeNotifier() = default;
 
 void SystemDnsConfigChangeNotifier::AddObserver(Observer* observer) {
-  core_->AddObserver(observer);
+  if (core_)
+    core_->AddObserver(observer);
 }
 
 void SystemDnsConfigChangeNotifier::RemoveObserver(Observer* observer) {
-  core_->RemoveObserver(observer);
+  if (core_)
+    core_->RemoveObserver(observer);
 }
 
 void SystemDnsConfigChangeNotifier::RefreshConfig() {
-  core_->RefreshConfig();
+  if (core_)
+    core_->RefreshConfig();
+}
+
+void SystemDnsConfigChangeNotifier::SetDnsConfigServiceForTesting(
+    std::unique_ptr<DnsConfigService> dns_config_service) {
+  DCHECK(core_);
+  DCHECK(dns_config_service);
+
+  core_->SetDnsConfigServiceForTesting(std::move(dns_config_service));
 }
 
 }  // namespace net

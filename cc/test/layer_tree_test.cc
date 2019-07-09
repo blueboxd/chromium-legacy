@@ -71,8 +71,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
                                refresh_rate,
                                begin_frame_source),
         use_software_renderer_(use_software_renderer),
-        task_runner_(std::move(task_runner)),
-        weak_factory_(this) {}
+        task_runner_(std::move(task_runner)) {}
   ~SynchronousLayerTreeFrameSink() override = default;
 
   void set_viewport(const gfx::Rect& viewport) { viewport_ = viewport; }
@@ -130,7 +129,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
   gfx::Rect viewport_;
   const bool use_software_renderer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<SynchronousLayerTreeFrameSink> weak_factory_;
+  base::WeakPtrFactory<SynchronousLayerTreeFrameSink> weak_factory_{this};
 };
 
 }  // namespace
@@ -640,8 +639,7 @@ class LayerTreeTestLayerTreeFrameSinkClient
 
 LayerTreeTest::LayerTreeTest()
     : layer_tree_frame_sink_client_(
-          new LayerTreeTestLayerTreeFrameSinkClient(this)),
-      weak_factory_(this) {
+          new LayerTreeTestLayerTreeFrameSinkClient(this)) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Tests should timeout quickly unless --cc-layer-tree-test-no-timeout was

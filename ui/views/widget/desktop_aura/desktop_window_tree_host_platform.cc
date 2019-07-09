@@ -50,6 +50,8 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   }
 
   properties.bounds = params.bounds;
+  properties.activatable =
+      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
@@ -306,13 +308,11 @@ void DesktopWindowTreeHostPlatform::SetShape(
 }
 
 void DesktopWindowTreeHostPlatform::Activate() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->Activate();
 }
 
 void DesktopWindowTreeHostPlatform::Deactivate() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->Deactivate();
 }
 
 bool DesktopWindowTreeHostPlatform::IsActive() const {

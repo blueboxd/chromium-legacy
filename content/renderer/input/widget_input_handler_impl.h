@@ -58,10 +58,10 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   void DispatchNonBlockingEvent(std::unique_ptr<content::InputEvent>) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
-      mojom::SynchronousCompositorControlHostPtr control_host,
-      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-      mojom::SynchronousCompositorAssociatedRequest compositor_request)
-      override;
+      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+          compositor_receiver) override;
   void InputWasProcessed();
 
  private:

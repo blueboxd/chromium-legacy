@@ -26,7 +26,6 @@
 
 namespace storage {
 
-class StorageMonitor;
 class UsageTracker;
 
 // This class holds per-client usage tracking information and caches per-host
@@ -39,8 +38,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
                      blink::mojom::StorageType type,
-                     SpecialStoragePolicy* special_storage_policy,
-                     StorageMonitor* storage_monitor);
+                     SpecialStoragePolicy* special_storage_policy);
   ~ClientUsageTracker() override;
 
   void GetGlobalLimitedUsage(UsageCallback callback);
@@ -84,8 +82,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                              const base::Optional<url::Origin>& origin,
                              int64_t usage);
 
-  void DidGetHostUsageAfterUpdate(const url::Origin& origin, int64_t usage);
-
   // Methods used by our GatherUsage tasks, as a task makes progress
   // origins and hosts are added incrementally to the cache.
   void AddCachedOrigin(const url::Origin& origin, int64_t usage);
@@ -106,7 +102,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   QuotaClient* client_;
   const blink::mojom::StorageType type_;
-  StorageMonitor* storage_monitor_;
 
   int64_t global_limited_usage_;
   int64_t global_unlimited_usage_;

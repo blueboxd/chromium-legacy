@@ -40,8 +40,7 @@ VideoDecoderClient::VideoDecoderClient(
       decoder_client_config_(config),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
-      video_(video),
-      weak_this_factory_(this) {
+      video_(video) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
 
   // Video frame processors are currently only supported in import mode, as

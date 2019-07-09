@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -266,16 +268,7 @@ void RecordActivityControlConsent(Profile* profile,
 }
 
 bool IsHotwordDspAvailable() {
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (const chromeos::AudioDevice& device : devices) {
-    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
-      VLOG(1) << "Hotword dsp device detected.";
-      return true;
-    }
-  }
-  VLOG(1) << "No hotword dsp device detected.";
-  return false;
+  return chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
 }
 
 bool IsVoiceMatchEnabled(const PrefService* prefs) {

@@ -93,7 +93,7 @@ class CC_EXPORT DecodedImageTracker {
   // Defaults to base::TimeTicks::Now(), but overrideable for testing.
   const base::TickClock* tick_clock_;
 
-  base::WeakPtrFactory<DecodedImageTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<DecodedImageTracker> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

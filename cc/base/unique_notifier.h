@@ -48,7 +48,7 @@ class CC_BASE_EXPORT UniqueNotifier {
   base::Lock lock_;
   bool notification_pending_;
 
-  base::WeakPtrFactory<UniqueNotifier> weak_ptr_factory_;
+  base::WeakPtrFactory<UniqueNotifier> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

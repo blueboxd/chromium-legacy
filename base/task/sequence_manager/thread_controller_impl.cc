@@ -163,7 +163,8 @@ void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task,
 }
 
 void ThreadControllerImpl::DoWork(WorkType work_type) {
-  TRACE_EVENT0("sequence_manager", "ThreadControllerImpl::DoWork");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+               "ThreadControllerImpl::DoWork");
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK(sequence_);

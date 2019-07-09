@@ -145,9 +145,7 @@ VdaVideoDecoder::VdaVideoDecoder(
           std::move(create_command_buffer_helper_cb)),
       create_and_initialize_vda_cb_(std::move(create_and_initialize_vda_cb)),
       vda_capabilities_(vda_capabilities),
-      timestamps_(128),
-      gpu_weak_this_factory_(this),
-      parent_weak_this_factory_(this) {
+      timestamps_(128) {
   DVLOG(1) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(vda_capabilities_.flags, 0U);

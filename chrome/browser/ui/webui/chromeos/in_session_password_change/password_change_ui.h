@@ -44,17 +44,26 @@ class PasswordChangeUI : public ui::WebDialogUI {
 // System dialog wrapping chrome://confirm-password-change
 class ConfirmPasswordChangeDialog : public SystemWebDialogDelegate {
  public:
-  static void Show();
+  static void Show(const std::string& scraped_old_password,
+                   const std::string& scraped_new_password,
+                   bool show_spinner_initially);
   static void Dismiss();
 
  protected:
-  ConfirmPasswordChangeDialog();
+  ConfirmPasswordChangeDialog(const std::string& scraped_old_password,
+                              const std::string& scraped_new_password,
+                              bool show_spinner_initially);
   ~ConfirmPasswordChangeDialog() override;
 
   // ui::WebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
+  std::string GetDialogArgs() const override;
 
  private:
+  std::string scraped_old_password_;
+  std::string scraped_new_password_;
+  bool show_spinner_initially_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeDialog);
 };
 

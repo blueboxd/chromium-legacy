@@ -35,8 +35,7 @@ DecryptingDemuxerStream::DecryptingDemuxerStream(
       waiting_cb_(waiting_cb),
       demuxer_stream_(NULL),
       decryptor_(NULL),
-      key_added_while_decrypt_pending_(false),
-      weak_factory_(this) {}
+      key_added_while_decrypt_pending_(false) {}
 
 std::string DecryptingDemuxerStream::GetDisplayName() const {
   return "DecryptingDemuxerStream";

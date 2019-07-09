@@ -268,7 +268,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   base::CancelableOnceClosure timeout_;
   scoped_refptr<viz::TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
-  base::WeakPtrFactory<LayerTreeTest> weak_factory_;
+  base::WeakPtrFactory<LayerTreeTest> weak_factory_{this};
 };
 
 }  // namespace cc

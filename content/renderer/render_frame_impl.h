@@ -57,11 +57,11 @@
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/media/media_factory.h"
-#include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -313,8 +313,6 @@ class CONTENT_EXPORT RenderFrameImpl
   const blink::WebHistoryItem& current_history_item() {
     return current_history_item_;
   }
-
-  RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetLocalRootRenderWidget();
@@ -681,7 +679,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebExternalPopupMenu* CreateExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
-  blink::WebCookieJar* CookieJar() override;
   blink::BlameContext* GetFrameBlameContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
@@ -699,9 +696,11 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-      mojo::ScopedInterfaceEndpointHandle client_endpoint) override;
+      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      const blink::WebElement& portal_element) override;
   blink::WebRemoteFrame* AdoptPortal(
-      const base::UnguessableToken& portal_token) override;
+      const base::UnguessableToken& portal_token,
+      const blink::WebElement& portal_element) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;
@@ -902,7 +901,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindFrameBindingsControl(
       mojom::FrameBindingsControlAssociatedRequest request);
   void BindFrameNavigationControl(
-      mojom::FrameNavigationControlAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver);
   // Only used when PerNavigationMojoInterface is enabled.
   void BindNavigationClient(mojom::NavigationClientAssociatedRequest request);
 
@@ -1550,8 +1549,6 @@ class CONTENT_EXPORT RenderFrameImpl
   PluginPowerSaverHelper* plugin_power_saver_helper_;
 #endif
 
-  RendererWebCookieJarImpl cookie_jar_;
-
   // All the registered observers.
   base::ObserverList<RenderFrameObserver>::Unchecked observers_;
 
@@ -1667,8 +1664,8 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
       frame_bindings_control_binding_;
-  mojo::AssociatedBinding<mojom::FrameNavigationControl>
-      frame_navigation_control_binding_;
+  mojo::AssociatedReceiver<mojom::FrameNavigationControl>
+      frame_navigation_control_receiver_;
   mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>
       fullscreen_binding_;
   mojo::AssociatedBinding<mojom::MhtmlFileWriter> mhtml_file_writer_binding_;

@@ -306,13 +306,13 @@ class MEDIA_EXPORT VideoRendererImpl
   base::TimeTicks last_frame_ready_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
+  base::WeakPtrFactory<VideoRendererImpl> weak_factory_{this};
 
   // Weak factory used to invalidate certain queued callbacks on reset().
   // This is useful when doing video frame copies asynchronously since we
   // want to discard video frames that might be received after the stream has
   // been reset.
-  base::WeakPtrFactory<VideoRendererImpl> cancel_on_flush_weak_factory_;
+  base::WeakPtrFactory<VideoRendererImpl> cancel_on_flush_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };

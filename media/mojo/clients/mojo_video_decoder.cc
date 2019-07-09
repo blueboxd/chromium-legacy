@@ -125,8 +125,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       media_log_binding_(&media_log_service_),
       request_overlay_info_cb_(request_overlay_info_cb),
       target_color_space_(target_color_space),
-      video_decoder_implementation_(implementation),
-      weak_factory_(this) {
+      video_decoder_implementation_(implementation) {
   DVLOG(1) << __func__;
   weak_this_ = weak_factory_.GetWeakPtr();
 }

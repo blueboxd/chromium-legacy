@@ -63,8 +63,7 @@ ResourceMultiBufferDataProvider::ResourceMultiBufferDataProvider(
       retries_(0),
       cors_mode_(url_data->cors_mode()),
       origin_(url_data->url().GetOrigin()),
-      is_client_audio_element_(is_client_audio_element),
-      weak_factory_(this) {
+      is_client_audio_element_(is_client_audio_element) {
   DCHECK(url_data_) << " pos = " << pos;
   DCHECK_GE(pos, 0);
 }

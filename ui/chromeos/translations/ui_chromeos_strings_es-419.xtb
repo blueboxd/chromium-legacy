@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT" /> archivos…</translation>
 <translation id="1352103415082130575">Teclado tailandés (Pattachote)</translation>
-<translation id="1358032944105037487">Teclado japonés</translation>
 <translation id="1358735829858566124">No se puede utilizar el archivo o el directorio.</translation>
 <translation id="1363028406613469049">Seguimiento</translation>
 <translation id="1378727793141957596">Te damos la bienvenida a Google Drive</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Se guardaron <ph name="FILE_COUNT" /> fotos en una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="3470502288861289375">Copiando…</translation>
 <translation id="3475447146579922140">Hoja de cálculo de Google</translation>
-<translation id="3494768541638400973">Entrada en japonés de Google (para teclado japonés)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errores</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugués</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Se encontró un total de <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Cabeza abajo</translation>
-<translation id="6937152069980083337">Entrada en japonés de Google (para teclado estadounidense)</translation>
 <translation id="6939777852457331078">Teclado Workman (EE. UU.)</translation>
 <translation id="696203921837389374">Habilitar la sincronización mediante datos móviles</translation>
 <translation id="6965382102122355670">Aceptar</translation>

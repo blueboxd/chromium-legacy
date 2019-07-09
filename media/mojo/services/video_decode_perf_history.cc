@@ -44,8 +44,7 @@ VideoDecodePerfHistory::VideoDecodePerfHistory(
     learning::FeatureProviderFactoryCB feature_factory_cb)
     : db_(std::move(db)),
       db_init_status_(UNINITIALIZED),
-      feature_factory_cb_(std::move(feature_factory_cb)),
-      weak_ptr_factory_(this) {
+      feature_factory_cb_(std::move(feature_factory_cb)) {
   DVLOG(2) << __func__;
   DCHECK(db_);
 

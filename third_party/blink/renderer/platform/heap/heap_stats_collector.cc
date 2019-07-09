@@ -203,15 +203,20 @@ base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
          scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
 }
 
-base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
+base::TimeDelta ThreadHeapStatsCollector::Event::foreground_sweeping_time()
+    const {
   return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
-base::TimeDelta ThreadHeapStatsCollector::Event::concurrent_sweeping_time()
+base::TimeDelta ThreadHeapStatsCollector::Event::background_sweeping_time()
     const {
   return base::TimeDelta::FromMicroseconds(
       concurrent_scope_data[kConcurrentSweep]);
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
+  return foreground_sweeping_time() + background_sweeping_time();
 }
 
 int64_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {

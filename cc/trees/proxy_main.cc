@@ -39,9 +39,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       commit_waits_for_activation_(false),
       started_(false),
       defer_main_frame_update_(false),
-      defer_commits_(true),
-      frame_sink_bound_weak_factory_(this),
-      weak_factory_(this) {
+      defer_commits_(true) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
   DCHECK(task_runner_provider_);
   DCHECK(IsMainThread());

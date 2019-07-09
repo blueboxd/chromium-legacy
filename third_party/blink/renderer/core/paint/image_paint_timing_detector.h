@@ -65,14 +65,7 @@ class CORE_EXPORT ImageRecordsManager {
   ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
-  inline void RemoveVisibleRecord(const DOMNodeId& visible_node_id) {
-    base::WeakPtr<ImageRecord> record =
-        visible_node_map_.find(visible_node_id)->value->AsWeakPtr();
-    size_ordered_set_.erase(record);
-    visible_node_map_.erase(visible_node_id);
-    // Leave out |images_queued_for_paint_time_| intentionally because the null
-    // record will be removed in |AssignPaintTimeToRegisteredQueuedNodes|.
-  }
+
   inline void RemoveVisibleRecord(
       const BackgroundImageId& background_image_id) {
     base::WeakPtr<ImageRecord> record =
@@ -88,16 +81,9 @@ class CORE_EXPORT ImageRecordsManager {
     DCHECK(!RecordedTooManyNodes());
     invisible_node_ids_.insert(node_id);
   }
-  void RecordVisibleNode(const DOMNodeId&,
-                         const uint64_t& visual_size,
-                         const ImageResourceContent&);
   void RecordVisibleNode(const BackgroundImageId& background_image_id,
                          const uint64_t& visual_size);
-  size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
-  bool IsRecordedVisibleNode(const DOMNodeId& node_id) const {
-    return visible_node_map_.Contains(node_id);
-  }
   bool IsRecordedVisibleNode(
       const BackgroundImageId& background_image_id) const {
     return visible_background_image_map_.Contains(background_image_id);
@@ -107,21 +93,15 @@ class CORE_EXPORT ImageRecordsManager {
   }
 
   inline bool RecordedTooManyNodes() const {
-    return visible_node_map_.size() + visible_background_image_map_.size() +
-               invisible_node_ids_.size() >
+    return visible_background_image_map_.size() + invisible_node_ids_.size() >
            kImageNodeNumberLimit;
   }
 
-  inline bool WasVisibleNodeLoaded(const DOMNodeId& node_id) const {
-    DCHECK(visible_node_map_.Contains(node_id));
-    return visible_node_map_.at(node_id)->loaded;
-  }
   inline bool WasVisibleNodeLoaded(
       const BackgroundImageId& background_image_id) const {
     DCHECK(visible_background_image_map_.Contains(background_image_id));
     return visible_background_image_map_.at(background_image_id)->loaded;
   }
-  void OnImageLoaded(const DOMNodeId&, unsigned current_frame_index);
   void OnImageLoaded(const BackgroundImageId&, unsigned current_frame_index);
   void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
                              unsigned current_frame_index);
@@ -153,11 +133,6 @@ class CORE_EXPORT ImageRecordsManager {
  private:
   // Find the image record of an visible image.
   inline base::WeakPtr<ImageRecord> FindVisibleRecord(
-      const DOMNodeId& node_id) const {
-    DCHECK(visible_node_map_.Contains(node_id));
-    return visible_node_map_.find(node_id)->value->AsWeakPtr();
-  }
-  inline base::WeakPtr<ImageRecord> FindVisibleRecord(
       const BackgroundImageId& background_image_id) const {
     DCHECK(visible_background_image_map_.Contains(background_image_id));
     return visible_background_image_map_.find(background_image_id)
@@ -177,9 +152,6 @@ class CORE_EXPORT ImageRecordsManager {
   }
 
   unsigned max_record_id_ = 0;
-  // We will never destroy the pointers within |visible_node_map_|. Once created
-  // they will exist for the whole life cycle of |visible_node_map_|.
-  HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> visible_node_map_;
   HashMap<BackgroundImageId, std::unique_ptr<ImageRecord>>
       visible_background_image_map_;
   HashSet<DOMNodeId> invisible_node_ids_;

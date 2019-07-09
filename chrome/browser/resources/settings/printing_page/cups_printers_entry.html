@@ -1,0 +1,32 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="cups_printer_types.html">
+<link rel="import" href="cups_printers_browser_proxy.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-cups-printers-entry">
+  <template>
+    <style include="settings-shared">
+      .printer-name {
+        flex: 1;
+      }
+    </style>
+    <div id="entry" class="list-item" focus-row-container>
+      <div class="printer-name text-elide">
+        <span id="printerName">
+            [[printerEntry.printerInfo.printerName]]
+        </span>
+        <div id="printerSubtext" hidden="[[!subtext]]" class="secondary">
+          [[subtext]]
+        </div>
+      </div>
+      <template is="dom-if" if="[[isSavedPrinter_]]">
+        <cr-icon-button class="icon-more-vert" on-click="onOpenActionMenuTap_"
+            title="$i18n{moreActions}">
+        </cr-icon-button>
+      </template>
+    </div>
+  </template>
+  <script src="cups_printers_entry.js"></script>
+</dom-module>

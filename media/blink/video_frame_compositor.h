@@ -232,7 +232,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
       auto_open_close_;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
 
-  base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

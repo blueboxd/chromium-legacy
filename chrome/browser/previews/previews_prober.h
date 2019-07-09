@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_PROBER_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_PROBER_H_
 
+#include <stdint.h>
 #include <memory>
 #include <string>
 
@@ -13,8 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -126,7 +130,9 @@ class PreviewsProber
       HttpMethod http_method,
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
-      const TimeoutPolicy& timeout_policy);
+      const TimeoutPolicy& timeout_policy,
+      const size_t max_cache_entries,
+      base::TimeDelta revalidate_cache_after);
   ~PreviewsProber() override;
 
   // Sends a probe now if the prober is currently inactive. If the probe is
@@ -135,8 +141,10 @@ class PreviewsProber
   // is in the foreground (work on Android only).
   void SendNowIfInactive(bool send_only_in_foreground);
 
-  // Returns the successfulness of the last probe, if there was one.
-  base::Optional<bool> LastProbeWasSuccessful() const;
+  // Returns the successfulness of the last probe, if there was one. If the last
+  // probe status was cached and needs to be revalidated, this may activate the
+  // prober.
+  base::Optional<bool> LastProbeWasSuccessful();
 
   // True if probes are being attempted, including retries.
   bool is_active() const { return is_active_; }
@@ -145,7 +153,7 @@ class PreviewsProber
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  protected:
-  // Exposes |tick_clock| for testing.
+  // Exposes |tick_clock| and |clock| for testing.
   PreviewsProber(
       Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -155,7 +163,10 @@ class PreviewsProber
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
-      const base::TickClock* tick_clock);
+      const size_t max_cache_entries,
+      base::TimeDelta revalidate_cache_after,
+      const base::TickClock* tick_clock,
+      const base::Clock* clock);
 
  private:
   void ResetState();
@@ -166,6 +177,8 @@ class PreviewsProber
   void ProcessProbeSuccess();
   void AddSelfAsNetworkConnectionObserver(
       network::NetworkConnectionTracker* network_connection_tracker);
+  void RecordProbeResult(bool success);
+  std::string GetCacheKeyForCurrentNetwork() const;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif
@@ -193,6 +206,13 @@ class PreviewsProber
   // The timeout policy to use in this prober.
   const TimeoutPolicy timeout_policy_;
 
+  // The maximum allowable size of |cached_probe_results_|.
+  const size_t max_cache_entries_;
+
+  // How long to allow a cached entry to be valid until it is revalidated in the
+  // background.
+  const base::TimeDelta revalidate_cache_after_;
+
   // The number of retries that have been attempted. This count does not include
   // the original probe.
   size_t successive_retry_count_;
@@ -206,14 +226,19 @@ class PreviewsProber
   // If a probe is being attempted, this will be running until the TTL.
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
+  // Caches past probe results in a mapping of one tuple to another:
+  //   (network_id, url_) -> (last_probe_status, last_modification_time).
+  // No more than |max_cache_entries_| will be kept in this dictionary.
+  std::unique_ptr<base::DictionaryValue> cached_probe_results_;
+
   // The tick clock used within this class.
   const base::TickClock* tick_clock_;
 
+  // The time clock used within this class.
+  const base::Clock* clock_;
+
   // Whether the prober is currently sending probes.
   bool is_active_;
-
-  // The status of the last completed probe, if any.
-  base::Optional<bool> last_probe_status_;
 
   // This reference is kept around for unregistering |this| as an observer on
   // any thread.

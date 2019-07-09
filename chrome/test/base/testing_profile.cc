@@ -885,25 +885,6 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-base::OnceCallback<net::CookieStore*()>
-TestingProfile::GetExtensionsCookieStoreGetter() {
-  return base::BindOnce(
-      [](std::unique_ptr<net::CookieStore,
-                         content::BrowserThread::DeleteOnIOThread>*
-             cookie_store) {
-        if (!*cookie_store) {
-          content::CookieStoreConfig cookie_config;
-          cookie_config.cookieable_schemes.push_back(
-              extensions::kExtensionScheme);
-          cookie_store->reset(
-              content::CreateCookieStore(cookie_config, nullptr /* netlog */)
-                  .release());
-        }
-        return cookie_store->get();
-      },
-      &extensions_cookie_store_);
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingProfile::GetURLLoaderFactory() {
   return nullptr;

@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Vers la droite</translation>
 <translation id="1351692861129622852">Importation de <ph name="FILE_COUNT" /> fichiers en cours…</translation>
 <translation id="1352103415082130575">Clavier thaï (pattachote)</translation>
-<translation id="1358032944105037487">Clavier japonais</translation>
 <translation id="1358735829858566124">Le fichier ou le répertoire ne sont pas utilisables.</translation>
 <translation id="1363028406613469049">Titre</translation>
 <translation id="1378727793141957596">Bienvenue dans Google Drive !</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> photos ont été sauvegardées sur <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="3470502288861289375">Copie en cours…</translation>
 <translation id="3475447146579922140">Feuille de calcul Google</translation>
-<translation id="3494768541638400973">Mode de saisie Google du japonais (pour clavier japonais)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erreurs</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugais</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> trouvées</translation>
 <translation id="6935521024859866267">À l'envers</translation>
-<translation id="6937152069980083337">Mode de saisie Google du japonais (pour clavier américain)</translation>
 <translation id="6939777852457331078">Clavier Workman américain</translation>
 <translation id="696203921837389374">Activer la synchronisation via les données mobiles</translation>
 <translation id="6965382102122355670">OK</translation>

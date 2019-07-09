@@ -37,7 +37,7 @@ static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
 DecryptingAudioDecoder::DecryptingAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     MediaLog* media_log)
-    : task_runner_(task_runner), media_log_(media_log), weak_factory_(this) {}
+    : task_runner_(task_runner), media_log_(media_log) {}
 
 std::string DecryptingAudioDecoder::GetDisplayName() const {
   return "DecryptingAudioDecoder";

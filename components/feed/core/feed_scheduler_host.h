@@ -146,7 +146,7 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // Surface the TriggerType for the last ShouldRefresh check that resulted in
   // kShouldRefresh. Callers of ShouldRefresh are presumed to follow with the
   // actual refresh.
-  TriggerType GetLastFetchTriggerTypeForDebugging() const;
+  TriggerType* GetLastFetchTriggerTypeForDebugging() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
@@ -234,7 +234,7 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   int last_fetch_status_ = 0;
 
   // Reason for last fetch for debugging.
-  TriggerType last_fetch_trigger_type_;
+  std::unique_ptr<TriggerType> last_fetch_trigger_type_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

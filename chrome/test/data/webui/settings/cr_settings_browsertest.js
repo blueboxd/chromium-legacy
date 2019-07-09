@@ -2126,32 +2126,6 @@ GEN('#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
- * Test fixture for the CUPS printing page.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsPrintingPageTest() {}
-
-CrSettingsPrintingPageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/printing_page/cups_printers.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '//ui/webui/resources/js/assert.js',
-    'test_util.js',
-    '../test_browser_proxy.js',
-    'chromeos/cups_printer_page_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsPrintingPageTest', 'All', function() {
-  mocha.run();
-});
-
-/**
  * Test fixture for the Smb Shares page.
  * @constructor
  * @extends {CrSettingsBrowserTest}

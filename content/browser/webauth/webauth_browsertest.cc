@@ -42,6 +42,7 @@
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -58,7 +59,6 @@ namespace content {
 namespace {
 
 using blink::mojom::Authenticator;
-using blink::mojom::AuthenticatorPtr;
 using blink::mojom::AuthenticatorStatus;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
@@ -444,7 +444,10 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     auto* broker = static_cast<blink::mojom::DocumentInterfaceBroker*>(
         static_cast<RenderFrameHostImpl*>(
             shell()->web_contents()->GetMainFrame()));
-    broker->GetAuthenticator(mojo::MakeRequest(&authenticator_ptr_));
+    if (authenticator_remote_.is_bound())
+      authenticator_remote_.reset();
+    broker->GetAuthenticator(
+        authenticator_remote_.BindNewPipeAndPassReceiver());
   }
 
   blink::mojom::PublicKeyCredentialCreationOptionsPtr
@@ -497,22 +500,24 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   void WaitForConnectionError() {
-    ASSERT_TRUE(authenticator_ptr_);
-    ASSERT_TRUE(authenticator_ptr_.is_bound());
-    if (authenticator_ptr_.encountered_error())
+    ASSERT_TRUE(authenticator_remote_);
+    ASSERT_TRUE(authenticator_remote_.is_bound());
+    if (!authenticator_remote_.is_connected())
       return;
 
     base::RunLoop run_loop;
-    authenticator_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+    authenticator_remote_.set_disconnect_handler(run_loop.QuitClosure());
     run_loop.Run();
   }
 
-  AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
+  blink::mojom::Authenticator* authenticator() {
+    return authenticator_remote_.get();
+  }
 
   device::test::FakeFidoDiscoveryFactory* discovery_factory_;
 
  private:
-  AuthenticatorPtr authenticator_ptr_;
+  mojo::Remote<blink::mojom::Authenticator> authenticator_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthLocalClientBrowserTest);
 };

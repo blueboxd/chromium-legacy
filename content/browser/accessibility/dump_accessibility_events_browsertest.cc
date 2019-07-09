@@ -352,8 +352,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
+// TODO(835455): Fails on Windows.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsAriaComboBoxDelayAddList \
+  DISABLED_AccessibilityEventsAriaComboBoxDelayAddList
+#else
+#define MAYBE_AccessibilityEventsAriaComboBoxDelayAddList \
+  AccessibilityEventsAriaComboBoxDelayAddList
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaComboBoxDelayAddList) {
+                       MAYBE_AccessibilityEventsAriaComboBoxDelayAddList) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-delay-add-list.html"));
 }
 

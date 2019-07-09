@@ -156,6 +156,15 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                         const gfx::Size& size,
                                         size_t num_surfaces,
                                         std::vector<VASurfaceID>* va_surfaces);
+
+  // Creates a single VASurfaceID of |va_format| and |size| and, if
+  // successful, creates a |va_context_id_| of the same format and size. Returns
+  // a ScopedVASurface containing the created VASurfaceID, the |va_format|, and
+  // |size|, or nullptr if creation failed.
+  std::unique_ptr<ScopedVASurface> CreateContextAndScopedVASurface(
+      unsigned int va_format,
+      const gfx::Size& size);
+
   // Releases the |va_surfaces| and destroys |va_context_id_|.
   virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
 

@@ -544,13 +544,20 @@ void PasswordManager::ProvisionallySavePassword(
 void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
   pending_login_managers_.clear();
 
-  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
-    if (!form_may_be_submitted) {
-      // |form_may_be_submitted| applies only to HTML forms, http-auth has to be
-      // considered anyway.
-      continue;
+  if (client_->IsNewTabPage()) {
+    // On a successful Chrome sign-in the page navigates to the new tab page
+    // (ntp). OnPasswordFormsRendered is not called on ntp. That is why the
+    // standard flow for saving hash does not work. Save a password hash now
+    // since a navigation to ntp is the sign of successful sign-in.
+    PasswordFormManagerInterface* manager = GetSubmittedManager();
+    if (manager &&
+        manager->GetSubmittedForm()->is_gaia_with_skip_save_password_form) {
+      MaybeSavePasswordHash(*manager);
     }
-    if (manager->is_submitted()) {
+  }
+
+  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
+    if (form_may_be_submitted && manager->is_submitted()) {
       owned_submitted_form_manager_ = std::move(manager);
       break;
     }

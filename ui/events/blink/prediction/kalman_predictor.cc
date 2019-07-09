@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/kalman_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace {
 
@@ -24,7 +25,9 @@ KalmanPredictor::KalmanPredictor(const bool enable_time_filtering)
 KalmanPredictor::~KalmanPredictor() = default;
 
 const char* KalmanPredictor::GetName() const {
-  return "Kalman";
+  return enable_time_filtering_
+             ? input_prediction::kScrollPredictorNameKalmanTimeFiltered
+             : input_prediction::kScrollPredictorNameKalman;
 }
 
 void KalmanPredictor::Reset() {

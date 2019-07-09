@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
@@ -159,9 +160,36 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
 
 PasswordChangeUI::~PasswordChangeUI() = default;
 
-ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog()
+// static
+void ConfirmPasswordChangeDialog::Show(const std::string& scraped_old_password,
+                                       const std::string& scraped_new_password,
+                                       bool show_spinner_initially) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_confirm_dialog) {
+    g_confirm_dialog->Focus();
+    return;
+  }
+  g_confirm_dialog = new ConfirmPasswordChangeDialog(
+      scraped_old_password, scraped_new_password, show_spinner_initially);
+  g_confirm_dialog->ShowSystemDialog();
+}
+
+// static
+void ConfirmPasswordChangeDialog::Dismiss() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_confirm_dialog)
+    g_confirm_dialog->Close();
+}
+
+ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog(
+    const std::string& scraped_old_password,
+    const std::string& scraped_new_password,
+    bool show_spinner_initially)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
-                              /*title=*/base::string16()) {}
+                              /*title=*/base::string16()),
+      scraped_old_password_(scraped_old_password),
+      scraped_new_password_(scraped_new_password),
+      show_spinner_initially_(show_spinner_initially) {}
 
 ConfirmPasswordChangeDialog::~ConfirmPasswordChangeDialog() {
   DCHECK_EQ(this, g_confirm_dialog);
@@ -173,22 +201,14 @@ void ConfirmPasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
                            kMaxConfirmPasswordChangeDialogHeight);
 }
 
-// static
-void ConfirmPasswordChangeDialog::Show() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_confirm_dialog) {
-    g_confirm_dialog->Focus();
-    return;
-  }
-  g_confirm_dialog = new ConfirmPasswordChangeDialog();
-  g_confirm_dialog->ShowSystemDialog();
-}
-
-// static
-void ConfirmPasswordChangeDialog::Dismiss() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_confirm_dialog)
-    g_confirm_dialog->Close();
+std::string ConfirmPasswordChangeDialog::GetDialogArgs() const {
+  // TODO(https://crbug.com/930109): Configure the embedded UI to only display
+  // prompts for the passwords that were not scraped.
+  std::string data;
+  base::DictionaryValue dialog_args;
+  dialog_args.SetBoolean("showSpinnerInitially", show_spinner_initially_);
+  base::JSONWriter::Write(dialog_args, &data);
+  return data;
 }
 
 ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
@@ -286,7 +306,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
   base::StringToInt(url_suffix, &less_than_n_days);
   less_than_n_days = std::max(less_than_n_days, 0);
   const base::string16 title = l10n_util::GetPluralStringFUTF16(
-      IDS_PASSWORD_EXPIRY_DAYS_BODY, less_than_n_days);
+      IDS_PASSWORD_EXPIRY_DAYS_TITLE, less_than_n_days);
   source->AddString("title", title);
 
   static constexpr LocalizedString kLocalizedStrings[] = {

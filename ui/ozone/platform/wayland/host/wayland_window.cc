@@ -482,6 +482,14 @@ PlatformWindowState WaylandWindow::GetPlatformWindowState() const {
   return state_;
 }
 
+void WaylandWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void WaylandWindow::SetCursor(PlatformCursor cursor) {
   scoped_refptr<BitmapCursorOzone> bitmap =
       BitmapCursorFactoryOzone::GetBitmapCursor(cursor);

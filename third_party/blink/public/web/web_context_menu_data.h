@@ -40,8 +40,6 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_menu_item_info.h"
 
-#define WEBCONTEXT_MEDIATYPEFILE_DEFINED
-
 namespace blink {
 
 // This struct is passed to WebViewClient::ShowContextMenu.

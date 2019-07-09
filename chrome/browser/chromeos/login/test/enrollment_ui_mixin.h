@@ -65,6 +65,8 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
 
   void LeaveDeviceAttributeErrorScreen();
 
+  void LeaveSuccessScreen();
+
   // Selects enrollment license.
   void SelectEnrollmentLicense(const std::string& license_type);
 

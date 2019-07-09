@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+                        timeout_policy, 1, base::TimeDelta::FromDays(1));
   prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+                        timeout_policy, 1, base::TimeDelta::FromDays(1));
   prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, NetworkChange) {
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+                        timeout_policy, 1, base::TimeDelta::FromDays(1));
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_4G);
   WaitForCompletedProbe(&prober);
 

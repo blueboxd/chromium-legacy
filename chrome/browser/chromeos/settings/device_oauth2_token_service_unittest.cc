@@ -121,11 +121,10 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   void CreateService() {
-    auto delegate = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
+    oauth2_service_.reset(new DeviceOAuth2TokenService(
         test_url_loader_factory_.GetSafeWeakWrapper(),
-        scoped_testing_local_state_.Get());
-    delegate->max_refresh_token_validation_retries_ = 0;
-    oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
+        scoped_testing_local_state_.Get()));
+    oauth2_service_->delegate_->max_refresh_token_validation_retries_ = 0;
     oauth2_service_->GetAccessTokenManager()
         ->set_max_authorization_token_fetch_retries_for_testing(0);
   }

@@ -17,7 +17,12 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 class PrefRegistrySimple;
+class PrefService;
 
 namespace chromeos {
 
@@ -127,7 +132,8 @@ class DeviceOAuth2TokenService
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   explicit DeviceOAuth2TokenService(
-      std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* local_state);
   ~DeviceOAuth2TokenService() override;
 
   // Flushes |pending_requests_|, indicating the specified result.

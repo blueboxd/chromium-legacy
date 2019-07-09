@@ -96,8 +96,7 @@ RendererImpl::RendererImpl(
       video_underflow_threshold_(
           base::TimeDelta::FromMilliseconds(kDefaultVideoUnderflowThresholdMs)),
       pending_audio_track_change_(false),
-      pending_video_track_change_(false),
-      weak_factory_(this) {
+      pending_video_track_change_(false) {
   weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __func__;
 

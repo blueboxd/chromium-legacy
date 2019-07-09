@@ -3664,9 +3664,9 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
 }
 
 void RenderWidget::SetupWidgetInputHandler(
-    mojom::WidgetInputHandlerRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
-  widget_input_handler_manager_->AddInterface(std::move(request),
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+  widget_input_handler_manager_->AddInterface(std::move(receiver),
                                               std::move(host));
 }
 

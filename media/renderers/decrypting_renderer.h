@@ -85,7 +85,7 @@ class MEDIA_EXPORT DecryptingRenderer : public Renderer {
 
   std::unique_ptr<DecryptingMediaResource> decrypting_media_resource_;
 
-  base::WeakPtrFactory<DecryptingRenderer> weak_factory_;
+  base::WeakPtrFactory<DecryptingRenderer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingRenderer);
 };

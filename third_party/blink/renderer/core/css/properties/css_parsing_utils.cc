@@ -1206,12 +1206,9 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange& range,
     return nullptr;
 
   CSSPrimitiveValue* blur_radius = css_property_parser_helpers::ConsumeLength(
-      range, css_parser_mode, kValueRangeAll);
+      range, css_parser_mode, kValueRangeNonNegative);
   CSSPrimitiveValue* spread_distance = nullptr;
   if (blur_radius) {
-    // Blur radius must be non-negative.
-    if (blur_radius->GetDoubleValue() < 0)
-      return nullptr;
     if (inset_and_spread == AllowInsetAndSpread::kAllow) {
       spread_distance = css_property_parser_helpers::ConsumeLength(
           range, css_parser_mode, kValueRangeAll);

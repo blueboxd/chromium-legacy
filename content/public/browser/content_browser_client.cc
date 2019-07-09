@@ -434,12 +434,6 @@ base::OnceClosure ContentBrowserClient::SelectClientCertificate(
   return base::OnceClosure();
 }
 
-net::CookieStore* ContentBrowserClient::OverrideCookieStoreForURL(
-    const GURL& url,
-    ResourceContext* context) {
-  return nullptr;
-}
-
 std::unique_ptr<device::LocationProvider>
 ContentBrowserClient::OverrideSystemLocationProvider() {
   return nullptr;
@@ -775,12 +769,15 @@ void ContentBrowserClient::CreateWebSocket(
   NOTREACHED();
 }
 
-void ContentBrowserClient::WillCreateRestrictedCookieManager(
+bool ContentBrowserClient::WillCreateRestrictedCookieManager(
+    BrowserContext* browser_context,
     const url::Origin& origin,
     bool is_service_worker,
     int process_id,
     int frame_id,
-    network::mojom::RestrictedCookieManagerRequest* request) {}
+    network::mojom::RestrictedCookieManagerRequest* request) {
+  return false;
+}
 
 std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
 ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(

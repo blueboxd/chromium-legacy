@@ -42,6 +42,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
+#include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -4854,7 +4855,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Set a cookie for the extension.
   net::CookieStore* cookie_store =
-      profile()->GetExtensionsCookieStoreGetter().Run();
+      extensions::ChromeExtensionCookies::Get(profile())
+          ->GetCookieStoreForTesting();
   ASSERT_TRUE(cookie_store);
   net::CookieOptions options;
   cookie_store->SetCookieWithOptionsAsync(

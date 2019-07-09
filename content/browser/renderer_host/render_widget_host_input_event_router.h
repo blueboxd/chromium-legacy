@@ -288,15 +288,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       const ui::LatencyInfo& latency,
       const base::Optional<gfx::PointF>& target_location);
 
-  // Transforms |point| from |root_view| coord space to |target| coord space.
-  // Result is stored in |transformed_point|. Returns true if the transform
-  // is successful, false otherwise.
-  bool TransformPointToTargetCoordSpace(RenderWidgetHostViewBase* root_view,
-                                        RenderWidgetHostViewBase* target,
-                                        const gfx::PointF& point,
-                                        gfx::PointF* transformed_point,
-                                        viz::EventSource source) const;
-
   // TODO(828422): Remove once this issue no longer occurs.
   void ReportBubblingScrollToSameView(const blink::WebGestureEvent& event,
                                       const RenderWidgetHostViewBase* view);

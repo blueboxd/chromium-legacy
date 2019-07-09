@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -20,15 +21,18 @@ import org.chromium.chrome.browser.widget.tile.TileWithTextView;
  */
 public class ExploreSitesTileView extends TileWithTextView {
     private static final int TITLE_LINES = 2;
-
-    private final int mIconSizePx;
+    private final int mIconCornerRadius;
 
     // Used to generate textual icons.
     private RoundedIconGenerator mIconGenerator;
 
     public ExploreSitesTileView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
-        mIconSizePx = getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
+        TypedArray styleAttrs = ctx.obtainStyledAttributes(attrs, R.styleable.ExploreSitesTileView);
+        mIconCornerRadius =
+                styleAttrs.getDimensionPixelSize(R.styleable.ExploreSitesTileView_iconCornerRadius,
+                        ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+        styleAttrs.recycle();
     }
 
     public void initialize(RoundedIconGenerator generator) {
@@ -47,8 +51,6 @@ public class ExploreSitesTileView extends TileWithTextView {
         if (image == null) {
             return new BitmapDrawable(getResources(), mIconGenerator.generateIconForText(text));
         }
-        return ViewUtils.createRoundedBitmapDrawable(
-                Bitmap.createScaledBitmap(image, mIconSizePx, mIconSizePx, false),
-                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+        return ViewUtils.createRoundedBitmapDrawable(image, mIconCornerRadius);
     }
 }

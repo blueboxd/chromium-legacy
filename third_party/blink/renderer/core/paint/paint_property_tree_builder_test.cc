@@ -340,6 +340,26 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
             overflow_clip->ClipRectExcludingOverlayScrollbars());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeCssOverlayScrollbar) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    ::-webkit-scrollbar { background-color: transparent; }
+    ::-webkit-scrollbar:vertical { width: 200px; }
+    ::-webkit-scrollbar-thumb { background: transparent; }
+    body {
+      margin: 0 30px 0 0;
+      background: lightgreen;
+      overflow-y: overlay;
+      overflow-x: hidden;
+    }
+    </style>
+    <div style="height: 5000px; width: 100%; background: lightblue;"></div>
+  )HTML");
+  // The document content should not be clipped by the overlay scrollbar because
+  // the scrollbar can be transparent and the content needs to paint below.
+  EXPECT_EQ(DocContentClip()->ClipRect(), FloatRoundedRect(0, 0, 800, 600));
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>

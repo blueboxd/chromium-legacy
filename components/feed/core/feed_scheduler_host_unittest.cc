@@ -21,6 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,11 +37,15 @@ char kNowString[] = "2018-06-11 15:41";
 
 }  // namespace
 
-class ForceDeviceOffline : public net::NetworkChangeNotifier {
+class ForceDeviceOffline {
  public:
-  ConnectionType GetCurrentConnectionType() const override {
-    return NetworkChangeNotifier::CONNECTION_NONE;
+  ForceDeviceOffline() {
+    notifier_->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
+
+ private:
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> notifier_ =
+      net::test::MockNetworkChangeNotifier::Create();
 };
 
 class FeedSchedulerHostTest : public ::testing::Test {
@@ -1040,19 +1045,19 @@ TEST_F(FeedSchedulerHostTest, GetLastFetchTriggerTypeForDebugging) {
   scheduler()->OnForegrounded();
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kForegrounded,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kNtpShown,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   ClassifyAsActiveSuggestionsConsumer();  // Fixed timer at 48 hours.
   test_clock()->Advance(TimeDelta::FromHours(49));
   scheduler()->OnFixedTimer(base::OnceClosure());
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kFixedTimer,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 }
 
 }  // namespace feed

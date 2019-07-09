@@ -333,6 +333,43 @@ void ExpireHistoryBackend::ExpireHistoryBeforeForTesting(base::Time end_time) {
   ParanoidExpireHistory();
 }
 
+void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
+    base::Time expiration_threshold) {
+  if (!thumb_db_)
+    return;
+
+  // Extra precaution to avoid repeated calls to GetOldOnDemandFavicons() close
+  // in time, since it can be fairly expensive.
+  if (expiration_threshold <
+      last_on_demand_expiration_threshold_ +
+          base::TimeDelta::FromHours(kClearOnDemandFaviconsIntervalHours)) {
+    return;
+  }
+
+  last_on_demand_expiration_threshold_ = expiration_threshold;
+
+  std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings =
+      thumb_db_->GetOldOnDemandFavicons(expiration_threshold);
+  DeleteEffects effects;
+
+  for (auto id_and_mappings_pair : icon_mappings) {
+    favicon_base::FaviconID icon_id = id_and_mappings_pair.first;
+    const IconMappingsForExpiry& mappings = id_and_mappings_pair.second;
+
+    if (backend_client_ &&
+        IsAnyURLPinned(backend_client_, mappings.page_urls)) {
+      continue;
+    }
+
+    thumb_db_->DeleteFavicon(icon_id);
+    thumb_db_->DeleteIconMappingsForFaviconId(icon_id);
+    effects.deleted_favicons.insert(mappings.icon_url);
+  }
+
+  BroadcastNotifications(&effects, DELETION_EXPIRED,
+                         DeletionTimeRange::Invalid(), base::nullopt);
+}
+
 void ExpireHistoryBackend::InitWorkQueue() {
   DCHECK(work_queue_.empty()) << "queue has to be empty prior to init";
 
@@ -586,43 +623,6 @@ void ExpireHistoryBackend::DoExpireIteration() {
   }
 
   ScheduleExpire();
-}
-
-void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
-    base::Time expiration_threshold) {
-  if (!thumb_db_)
-    return;
-
-  // Extra precaution to avoid repeated calls to GetOldOnDemandFavicons() close
-  // in time, since it can be fairly expensive.
-  if (expiration_threshold <
-      last_on_demand_expiration_threshold_ +
-          base::TimeDelta::FromHours(kClearOnDemandFaviconsIntervalHours)) {
-    return;
-  }
-
-  last_on_demand_expiration_threshold_ = expiration_threshold;
-
-  std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings =
-      thumb_db_->GetOldOnDemandFavicons(expiration_threshold);
-  DeleteEffects effects;
-
-  for (auto id_and_mappings_pair : icon_mappings) {
-    favicon_base::FaviconID icon_id = id_and_mappings_pair.first;
-    const IconMappingsForExpiry& mappings = id_and_mappings_pair.second;
-
-    if (backend_client_ &&
-        IsAnyURLPinned(backend_client_, mappings.page_urls)) {
-      continue;
-    }
-
-    thumb_db_->DeleteFavicon(icon_id);
-    thumb_db_->DeleteIconMappingsForFaviconId(icon_id);
-    effects.deleted_favicons.insert(mappings.icon_url);
-  }
-
-  BroadcastNotifications(&effects, DELETION_EXPIRED,
-                         DeletionTimeRange::Invalid(), base::nullopt);
 }
 
 bool ExpireHistoryBackend::ExpireSomeOldHistory(

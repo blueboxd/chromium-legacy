@@ -16,7 +16,6 @@
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
 namespace previews {
@@ -113,27 +112,6 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList() {
 size_t MaxInMemoryHostsInBlackList() {
   return GetParamValueAsSizeT(kClientSidePreviewsFieldTrial,
                               "max_hosts_in_blacklist", 100);
-}
-
-size_t MaxHintsFetcherTopHostBlacklistSize() {
-  // The blacklist will be limited to the most engaged hosts and will hold twice
-  // (2*N) as many hosts that the HintsFetcher request hints for. The extra N
-  // hosts on the blacklist are meant to cover the case that the engagement
-  // scores on some of the top N host engagement scores decay and they fall out
-  // of the top N.
-  return 2 * MaxHostsForOptimizationGuideServiceHintsFetch();
-}
-
-size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
-  return GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
-      "max_hosts_for_optimization_guide_service_hints_fetch", 30);
-}
-
-base::TimeDelta StoredFetchedHintsFreshnessDuration() {
-  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
-      "max_store_duration_for_featured_hints_in_days", 7));
 }
 
 int PerHostBlackListOptOutThreshold() {
@@ -239,39 +217,6 @@ GURL GetLitePagePreviewsDomainURL() {
   return GURL("https://litepages.googlezip.net/");
 }
 
-std::string GetOptimizationGuideServiceAPIKey() {
-  // Command line override takes priority.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kOptimizationGuideServiceAPIKey)) {
-    return command_line->GetSwitchValueASCII(
-        switches::kOptimizationGuideServiceAPIKey);
-  }
-
-  return google_apis::GetAPIKey();
-}
-
-GURL GetOptimizationGuideServiceURL() {
-  // Command line override takes priority.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kOptimizationGuideServiceURL)) {
-    // Assume the command line switch is correct and return it.
-    return GURL(command_line->GetSwitchValueASCII(
-        switches::kOptimizationGuideServiceURL));
-  }
-
-  std::string url = base::GetFieldTrialParamValueByFeature(
-      features::kOptimizationHintsFetching, "optimization_guide_service_url");
-  if (url.empty() || !GURL(url).SchemeIs(url::kHttpsScheme)) {
-    if (!url.empty())
-      LOG(WARNING)
-          << "Empty or invalid optimization_guide_service_url provided: "
-          << url;
-    return GURL(previews::kOptimizationGuideServiceDefaultURL);
-  }
-
-  return GURL(url);
-}
-
 bool IsInLitePageRedirectControl() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "control_group", false);
@@ -371,14 +316,6 @@ int ResourceLoadingHintsVersion() {
 int DeferAllScriptPreviewsVersion() {
   return GetFieldTrialParamByFeatureAsInt(features::kDeferAllScriptPreviews,
                                           kVersion, 0);
-}
-
-bool IsOptimizationHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHints);
-}
-
-bool IsHintsFetchingEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
 }
 
 int NoScriptPreviewsInflationPercent() {

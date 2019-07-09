@@ -29,15 +29,15 @@
         pointer-events: none;
       }
 
-      :host([side=top]),
-      :host([side=bottom]) {
+      :host([side=top]) #lineContainer,
+      :host([side=bottom]) #lineContainer {
         cursor: ns-resize;
         padding: 8px 0;
         width: 100%;
       }
 
-      :host([side=left]),
-      :host([side=right]) {
+      :host([side=left]) #lineContainer,
+      :host([side=right]) #lineContainer {
         cursor: ew-resize;
         height: 100%;
         padding: 0 8px;
@@ -146,7 +146,9 @@
         padding-inline-end: 8px;
       }
     </style>
-      <div id="line"></div>
+      <div id="lineContainer">
+        <div id="line"></div>
+      </div>
       <div id="row-container">
         <div id="input-container">
           <input id="input" disabled="[[disabled]]" aria-label$="[[i18n(side)]]"

@@ -138,22 +138,20 @@
               </cr-button>
             </span>
           </div>
-          <div id="aboutTPMFirmwareUpdate" class="settings-box two-line"
+          <cr-link-row
+              id="aboutTPMFirmwareUpdate"
+              class="hr"
               hidden$="[[!showTPMFirmwareUpdateLineItem_]]"
-              on-click="onTPMFirmwareUpdateClick_" actionable>
-            <div class="start">
-              <div>$i18n{aboutTPMFirmwareUpdateTitle}</div>
-              <div class="secondary">
-                $i18n{aboutTPMFirmwareUpdateDescription}
-                <a href="$i18n{aboutTPMFirmwareUpdateLearnMoreURL}"
-                    target="_blank" on-click="onLearnMoreClick_">
-                  $i18n{learnMore}
-                </a>
-              </div>
+              label="$i18n{aboutTPMFirmwareUpdateTitle}"
+              on-click="onTPMFirmwareUpdateClick_">
+            <div slot="sub-label">
+              $i18n{aboutTPMFirmwareUpdateDescription}
+              <a href="$i18n{aboutTPMFirmwareUpdateLearnMoreURL}"
+                  target="_blank" on-click="onLearnMoreClick_">
+                $i18n{learnMore}
+              </a>
             </div>
-            <cr-icon-button class="subpage-arrow"
-                aria-labelledby="aboutTPMFirmwareUpdate"></cr-icon-button>
-          </div>
+          </cr-link-row>
           <cr-link-row class="hr" id="help" on-click="onHelpClick_"
               label="$i18n{aboutGetHelpUsingChromeOs}" external></cr-link-row>
 <if expr="_google_chrome">

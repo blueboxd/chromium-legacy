@@ -155,16 +155,6 @@ void ImagePaintTimingDetector::OnPaintFinished() {
   RegisterNotifySwapTime();
 }
 
-void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(DOMNodeId node_id) {
-  if (!is_recording_)
-    return;
-  // Todo: check whether it is visible background image.
-  if (!records_manager_.IsRecordedVisibleNode(node_id))
-    return;
-  records_manager_.RemoveVisibleRecord(node_id);
-  need_update_timing_at_frame_end_ = true;
-}
-
 void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
     DOMNodeId node_id,
     const ImageResourceContent* cached_image) {
@@ -174,6 +164,7 @@ void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
   if (!records_manager_.IsRecordedVisibleNode(background_image_id))
     return;
   records_manager_.RemoveVisibleRecord(background_image_id);
+  need_update_timing_at_frame_end_ = true;
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
@@ -286,63 +277,6 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     HandleTooManyNodes();
 }
 
-void ImagePaintTimingDetector::RecordImage(
-    const LayoutObject& object,
-    const IntSize& intrinsic_size,
-    const ImageResourceContent& cached_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
-  // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
-  // anonymous objects' rect.
-  Node* node = object.GetNode();
-  if (!node)
-    return;
-
-  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
-  DCHECK_NE(node_id, kInvalidDOMNodeId);
-
-  if (records_manager_.IsRecordedInvisibleNode(node_id))
-    return;
-
-  bool is_loaded = cached_image.IsLoaded();
-  bool is_recored_visible_node =
-      records_manager_.IsRecordedVisibleNode(node_id);
-  if (is_recored_visible_node &&
-      !records_manager_.WasVisibleNodeLoaded(node_id) && is_loaded) {
-    records_manager_.OnImageLoaded(node_id, frame_index_);
-    need_update_timing_at_frame_end_ = true;
-    return;
-  }
-
-  if (is_recored_visible_node || !is_recording_)
-    return;
-  IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
-  // Before the image resource starts loading, <img> has no size info. We wait
-  // until the size is known.
-  if (visual_rect.IsEmpty())
-    return;
-  uint64_t rect_size =
-      frame_view_->GetPaintTimingDetector()
-          .CalculateVisualRect(visual_rect, current_paint_chunk_properties)
-          .Size()
-          .Area();
-  rect_size = DownScaleIfIntrinsicSizeIsSmaller(
-      rect_size, intrinsic_size.Area(), visual_rect.Size().Area());
-  DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
-           << ", type=" << object.DebugName();
-  if (rect_size == 0) {
-    records_manager_.RecordInvisibleNode(node_id);
-  } else {
-    records_manager_.RecordVisibleNode(node_id, rect_size, cached_image);
-    if (is_loaded) {
-      records_manager_.OnImageLoaded(node_id, frame_index_);
-      need_update_timing_at_frame_end_ = true;
-    }
-  }
-
-  if (records_manager_.RecordedTooManyNodes())
-    HandleTooManyNodes();
-}
-
 void ImagePaintTimingDetector::HandleTooManyNodes() {
   TRACE_EVENT_INSTANT0("loading", "ImagePaintTimingDetector::OverNodeLimit",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -351,12 +285,6 @@ void ImagePaintTimingDetector::HandleTooManyNodes() {
 
 ImageRecordsManager::ImageRecordsManager()
     : size_ordered_set_(&LargeImageFirst) {}
-
-void ImageRecordsManager::OnImageLoaded(const DOMNodeId& node_id,
-                                        unsigned current_frame_index) {
-  base::WeakPtr<ImageRecord> record = FindVisibleRecord(node_id);
-  OnImageLoadedInternal(record, current_frame_index);
-}
 
 void ImageRecordsManager::OnImageLoaded(
     const BackgroundImageId& background_image_id,
@@ -370,16 +298,6 @@ void ImageRecordsManager::OnImageLoadedInternal(
     unsigned current_frame_index) {
   SetLoaded(record);
   QueueToMeasurePaintTime(record, current_frame_index);
-}
-
-void ImageRecordsManager::RecordVisibleNode(
-    const DOMNodeId& node_id,
-    const uint64_t& visual_size,
-    const ImageResourceContent& cached_image) {
-  std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(node_id, &cached_image, visual_size);
-  size_ordered_set_.insert(record->AsWeakPtr());
-  visible_node_map_.insert(node_id, std::move(record));
 }
 
 void ImageRecordsManager::RecordVisibleNode(
@@ -406,8 +324,7 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 }
 
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
-  DCHECK_EQ(visible_node_map_.size() + visible_background_image_map_.size(),
-            size_ordered_set_.size());
+  DCHECK_EQ(visible_background_image_map_.size(), size_ordered_set_.size());
   if (size_ordered_set_.size() == 0)
     return nullptr;
   return size_ordered_set_.begin()->get();

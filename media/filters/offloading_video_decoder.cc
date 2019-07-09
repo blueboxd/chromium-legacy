@@ -61,8 +61,7 @@ OffloadingVideoDecoder::OffloadingVideoDecoder(
     std::unique_ptr<OffloadableVideoDecoder> decoder)
     : min_offloading_width_(min_offloading_width),
       supported_codecs_(std::move(supported_codecs)),
-      helper_(std::make_unique<CancellationHelper>(std::move(decoder))),
-      weak_factory_(this) {
+      helper_(std::make_unique<CancellationHelper>(std::move(decoder))) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 

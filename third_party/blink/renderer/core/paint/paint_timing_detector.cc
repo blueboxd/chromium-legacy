@@ -110,23 +110,16 @@ void PaintTimingDetector::NotifyImagePaint(
   if (!cached_image)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  if (detector.GetImagePaintTimingDetector()) {
-    detector.GetImagePaintTimingDetector()->RecordImage(
-        object, intrinsic_size, *cached_image, current_paint_chunk_properties);
-  }
+  if (!detector.GetImagePaintTimingDetector())
+    return;
+  detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
+      object, intrinsic_size, *cached_image, current_paint_chunk_properties);
 }
 
 void PaintTimingDetector::LayoutObjectWillBeDestroyed(
     const LayoutObject& object) {
   if (text_paint_timing_detector_)
     text_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
-
-  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
-  if (node_id == kInvalidDOMNodeId)
-    return;
-
-  if (image_paint_timing_detector_)
-    image_paint_timing_detector_->LayoutObjectWillBeDestroyed(node_id);
 }
 
 void PaintTimingDetector::NotifyBackgroundImageRemoved(

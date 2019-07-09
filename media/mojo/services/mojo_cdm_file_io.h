@@ -107,7 +107,7 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
   State state_ = State::kUnopened;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MojoCdmFileIO> weak_factory_;
+  base::WeakPtrFactory<MojoCdmFileIO> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmFileIO);
 };

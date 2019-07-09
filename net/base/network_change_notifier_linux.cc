@@ -40,7 +40,6 @@ class NetworkChangeNotifierLinux::BlockingThreadObjects {
  private:
   void OnIPAddressChanged();
   void OnLinkChanged();
-  internal::DnsConfigServicePosix dns_config_service_;
   // Used to detect online/offline state and IP address changes.
   internal::AddressTrackerLinux address_tracker_;
   NetworkChangeNotifier::ConnectionType last_type_;
@@ -64,8 +63,6 @@ NetworkChangeNotifierLinux::BlockingThreadObjects::BlockingThreadObjects(
 void NetworkChangeNotifierLinux::BlockingThreadObjects::Init() {
   address_tracker_.Init();
   last_type_ = GetCurrentConnectionType();
-  dns_config_service_.WatchConfig(
-      base::Bind(&NetworkChangeNotifier::SetDnsConfig));
 }
 
 void NetworkChangeNotifierLinux::BlockingThreadObjects::OnIPAddressChanged() {

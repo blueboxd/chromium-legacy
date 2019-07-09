@@ -262,7 +262,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool pending_video_track_change_ = false;
 
   base::WeakPtr<RendererImpl> weak_this_;
-  base::WeakPtrFactory<RendererImpl> weak_factory_;
+  base::WeakPtrFactory<RendererImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RendererImpl);
 };

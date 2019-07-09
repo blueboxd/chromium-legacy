@@ -1367,12 +1367,15 @@ public class BottomSheet
             // content description until after announcing full/half height.
             setFocusable(true);
             setFocusableInTouchMode(true);
-            String swipeToClose = ". "
-                    + getResources().getString(R.string.bottom_sheet_accessibility_description);
-            setContentDescription(
-                    getResources().getString(
-                            getCurrentSheetContent().getSheetContentDescriptionStringId())
-                    + swipeToClose);
+            String contentDescription = getResources().getString(
+                    getCurrentSheetContent().getSheetContentDescriptionStringId());
+
+            if (getCurrentSheetContent().swipeToDismissEnabled()) {
+                contentDescription += ". "
+                        + getResources().getString(R.string.bottom_sheet_accessibility_description);
+            }
+
+            setContentDescription(contentDescription);
             if (getFocusedChild() == null) requestFocus();
         }
 

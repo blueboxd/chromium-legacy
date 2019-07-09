@@ -1386,6 +1386,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     unsigned length) {
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
+  DCHECK(font_data);
   scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, start_index, length, direction);
   result->num_glyphs_ = length;
@@ -1428,6 +1429,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
                                                         float width) {
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
+  DCHECK(font_data);
   scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, start_index, length, direction);
   result->num_glyphs_ = length;

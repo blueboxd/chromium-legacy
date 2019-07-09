@@ -16,7 +16,9 @@
 #include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -42,9 +44,10 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
 
   void Init();
   void BindChannel(
-      mojom::SynchronousCompositorControlHostPtr control_host,
-      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-      mojom::SynchronousCompositorAssociatedRequest compositor_request);
+      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+          compositor_request);
 
   // ui::SynchronousInputHandler overrides.
   void SetNeedsSynchronousAnimateInput() final;
@@ -116,9 +119,9 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   struct SharedMemoryWithSize;
 
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
-  mojom::SynchronousCompositorControlHostPtr control_host_;
-  mojom::SynchronousCompositorHostAssociatedPtr host_;
-  mojo::AssociatedBinding<mojom::SynchronousCompositor> binding_;
+  mojo::Remote<mojom::SynchronousCompositorControlHost> control_host_;
+  mojo::AssociatedRemote<mojom::SynchronousCompositorHost> host_;
+  mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};
   const bool use_in_process_zero_copy_software_draw_;
 
   bool compute_scroll_called_via_ipc_ = false;

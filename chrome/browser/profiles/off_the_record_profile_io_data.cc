@@ -108,22 +108,3 @@ OffTheRecordProfileIOData::OffTheRecordProfileIOData(
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   DestroyResourceContext();
 }
-
-void OffTheRecordProfileIOData::OnMainRequestContextCreated(
-    ProfileParams* profile_params) const {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  InitializeExtensionsCookieStore(profile_params);
-#endif
-}
-
-void OffTheRecordProfileIOData::InitializeExtensionsCookieStore(
-    ProfileParams* profile_params) const {
-  content::CookieStoreConfig cookie_config;
-  // Enable cookies for chrome-extension URLs.
-  cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
-}
-
-net::CookieStore* OffTheRecordProfileIOData::GetExtensionsCookieStore() const {
-  return extensions_cookie_store_.get();
-}

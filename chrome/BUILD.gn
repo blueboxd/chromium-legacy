@@ -335,7 +335,6 @@ if (!is_android && !is_mac) {
       if (is_chromeos) {
         data_deps += [ "//mojo/core:shared_libraries_for_arc" ]
         configs += [ "//build/config/chromeos:print_orderfile" ]
-        configs += [ "//build/config/compiler:chrome_orderfile_config" ]
       }
 
       # These files are used by the installer so we need a public dep.
@@ -515,7 +514,21 @@ if (is_win) {
       ]
     }
 
-    configs += [ "//build/config/compiler:chrome_orderfile_config" ]
+    if (is_clang && is_official_build) {
+      orderfile = "build/chrome.$target_cpu.orderfile"
+      rebased_orderfile = rebase_path(orderfile, root_build_dir)
+      inputs = [
+        orderfile,
+      ]
+      ldflags += [
+        "/order:@$rebased_orderfile",
+
+        # Ignore warnings about missing functions or functions not in their
+        # own section.
+        "/ignore:4037",
+        "/ignore:4065",
+      ]
+    }
   }
 
   if (is_multi_dll_chrome) {

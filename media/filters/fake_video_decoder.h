@@ -123,7 +123,7 @@ class FakeVideoDecoder : public VideoDecoder {
   bool fail_to_initialize_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<FakeVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<FakeVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoDecoder);
 };

@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">ขวา</translation>
 <translation id="1351692861129622852">กำลังนำเข้า <ph name="FILE_COUNT" /> ไฟล์...</translation>
 <translation id="1352103415082130575">แป้นพิมพ์ภาษาไทย (ปัตตะโชติ)</translation>
-<translation id="1358032944105037487">แป้นพิมพ์ภาษาญี่ปุ่น</translation>
 <translation id="1358735829858566124">ไฟล์หรือไดเรกทอรีใช้งานไม่ได้</translation>
 <translation id="1363028406613469049">แทร็ก</translation>
 <translation id="1378727793141957596">ยินดีต้อนรับสู่ Google ไดรฟ์!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">สำรองรูปภาพ <ph name="FILE_COUNT" /> รูปไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" />แล้ว</translation>
 <translation id="3470502288861289375">กำลังคัดลอก...</translation>
 <translation id="3475447146579922140">สเปรดชีตของ Google</translation>
-<translation id="3494768541638400973">การป้อนข้อมูลภาษาญี่ปุ่นของ Google (สำหรับแป้นพิมพ์ภาษาญี่ปุ่น)</translation>
 <translation id="3495304270784461826">ข้อผิดพลาด <ph name="COUNT" /> รายการ</translation>
 <translation id="3519867315646775981">การทับศัพท์ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">โปรตุเกส</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     พบ <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">กลับหัว</translation>
-<translation id="6937152069980083337">การป้อนข้อมูลภาษาญี่ปุ่นของ Google (สำหรับแป้นพิมพ์สหรัฐฯ)</translation>
 <translation id="6939777852457331078">แป้นพิมพ์ Workman สหรัฐฯ</translation>
 <translation id="696203921837389374">เปิดใช้การซิงค์ผ่านข้อมูลมือถือ</translation>
 <translation id="6965382102122355670">ตกลง</translation>

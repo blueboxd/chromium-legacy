@@ -69,14 +69,11 @@ class HintCache {
   void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
                             base::OnceClosure callback);
 
-  // Process |get_hints_response| to be stored in the hint cache store. Returns
-  // true if processing |get_hints_response| is successful and applicable hints
-  // can be stored. Returns false if there are no applicable hints in
-  // |get_hints_response| or it cannot be processed. |callback| is
-  // asynchronously run when the hints are successfully stored or if the store
-  // is not available. |update_time| specifies when the hints within
-  // |get_hints_response| will need to be updated next.
-  bool UpdateFetchedHints(
+  // Process |get_hints_response| to be stored in the hint cache store.
+  // |callback| is asynchronously run when the hints are successfully stored or
+  // if the store is not available. |update_time| specifies when the hints
+  // within |get_hints_response| will need to be updated next.
+  void UpdateFetchedHints(
       std::unique_ptr<optimization_guide::proto::GetHintsResponse>
           get_hints_response,
       base::Time update_time,

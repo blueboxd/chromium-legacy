@@ -220,9 +220,6 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
   return GetCanvasResourceProvider()->Canvas();
 }
 
-void OffscreenCanvasRenderingContext2D::DisableDeferral(DisableDeferralReason) {
-}
-
 void OffscreenCanvasRenderingContext2D::DidDraw() {
   Host()->DidDraw();
   dirty_rect_for_commit_.set(0, 0, Width(), Height());

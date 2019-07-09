@@ -73,6 +73,22 @@ group("policy_testserver_pyproto") {
   }
 }
 
+if (is_android) {
+  android_library("test_support_java") {
+    testonly = true
+    deps = [
+      "//chrome/android:chrome_all_java",
+    ]
+    java_files = [ "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java" ]
+  }
+
+  generate_jni("test_support_jni_headers") {
+    sources = [
+      "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java",
+    ]
+  }
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
@@ -88,10 +104,10 @@ static_library("test_support") {
     "base/chrome_test_launcher.h",
     "base/chrome_test_suite.cc",
     "base/chrome_test_suite.h",
+    "base/chrome_test_utils.cc",
+    "base/chrome_test_utils.h",
     "base/chrome_unit_test_suite.cc",
     "base/chrome_unit_test_suite.h",
-    "base/dialog_test_browser_window.cc",
-    "base/dialog_test_browser_window.h",
     "base/find_in_page_observer.cc",
     "base/find_in_page_observer.h",
     "base/process_inspector_win.cc",
@@ -106,8 +122,6 @@ static_library("test_support") {
     "base/scoped_testing_local_state.h",
     "base/search_test_utils.cc",
     "base/search_test_utils.h",
-    "base/test_browser_window.cc",
-    "base/test_browser_window.h",
     "base/test_launcher_utils.cc",
     "base/test_launcher_utils.h",
     "base/test_service_manager_listener.cc",
@@ -134,9 +148,12 @@ static_library("test_support") {
     "logging/win/mof_data_parser.h",
     "logging/win/test_log_collector.cc",
     "logging/win/test_log_collector.h",
+    "payments/payment_request_test_controller.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
+
+  deps = []
 
   # New deps should go in the non-iOS section below.
   public_deps = [
@@ -210,12 +227,12 @@ static_library("test_support") {
   ]
 
   if (is_android) {
-    sources -= [
-      "base/dialog_test_browser_window.cc",
-      "base/dialog_test_browser_window.h",
-      "base/test_browser_window.cc",
-      "base/test_browser_window.h",
+    sources += [
+      "payments/android/payment_request_test_bridge.cc",
+      "payments/android/payment_request_test_bridge.h",
+      "payments/payment_request_test_controller_android.cc",
     ]
+    deps += [ ":test_support_jni_headers" ]
     if (enable_vr) {
       public_deps += [ "//chrome/browser/android/vr:test_support" ]
 
@@ -233,6 +250,11 @@ static_library("test_support") {
     sources += [
       "../browser/ui/tabs/pinned_tab_test_utils.cc",
       "../browser/ui/tabs/pinned_tab_test_utils.h",
+      "base/dialog_test_browser_window.cc",
+      "base/dialog_test_browser_window.h",
+      "base/test_browser_window.cc",
+      "base/test_browser_window.h",
+      "payments/payment_request_test_controller_desktop.cc",
     ]
   }
 
@@ -468,6 +490,7 @@ if (is_android) {
       ":android_browsertests_java",
       ":browser_tests_runner",
       ":test_support",
+      ":test_support_java",
       ":test_support_ui_android",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
@@ -483,6 +506,7 @@ if (is_android) {
     ]
 
     sources = [
+      "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
     ]
@@ -493,6 +517,7 @@ if (is_android) {
       "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
       "$root_gen_dir/components/components_resources.pak",
       "$root_out_dir/browser_tests.pak",
+      "//components/test/data/payments",
     ]
   }
 
@@ -503,14 +528,11 @@ if (is_android) {
     sources = [
       "base/android/android_browser_test.cc",
       "base/android/android_browser_test.h",
-      "base/android/payment_request_test_bridge.cc",
-      "base/android/payment_request_test_bridge.h",
     ]
     public_deps = [
       "//content/test:test_support",
     ]
     deps = [
-      ":android_browsertests_jni_headers",
       "//chrome/browser",
       "//content/public/browser",
     ]
@@ -561,13 +583,6 @@ if (is_android) {
     java_files = [
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
-      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/PaymentRequestTestBridge.java",
-    ]
-  }
-
-  generate_jni("android_browsertests_jni_headers") {
-    sources = [
-      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/PaymentRequestTestBridge.java",
     ]
   }
 
@@ -1748,6 +1763,7 @@ if (!is_android) {
       sources += [
         "../browser/payments/manifest_verifier_browsertest.cc",
         "../browser/payments/payment_manifest_parser_browsertest.cc",
+        "../browser/payments/payment_request_can_make_payment_browsertest.cc",
         "../browser/payments/service_worker_payment_app_factory_browsertest.cc",
         "../browser/payments/site_per_process_payments_browsertest.cc",
         "../browser/ui/global_error/global_error_browsertest.cc",
@@ -1811,7 +1827,6 @@ if (!is_android) {
         "../browser/ui/views/payments/payment_request_browsertest.cc",
         "../browser/ui/views/payments/payment_request_browsertest_base.cc",
         "../browser/ui/views/payments/payment_request_browsertest_base.h",
-        "../browser/ui/views/payments/payment_request_can_make_payment_browsertest.cc",
         "../browser/ui/views/payments/payment_request_can_make_payment_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_completion_status_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_data_url_browsertest.cc",

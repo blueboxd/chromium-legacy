@@ -119,6 +119,28 @@ def _ParseArguments(parser):
   return args
 
 
+def _AddCoverageMetricSummaries(original_dict, tree_root):
+  """Adds coverage summaries data to given dictionary.
+
+  JaCoCo coverage counter type definition:
+  https://www.jacoco.org/jacoco/trunk/doc/counters.html
+  Code coverage Metric message definition:
+  https://chromium.googlesource.com/infra/infra/+/HEAD/appengine/findit/model/proto/code_coverage.proto#77
+
+  Args:
+    original_dict: The given dictionary to add coverage metrics.
+    tree_root: The root element to search for "counter" tag.
+  """
+  original_dict['summaries'] = []
+  for counter in tree_root.findall('counter'):
+    summary = {}
+    summary['name'] = counter.attrib['type'].lower()
+    summary['covered'] = int(counter.attrib['covered'])
+    summary['total'] = int(counter.attrib['missed']) + int(
+        counter.attrib['covered'])
+    original_dict['summaries'].append(summary)
+
+
 def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
   """Generates a JSON representation based on Jacoco xml report.
 
@@ -144,7 +166,7 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
   tree = ET.parse(jacoco_xml_path)
   root = tree.getroot()
 
-  for package in root.iter('package'):
+  for package in root.findall('package'):
     package_path = package.attrib['name']
     print('Processing package %s' % package_path)
 
@@ -163,7 +185,7 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
             package_path)
       continue
 
-    for sourcefile in package.iter('sourcefile'):
+    for sourcefile in package.findall('sourcefile'):
       sourcefile_name = sourcefile.attrib['name']
       path = os.path.join(package_source_dir, sourcefile_name)
       print('Processing file %s' % path)
@@ -179,7 +201,7 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
         with open(abs_path, 'r') as f:
           file_coverage['total_lines'] = sum(1 for _ in f)
 
-      for line in sourcefile.iter('line'):
+      for line in sourcefile.findall('line'):
         line_number = int(line.attrib['nr'])
         covered_instructions = int(line.attrib['ci'])
         missed_branches = int(line.attrib['mb'])
@@ -202,7 +224,13 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
           branch_coverage['covered'] = covered_branches
           file_coverage['branches'].append(branch_coverage)
 
+      # Add coverage metrics for one sourcefile.
+      _AddCoverageMetricSummaries(file_coverage, sourcefile)
+
       data['files'].append(file_coverage)
+
+  # Add coverage metrics for the src report.
+  _AddCoverageMetricSummaries(data, root)
 
   with open(out_file_path, 'w') as f:
     json.dump(data, f)

@@ -31,6 +31,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/web_resource/web_resource_pref_names.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -160,11 +161,15 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_METHOD1(OnSignInStateChanged, void(bool));
 };
 
-class FakeOfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
+class FakeOfflineNetworkChangeNotifier {
  public:
-  ConnectionType GetCurrentConnectionType() const override {
-    return NetworkChangeNotifier::CONNECTION_NONE;
+  FakeOfflineNetworkChangeNotifier() {
+    notifier_->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
+
+ private:
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> notifier_ =
+      net::test::MockNetworkChangeNotifier::Create();
 };
 
 }  // namespace

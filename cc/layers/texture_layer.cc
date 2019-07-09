@@ -23,8 +23,7 @@ scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
   return scoped_refptr<TextureLayer>(new TextureLayer(client));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client)
-    : client_(client), weak_ptr_factory_(this) {}
+TextureLayer::TextureLayer(TextureLayerClient* client) : client_(client) {}
 
 TextureLayer::~TextureLayer() = default;
 

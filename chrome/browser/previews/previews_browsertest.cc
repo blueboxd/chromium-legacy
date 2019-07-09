@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -224,7 +225,8 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kOptimizationHints,
+        {previews::features::kPreviews,
+         optimization_guide::features::kOptimizationHints,
          previews::features::kNoScriptPreviews,
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},

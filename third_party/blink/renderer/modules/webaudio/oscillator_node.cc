@@ -512,6 +512,7 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
       // Use musical pitch standard A440 as a default.
       frequency_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeOscillatorFrequency,
                              440,
                              AudioParamHandler::AutomationRate::kAudio,
@@ -521,6 +522,7 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
       // Default to no detuning.
       detune_(
           AudioParam::Create(context,
+                             Uuid(),
                              kParamTypeOscillatorDetune,
                              0,
                              AudioParamHandler::AutomationRate::kAudio,

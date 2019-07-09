@@ -54,8 +54,7 @@ MojoRendererService::MojoRendererService(
     : mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
       playback_rate_(0),
-      renderer_(std::move(renderer)),
-      weak_factory_(this) {
+      renderer_(std::move(renderer)) {
   DVLOG(1) << __func__;
   DCHECK(renderer_);
 

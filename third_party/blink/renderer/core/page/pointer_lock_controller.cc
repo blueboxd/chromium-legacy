@@ -138,7 +138,7 @@ void PointerLockController::DidLosePointerLock() {
   EnqueueEvent(event_type_names::kPointerlockchange, pointer_lock_document);
 
   // Set the last mouse position back the locked position.
-  if (pointer_lock_document) {
+  if (pointer_lock_document && pointer_lock_document->GetFrame()) {
     pointer_lock_document->GetFrame()
         ->GetEventHandler()
         .SetMousePositionForPointerUnlock(pointer_lock_screen_position_);

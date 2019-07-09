@@ -240,7 +240,6 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (root_window_)
       ScheduleDelete();
   }
-  void DidNotNeedBeginFrame() override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,

@@ -465,6 +465,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void ExitCommandProcessingEarly() override;
 
+  void CheckSwapBuffersAsyncResult(const char* function_name,
+                                   uint64_t swap_id,
+                                   gfx::SwapResult result,
+                                   std::unique_ptr<gfx::GpuFence> gpu_fence);
   error::Error CheckSwapBuffersResult(gfx::SwapResult result,
                                       const char* function_name);
 

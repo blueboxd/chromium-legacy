@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/proto/hint_cache.pb.h"
-#include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {
@@ -56,8 +56,8 @@ TEST(HintUpdateDataTest, BuildFetchUpdateData) {
 
   std::unique_ptr<HintUpdateData> fetch_update =
       HintUpdateData::CreateFetchedHintUpdateData(
-          update_time,
-          update_time + params::StoredFetchedHintsFreshnessDuration());
+          update_time, update_time + optimization_guide::features::
+                                         StoredFetchedHintsFreshnessDuration());
   fetch_update->MoveHintIntoUpdateData(std::move(hint1));
   EXPECT_FALSE(fetch_update->component_version().has_value());
   EXPECT_TRUE(fetch_update->fetch_update_time().has_value());

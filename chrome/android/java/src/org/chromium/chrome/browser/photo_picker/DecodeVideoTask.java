@@ -9,6 +9,7 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.support.annotation.IntDef;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
@@ -16,6 +17,8 @@ import org.chromium.base.task.AsyncTask;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,6 +26,19 @@ import java.util.Locale;
  * A worker task to decode video and extract information from it off of the UI thread.
  */
 class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
+    /**
+     * The possible error states while decoding.
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({DecodingResult.SUCCESS, DecodingResult.FILE_ERROR, DecodingResult.RUNTIME_ERROR,
+            DecodingResult.IO_ERROR})
+    public @interface DecodingResult {
+        int SUCCESS = 0;
+        int FILE_ERROR = 1;
+        int RUNTIME_ERROR = 2;
+        int IO_ERROR = 3;
+    }
+
     /**
      * An interface to use to communicate back the results to the client.
      */
@@ -32,8 +48,10 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
          * @param uri The uri of the video decoded.
          * @param bitmaps An array of thumbnails extracted from the video.
          * @param duration The duration of the video.
+         * @param decodingStatus Whether the decoding was successful.
          */
-        void videoDecodedCallback(Uri uri, List<Bitmap> bitmaps, String duration);
+        void videoDecodedCallback(
+                Uri uri, List<Bitmap> bitmaps, String duration, @DecodingResult int decodingStatus);
     }
 
     // The callback to use to communicate the results.
@@ -56,6 +74,9 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
 
     // A metadata retriever, used to decode the video, and extract a thumbnail frame.
     private MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
+
+    // Keeps track of errors during decoding.
+    private @DecodingResult int mDecodingResult;
 
     /**
      * A DecodeVideoTask constructor.
@@ -127,13 +148,17 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
 
             return new Pair<List<Bitmap>, String>(bitmaps, duration);
         } catch (FileNotFoundException exception) {
+            mDecodingResult = DecodingResult.FILE_ERROR;
             return null;
         } catch (RuntimeException exception) {
+            mDecodingResult = DecodingResult.RUNTIME_ERROR;
             return null;
         } finally {
             try {
                 if (afd != null) afd.close();
+                mDecodingResult = DecodingResult.SUCCESS;
             } catch (IOException exception) {
+                mDecodingResult = DecodingResult.IO_ERROR;
                 return null;
             }
         }
@@ -150,10 +175,10 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
         }
 
         if (results == null) {
-            mCallback.videoDecodedCallback(mUri, null, "");
+            mCallback.videoDecodedCallback(mUri, null, "", mDecodingResult);
             return;
         }
 
-        mCallback.videoDecodedCallback(mUri, results.first, results.second);
+        mCallback.videoDecodedCallback(mUri, results.first, results.second, mDecodingResult);
     }
 }

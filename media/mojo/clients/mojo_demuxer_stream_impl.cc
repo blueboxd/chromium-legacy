@@ -20,9 +20,7 @@ namespace media {
 MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
     media::DemuxerStream* stream,
     mojo::InterfaceRequest<mojom::DemuxerStream> request)
-    : binding_(this, std::move(request)),
-      stream_(stream),
-      weak_factory_(this) {}
+    : binding_(this, std::move(request)), stream_(stream) {}
 
 MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() = default;
 

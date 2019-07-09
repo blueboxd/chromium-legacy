@@ -95,12 +95,16 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       context, single_shot ? "setTimeout" : "setInterval", this);
 }
 
-DOMTimer::~DOMTimer() {
-  if (action_)
-    action_->Dispose();
+DOMTimer::~DOMTimer() = default;
+
+void DOMTimer::Dispose() {
+  Stop();
 }
 
 void DOMTimer::Stop() {
+  if (!action_)
+    return;
+
   const bool is_interval = !RepeatInterval().is_zero();
   probe::AsyncTaskCanceledBreakable(
       GetExecutionContext(), is_interval ? "clearInterval" : "clearTimeout",

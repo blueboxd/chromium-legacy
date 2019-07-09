@@ -854,7 +854,8 @@ class TestInputHandlerClient : public InputHandlerClient {
     min_page_scale_factor_ = min_page_scale_factor;
     max_page_scale_factor_ = max_page_scale_factor;
   }
-  void DeliverInputForBeginFrame() override {}
+  void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override {}
+  void DeliverInputForHighLatencyMode() override {}
 
   gfx::ScrollOffset last_set_scroll_offset() { return last_set_scroll_offset_; }
 

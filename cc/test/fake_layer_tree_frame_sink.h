@@ -143,7 +143,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   void DidReceiveCompositorFrameAck();
 
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
-  base::WeakPtrFactory<FakeLayerTreeFrameSink> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeLayerTreeFrameSink> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

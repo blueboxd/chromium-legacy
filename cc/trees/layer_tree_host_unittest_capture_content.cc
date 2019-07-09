@@ -58,8 +58,7 @@ class LayerTreeHostCaptureContentTest : public LayerTreeTest {
   ~LayerTreeHostCaptureContentTest() override = default;
 
  protected:
-  LayerTreeHostCaptureContentTest()
-      : device_bounds_(10, 10), weak_factory_(this) {}
+  LayerTreeHostCaptureContentTest() : device_bounds_(10, 10) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -116,7 +115,7 @@ class LayerTreeHostCaptureContentTest : public LayerTreeTest {
   scoped_refptr<FakePictureLayer> root_picture_layer_;
   std::vector<NodeHolder> captured_content_;
   const gfx::Size device_bounds_;
-  base::WeakPtrFactory<LayerTreeHostCaptureContentTest> weak_factory_;
+  base::WeakPtrFactory<LayerTreeHostCaptureContentTest> weak_factory_{this};
 };
 
 class LayerTreeHostCaptureContentTestBasic

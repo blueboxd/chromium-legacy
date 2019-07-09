@@ -27,8 +27,7 @@ class DnsConfigService;
 // This class is thread and sequence safe except that RemoveObserver() must be
 // called on the same sequence as the matched AddObserver() call.
 //
-// TODO(crbug.com/971411): Use this class in HostResolverManager and
-// NetworkChangeNotifier.
+// TODO(crbug.com/971411): Use this class in HostResolverManager.
 class NET_EXPORT_PRIVATE SystemDnsConfigChangeNotifier {
  public:
   class Observer {
@@ -46,6 +45,10 @@ class NET_EXPORT_PRIVATE SystemDnsConfigChangeNotifier {
   // |task_runner|. As required by DnsConfigService, blocking I/O may be
   // performed on |task_runner|, so it must support blocking (i.e.
   // base::MayBlock).
+  //
+  // |dns_config_service| may be null if system DNS config is disabled for the
+  // current platform. Calls against the created object will noop, and no
+  // notifications will ever be sent.
   SystemDnsConfigChangeNotifier(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       std::unique_ptr<DnsConfigService> dns_config_service);
@@ -66,6 +69,9 @@ class NET_EXPORT_PRIVATE SystemDnsConfigChangeNotifier {
   // notifications to registered Observers). For use only on platforms
   // expecting network-stack-external notifications of DNS config changes.
   void RefreshConfig();
+
+  void SetDnsConfigServiceForTesting(
+      std::unique_ptr<DnsConfigService> dns_config_service);
 
  private:
   class Core;

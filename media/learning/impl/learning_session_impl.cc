@@ -81,8 +81,7 @@ LearningSessionImpl::LearningSessionImpl(
             return base::SequenceBound<LearningTaskControllerImpl>(
                 task_runner, task, DistributionReporter::Create(task),
                 std::move(feature_provider));
-          })),
-      weak_factory_(this) {}
+          })) {}
 
 LearningSessionImpl::~LearningSessionImpl() = default;
 

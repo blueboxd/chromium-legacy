@@ -93,7 +93,7 @@ class FakeVideoCaptureDevice : public VideoCaptureDevice {
 
   // FakeVideoCaptureDevice post tasks to itself for frame construction and
   // needs to deal with asynchronous StopAndDeallocate().
-  base::WeakPtrFactory<FakeVideoCaptureDevice> weak_factory_;
+  base::WeakPtrFactory<FakeVideoCaptureDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureDevice);
 };

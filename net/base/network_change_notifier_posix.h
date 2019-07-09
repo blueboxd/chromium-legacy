@@ -18,14 +18,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 
-namespace base {
-class SequencedTaskRunner;
-struct OnTaskRunnerDeleter;
-}  // namespace base
-
 namespace net {
-
-class DnsConfigService;
 
 // A NetworkChangeNotifier that needs to be told about network changes by some
 // other object. This class can't directly listen for network changes because on
@@ -48,10 +41,6 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
       NetworkChangeNotifier::ConnectionType connection_type,
       NetworkChangeNotifier::ConnectionSubtype connection_subtype);
 
-  // |dns_config_service| must support RefreshConfig().
-  void SetDnsConfigServiceForTesting(
-      std::unique_ptr<DnsConfigService> dns_config_service);
-
  protected:
   // NetworkChangeNotifier overrides.
   NetworkChangeNotifier::ConnectionType GetCurrentConnectionType()
@@ -62,15 +51,6 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
 
  private:
   friend class NetworkChangeNotifierPosixTest;
-
-  void SetAndStartDnsConfigService(
-      std::unique_ptr<DnsConfigService> dns_config_service);
-
-  // |dns_config_service_| will live on this runner.
-  scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;
-  // DnsConfigService that lives on |dns_config_service_runner_|.
-  std::unique_ptr<DnsConfigService, base::OnTaskRunnerDeleter>
-      dns_config_service_;
 
   // Calculates parameters used for network change notifier online/offline
   // signals.

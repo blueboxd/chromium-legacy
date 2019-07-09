@@ -7,21 +7,27 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
 
-class ConfirmPasswordChangeHandler : public content::WebUIMessageHandler {
+class ConfirmPasswordChangeHandler
+    : public content::WebUIMessageHandler,
+      public InSessionPasswordChangeManager::Observer {
  public:
   ConfirmPasswordChangeHandler();
   ~ConfirmPasswordChangeHandler() override;
 
-  // content::WebUIMessageHandler:
-  void RegisterMessages() override;
-
   // Tries to change the cryptohome password once the confirm-password-change
   // dialog is filled in and the password change is confirmed.
   void HandleChangePassword(const base::ListValue* passwords);
+
+  // InSessionPasswordChangeManager::Observer:
+  void OnEvent(InSessionPasswordChangeManager::Event event) override;
+
+  // content::WebUIMessageHandler:
+  void RegisterMessages() override;
 
  private:
   base::WeakPtrFactory<ConfirmPasswordChangeHandler> weak_factory_{this};

@@ -10,12 +10,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.net.UrlResponseInfo;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * Test functionality of FakeUrlResponse.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class FakeUrlResponseTest {
     private static final int TEST_HTTP_STATUS_CODE = 201;
     private static final String TEST_HEADER_NAME = "name";

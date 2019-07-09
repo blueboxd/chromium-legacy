@@ -28,8 +28,11 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     fuchsia::netstack::NetstackPtr netstack,
-    uint32_t required_features)
-    : required_features_(required_features) {
+    uint32_t required_features,
+    SystemDnsConfigChangeNotifier* system_dns_config_notifier)
+    : NetworkChangeNotifier(NetworkChangeCalculatorParams(),
+                            system_dns_config_notifier),
+      required_features_(required_features) {
   DCHECK(netstack);
 
   // Temporarily re-wrap our Netstack channel so we can query the interfaces

@@ -20,6 +20,7 @@ class StrategySizeAlgorithm;
 class StreamAlgorithm;
 class StreamPromiseResolver;
 class StreamStartAlgorithm;
+class UnderlyingSinkBase;
 class WritableStreamDefaultController;
 class WritableStreamDefaultWriter;
 
@@ -43,6 +44,11 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
                                       double high_water_mark,
                                       StrategySizeAlgorithm* size_algorithm,
                                       ExceptionState&);
+
+  static WritableStreamNative* CreateWithCountQueueingStrategy(
+      ScriptState*,
+      UnderlyingSinkBase*,
+      size_t high_water_mark);
 
   // Used by Create().
   WritableStreamNative();

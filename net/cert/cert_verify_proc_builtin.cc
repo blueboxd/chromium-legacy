@@ -36,6 +36,10 @@ namespace net {
 
 namespace {
 
+// Very conservative iteration count limit.
+// TODO(https://crbug.com/634470): Make this smaller.
+constexpr uint32_t kPathBuilderIterationLimit = 25000;
+
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
 RevocationPolicy NoRevocationChecking() {
@@ -469,6 +473,8 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   } else {
     LOG(ERROR) << "No net_fetcher for performing AIA chasing.";
   }
+
+  path_builder.SetIterationLimit(kPathBuilderIterationLimit);
 
   path_builder.Run();
 }

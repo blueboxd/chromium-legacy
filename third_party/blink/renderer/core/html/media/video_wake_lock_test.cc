@@ -153,6 +153,16 @@ class VideoWakeLockTest : public PageTestBase {
         video_.Get(), event_type_names::kLeavepictureinpicture);
   }
 
+  void SimulateContextPause() {
+    GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kPaused);
+  }
+
+  void SimulateContextRunning() {
+    GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+  }
+
+  void SimulateContextDestroyed() { GetDocument().NotifyContextDestroyed(); }
+
  private:
   Persistent<HTMLVideoElement> video_;
   Persistent<VideoWakeLock> video_wake_lock_;
@@ -308,6 +318,33 @@ TEST_F(VideoWakeLockTest, RemotingVideoInPictureInPictureDoesNotRequestLock) {
   SimulateEnterPictureInPicture();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
       mojom::blink::PresentationConnectionState::CONNECTED);
+  EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
+}
+
+TEST_F(VideoWakeLockTest, PausingContextCancelsLock) {
+  SimulatePlaying();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+
+  SimulateContextPause();
+  EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
+}
+
+TEST_F(VideoWakeLockTest, ResumingContextResumesLock) {
+  SimulatePlaying();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+
+  SimulateContextPause();
+  EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
+
+  SimulateContextRunning();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+}
+
+TEST_F(VideoWakeLockTest, DestroyingContextCancelsLock) {
+  SimulatePlaying();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+
+  SimulateContextDestroyed();
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 

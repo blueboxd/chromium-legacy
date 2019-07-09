@@ -44,8 +44,9 @@ class MockInputRouter : public InputRouter {
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
   base::Optional<cc::TouchAction> ActiveTouchAction() override;
   void SetForceEnableZoom(bool enabled) override {}
-  void BindHost(mojom::WidgetInputHandlerHostRequest request,
-                bool frame_handler) override {}
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() override;
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewFrameHost()
+      override;
   void StopFling() override {}
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}

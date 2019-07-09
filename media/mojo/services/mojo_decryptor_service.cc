@@ -73,9 +73,7 @@ std::unique_ptr<MojoDecryptorService> MojoDecryptorService::Create(
 MojoDecryptorService::MojoDecryptorService(
     media::Decryptor* decryptor,
     std::unique_ptr<CdmContextRef> cdm_context_ref)
-    : decryptor_(decryptor),
-      cdm_context_ref_(std::move(cdm_context_ref)),
-      weak_factory_(this) {
+    : decryptor_(decryptor), cdm_context_ref_(std::move(cdm_context_ref)) {
   DVLOG(1) << __func__;
   DCHECK(decryptor_);
   // |cdm_context_ref_| could be null, in which case the owner of |this| will

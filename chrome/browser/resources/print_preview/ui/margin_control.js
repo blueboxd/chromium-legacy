@@ -164,7 +164,7 @@ Polymer({
    */
   shouldDrag: function(event) {
     return !this.disabled && event.button == 0 &&
-        (event.path[0] == this || event.path[0] == this.$.line);
+        (event.path[0] == this.$.lineContainer || event.path[0] == this.$.line);
   },
 
   /** @private */

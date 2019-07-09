@@ -72,6 +72,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                          mojom::CookieChangeListenerPtr listener,
                          AddChangeListenerCallback callback) override;
 
+  void SetCookieFromString(const GURL& url,
+                           const GURL& site_for_cookies,
+                           const std::string& cookie,
+                           SetCookieFromStringCallback callback) override;
+
+  void GetCookiesString(const GURL& url,
+                        const GURL& site_for_cookies,
+                        GetCookiesStringCallback callback) override;
+  void CookiesEnabledFor(const GURL& url,
+                         const GURL& site_for_cookies,
+                         CookiesEnabledForCallback callback) override;
+
  private:
   // The state associated with a CookieChangeListener.
   class Listener;

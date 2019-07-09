@@ -52,7 +52,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
 
   bool external_stencil_test_ = false;
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

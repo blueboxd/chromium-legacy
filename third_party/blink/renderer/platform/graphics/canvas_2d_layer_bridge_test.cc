@@ -149,7 +149,8 @@ class Canvas2DLayerBridgeTest : public Test {
   std::unique_ptr<Canvas2DLayerBridge> MakeBridge(
       const IntSize& size,
       Canvas2DLayerBridge::AccelerationMode acceleration_mode,
-      const CanvasColorParams& color_params) {
+      const CanvasColorParams& color_params,
+      bool disable_deferral = false) {
     std::unique_ptr<Canvas2DLayerBridge> bridge =
         std::make_unique<Canvas2DLayerBridge>(size, acceleration_mode,
                                               color_params);
@@ -157,6 +158,7 @@ class Canvas2DLayerBridgeTest : public Test {
     if (!host_)
       host_ = std::make_unique<MockCanvasResourceHost>(size);
     bridge->SetCanvasResourceHost(host_.get());
+    bridge->is_deferral_enabled_ = !disable_deferral;
     return bridge;
   }
 
@@ -528,12 +530,11 @@ TEST_F(Canvas2DLayerBridgeTest,
 
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
-                 CanvasColorParams());
+                 CanvasColorParams(), true);
   EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AnyNumber());
 
   bridge->DontUseIdleSchedulingForTesting();
   DrawSomething(bridge.get());
-  bridge->DisableDeferral(kDisableDeferralReasonUnknown);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = std::make_unique<MockLogger>();
@@ -633,7 +634,6 @@ TEST_F(
   bridge->DontUseIdleSchedulingForTesting();
   DrawSomething(bridge.get());
   EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AnyNumber());
-  bridge->DisableDeferral(kDisableDeferralReasonUnknown);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = std::make_unique<MockLogger>();
@@ -675,68 +675,6 @@ TEST_F(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
-}
-
-#if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
-TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
-#else
-TEST_F(Canvas2DLayerBridgeTest,
-       DISABLED_DisableDeferredRenderingWhileHibernating)
-#endif
-{
-  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
-  std::unique_ptr<Canvas2DLayerBridge> bridge =
-      MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
-                 CanvasColorParams());
-  bridge->DontUseIdleSchedulingForTesting();
-  DrawSomething(bridge.get());
-
-  EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AnyNumber());
-
-  // Register an alternate Logger for tracking hibernation events
-  std::unique_ptr<MockLogger> mock_logger = std::make_unique<MockLogger>();
-  MockLogger* mock_logger_ptr = mock_logger.get();
-  bridge->SetLoggerForTesting(std::move(mock_logger));
-
-  // Test entering hibernation
-  EXPECT_CALL(
-      *mock_logger_ptr,
-      ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
-  platform->RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  testing::Mock::VerifyAndClearExpectations(Host());
-  EXPECT_FALSE(bridge->IsAccelerated());
-  EXPECT_TRUE(bridge->IsHibernating());
-  EXPECT_TRUE(bridge->IsValid());
-
-  // Disable deferral while background rendering
-  EXPECT_CALL(*mock_logger_ptr,
-              ReportHibernationEvent(
-                  Canvas2DLayerBridge::
-                      kHibernationEndedWithSwitchToBackgroundRendering));
-  EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AtLeast(1));
-  bridge->DisableDeferral(kDisableDeferralReasonUnknown);
-  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  testing::Mock::VerifyAndClearExpectations(Host());
-  EXPECT_FALSE(bridge->IsAccelerated());
-  EXPECT_FALSE(bridge->IsHibernating());
-  EXPECT_TRUE(bridge->IsValid());
-
-  // Unhide
-  EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AtLeast(1));
-  bridge->SetIsHidden(false);
-  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  testing::Mock::VerifyAndClearExpectations(Host());
-  EXPECT_TRUE(
-      bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
-  EXPECT_FALSE(bridge->IsHibernating());
-  EXPECT_TRUE(bridge->IsValid());
-
-  EXPECT_CALL(*Host(), RestoreCanvasMatrixClipStack(_)).Times(AnyNumber());
-  bridge.reset();
-  testing::Mock::VerifyAndClearExpectations(Host());
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1278,13 +1216,11 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
-  // Disable deferral so we can inspect the cache state as we use the canvas.
   auto color_params =
       CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
-                 color_params);
-  bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
+                 color_params, true);
 
   Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
@@ -1314,13 +1250,11 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
-  // Disable deferral so we can inspect the cache state as we use the canvas.
   auto color_params =
       CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
-                 color_params);
-  bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
+                 color_params, true);
 
   auto image =
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
@@ -1334,14 +1268,11 @@ TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
-  // Disable deferral so we use the raster canvas directly.
   auto color_params =
       CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
-                 color_params);
-  bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
-
+                 color_params, true);
   PaintFlags flags;
   Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
@@ -1353,7 +1284,7 @@ TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
   bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
 
   // Lose the context and ensure that the image provider is not used.
-  bridge->ResourceProvider()->OnContextDestroyed();
+  bridge->GetOrCreateResourceProvider()->OnContextDestroyed();
   // We should unref all images on the cache when the context is destroyed.
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 0);
   image_decode_cache_.set_disallow_cache_use(true);

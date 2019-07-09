@@ -19,14 +19,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_config_watcher_mac.h"
 
-namespace base {
-class SequencedTaskRunner;
-struct OnTaskRunnerDeleter;
-}  // namespace base
-
 namespace net {
-
-class DnsConfigService;
 
 class NetworkChangeNotifierMac: public NetworkChangeNotifier {
  public:
@@ -82,14 +75,6 @@ class NetworkChangeNotifierMac: public NetworkChangeNotifier {
 
   Forwarder forwarder_;
   std::unique_ptr<const NetworkConfigWatcherMac> config_watcher_;
-
-#if !defined(OS_IOS)
-  // |dns_config_service_| will live on this runner.
-  scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;
-  // DnsConfigService that lives on |dns_config_service_runner_|.
-  std::unique_ptr<DnsConfigService, base::OnTaskRunnerDeleter>
-      dns_config_service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierMac);
 };

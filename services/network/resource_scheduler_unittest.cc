@@ -478,6 +478,9 @@ TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
   base::HistogramTester histogram_tester;
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  InitializeScheduler();
 
   SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
@@ -1010,9 +1013,9 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
   }
 }
 
-// Test that a change in network conditions midway during loading does not
-// change the behavior of the resource scheduler.
-TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
+// Test that a change in network conditions midway during loading
+// changes the behavior of the resource scheduler.
+TEST_F(ResourceSchedulerTest, RequestLimitOverrideNotFixedForPageLoad) {
   InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 2.
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
@@ -1047,18 +1050,26 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(second_last_singlehost->started());
 
+  //  |last_singlehost_before_ect_change| should not start because of the
+  //  limits.
+  std::unique_ptr<TestRequest> last_singlehost_before_ect_change(
+      NewRequest("http://host/last_singlehost_before_ect_change", net::LOWEST));
+  EXPECT_FALSE(last_singlehost_before_ect_change->started());
+
   // Change the ECT to go outside the experiment buckets and change the network
-  // type to 4G. This should affect the limit calculated at the beginning of
-  // the page load.
+  // type to 4G. This should affect the limit which should affect requests
+  // that are already queued (e.g., |last_singlehost_before_ect_change|), and
+  // requests that arrive later (e.g., |last_singlehost_after_ect_change|).
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
   base::RunLoop().RunUntilIdle();
 
-  std::unique_ptr<TestRequest> last_singlehost(
-      NewRequest("http://host/last", net::LOWEST));
+  std::unique_ptr<TestRequest> last_singlehost_after_ect_change(
+      NewRequest("http://host/last_singlehost_after_ect_change", net::LOWEST));
 
-  // Last should start because the limit should have changed.
-  EXPECT_TRUE(last_singlehost->started());
+  // Both requests should start because the limits should have changed.
+  EXPECT_TRUE(last_singlehost_before_ect_change->started());
+  EXPECT_TRUE(last_singlehost_after_ect_change->started());
 }
 
 // Test that when the network quality changes such that the new limit is lower,

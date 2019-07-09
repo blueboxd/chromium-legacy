@@ -104,7 +104,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) override;
-  void DeliverInputForBeginFrame() override;
+  void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override;
+  void DeliverInputForHighLatencyMode() override;
 
   // SynchronousInputHandlerProxy implementation.
   void SetOnlySynchronouslyAnimateRootFlings(

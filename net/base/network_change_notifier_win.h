@@ -22,12 +22,9 @@
 
 namespace base {
 class SequencedTaskRunner;
-struct OnTaskRunnerDeleter;
 }  // namespace base
 
 namespace net {
-
-class DnsConfigService;
 
 // NetworkChangeNotifierWin uses a SequenceChecker, as all its internal
 // notification code must be called on the sequence it is created and destroyed
@@ -49,7 +46,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   void WatchForAddressChange();
 
  protected:
-
   // For unit tests only.
   bool is_watching() { return is_watching_; }
   void set_is_watching(bool is_watching) { is_watching_ = is_watching; }
@@ -71,7 +67,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
 
   // Calls RecomputeCurrentConnectionTypeImpl on the DNS sequence and runs
   // |reply_callback| with the type on the calling sequence.
-  virtual void RecomputeCurrentConnectionTypeOnDnsSequence(
+  virtual void RecomputeCurrentConnectionTypeOnBlockingSequence(
       base::OnceCallback<void(ConnectionType)> reply_callback) const;
 
   void SetCurrentConnectionType(ConnectionType connection_type);
@@ -109,11 +105,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   // Number of times WatchForAddressChange has failed in a row.
   int sequential_failures_;
 
-  // |dns_config_service_| will live on this runner.
-  scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;
-  // DnsConfigService that lives on |dns_config_service_runner_|.
-  std::unique_ptr<DnsConfigService, base::OnTaskRunnerDeleter>
-      dns_config_service_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   mutable base::Lock last_computed_connection_type_lock_;
   ConnectionType last_computed_connection_type_;
@@ -123,9 +115,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   bool last_announced_offline_;
   // Number of times polled to check if still offline.
   int offline_polls_;
-
-  // Keeps track of whether DnsConfigService::WatchConfig() has been called.
-  bool posted_watch_config_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

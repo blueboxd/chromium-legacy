@@ -78,7 +78,7 @@ const base::NoDestructor<GURL> kEmptyOriginUrl;
 const int kCriticalWarningDays = 3;
 
 base::string16 GetTitleText(int less_than_n_days) {
-  return l10n_util::GetPluralStringFUTF16(IDS_PASSWORD_EXPIRY_DAYS_BODY,
+  return l10n_util::GetPluralStringFUTF16(IDS_PASSWORD_EXPIRY_DAYS_TITLE,
                                           less_than_n_days);
 }
 

@@ -247,10 +247,6 @@ class OutOfProcessInstance : public pp::Instance,
                             int32_t sample,
                             int32_t boundary_value);
 
-  // Wrapper for |uma_| so PrintPreview.PdfAction histogram reporting only
-  // occurs when the PDF Viewer is being used inside print preview.
-  void PrintPreviewHistogramEnumeration(int32_t sample);
-
   pp::ImageData image_data_;
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
@@ -438,18 +434,6 @@ class OutOfProcessInstance : public pp::Instance,
 
   // True if the plugin is loaded in print preview, otherwise false.
   bool is_print_preview_;
-
-  // Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
-  enum PdfActionBuckets {
-    PRINT_PREVIEW_SHOWN = 0,
-    ROTATE = 1,
-    SELECT_TEXT = 2,
-    UPDATE_ZOOM = 3,
-    PDFACTION_BUCKET_BOUNDARY,
-  };
-
-  // Array indicating what events have been recorded for print preview metrics.
-  bool preview_action_recorded_[PDFACTION_BUCKET_BOUNDARY];
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };

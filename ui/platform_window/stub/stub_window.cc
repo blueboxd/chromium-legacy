@@ -64,6 +64,14 @@ PlatformWindowState StubWindow::GetPlatformWindowState() const {
   return PlatformWindowState::kUnknown;
 }
 
+void StubWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void StubWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void StubWindow::SetCursor(PlatformCursor cursor) {}
 
 void StubWindow::MoveCursorTo(const gfx::Point& location) {}

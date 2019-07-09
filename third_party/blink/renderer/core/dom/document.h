@@ -103,6 +103,7 @@ class WindowAgent;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
+class CookieJar;
 class V0CustomElementMicrotaskRunQueue;
 class V0CustomElementRegistrationContext;
 class DOMImplementation;
@@ -932,6 +933,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   String cookie(ExceptionState&) const;
   void setCookie(const String&, ExceptionState&);
+  bool CookiesEnabled() const;
 
   const AtomicString& referrer() const;
 
@@ -2067,6 +2069,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used to communicate state associated with resource management to the
   // embedder.
   std::unique_ptr<DocumentResourceCoordinator> resource_coordinator_;
+
+  // Used for document.cookie. May be null.
+  std::unique_ptr<CookieJar> cookie_jar_;
 
   // A dummy scheduler to return when the document is detached.
   // All operations on it result in no-op, but due to this it's safe to

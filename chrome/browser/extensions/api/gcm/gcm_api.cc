@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -142,8 +141,6 @@ GcmUnregisterFunction::GcmUnregisterFunction() {}
 GcmUnregisterFunction::~GcmUnregisterFunction() {}
 
 ExtensionFunction::ResponseAction GcmUnregisterFunction::Run() {
-  UMA_HISTOGRAM_BOOLEAN("GCM.APICallUnregister", true);
-
   GetGCMDriver()->Unregister(
       extension()->id(),
       base::Bind(&GcmUnregisterFunction::CompleteFunctionWithResult, this));

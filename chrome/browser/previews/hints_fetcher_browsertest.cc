@@ -25,8 +25,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -133,9 +135,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
-    cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
-                           hints_server_->base_url().spec());
-    cmd->AppendSwitchASCII(previews::switches::kFetchHintsOverride,
+    cmd->AppendSwitchASCII(
+        optimization_guide::switches::kOptimizationGuideServiceURL,
+        hints_server_->base_url().spec());
+    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
   }
 
@@ -303,9 +306,9 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
     // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kNoScriptPreviews,
-         previews::features::kOptimizationHints,
+         optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
-         previews::features::kOptimizationHintsFetching,
+         optimization_guide::features::kOptimizationHintsFetching,
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
         {});
@@ -598,9 +601,9 @@ IN_PROC_BROWSER_TEST_F(
   const base::HistogramTester* histogram_tester = GetHistogramTester();
   GURL url = https_url();
   base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-      previews::switches::kFetchHintsOverride);
+      optimization_guide::switches::kFetchHintsOverride);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      previews::switches::kFetchHintsOverrideTimer);
+      optimization_guide::switches::kFetchHintsOverrideTimer);
 
   SeedSiteEngagementService();
 

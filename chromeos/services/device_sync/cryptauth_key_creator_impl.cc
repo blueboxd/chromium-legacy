@@ -9,7 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "crypto/hkdf.h"
 

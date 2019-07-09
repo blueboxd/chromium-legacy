@@ -83,13 +83,13 @@ table {
   white-space: pre-wrap;
 }
 
-.body tr.thin:nth-child(even) td {
+.body tr.thin:nth-child(even) {
   background-color: #fafafa;
 }
 
-.body tr:hover td,
+.body tr:hover,
 /* must explicitly select .thin tr's to override above .thin styling */
-.body tr.thin:hover td {
+.body tr.thin:hover {
   background-color: var(--row-hover-color);
 }
 
@@ -285,10 +285,10 @@ img:not([src]),
 
 /* filter */
 
-.filtered-highlighted {
+.body tr.filtered-highlighted:not(:hover) {
   background-color: rgb(208, 240, 255);
 }
 
-.filtered-highlighted-nested {
+.body tr.filtered-highlighted:not(:hover) td.filtered-highlighted-nested {
   background-color: rgb(208, 255, 208);
 }

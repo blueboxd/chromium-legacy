@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351692861129622852">Importuję <ph name="FILE_COUNT" /> pliki(ów)...</translation>
 <translation id="1352103415082130575">Klawiatura tajska (Pattachote)</translation>
-<translation id="1358032944105037487">Klawiatura japońska</translation>
 <translation id="1358735829858566124">Plik lub katalog nie nadaje się do użycia.</translation>
 <translation id="1363028406613469049">Utwór</translation>
 <translation id="1378727793141957596">Dysk Google – witamy</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">Kopie zapasowe <ph name="FILE_COUNT" /> zdjęć zostały utworzone na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopiuję...</translation>
 <translation id="3475447146579922140">Arkusz kalkulacyjny Google</translation>
-<translation id="3494768541638400973">japoński – Google (dla klawiatury japońskiej)</translation>
 <translation id="3495304270784461826">Błędy: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracja (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalski</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Znaleziono <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Do góry nogami</translation>
-<translation id="6937152069980083337">japoński – Google (dla klawiatury amerykańskiej)</translation>
 <translation id="6939777852457331078">Amerykańska klawiatura Workman</translation>
 <translation id="696203921837389374">Włącz synchronizację przy użyciu komórkowej transmisji danych.</translation>
 <translation id="6965382102122355670">OK</translation>

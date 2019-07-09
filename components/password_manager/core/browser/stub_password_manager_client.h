@@ -69,6 +69,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   ukm::SourceId GetUkmSourceId() override;
   PasswordManagerMetricsRecorder* GetMetricsRecorder() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
+  bool IsNewTabPage() const override;
 
  private:
   const StubCredentialsFilter credentials_filter_;

@@ -10,8 +10,7 @@ namespace media {
 
 MojoProvisionFetcher::MojoProvisionFetcher(
     mojom::ProvisionFetcherPtr provision_fetcher_ptr)
-    : provision_fetcher_ptr_(std::move(provision_fetcher_ptr)),
-      weak_factory_(this) {
+    : provision_fetcher_ptr_(std::move(provision_fetcher_ptr)) {
   DVLOG(1) << __func__;
 }
 

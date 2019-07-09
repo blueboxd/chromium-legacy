@@ -73,8 +73,7 @@ CourierRenderer::CourierRenderer(
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
       remote_renderer_handle_(RpcBroker::kInvalidHandle),
       video_renderer_sink_(video_renderer_sink),
-      clock_(base::DefaultTickClock::GetInstance()),
-      weak_factory_(this) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   VLOG(2) << __func__;
   // Note: The constructor is running on the main thread, but will be destroyed
   // on the media thread. Therefore, all weak pointers must be dereferenced on

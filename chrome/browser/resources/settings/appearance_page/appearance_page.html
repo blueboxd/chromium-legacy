@@ -74,7 +74,7 @@
 <if expr="is_linux and not chromeos">
           <div class="settings-row continuation"
               hidden="[[!showThemesSecondary_(
-              prefs.extensions.theme.id.value, useSystemTheme_)]]"
+                  prefs.extensions.theme.id.value, useSystemTheme_)]]"
               id="themesSecondaryActions">
             <div class="separator"></div>
             <template is="dom-if" if="[[showUseClassic_(
@@ -143,7 +143,7 @@
         </settings-toggle-button>
 </if>
         <div class="settings-box">
-          <div class="start">$i18n{fontSize}</div>
+          <div class="start settings-box-text">$i18n{fontSize}</div>
           <settings-dropdown-menu id="defaultFontSize" label="$i18n{fontSize}"
               pref="{{prefs.webkit.webprefs.default_font_size}}"
               menu-options="[[fontSizeOptions_]]">
@@ -153,7 +153,9 @@
             label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_">
         </cr-link-row>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
-          <div id="pageZoom" class="start">$i18n{pageZoom}</div>
+          <div id="pageZoom" class="start settings-box-text">
+            $i18n{pageZoom}
+          </div>
           <select id="zoomLevel" class="md-select" aria-labelledby="pageZoom"
               on-change="onZoomLevelChange_">
             <template is="dom-repeat" items="[[pageZoomLevels_]]">

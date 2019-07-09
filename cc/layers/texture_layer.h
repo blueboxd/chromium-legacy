@@ -227,7 +227,7 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   // TextureLayerImpl.
   std::vector<viz::SharedBitmapId> to_unregister_bitmap_ids_;
 
-  base::WeakPtrFactory<TextureLayer> weak_ptr_factory_;
+  base::WeakPtrFactory<TextureLayer> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

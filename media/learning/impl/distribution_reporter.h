@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) DistributionReporter {
   // Otherwise, we assume that all features are used.
   base::Optional<std::set<int>> feature_indices_;
 
-  base::WeakPtrFactory<DistributionReporter> weak_factory_;
+  base::WeakPtrFactory<DistributionReporter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DistributionReporter);
 };

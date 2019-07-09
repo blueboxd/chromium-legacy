@@ -447,10 +447,6 @@ cc::PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
   return nullptr;
 }
 
-void CanvasRenderingContext2D::DisableDeferral(DisableDeferralReason reason) {
-  canvas()->DisableDeferral(reason);
-}
-
 String CanvasRenderingContext2D::font() const {
   if (!GetState().HasRealizedFont())
     return kDefaultFont;

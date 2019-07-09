@@ -273,7 +273,6 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
         } else if (target_is_opaque) {
           allowlist.opaque_value = value;
         } else {
-          DCHECK(!target_origin.opaque());
           values[target_origin] = value;
         }
       }

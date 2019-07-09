@@ -56,9 +56,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       inside_synchronous_composite_(false),
       needs_impl_frame_(false),
       layer_tree_frame_sink_creation_requested_(false),
-      layer_tree_frame_sink_lost_(true),
-      frame_sink_bound_weak_factory_(this),
-      weak_factory_(this) {
+      layer_tree_frame_sink_lost_(true) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(task_runner_provider_);
   DCHECK(task_runner_provider_->IsMainThread());

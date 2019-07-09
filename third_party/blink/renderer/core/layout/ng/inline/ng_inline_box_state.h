@@ -106,7 +106,7 @@ struct NGInlineBoxState {
 // 2) Performs layout when the positin/size of a box was computed.
 // 3) Cache common values for a box.
 class CORE_EXPORT NGInlineLayoutStateStack {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   // The box state for the line box.

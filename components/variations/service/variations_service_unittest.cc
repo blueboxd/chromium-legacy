@@ -428,7 +428,8 @@ TEST_F(VariationsServiceTest, VariationsURLHasParams) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
-  net::test::MockNetworkChangeNotifier network_change_notifier;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier = net::test::MockNetworkChangeNotifier::Create();
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
   std::unique_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
@@ -878,7 +879,8 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
 
   VariationsService::EnableFetchForTesting();
 
-  net::test::MockNetworkChangeNotifier network_change_notifier;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier = net::test::MockNetworkChangeNotifier::Create();
 
   // Create a variations service and perform a successful fetch.
   TestVariationsService service(

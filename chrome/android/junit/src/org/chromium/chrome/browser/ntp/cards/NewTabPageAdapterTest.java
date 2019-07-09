@@ -37,6 +37,7 @@ import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.view.View;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,6 +77,7 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -275,6 +277,9 @@ public class NewTabPageAdapterTest {
 
     @Before
     public void setUp() {
+        // These tests fail on touchless builds, see https://crbug.com/981870.
+        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
+
         MockitoAnnotations.initMocks(this);
 
         // Ensure that NetworkChangeNotifier is initialized.

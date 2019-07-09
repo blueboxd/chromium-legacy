@@ -86,6 +86,7 @@ class SkiaOutputDevice {
   virtual void DiscardBackbuffer();
 
   bool need_swap_semaphore() const { return need_swap_semaphore_; }
+  bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
  protected:
   // Begin paint the back buffer.
@@ -112,6 +113,9 @@ class SkiaOutputDevice {
   // Only valid between StartSwapBuffers and FinishSwapBuffers.
   base::Optional<BufferPresentedCallback> feedback_;
   base::Optional<gpu::SwapBuffersCompleteParams> params_;
+
+  // RGBX format is emulated with RGBA.
+  bool is_emulated_rgbx_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);
 };

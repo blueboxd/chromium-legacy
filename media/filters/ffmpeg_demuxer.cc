@@ -934,9 +934,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       media_tracks_updated_cb_(media_tracks_updated_cb),
-      is_local_file_(is_local_file),
-      cancel_pending_seek_factory_(this),
-      weak_factory_(this) {
+      is_local_file_(is_local_file) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
   DCHECK(media_tracks_updated_cb_);

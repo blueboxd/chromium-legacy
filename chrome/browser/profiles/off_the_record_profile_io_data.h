@@ -18,10 +18,6 @@
 
 class Profile;
 
-namespace net {
-class CookieStore;
-}  // namespace net
-
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
 // reference to the OffTheRecordProfileIOData. OffTheRecordProfileIOData is
 // intended to own all the objects owned by OffTheRecordProfile which live on
@@ -66,14 +62,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
  private:
   explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
   ~OffTheRecordProfileIOData() override;
-
-  void OnMainRequestContextCreated(
-      ProfileParams* profile_params) const override;
-  void InitializeExtensionsCookieStore(
-      ProfileParams* profile_params) const override;
-  net::CookieStore* GetExtensionsCookieStore() const override;
-
-  mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

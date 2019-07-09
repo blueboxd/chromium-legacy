@@ -207,10 +207,6 @@ jumbo_component("browser") {
     "quota/quota_temporary_storage_evictor.h",
     "quota/special_storage_policy.cc",
     "quota/special_storage_policy.h",
-    "quota/storage_monitor.cc",
-    "quota/storage_monitor.h",
-    "quota/storage_observer.cc",
-    "quota/storage_observer.h",
     "quota/usage_tracker.cc",
     "quota/usage_tracker.h",
   ]
@@ -316,7 +312,6 @@ source_set("unittests") {
     "quota/quota_manager_unittest.cc",
     "quota/quota_settings_unittest.cc",
     "quota/quota_temporary_storage_evictor_unittest.cc",
-    "quota/storage_monitor_unittest.cc",
     "quota/usage_tracker_unittest.cc",
     "test/mock_quota_manager_unittest.cc",
   ]

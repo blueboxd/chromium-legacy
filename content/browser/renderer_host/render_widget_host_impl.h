@@ -56,7 +56,9 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -660,13 +662,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // there are any queued messages belonging to it, they will be processed.
   void DidProcessFrame(uint32_t frame_token);
 
-  // An associated WidgetInputHandler should be set if the RWHI is associated
-  // with a RenderFrameHost. Using an associated channel will allow the
-  // interface calls processed on the FrameInputHandler to be processed in order
-  // with the interface calls processed on the WidgetInputHandler.
-  void SetWidgetInputHandler(
-      mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
-      mojom::WidgetInputHandlerHostRequest host_request);
+  // Indicate the frame input handler is now available.
+  void SetFrameInputHandler(mojom::FrameInputHandler*);
   void SetWidget(mojom::WidgetPtr widget);
 
   viz::mojom::InputTargetClient* input_target_client() {
@@ -1172,8 +1169,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // at the frame input level; see FrameInputHandler. Note that when the
   // RWHI wraps a WebPagePopup widget it will only have a
   // a |widget_input_handler_|.
-  mojom::WidgetInputHandlerAssociatedPtr associated_widget_input_handler_;
-  mojom::WidgetInputHandlerPtr widget_input_handler_;
+  mojo::AssociatedRemote<mojom::WidgetInputHandler>
+      associated_widget_input_handler_;
+  mojo::Remote<mojom::WidgetInputHandler> widget_input_handler_;
   viz::mojom::InputTargetClientPtr input_target_client_;
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;

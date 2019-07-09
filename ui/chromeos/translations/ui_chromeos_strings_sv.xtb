@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351692861129622852">Importerar <ph name="FILE_COUNT" /> filer …</translation>
 <translation id="1352103415082130575">Tangentbord för thailändska (Pattachote)</translation>
-<translation id="1358032944105037487">Japanskt tangentbord</translation>
 <translation id="1358735829858566124">Filen eller katalogen kan inte användas.</translation>
 <translation id="1363028406613469049">Spår</translation>
 <translation id="1378727793141957596">Välkommen till Google Drive!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> foton har säkerhetskopierats på <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopierar ...</translation>
 <translation id="3475447146579922140">Kalkylark i Google Dokument</translation>
-<translation id="3494768541638400973">Googles japanska inmatning (för japanskt tangentbord)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fel.</translation>
 <translation id="3519867315646775981">Translitterera (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugisiska</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> hittades</translation>
 <translation id="6935521024859866267">Uppochned</translation>
-<translation id="6937152069980083337">Googles japanska inmatning (för amerikanskt tangentbord)</translation>
 <translation id="6939777852457331078">Workman-tangentbord för USA</translation>
 <translation id="696203921837389374">Aktivera synkronisering via mobildata</translation>
 <translation id="6965382102122355670">OK</translation>

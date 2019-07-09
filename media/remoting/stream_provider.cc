@@ -104,7 +104,7 @@ class MediaStream final : public DemuxerStream {
   AudioDecoderConfig next_audio_decoder_config_;
   VideoDecoderConfig next_video_decoder_config_;
 
-  base::WeakPtrFactory<MediaStream> weak_factory_;
+  base::WeakPtrFactory<MediaStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStream);
 };
@@ -117,8 +117,7 @@ MediaStream::MediaStream(RpcBroker* rpc_broker,
       type_(type),
       remote_handle_(remote_handle),
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
-      error_callback_(error_callback),
-      weak_factory_(this) {
+      error_callback_(error_callback) {
   DCHECK(remote_handle_ != RpcBroker::kInvalidHandle);
   rpc_broker_->RegisterMessageReceiverCallback(
       rpc_handle_,
@@ -393,9 +392,7 @@ void MediaStream::OnError(const std::string& error) {
 
 StreamProvider::StreamProvider(RpcBroker* rpc_broker,
                                const base::Closure& error_callback)
-    : rpc_broker_(rpc_broker),
-      error_callback_(error_callback),
-      weak_factory_(this) {}
+    : rpc_broker_(rpc_broker), error_callback_(error_callback) {}
 
 StreamProvider::~StreamProvider() = default;
 

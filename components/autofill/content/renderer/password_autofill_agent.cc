@@ -1316,13 +1316,6 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
-
-      // Record how often users submit passwords on about:blank frames.
-      if (form.GetDocument().Url().ProtocolIs(url::kAboutScheme)) {
-        bool is_main_frame = !form.GetDocument().GetFrame()->Parent();
-        UMA_HISTOGRAM_BOOLEAN("PasswordManager.AboutBlankPasswordSubmission",
-                              is_main_frame);
-      }
     }
 
     provisionally_saved_form_.Reset();

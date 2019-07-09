@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/policy/os_and_policies_update_checker.h"
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
@@ -29,11 +30,14 @@ base::Optional<base::Time> IncrementMonthAndSetDayOfMonth(
 
 // The maximum iterations allowed to start an update check timer if the
 // operation fails.
-constexpr int kMaxRetryUpdateCheckIterations = 5;
+constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
 
 // Time to call |StartUpdateCheckTimer| again in case it failed.
 constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
     base::TimeDelta::FromMinutes(5);
+
+// Number of days in a week.
+constexpr int kDaysInAWeek = 7;
 
 }  // namespace update_checker_internal
 
@@ -44,17 +48,18 @@ class DeviceScheduledUpdateChecker {
   explicit DeviceScheduledUpdateChecker(chromeos::CrosSettings* cros_settings);
   virtual ~DeviceScheduledUpdateChecker();
 
+  // Frequency at which the update check should occur.
+  enum class Frequency {
+    kDaily,
+    kWeekly,
+    kMonthly,
+  };
+
   // Holds the data associated with the current scheduled update check policy.
   struct ScheduledUpdateCheckData {
     ScheduledUpdateCheckData();
     ScheduledUpdateCheckData(const ScheduledUpdateCheckData&);
     ~ScheduledUpdateCheckData();
-
-    enum class Frequency {
-      kDaily,
-      kWeekly,
-      kMonthly,
-    };
 
     int hour;
 
@@ -78,7 +83,7 @@ class DeviceScheduledUpdateChecker {
  protected:
   // Called when |update_check_timer_| fires. Triggers an update check and
   // schedules the next update check based on |scheduled_update_check_data_|.
-  virtual void UpdateCheck();
+  virtual void OnUpdateCheckTimerExpired();
 
   // Calculates next update check time based on |scheduled_update_check_data_|
   // and |cur_local_time|. Returns |base::nullopt| if calculation failed due to
@@ -86,6 +91,10 @@ class DeviceScheduledUpdateChecker {
   // |scheduled_update_check_data_| to be set.
   virtual base::Optional<base::Time> CalculateNextUpdateCheckTime(
       base::Time cur_local_time);
+
+  // Called when |os_and_policies_update_checker_| has finished successfully or
+  // unsuccessfully after retrying.
+  virtual void OnUpdateCheckCompletion(bool result);
 
  private:
   // Callback triggered when scheduled update check setting has changed.
@@ -107,7 +116,12 @@ class DeviceScheduledUpdateChecker {
   // been reached.
   void OnStartUpdateCheckTimerRetryFailure();
 
-  // Reset all state and cancel all pending tasks.
+  // Starts |start_update_check_timer_task_executor_| to run the next update
+  // check timer, via |StartUpdateCheckTimer|, only if a policy i.e.
+  // |scheduled_update_check_data_| is set.
+  void MaybeStartUpdateCheckTimer();
+
+  // Reset all state and cancel all pending tasks
   void ResetState();
 
   // Returns current time.
@@ -128,6 +142,9 @@ class DeviceScheduledUpdateChecker {
 
   // Used to run and retry |StartUpdateCheckTimer| if it fails.
   TaskExecutorWithRetries start_update_check_timer_task_executor_;
+
+  // Used to initiate update checks when |update_check_timer_| fires.
+  OsAndPoliciesUpdateChecker os_and_policies_update_checker_;
 
   // Timer that is scheduled to check for updates.
   std::unique_ptr<chromeos::NativeTimer> update_check_timer_;

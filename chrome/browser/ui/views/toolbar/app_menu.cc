@@ -1075,21 +1075,18 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
+#if defined(OS_CHROMEOS)
     if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
+      // ChromeOS adds extra vertical space for the menu buttons.
       const MenuConfig& config = views::MenuConfig::instance();
-      int top_margin = config.item_top_margin + config.separator_height / 2;
+      int top_margin = config.item_top_margin + config.separator_height / 2 + 4;
       int bottom_margin =
-          config.item_bottom_margin + config.separator_height / 2;
-
-      // Chromeos adds extra vertical space for the menu buttons.
-#if defined(OS_CHROMEOS)
-      top_margin += 4;
-      bottom_margin += 5;
-#endif
+          config.item_bottom_margin + config.separator_height / 2 + 5;
 
       item->SetMargins(top_margin, bottom_margin);
     }
+#endif
 
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
       PopulateMenu(item, model->GetSubmenuModelAt(i));

@@ -367,8 +367,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void VisibilityChanged(blink::mojom::FrameVisibility) override {}
 
-  WebCookieJar* CookieJar() const override { return nullptr; }
-
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return &interface_provider_;
   }

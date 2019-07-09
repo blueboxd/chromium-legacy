@@ -36,7 +36,6 @@
 <translation id="1346748346194534595">V desno</translation>
 <translation id="1351692861129622852">Uvoz toliko datotek: <ph name="FILE_COUNT" /> ...</translation>
 <translation id="1352103415082130575">Tipkovnica za tajščino (Pattachote)</translation>
-<translation id="1358032944105037487">Japonska tipkovnica</translation>
 <translation id="1358735829858566124">Neuporabna datoteka ali imenik.</translation>
 <translation id="1363028406613469049">Posnetek</translation>
 <translation id="1378727793141957596">Pozdravljeni v storitvi Google Drive!</translation>
@@ -205,7 +204,6 @@
 <translation id="3468522857997926824">V <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> je varnostno kopiranih toliko fotografij: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopiranje ...</translation>
 <translation id="3475447146579922140">Googlova preglednica</translation>
-<translation id="3494768541638400973">Googlov japonski način vnosa (za japonsko tipkovnico)</translation>
 <translation id="3495304270784461826">Št. napak: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Prečrkovanje (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugalščina</translation>
@@ -515,7 +513,6 @@
     <ph name="LINE_BREAK1" />
     Št. najdenih: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Obrnjeno</translation>
-<translation id="6937152069980083337">Googlov japonski način vnosa (za ameriško tipkovnico)</translation>
 <translation id="6939777852457331078">Tipkovnica za angleščino (Združene države) – Workman</translation>
 <translation id="696203921837389374">Omogoči sinhronizacijo prek prenosa podatkov v mobilnih omrežjih</translation>
 <translation id="6965382102122355670">V redu</translation>

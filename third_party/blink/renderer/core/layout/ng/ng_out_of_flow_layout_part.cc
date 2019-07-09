@@ -450,15 +450,22 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
       container_info.ContentSize(candidate_style.GetPosition());
   PhysicalSize container_physical_content_size =
       ToPhysicalSize(container_content_size, writing_mode_);
-  LogicalSize container_content_size_in_candidate_writing_mode =
-      container_physical_content_size.ConvertToLogical(candidate_writing_mode);
 
   // Determine if we need to actually run the full OOF-positioned sizing, and
   // positioning algorithm.
-  if (scoped_refptr<const NGLayoutResult> cached_result =
-          node.CachedLayoutResultForOutOfFlowPositioned(
-              container_content_size_in_candidate_writing_mode))
-    return cached_result;
+  //
+  // When this candidate has an inline container, the container may move without
+  // setting |NeedsLayout()| to the candidate and that there are cases where the
+  // cache validity cannot be determined.
+  if (!candidate.inline_container) {
+    LogicalSize container_content_size_in_candidate_writing_mode =
+        container_physical_content_size.ConvertToLogical(
+            candidate_writing_mode);
+    if (scoped_refptr<const NGLayoutResult> cached_result =
+            node.CachedLayoutResultForOutOfFlowPositioned(
+                container_content_size_in_candidate_writing_mode))
+      return cached_result;
+  }
 
   // Adjust the |static_position| (which is currently relative to the default
   // container's border-box). ng_absolute_utils expects the static position to

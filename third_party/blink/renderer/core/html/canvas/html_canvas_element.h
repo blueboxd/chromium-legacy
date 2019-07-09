@@ -159,8 +159,6 @@ class CORE_EXPORT HTMLCanvasElement final
              const PhysicalRect&,
              bool flatten_composited_layers);
 
-  void DisableDeferral(DisableDeferralReason);
-
   CanvasRenderingContext* RenderingContext() const override {
     return context_.Get();
   }

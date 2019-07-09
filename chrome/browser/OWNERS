@@ -62,8 +62,6 @@ per-file *_mac.h=mark@chromium.org
 per-file *_mac.h=rsesek@chromium.org
 per-file *_mac.h=thakis@chromium.org
 
-per-file media_router_resources.grdp=file://chrome/browser/media/router/OWNERS
-
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=thomasanderson@chromium.org

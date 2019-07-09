@@ -104,10 +104,8 @@ TEST_F(SamlPasswordExpiryNotificationTest, ShowAlreadyExpired) {
   ShowSamlPasswordExpiryNotification(profile_, 0);
   ASSERT_TRUE(Notification().has_value());
 
-  EXPECT_EQ(utf16("Your current password has expired!"),
-            Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password immediately"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
+  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
 
   DismissSamlPasswordExpiryNotification(profile_);
   EXPECT_FALSE(Notification().has_value());
@@ -117,10 +115,9 @@ TEST_F(SamlPasswordExpiryNotificationTest, ShowWillSoonExpire) {
   ShowSamlPasswordExpiryNotification(profile_, 14);
   ASSERT_TRUE(Notification().has_value());
 
-  EXPECT_EQ(utf16("Your current password will expire in less than 14 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 14 days"),
             Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password now"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 
   DismissSamlPasswordExpiryNotification(profile_);
   EXPECT_FALSE(Notification().has_value());
@@ -151,8 +148,7 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_AlreadyExpired) {
 
   // Notification is shown immediately since password has expired.
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password has expired!"),
-            Notification()->title());
+  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
 }
 
 TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillSoonExpire) {
@@ -161,7 +157,7 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillSoonExpire) {
 
   // Notification is shown immediately since password will soon expire.
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password will expire in less than 7 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 7 days"),
             Notification()->title());
 }
 
@@ -175,7 +171,7 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillEventuallyExpire) {
   // But, it will be shown once we are in the advance warning window:
   test_environment_.FastForwardBy(kOneYear + kOneHour);
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password will expire in less than 14 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 14 days"),
             Notification()->title());
 }
 
@@ -198,7 +194,7 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_PasswordChanged) {
 
   // Notification is shown immediately since password will soon expire.
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password will expire in less than 7 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 7 days"),
             Notification()->title());
 
   // Password is changed and notification is dismissed.
@@ -243,32 +239,26 @@ TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NoUserActionTaken) {
   // But the next day, the notification is shown.
   test_environment_.FastForwardBy(kOneDay);
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password will expire in less than 14 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 14 days"),
             Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password now"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 
   // As time passes, the notification updates each day.
   test_environment_.FastForwardBy(kAdvanceWarningTime / 2);
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password will expire in less than 7 days!"),
+  EXPECT_EQ(utf16("Password expires in less than 7 days"),
             Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password now"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 
   test_environment_.FastForwardBy(kAdvanceWarningTime / 2);
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password has expired!"),
-            Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password immediately"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
+  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
 
   test_environment_.FastForwardBy(kOneYear);
   EXPECT_TRUE(Notification().has_value());
-  EXPECT_EQ(utf16("Your current password has expired!"),
-            Notification()->title());
-  EXPECT_EQ(utf16("Please choose a new password immediately"),
-            Notification()->message());
+  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
+  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
 }
 
 TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NotificationDismissed) {

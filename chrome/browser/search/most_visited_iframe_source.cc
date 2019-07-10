@@ -7,12 +7,16 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/search/local_files_ntp_source.h"
+#include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/ntp_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/local_ntp_resources.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace {
@@ -61,24 +65,6 @@ void MostVisitedIframeSource::StartDataRequest(
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
 
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    std::string rel_path = "most_visited_" + path.substr(1);
-    if (path == kSingleJSPath) {
-      std::string origin;
-      if (!GetOrigin(wc_getter, &origin)) {
-        callback.Run(nullptr);
-        return;
-      }
-      local_ntp::SendLocalFileResourceWithOrigin(rel_path, origin, callback);
-    } else {
-      local_ntp::SendLocalFileResource(rel_path, callback);
-    }
-    return;
-  }
-#endif
-
   if (path == kSingleHTMLPath) {
     ui::TemplateReplacements replacements;
     bool disable_fade = base::FeatureList::IsEnabled(
@@ -124,6 +110,40 @@ void MostVisitedIframeSource::StartDataRequest(
   }
 }
 
+std::string MostVisitedIframeSource::GetMimeType(
+    const std::string& path_and_query) {
+  std::string path(GURL("chrome-search://host/" + path_and_query).path());
+  if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+    return "application/javascript";
+  if (base::EndsWith(path, ".png", base::CompareCase::INSENSITIVE_ASCII))
+    return "image/png";
+  if (base::EndsWith(path, ".css", base::CompareCase::INSENSITIVE_ASCII))
+    return "text/css";
+  if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII))
+    return "text/html";
+  if (base::EndsWith(path, ".svg", base::CompareCase::INSENSITIVE_ASCII))
+    return "image/svg+xml";
+  return std::string();
+}
+
+bool MostVisitedIframeSource::AllowCaching() {
+  return false;
+}
+
+bool MostVisitedIframeSource::ShouldServiceRequest(
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) {
+  return InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                                render_process_id) &&
+         url.SchemeIs(chrome::kChromeSearchScheme) &&
+         url.host_piece() == GetSource() && ServesPath(url.path());
+}
+
+bool MostVisitedIframeSource::ShouldDenyXFrameOptions() {
+  return false;
+}
+
 bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
   return path == kSingleHTMLPath || path == kSingleCSSPath ||
          path == kSingleJSPath || path == kTitleHTMLPath ||
@@ -133,4 +153,52 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kAddWhiteSvgPath || path == kEditMenuSvgPath ||
          path == kLocalNTPCommonCSSPath || path == kAnimationsCSSPath ||
          path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath;
+}
+
+void MostVisitedIframeSource::SendResource(
+    int resource_id,
+    const content::URLDataSource::GotDataCallback& callback,
+    const ui::TemplateReplacements* replacements) {
+  base::StringPiece resource =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+  std::string response =
+      replacements != nullptr
+          ? ui::ReplaceTemplateExpressions(resource, *replacements)
+          : resource.as_string();
+  callback.Run(base::RefCountedString::TakeString(&response));
+}
+
+void MostVisitedIframeSource::SendJSWithOrigin(
+    int resource_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::URLDataSource::GotDataCallback& callback) {
+  std::string origin;
+  if (!GetOrigin(wc_getter, &origin)) {
+    callback.Run(nullptr);
+    return;
+  }
+
+  base::StringPiece template_js =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+  std::string response(template_js.as_string());
+  base::ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
+  callback.Run(base::RefCountedString::TakeString(&response));
+}
+
+bool MostVisitedIframeSource::GetOrigin(
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    std::string* origin) const {
+  if (wc_getter.is_null())
+    return false;
+  content::WebContents* contents = wc_getter.Run();
+  if (!contents)
+    return false;
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  if (!entry)
+    return false;
+
+  *origin = entry->GetURL().GetOrigin().spec();
+  // Origin should not include a trailing slash. That is part of the path.
+  base::TrimString(*origin, "/", origin);
+  return true;
 }

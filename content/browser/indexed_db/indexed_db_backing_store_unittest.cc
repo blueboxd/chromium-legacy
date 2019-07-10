@@ -62,13 +62,14 @@ bool WriteFile(const base::FilePath& file, base::StringPiece content) {
 
 class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
-  TestableIndexedDBBackingStore(IndexedDBBackingStore::Mode backing_store_mode,
-                                IndexedDBFactory* indexed_db_factory,
-                                indexed_db::LevelDBFactory* leveldb_factory,
-                                const url::Origin& origin,
-                                const base::FilePath& blob_path,
-                                std::unique_ptr<LevelDBDatabase> db,
-                                base::SequencedTaskRunner* task_runner)
+  TestableIndexedDBBackingStore(
+      IndexedDBBackingStore::Mode backing_store_mode,
+      IndexedDBFactory* indexed_db_factory,
+      indexed_db::LevelDBFactory* leveldb_factory,
+      const url::Origin& origin,
+      const base::FilePath& blob_path,
+      std::unique_ptr<TransactionalLevelDBDatabase> db,
+      base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(backing_store_mode,
                               indexed_db_factory,
                               leveldb_factory,
@@ -148,7 +149,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       indexed_db::LevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
-      std::unique_ptr<LevelDBDatabase> db,
+      std::unique_ptr<TransactionalLevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner) override {
     return std::make_unique<TestableIndexedDBBackingStore>(
         backing_store_mode, this, leveldb_factory, origin, blob_path,

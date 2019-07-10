@@ -137,7 +137,11 @@ void AshTestBase::SetUp() {
   // default state.
   shell::ToplevelWindow::ClearSavedStateForTest();
 
-  ash_test_helper_->SetUp(start_session_, provide_local_state_);
+  AshTestHelper::InitParams params;
+  params.start_session = start_session_;
+  params.provide_local_state = provide_local_state_;
+  params.config_type = AshTestHelper::kUnitTest;
+  ash_test_helper_->SetUp(params);
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();

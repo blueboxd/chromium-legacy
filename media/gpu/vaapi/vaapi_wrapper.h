@@ -23,6 +23,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/gpu/media_gpu_export.h"
@@ -36,7 +37,9 @@
 #endif  // USE_X11
 
 namespace gfx {
+enum class BufferFormat;
 class NativePixmap;
+class NativePixmapDmaBuf;
 }
 
 namespace media {
@@ -187,6 +190,25 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // surface is transferred to the caller.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       const scoped_refptr<gfx::NativePixmap>& pixmap);
+
+  // Syncs and exports the VA surface identified by |va_surface_id| as a
+  // gfx::NativePixmapDmaBuf. Currently, the only VAAPI surface pixel formats
+  // supported are VA_FOURCC_IMC3 and VA_FOURCC_NV12.
+  //
+  // Notes:
+  //
+  // - For VA_FOURCC_IMC3, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YVU_420 because we don't have a YUV_420 format. The
+  //   planes are flipped accordingly, i.e.,
+  //   gfx::NativePixmapDmaBuf::GetDmaBufOffset(1) refers to the V plane.
+  //   TODO(andrescj): revisit once crrev.com/c/1573718 lands.
+  //
+  // - For VA_FOURCC_NV12, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YUV_420_BIPLANAR.
+  //
+  // Returns nullptr on failure.
+  scoped_refptr<gfx::NativePixmapDmaBuf> ExportVASurfaceAsNativePixmapDmaBuf(
+      VASurfaceID va_surface_id);
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no

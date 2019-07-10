@@ -206,20 +206,18 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
+  const std::string name = "Name";
+  const SkColor color = 0xAABBCCDDu;
 
   auto app = std::make_unique<WebApp>(app_id);
-
+  // Required fields:
   app->SetLaunchUrl(launch_url);
-  EXPECT_TRUE(app->name().empty());
+  app->SetName(name);
+  app->SetThemeColor(base::Optional<SkColor>(color));
+  // Let optional fields be empty:
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
-  EXPECT_FALSE(app->theme_color().has_value());
-
-  // |icons| is mandatory data member for a representation in DB. If no icons,
-  // WebAppDatabase::CreateWebApp(from_proto) returns nullptr.
-  WebApp::Icons icons;
-  icons.push_back({GURL("https://example.com/icon"), 512});
-  app->SetIcons(std::move(icons));
+  EXPECT_TRUE(app->icons().empty());
   registrar_->RegisterApp(std::move(app));
 
   Registry registry = ReadRegistry();
@@ -227,15 +225,16 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
 
-  // Mandatory members.
+  // Required fields were serialized:
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
+  EXPECT_EQ(name, app_copy->name());
+  EXPECT_EQ(color, app_copy->theme_color().value());
 
-  // No optional members.
-  EXPECT_TRUE(app_copy->name().empty());
+  // No optional fields.
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
-  EXPECT_FALSE(app_copy->theme_color().has_value());
+  EXPECT_TRUE(app_copy->icons().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

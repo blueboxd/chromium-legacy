@@ -27,8 +27,8 @@
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
@@ -53,7 +53,7 @@ class FileWriterDelegate;
 namespace content {
 class IndexedDBFactory;
 class LevelDBComparator;
-class LevelDBDatabase;
+class TransactionalLevelDBDatabase;
 struct IndexedDBValue;
 
 namespace indexed_db {
@@ -165,7 +165,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
                      const std::string& object_store_data_key,
                      std::vector<IndexedDBBlobInfo>*);
 
-    LevelDBTransaction* transaction() { return transaction_.get(); }
+    TransactionalLevelDBTransaction* transaction() {
+      return transaction_.get();
+    }
 
     virtual uint64_t GetTransactionSize();
 
@@ -268,7 +270,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // TODO(dmurph): Convert to WeakPtr. https://crbug.com/960992
     IndexedDBBackingStore* backing_store_;
     indexed_db::LevelDBFactory* const leveldb_factory_;
-    scoped_refptr<LevelDBTransaction> transaction_;
+    scoped_refptr<TransactionalLevelDBTransaction> transaction_;
     std::map<std::string, std::unique_ptr<BlobChangeRecord>> blob_change_map_;
     std::map<std::string, std::unique_ptr<BlobChangeRecord>>
         incognito_blob_map_;
@@ -360,7 +362,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     Transaction* transaction_;
     int64_t database_id_;
     const CursorOptions cursor_options_;
-    std::unique_ptr<LevelDBIterator> iterator_;
+    std::unique_ptr<TransactionalLevelDBIterator> iterator_;
     std::unique_ptr<blink::IndexedDBKey> current_key_;
     IndexedDBBackingStore::RecordIdentifier record_identifier_;
 
@@ -401,7 +403,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
                         indexed_db::LevelDBFactory* leveldb_factory,
                         const url::Origin& origin,
                         const base::FilePath& blob_path,
-                        std::unique_ptr<LevelDBDatabase> db,
+                        std::unique_ptr<TransactionalLevelDBDatabase> db,
                         base::SequencedTaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
 
@@ -536,7 +538,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       blink::mojom::IDBCursorDirection,
       leveldb::Status*);
 
-  LevelDBDatabase* db() { return db_.get(); }
+  TransactionalLevelDBDatabase* db() { return db_.get(); }
 
   const std::string& origin_identifier() { return origin_identifier_; }
 
@@ -573,8 +575,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
  protected:
   friend class IndexedDBOriginState;
 
-  leveldb::Status AnyDatabaseContainsBlobs(LevelDBTransaction* transaction,
-                                           bool* blobs_exist);
+  leveldb::Status AnyDatabaseContainsBlobs(
+      TransactionalLevelDBTransaction* transaction,
+      bool* blobs_exist);
 
   // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.
   leveldb::Status GetCompleteMetadata(
@@ -655,7 +658,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   mutable int num_blob_files_deleted_ = 0;
 #endif
 
-  std::unique_ptr<LevelDBDatabase> db_;
+  std::unique_ptr<TransactionalLevelDBDatabase> db_;
   // Whenever blobs are registered in active_blob_registry_,
   // indexed_db_factory_ will hold a reference to this backing store.
   IndexedDBActiveBlobRegistry active_blob_registry_;

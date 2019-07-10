@@ -11,7 +11,7 @@ cr.define('onboarding_welcome_app_test', function() {
     /** @type {welcome.WelcomeBrowserProxy} */
     let testWelcomeBrowserProxy;
 
-    /** @type {nux.NuxSetAsDefaultProxy} */
+    /** @type {welcome.NuxSetAsDefaultProxy} */
     let testSetAsDefaultProxy;
 
     function resetTestElement() {
@@ -48,11 +48,11 @@ cr.define('onboarding_welcome_app_test', function() {
       welcome.WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
 
       testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
-      nux.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
+      welcome.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
 
       // Not used in test, but setting to test proxy anyway, in order to prevent
       // calls to backend.
-      nux.BookmarkProxyImpl.instance_ = new TestBookmarkProxy();
+      welcome.BookmarkProxyImpl.instance_ = new TestBookmarkProxy();
 
       resetTestElement();
     });
@@ -123,7 +123,7 @@ cr.define('onboarding_welcome_app_test', function() {
 
     test('default-status check resolves with correct value', function() {
       /**
-       * @param {!nux.DefaultBrowserInfo} status
+       * @param {!welcome.DefaultBrowserInfo} status
        * @param {boolean} expectedDefaultExists
        * @return {!Promise}
        */

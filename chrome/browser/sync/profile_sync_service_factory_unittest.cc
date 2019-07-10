@@ -13,6 +13,7 @@
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/base/model_type.h"
@@ -20,6 +21,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -42,27 +44,46 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(45 == syncer::ModelType::NUM_ENTRIES,
+    static_assert(46 == syncer::ModelType::NUM_ENTRIES,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
     std::vector<syncer::ModelType> datatypes;
 
-    // Desktop types.
-#if !defined(OS_ANDROID)
+    // These preprocessor conditions and their order should be in sync with
+    // preprocessor conditions in ChromeSyncClient::CreateDataTypeControllers:
+
+    // ChromeSyncClient types.
+    datatypes.push_back(syncer::SECURITY_EVENTS);
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    datatypes.push_back(syncer::SUPERVISED_USER_SETTINGS);
+    datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     datatypes.push_back(syncer::APPS);
-#if BUILDFLAG(ENABLE_APP_LIST)
-    datatypes.push_back(syncer::APP_LIST);
-#endif
-    datatypes.push_back(syncer::APP_SETTINGS);
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
-    datatypes.push_back(syncer::DICTIONARY);
-#endif
     datatypes.push_back(syncer::EXTENSIONS);
     datatypes.push_back(syncer::EXTENSION_SETTINGS);
-    datatypes.push_back(syncer::SEARCH_ENGINES);
+    datatypes.push_back(syncer::APP_SETTINGS);
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
+        base::FeatureList::IsEnabled(features::kDesktopPWAsUSS)) {
+      datatypes.push_back(syncer::WEB_APPS);
+    }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if !defined(OS_ANDROID)
     datatypes.push_back(syncer::THEMES);
-#endif  // !OS_ANDROID
+    datatypes.push_back(syncer::SEARCH_ENGINES);
+#endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+    datatypes.push_back(syncer::APP_LIST);
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
+
+#if defined(OS_LINUX) || defined(OS_WIN)
+    datatypes.push_back(syncer::DICTIONARY);
+#endif
 
 #if defined(OS_CHROMEOS)
     if (arc::IsArcAllowedForProfile(profile()))
@@ -88,9 +109,6 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
-    datatypes.push_back(syncer::SECURITY_EVENTS);
-    datatypes.push_back(syncer::SUPERVISED_USER_SETTINGS);
-    datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
     datatypes.push_back(syncer::USER_CONSENTS);

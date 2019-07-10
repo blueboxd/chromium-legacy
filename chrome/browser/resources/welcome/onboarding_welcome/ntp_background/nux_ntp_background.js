@@ -13,17 +13,17 @@ Polymer({
   ],
 
   properties: {
-    /** @type {nux.stepIndicatorModel} */
+    /** @type {welcome.stepIndicatorModel} */
     indicatorModel: Object,
 
-    /** @private {?nux.NtpBackgroundData} */
+    /** @private {?welcome.NtpBackgroundData} */
     selectedBackground_: {
       observer: 'onSelectedBackgroundChange_',
       type: Object,
     },
   },
 
-  /** @private {?Array<!nux.NtpBackgroundData>} */
+  /** @private {?Array<!welcome.NtpBackgroundData>} */
   backgrounds_: null,
 
   /** @private */
@@ -32,17 +32,17 @@ Polymer({
   /** @private {boolean} */
   imageIsLoading_: false,
 
-  /** @private {?nux.ModuleMetricsManager} */
+  /** @private {?welcome.ModuleMetricsManager} */
   metricsManager_: null,
 
-  /** @private {?nux.NtpBackgroundProxy} */
+  /** @private {?welcome.NtpBackgroundProxy} */
   ntpBackgroundProxy_: null,
 
   /** @override */
   ready: function() {
-    this.ntpBackgroundProxy_ = nux.NtpBackgroundProxyImpl.getInstance();
-    this.metricsManager_ = new nux.ModuleMetricsManager(
-        nux.NtpBackgroundMetricsProxyImpl.getInstance());
+    this.ntpBackgroundProxy_ = welcome.NtpBackgroundProxyImpl.getInstance();
+    this.metricsManager_ = new welcome.ModuleMetricsManager(
+        welcome.NtpBackgroundMetricsProxyImpl.getInstance());
   },
 
   onRouteEnter: function() {
@@ -98,7 +98,7 @@ Polymer({
   },
 
   /**
-   * @param {!nux.NtpBackgroundData} background
+   * @param {!welcome.NtpBackgroundData} background
    * @private
    */
   isSelectedBackground_: function(background) {
@@ -144,7 +144,7 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item: !nux.NtpBackgroundData}}} e
+   * @param {!{model: !{item: !welcome.NtpBackgroundData}}} e
    * @private
    */
   onBackgroundClick_: function(e) {

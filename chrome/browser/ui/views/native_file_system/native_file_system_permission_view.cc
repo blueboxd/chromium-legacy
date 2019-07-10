@@ -8,16 +8,15 @@
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -33,26 +32,10 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  base::string16 formatted_origin =
-      url_formatter::FormatOriginForSecurityDisplay(
-          origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-  size_t offset;
-  auto label = std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringFUTF16(
-          is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
-                       : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
-          formatted_origin, &offset),
-      nullptr);
-  label->SetTextContext(CONTEXT_BODY_TEXT_SMALL);
-  label->SetDefaultTextStyle(STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  views::StyledLabel::RangeStyleInfo origin_style;
-  origin_style.text_style = STYLE_EMPHASIZED_SECONDARY;
-  label->AddStyleRange(gfx::Range(offset, offset + formatted_origin.length()),
-                       origin_style);
-
-  AddChildView(std::move(label));
+  AddChildView(native_file_system_ui_helper::CreateOriginLabel(
+      is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
+                   : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
+      origin, CONTEXT_BODY_TEXT_SMALL));
 
   auto file_label_container = std::make_unique<views::View>();
   int indent =

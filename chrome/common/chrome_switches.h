@@ -193,10 +193,6 @@ extern const char kWindowWorkspace[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
 
-#if !defined(GOOGLE_CHROME_BUILD)
-extern const char kLocalNtpReload[];
-#endif
-
 #if defined(OS_ANDROID)
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kEnableAccessibilityTabSwitcher[];

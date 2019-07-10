@@ -11,6 +11,10 @@
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android_observer.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace ui {
 class ViewAndroid;
 class WindowAndroid;
@@ -23,18 +27,9 @@ class NavigationGlow : public ui::OverscrollGlowClient,
                        public ui::WindowAndroidObserver,
                        public ui::ViewAndroidObserver {
  public:
-  explicit NavigationGlow(float dip_scale);
+  explicit NavigationGlow(float dip_scale, content::WebContents* web_contents);
   ~NavigationGlow() override;
 
-  void InitWithSceneLayer(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jscene_layer,
-      const base::android::JavaParamRef<jobject>& jwindow_android);
-  void InitWithWebContents(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents);
   void Prepare(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jfloat start_x,

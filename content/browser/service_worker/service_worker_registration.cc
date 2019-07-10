@@ -250,17 +250,40 @@ void ServiceWorkerRegistration::ClaimClients() {
   DCHECK(context_);
   DCHECK(active_version());
 
+  // https://w3c.github.io/ServiceWorker/#clients-claim
+  //
+  // "For each service worker client client whose origin is the same as the
+  //  service worker's origin:
+  const bool include_reserved_clients = false;
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(
-               scope_.GetOrigin(), false /* include_reserved_clients */);
+           context_->GetClientProviderHostIterator(scope_.GetOrigin(),
+                                                   include_reserved_clients);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
+    // "1. If client’s execution ready flag is unset or client’s discarded flag
+    //     is set, continue."
+    // |include_reserved_clients| ensures only execution ready clients are
+    // returned.
+    DCHECK(host->is_execution_ready());
+
+    // This is part of step 5 but performed here as an optimization. Do nothing
+    // if this version is already the controller.
     if (host->controller() == active_version())
       continue;
+
+    // "2. If client is not a secure context, continue."
     if (!host->IsContextSecureForServiceWorker())
       continue;
-    if (host->MatchRegistration() == this)
-      host->ClaimedByRegistration(this);
+
+    // "3. Let registration be the result of running Match Service Worker
+    //     Registration algorithm passing client’s creation URL as the argument.
+    //  4. If registration is not the service worker's containing service worker
+    //     registration, continue."
+    if (host->MatchRegistration() != this)
+      continue;
+
+    // The remaining steps are performed here:
+    host->ClaimedByRegistration(this);
   }
 }
 

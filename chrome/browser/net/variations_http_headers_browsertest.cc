@@ -325,17 +325,9 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
-#if defined(OS_CHROMEOS)
-// See https://crbug.com/964338
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
-  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
-#else
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
-  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
-#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -356,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait for the response to complete.
   loader_helper.WaitForCallback();
+  EXPECT_EQ(net::OK, loader->NetError());
   EXPECT_TRUE(loader_helper.response_body());
 
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
@@ -364,17 +357,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
-#if defined(OS_CHROMEOS)
-// See https://crbug.com/964338
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
-  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
-#else
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
-  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
-#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -395,6 +380,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait for the response to complete.
   loader_helper.WaitForCallback();
+  EXPECT_EQ(net::OK, loader->NetError());
   EXPECT_TRUE(loader_helper.response_body());
 
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));

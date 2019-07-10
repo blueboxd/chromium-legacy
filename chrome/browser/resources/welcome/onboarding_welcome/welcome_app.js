@@ -111,7 +111,7 @@ Polymer({
 
     /** @type {!Promise} */
     const defaultBrowserPromise =
-        nux.NuxSetAsDefaultProxyImpl.getInstance()
+        welcome.NuxSetAsDefaultProxyImpl.getInstance()
             .requestDefaultBrowserState()
             .then((status) => {
               if (status.isDefault || !status.canBeDefault) {
@@ -128,7 +128,7 @@ Polymer({
     return Promise
         .all([
           defaultBrowserPromise,
-          nux.BookmarkBarManager.getInstance().initialized,
+          welcome.BookmarkBarManager.getInstance().initialized,
         ])
         .then(([canSetDefault]) => {
           modules = modules.filter(module => {

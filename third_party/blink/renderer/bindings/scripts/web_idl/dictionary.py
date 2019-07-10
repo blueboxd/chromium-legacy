@@ -28,6 +28,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                      extended_attributes=None,
                      code_generator_info=None,
                      component=None,
+                     components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
             assert isinstance(own_members, (list, tuple)) and all(
@@ -39,10 +40,23 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
             IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(self, component)
+            WithComponent.__init__(
+                self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
+            self.is_partial = is_partial
             self.own_members = own_members
+
+        def make_copy(self):
+            return Dictionary.IR(
+                identifier=self.identifier,
+                is_partial=self.is_partial,
+                own_members=map(DictionaryMember.IR.make_copy,
+                                self.own_members),
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
 
     @property
     def inherited_dictionary(self):
@@ -86,6 +100,7 @@ class DictionaryMember(IdlMember):
                      extended_attributes=None,
                      code_generator_info=None,
                      component=None,
+                     components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert isinstance(is_required, bool)
@@ -95,12 +110,24 @@ class DictionaryMember(IdlMember):
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(self, component)
+            WithComponent.__init__(
+                self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
             self.is_required = is_required
             self.default_value = default_value
+
+        def make_copy(self):
+            return DictionaryMember.IR(
+                identifier=self.identifier,
+                idl_type=self.idl_type,
+                is_required=self.is_required,
+                default_value=self.default_value,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
 
     @property
     def idl_type(self):

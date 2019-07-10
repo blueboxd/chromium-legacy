@@ -49,7 +49,7 @@
 
 @media (prefers-color-scheme: dark) {
   #edit-bg.ep-enhanced {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
   }
 }
 
@@ -142,9 +142,8 @@ html[dir=rtl] #edit-bg {
 
 @media (prefers-color-scheme: dark) {
   #edit-bg-dialog {
-    background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-        0 4px 8px 3px rgba(0, 0, 0, .15);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    box-shadow: var(--dark-mode-shadow);
   }
 }
 
@@ -298,10 +297,9 @@ html[dir=rtl] .bg-option-img {
 
 @media (prefers-color-scheme: dark) {
   #bg-sel-menu {
-    background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-        0 4px 8px 3px rgba(0, 0, 0, .15);
-    }
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    box-shadow: var(--dark-mode-shadow);
+  }
 }
 
 /* The width is decided by the longest text length plus 16px margin on the

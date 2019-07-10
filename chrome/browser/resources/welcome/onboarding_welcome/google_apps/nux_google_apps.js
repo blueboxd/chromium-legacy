@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('nux');
+cr.exportPath('welcome');
 
 /**
  * @typedef {{
@@ -14,15 +14,15 @@ cr.exportPath('nux');
  *   selected: boolean,
  * }}
  */
-nux.AppItem;
+welcome.AppItem;
 
 /**
  * @typedef {{
- *   item: !nux.AppItem,
+ *   item: !welcome.AppItem,
  *   set: function(string, boolean):void
  * }}
  */
-nux.AppItemModel;
+welcome.AppItemModel;
 
 const KEYBOARD_FOCUSED = 'keyboard-focused';
 
@@ -32,11 +32,11 @@ Polymer({
   behaviors: [welcome.NavigationBehavior, I18nBehavior],
 
   properties: {
-    /** @type {nux.stepIndicatorModel} */
+    /** @type {welcome.stepIndicatorModel} */
     indicatorModel: Object,
 
     /**
-     * @type {!Array<!nux.AppItem>}
+     * @type {!Array<!welcome.AppItem>}
      * @private
      */
     appList_: Array,
@@ -48,19 +48,19 @@ Polymer({
     },
   },
 
-  /** @private {nux.GoogleAppProxy} */
+  /** @private {welcome.GoogleAppProxy} */
   appProxy_: null,
 
-  /** @private {?nux.ModuleMetricsManager} */
+  /** @private {?welcome.ModuleMetricsManager} */
   metricsManager_: null,
 
   /** @private */
   finalized_: false,
 
-  /** @private {nux.BookmarkProxy} */
+  /** @private {welcome.BookmarkProxy} */
   bookmarkProxy_: null,
 
-  /** @private {nux.BookmarkBarManager} */
+  /** @private {welcome.BookmarkBarManager} */
   bookmarkBarManager_: null,
 
   /** @private {boolean} */
@@ -68,11 +68,11 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.appProxy_ = nux.GoogleAppProxyImpl.getInstance();
-    this.metricsManager_ = new nux.ModuleMetricsManager(
-        nux.GoogleAppsMetricsProxyImpl.getInstance());
-    this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
-    this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
+    this.appProxy_ = welcome.GoogleAppProxyImpl.getInstance();
+    this.metricsManager_ = new welcome.ModuleMetricsManager(
+        welcome.GoogleAppsMetricsProxyImpl.getInstance());
+    this.bookmarkProxy_ = welcome.BookmarkProxyImpl.getInstance();
+    this.bookmarkBarManager_ = welcome.BookmarkBarManager.getInstance();
   },
 
   /** @override */
@@ -164,7 +164,7 @@ Polymer({
 
   /**
    * Handle toggling the apps selected.
-   * @param {!{model: !nux.AppItemModel}} e
+   * @param {!{model: !welcome.AppItemModel}} e
    * @private
    */
   onAppClick_: function(e) {
@@ -235,7 +235,7 @@ Polymer({
       this.appList_.forEach(app => this.updateBookmark_(app));
     } else {
       this.appProxy_.getAppList().then(list => {
-        this.appList_ = /** @type(!Array<!nux.AppItem>) */ (list);
+        this.appList_ = /** @type(!Array<!welcome.AppItem>) */ (list);
         this.appList_.forEach((app, index) => {
           // Default select first few items.
           app.selected = index < 3;
@@ -248,7 +248,7 @@ Polymer({
   },
 
   /**
-   * @param {!nux.AppItem} item
+   * @param {!welcome.AppItem} item
    * @private
    */
   updateBookmark_: function(item) {

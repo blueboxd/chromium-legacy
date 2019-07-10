@@ -37,13 +37,13 @@ cr.define('onboarding_welcome_app_chooser', function() {
       },
     ];
 
-    /** @type {nux.NuxAppProxy} */
+    /** @type {welcome.NuxAppProxy} */
     let testAppBrowserProxy;
 
-    /** @type {nux.ModuleMetricsProxy} */
+    /** @type {welcome.ModuleMetricsProxy} */
     let testAppMetricsProxy;
 
-    /** @type {nux.BookmarkProxy} */
+    /** @type {welcome.BookmarkProxy} */
     let testBookmarkBrowserProxy;
 
     /** @type {AppChooserElement} */
@@ -54,10 +54,10 @@ cr.define('onboarding_welcome_app_chooser', function() {
       testAppMetricsProxy = new TestMetricsProxy();
       testBookmarkBrowserProxy = new TestBookmarkProxy();
 
-      nux.GoogleAppProxyImpl.instance_ = testAppBrowserProxy;
-      nux.GoogleAppsMetricsProxyImpl.instance_ = testAppMetricsProxy;
-      nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
-      nux.BookmarkBarManager.instance_ = new nux.BookmarkBarManager();
+      welcome.GoogleAppProxyImpl.instance_ = testAppBrowserProxy;
+      welcome.GoogleAppsMetricsProxyImpl.instance_ = testAppMetricsProxy;
+      welcome.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
+      welcome.BookmarkBarManager.instance_ = new welcome.BookmarkBarManager();
 
       testAppBrowserProxy.setAppList(apps);
 

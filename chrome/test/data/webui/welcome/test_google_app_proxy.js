@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {nux.GoogleAppProxy} */
+/** @implements {welcome.GoogleAppProxy} */
 class TestGoogleAppProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -13,7 +13,7 @@ class TestGoogleAppProxy extends TestBrowserProxy {
 
     this.providerSelectedCount = 0;
 
-    /** @private {!Array<!nux.BookmarkListItem>} */
+    /** @private {!Array<!welcome.BookmarkListItem>} */
     this.appList_ = [];
   }
 
@@ -34,7 +34,7 @@ class TestGoogleAppProxy extends TestBrowserProxy {
     this.providerSelectedCount++;
   }
 
-  /** @param {!Array<!nux.BookmarkListItem>} appList */
+  /** @param {!Array<!welcome.BookmarkListItem>} appList */
   setAppList(appList) {
     this.appList_ = appList;
   }

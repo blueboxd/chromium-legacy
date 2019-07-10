@@ -25,7 +25,6 @@
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_init_params.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
@@ -72,7 +71,6 @@ namespace ash {
 
 AshTestHelper::AshTestHelper()
     : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
-  ui::test::EnableTestConfigForPlatformWindows();
 }
 
 AshTestHelper::~AshTestHelper() {
@@ -81,7 +79,8 @@ AshTestHelper::~AshTestHelper() {
   ScreenAsh::DeleteScreenForShutdown();
 }
 
-void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
+void AshTestHelper::SetUp(const InitParams& init_params,
+                          base::Optional<ShellInitParams> shell_init_params) {
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -91,22 +90,26 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         ::switches::kHostWindowBounds, "1+1-800x600");
   }
 
+  if (init_params.config_type == kUnitTest) {
+    // Default for unit tests but not for perf tests.
+    zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+    TabletModeController::SetUseScreenshotForTest(false);
+    ui::test::EnableTestConfigForPlatformWindows();
+    display::ResetDisplayIdForTest();
+    ui::InitializeInputMethodForTesting();
+  }
+
   statistics_provider_ =
       std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
 
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
 
-  display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();
   // Only create a ViewsDelegate if the test didn't create one already.
   if (!views::ViewsDelegate::GetInstance())
     test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
-
-  // Disable animations during tests.
-  zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-  ui::InitializeInputMethodForTesting();
 
   // Creates Shell and hook with Desktop.
   if (!test_shell_delegate_)
@@ -137,7 +140,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   ui::MaterialDesignController::Initialize();
 
-  CreateShell(provide_local_state);
+  CreateShell(init_params.provide_local_state, std::move(shell_init_params));
 
   // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
   aura::test::EnvTestHelper env_helper(aura::Env::GetInstance());
@@ -167,38 +170,43 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());
 
-  if (start_session)
+  if (init_params.start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
-
-  // Tests that change the display configuration generally don't care about
-  // the notifications and the popup UI can interfere with things like
-  // cursors.
-  shell->screen_layout_observer()->set_show_notifications_for_testing(false);
-
-  display::test::DisplayManagerTestApi(shell->display_manager())
-      .DisableChangeDisplayUponHostResize();
-  DisplayConfigurationControllerTestApi(
-      shell->display_configuration_controller())
-      .SetDisplayAnimator(false);
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
-  // Create the test keyboard controller observer to respond to
-  // OnLoadKeyboardContentsRequested().
-  test_keyboard_controller_observer_ =
-      std::make_unique<TestKeyboardControllerObserver>(
-          shell->keyboard_controller());
-
   new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
 
-  // Remove the app dragging animations delay for testing purposes.
-  shell->overview_controller()->set_delayed_animation_task_delay_for_test(
-      base::TimeDelta());
+  // Post shell creation config init.
+  if (init_params.config_type == kUnitTest) {
+    // Tests that change the display configuration generally don't care about
+    // the notifications and the popup UI can interfere with things like
+    // cursors.
+    shell->screen_layout_observer()->set_show_notifications_for_testing(false);
 
-  // Ensure tests have a wallpaper as placeholder.
-  shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
+    // Disable display change animations in unit tests.
+    DisplayConfigurationControllerTestApi(
+        shell->display_configuration_controller())
+        .SetDisplayAnimator(false);
 
-  TabletModeController::SetUseScreenshotForTest(false);
+    // Remove the app dragging animations delay for testing purposes.
+    shell->overview_controller()->set_delayed_animation_task_delay_for_test(
+        base::TimeDelta());
+
+    // Don't change the display size due to host size resize.
+    display::test::DisplayManagerTestApi(shell->display_manager())
+        .DisableChangeDisplayUponHostResize();
+
+    // Create the test keyboard controller observer to respond to
+    // OnLoadKeyboardContentsRequested().
+    test_keyboard_controller_observer_ =
+        std::make_unique<TestKeyboardControllerObserver>(
+            shell->keyboard_controller());
+    // Unit test expects empty wallpaper.
+    shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
+  } else {
+    shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+  }
 }
 
 void AshTestHelper::TearDown() {
@@ -257,6 +265,8 @@ void AshTestHelper::TearDown() {
       ui::test::EventGeneratorDelegate::FactoryFunction());
 
   statistics_provider_.reset();
+
+  TabletModeController::SetUseScreenshotForTest(true);
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {
@@ -275,26 +285,28 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 
-void AshTestHelper::CreateShell(bool provide_local_state) {
-  const bool enable_pixel_output = false;
-  context_factories_ =
-      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
-  ShellInitParams init_params;
-  init_params.delegate.reset(test_shell_delegate_);
-  init_params.context_factory = context_factories_->GetContextFactory();
-  init_params.context_factory_private =
-      context_factories_->GetContextFactoryPrivate();
-  init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
-
+void AshTestHelper::CreateShell(bool provide_local_state,
+                                base::Optional<ShellInitParams> init_params) {
+  if (init_params == base::nullopt) {
+    context_factories_ = std::make_unique<ui::TestContextFactories>(
+        /*enable_pixel_output=*/false);
+    init_params.emplace(ShellInitParams());
+    init_params->delegate.reset(test_shell_delegate_);
+    init_params->context_factory = context_factories_->GetContextFactory();
+    init_params->context_factory_private =
+        context_factories_->GetContextFactoryPrivate();
+    init_params->keyboard_ui_factory =
+        std::make_unique<TestKeyboardUIFactory>();
+  }
   if (provide_local_state) {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     RegisterLocalStatePrefs(pref_service->registry(), true);
 
     local_state_ = std::move(pref_service);
-    init_params.local_state = local_state_.get();
+    init_params->local_state = local_state_.get();
   }
 
-  Shell::CreateInstance(std::move(init_params));
+  Shell::CreateInstance(std::move(*init_params));
 }
 
 }  // namespace ash

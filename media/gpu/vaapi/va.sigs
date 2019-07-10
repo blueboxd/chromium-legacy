@@ -20,6 +20,7 @@ VAStatus vaDestroySurfaces(VADisplay dpy, VASurfaceID *surfaces, int num_surface
 int vaDisplayIsValid(VADisplay dpy);
 VAStatus vaEndPicture(VADisplay dpy, VAContextID context);
 const char *vaErrorStr(VAStatus error_status);
+VAStatus vaExportSurfaceHandle(VADisplay dpy, VASurfaceID surface_id, uint32_t mem_type, uint32_t flags, void *descriptor);
 VAStatus vaGetConfigAttributes(VADisplay dpy, VAProfile profile, VAEntrypoint entrypoint, VAConfigAttrib *attrib_list, int num_attribs);
 VAStatus vaGetImage(VADisplay dpy, VASurfaceID surface, int x, int y, unsigned int width, unsigned int height, VAImageID image);
 VAStatus vaInitialize(VADisplay dpy, int *major_version, int *minor_version);

@@ -6115,4 +6115,13 @@ TEST(HeapTest, GarbageCollectedMixinIsAliveDuringConstruction) {
   MakeGarbageCollected<P>();
 }
 
+TEST(HeapTest, PersistentAssignsDeletedValue) {
+  // Regression test: https://crbug.com/982313
+
+  Persistent<IntWrapper> deleted(WTF::kHashTableDeletedValue);
+  Persistent<IntWrapper> pre_initialized(MakeGarbageCollected<IntWrapper>(1));
+  pre_initialized = deleted;
+  PreciselyCollectGarbage();
+}
+
 }  // namespace blink

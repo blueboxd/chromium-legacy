@@ -73,6 +73,13 @@ class ExtendedAttribute(object):
         # Should not reach here.
         assert False, 'Unknown format: {}'.format(self._format)
 
+    def make_copy(self):
+        return ExtendedAttribute(
+            key=self._key,
+            values=self._values,
+            arguments=self._arguments,
+            name=self._name)
+
     @property
     def key(self):
         """
@@ -174,6 +181,9 @@ class ExtendedAttributes(object):
     def __str__(self):
         attrs = [str(attr) for attr in self]
         return '[{}]'.format(', '.join(attrs))
+
+    def make_copy(self):
+        return ExtendedAttributes(map(ExtendedAttribute.make_copy, self))
 
     def get(self, key):
         """

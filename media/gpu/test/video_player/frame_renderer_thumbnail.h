@@ -40,13 +40,15 @@ class FrameRendererThumbnail : public FrameRenderer {
 
   // Create an instance of the thumbnail frame renderer.
   static std::unique_ptr<FrameRendererThumbnail> Create(
-      const std::vector<std::string> thumbnail_checksums);
+      const std::vector<std::string> thumbnail_checksums,
+      const base::FilePath& output_folder);
 
   // Create an instance of the thumbnail frame renderer. The |video_file_path|
   // should point to a file containing all golden thumbnail hashes for the video
   // being rendered.
   static std::unique_ptr<FrameRendererThumbnail> Create(
-      const base::FilePath& video_file_path);
+      const base::FilePath& video_file_path,
+      const base::FilePath& output_folder);
 
   // FrameRenderer implementation
   // Acquire the active GL context. This will claim |gl_context_lock_|.
@@ -67,7 +69,8 @@ class FrameRendererThumbnail : public FrameRenderer {
 
  private:
   explicit FrameRendererThumbnail(
-      const std::vector<std::string>& thumbnail_checksums);
+      const std::vector<std::string>& thumbnail_checksums,
+      const base::FilePath& output_folder);
 
   // Initialize the frame renderer, performs all rendering-related setup.
   void Initialize();
@@ -122,6 +125,9 @@ class FrameRendererThumbnail : public FrameRenderer {
 
   // Whether GL was initialized, as it should only happen once.
   static bool gl_initialized_;
+
+  // Output folder the thumbnails image will be written to by SaveThumbnail().
+  const base::FilePath output_folder_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(renderer_sequence_checker_);

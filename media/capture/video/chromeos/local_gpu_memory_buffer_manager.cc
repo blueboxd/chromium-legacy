@@ -5,11 +5,18 @@
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 
 #include <drm_fourcc.h>
+#include <gbm.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <xf86drm.h>
-#include <memory>
 
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -56,6 +63,8 @@ uint32_t GetDrmFormat(gfx::BufferFormat gfx_format) {
   switch (gfx_format) {
     case gfx::BufferFormat::R_8:
       return DRM_FORMAT_R8;
+    case gfx::BufferFormat::YVU_420:
+      return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     // Add more formats when needed.
@@ -250,5 +259,47 @@ LocalGpuMemoryBufferManager::CreateGpuMemoryBuffer(
 void LocalGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}
+
+std::unique_ptr<gfx::GpuMemoryBuffer> LocalGpuMemoryBufferManager::ImportDmaBuf(
+    const gfx::NativePixmapHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format) {
+  if (handle.planes.size() != gfx::NumberOfPlanesForBufferFormat(format)) {
+    // This could happen if e.g., we get a compressed RGBA buffer where one
+    // plane is for metadata. We don't support this case.
+    LOG(ERROR) << "Cannot import " << gfx::BufferFormatToString(format)
+               << " with " << handle.planes.size() << " plane(s) (expected "
+               << gfx::NumberOfPlanesForBufferFormat(format) << " plane(s))";
+    return nullptr;
+  }
+  const uint32_t drm_format = GetDrmFormat(format);
+  if (!drm_format) {
+    LOG(ERROR) << "Unsupported format " << gfx::BufferFormatToString(format);
+    return nullptr;
+  }
+  gbm_import_fd_modifier_data import_data{
+      base::checked_cast<uint32_t>(size.width()),
+      base::checked_cast<uint32_t>(size.height()), drm_format,
+      base::checked_cast<uint32_t>(handle.planes.size())};
+  for (size_t plane = 0; plane < handle.planes.size(); plane++) {
+    if (!handle.planes[plane].fd.is_valid()) {
+      LOG(ERROR) << "Invalid file descriptor for plane " << plane;
+      return nullptr;
+    }
+    import_data.fds[plane] = handle.planes[plane].fd.get();
+    import_data.strides[plane] =
+        base::checked_cast<int>(handle.planes[plane].stride);
+    import_data.offsets[plane] =
+        base::checked_cast<int>(handle.planes[plane].offset);
+  }
+  import_data.modifier = handle.modifier;
+  gbm_bo* buffer_object = gbm_bo_import(gbm_device_, GBM_BO_IMPORT_FD_MODIFIER,
+                                        &import_data, GBM_BO_USE_SW_READ_OFTEN);
+  if (!buffer_object) {
+    PLOG(ERROR) << "Could not import the DmaBuf into gbm";
+    return nullptr;
+  }
+  return std::make_unique<GpuMemoryBufferImplGbm>(format, buffer_object);
+}
 
 }  // namespace media

@@ -4,11 +4,13 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
-#include <algorithm>
-#include <type_traits>
-
 #include <dlfcn.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <algorithm>
+#include <type_traits>
+#include <utility>
 
 #include <va/va.h>
 #include <va/va_drm.h>
@@ -19,11 +21,14 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/environment.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -41,7 +46,10 @@
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -1398,6 +1406,87 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
 
   return new VASurface(va_surface_id, size, va_format,
                        base::BindOnce(&VaapiWrapper::DestroySurface, this));
+}
+
+scoped_refptr<gfx::NativePixmapDmaBuf>
+VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(VASurfaceID va_surface_id) {
+  VADRMPRIMESurfaceDescriptor descriptor;
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+    VA_SUCCESS_OR_RETURN(va_res, "Cannot sync VASurface", nullptr);
+    va_res = vaExportSurfaceHandle(
+        va_display_, va_surface_id, VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
+        VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS,
+        &descriptor);
+    VA_SUCCESS_OR_RETURN(va_res, "Failed to export VASurface", nullptr);
+  }
+
+  // We only support one bo containing all the planes. The fd should be owned by
+  // us: per va/va.h, "the exported handles are owned by the caller."
+  //
+  // TODO(crbug.com/974438): support multiple buffer objects so that this can
+  // work in AMD.
+  if (descriptor.num_objects != 1u) {
+    DVLOG(1) << "Only surface descriptors with one bo are supported";
+    return nullptr;
+  }
+  base::ScopedFD bo_fd(descriptor.objects[0].fd);
+  const uint64_t bo_modifier = descriptor.objects[0].drm_format_modifier;
+
+  // Translate the pixel format to a gfx::BufferFormat.
+  gfx::BufferFormat buffer_format;
+  switch (descriptor.fourcc) {
+    case VA_FOURCC_IMC3:
+      // IMC3 is like I420 but all the planes have the same stride. This is used
+      // for decoding 4:2:0 JPEGs in the Intel i965 driver. We don't currently
+      // have a gfx::BufferFormat for YUV420. Instead, we reuse YVU_420 and
+      // later swap the U and V planes.
+      //
+      // TODO(andrescj): revisit this once crrev.com/c/1573718 lands.
+      buffer_format = gfx::BufferFormat::YVU_420;
+      break;
+    case VA_FOURCC_NV12:
+      buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+      break;
+    default:
+      LOG(ERROR) << "Cannot export a surface with FOURCC "
+                 << FourccToString(descriptor.fourcc);
+      return nullptr;
+  }
+
+  gfx::NativePixmapHandle handle{};
+  handle.modifier = bo_modifier;
+  for (uint32_t layer = 0; layer < descriptor.num_layers; layer++) {
+    // According to va/va_drmcommon.h, if VA_EXPORT_SURFACE_SEPARATE_LAYERS is
+    // specified, each layer should contain one plane.
+    DCHECK_EQ(1u, descriptor.layers[layer].num_planes);
+
+    // Strictly speaking, we only have to dup() the fd for the planes after the
+    // first one since we already own the first one, but we dup() regardless for
+    // simplicity: |bo_fd| will be closed at the end of this method anyway.
+    base::ScopedFD plane_fd(HANDLE_EINTR(dup(bo_fd.get())));
+    PCHECK(plane_fd.is_valid());
+    constexpr uint64_t kZeroSizeToPreventMapping = 0u;
+    handle.planes.emplace_back(
+        base::checked_cast<int>(descriptor.layers[layer].pitch[0]),
+        base::checked_cast<int>(descriptor.layers[layer].offset[0]),
+        kZeroSizeToPreventMapping,
+        base::ScopedFD(HANDLE_EINTR(dup(bo_fd.get()))));
+  }
+
+  if (descriptor.fourcc == VA_FOURCC_IMC3) {
+    // Recall that for VA_FOURCC_IMC3, we will return a format of
+    // gfx::BufferFormat::YVU_420, so we need to swap the U and V planes to keep
+    // the semantics.
+    DCHECK_EQ(3u, handle.planes.size());
+    std::swap(handle.planes[1], handle.planes[2]);
+  }
+
+  return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+      gfx::Size(base::checked_cast<int>(descriptor.width),
+                base::checked_cast<int>(descriptor.height)),
+      buffer_format, std::move(handle));
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,

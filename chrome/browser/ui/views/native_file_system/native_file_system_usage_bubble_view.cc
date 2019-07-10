@@ -13,16 +13,15 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/elide_url.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/listformatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
@@ -46,6 +45,42 @@ base::string16 FormatList(base::span<base::string16> items) {
     return base::string16();
   }
   return base::i18n::UnicodeStringToString16(formatted);
+}
+
+// Returns the message Id to use as heading text, depending on what types of
+// usage are present (i.e. just writable files, or also readable directories,
+// etc).
+// |need_lifetime_text_at_end| is set to false iff the returned message Id
+// already includes an explanation for how long a website will have access to
+// the listed paths. It is set to true iff a separate label is needed at the end
+// of the dialog to explain lifetime.
+int ComputeHeadingMessageFromUsage(
+    const NativeFileSystemUsageBubbleView::Usage& usage,
+    bool* need_lifetime_text_at_end) {
+  if (!usage.writable_files.empty() && !usage.writable_directories.empty()) {
+    *need_lifetime_text_at_end = true;
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT;
+  }
+  if (!usage.writable_files.empty()) {
+    if (usage.readable_directories.empty()) {
+      *need_lifetime_text_at_end = false;
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
+    }
+    *need_lifetime_text_at_end = true;
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_NO_LIFETIME_TEXT;
+  }
+  if (!usage.writable_directories.empty()) {
+    if (usage.readable_directories.empty()) {
+      *need_lifetime_text_at_end = false;
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
+    }
+    *need_lifetime_text_at_end = true;
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_NO_LIFETIME_TEXT;
+  }
+
+  DCHECK(!usage.readable_directories.empty());
+  *need_lifetime_text_at_end = false;
+  return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
 }
 
 }  // namespace
@@ -156,15 +191,44 @@ void NativeFileSystemUsageBubbleView::Init() {
                       views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
                   0));
 
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT,
-              IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT,
+  bool need_lifetime_text_at_end = false;
+  int heading_message_id =
+      ComputeHeadingMessageFromUsage(usage_, &need_lifetime_text_at_end);
+
+  AddChildView(native_file_system_ui_helper::CreateOriginLabel(
+      heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
+
+  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT,
               usage_.writable_files);
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT,
-              IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
+  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
               usage_.writable_directories);
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT,
-              IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
+
+  // If the header wasn't already the "readable directories" header (i.e. we
+  // had at least one writable file or directory as well) add a secondary header
+  // for the readable directories section.
+  if (heading_message_id !=
+      IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT) {
+    auto directory_label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(
+            IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_ALSO_READABLE_DIRECTORIES_TEXT),
+        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+    directory_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    directory_label->SetMultiLine(true);
+    AddChildView(std::move(directory_label));
+  }
+
+  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
               usage_.readable_directories);
+
+  if (need_lifetime_text_at_end) {
+    auto lifetime_label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(
+            IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_LIFETIME_TEXT),
+        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+    lifetime_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    lifetime_label->SetMultiLine(true);
+    AddChildView(std::move(lifetime_label));
+  }
 }
 
 void NativeFileSystemUsageBubbleView::WindowClosing() {
@@ -189,29 +253,10 @@ gfx::Size NativeFileSystemUsageBubbleView::CalculatePreferredSize() const {
 }
 
 void NativeFileSystemUsageBubbleView::AddPathList(
-    int caption_message_id,
     int details_message_id,
     const std::vector<base::FilePath>& paths) {
   if (paths.empty())
     return;
-
-  base::string16 formatted_origin =
-      url_formatter::FormatOriginForSecurityDisplay(
-          origin_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-  size_t offset;
-  auto label = std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringFUTF16(caption_message_id, formatted_origin, &offset),
-      nullptr);
-  label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  label->SetDefaultTextStyle(STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  views::StyledLabel::RangeStyleInfo origin_style;
-  origin_style.text_style = STYLE_EMPHASIZED_SECONDARY;
-  label->AddStyleRange(gfx::Range(offset, offset + formatted_origin.length()),
-                       origin_style);
-
-  AddChildView(std::move(label));
 
   std::vector<base::string16> base_names;
   for (const auto& path : paths)

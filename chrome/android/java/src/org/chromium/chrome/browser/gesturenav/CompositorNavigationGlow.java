@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Implements navigation glow using compositor layer for tab switcher or rendered web contents.
@@ -25,36 +23,10 @@ class CompositorNavigationGlow extends NavigationGlow {
      *        for rendering glow effect.
      * @return NavigationGlow object for rendered pages
      */
-    public static NavigationGlow forWebContents(ViewGroup parentView, WebContents webContents) {
-        CompositorNavigationGlow glow = new CompositorNavigationGlow(parentView);
-        glow.initWithWebContents(webContents);
-        return glow;
-    }
-
-    /**
-     * @pararm parentView Parent view where the glow view gets attached to.
-     * @pararm sceneLayer SceneLayer whose cc layer will be used for rendering glow effect.
-     * @pararm window WindowAndroid object to get WindowAndroidCompositor from for animation effect.
-     * @return {@link NavigationGlow} object for the screen rendered with {@link SceneLayer}
-     */
-    public static NavigationGlow forSceneLayer(
-            ViewGroup parentView, SceneLayer sceneLayer, WindowAndroid window) {
-        CompositorNavigationGlow glow = new CompositorNavigationGlow(parentView);
-        glow.initWithSceneLayer(sceneLayer, window);
-        return glow;
-    }
-
-    private CompositorNavigationGlow(ViewGroup parentView) {
+    public CompositorNavigationGlow(ViewGroup parentView, WebContents webContents) {
         super(parentView);
-        mNativeNavigationGlow = nativeInit(parentView.getResources().getDisplayMetrics().density);
-    }
-
-    private void initWithSceneLayer(SceneLayer sceneLayer, WindowAndroid window) {
-        nativeInitWithSceneLayer(mNativeNavigationGlow, sceneLayer, window);
-    }
-
-    private void initWithWebContents(WebContents webContents) {
-        nativeInitWithWebContents(mNativeNavigationGlow, webContents);
+        mNativeNavigationGlow =
+                nativeInit(parentView.getResources().getDisplayMetrics().density, webContents);
     }
 
     @Override
@@ -91,11 +63,7 @@ class CompositorNavigationGlow extends NavigationGlow {
         mNativeNavigationGlow = 0;
     }
 
-    private native long nativeInit(float dipScale);
-    private native void nativeInitWithSceneLayer(
-            long nativeNavigationGlow, SceneLayer sceneLayer, WindowAndroid window);
-    private native void nativeInitWithWebContents(
-            long nativeNavigationGlow, WebContents webContents);
+    private native long nativeInit(float dipScale, WebContents webContents);
     private native void nativePrepare(
             long nativeNavigationGlow, float startX, float startY, int width, int height);
     private native void nativeOnOverscroll(

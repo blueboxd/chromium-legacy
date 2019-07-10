@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include <net/nqe/network_congestion_analyzer.h>
+
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace net {
 
@@ -12,6 +17,7 @@ namespace internal {
 
 NetworkCongestionAnalyzer::NetworkCongestionAnalyzer()
     : recent_active_hosts_count_(0u) {}
+
 NetworkCongestionAnalyzer::~NetworkCongestionAnalyzer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
@@ -19,6 +25,51 @@ NetworkCongestionAnalyzer::~NetworkCongestionAnalyzer() {
 size_t NetworkCongestionAnalyzer::GetActiveHostsCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return recent_active_hosts_count_;
+}
+
+void NetworkCongestionAnalyzer::NotifyStartTransaction(
+    const URLRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Starts tracking the peak queueing delay after |request| starts.
+  TrackPeakQueueingDelayBegin(&request);
+}
+
+void NetworkCongestionAnalyzer::NotifyRequestCompleted(
+    const URLRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Ends tracking of the peak queueing delay.
+  base::Optional<base::TimeDelta> peak_observed_delay =
+      TrackPeakQueueingDelayEnd(&request);
+  if (peak_observed_delay.has_value()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("ResourceScheduler.PeakObservedQueueingDelay",
+                               peak_observed_delay.value());
+  }
+}
+
+void NetworkCongestionAnalyzer::TrackPeakQueueingDelayBegin(
+    const URLRequest* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Returns if |request| has already been tracked.
+  if (request_peak_delay_.find(request) != request_peak_delay_.end())
+    return;
+
+  request_peak_delay_[request] = base::nullopt;
+}
+
+base::Optional<base::TimeDelta>
+NetworkCongestionAnalyzer::TrackPeakQueueingDelayEnd(
+    const URLRequest* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto request_delay = request_peak_delay_.find(request);
+  if (request_delay == request_peak_delay_.end())
+    return base::nullopt;
+
+  base::Optional<base::TimeDelta> peak_delay = request_delay->second;
+  request_peak_delay_.erase(request_delay);
+  return peak_delay;
 }
 
 void NetworkCongestionAnalyzer::ComputeRecentQueueingDelay(
@@ -63,6 +114,16 @@ void NetworkCongestionAnalyzer::ComputeRecentQueueingDelay(
   int32_t delay_ms =
       delay_sample_sum / static_cast<int>(recent_active_hosts_count_);
   recent_queueing_delay_ = base::TimeDelta::FromMilliseconds(delay_ms);
+
+  // Updates the peak queueing delay for all tracked in-flight requests.
+  for (auto& it : request_peak_delay_) {
+    if (it.second.has_value()) {
+      it.second = std::max(it.second.value(), recent_queueing_delay_);
+    } else {
+      it.second = recent_queueing_delay_;
+    }
+  }
+
   if (recent_downlink_per_packet_time_ms_ != base::nullopt) {
     recent_queue_length_ = static_cast<float>(delay_ms) /
                            recent_downlink_per_packet_time_ms_.value();

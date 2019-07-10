@@ -115,7 +115,6 @@ components/viz/viz_export.h
 components/wifi/wifi_export.h
 components/wifi/wifi_service.h
 content/browser/background_fetch/background_fetch_constants.h
-content/browser/service_worker/service_worker_response_type.h
 content/common/mac/attributed_string_coder.h
 content/public/browser/context_factory.h
 content/public/browser/media_observer.h

@@ -293,11 +293,11 @@ class ChildProcessSecurityPolicy {
 
   // Semantically identical to the above, but accepts a string of comma
   // separated origins. |origins_to_add| can contain both wildcard and
-  // non-wildcard origins, e.g. "https://**.foo.com,https://bar.com".
+  // non-wildcard origins, e.g. "https://[*.]foo.com,https://bar.com".
   //
   // Wildcard origins provide a way to treat all subdomains under the specified
   // host and scheme as distinct isolated origins. For example,
-  // https://**.foo.com would isolate https://foo.com, https://bar.foo.com and
+  // https://[*.]foo.com would isolate https://foo.com, https://bar.foo.com and
   // https://qux.baz.foo.com all in separate processes. Adding a wildcard origin
   // implies breaking document.domain for all of its subdomains.
   //

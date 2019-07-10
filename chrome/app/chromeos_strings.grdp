@@ -2857,6 +2857,12 @@
   <message name="IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT" desc="Text displayed when the cellular activation UI cannot be opened because no cellular network exists.">
     No cellular network exists
   </message>
+  <message name="IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL" desc="Label for section dealing with showing the 'Add new Wi-Fi network' dialog.">
+    New Wi-Fi Network Dialog
+  </message>
+  <message name="IDS_NETWORK_UI_ADD_NEW_WIFI_BUTTON_TEXT" desc="Text for button which, when pressed, opens the 'Add new Wi-Fi network' dialog.">
+    Show 'Add new Wi-Fi' dialog
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     For network logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>

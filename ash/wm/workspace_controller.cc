@@ -17,7 +17,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/backdrop_controller.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/window.h"
@@ -124,11 +123,6 @@ void WorkspaceController::DoInitialAnimation() {
     layer->SetTransform(gfx::Transform());
     layer->SetOpacity(1.0f);
   }
-}
-
-void WorkspaceController::SetBackdropDelegate(
-    std::unique_ptr<BackdropDelegate> delegate) {
-  layout_manager_->SetBackdropDelegate(std::move(delegate));
 }
 
 void WorkspaceController::OnWindowDestroying(aura::Window* window) {

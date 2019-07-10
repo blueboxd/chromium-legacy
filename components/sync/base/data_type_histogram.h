@@ -170,6 +170,9 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::SECURITY_EVENTS:                            \
         PER_DATA_TYPE_MACRO("SecurityEvents");                   \
         break;                                                   \
+      case ::syncer::WEB_APPS:                                   \
+        PER_DATA_TYPE_MACRO("WebApps");                          \
+        break;                                                   \
       case ::syncer::WIFI_CONFIGURATIONS:                        \
         PER_DATA_TYPE_MACRO("WifiConfigurations");               \
         break;                                                   \

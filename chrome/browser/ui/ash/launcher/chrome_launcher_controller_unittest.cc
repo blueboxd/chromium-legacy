@@ -313,6 +313,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
 
+    bool flush_app_service_mojo_calls = false;
     if (app_service_proxy_connector_) {
       DCHECK(profile());
       app_service_proxy_impl_.reset(apps::AppServiceProxyImpl::CreateForTesting(
@@ -320,10 +321,16 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       old_app_service_proxy_for_testing_ =
           AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
               app_service_proxy_impl_.get());
+      // Flush the App Service Mojo calls, but only after calling
+      // arc_test_.SetUp, as it also pumps the run-loop in general.
+      flush_app_service_mojo_calls = true;
     }
 
     if (auto_start_arc_test_)
       arc_test_.SetUp(profile());
+
+    if (flush_app_service_mojo_calls)
+      app_service_proxy_impl_->FlushMojoCallsForTesting();
 
     // Wait until |extension_system| is signaled as started.
     base::RunLoop run_loop;
@@ -1323,6 +1330,8 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   EXPECT_EQ("App2, Fake App 1, Chrome, App1, Fake App 0, Gmail",
             GetPinnedAppStatus());
 
+  if (app_service_proxy_impl_)
+    app_service_proxy_impl_->FlushMojoCallsForTesting();
   copy_sync_list = app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
 
   ResetLauncherController();

@@ -1439,8 +1439,8 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
 
 TEST_F(ChildProcessSecurityPolicyTest, IsolateAllSuborigins) {
   url::Origin qux = url::Origin::Create(GURL("https://qux.com/"));
-  IsolatedOriginPattern etld1_wild("https://**.foo.com");
-  IsolatedOriginPattern etld2_wild("https://**.bar.foo.com");
+  IsolatedOriginPattern etld1_wild("https://[*.]foo.com");
+  IsolatedOriginPattern etld2_wild("https://[*.]bar.foo.com");
   url::Origin etld1 = url::Origin::Create(GURL("https://foo.com"));
   url::Origin etld2 = url::Origin::Create(GURL("https://bar.foo.com"));
 
@@ -1498,8 +1498,8 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardOrigins) {
   // Construct a simple case, a single isolated origin.
   //  IsolatedOriginPattern isolated("https://isolated.com");
   IsolatedOriginPattern inner_isolated("https://inner.isolated.com");
-  IsolatedOriginPattern wildcard("https://**.wildcard.com");
-  IsolatedOriginPattern inner_wildcard("https://**.inner.wildcard.com");
+  IsolatedOriginPattern wildcard("https://[*.]wildcard.com");
+  IsolatedOriginPattern inner_wildcard("https://[*.]inner.wildcard.com");
 
   GURL isolated_url("https://isolated.com");
   GURL inner_isolated_url("https://inner.isolated.com");
@@ -1565,7 +1565,8 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardEmbedded) {
     // isolated origin. Removing the isolated origin should have no effect on
     // the wildcard origin.
     IsolatedOriginPattern isolated("https://isolated.com");
-    IsolatedOriginPattern wildcard_isolated("https://**.wildcard.isolated.com");
+    IsolatedOriginPattern wildcard_isolated(
+        "https://[*.]wildcard.isolated.com");
 
     GURL isolated_url("https://isolated.com");
     GURL a_isolated_url("https://a.isolated.com");
@@ -1594,7 +1595,7 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardEmbedded) {
   {
     // A single isolated origin is nested within a wildcard origin. In this
     // scenario the wildcard origin supersedes isolated origins.
-    IsolatedOriginPattern wildcard("https://**.wildcard.com");
+    IsolatedOriginPattern wildcard("https://[*.]wildcard.com");
     IsolatedOriginPattern isolated_wildcard("https://isolated.wildcard.com");
 
     GURL wildcard_url("https://wildcard.com");
@@ -1623,8 +1624,8 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardEmbedded) {
   {
     // Nest wildcard isolated origins within each other. Verify that removing
     // the outer wildcard origin doesn't affect the inner one.
-    IsolatedOriginPattern outer("https://**.outer.com");
-    IsolatedOriginPattern inner("https://**.inner.outer.com");
+    IsolatedOriginPattern outer("https://[*.]outer.com");
+    IsolatedOriginPattern inner("https://[*.]inner.outer.com");
 
     GURL outer_url("https://outer.com");
     GURL a_outer_url("https://a.outer.com");
@@ -1652,7 +1653,7 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardEmbedded) {
   // doesn't affect the isolating behavior of the wildcard, i.e. whichever
   // isolated domain is added entered 'wins'.
   {
-    IsolatedOriginPattern wild("https://**.bar.foo.com");
+    IsolatedOriginPattern wild("https://[*.]bar.foo.com");
     IsolatedOriginPattern single("https://bar.foo.com");
 
     GURL host_url("https://host.bar.foo.com");
@@ -1678,7 +1679,7 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardAndNonWildcardEmbedded) {
   // Verify the first domain added remains dominant in the case of differing
   // wildcard and non-wildcard statuses.
   {
-    IsolatedOriginPattern wild("https://**.bar.foo.com");
+    IsolatedOriginPattern wild("https://[*.]bar.foo.com");
     IsolatedOriginPattern single("https://bar.foo.com");
 
     GURL host_url("https://host.bar.foo.com");
@@ -2118,14 +2119,14 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
-  const base::StringPiece etld1_wild("https://**.foo.com");
+  const base::StringPiece etld1_wild("https://[*.]foo.com");
   url::Origin etld1_wild_origin = url::Origin::Create(GURL("https://foo.com"));
   IsolatedOriginPattern p(etld1_wild);
   EXPECT_TRUE(p.isolate_all_subdomains());
   EXPECT_TRUE(p.is_valid());
   EXPECT_EQ(p.origin(), etld1_wild_origin);
 
-  const base::StringPiece etld2_wild("https://**.bar.foo.com");
+  const base::StringPiece etld2_wild("https://[*.]bar.foo.com");
   url::Origin etld2_wild_origin =
       url::Origin::Create(GURL("https://bar.foo.com"));
   bool result = p.Parse(etld2_wild);
@@ -2181,7 +2182,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
   EXPECT_TRUE(p.is_valid());
   EXPECT_EQ(p.origin(), ip_origin);
 
-  const base::StringPiece wild_ip_addr("https://**.10.20.30.40");
+  const base::StringPiece wild_ip_addr("https://[*.]10.20.30.40");
   result = p.Parse(wild_ip_addr);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());
@@ -2304,9 +2305,9 @@ TEST_F(ChildProcessSecurityPolicyTest, IsolatedOriginPatternEquality) {
   EXPECT_EQ(IsolatedOriginPattern(foo), IsolatedOriginPattern(foo_port));
   EXPECT_EQ(IsolatedOriginPattern(foo), IsolatedOriginPattern(foo_path));
 
-  std::string wild_foo("https://**.foo.com");
-  std::string wild_foo_port("https://**.foo.com:8000");
-  std::string wild_foo_path("https://**.foo.com/some/path");
+  std::string wild_foo("https://[*.]foo.com");
+  std::string wild_foo_port("https://[*.]foo.com:8000");
+  std::string wild_foo_path("https://[*.]foo.com/some/path");
 
   EXPECT_EQ(IsolatedOriginPattern(wild_foo),
             IsolatedOriginPattern(wild_foo_port));
@@ -2347,14 +2348,14 @@ TEST_F(ChildProcessSecurityPolicyTest, ParseIsolatedOrigins) {
   // A single wildcard origin.
   EXPECT_THAT(
       ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
-          "https://**.wild.foo.com"),
-      testing::ElementsAre(IsolatedOriginPattern("https://**.wild.foo.com")));
+          "https://[*.]wild.foo.com"),
+      testing::ElementsAre(IsolatedOriginPattern("https://[*.]wild.foo.com")));
 
   // A mixture of wildcard and non-wildcard origins.
   EXPECT_THAT(
       ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
-          "https://**.wild.foo.com,https://isolated.foo.com"),
-      testing::ElementsAre(IsolatedOriginPattern("https://**.wild.foo.com"),
+          "https://[*.]wild.foo.com,https://isolated.foo.com"),
+      testing::ElementsAre(IsolatedOriginPattern("https://[*.]wild.foo.com"),
                            IsolatedOriginPattern("https://isolated.foo.com")));
 }
 
@@ -2373,7 +2374,7 @@ TEST_F(ChildProcessSecurityPolicyTest, WildcardDefaultPort) {
   url::Origin wild_with_port =
       url::Origin::Create(GURL("https://a.wild.com:5678"));
   url::Origin wild_origin = url::Origin::Create(GURL("https://a.wild.com"));
-  IsolatedOriginPattern wild_pattern("https://**.wild.com:5678");
+  IsolatedOriginPattern wild_pattern("https://[*.]wild.com:5678");
 
   p->AddIsolatedOrigins({isolated_origin_with_port},
                         IsolatedOriginSource::TEST);

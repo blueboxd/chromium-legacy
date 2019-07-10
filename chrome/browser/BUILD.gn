@@ -806,6 +806,10 @@ jumbo_split_static_library("browser") {
     "metrics/ukm_background_recorder_service.h",
     "metrics/variations/chrome_variations_service_client.cc",
     "metrics/variations/chrome_variations_service_client.h",
+    "native_file_system/chrome_native_file_system_permission_context.cc",
+    "native_file_system/chrome_native_file_system_permission_context.h",
+    "native_file_system/native_file_system_permission_context_factory.cc",
+    "native_file_system/native_file_system_permission_context_factory.h",
     "native_window_notification_source.h",
     "navigation_predictor/navigation_predictor.cc",
     "navigation_predictor/navigation_predictor.h",
@@ -3245,8 +3249,6 @@ jumbo_split_static_library("browser") {
       "search/chrome_colors/chrome_colors_factory.h",
       "search/chrome_colors/chrome_colors_service.cc",
       "search/chrome_colors/chrome_colors_service.h",
-      "search/iframe_source.cc",
-      "search/iframe_source.h",
       "search/instant_service.cc",
       "search/instant_service.h",
       "search/instant_service_factory.cc",
@@ -5001,13 +5003,6 @@ jumbo_split_static_library("browser") {
     sources += [
       "exo_parts.cc",
       "exo_parts.h",
-    ]
-  }
-
-  if (!is_chrome_branded && !is_android) {
-    sources += [
-      "search/local_files_ntp_source.cc",
-      "search/local_files_ntp_source.h",
     ]
   }
 

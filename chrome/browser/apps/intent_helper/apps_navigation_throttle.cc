@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -117,8 +118,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
   std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
   ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps),
-      /*show_remember_selection=*/false,
+      web_contents, std::move(apps), ShouldShowRememberSelection(apps),
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -333,6 +333,25 @@ void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
     web_contents->ClosePage();
 }
 
+// static
+bool AppsNavigationThrottle::ContainsOnlyPwas(
+    const std::vector<apps::IntentPickerAppInfo>& apps) {
+  return std::all_of(apps.begin(), apps.end(),
+                     [](const apps::IntentPickerAppInfo& app_info) {
+                       return app_info.type == apps::mojom::AppType::kWeb;
+                     });
+}
+
+// static
+bool AppsNavigationThrottle::ShouldShowRememberSelection(
+    std::vector<apps::IntentPickerAppInfo>& apps) {
+  // There is no support persistence for PWA so the selection should be hidden
+  // if only PWAs are present.
+  // TODO(crbug.com/826982): Provide the "Remember my choice" option when the
+  // app registry can support persistence for PWAs.
+  return !ContainsOnlyPwas(apps);
+}
+
 bool AppsNavigationThrottle::ShouldDeferNavigationForArc(
     content::NavigationHandle* handle) {
   return false;
@@ -361,7 +380,7 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
       break;
     case PickerShowState::kPopOut:
       ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
-                                    ShouldShowRememberSelection(),
+                                    ShouldShowRememberSelection(apps),
                                     std::move(callback));
       break;
     default:
@@ -383,10 +402,6 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
     const GURL& url) {
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
-}
-
-bool AppsNavigationThrottle::ShouldShowRememberSelection() {
-  return false;
 }
 
 bool AppsNavigationThrottle::navigate_from_link() {

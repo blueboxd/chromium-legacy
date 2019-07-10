@@ -15,6 +15,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "gpu/config/gpu_info.h"
 
+namespace gfx {
+class NativePixmapDmaBuf;
+}  // namespace gfx
+
 namespace media {
 
 class VASurface;
@@ -30,6 +34,7 @@ enum class VaapiImageDecodeStatus : uint32_t {
   kExecuteDecodeFailed,
   kUnsupportedSurfaceFormat,
   kCannotGetImage,
+  kCannotExportSurface,
   kInvalidState,
 };
 
@@ -62,6 +67,13 @@ class VaapiImageDecoder {
 
   // Returns the image profile supported by this decoder.
   gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile() const;
+
+  // Exports the decoded data from the last Decode() call as a
+  // gfx::NativePixmapDmaBuf. Returns nullptr on failure and sets *|status| to
+  // the reason for failure. On success, the image decoder gives up ownership of
+  // the buffer underlying the NativePixmapDmaBuf.
+  scoped_refptr<gfx::NativePixmapDmaBuf> ExportAsNativePixmapDmaBuf(
+      VaapiImageDecodeStatus* status);
 
  protected:
   explicit VaapiImageDecoder(VAProfile va_profile);

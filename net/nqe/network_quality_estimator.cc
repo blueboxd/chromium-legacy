@@ -276,6 +276,7 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     MaybeComputeEffectiveConnectionType();
   }
   throughput_analyzer_->NotifyStartTransaction(request);
+  network_congestion_analyzer_.NotifyStartTransaction(request);
 }
 
 bool NetworkQualityEstimator::IsHangingRequest(
@@ -390,6 +391,7 @@ void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
     return;
 
   throughput_analyzer_->NotifyRequestCompleted(request);
+  network_congestion_analyzer_.NotifyRequestCompleted(request);
 }
 
 void NetworkQualityEstimator::NotifyURLRequestDestroyed(

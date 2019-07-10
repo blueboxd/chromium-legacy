@@ -57,6 +57,7 @@ import "typed_url_specifics.proto";
 import "unique_position.proto";
 import "user_consent_specifics.proto";
 import "user_event_specifics.proto";
+import "web_app_specifics.proto";
 import "wifi_configuration_specifics.proto";
 import "wifi_credential_specifics.proto";
 
@@ -150,6 +151,7 @@ message EntitySpecifics {
     MountainShareSpecifics mountain_share = 545005;
     SendTabToSelfSpecifics send_tab_to_self = 601980;
     SecurityEventSpecifics security_event = 600372;
+    WebAppSpecifics web_app = 673225;
     WifiConfigurationSpecifics wifi_configuration = 662827;
   }
 }

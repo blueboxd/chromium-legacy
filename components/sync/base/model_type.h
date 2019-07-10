@@ -139,6 +139,8 @@ enum ModelType {
   SECURITY_EVENTS,
   // Wi-Fi network configurations + credentials
   WIFI_CONFIGURATIONS,
+  // A web app object.
+  WEB_APPS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -203,7 +205,7 @@ constexpr ModelTypeSet ProtocolTypes() {
       DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
       PRINTERS, READING_LIST, USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS,
       MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WIFI_CONFIGURATIONS);
+      WEB_APPS, WIFI_CONFIGURATIONS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from

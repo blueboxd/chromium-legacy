@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('nux');
+cr.exportPath('welcome');
 
 /**
  * @typedef {{
@@ -12,7 +12,7 @@ cr.exportPath('nux');
  *   url: string,
  * }}
  */
-nux.BookmarkListItem;
+welcome.BookmarkListItem;
 
 /**
  * @typedef {{
@@ -20,7 +20,7 @@ nux.BookmarkListItem;
  *   active: number,
  * }}
  */
-nux.stepIndicatorModel;
+welcome.stepIndicatorModel;
 
 /**
  * TODO(hcarmona): somehow reuse from
@@ -32,4 +32,4 @@ nux.stepIndicatorModel;
  *   isUnknownError: boolean,
  * }};
  */
-nux.DefaultBrowserInfo;
+welcome.DefaultBrowserInfo;

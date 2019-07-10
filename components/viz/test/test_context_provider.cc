@@ -277,8 +277,19 @@ TestContextProvider::TestContextProvider(
     std::unique_ptr<TestContextSupport> support,
     std::unique_ptr<TestGLES2Interface> gl,
     bool support_locking)
+    : TestContextProvider(std::move(support),
+                          std::move(gl),
+                          /*raster=*/nullptr,
+                          support_locking) {}
+
+TestContextProvider::TestContextProvider(
+    std::unique_ptr<TestContextSupport> support,
+    std::unique_ptr<TestGLES2Interface> gl,
+    std::unique_ptr<gpu::raster::RasterInterface> raster,
+    bool support_locking)
     : support_(std::move(support)),
       context_gl_(std::move(gl)),
+      raster_context_(std::move(raster)),
       shared_image_interface_(std::make_unique<TestSharedImageInterface>()),
       support_locking_(support_locking),
       weak_ptr_factory_(this) {
@@ -286,8 +297,10 @@ TestContextProvider::TestContextProvider(
   DCHECK(context_gl_);
   context_thread_checker_.DetachFromThread();
   context_gl_->set_test_support(support_.get());
-  raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      context_gl_.get());
+  if (!raster_context_) {
+    raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+        context_gl_.get());
+  }
   // Just pass nullptr to the ContextCacheController for its task runner.
   // Idle handling is tested directly in ContextCacheController's
   // unittests, and isn't needed here.

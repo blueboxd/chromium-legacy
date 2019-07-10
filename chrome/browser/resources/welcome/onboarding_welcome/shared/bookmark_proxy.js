@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   /**
    * @typedef {{
    *    parentId: string,
@@ -30,7 +30,7 @@ cr.define('nux', function() {
     isBookmarkBarShown() {}
   }
 
-  /** @implements {nux.BookmarkProxy} */
+  /** @implements {welcome.BookmarkProxy} */
   class BookmarkProxyImpl {
     /** @override */
     addBookmark(data, callback) {
@@ -58,7 +58,7 @@ cr.define('nux', function() {
   // Wrapper for bookmark proxy to keep some additional states.
   class BookmarkBarManager {
     constructor() {
-      /** @private {nux.BookmarkProxy} */
+      /** @private {welcome.BookmarkProxy} */
       this.proxy_ = BookmarkProxyImpl.getInstance();
 
       /** @private {boolean} */

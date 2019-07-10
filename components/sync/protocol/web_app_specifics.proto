@@ -1,0 +1,19 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+// WebApp data. This should be a subset of WebAppProto in
+// chrome/browser/web_applications/proto/web_app.proto
+message WebAppSpecifics {
+  // app_id is the client tag for sync system.
+  optional string app_id = 1;
+  optional string launch_url = 2;
+  optional string name = 3;
+  optional uint32 theme_color = 4;
+}

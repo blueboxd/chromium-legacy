@@ -26,9 +26,8 @@ body {
 
 @media (prefers-color-scheme: dark) {
   #edit-link-dialog {
-    background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-        0 4px 8px 3px rgba(0, 0, 0, .15);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    box-shadow: var(--dark-mode-shadow);
   }
 }
 

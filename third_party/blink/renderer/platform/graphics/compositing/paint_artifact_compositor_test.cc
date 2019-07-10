@@ -3035,45 +3035,6 @@ TEST_P(PaintArtifactCompositorTest,
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
-  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
-    // Expectation in effect stack diagram:
-    //   l0         l1
-    // [ e1 ]
-    // [  mask_isolation_0   ]
-    // [         e0          ]
-    // One content layer, one clip mask.
-    ASSERT_EQ(1u, RootLayer()->children().size());
-    ASSERT_EQ(1u, ContentLayerCount());
-    // There is still a "synthesized layer" but it's null.
-    ASSERT_EQ(1u, SynthesizedClipLayerCount());
-    EXPECT_FALSE(SynthesizedClipLayerAt(0));
-
-    const cc::Layer* content0 = RootLayer()->children()[0].get();
-
-    constexpr int c0_id = 1;
-    constexpr int e0_id = 1;
-
-    EXPECT_EQ(ContentLayerAt(0), content0);
-    int c1_id = content0->clip_tree_index();
-    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-    ASSERT_EQ(c0_id, cc_c1.parent_id);
-    int e1_id = content0->effect_tree_index();
-    const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
-    EXPECT_EQ(c1_id, cc_e1.clip_id);
-    int mask_isolation_0_id = cc_e1.parent_id;
-    const cc::EffectNode& mask_isolation_0 =
-        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
-    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
-    EXPECT_EQ(c1_id, mask_isolation_0.clip_id);
-    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
-    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
-    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 0),
-              mask_isolation_0.rounded_corner_bounds);
-    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
-    return;
-  }
-
   // Expectation in effect stack diagram:
   //   l0         l1
   // [ e1 ][ mask_effect_0 ]

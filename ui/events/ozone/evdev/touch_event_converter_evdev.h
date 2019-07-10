@@ -93,7 +93,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void CancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
   // Normalize pressure value to [0, 1].
-  float ScalePressure(int32_t value);
+  float ScalePressure(int32_t value) const;
 
   int NextTrackingId();
 
@@ -165,7 +165,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Callback to enable/disable palm suppression.
   base::RepeatingCallback<void(bool)> enable_palm_suppression_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 

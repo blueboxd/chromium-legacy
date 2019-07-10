@@ -410,6 +410,36 @@ TEST_F(DesksTest, DeskActivation) {
   EXPECT_FALSE(desk_4->GetDeskContainerForRoot(root)->IsVisible());
 }
 
+TEST_F(DesksTest, TestWindowPositioningPaused) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+
+  // Create two windows whose window positioning is managed.
+  const auto win0_bounds = gfx::Rect{10, 20, 250, 100};
+  const auto win1_bounds = gfx::Rect{50, 50, 200, 200};
+  auto win0 = CreateTestWindow(win0_bounds);
+  auto win1 = CreateTestWindow(win1_bounds);
+  wm::WindowState* window_state = wm::GetWindowState(win0.get());
+  window_state->SetWindowPositionManaged(true);
+  window_state = wm::GetWindowState(win1.get());
+  window_state->SetWindowPositionManaged(true);
+  EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
+  EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
+
+  // Moving one window to the second desk should not affect the bounds of either
+  // windows.
+  Desk* desk_2 = controller->desks()[1].get();
+  controller->MoveWindowFromActiveDeskTo(win1.get(), desk_2);
+  EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
+  EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
+
+  // Removing a desk, which results in moving its windows to another desk should
+  // not affect the positions of those managed windows.
+  controller->RemoveDesk(desk_2);
+  EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
+  EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
+}
+
 // This test makes sure we have coverage for that desk switch animation when run
 // with multiple displays.
 TEST_F(DesksTest, DeskActivationDualDisplay) {

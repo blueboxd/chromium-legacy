@@ -576,14 +576,12 @@ void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
   }
 }
 
-void WebrtcTransport::OnAudioSenderCreated(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {}
+void WebrtcTransport::OnAudioTransceiverCreated(
+    rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {}
 
-void WebrtcTransport::OnVideoSenderCreated(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {
-  // TODO(lambroslambrou): Store the VideoSender here, instead of looping over
-  // all Senders in GetVideoSender().
-  DCHECK_EQ(GetVideoSender(), sender);
+void WebrtcTransport::OnVideoTransceiverCreated(
+    rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
+  video_transceiver_ = transceiver;
   SetSenderBitrates(MaxBitrateForConnection());
 }
 
@@ -956,13 +954,7 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 
 rtc::scoped_refptr<webrtc::RtpSenderInterface>
 WebrtcTransport::GetVideoSender() {
-  auto senders = peer_connection()->GetSenders();
-  for (rtc::scoped_refptr<webrtc::RtpSenderInterface> sender : senders) {
-    if (sender->media_type() == cricket::MediaType::MEDIA_TYPE_VIDEO) {
-      return sender;
-    }
-  }
-  return nullptr;
+  return video_transceiver_ ? video_transceiver_->sender() : nullptr;
 }
 
 }  // namespace protocol

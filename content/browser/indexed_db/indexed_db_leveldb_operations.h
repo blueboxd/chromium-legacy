@@ -27,9 +27,9 @@
 // Contains common operations for LevelDBTransactions and/or LevelDBDatabases.
 
 namespace content {
-class LevelDBDatabase;
-class LevelDBIterator;
-class LevelDBTransaction;
+class TransactionalLevelDBDatabase;
+class TransactionalLevelDBIterator;
+class TransactionalLevelDBTransaction;
 
 namespace indexed_db {
 
@@ -66,7 +66,7 @@ leveldb::Status CONTENT_EXPORT GetInt(DBOrTransaction* db,
                                       int64_t* found_int,
                                       bool* found);
 
-void PutBool(LevelDBTransaction* transaction,
+void PutBool(TransactionalLevelDBTransaction* transaction,
              const base::StringPiece& key,
              bool value);
 
@@ -92,11 +92,11 @@ WARN_UNUSED_RESULT leveldb::Status GetString(DBOrTransaction* db,
                                              base::string16* found_string,
                                              bool* found);
 
-void PutString(LevelDBTransaction* transaction,
+void PutString(TransactionalLevelDBTransaction* transaction,
                const base::StringPiece& key,
                const base::string16& value);
 
-void PutIDBKeyPath(LevelDBTransaction* transaction,
+void PutIDBKeyPath(TransactionalLevelDBTransaction* transaction,
                    const base::StringPiece& key,
                    const blink::IndexedDBKeyPath& value);
 
@@ -107,24 +107,24 @@ WARN_UNUSED_RESULT leveldb::Status GetMaxObjectStoreId(
     int64_t* max_object_store_id);
 
 WARN_UNUSED_RESULT leveldb::Status SetMaxObjectStoreId(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id);
 
 WARN_UNUSED_RESULT leveldb::Status GetNewVersionNumber(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
     int64_t* new_version_number);
 
 WARN_UNUSED_RESULT leveldb::Status SetMaxIndexId(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
     int64_t index_id);
 
 WARN_UNUSED_RESULT leveldb::Status VersionExists(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
     int64_t version,
@@ -136,34 +136,35 @@ WARN_UNUSED_RESULT leveldb::Status GetNewDatabaseId(Transaction* transaction,
                                                     int64_t* new_id);
 
 WARN_UNUSED_RESULT bool CheckObjectStoreAndMetaDataType(
-    const LevelDBIterator* it,
+    const TransactionalLevelDBIterator* it,
     const std::string& stop_key,
     int64_t object_store_id,
     int64_t meta_data_type);
 
-WARN_UNUSED_RESULT bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
-                                                 const std::string& stop_key,
-                                                 int64_t index_id,
-                                                 unsigned char meta_data_type);
+WARN_UNUSED_RESULT bool CheckIndexAndMetaDataKey(
+    const TransactionalLevelDBIterator* it,
+    const std::string& stop_key,
+    int64_t index_id,
+    unsigned char meta_data_type);
 
 WARN_UNUSED_RESULT bool FindGreatestKeyLessThanOrEqual(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     const std::string& target,
     std::string* found_key,
     leveldb::Status* s);
 
 WARN_UNUSED_RESULT bool GetBlobKeyGeneratorCurrentNumber(
-    LevelDBTransaction* leveldb_transaction,
+    TransactionalLevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number);
 
 WARN_UNUSED_RESULT bool UpdateBlobKeyGeneratorCurrentNumber(
-    LevelDBTransaction* leveldb_transaction,
+    TransactionalLevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number);
 
 WARN_UNUSED_RESULT leveldb::Status GetEarliestSweepTime(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     base::Time* earliest_sweep);
 
 template <typename Transaction>

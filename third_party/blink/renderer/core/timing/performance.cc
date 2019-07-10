@@ -86,6 +86,10 @@ const Performance::UnifiedClock* DefaultUnifiedClock() {
   return &unified_clock;
 }
 
+bool IsMeasureOptionsEmpty(const PerformanceMeasureOptions& options) {
+  return !options.hasDetail() && !options.hasEnd() && !options.hasStart();
+}
+
 }  // namespace
 
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
@@ -643,9 +647,12 @@ void Performance::clearMarks(const AtomicString& mark_name) {
 PerformanceMeasure* Performance::measure(ScriptState* script_state,
                                          const AtomicString& measure_name,
                                          ExceptionState& exception_state) {
+  // When |startOrOptions| is not provided, it's assumed to be an empty
+  // dictionary.
   return MeasureInternal(
       script_state, measure_name,
-      NativeValueTraits<StringOrPerformanceMeasureOptions>::NullValue(),
+      StringOrPerformanceMeasureOptions::FromPerformanceMeasureOptions(
+          PerformanceMeasureOptions::Create()),
       base::nullopt, exception_state);
 }
 
@@ -691,9 +698,13 @@ PerformanceMeasure* Performance::MeasureInternal(
     const StringOrPerformanceMeasureOptions& start_or_options,
     base::Optional<String> end,
     ExceptionState& exception_state) {
+  DCHECK(!start_or_options.IsNull());
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
-    if (start_or_options.IsPerformanceMeasureOptions()) {
-      // measure("name", {}, *)
+    // An empty option is treated with no difference as null, undefined.
+    if (start_or_options.IsPerformanceMeasureOptions() &&
+        !IsMeasureOptionsEmpty(
+            *start_or_options.GetAsPerformanceMeasureOptions())) {
+      // measure("name", { start, end }, *)
       if (end) {
         exception_state.ThrowTypeError(
             "If a PerformanceMeasureOptions object was passed, |end| must be "
@@ -712,7 +723,8 @@ PerformanceMeasure* Performance::MeasureInternal(
         converted_start =
             StringOrDouble::FromString(start_or_options.GetAsString());
       } else {
-        DCHECK(start_or_options.IsNull());
+        DCHECK(start_or_options.IsNull() ||
+               start_or_options.IsPerformanceMeasureOptions());
         converted_start = NativeValueTraits<StringOrDouble>::NullValue();
       }
       // We let |end| behave the same whether it's empty, undefined or null in
@@ -729,13 +741,12 @@ PerformanceMeasure* Performance::MeasureInternal(
     // string 'null'.
     StringOrDouble converted_start;
     if (start_or_options.IsPerformanceMeasureOptions()) {
-      converted_start = StringOrDouble::FromString("[object Object]");
-    } else if (start_or_options.IsString()) {
+      converted_start = NativeValueTraits<StringOrDouble>::NullValue();
+    } else {
+      // |start_or_options| is not nullable.
+      DCHECK(start_or_options.IsString());
       converted_start =
           StringOrDouble::FromString(start_or_options.GetAsString());
-    } else {
-      DCHECK(start_or_options.IsNull());
-      DCHECK(converted_start.IsNull());
     }
 
     MeasureWithDetail(script_state, measure_name, converted_start,

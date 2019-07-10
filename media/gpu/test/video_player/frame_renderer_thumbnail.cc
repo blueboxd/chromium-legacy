@@ -27,8 +27,8 @@ constexpr gfx::Size kThumbnailsPageSize(1600, 1200);
 // Size of the individual thumbnails that will be rendered.
 constexpr gfx::Size kThumbnailSize(160, 120);
 
-// Default file path used to store the thumbnail image.
-constexpr const base::FilePath::CharType* kDefaultOutputPath =
+// Default filename used to store the thumbnails image.
+constexpr const base::FilePath::CharType* kThumbnailFilename =
     FILE_PATH_LITERAL("thumbnail.png");
 
 // Vertex shader used to render thumbnails.
@@ -110,13 +110,15 @@ class AutoGLContext {
 bool FrameRendererThumbnail::gl_initialized_ = false;
 
 FrameRendererThumbnail::FrameRendererThumbnail(
-    const std::vector<std::string>& thumbnail_checksums)
+    const std::vector<std::string>& thumbnail_checksums,
+    const base::FilePath& output_folder)
     : frame_count_(0),
       thumbnail_checksums_(thumbnail_checksums),
       thumbnails_fbo_id_(0),
       thumbnails_texture_id_(0),
       vertex_buffer_(0),
-      program_(0) {
+      program_(0),
+      output_folder_(output_folder) {
   DETACH_FROM_SEQUENCE(renderer_sequence_checker_);
 }
 
@@ -133,25 +135,26 @@ FrameRendererThumbnail::~FrameRendererThumbnail() {
 
 // static
 std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
-    const std::vector<std::string> thumbnail_checksums) {
-  auto frame_renderer =
-      base::WrapUnique(new FrameRendererThumbnail(thumbnail_checksums));
+    const std::vector<std::string> thumbnail_checksums,
+    const base::FilePath& output_folder) {
+  base::FilePath resolved_output_folder =
+      base::MakeAbsoluteFilePath(output_folder);
+  auto frame_renderer = base::WrapUnique(
+      new FrameRendererThumbnail(thumbnail_checksums, resolved_output_folder));
   frame_renderer->Initialize();
   return frame_renderer;
 }
 
 // static
 std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
-    const base::FilePath& video_file_path) {
+    const base::FilePath& video_file_path,
+    const base::FilePath& output_folder) {
   // Read thumbnail checksums from file.
   std::vector<std::string> thumbnail_checksums =
       media::test::ReadGoldenThumbnailMD5s(
           video_file_path.AddExtension(FILE_PATH_LITERAL(".md5")));
 
-  auto frame_renderer =
-      base::WrapUnique(new FrameRendererThumbnail(thumbnail_checksums));
-  frame_renderer->Initialize();
-  return frame_renderer;
+  return FrameRendererThumbnail::Create(thumbnail_checksums, output_folder);
 }
 
 void FrameRendererThumbnail::AcquireGLContext() {
@@ -246,6 +249,10 @@ bool FrameRendererThumbnail::ValidateThumbnail() {
 void FrameRendererThumbnail::SaveThumbnail() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // Create the directory tree if it doesn't exist yet.
+  if (!DirectoryExists(output_folder_))
+    base::CreateDirectory(output_folder_);
+
   const std::vector<uint8_t> rgba = ConvertThumbnailToRGBA();
 
   // Convert raw RGBA into PNG for export.
@@ -254,9 +261,11 @@ void FrameRendererThumbnail::SaveThumbnail() {
                         kThumbnailsPageSize, kThumbnailsPageSize.width() * 4,
                         true, std::vector<gfx::PNGCodec::Comment>(), &png);
 
-  base::FilePath filepath(kDefaultOutputPath);
+  base::FilePath filepath = output_folder_.Append(kThumbnailFilename);
+  base::File thumbnail_file(
+      filepath, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   int num_bytes =
-      base::WriteFile(filepath, reinterpret_cast<char*>(&png[0]), png.size());
+      thumbnail_file.Write(0u, reinterpret_cast<char*>(&png[0]), png.size());
   ASSERT_NE(-1, num_bytes);
   EXPECT_EQ(static_cast<size_t>(num_bytes), png.size());
 }

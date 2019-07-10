@@ -10,6 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -56,6 +57,22 @@ bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
   // non-desk windows that doesn't depend on the activatability of the window.
   return has_transient_children || CanIncludeWindowInMruList(window);
 }
+
+// Used to temporarily turn off the automatic window positioning while windows
+// are being moved between desks.
+class ScopedWindowPositionerDisabler {
+ public:
+  ScopedWindowPositionerDisabler() {
+    WindowPositioner::DisableAutoPositioning(true);
+  }
+
+  ~ScopedWindowPositionerDisabler() {
+    WindowPositioner::DisableAutoPositioning(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedWindowPositionerDisabler);
+};
 
 }  // namespace
 
@@ -225,6 +242,8 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
   DCHECK(target_desk);
 
   {
+    ScopedWindowPositionerDisabler window_positioner_disabler;
+
     // Throttle notifying the observers, while we move those windows and notify
     // them only once when done.
     auto this_desk_throttled = GetScopedNotifyContentChangedDisabler();
@@ -260,6 +279,8 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
   DCHECK(this != target_desk);
 
   {
+    ScopedWindowPositionerDisabler window_positioner_disabler;
+
     // Throttling here is necessary even though we're attempting to move a
     // single window. This is because that window might exist in a transient
     // window tree, which will result in actually moving multiple windows if the

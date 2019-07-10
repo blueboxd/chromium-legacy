@@ -17,6 +17,7 @@
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/observation_buffer.h"
+#include "net/nqe/throughput_analyzer.h"
 
 namespace net {
 
@@ -35,6 +36,12 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   // Returns the number of hosts that are involved in the last attempt of
   // computing the recent queueing delay. These hosts are recent active hosts.
   size_t GetActiveHostsCount() const;
+
+  // Notifies |this| that the headers of |request| are about to be sent.
+  void NotifyStartTransaction(const URLRequest& request);
+
+  // Notifies |this| that the response body of |request| has been received.
+  void NotifyRequestCompleted(const URLRequest& request);
 
   // Computes the recent queueing delay. Records the observed queueing delay
   // samples for all recent active hosts. The mean queueing delay is recorded in
@@ -61,6 +68,15 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   }
 
  private:
+  // Starts tracking the peak queueing delay for |request|.
+  void TrackPeakQueueingDelayBegin(const URLRequest* request);
+
+  // Returns the peak queueing delay observed by |request|. Also removes the
+  // record that belongs to |request| in the map. If the result is unavailable,
+  // returns nullopt.
+  base::Optional<base::TimeDelta> TrackPeakQueueingDelayEnd(
+      const URLRequest* request);
+
   // Sets the |recent_downlink_throughput_kbps_| with the estimated downlink
   // throughput in kbps. Also, computes the time frame (in millisecond) to
   // transmit one TCP packet (1500 Bytes) under this downlink throughput.
@@ -82,6 +98,15 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   base::Optional<float> recent_queue_length_;
   // The estimate of queueing delay induced by packet queue.
   base::TimeDelta recent_queueing_delay_;
+
+  // Mapping between URL requests to the observed queueing delay observations.
+  // The default value is nullopt.
+  typedef std::unordered_map<const URLRequest*, base::Optional<base::TimeDelta>>
+      RequestPeakDelay;
+
+  // This map maintains the mapping from in-flight URL requests to the peak
+  // queueing delay observed by requests.
+  RequestPeakDelay request_peak_delay_;
 
   // Counts the number of hosts involved in the last attempt of computing the
   // recent queueing delay.

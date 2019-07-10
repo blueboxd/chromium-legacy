@@ -18,7 +18,6 @@ class SingleThreadTaskRunner;
 
 namespace webrtc {
 class PeerConnectionInterface;
-class RtpSenderInterface;
 }  // namespace webrtc
 
 namespace remoting {
@@ -44,7 +43,6 @@ class WebrtcAudioStream : public AudioStream {
   scoped_refptr<WebrtcAudioSourceAdapter> source_adapter_;
 
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> audio_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcAudioStream);
 };

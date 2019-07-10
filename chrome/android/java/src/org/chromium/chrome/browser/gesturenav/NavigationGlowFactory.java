@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.view.ViewGroup;
 
 import org.chromium.base.Supplier;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Factory class that provides {@link NavigationGlow} according to the actual surface
@@ -18,25 +16,13 @@ import org.chromium.ui.base.WindowAndroid;
 public class NavigationGlowFactory {
     /**
      * @pararm parentView Parent view where the glow view gets attached to.
-     * @pararm sceneLayer SceneLayer whose cc layer will be used for rendering glow effect.
-     * @pararm window WindowAndroid object to get WindowAndroidCompositor from for animation effect.
-     * @return Supplier for {@link NavigationGlow} object for the screen rendered with {@link
-     *         SceneLayer}.
-     */
-    public static Supplier<NavigationGlow> forSceneLayer(
-            ViewGroup parentView, SceneLayer sceneLayer, WindowAndroid window) {
-        return () -> CompositorNavigationGlow.forSceneLayer(parentView, sceneLayer, window);
-    }
-
-    /**
-     * @pararm parentView Parent view where the glow view gets attached to.
      * @pararm webContents WebContents whose native view's cc layer will be used
      *        for rendering glow effect.
      * @return Supplier for {@link NavigationGlow} object for rendered pages.
      */
     public static Supplier<NavigationGlow> forRenderedPage(
             ViewGroup parentView, WebContents webContents) {
-        return () -> CompositorNavigationGlow.forWebContents(parentView, webContents);
+        return () -> new CompositorNavigationGlow(parentView, webContents);
     }
 
     /**

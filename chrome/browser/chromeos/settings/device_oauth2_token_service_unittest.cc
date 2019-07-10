@@ -43,22 +43,6 @@
 
 namespace chromeos {
 
-namespace {
-
-class MockOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
- public:
-  MockOAuth2TokenServiceObserver();
-  ~MockOAuth2TokenServiceObserver() override;
-
-  MOCK_METHOD1(OnRefreshTokenAvailable, void(const CoreAccountId&));
-};
-
-MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {}
-
-MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {}
-
-}  // namespace
-
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
@@ -462,23 +446,28 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
 TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
   CreateService();
 
-  testing::StrictMock<MockOAuth2TokenServiceObserver> observer;
-  GetDelegate()->AddObserver(&observer);
+  auto callback_without_id = base::BindRepeating(
+      [](const CoreAccountId& account_id) { EXPECT_TRUE(false); });
+  oauth2_service_->SetRefreshTokenAvailableCallback(
+      std::move(callback_without_id));
 
   // Make a token available during enrollment. Verify that the token is not
   // announced yet.
   oauth2_service_->SetAndSaveRefreshToken(
       "test-token", DeviceOAuth2TokenService::StatusCallback());
-  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  base::RunLoop run_loop;
+  auto callback_with_id =
+      base::BindRepeating([](base::RunLoop* loop,
+                             const CoreAccountId& account_id) { loop->Quit(); },
+                          &run_loop);
+  oauth2_service_->SetRefreshTokenAvailableCallback(
+      std::move(callback_with_id));
 
   // Also make the robot account ID available. Verify that the token is
   // announced now.
-  EXPECT_CALL(observer,
-              OnRefreshTokenAvailable(CoreAccountId("robot@example.com")));
   SetRobotAccountId("robot@example.com");
-  testing::Mock::VerifyAndClearExpectations(&observer);
-
-  GetDelegate()->RemoveObserver(&observer);
+  run_loop.Run();
 }
 
 }  // namespace chromeos

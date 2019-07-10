@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <new>
 #include <utility>
 #include <vector>
@@ -17,6 +18,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -26,6 +29,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
@@ -235,13 +239,18 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
 
   std::vector<sk_sp<SkImage>> plane_sk_images;
+  base::Optional<base::ScopedClosureRunner> notify_gl_state_changed;
 #if defined(OS_CHROMEOS)
-  // Right now, we only support YUV 4:2:0 for the output of the decoder.
+  // Right now, we only support YUV 4:2:0 for the output of the decoder. Note
+  // that the we get the planes in YVU order, but we need them in YUV order to
+  // create the transfer cache entry.
   //
   // TODO(andrescj): change to gfx::BufferFormat::YUV_420 once
   // https://crrev.com/c/1573718 lands.
   DCHECK_EQ(gfx::BufferFormat::YVU_420, completed_decode->buffer_format);
   DCHECK_EQ(3u, completed_decode->handle.native_pixmap_handle.planes.size());
+  std::swap(completed_decode->handle.native_pixmap_handle.planes[1],
+            completed_decode->handle.native_pixmap_handle.planes[2]);
 
   // Calculate the dimensions of each of the planes.
   const gfx::Size y_plane_size = completed_decode->visible_size;
@@ -260,6 +269,18 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     return;
   }
   gfx::Size uv_plane_size = gfx::Size(uv_width, uv_height);
+
+  // We should notify the SharedContextState that we or Skia may have modified
+  // the driver's GL state. We should also notify Skia that we may have modified
+  // the graphics API state outside of Skia. We put this in a
+  // ScopedClosureRunner so that if we return early, both the SharedContextState
+  // and Skia end up in a consistent state.
+  notify_gl_state_changed.emplace(base::BindOnce(
+      [](scoped_refptr<SharedContextState> scs) {
+        scs->set_need_context_state_reset(true);
+        scs->PessimisticallyResetGrContext();
+      },
+      shared_context_state));
 
   // Create a gl::GLImage for each plane and attach it to a texture.
   plane_sk_images.resize(3u);
@@ -318,6 +339,9 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
       return;
     }
 
+    // Notify Skia that we have changed the driver's GL state outside of Skia.
+    shared_context_state->PessimisticallyResetGrContext();
+
     // Create a SkImage using the texture.
     const GrBackendTexture plane_backend_texture(
         plane_size.width(), plane_size.height(), GrMipMapped::kNo,
@@ -368,22 +392,31 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     OnError();
     return;
   }
-  DCHECK(shared_context_state->transfer_cache());
-  if (!shared_context_state->transfer_cache()
-           ->CreateLockedHardwareDecodedImageEntry(
-               command_buffer->decoder_context()->GetRasterDecoderId(),
-               params.transfer_cache_entry_id,
-               ServiceDiscardableHandle(std::move(handle_buffer),
-                                        params.discardable_handle_shm_offset,
-                                        params.discardable_handle_shm_id),
-               shared_context_state->gr_context(), std::move(plane_sk_images),
-               completed_decode->buffer_byte_size, params.needs_mips,
-               params.target_color_space.ToSkColorSpace())) {
-    DLOG(ERROR) << "Could not create and insert the transfer cache entry";
-    OnError();
-    return;
+
+  {
+    auto* gr_shader_cache = channel_->gpu_channel_manager()->gr_shader_cache();
+    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gr_shader_cache)
+      cache_use.emplace(gr_shader_cache,
+                        base::strict_cast<int32_t>(channel_->client_id()));
+    DCHECK(shared_context_state->transfer_cache());
+    if (!shared_context_state->transfer_cache()
+             ->CreateLockedHardwareDecodedImageEntry(
+                 command_buffer->decoder_context()->GetRasterDecoderId(),
+                 params.transfer_cache_entry_id,
+                 ServiceDiscardableHandle(std::move(handle_buffer),
+                                          params.discardable_handle_shm_offset,
+                                          params.discardable_handle_shm_id),
+                 shared_context_state->gr_context(), std::move(plane_sk_images),
+                 completed_decode->buffer_byte_size, params.needs_mips,
+                 params.target_color_space.ToSkColorSpace())) {
+      DLOG(ERROR) << "Could not create and insert the transfer cache entry";
+      OnError();
+      return;
+    }
   }
-  shared_context_state->set_need_context_state_reset(true);
+  DCHECK(notify_gl_state_changed);
+  notify_gl_state_changed->RunAndReset();
 
   // All done! The decoded image can now be used for rasterization, so we can
   // release the decode sync token.

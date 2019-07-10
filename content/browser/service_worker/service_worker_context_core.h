@@ -161,8 +161,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Returns a ProviderHost iterator for all service worker clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
-  // that are execution ready (i.e., for windows, the navigation has been
-  // committed and for workers, the final response after redirects has been
+  // that are execution ready (i.e., for windows, the document has been
+  // created and for workers, the final response after redirects has been
   // delivered).
   std::unique_ptr<ProviderHostIterator> GetClientProviderHostIterator(
       const GURL& origin,

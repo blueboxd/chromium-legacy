@@ -283,7 +283,7 @@ void IndexedDBOriginState::StartPreCloseTasks() {
 
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
-  scoped_refptr<LevelDBTransaction> txn =
+  scoped_refptr<TransactionalLevelDBTransaction> txn =
       leveldb_factory_->CreateLevelDBTransaction(backing_store_->db());
   indexed_db::SetEarliestSweepTime(txn.get(), GenerateNextOriginSweepTime(now));
   s = txn->Commit();

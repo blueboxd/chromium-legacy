@@ -26,6 +26,7 @@ const int kMenuViewBoundsBuffer = 100;
 // The buffers in dips around a scroll point where the scroll menu is shown.
 const int kScrollViewBoundsXBuffer = 110;
 const int kScrollViewBoundsYBuffer = 10;
+const int kScrollViewBoundsRectBuffer = 18;
 
 ui::GestureEvent CreateTapEvent() {
   return ui::GestureEvent(0, 0, 0, base::TimeTicks(),
@@ -305,20 +306,35 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
   }
 }
 
-TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleManualPositioning) {
-  UpdateDisplay("1000x800");
+TEST_F(AutoclickMenuBubbleControllerTest,
+       ScrollBubbleManualPositioningLargeScrollBounds) {
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   controller->SetAutoclickEventType(AutoclickEventType::kScroll);
 
-  const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
+  // With large scrollable bounds, the scroll bubble should just be positioned
+  // near the scroll point. Try with high density bounds and LTR/RTL languages.
+  const struct {
+    bool is_RTL;
+    gfx::Rect scroll_bounds;
+    std::string display_spec;
+  } kTestCases[] = {
+      {true, gfx::Rect(0, 0, 1000, 800), "1000x800"},
+      {false, gfx::Rect(0, 0, 1000, 800), "1000x800"},
+      {false, gfx::Rect(100, 100, 800, 600), "1000x800"},
+      {true, gfx::Rect(200, 0, 600, 600), "1000x800"},
+      {true, gfx::Rect(0, 0, 1000, 800), "2000x1600*2"},
+      {false, gfx::Rect(0, 0, 1000, 800), "2000x1600*2"},
+  };
   for (auto& test : kTestCases) {
+    UpdateDisplay(test.display_spec);
     base::i18n::SetRTLForTesting(test.is_RTL);
+    gfx::Rect scroll_bounds = test.scroll_bounds;
     controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
 
     // Start with a point no where near the autoclick menu.
     gfx::Point point = gfx::Point(400, 400);
-    GetBubbleController()->SetScrollPoint(point);
+    GetBubbleController()->SetScrollPosition(scroll_bounds, point);
 
     // In-line with the point in the Y axis.
     EXPECT_LT(abs(GetScrollViewBounds().right_center().y() - point.y()),
@@ -335,25 +351,153 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleManualPositioning) {
 
     // Moving the autoclick bubble doesn't impact the scroll bubble once it
     // has been manually set.
-    gfx::Rect scroll_bounds = GetScrollViewBounds();
+    gfx::Rect bubble_bounds = GetScrollViewBounds();
     controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomRight);
-    EXPECT_EQ(scroll_bounds, GetScrollViewBounds());
+    EXPECT_EQ(bubble_bounds, GetScrollViewBounds());
 
     // If we position it by the edge of the screen, it should stay on-screen,
     // regardless of LTR vs RTL.
     point = gfx::Point(0, 0);
-    GetBubbleController()->SetScrollPoint(point);
+    GetBubbleController()->SetScrollPosition(scroll_bounds, point);
     EXPECT_LT(abs(GetScrollViewBounds().x() - point.x()),
               kScrollViewBoundsXBuffer);
     EXPECT_LT(abs(GetScrollViewBounds().y() - point.y()),
               kScrollViewBoundsYBuffer);
 
     point = gfx::Point(1000, 400);
-    GetBubbleController()->SetScrollPoint(point);
+    GetBubbleController()->SetScrollPosition(scroll_bounds, point);
     EXPECT_LT(abs(GetScrollViewBounds().right() - point.x()),
               kScrollViewBoundsXBuffer);
     EXPECT_LT(abs(GetScrollViewBounds().left_center().y() - point.y()),
               kScrollViewBoundsYBuffer);
+  }
+}
+
+TEST_F(AutoclickMenuBubbleControllerTest,
+       ScrollBubbleManualPositioningSmallScrollBounds) {
+  UpdateDisplay("1200x1000");
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetAutoclickEventType(AutoclickEventType::kScroll);
+
+  const struct {
+    bool is_RTL;
+    gfx::Rect scroll_bounds;
+    gfx::Point scroll_point;
+    bool expect_bounds_on_right;
+    bool expect_bounds_on_left;
+    bool expect_bounds_on_top;
+    bool expect_bounds_on_bottom;
+  } kTestCases[] = {
+      // Small centered bounds, point closest to the right side.
+      {true, gfx::Rect(400, 350, 300, 300), gfx::Point(555, 500),
+       true /* on right */, false, false, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(555, 500),
+       true /* on right */, false, false, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(650, 400),
+       true /* on right */, false, false, false},
+
+      // Small centered bounds, point closest to the left side.
+      {true, gfx::Rect(400, 350, 300, 300), gfx::Point(545, 500), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(545, 500), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(410, 400), false,
+       true /* on left */, false, false},
+
+      // Point closest to the top of the bounds.
+      {true, gfx::Rect(400, 350, 300, 300), gfx::Point(550, 400), false, false,
+       true /* on top */, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(550, 400), false, false,
+       true /* on top */, false},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(402, 351), false, false,
+       true /* on top */, false},
+
+      // Point closest to the bottom of the bounds.
+      {true, gfx::Rect(400, 350, 300, 300), gfx::Point(550, 550), false, false,
+       false, true /* on bottom */},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(550, 550), false, false,
+       false, true /* on bottom */},
+      {false, gfx::Rect(400, 350, 300, 300), gfx::Point(450, 649), false, false,
+       false, true /* on bottom */},
+
+      // These bounds only have space on the right and bottom. Even points
+      // close to the top left get mapped to the right or bottom.
+      {false, gfx::Rect(100, 100, 300, 300), gfx::Point(130, 120),
+       true /* on right */, false, false, false},
+      {true, gfx::Rect(100, 100, 300, 300), gfx::Point(130, 120),
+       true /* on right */, false, false, false},
+      {false, gfx::Rect(100, 100, 300, 300), gfx::Point(120, 130), false, false,
+       false, true /* on bottom */},
+
+      // These bounds only have space on the top and left. Even points
+      // close to the bottom right get mapped to the top or left.
+      {false, gfx::Rect(900, 600, 300, 300), gfx::Point(1075, 800), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(900, 600, 300, 300), gfx::Point(1075, 800), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(900, 600, 300, 300), gfx::Point(1100, 775), false,
+       false, true /* on top */, false},
+
+      // These bounds have space above/below, but not left/right.
+      {false, gfx::Rect(400, 100, 300, 800), gfx::Point(525, 110), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(400, 100, 300, 800), gfx::Point(525, 845), false,
+       true /* on left */, false, false},
+      {false, gfx::Rect(400, 100, 300, 800), gfx::Point(575, 845),
+       true /* on right */, false, false, false},
+
+      // These bounds have space left/right, but not above/below.
+      {false, gfx::Rect(100, 350, 1000, 300), gfx::Point(200, 450), false,
+       false, true /* on top */, false},
+      {false, gfx::Rect(100, 350, 1000, 300), gfx::Point(200, 550), false,
+       false, false, true /* on bottom */},
+      {false, gfx::Rect(100, 350, 1000, 300), gfx::Point(1000, 550), false,
+       false, false, true /* on bottom */},
+  };
+  for (auto& test : kTestCases) {
+    base::i18n::SetRTLForTesting(test.is_RTL);
+    gfx::Rect scroll_bounds = test.scroll_bounds;
+    gfx::Point scroll_point = test.scroll_point;
+    GetBubbleController()->SetScrollPosition(scroll_bounds, scroll_point);
+
+    if (test.expect_bounds_on_right) {
+      // The scroll view should be on the right of the bounds and centered
+      // vertically on the scroll point.
+      EXPECT_LT(abs(GetScrollViewBounds().y() +
+                    GetScrollViewBounds().height() / 2 - scroll_point.y()),
+                kScrollViewBoundsYBuffer);
+      EXPECT_LT(GetScrollViewBounds().x() - scroll_bounds.right(),
+                kScrollViewBoundsRectBuffer);
+      EXPECT_GT(GetScrollViewBounds().x() - scroll_bounds.right(), 0);
+    } else if (test.expect_bounds_on_left) {
+      // The scroll view should be on the left of the bounds and centered
+      // vertically on the scroll point.
+      EXPECT_LT(abs(GetScrollViewBounds().y() +
+                    GetScrollViewBounds().height() / 2 - scroll_point.y()),
+                kScrollViewBoundsYBuffer);
+      EXPECT_LT(scroll_bounds.x() - GetScrollViewBounds().right(),
+                kScrollViewBoundsRectBuffer);
+      EXPECT_GT(scroll_bounds.x() - GetScrollViewBounds().right(), 0);
+    } else if (test.expect_bounds_on_top) {
+      // The scroll view should be on the top of the bounds and centered
+      // horizontally on the scroll point.
+      EXPECT_LT(abs(GetScrollViewBounds().x() +
+                    GetScrollViewBounds().width() / 2 - scroll_point.x()),
+                kScrollViewBoundsYBuffer);
+      EXPECT_LT(scroll_bounds.y() - GetScrollViewBounds().bottom(),
+                kScrollViewBoundsRectBuffer);
+      EXPECT_GT(scroll_bounds.y() - GetScrollViewBounds().bottom(), 0);
+    } else if (test.expect_bounds_on_bottom) {
+      // The scroll view should be on the bottom of the bounds and centered
+      // horizontally on the scroll point.
+      EXPECT_LT(abs(GetScrollViewBounds().x() +
+                    GetScrollViewBounds().width() / 2 - scroll_point.x()),
+                kScrollViewBoundsYBuffer);
+      EXPECT_LT(GetScrollViewBounds().y() - scroll_bounds.bottom(),
+                kScrollViewBoundsRectBuffer);
+      EXPECT_GT(GetScrollViewBounds().y() - scroll_bounds.bottom(), -1);
+    }
   }
 }
 

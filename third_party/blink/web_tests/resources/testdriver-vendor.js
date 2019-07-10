@@ -17,31 +17,47 @@
     return [x, y];
   }
 
-  function getPointerInteractablePaintTree(element) {
-    if (!window.document.contains(element)) {
+  function getPointerInteractablePaintTree(element, frame) {
+    var frameDocument = frame == window ? window.document : frame.contentDocument;
+    if (!frameDocument.contains(element)) {
       return [];
     }
 
     var rectangles = element.getClientRects();
-
     if (rectangles.length === 0) {
       return [];
     }
 
     var centerPoint = getInViewCenterPoint(rectangles[0]);
     if ("elementsFromPoint" in document) {
-      return document.elementsFromPoint(centerPoint[0], centerPoint[1]);
+      return frameDocument.elementsFromPoint(centerPoint[0], centerPoint[1]);
     } else if ("msElementsFromPoint" in document) {
-      var rv = document.msElementsFromPoint(centerPoint[0], centerPoint[1]);
+      var rv = frameDocument.msElementsFromPoint(centerPoint[0], centerPoint[1]);
       return Array.prototype.slice.call(rv ? rv : []);
     } else {
       throw new Error("document.elementsFromPoint unsupported");
     }
   }
 
-  function inView(element) {
-    var pointerInteractablePaintTree = getPointerInteractablePaintTree(element);
-    return pointerInteractablePaintTree.indexOf(element) !== -1 || element.contains(pointerInteractablePaintTree[0]);
+  function inView(element, frame) {
+    var pointerInteractablePaintTree = getPointerInteractablePaintTree(element, frame);
+    return pointerInteractablePaintTree.indexOf(element) !== -1 || element.contains(pointerInteractablePaintTree[0], frame);
+  }
+
+  function findElementInFrame(element, frame) {
+    var foundFrame = frame;
+    var frameDocument = frame == window ? window.document : frame.contentDocument;
+    if (!frameDocument.contains(element)) {
+      foundFrame = null;
+      var frames = document.getElementsByTagName("iframe");
+      for (let i = 0; i < frames.length; i++) {
+        if (findElementInFrame(element, frames[i])) {
+          foundFrame = frames[i];
+          break;
+        }
+      }
+    }
+    return foundFrame;
   }
 
   window.test_driver_internal.click = function(element, coords) {
@@ -122,12 +138,13 @@
                return Promise.reject(new Error("pointer origin is not given correctly"));
              }
           } else {
-            let element = actions[i].actions[j].origin;
-            if (!window.document.contains(element)) {
-              return Promise.reject(new Error("element in different document or shadow tree"));
+            var element = actions[i].actions[j].origin;
+            var frame = findElementInFrame(element, window);
+            if (frame == null) {
+              return Promise.reject(new Error("element in different document or iframe"));
             }
 
-            if (!inView(element)) {
+            if (!inView(element, frame)) {
               if (didScrollIntoView)
                 return Promise.reject(new Error("already scrolled into view, the element is not found"));
 
@@ -137,7 +154,7 @@
               didScrollIntoView = true;
             }
 
-            var pointerInteractablePaintTree = getPointerInteractablePaintTree(element);
+            var pointerInteractablePaintTree = getPointerInteractablePaintTree(element, frame);
             if (pointerInteractablePaintTree.length === 0 ||
                 !element.contains(pointerInteractablePaintTree[0])) {
               return Promise.reject(new Error("element click intercepted error"));
@@ -147,6 +164,11 @@
             var centerPoint = getInViewCenterPoint(rect);
             last_x_position = actions[i].actions[j].x + centerPoint[0];
             last_y_position = actions[i].actions[j].y + centerPoint[1];
+            if (frame != window) {
+              var frameRect = frame.getClientRects();
+              last_x_position += frameRect[0].left;
+              last_y_position += frameRect[0].top;
+            }
           }
         }
 

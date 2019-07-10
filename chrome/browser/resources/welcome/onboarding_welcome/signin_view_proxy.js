@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   const NUX_SIGNIN_VIEW_INTERACTION_METRIC_NAME =
       'FirstRun.NewUserExperience.SignInInterstitialInteraction';
 
@@ -32,7 +32,7 @@ cr.define('nux', function() {
     recordSignIn() {}
   }
 
-  /** @implements {nux.SigninViewProxy} */
+  /** @implements {welcome.SigninViewProxy} */
   class SigninViewProxyImpl {
     /** @override */
     recordPageShown() {

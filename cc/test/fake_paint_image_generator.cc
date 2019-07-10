@@ -37,11 +37,11 @@ FakePaintImageGenerator::FakePaintImageGenerator(
 FakePaintImageGenerator::~FakePaintImageGenerator() = default;
 
 bool FakePaintImageGenerator::IsEligibleForAcceleratedDecoding() const {
-  return false;
+  return is_eligible_for_accelerated_decode_;
 }
 
 sk_sp<SkData> FakePaintImageGenerator::GetEncodedData() const {
-  return nullptr;
+  return SkData::MakeEmpty();
 }
 
 bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,

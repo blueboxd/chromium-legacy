@@ -276,7 +276,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     CHECK(s.ok()) << s.ToString();
     CHECK(handle.IsHeld());
 
-    LevelDBDatabase* db = handle.origin_state()->backing_store()->db();
+    TransactionalLevelDBDatabase* db =
+        handle.origin_state()->backing_store()->db();
     s = db->Put(key, &value);
     CHECK(s.ok()) << s.ToString();
 

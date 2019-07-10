@@ -112,8 +112,6 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url) override;
 
-  bool ShouldShowRememberSelection() override;
-
   void CloseTab();
 
   // Whether or not the intent picker UI should be displayed without the user

@@ -9,9 +9,10 @@
 
 #include "base/macros.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
 
 namespace content {
-class ShellBrowserContext;
+class BrowserContext;
 struct MainFunctionParams;
 }
 
@@ -19,12 +20,8 @@ namespace views {
 class ViewsDelegate;
 }
 
-namespace wm {
-class WMState;
-}
-
 namespace ash {
-class TestPrefServiceProvider;
+class AshTestHelper;
 
 namespace shell {
 class ExampleAppListClient;
@@ -44,19 +41,17 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
 
-  content::ShellBrowserContext* browser_context() {
-    return browser_context_.get();
-  }
+  content::BrowserContext* browser_context() { return browser_context_.get(); }
 
  private:
-  std::unique_ptr<content::ShellBrowserContext> browser_context_;
+  std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
-  std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<ExampleSessionControllerClient>
       example_session_controller_client_;
   std::unique_ptr<ExampleAppListClient> example_app_list_client_;
-  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
+  std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
+  content::MainFunctionParams parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

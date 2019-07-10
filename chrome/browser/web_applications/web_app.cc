@@ -39,7 +39,6 @@ void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
 }
 
 void WebApp::SetIcons(Icons icons) {
-  DCHECK(!icons.empty());
   icons_ = std::move(icons);
 }
 

@@ -608,7 +608,7 @@ void TouchEventConverterEvdev::ReleaseTouches() {
   ReportEvents(EventTimeForNow());
 }
 
-float TouchEventConverterEvdev::ScalePressure(int32_t value) {
+float TouchEventConverterEvdev::ScalePressure(int32_t value) const {
   float pressure = value - pressure_min_;
   if (pressure_max_ - pressure_min_)
     pressure /= pressure_max_ - pressure_min_;

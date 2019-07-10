@@ -23,11 +23,12 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
-#include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -161,6 +162,18 @@ void DoSplitViewTransition(
   }
 }
 
+void UpdateDeskContainersBackdrops() {
+  for (auto* root : Shell::GetAllRootWindows()) {
+    for (auto* desk_container : desks_util::GetDesksContainers(root)) {
+      WorkspaceController* controller = GetWorkspaceController(desk_container);
+      WorkspaceLayoutManager* layout_manager = controller->layout_manager();
+      BackdropController* backdrop_controller =
+          layout_manager->backdrop_controller();
+      backdrop_controller->UpdateBackdrop();
+    }
+  }
+}
+
 }  // namespace
 
 // Class which tells tablet mode controller to observe a given window for UMA
@@ -240,7 +253,6 @@ void TabletModeWindowManager::Init() {
     ArrangeWindowsForTabletMode();
   }
   AddWindowCreationObservers();
-  EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -293,7 +305,6 @@ void TabletModeWindowManager::Shutdown() {
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
 
   ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
@@ -717,30 +728,13 @@ void TabletModeWindowManager::RemoveWindowCreationObservers() {
 }
 
 void TabletModeWindowManager::DisplayConfigurationChanged() {
-  EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   AddWindowCreationObservers();
-  EnableBackdropBehindTopWindowOnEachDisplay(true);
+  UpdateDeskContainersBackdrops();
 }
 
 bool TabletModeWindowManager::IsContainerWindow(aura::Window* window) {
   return base::Contains(observed_container_windows_, window);
-}
-
-void TabletModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
-    bool enable) {
-  // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
-  // the topmost window of its container.
-  for (auto* root : Shell::GetAllRootWindows()) {
-    for (auto* desk_container : desks_util::GetDesksContainers(root)) {
-      WorkspaceController* controller = GetWorkspaceController(desk_container);
-      DCHECK(controller);
-
-      controller->SetBackdropDelegate(
-          enable ? std::make_unique<TabletModeBackdropDelegateImpl>()
-                 : nullptr);
-    }
-  }
 }
 
 }  // namespace ash

@@ -59,7 +59,7 @@ class TabSelectionEditorCoordinator {
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
                 null, null, null, this::getItemViewType, this::getSelectionDelegate, null, null,
-                false, R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
+                false, COMPONENT_NAME);
 
         mTabSelectionEditorLayout = LayoutInflater.from(context)
                 .inflate(R.layout.tab_selection_editor_layout, null)

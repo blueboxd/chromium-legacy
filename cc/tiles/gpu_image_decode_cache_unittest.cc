@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_image_builder.h"
@@ -15,11 +16,19 @@
 #include "cc/test/transfer_cache_test_helper.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
+#include "gpu/command_buffer/client/raster_implementation_gles.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
+#include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_finch_features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+
+using testing::_;
+using testing::StrictMock;
 
 namespace cc {
 namespace {
@@ -101,13 +110,15 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
  public:
   explicit FakeGPUImageDecodeTestGLES2Interface(
       FakeDiscardableManager* discardable_manager,
-      TransferCacheTestHelper* transfer_cache_helper)
+      TransferCacheTestHelper* transfer_cache_helper,
+      bool advertise_accelerated_decoding)
       : extension_string_(
             "GL_EXT_texture_format_BGRA8888 GL_OES_rgb8_rgba8 "
             "GL_OES_texture_npot GL_EXT_texture_rg "
             "GL_OES_texture_half_float GL_OES_texture_half_float_linear"),
         discardable_manager_(discardable_manager),
-        transfer_cache_helper_(transfer_cache_helper) {}
+        transfer_cache_helper_(transfer_cache_helper),
+        advertise_accelerated_decoding_(advertise_accelerated_decoding) {}
 
   ~FakeGPUImageDecodeTestGLES2Interface() override {
     // All textures / framebuffers / renderbuffers should be cleaned up.
@@ -159,6 +170,11 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
   }
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {
     transfer_cache_helper_->DeleteEntryDirect(MakeEntryKey(type, id));
+  }
+
+  bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) const override {
+    return advertise_accelerated_decoding_;
   }
 
   std::pair<TransferCacheEntryType, uint32_t> MakeEntryKey(uint32_t type,
@@ -213,28 +229,73 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
   const std::string extension_string_;
   FakeDiscardableManager* discardable_manager_;
   TransferCacheTestHelper* transfer_cache_helper_;
+  bool advertise_accelerated_decoding_ = false;
   size_t mapped_entry_size_ = 0;
   std::unique_ptr<uint8_t[]> mapped_entry_;
+};
+
+class MockRasterImplementation : public gpu::raster::RasterImplementationGLES {
+ public:
+  explicit MockRasterImplementation(gpu::gles2::GLES2Interface* gl)
+      : RasterImplementationGLES(gl) {}
+  ~MockRasterImplementation() override = default;
+
+  gpu::SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
+                                     const gfx::Size& output_size,
+                                     uint32_t transfer_cache_entry_id,
+                                     const gfx::ColorSpace& target_color_space,
+                                     bool needs_mips) override {
+    DoScheduleImageDecode(output_size, transfer_cache_entry_id,
+                          target_color_space, needs_mips);
+    if (!next_accelerated_decode_fails_) {
+      return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
+                            gpu::CommandBufferId::FromUnsafeValue(1u),
+                            next_release_count_++);
+    }
+    return gpu::SyncToken();
+  }
+
+  void SetAcceleratedDecodingFailed() { next_accelerated_decode_fails_ = true; }
+
+  MOCK_METHOD4(DoScheduleImageDecode,
+               void(const gfx::Size& /* output_size */,
+                    uint32_t /* transfer_cache_entry_id */,
+                    const gfx::ColorSpace& /* target_color_space */,
+                    bool /* needs_mips */));
+
+ private:
+  bool next_accelerated_decode_fails_ = false;
+  uint64_t next_release_count_ = 1u;
 };
 
 class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
  public:
   static scoped_refptr<GPUImageDecodeTestMockContextProvider> Create(
       FakeDiscardableManager* discardable_manager,
-      TransferCacheTestHelper* transfer_cache_helper) {
+      TransferCacheTestHelper* transfer_cache_helper,
+      bool advertise_accelerated_decoding) {
+    auto support = std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
+        discardable_manager, transfer_cache_helper,
+        advertise_accelerated_decoding);
+    auto gl = std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
+        discardable_manager, transfer_cache_helper,
+        false /* advertise_accelerated_decoding */);
+    auto raster =
+        std::make_unique<StrictMock<MockRasterImplementation>>(gl.get());
     return new GPUImageDecodeTestMockContextProvider(
-        std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
-            discardable_manager, transfer_cache_helper),
-        std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
-            discardable_manager, transfer_cache_helper));
+        std::move(support), std::move(gl), std::move(raster));
   }
 
  private:
   ~GPUImageDecodeTestMockContextProvider() override = default;
   GPUImageDecodeTestMockContextProvider(
       std::unique_ptr<viz::TestContextSupport> support,
-      std::unique_ptr<viz::TestGLES2Interface> gl)
-      : TestContextProvider(std::move(support), std::move(gl), true) {}
+      std::unique_ptr<viz::TestGLES2Interface> gl,
+      std::unique_ptr<gpu::raster::RasterInterface> raster)
+      : TestContextProvider(std::move(support),
+                            std::move(gl),
+                            std::move(raster),
+                            true) {}
 };
 
 SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
@@ -260,13 +321,21 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
 size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
 
 class GpuImageDecodeCacheTest
-    : public ::testing::TestWithParam<std::tuple<SkColorType,
-                                                 bool /* use_transfer_cache */,
-                                                 bool /* do_yuv_decode */>> {
+    : public ::testing::TestWithParam<
+          std::tuple<SkColorType,
+                     bool /* use_transfer_cache */,
+                     bool /* do_yuv_decode */,
+                     bool /* advertise_accelerated_decoding */>> {
  public:
   void SetUp() override {
+    advertise_accelerated_decoding_ = std::get<3>(GetParam());
+    if (advertise_accelerated_decoding_) {
+      feature_list_.InitAndEnableFeature(
+          features::kVaapiJpegImageDecodeAcceleration);
+    }
     context_provider_ = GPUImageDecodeTestMockContextProvider::Create(
-        &discardable_manager_, &transfer_cache_helper_);
+        &discardable_manager_, &transfer_cache_helper_,
+        advertise_accelerated_decoding_);
     discardable_manager_.SetGLES2Interface(
         context_provider_->UnboundTestContextGL());
     context_provider_->BindToCurrentThread();
@@ -437,12 +506,18 @@ class GpuImageDecodeCacheTest
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
+
+  // The order of these members is important because |context_provider_| depends
+  // on |discardable_manager_| and |transfer_cache_helper_|.
   FakeDiscardableManager discardable_manager_;
-  scoped_refptr<GPUImageDecodeTestMockContextProvider> context_provider_;
   TransferCacheTestHelper transfer_cache_helper_;
+  scoped_refptr<GPUImageDecodeTestMockContextProvider> context_provider_;
+
   bool use_transfer_cache_;
   SkColorType color_type_;
   bool do_yuv_decode_;
+  bool advertise_accelerated_decoding_;
   int max_texture_size_ = 0;
 };
 
@@ -3091,16 +3166,347 @@ bool true_array[] = {true};
 INSTANTIATE_TEST_SUITE_P(
     GpuImageDecodeCacheTestsInProcessRaster,
     GpuImageDecodeCacheTest,
-    testing::Combine(testing::ValuesIn(test_color_types),
-                     testing::ValuesIn(false_array) /* use_transfer_cache */,
-                     testing::Bool() /* do_yuv_decode */));
+    testing::Combine(
+        testing::ValuesIn(test_color_types),
+        testing::ValuesIn(false_array) /* use_transfer_cache */,
+        testing::Bool() /* do_yuv_decode */,
+        testing::ValuesIn(false_array) /* advertise_accelerated_decoding */));
 
 INSTANTIATE_TEST_SUITE_P(
     GpuImageDecodeCacheTestsOOPR,
     GpuImageDecodeCacheTest,
-    testing::Combine(testing::ValuesIn(test_color_types),
-                     testing::ValuesIn(true_array) /* use_transfer_cache */,
-                     testing::ValuesIn(false_array) /* do_yuv_decode */));
+    testing::Combine(
+        testing::ValuesIn(test_color_types),
+        testing::ValuesIn(true_array) /* use_transfer_cache */,
+        testing::ValuesIn(false_array) /* do_yuv_decode */,
+        testing::ValuesIn(false_array) /* advertise_accelerated_decoding */));
+
+class GpuImageDecodeCacheWithAcceleratedDecodesTest
+    : public GpuImageDecodeCacheTest {
+ public:
+  PaintImage CreatePaintImageForDecodeAcceleration(
+      const gfx::Size& size,
+      sk_sp<SkColorSpace> color_space = nullptr,
+      bool is_eligible_for_accelerated_decoding = true) {
+    SkImageInfo info =
+        SkImageInfo::Make(size.width(), size.height(), color_type_,
+                          kPremul_SkAlphaType, color_space);
+    sk_sp<FakePaintImageGenerator> generator;
+    if (do_yuv_decode_) {
+      generator =
+          sk_make_sp<FakePaintImageGenerator>(info, GetYUV420SizeInfo(size));
+
+      // TODO(crbug.com/968125): even though the paint image can be decoded to
+      // YUV, the cache won't follow that path because it's not yet supported in
+      // OOPR. Remove this expectation when it is.
+      generator->SetExpectFallbackToRGB();
+    } else {
+      generator = sk_make_sp<FakePaintImageGenerator>(info);
+    }
+    if (is_eligible_for_accelerated_decoding)
+      generator->SetEligibleForAcceleratedDecoding();
+    PaintImage image = PaintImageBuilder::WithDefault()
+                           .set_id(PaintImage::GetNextId())
+                           .set_paint_image_generator(generator)
+                           .TakePaintImage();
+    return image;
+  }
+
+  StrictMock<MockRasterImplementation>* raster_implementation() const {
+    return static_cast<StrictMock<MockRasterImplementation>*>(
+        context_provider_->RasterInterface());
+  }
+};
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       RequestAcceleratedDecodeSuccessfully) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // Accelerated decodes should not produce decode tasks.
+  ASSERT_TRUE(result.task->dependencies().empty());
+  EXPECT_CALL(*raster_implementation(),
+              DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+      .Times(1);
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       RequestAcceleratedDecodeSuccessfullyWithColorSpaceConversion) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // Accelerated decodes should not produce decode tasks.
+  ASSERT_TRUE(result.task->dependencies().empty());
+  EXPECT_CALL(*raster_implementation(),
+              DoScheduleImageDecode(image_size, _,
+                                    cache->SupportsColorSpaceConversion()
+                                        ? target_color_space
+                                        : gfx::ColorSpace(),
+                                    _))
+      .Times(1);
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       AcceleratedDecodeRequestFails) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // Accelerated decodes should not produce decode tasks.
+  ASSERT_TRUE(result.task->dependencies().empty());
+  raster_implementation()->SetAcceleratedDecodingFailed();
+  EXPECT_CALL(*raster_implementation(),
+              DoScheduleImageDecode(image_size, _,
+                                    cache->SupportsColorSpaceConversion()
+                                        ? target_color_space
+                                        : gfx::ColorSpace(),
+                                    _))
+      .Times(1);
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  EXPECT_FALSE(decoded_draw_image.transfer_cache_entry_id().has_value());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       CannotRequestAcceleratedDecodeBecauseOfStandAloneDecode) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetOutOfRasterDecodeTaskForImageAndRef(draw_image);
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // A non-accelerated standalone decode should produce only a decode task.
+  ASSERT_TRUE(result.task->dependencies().empty());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       CannotRequestAcceleratedDecodeBecauseOfNonZeroUploadMipLevel) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // A non-accelerated normal decode should produce a decode dependency.
+  ASSERT_EQ(result.task->dependencies().size(), 1u);
+  ASSERT_TRUE(result.task->dependencies()[0]);
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       CannotRequestAcceleratedDecodeBecauseOfIneligiblePaintImage) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image = CreatePaintImageForDecodeAcceleration(
+      image_size, image_color_space,
+      false /* is_eligible_for_accelerated_decoding */);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // A non-accelerated normal decode should produce a decode dependency.
+  ASSERT_EQ(result.task->dependencies().size(), 1u);
+  ASSERT_TRUE(result.task->dependencies()[0]);
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       CannotRequestAcceleratedDecodeBecauseOfNonSRGBColorSpace) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space =
+      SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, SkNamedGamut::kAdobeRGB);
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // A non-accelerated normal decode should produce a decode dependency.
+  ASSERT_EQ(result.task->dependencies().size(), 1u);
+  ASSERT_TRUE(result.task->dependencies()[0]);
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       RequestAcceleratedDecodeSuccessfullyAfterCancellation) {
+  auto cache = CreateCache();
+  const gfx::Size image_size = GetNormalImageSize();
+  const sk_sp<SkColorSpace> image_color_space = SkColorSpace::MakeSRGB();
+  const gfx::ColorSpace target_color_space(*image_color_space);
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image =
+      CreatePaintImageForDecodeAcceleration(image_size, image_color_space);
+  const bool is_decomposable = true;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+
+  // Accelerated decodes should not produce decode tasks.
+  ASSERT_TRUE(result.task->dependencies().empty());
+
+  // Cancel the upload.
+  TestTileTaskRunner::CancelTask(result.task.get());
+  TestTileTaskRunner::CompleteTask(result.task.get());
+
+  // Get the image again - we should have an upload task.
+  ImageDecodeCache::TaskResult another_result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(another_result.need_unref);
+  ASSERT_TRUE(another_result.task);
+  EXPECT_EQ(another_result.task->dependencies().size(), 0u);
+  EXPECT_CALL(*raster_implementation(),
+              DoScheduleImageDecode(image_size, _, gfx::ColorSpace(), _))
+      .Times(1);
+  TestTileTaskRunner::ProcessTask(another_result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    GpuImageDecodeCacheTestsOOPR,
+    GpuImageDecodeCacheWithAcceleratedDecodesTest,
+    testing::Combine(
+        testing::ValuesIn(test_color_types),
+        testing::ValuesIn(true_array) /* use_transfer_cache */,
+        testing::Bool() /* do_yuv_decode */,
+        testing::ValuesIn(true_array) /* advertise_accelerated_decoding */));
 
 #undef EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE
 #undef EXPECT_FALSE_IF_NOT_USING_TRANSFER_CACHE

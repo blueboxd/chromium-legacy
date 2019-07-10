@@ -40,6 +40,10 @@ const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
 const base::Feature kCrostiniUsbAllowUnsupported{
     "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the new WebUI Crostini installer.
+const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

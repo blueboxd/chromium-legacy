@@ -141,7 +141,11 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // If the surface is not visible within in the current view port, we should
   // not submit. Not submitting when off-screen saves significant memory.
-  bool is_surface_visible_ = false;
+  //
+  // We start as visible to avoid a white flash for on-screen content. This does
+  // not seem to cause a memory regression, since when off-screen it the layer
+  // will quickly be marked as such.
+  bool is_surface_visible_ = true;
 
   // Likewise, if the entire page is not visible, we should not submit. Not
   // submitting in the background causes the VideoFrameProvider to enter a

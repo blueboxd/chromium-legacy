@@ -193,9 +193,9 @@ Polymer({
     return nameserversType == 'custom' &&
         !this.isNetworkPolicyEnforced(
             networkProperties.NameServersConfigType) &&
-        !!networkProperties.StaticIPConfig &&
-        !this.isNetworkPolicyEnforced(
-            networkProperties.StaticIPConfig.NameServers);
+        (!networkProperties.StaticIPConfig ||
+         !this.isNetworkPolicyEnforced(
+             networkProperties.StaticIPConfig.NameServers));
   },
 
   /**

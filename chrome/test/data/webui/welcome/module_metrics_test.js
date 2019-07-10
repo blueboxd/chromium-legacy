@@ -4,15 +4,15 @@
 
 cr.define('onboarding_welcome_module_metrics', function() {
   suite('ModuleMetricsTest', function() {
-    /** @type {nux.ModuleMetricsProxy} */
+    /** @type {welcome.ModuleMetricsProxy} */
     let testMetricsProxy;
 
-    /** @type {nux.ModuleMetricsManager} */
+    /** @type {welcome.ModuleMetricsManager} */
     let testMetricsManager;
 
     setup(function() {
       testMetricsProxy = new TestMetricsProxy();
-      testMetricsManager = new nux.ModuleMetricsManager(testMetricsProxy);
+      testMetricsManager = new welcome.ModuleMetricsManager(testMetricsProxy);
 
       testMetricsManager.recordPageInitialized();
 

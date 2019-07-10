@@ -232,6 +232,12 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 const base::Feature kDesktopPWAsUnifiedInstall{
     "DesktopPWAsUnifiedInstall", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables new Desktop PWAs Unified Sync and Storage (USS)
+// implementation that does not use extensions. Requires
+// kDesktopPWAsWithoutExtensions to be enabled.
+const base::Feature kDesktopPWAsUSS{"DesktopPWAsUSS",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the ability to install PWAs from the omnibox.
 const base::Feature kDesktopPWAsOmniboxInstall{
     "DesktopPWAsOmniboxInstall", base::FEATURE_ENABLED_BY_DEFAULT};

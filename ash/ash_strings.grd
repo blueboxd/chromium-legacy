@@ -737,7 +737,7 @@ This file contains the strings for ash.
 
       <!-- Virtual Desks -->
       <message name="IDS_ASH_DESKS_NEW_DESK_BUTTON" desc="The label of the new virtual desk (a.k.a. workspaces) button.">
-        New Desk
+        New desk
       </message>
       <message name="IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE" desc="The label of the first virtual desk thumbnail.">
         Desk 1

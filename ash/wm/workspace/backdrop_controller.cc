@@ -23,7 +23,6 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/auto_reset.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "ui/aura/client/aura_constants.h"
@@ -73,23 +72,64 @@ bool InOverviewSession() {
   return overview_controller && overview_controller->InOverviewSession();
 }
 
+// Returns the bottom-most snapped window in the given |desk_container|, and
+// nullptr if no such window was found.
+aura::Window* GetBottomMostSnappedWindowForDeskContainer(
+    aura::Window* desk_container) {
+  DCHECK(desks_util::IsDeskContainer(desk_container));
+  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  // For the active desk, only use the windows snapped in SplitViewController if
+  // SplitView mode is active.
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (desks_util::IsActiveDeskContainer(desk_container) &&
+      split_view_controller->InSplitViewMode()) {
+    aura::Window* left_window = split_view_controller->left_window();
+    aura::Window* right_window = split_view_controller->right_window();
+    for (auto* child : desk_container->children()) {
+      if (child == left_window || child == right_window)
+        return child;
+    }
+
+    return nullptr;
+  }
+
+  // For the inactive desks, we can't use the SplitViewController, since it only
+  // tracks left/right snapped windows in the active desk only.
+  // TODO(afakhry|xdai): SplitViewController should be changed to track snapped
+  // windows per desk per display.
+  for (auto* child : desk_container->children()) {
+    if (wm::GetWindowState(child)->IsSnapped())
+      return child;
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->accessibility_controller()->AddObserver(this);
-  Shell::Get()->wallpaper_controller()->AddObserver(this);
+  auto* shell = Shell::Get();
+  shell->AddShellObserver(this);
+  shell->overview_controller()->AddObserver(this);
+  shell->accessibility_controller()->AddObserver(this);
+  shell->wallpaper_controller()->AddObserver(this);
+  shell->tablet_mode_controller()->AddObserver(this);
 }
 
 BackdropController::~BackdropController() {
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  if (Shell::Get()->overview_controller())
-    Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
+  auto* shell = Shell::Get();
+  // Shell destroys the TabletModeController before destroying all root windows.
+  if (shell->tablet_mode_controller())
+    shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->accessibility_controller()->RemoveObserver(this);
+  shell->wallpaper_controller()->RemoveObserver(this);
+  if (shell->overview_controller())
+    shell->overview_controller()->RemoveObserver(this);
+  shell->RemoveShellObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide(/*destroy=*/true);
@@ -126,12 +166,6 @@ void BackdropController::OnDeskContentChanged() {
   // the backdrop should be destroyed from the source desk, while created for
   // the target desk, and the mini_views of both desks should be updated.
   UpdateBackdropInternal();
-}
-
-void BackdropController::SetBackdropDelegate(
-    std::unique_ptr<BackdropDelegate> delegate) {
-  delegate_ = std::move(delegate);
-  UpdateBackdrop();
 }
 
 void BackdropController::UpdateBackdrop() {
@@ -207,7 +241,9 @@ void BackdropController::OnAccessibilityStatusChanged() {
 
 void BackdropController::OnSplitViewStateChanged(SplitViewState previous_state,
                                                  SplitViewState state) {
-  UpdateBackdrop();
+  // Force the update of the backdrop, even if overview is active, so that the
+  // backdrop shows up properly in the mini_views.
+  UpdateBackdropInternal();
 }
 
 void BackdropController::OnSplitViewDividerPositionChanged() {
@@ -220,6 +256,14 @@ void BackdropController::OnWallpaperPreviewStarted() {
     active_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
   }
+  UpdateBackdrop();
+}
+
+void BackdropController::OnTabletModeStarted() {
+  UpdateBackdrop();
+}
+
+void BackdropController::OnTabletModeEnded() {
   UpdateBackdrop();
 }
 
@@ -325,7 +369,25 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
     return true;
   }
 
-  return delegate_ ? delegate_->HasBackdrop(window) : false;
+  if (!desks_util::IsDeskContainer(container_))
+    return false;
+
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  // Don't show the backdrop in tablet mode for PIP windows.
+  auto* state = wm::GetWindowState(window);
+  if (state->IsPip())
+    return false;
+
+  if (!state->IsSnapped())
+    return true;
+
+  auto* bottom_most_snapped_window =
+      GetBottomMostSnappedWindowForDeskContainer(container_);
+  if (!bottom_most_snapped_window)
+    return true;
+  return window == bottom_most_snapped_window;
 }
 
 void BackdropController::Show() {
@@ -370,6 +432,8 @@ void BackdropController::Hide(bool destroy, bool animate) {
 }
 
 bool BackdropController::BackdropShouldFullscreen() {
+  // TODO(afakhry): Define the correct behavior and revise this in a follow-up
+  // CL.
   aura::Window* window = GetTopmostWindowWithBackdrop();
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();

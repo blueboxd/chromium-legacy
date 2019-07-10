@@ -30,9 +30,9 @@ class Snapshot;
 }  // namespace leveldb
 
 namespace content {
-class LevelDBIteratorImpl;
-class LevelDBDatabase;
-class LevelDBTransaction;
+class TransactionalLevelDBIteratorImpl;
+class TransactionalLevelDBDatabase;
+class TransactionalLevelDBTransaction;
 
 // The leveldb::Env used by the Indexed DB backend.
 class LevelDBEnv : public leveldb_env::ChromiumEnv {
@@ -83,13 +83,13 @@ class CONTENT_EXPORT LevelDBFactory {
                        const LevelDBComparator* idb_comparator,
                        const leveldb::Comparator* ldb_comparator) = 0;
 
-  virtual std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
+  virtual std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
       std::unique_ptr<leveldb::Iterator> iterator,
-      LevelDBDatabase* db,
+      TransactionalLevelDBDatabase* db,
       const leveldb::Snapshot* snapshot) = 0;
 
-  virtual scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
-      LevelDBDatabase* db) = 0;
+  virtual scoped_refptr<TransactionalLevelDBTransaction>
+  CreateLevelDBTransaction(TransactionalLevelDBDatabase* db) = 0;
 
   // A somewhat safe way to destroy a leveldb database. This asserts that there
   // are no other references to the given LevelDBState, and deletes the database
@@ -114,12 +114,12 @@ class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
   OpenLevelDBState(const base::FilePath& file_name,
                    const LevelDBComparator* idb_comparator,
                    const leveldb::Comparator* ldb_comparator) override;
-  std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
+  std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
       std::unique_ptr<leveldb::Iterator> iterator,
-      LevelDBDatabase* db,
+      TransactionalLevelDBDatabase* db,
       const leveldb::Snapshot* snapshot) override;
-  scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
-      LevelDBDatabase* db) override;
+  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
+      TransactionalLevelDBDatabase* db) override;
   leveldb::Status DestroyLevelDB(
       scoped_refptr<LevelDBState> output_state) override;
   leveldb::Status DestroyLevelDB(const base::FilePath& path) override;

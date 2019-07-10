@@ -268,8 +268,8 @@ void AutoclickController::OnAutoclickScrollableBoundsFound(
   // TODO(katie): Don't call this on the very first time scrollable bounds
   // are found for each time the type is changed to scroll. We want the
   // default first position of the scrollbar to be next to the menu bubble.
-  // TODO(katie): Set the scroll bubble position using the bounds.
-  menu_bubble_controller_->SetScrollPoint(scroll_location_);
+  menu_bubble_controller_->SetScrollPosition(bounds_in_screen,
+                                             scroll_location_);
 }
 
 void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {

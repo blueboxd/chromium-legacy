@@ -15,11 +15,11 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -186,16 +186,18 @@ Status GetInt(DBOrTransaction* db,
               bool* found) {
   return GetIntInternal(db, key, found_int, found);
 }
-template Status GetInt<LevelDBTransaction>(LevelDBTransaction* db,
-                                           const StringPiece& key,
-                                           int64_t* found_int,
-                                           bool* found);
-template Status GetInt<LevelDBDatabase>(LevelDBDatabase* db,
-                                        const StringPiece& key,
-                                        int64_t* found_int,
-                                        bool* found);
+template Status GetInt<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* db,
+    const StringPiece& key,
+    int64_t* found_int,
+    bool* found);
+template Status GetInt<TransactionalLevelDBDatabase>(
+    TransactionalLevelDBDatabase* db,
+    const StringPiece& key,
+    int64_t* found_int,
+    bool* found);
 
-void PutBool(LevelDBTransaction* transaction,
+void PutBool(TransactionalLevelDBTransaction* transaction,
              const StringPiece& key,
              bool value) {
   std::string buffer;
@@ -210,9 +212,10 @@ void PutInt(Transaction* transaction, const StringPiece& key, int64_t value) {
   EncodeInt(value, &buffer);
   transaction->Put(key, &buffer);
 }
-template void PutInt<LevelDBTransaction>(LevelDBTransaction* transaction,
-                                         const StringPiece& key,
-                                         int64_t value);
+template void PutInt<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* transaction,
+    const StringPiece& key,
+    int64_t value);
 template void PutInt<LevelDBDirectTransaction>(
     LevelDBDirectTransaction* transaction,
     const StringPiece& key,
@@ -243,14 +246,16 @@ Status GetVarInt(DBOrTransaction* db,
     return s;
   return InternalInconsistencyStatus();
 }
-template Status GetVarInt<LevelDBTransaction>(LevelDBTransaction* txn,
-                                              const StringPiece& key,
-                                              int64_t* found_int,
-                                              bool* found);
-template Status GetVarInt<LevelDBDatabase>(LevelDBDatabase* db,
-                                           const StringPiece& key,
-                                           int64_t* found_int,
-                                           bool* found);
+template Status GetVarInt<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* txn,
+    const StringPiece& key,
+    int64_t* found_int,
+    bool* found);
+template Status GetVarInt<TransactionalLevelDBDatabase>(
+    TransactionalLevelDBDatabase* db,
+    const StringPiece& key,
+    int64_t* found_int,
+    bool* found);
 
 template <typename Transaction>
 void PutVarInt(Transaction* transaction,
@@ -260,9 +265,10 @@ void PutVarInt(Transaction* transaction,
   EncodeVarInt(value, &buffer);
   transaction->Put(key, &buffer);
 }
-template void PutVarInt<LevelDBTransaction>(LevelDBTransaction* transaction,
-                                            const StringPiece& key,
-                                            int64_t value);
+template void PutVarInt<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* transaction,
+    const StringPiece& key,
+    int64_t value);
 template void PutVarInt<LevelDBDirectTransaction>(
     LevelDBDirectTransaction* transaction,
     const StringPiece& key,
@@ -294,16 +300,18 @@ Status GetString(DBOrTransaction* db,
   return InternalInconsistencyStatus();
 }
 
-template Status GetString<LevelDBTransaction>(LevelDBTransaction* txn,
-                                              const StringPiece& key,
-                                              base::string16* found_string,
-                                              bool* found);
-template Status GetString<LevelDBDatabase>(LevelDBDatabase* db,
-                                           const StringPiece& key,
-                                           base::string16* found_string,
-                                           bool* found);
+template Status GetString<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* txn,
+    const StringPiece& key,
+    base::string16* found_string,
+    bool* found);
+template Status GetString<TransactionalLevelDBDatabase>(
+    TransactionalLevelDBDatabase* db,
+    const StringPiece& key,
+    base::string16* found_string,
+    bool* found);
 
-void PutString(LevelDBTransaction* transaction,
+void PutString(TransactionalLevelDBTransaction* transaction,
                const StringPiece& key,
                const base::string16& value) {
   std::string buffer;
@@ -311,7 +319,7 @@ void PutString(LevelDBTransaction* transaction,
   transaction->Put(key, &buffer);
 }
 
-void PutIDBKeyPath(LevelDBTransaction* transaction,
+void PutIDBKeyPath(TransactionalLevelDBTransaction* transaction,
                    const StringPiece& key,
                    const IndexedDBKeyPath& value) {
   std::string buffer;
@@ -338,16 +346,16 @@ Status GetMaxObjectStoreId(DBOrTransaction* db,
   return s;
 }
 
-template Status GetMaxObjectStoreId<LevelDBTransaction>(
-    LevelDBTransaction* db,
+template Status GetMaxObjectStoreId<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* db,
     int64_t database_id,
     int64_t* max_object_store_id);
-template Status GetMaxObjectStoreId<LevelDBDatabase>(
-    LevelDBDatabase* db,
+template Status GetMaxObjectStoreId<TransactionalLevelDBDatabase>(
+    TransactionalLevelDBDatabase* db,
     int64_t database_id,
     int64_t* max_object_store_id);
 
-Status SetMaxObjectStoreId(LevelDBTransaction* transaction,
+Status SetMaxObjectStoreId(TransactionalLevelDBTransaction* transaction,
                            int64_t database_id,
                            int64_t object_store_id) {
   const std::string max_object_store_id_key = DatabaseMetaDataKey::Encode(
@@ -375,7 +383,7 @@ Status SetMaxObjectStoreId(LevelDBTransaction* transaction,
   return s;
 }
 
-Status GetNewVersionNumber(LevelDBTransaction* transaction,
+Status GetNewVersionNumber(TransactionalLevelDBTransaction* transaction,
                            int64_t database_id,
                            int64_t object_store_id,
                            int64_t* new_version_number) {
@@ -405,7 +413,7 @@ Status GetNewVersionNumber(LevelDBTransaction* transaction,
   return s;
 }
 
-Status SetMaxIndexId(LevelDBTransaction* transaction,
+Status SetMaxIndexId(TransactionalLevelDBTransaction* transaction,
                      int64_t database_id,
                      int64_t object_store_id,
                      int64_t index_id) {
@@ -430,7 +438,7 @@ Status SetMaxIndexId(LevelDBTransaction* transaction,
   return s;
 }
 
-Status VersionExists(LevelDBTransaction* transaction,
+Status VersionExists(TransactionalLevelDBTransaction* transaction,
                      int64_t database_id,
                      int64_t object_store_id,
                      int64_t version,
@@ -460,8 +468,8 @@ template Status GetNewDatabaseId<LevelDBDirectTransaction>(
     LevelDBDirectTransaction* transaction,
     int64_t* new_id);
 
-template Status GetNewDatabaseId<LevelDBTransaction>(
-    LevelDBTransaction* transaction,
+template Status GetNewDatabaseId<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* transaction,
     int64_t* new_id);
 
 template <typename Transaction>
@@ -486,7 +494,7 @@ Status GetNewDatabaseId(Transaction* transaction, int64_t* new_id) {
   return Status::OK();
 }
 
-bool CheckObjectStoreAndMetaDataType(const LevelDBIterator* it,
+bool CheckObjectStoreAndMetaDataType(const TransactionalLevelDBIterator* it,
                                      const std::string& stop_key,
                                      int64_t object_store_id,
                                      int64_t meta_data_type) {
@@ -505,7 +513,7 @@ bool CheckObjectStoreAndMetaDataType(const LevelDBIterator* it,
   return ok;
 }
 
-bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
+bool CheckIndexAndMetaDataKey(const TransactionalLevelDBIterator* it,
                               const std::string& stop_key,
                               int64_t index_id,
                               unsigned char meta_data_type) {
@@ -523,11 +531,13 @@ bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
   return true;
 }
 
-bool FindGreatestKeyLessThanOrEqual(LevelDBTransaction* transaction,
-                                    const std::string& target,
-                                    std::string* found_key,
-                                    Status* s) {
-  std::unique_ptr<LevelDBIterator> it = transaction->CreateIterator();
+bool FindGreatestKeyLessThanOrEqual(
+    TransactionalLevelDBTransaction* transaction,
+    const std::string& target,
+    std::string* found_key,
+    Status* s) {
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      transaction->CreateIterator();
   *s = it->Seek(target);
   if (!s->ok())
     return false;
@@ -555,7 +565,7 @@ bool FindGreatestKeyLessThanOrEqual(LevelDBTransaction* transaction,
 }
 
 bool GetBlobKeyGeneratorCurrentNumber(
-    LevelDBTransaction* leveldb_transaction,
+    TransactionalLevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number) {
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
@@ -584,7 +594,7 @@ bool GetBlobKeyGeneratorCurrentNumber(
 }
 
 bool UpdateBlobKeyGeneratorCurrentNumber(
-    LevelDBTransaction* leveldb_transaction,
+    TransactionalLevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number) {
 #if DCHECK_IS_ON()
@@ -603,7 +613,8 @@ bool UpdateBlobKeyGeneratorCurrentNumber(
   return true;
 }
 
-Status GetEarliestSweepTime(LevelDBDatabase* db, base::Time* earliest_sweep) {
+Status GetEarliestSweepTime(TransactionalLevelDBDatabase* db,
+                            base::Time* earliest_sweep) {
   const std::string earliest_sweep_time_key = EarliestSweepKey::Encode();
   *earliest_sweep = base::Time();
   bool found = false;
@@ -621,8 +632,8 @@ Status GetEarliestSweepTime(LevelDBDatabase* db, base::Time* earliest_sweep) {
   return s;
 }
 
-template void SetEarliestSweepTime<LevelDBTransaction>(
-    LevelDBTransaction* db,
+template void SetEarliestSweepTime<TransactionalLevelDBTransaction>(
+    TransactionalLevelDBTransaction* db,
     base::Time earliest_sweep);
 template void SetEarliestSweepTime<LevelDBDirectTransaction>(
     LevelDBDirectTransaction* db,

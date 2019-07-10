@@ -4,16 +4,30 @@
 
 #include "ash/display/output_protection_delegate.h"
 
-#include "ash/display/output_protection_controller_ash.h"
+#include "ash/shell.h"
 #include "base/bind_helpers.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/content_protection_manager.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
 namespace ash {
 
-OutputProtectionDelegate::Controller::Controller() = default;
-OutputProtectionDelegate::Controller::~Controller() = default;
+namespace {
+
+display::ContentProtectionManager* manager() {
+  return Shell::Get()->display_configurator()->content_protection_manager();
+}
+
+}  // namespace
+
+struct OutputProtectionDelegate::ClientIdHolder {
+  ClientIdHolder() : id(manager()->RegisterClient()) {}
+  ~ClientIdHolder() { manager()->UnregisterClient(id); }
+
+  const display::ContentProtectionManager::ClientId id;
+};
 
 OutputProtectionDelegate::OutputProtectionDelegate(aura::Window* window)
     : window_(window),
@@ -62,27 +76,27 @@ void OutputProtectionDelegate::OnWindowDestroying(aura::Window* window) {
   window_ = nullptr;
 }
 
-void OutputProtectionDelegate::QueryStatus(
-    Controller::QueryStatusCallback callback) {
-  if (!InitializeControllerIfNecessary()) {
+void OutputProtectionDelegate::QueryStatus(QueryStatusCallback callback) {
+  if (!RegisterClientIfNecessary()) {
     std::move(callback).Run(/*success=*/false,
                             display::DISPLAY_CONNECTION_TYPE_NONE,
                             display::CONTENT_PROTECTION_METHOD_NONE);
     return;
   }
 
-  controller_->QueryStatus(display_id_, std::move(callback));
+  manager()->QueryContentProtection(client_->id, display_id_,
+                                    std::move(callback));
 }
 
-void OutputProtectionDelegate::SetProtection(
-    uint32_t protection_mask,
-    Controller::SetProtectionCallback callback) {
-  if (!InitializeControllerIfNecessary()) {
+void OutputProtectionDelegate::SetProtection(uint32_t protection_mask,
+                                             SetProtectionCallback callback) {
+  if (!RegisterClientIfNecessary()) {
     std::move(callback).Run(/*success=*/false);
     return;
   }
 
-  controller_->SetProtection(display_id_, protection_mask, std::move(callback));
+  manager()->ApplyContentProtection(client_->id, display_id_, protection_mask,
+                                    std::move(callback));
   protection_mask_ = protection_mask;
 }
 
@@ -95,22 +109,22 @@ void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
     return;
 
   if (protection_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
-    DCHECK(controller_);
-    controller_->SetProtection(new_display_id, protection_mask_,
-                               base::DoNothing());
-    controller_->SetProtection(display_id_,
-                               display::CONTENT_PROTECTION_METHOD_NONE,
-                               base::DoNothing());
+    DCHECK(client_);
+    manager()->ApplyContentProtection(client_->id, new_display_id,
+                                      protection_mask_, base::DoNothing());
+    manager()->ApplyContentProtection(client_->id, display_id_,
+                                      display::CONTENT_PROTECTION_METHOD_NONE,
+                                      base::DoNothing());
   }
   display_id_ = new_display_id;
 }
 
-bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
+bool OutputProtectionDelegate::RegisterClientIfNecessary() {
   if (!window_)
     return false;
 
-  if (!controller_)
-    controller_ = std::make_unique<OutputProtectionControllerAsh>();
+  if (!client_)
+    client_ = std::make_unique<ClientIdHolder>();
 
   return true;
 }

@@ -51,6 +51,7 @@ export class StdToastElement extends HTMLElement {
   static observedAttributes = ['open'];
   #shadow = this.attachShadow({mode: 'closed'});
   #timeoutID;
+  #actionSlot;
 
   constructor(message) {
     super();
@@ -58,6 +59,10 @@ export class StdToastElement extends HTMLElement {
     this.#shadow.adoptedStyleSheets = [generateStylesheet()];
 
     this.#shadow.innerHTML = `<slot></slot>`;
+    this.#actionSlot = document.createElement('slot');
+    this.#actionSlot.setAttribute('name', 'action');
+    this.#shadow.appendChild(this.#actionSlot);
+
     if (message !== undefined) {
       this.textContent = message;
     }

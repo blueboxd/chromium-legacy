@@ -387,41 +387,24 @@ class ServiceWorkerNavigationLoaderTest
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
-  // Indicates whether ServiceWorkerNavigationLoader decided to handle a
-  // request, i.e., it returned a non-null RequestHandler for the request.
-  enum class LoaderResult {
-    kHandledRequest,
-    kDidNotHandleRequest,
-  };
-
-  // Starts a request. Returns whether ServiceWorkerNavigationLoader handled the
-  // request. If kHandledRequest was returned, the request is ongoing and the
+  // Starts a request. After calling this, the request is ongoing and the
   // caller can use functions like client_.RunUntilComplete() to wait for
   // completion.
-  LoaderResult StartRequest(std::unique_ptr<network::ResourceRequest> request) {
+  void StartRequest(std::unique_ptr<network::ResourceRequest> request) {
     provider_host_ = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &provider_endpoints_);
-    // Start a ServiceWorkerNavigationLoader. It should return a
-    // RequestHandler.
-    SingleRequestURLLoaderFactory::RequestHandler handler;
+    // Create a ServiceWorkerNavigationLoader.
     loader_ = std::make_unique<ServiceWorkerNavigationLoader>(
-        base::BindOnce(&ReceiveRequestHandler, &handler),
         base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                        base::Unretained(this)),
-        this, *request, provider_host_,
+        this, provider_host_,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
-    loader_->ForwardToServiceWorker();
-    base::RunLoop().RunUntilIdle();
-    if (!handler)
-      return LoaderResult::kDidNotHandleRequest;
 
-    // Run the handler. It will load |request.url|.
-    std::move(handler).Run(*request, mojo::MakeRequest(&loader_ptr_),
-                           client_.CreateInterfacePtr());
-
-    return LoaderResult::kHandledRequest;
+    // Load |request.url|.
+    loader_->StartRequest(*request, mojo::MakeRequest(&loader_ptr_),
+                          client_.CreateInterfacePtr());
   }
 
   // The |fallback_callback| passed to the ServiceWorkerNavigationLoader in
@@ -514,9 +497,8 @@ class ServiceWorkerNavigationLoaderTest
 TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
   base::HistogramTester histogram_tester;
 
-  // Perform the request
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  // Perform the request.
+  StartRequest(CreateRequest());
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
@@ -543,9 +525,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   version_ = nullptr;
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
-
+  StartRequest(CreateRequest());
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
 
@@ -597,8 +577,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilComplete();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -638,8 +617,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
 
   // We should get a valid response once the headers arrive.
   client_.RunUntilResponseReceived();
@@ -674,8 +652,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
                                      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -722,8 +699,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
                                      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -772,8 +748,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
                                      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -822,8 +797,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
   service_worker_->RespondWithFallback();
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
 
   // The fallback callback should be called.
   RunUntilFallbackCallback();
@@ -849,9 +823,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
   service_worker_->RespondWithError();
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
-
+  StartRequest(CreateRequest());
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
 
@@ -871,8 +843,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   service_worker_->FailToDispatchFetchEvent();
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
 
   // The fallback callback should be called.
   RunUntilFallbackCallback();
@@ -895,8 +866,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
   service_worker_->RespondEarly();
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilComplete();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -910,41 +880,6 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
   EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 }
 
-// Test asking the loader to fallback to network. In production code, this
-// happens when there is no active service worker for the URL, or it must be
-// skipped, etc.
-TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
-  base::HistogramTester histogram_tester;
-
-  network::ResourceRequest request;
-  request.url = GURL("https://www.example.com/");
-  request.method = "GET";
-  request.mode = network::mojom::RequestMode::kNavigate;
-  request.credentials_mode = network::mojom::CredentialsMode::kInclude;
-  request.redirect_mode = network::mojom::RedirectMode::kManual;
-
-  SingleRequestURLLoaderFactory::RequestHandler handler;
-  auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
-      base::BindOnce(&ReceiveRequestHandler, &handler),
-      base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
-                     base::Unretained(this)),
-      this, request, nullptr /* provider_host */,
-      base::WrapRefCounted<URLLoaderFactoryGetter>(
-          helper_->context()->loader_factory_getter()));
-  // Ask the loader to fallback to network. In production code,
-  // ServiceWorkerControlleeRequestHandler calls FallbackToNetwork() to do this.
-  loader->FallbackToNetwork();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handler);
-
-  // No fetch event was dispatched.
-  histogram_tester.ExpectTotalCount(kHistogramMainResourceFetchEvent, 0);
-  histogram_tester.ExpectTotalCount(
-      "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "StartToForwardServiceWorker",
-      0);
-}
-
 // Test responding to the fetch event with a redirect response.
 TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
   base::HistogramTester histogram_tester;
@@ -952,8 +887,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
   service_worker_->RespondWithRedirectResponse(new_url);
 
   // Perform the request.
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
   client_.RunUntilRedirectReceived();
 
   const network::ResourceResponseHead& info = client_.response_head();
@@ -969,9 +903,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
                                       blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterForwardToServiceWorker) {
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+TEST_F(ServiceWorkerNavigationLoaderTest, Lifetime) {
+  StartRequest(CreateRequest());
   base::WeakPtr<ServiceWorkerNavigationLoader> loader = loader_->AsWeakPtr();
   ASSERT_TRUE(loader);
 
@@ -992,40 +925,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterForwardToServiceWorker) {
   // |loader_| is deleted here. LSan test will alert if it leaks.
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
-  network::ResourceRequest request;
-  request.url = GURL("https://www.example.com/");
-  request.method = "GET";
-  request.mode = network::mojom::RequestMode::kNavigate;
-  request.credentials_mode = network::mojom::CredentialsMode::kInclude;
-  request.redirect_mode = network::mojom::RedirectMode::kManual;
-
-  SingleRequestURLLoaderFactory::RequestHandler handler;
-  auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
-      base::BindOnce(&ReceiveRequestHandler, &handler),
-      base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
-                     base::Unretained(this)),
-      this, request, nullptr /* provider_host */,
-      base::WrapRefCounted<URLLoaderFactoryGetter>(
-          helper_->context()->loader_factory_getter()));
-  base::WeakPtr<ServiceWorkerNavigationLoader> loader_weakptr =
-      loader->AsWeakPtr();
-  // Ask the loader to fallback to network. In production code,
-  // ServiceWorkerControlleeRequestHandler calls FallbackToNetwork() to do this.
-  loader->FallbackToNetwork();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handler);
-  EXPECT_TRUE(loader_weakptr);
-
-  // DetachedFromRequest() deletes |loader_|.
-  loader.release()->DetachedFromRequest();
-  EXPECT_FALSE(loader_weakptr);
-}
-
 TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
   service_worker_->DeferResponse();
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
 
   // Wait for the fetch event to be dispatched.
   service_worker_->RunUntilFetchEvent();
@@ -1045,8 +947,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, DetachedDuringFetchEvent) {
-  LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+  StartRequest(CreateRequest());
 
   // Detach the loader immediately after it started. This results in
   // DidDispatchFetchEvent() being invoked later with null |delegate_|.

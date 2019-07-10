@@ -14,9 +14,9 @@
 #include "base/time/tick_clock.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/mock_level_db.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -143,9 +143,9 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
             base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
             indexed_db::GetDefaultLevelDBComparator());
     ASSERT_TRUE(s.ok());
-    in_memory_db_ = std::make_unique<LevelDBDatabase>(
+    in_memory_db_ = std::make_unique<TransactionalLevelDBDatabase>(
         std::move(level_db_state), indexed_db::LevelDBFactory::Get(), nullptr,
-        LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
+        TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         kRoundIterations, kMaxIterations, in_memory_db_->db());
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
@@ -224,7 +224,7 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<LevelDBDatabase> in_memory_db_;
+  std::unique_ptr<TransactionalLevelDBDatabase> in_memory_db_;
   leveldb::MockLevelDB mock_db_;
 
   std::unique_ptr<IndexedDBTombstoneSweeper> sweeper_;

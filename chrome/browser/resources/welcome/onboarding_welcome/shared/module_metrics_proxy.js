@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   /** @interface */
   class ModuleMetricsProxy {
     recordPageShown() {}
@@ -28,7 +28,7 @@ cr.define('nux', function() {
     recordNavigatedAwayThroughBrowserHistory() {}
   }
 
-  /** @implements {nux.ModuleMetricsProxy} */
+  /** @implements {welcome.ModuleMetricsProxy} */
   class ModuleMetricsProxyImpl {
     /**
      * @param {string} histogramName The histogram that will record the module
@@ -125,7 +125,7 @@ cr.define('nux', function() {
   }
 
   class ModuleMetricsManager {
-    /** @param {nux.ModuleMetricsProxy} metricsProxy */
+    /** @param {welcome.ModuleMetricsProxy} metricsProxy */
     constructor(metricsProxy) {
       this.metricsProxy_ = metricsProxy;
 
@@ -196,7 +196,8 @@ cr.define('nux', function() {
   };
 });
 
-nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
+welcome.GoogleAppsMetricsProxyImpl =
+    class extends welcome.ModuleMetricsProxyImpl {
   constructor() {
     /**
      * NuxGoogleAppsInteractions enum.
@@ -227,7 +228,8 @@ nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
   }
 };
 
-nux.NtpBackgroundMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
+welcome.NtpBackgroundMetricsProxyImpl =
+    class extends welcome.ModuleMetricsProxyImpl {
   constructor() {
     /**
      * NuxNtpBackgroundInteractions enum.
@@ -259,5 +261,5 @@ nux.NtpBackgroundMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
   }
 };
 
-cr.addSingletonGetter(nux.GoogleAppsMetricsProxyImpl);
-cr.addSingletonGetter(nux.NtpBackgroundMetricsProxyImpl);
+cr.addSingletonGetter(welcome.GoogleAppsMetricsProxyImpl);
+cr.addSingletonGetter(welcome.NtpBackgroundMetricsProxyImpl);

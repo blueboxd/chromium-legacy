@@ -17,6 +17,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/image_decode_cache.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -36,9 +37,9 @@ namespace cc {
 // Generally, when an image is required for raster, GpuImageDecodeCache
 // creates two tasks, one to decode the image, and one to upload the image to
 // the GPU. These tasks are completed before the raster task which depends on
-// the image. We need to seperate decode and upload tasks, as decode can occur
+// the image. We need to separate decode and upload tasks, as decode can occur
 // simultaneously on multiple threads, while upload requires the GL context
-// lock must happen on our non-concurrent raster thread.
+// lock so it must happen on our non-concurrent raster thread.
 //
 // Decoded and Uploaded image data share a single cache entry. Depending on how
 // far we've progressed, this cache entry may contain CPU-side decoded data,
@@ -97,6 +98,35 @@ namespace cc {
 //      keeps an ImageData alive while it is present in either the
 //      |persistent_cache_| or |in_use_cache_|.
 //
+// HARDWARE ACCELERATED DECODES:
+//
+// In Chrome OS, we have the ability to use specialized hardware to decode
+// certain images. Because this requires interacting with drivers, it must be
+// done in the GPU process. Therefore, we follow a different path than the usual
+// decode -> upload tasks:
+//   1) We decide whether to do hardware decode acceleration for an image before
+//      we create the decode/upload tasks. Under the hood, this involves parsing
+//      the image and checking if it's supported by the hardware decoder
+//      according to information advertised by the GPU process. Also, we only
+//      allow hardware decoding in OOP-R mode.
+//   2) If we do decide to do hardware decoding, we don't create a decode task.
+//      Instead, we create only an upload task and store enough state to
+//      indicate that the image will go through this hardware accelerated path.
+//      The reason that we use the upload task is that we need to hold the
+//      context lock in order to schedule the image decode.
+//   3) When the upload task runs, we send a request to the GPU process to start
+//      the image decode. This is an IPC message that does not require us to
+//      wait for the response. Instead, we get a sync token that is signalled
+//      when the decode completes. We insert a wait for this sync token right
+//      after sending the decode request.
+//
+// We also handle the more unusual case where images are decoded at raster time.
+// The process is similar: we skip the software decode and then request the
+// hardware decode in the same way as step (3) above.
+//
+// Note that the decoded data never makes it back to the renderer. It stays in
+// the GPU process. The sync token ensures that any raster work that needs the
+// image happens after the decode completes.
 class CC_EXPORT GpuImageDecodeCache
     : public ImageDecodeCache,
       public base::trace_event::MemoryDumpProvider {
@@ -144,7 +174,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Called by Decode / Upload tasks.
   void DecodeImageInTask(const DrawImage& image, TaskType task_type);
-  void UploadImageInTask(const DrawImage& image);
+  void UploadImageInTask(const DrawImage& image, sk_sp<SkData> encoded_data);
 
   // Called by Decode / Upload tasks when tasks are finished.
   void OnImageDecodeTaskCompleted(const DrawImage& image,
@@ -216,7 +246,8 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Stores the CPU-side decoded bits of an image and supporting fields.
   struct DecodedImageData : public ImageDataBase {
-    explicit DecodedImageData(bool is_bitmap_backed);
+    explicit DecodedImageData(bool is_bitmap_backed,
+                              bool do_hardware_accelerated_decode);
     ~DecodedImageData();
 
     bool Lock();
@@ -255,6 +286,10 @@ class CC_EXPORT GpuImageDecodeCache
 
     bool is_yuv() const { return image_yuv_planes_.has_value(); }
 
+    bool do_hardware_accelerated_decode() const {
+      return do_hardware_accelerated_decode_;
+    }
+
     // Test-only functions.
     sk_sp<SkImage> ImageForTesting() const { return image_; }
 
@@ -278,6 +313,12 @@ class CC_EXPORT GpuImageDecodeCache
     std::unique_ptr<base::DiscardableMemory> data_;
     sk_sp<SkImage> image_;  // RGBX (or null in YUV decode path)
     base::Optional<YUVSkImages> image_yuv_planes_;
+
+    // |do_hardware_accelerated_decode_| keeps track of images that should go
+    // through hardware decode acceleration. Currently, this path is intended
+    // only for Chrome OS and only for some JPEG images (see
+    // https://crbug.com/868400).
+    bool do_hardware_accelerated_decode_;
   };
 
   // Stores the GPU-side image and supporting fields.
@@ -447,6 +488,7 @@ class CC_EXPORT GpuImageDecodeCache
               int upload_scale_mip_level,
               bool needs_mips,
               bool is_bitmap_backed,
+              bool do_hardware_accelerated_decode,
               bool is_yuv_format);
 
     bool IsGpuOrTransferCache() const;
@@ -557,7 +599,9 @@ class CC_EXPORT GpuImageDecodeCache
       sk_sp<SkColorSpace> decoded_color_space) const;
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
-      const DrawImage& image);
+      const DrawImage& image,
+      bool allow_hardware_decode,
+      sk_sp<SkData>* encoded_data);
   void WillAddCacheEntry(const DrawImage& draw_image);
   SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image,
                                           int upload_scale_mip_level) const;
@@ -591,7 +635,8 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Requires that the |context_| lock be held when calling.
   void UploadImageIfNecessary(const DrawImage& draw_image,
-                              ImageData* image_data);
+                              ImageData* image_data,
+                              sk_sp<SkData> encoded_data);
 
   // Flush pending operations on context_->GrContext() for each element of
   // |yuv_images| and then clear the vector.

@@ -7,7 +7,7 @@ cr.define('onboarding_set_as_default_test', function() {
     /** @type {NuxSetAsDefaultElement} */
     let testElement;
 
-    /** @type {nux.NuxSetAsDefaultProxy} */
+    /** @type {welcome.NuxSetAsDefaultProxy} */
     let testSetAsDefaultProxy;
 
     /** @type {!Promise} */
@@ -15,7 +15,7 @@ cr.define('onboarding_set_as_default_test', function() {
 
     setup(function() {
       testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
-      nux.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
+      welcome.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
 
       navigatedPromise = new Promise(resolve => {
         // Spy on navigational function to make sure it's called.

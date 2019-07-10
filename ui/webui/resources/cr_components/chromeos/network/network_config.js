@@ -406,7 +406,9 @@ Polymer({
             this.getManagedPropertiesCallback_(managedProperties);
           });
     } else {
-      this.focusFirstInput_();
+      setTimeout(() => {
+        this.focusFirstInput_();
+      });
     }
 
     if (this.type == CrOnc.Type.VPN ||

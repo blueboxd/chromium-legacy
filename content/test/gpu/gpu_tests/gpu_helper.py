@@ -111,7 +111,18 @@ def GetSkiaRenderer(extra_browser_args):
     for o in extra_browser_args:
       if "UseSkiaRenderer" in o:
         return 'skia-renderer'
+      if "--disable-vulkan-fallback-to-gl-for-testing" in o:
+        return 'skia-renderer'
   return 'no-skia-renderer'
+
+# Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--use-vulkan='.
+def GetVulkan(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if "--use-vulkan=" in o:
+        return 'use-vulkan'
+  return 'no-use-vulkan'
 
 # used by unittests to create a mock arguments object
 def GetMockArgs(is_asan=False, webgl_version='1.0.0'):

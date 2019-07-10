@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -20,7 +21,6 @@
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -28,7 +28,7 @@ namespace chromeos {
 
 void DeviceOAuth2TokenServiceDelegate::OnServiceAccountIdentityChanged() {
   if (!GetRobotAccountId().empty() && !refresh_token_.empty())
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    service_->FireRefreshTokenAvailable(GetRobotAccountId());
 }
 
 DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
@@ -47,6 +47,7 @@ DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
               base::Bind(&DeviceOAuth2TokenServiceDelegate::
                              OnServiceAccountIdentityChanged,
                          base::Unretained(this)))),
+      service_(service),
       weak_ptr_factory_(this) {
   // Pull in the system salt.
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -71,7 +72,7 @@ void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
   // will be done from OnServiceAccountIdentityChanged() once the robot account
   // ID becomes available as well.
   if (!GetRobotAccountId().empty())
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    service_->FireRefreshTokenAvailable(GetRobotAccountId());
 
   token_save_callbacks_.push_back(result_callback);
   if (!waiting_for_salt) {
@@ -227,7 +228,7 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
 
   // Announce the token.
   if (!GetRobotAccountId().empty()) {
-    FireRefreshTokenAvailable(GetRobotAccountId());
+    service_->FireRefreshTokenAvailable(GetRobotAccountId());
   }
 }
 
@@ -324,13 +325,6 @@ void DeviceOAuth2TokenServiceDelegate::RequestValidation() {
 void DeviceOAuth2TokenServiceDelegate::InitializeWithValidationStatusDelegate(
     ValidationStatusDelegate* delegate) {
   validation_status_delegate_ = delegate;
-
-  // Now that |delegate| (i.e., DeviceOAuth2TokenService) has been initialized
-  // and is listening to this object as an observer, fire the notification that
-  // refresh tokens were loaded; otherwise,
-  // OAuth2TokenService::{GetAccounts(), RefreshTokenIsAvailable()} will short-
-  // circuit out to match O2TS semantics.
-  FireRefreshTokensLoaded();
 }
 
 void DeviceOAuth2TokenServiceDelegate::ClearValidationStatusDelegate() {

@@ -14,7 +14,7 @@
 namespace content {
 
 // This class holds isolated origin patterns, providing support for double
-// wildcard origins, e.g. https://**.foo.com indicates that all domains under
+// wildcard origins, e.g. https://[*.]foo.com indicates that all domains under
 // foo.com are to be treated as if they are distinct isolated
 // origins. Non-wildcard origins to be isolated are also supported, e.g.
 // https://bar.com.
@@ -47,8 +47,8 @@ class CONTENT_EXPORT IsolatedOriginPattern {
   // this oriqin will be opaque.
   const url::Origin& origin() const { return origin_; }
 
-  // True if the supplied pattern was of the form https://**.foo.com, indicating
-  // all subdomains of foo.com are to be isolated.
+  // True if the supplied pattern was of the form https://[*.]foo.com,
+  // indicating all subdomains of foo.com are to be isolated.
   bool isolate_all_subdomains() const { return isolate_all_subdomains_; }
 
   // Return the original pattern used to construct this instance.

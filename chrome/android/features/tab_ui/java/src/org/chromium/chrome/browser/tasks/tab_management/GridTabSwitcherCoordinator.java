@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -118,14 +116,7 @@ public class GridTabSwitcherCoordinator
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
                 null, null, null, compositorViewHolder,
-                compositorViewHolder.getDynamicResourceLoader(), true,
-                R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
-
-        HistoryNavigationLayout navigation =
-                compositorViewHolder.findViewById(R.id.history_navigation);
-
-        navigation.setNavigationDelegate(HistoryNavigationDelegate.createForTabSwitcher(
-                context, backPress, tabModelSelector::getCurrentTab));
+                compositorViewHolder.getDynamicResourceLoader(), true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
 

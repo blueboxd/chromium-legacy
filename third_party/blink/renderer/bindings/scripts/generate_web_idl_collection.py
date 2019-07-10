@@ -11,6 +11,7 @@ import blink_idl_parser
 import optparse
 import utilities
 from web_idl.collector import Collector
+from web_idl.collection import Collection
 
 
 _VALID_COMPONENTS = ("core", "modules")
@@ -42,7 +43,7 @@ def main():
     parser = blink_idl_parser.BlinkIDLParser()
     collector = Collector(component=options.component, parser=parser)
     collector.collect_from_idl_files(idl_file_names)
-    utilities.write_pickle_file(options.output, collector.get_collection())
+    Collection.write_to_file(collector.get_collection(), options.output)
 
 
 if __name__ == '__main__':

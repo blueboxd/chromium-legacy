@@ -2477,6 +2477,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_skia_renderer_vulkan_gtests',
+          'gpu_telemetry_tests': 'gpu_skia_renderer_vulkan_telemetry_tests',
         },
       },
       'Android FYI dEQP Release (Nexus 5X)': {

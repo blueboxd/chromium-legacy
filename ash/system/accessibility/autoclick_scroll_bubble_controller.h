@@ -20,7 +20,8 @@ class AutoclickScrollBubbleController : public TrayBubbleView::Delegate {
 
   void UpdateAnchorRect(gfx::Rect rect, views::BubbleBorder::Arrow alignment);
 
-  void SetScrollPoint(gfx::Point scroll_location_in_dips);
+  void SetScrollPosition(gfx::Rect scroll_bounds_in_dips,
+                         const gfx::Point& scroll_point_in_dips);
 
   void ShowBubble(gfx::Rect anchor_rect, views::BubbleBorder::Arrow alignment);
   void CloseBubble();
@@ -47,11 +48,13 @@ class AutoclickScrollBubbleController : public TrayBubbleView::Delegate {
   AutoclickScrollView* scroll_view_ = nullptr;
   views::Widget* bubble_widget_ = nullptr;
 
-  // Whether the scroll bubble should be positioned based on a fixed point
+  // Whether the scroll bubble should be positioned based on a fixed rect
   // or just relative to the rect passed in UpdateAnchorRect.
-  bool set_scroll_point_ = false;
+  bool set_scroll_rect_ = false;
 
   gfx::Rect menu_bubble_rect_;
+  views::BubbleBorder::Arrow menu_bubble_alignment_ =
+      views::BubbleBorder::Arrow::TOP_LEFT;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickScrollBubbleController);
 };

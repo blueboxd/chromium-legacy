@@ -315,6 +315,9 @@ class GpuIntegrationTest(
       skia_renderer = gpu_helper.GetSkiaRenderer(\
           browser._browser_backend.browser_options.extra_browser_args)
       tags.extend([skia_renderer])
+      use_vulkan = gpu_helper.GetVulkan(\
+          browser._browser_backend.browser_options.extra_browser_args)
+      tags.extend([use_vulkan])
     return tags
 
   @classmethod

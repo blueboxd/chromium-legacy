@@ -22,7 +22,6 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -179,7 +178,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
-base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
+mojo::IncomingInvitation InitializeMojoIPCChannel() {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
 #if defined(OS_WIN)
@@ -200,12 +199,12 @@ base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
   auto* client = base::MachPortRendezvousClient::GetInstance();
   if (!client) {
     LOG(ERROR) << "Mach rendezvous failed.";
-    return base::nullopt;
+    return {};
   }
   auto receive = client->TakeReceiveRight('mojo');
   if (!receive.is_valid()) {
     LOG(ERROR) << "Invalid PlatformChannel receive right";
-    return base::nullopt;
+    return {};
   }
   endpoint =
       mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(receive)));
@@ -214,10 +213,6 @@ base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
       base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
           service_manager::kMojoIPCChannel))));
 #endif
-  // Mojo isn't supported on all child process types.
-  // TODO(crbug.com/604282): Support Mojo in the remaining processes.
-  if (!endpoint.is_valid())
-    return base::nullopt;
 
   return mojo::IncomingInvitation::Accept(std::move(endpoint));
 }
@@ -425,15 +420,14 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!IsInBrowserProcess()) {
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
         GetIOTaskRunner(), mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
-    base::Optional<mojo::IncomingInvitation> invitation =
-        InitializeMojoIPCChannel();
+    mojo::IncomingInvitation invitation = InitializeMojoIPCChannel();
 
     std::string service_request_token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             service_manager::switches::kServiceRequestChannelToken);
-    if (!service_request_token.empty() && invitation) {
+    if (!service_request_token.empty()) {
       service_request_pipe =
-          invitation->ExtractMessagePipe(service_request_token);
+          invitation.ExtractMessagePipe(service_request_token);
     }
   } else {
     service_request_pipe = options.mojo_invitation->ExtractMessagePipe(

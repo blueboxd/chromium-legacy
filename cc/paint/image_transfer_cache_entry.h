@@ -42,6 +42,8 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   uint32_t SerializedSize() const final;
   bool Serialize(base::span<uint8_t> data) const final;
 
+  static uint32_t GetNextId() { return s_next_id_.GetNext(); }
+
  private:
   uint32_t id_;
   const SkPixmap* const pixmap_;

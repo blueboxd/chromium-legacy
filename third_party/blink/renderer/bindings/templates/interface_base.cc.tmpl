@@ -883,14 +883,14 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
   {% if attribute.is_data_type_property %}
   static constexpr V8DOMConfiguration::AttributeConfiguration
   k{{attribute.name}}Configurations[] = {
-      {{attribute_configuration(attribute) | trim | indent(4)}}
+      {{attribute_configuration(attribute) | trim | indent(6)}}
   };
   for (const auto& config : k{{attribute.name}}Configurations)
     V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, config);
   {% else %}
   static constexpr V8DOMConfiguration::AccessorConfiguration
   k{{attribute.name}}Configurations[] = {
-      {{accessor_configuration(attribute) | trim | indent(4)}}
+      {{accessor_configuration(attribute) | trim | indent(6)}}
   };
   for (const auto& config : k{{attribute.name}}Configurations) {
     V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
@@ -913,7 +913,7 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
   {% filter secure_context(method.secure_context_test) %}
   static constexpr V8DOMConfiguration::MethodConfiguration
   k{{method.camel_case_name}}Configurations[] = {
-      {{method_configuration(method) | trim | indent(4)}}
+      {{method_configuration(method) | trim | indent(6)}}
   };
   for (const auto& config : k{{method.camel_case_name}}Configurations) {
     V8DOMConfiguration::InstallMethod(

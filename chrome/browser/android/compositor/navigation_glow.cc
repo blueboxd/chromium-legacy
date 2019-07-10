@@ -30,27 +30,10 @@ bool IsAndroidLOrNewer() {
 
 namespace android {
 
-NavigationGlow::NavigationGlow(float dip_scale)
+NavigationGlow::NavigationGlow(float dip_scale,
+                               content::WebContents* web_contents)
     : dip_scale_(dip_scale),
-      glow_effect_(std::make_unique<ui::OverscrollGlow>(this)) {}
-
-NavigationGlow::~NavigationGlow() = default;
-
-void NavigationGlow::InitWithSceneLayer(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jscene_layer,
-    const JavaParamRef<jobject>& jwindow_android) {
-  layer_ = SceneLayer::FromJavaObject(env, jscene_layer)->layer().get();
-  window_ = ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android);
-  window_->AddObserver(this);
-}
-
-void NavigationGlow::InitWithWebContents(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents) {
-  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+      glow_effect_(std::make_unique<ui::OverscrollGlow>(this)) {
   DCHECK(web_contents);
   view_ = web_contents->GetNativeView();
   view_->AddObserver(this);
@@ -58,9 +41,9 @@ void NavigationGlow::InitWithWebContents(
   OnAttachedToWindow();
 }
 
+NavigationGlow::~NavigationGlow() = default;
+
 void NavigationGlow::OnAttachedToWindow() {
-  if (!view_)
-    return;
   window_ = view_->GetWindowAndroid();
   if (window_) {
     window_->AddObserver(this);
@@ -112,8 +95,7 @@ void NavigationGlow::OnReset(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void NavigationGlow::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   OnDetachedFromWindow();
-  if (view_)
-    view_->RemoveObserver(this);
+  view_->RemoveObserver(this);
   delete this;
 }
 
@@ -130,10 +112,15 @@ std::unique_ptr<ui::EdgeEffectBase> NavigationGlow::CreateEdgeEffect() {
   return std::make_unique<ui::EdgeEffect>(&resource_manager, dip_scale_);
 }
 
-static jlong JNI_CompositorNavigationGlow_Init(JNIEnv* env,
-                                               const JavaParamRef<jobject>& obj,
-                                               const jfloat dip_scale) {
-  return reinterpret_cast<intptr_t>(new NavigationGlow(dip_scale));
+static jlong JNI_CompositorNavigationGlow_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jfloat dip_scale,
+    const JavaParamRef<jobject>& jweb_contents) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  DCHECK(web_contents);
+  return reinterpret_cast<intptr_t>(
+      new NavigationGlow(dip_scale, web_contents));
 }
 
 }  // namespace android

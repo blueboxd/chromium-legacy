@@ -168,9 +168,11 @@ source_set("jpeg_decoder_unit_test") {
     ":vaapi_utils_unittest",
     "//base",
     "//media:test_support",
+    "//media/capture:chromeos_test_utils",
     "//media/parsers",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
+    "//ui/gfx:memory_buffer",
     "//ui/gfx/codec",
     "//ui/gfx/geometry",
   ]

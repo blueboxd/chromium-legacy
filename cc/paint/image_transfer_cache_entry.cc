@@ -122,7 +122,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     const SkPixmap* pixmap,
     const SkColorSpace* target_color_space,
     bool needs_mips)
-    : id_(s_next_id_.GetNext()),
+    : id_(GetNextId()),
       pixmap_(pixmap),
       target_color_space_(target_color_space),
       needs_mips_(needs_mips) {

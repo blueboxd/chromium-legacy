@@ -35,4 +35,16 @@ base::Optional<std::string> GetPrinterId(ipp_t* ipp) {
   return uuid.substr(uuid_start + 1).as_string();
 }
 
+base::Optional<std::string> ParseEndpointForPrinterId(
+    base::StringPiece endpoint) {
+  size_t last_path = endpoint.find_last_of('/');
+  if (last_path == base::StringPiece::npos ||
+      last_path + 1 >= endpoint.size()) {
+    return base::nullopt;
+  }
+
+  endpoint.remove_prefix(last_path + 1);
+  return endpoint.as_string();
+}
+
 }  // namespace cups_proxy

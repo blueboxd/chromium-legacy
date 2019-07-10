@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   /**
    * @typedef {{
    *   id: number,
@@ -17,7 +17,7 @@ cr.define('nux', function() {
   class NtpBackgroundProxy {
     clearBackground() {}
 
-    /** @return {!Promise<!Array<!nux.NtpBackgroundData>>} */
+    /** @return {!Promise<!Array<!welcome.NtpBackgroundData>>} */
     getBackgrounds() {}
 
     /**
@@ -37,7 +37,7 @@ cr.define('nux', function() {
     setBackground(id) {}
   }
 
-  /** @implements {nux.NtpBackgroundProxy} */
+  /** @implements {welcome.NtpBackgroundProxy} */
   class NtpBackgroundProxyImpl {
     /** @override */
     clearBackground() {
@@ -62,7 +62,7 @@ cr.define('nux', function() {
     /** @override */
     recordBackgroundImageFailedToLoad() {
       const ntpInteractions =
-          nux.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+          welcome.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
       chrome.metricsPrivate.recordEnumerationValue(
           'FirstRun.NewUserExperience.NtpBackgroundInteraction',
           ntpInteractions.BackgroundImageFailedToLoad,
@@ -78,7 +78,7 @@ cr.define('nux', function() {
     /** @override */
     recordBackgroundImageNeverLoaded() {
       const ntpInteractions =
-          nux.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+          welcome.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
       chrome.metricsPrivate.recordEnumerationValue(
           'FirstRun.NewUserExperience.NtpBackgroundInteraction',
           ntpInteractions.BackgroundImageNeverLoaded,

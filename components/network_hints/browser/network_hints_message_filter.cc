@@ -83,7 +83,7 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
       int result,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     VLOG(2) << __FUNCTION__ << ": " << hostname_ << ", result=" << result;
-    std::move(request_);
+    request_.reset();
   }
 
   mojo::Binding<network::mojom::ResolveHostClient> binding_;

@@ -1626,10 +1626,10 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
       if (matches_browsing_instance_id &&
           IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(
               origin, isolated_origin_entry.origin())) {
-        // If a match has been found that requires all subdomains to be
-        // isolated then return immediately. |origin| is returned to ensure
-        // proper process isolation, e.g. https://a.b.c.isolated.com matches
-        // an IsolatedOriginEntry constructed from http://**.isolated.com, so
+        // If a match has been found that requires all subdomains to be isolated
+        // then return immediately. |origin| is returned to ensure proper
+        // process isolation, e.g. https://a.b.c.isolated.com matches an
+        // IsolatedOriginEntry constructed from http://[*.]isolated.com, so
         // https://a.b.c.isolated.com must be returned.
         if (isolated_origin_entry.isolate_all_subdomains()) {
           *result = origin;

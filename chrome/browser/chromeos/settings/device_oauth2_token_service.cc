@@ -52,14 +52,12 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     PrefService* local_state) {
   delegate_ = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
       url_loader_factory, local_state, this);
-  delegate_->AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
   delegate_->InitializeWithValidationStatusDelegate(this);
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
-  delegate_->RemoveObserver(this);
   delegate_->ClearValidationStatusDelegate();
   FlushPendingRequests(false, GoogleServiceAuthError::REQUEST_CANCELED);
 }
@@ -133,39 +131,18 @@ bool DeviceOAuth2TokenService::HasRefreshToken(
   return RefreshTokenIsAvailable(account_id);
 }
 
-bool DeviceOAuth2TokenService::FixRequestErrorIfPossible() {
-  return delegate_->FixRequestErrorIfPossible();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 DeviceOAuth2TokenService::GetURLLoaderFactory() const {
   return delegate_->GetURLLoaderFactory();
 }
 
-void DeviceOAuth2TokenService::OnAccessTokenInvalidated(
-    const CoreAccountId& account_id,
-    const std::string& client_id,
-    const std::set<std::string>& scopes,
-    const std::string& access_token) {
-  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
-                                      access_token);
-}
-
-void DeviceOAuth2TokenService::OnAccessTokenFetched(
-    const CoreAccountId& account_id,
-    const GoogleServiceAuthError& error) {
-  // Update the auth error state so auth errors are appropriately communicated
-  // to the user.
-  delegate_->UpdateAuthError(account_id, error);
-}
-
-void DeviceOAuth2TokenService::OnRefreshTokenAvailable(
+void DeviceOAuth2TokenService::FireRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   if (on_refresh_token_available_callback_)
     on_refresh_token_available_callback_.Run(account_id);
 }
 
-void DeviceOAuth2TokenService::OnRefreshTokenRevoked(
+void DeviceOAuth2TokenService::FireRefreshTokenRevoked(
     const CoreAccountId& account_id) {
   if (on_refresh_token_revoked_callback_)
     on_refresh_token_revoked_callback_.Run(account_id);

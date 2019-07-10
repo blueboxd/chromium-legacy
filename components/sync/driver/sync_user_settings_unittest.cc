@@ -141,6 +141,7 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(APP_LIST);
       expected_preferred_types.Put(APP_SETTINGS);
       expected_preferred_types.Put(ARC_PACKAGE);
+      expected_preferred_types.Put(WEB_APPS);
     }
     if (type == UserSelectableType::kExtensions) {
       expected_preferred_types.Put(EXTENSION_SETTINGS);

@@ -4,7 +4,7 @@
 
 cr.define('onboarding_ntp_background_test', function() {
   suite('NuxNtpBackgroundTest', function() {
-    /** @type {!Array<!nux.NtpBackgroundData} */
+    /** @type {!Array<!welcome.NtpBackgroundData} */
     let backgrounds = [
       {
         id: 0,
@@ -25,10 +25,10 @@ cr.define('onboarding_ntp_background_test', function() {
     /** @type {NuxNtpBackgroundElement} */
     let testElement;
 
-    /** @type {nux.ModuleMetricsProxy} */
+    /** @type {welcome.ModuleMetricsProxy} */
     let testMetricsProxy;
 
-    /** @type {nux.NtpBackgroundProxy} */
+    /** @type {welcome.NtpBackgroundProxy} */
     let testNtpBackgroundProxy;
 
     setup(function() {
@@ -37,9 +37,9 @@ cr.define('onboarding_ntp_background_test', function() {
       });
 
       testMetricsProxy = new TestMetricsProxy();
-      nux.NtpBackgroundMetricsProxyImpl.instance_ = testMetricsProxy;
+      welcome.NtpBackgroundMetricsProxyImpl.instance_ = testMetricsProxy;
       testNtpBackgroundProxy = new TestNtpBackgroundProxy();
-      nux.NtpBackgroundProxyImpl.instance_ = testNtpBackgroundProxy;
+      welcome.NtpBackgroundProxyImpl.instance_ = testNtpBackgroundProxy;
       testNtpBackgroundProxy.setBackgroundsList(backgrounds);
 
       PolymerTest.clearBody();

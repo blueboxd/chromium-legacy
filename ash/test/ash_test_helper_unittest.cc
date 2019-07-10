@@ -21,7 +21,8 @@ class AshTestHelperTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     ash_test_helper_ = std::make_unique<AshTestHelper>();
-    ash_test_helper_->SetUp(true);
+    AshTestHelper::InitParams init_params;
+    ash_test_helper_->SetUp(std::move(init_params));
   }
 
   void TearDown() override {

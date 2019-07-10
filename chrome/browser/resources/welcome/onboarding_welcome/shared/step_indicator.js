@@ -10,7 +10,7 @@ Polymer({
   is: 'step-indicator',
 
   properties: {
-    /** @type {nux.stepIndicatorModel} */
+    /** @type {welcome.stepIndicatorModel} */
     model: Object,
 
     /** @private */

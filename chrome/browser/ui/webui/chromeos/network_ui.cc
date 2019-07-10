@@ -48,6 +48,7 @@ constexpr char kGetDeviceProperties[] = "getShillDeviceProperties";
 constexpr char kOpenCellularActivationUi[] = "openCellularActivationUi";
 constexpr char kShowNetworkDetails[] = "showNetworkDetails";
 constexpr char kShowNetworkConfig[] = "showNetworkConfig";
+constexpr char kShowAddNewWifiNetworkDialog[] = "showAddNewWifi";
 
 bool GetServicePathFromGuid(const std::string& guid,
                             std::string* service_path) {
@@ -118,6 +119,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback(
         kShowNetworkConfig,
         base::BindRepeating(&NetworkConfigMessageHandler::ShowNetworkConfig,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        kShowAddNewWifiNetworkDialog,
+        base::BindRepeating(&NetworkConfigMessageHandler::ShowAddNewWifi,
                             base::Unretained(this)));
   }
 
@@ -218,6 +223,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
 
     InternetConfigDialog::ShowDialogForNetworkId(guid);
+  }
+
+  void ShowAddNewWifi(const base::ListValue* arg_list) {
+    InternetConfigDialog::ShowDialogForNetworkType(::onc::network_type::kWiFi);
   }
 
   void GetShillDevicePropertiesSuccess(
@@ -329,6 +338,13 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "noCellularErrorText",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT));
+
+  localized_strings->SetString(
+      "addNewWifiLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL));
+  localized_strings->SetString(
+      "addNewWifiButtonText",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_ADD_NEW_WIFI_BUTTON_TEXT));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)

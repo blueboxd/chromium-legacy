@@ -6,6 +6,7 @@ html {
   /* Material Design colors. Keep in sync with ui/gfx/color_palette.h. */
 
   --dark-mode-bg-rgb: 50, 54, 57;
+  --dark-mode-dialog-rgb: 41, 42, 45;
 
   /* Google Grey */
   --GG050-rgb: 248, 249, 250;
@@ -47,6 +48,9 @@ html {
   --GR500-dark-rgb: 230, 106, 94;
   --GR600-dark-rgb: 211, 59, 48;
   --GR800-dark-rgb: 180, 27, 26;
+
+  --dark-mode-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+      0 4px 8px 3px rgba(0, 0, 0, .15);
 }
 
 body * {

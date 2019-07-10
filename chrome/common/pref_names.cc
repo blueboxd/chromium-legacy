@@ -1409,6 +1409,11 @@ const char kWebRtcEventLogCollectionAllowed[] = "webrtc.event_logs_collection";
 #if !defined(OS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.
 const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
+
+// A boolean specifying whether the default search shortcut should be shown on
+// the New Tab Page after it has been initialized during first run.
+const char kShowFirstRunDefaultSearchShortcut[] =
+    "profile.show_first_run_default_search_shortcut";
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

@@ -17,14 +17,16 @@ struct BackingModifier {
 BackingModifier CanFreeOrShrinkBacking(ThreadState* const state,
                                        void* address) {
   // - |SweepForbidden| protects against modifying objects from destructors.
+  // - |IsSweepingInProgress| protects against modifying objects while
+  // concurrent sweeping is in progress.
   // - |in_atomic_pause| protects against modifying objects from within the GC.
   // This can
   //   e.g. happen when hash table buckets that have containers inlined are
   //   freed during weakness processing.
   // - |IsMarkingInProgress| protects against incremental marking which may have
   //   registered callbacks.
-  if (state->SweepForbidden() || state->in_atomic_pause() ||
-      state->IsMarkingInProgress())
+  if (state->SweepForbidden() || state->IsSweepingInProgress() ||
+      state->in_atomic_pause() || state->IsMarkingInProgress())
     return {false, nullptr, nullptr};
 
   // - Don't adjust large objects because their page is never reused.
@@ -76,7 +78,8 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
     return false;
 
   ThreadState* state = ThreadState::Current();
-  if (state->SweepForbidden())
+  // Don't expand if concurrent sweeping is in progress.
+  if (state->SweepForbidden() || state->IsSweepingInProgress())
     return false;
   DCHECK(!state->in_atomic_pause());
   DCHECK(state->IsAllocationAllowed());

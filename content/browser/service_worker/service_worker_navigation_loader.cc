@@ -78,34 +78,25 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 };
 
 ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
-    NavigationLoaderInterceptor::LoaderCallback callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     Delegate* delegate,
-    const network::ResourceRequest& tentative_resource_request,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
-    : loader_callback_(std::move(callback)),
-      fallback_callback_(std::move(fallback_callback)),
+    : fallback_callback_(std::move(fallback_callback)),
       delegate_(delegate),
       provider_host_(std::move(provider_host)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
-      "ServiceWorkerNavigationLoader::ServiceWorkerNavigationloader", this,
-      TRACE_EVENT_FLAG_FLOW_OUT, "url", tentative_resource_request.url.spec());
+      "ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader", this,
+      TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(delegate_);
-  DCHECK(ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(tentative_resource_request.resource_type)));
 
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
-
-  // Beware that the final resource request may change due to throttles, so
-  // don't save |tentative_resource_request| here. We'll get the real one in
-  // StartRequest.
 }
 
 ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
@@ -113,44 +104,6 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::~ServiceWorkerNavigationloader", this,
       TRACE_EVENT_FLAG_FLOW_IN);
-}
-
-void ServiceWorkerNavigationLoader::FallbackToNetwork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // ServiceWorkerControlleeRequestHandler only calls this if this loader never
-  // intercepted the request. Fallback to network after interception uses
-  // |fallback_callback_| instead.
-  DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
-  response_type_ = ResponseType::FALLBACK_TO_NETWORK;
-
-  TransitionToStatus(Status::kCompleted);
-
-  std::move(loader_callback_).Run({});
-}
-
-void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::ForwardToServiceWorker",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK_EQ(status_, Status::kNotStarted);
-  DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
-
-  response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
-
-  std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
-                          weak_factory_.GetWeakPtr()));
-}
-
-bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
-  return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
-}
-
-bool ServiceWorkerNavigationLoader::ShouldForwardToServiceWorker() {
-  return response_type_ == ResponseType::FORWARD_TO_SERVICE_WORKER;
 }
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
@@ -167,6 +120,13 @@ void ServiceWorkerNavigationLoader::StartRequest(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerNavigationLoader::StartRequest", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "url", resource_request.url.spec());
+  DCHECK(ServiceWorkerUtils::IsMainResourceType(
+      static_cast<ResourceType>(resource_request.resource_type)));
+
   resource_request_ = resource_request;
   if (provider_host_ && provider_host_->fetch_request_window_id()) {
     resource_request_.fetch_window_id =
@@ -182,12 +142,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                      base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
-  DCHECK_EQ(ResponseType::FORWARD_TO_SERVICE_WORKER, response_type_);
   TransitionToStatus(Status::kStarted);
-
-  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
-                         "ServiceWorkerNavigationLoader::StartRequest", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   ServiceWorkerVersion* active_worker = delegate_->GetServiceWorkerVersion();
   if (!active_worker) {

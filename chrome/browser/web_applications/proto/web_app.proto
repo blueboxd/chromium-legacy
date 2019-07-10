@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package web_app;
 
-// Information about web app icon.
+// Local data: Information about web app icon.
 message WebAppIconInfoProto {
   // The URL of the app icon.
   required string url = 1;
@@ -17,18 +17,18 @@ message WebAppIconInfoProto {
 }
 
 // WebApp class data.
-// TODO(loyso): Consider moving this proto to components/sync/protocol/
-// crbug.com/902214.
+// This should be a superset for WebAppSpecifics in
+// components/sync/protocol/web_app_specifics.proto
 message WebAppProto {
   // app_id is the client tag for sync system.
   required string app_id = 1;
-  optional string name = 2;
-  optional string description = 3;
-  required string launch_url = 4;
-  optional string scope = 5;
-  optional uint32 theme_color = 6;
+  required string launch_url = 2;
+  required string name = 3;
+  required uint32 theme_color = 4;
 
   // Local data members, not to be synced:
+  optional string description = 5;
+  optional string scope = 6;
   // List of icon infos.
   repeated WebAppIconInfoProto icons = 7;
 }

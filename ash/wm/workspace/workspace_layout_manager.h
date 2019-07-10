@@ -24,7 +24,6 @@
 namespace ash {
 
 class RootWindowController;
-class BackdropDelegate;
 class BackdropController;
 
 namespace wm {
@@ -44,11 +43,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
   // |window| is the container for this layout manager.
   explicit WorkspaceLayoutManager(aura::Window* window);
   ~WorkspaceLayoutManager() override;
-
-  // A delegate which can be set to add a backdrop behind the top most visible
-  // window. With the call the ownership of the delegate will be transferred to
-  // the WorkspaceLayoutManager.
-  void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   BackdropController* backdrop_controller() {
     return backdrop_controller_.get();

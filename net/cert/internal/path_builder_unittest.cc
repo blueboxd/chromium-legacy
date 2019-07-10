@@ -488,6 +488,45 @@ TEST_F(PathBuilderMultiRootTest, TestIterationLimit) {
   }
 }
 
+TEST_F(PathBuilderMultiRootTest, TestTrivialDeadline) {
+  // C(D) is the trust root.
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(c_by_d_);
+
+  // Cert B(C) is supplied.
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(b_by_c_);
+
+  for (const bool insufficient_limit : {true, false}) {
+    SCOPED_TRACE(insufficient_limit);
+
+    CertPathBuilder::Result result;
+    CertPathBuilder path_builder(
+        a_by_b_, &trust_store, &delegate_, time_, KeyPurpose::ANY_EKU,
+        initial_explicit_policy_, user_initial_policy_set_,
+        initial_policy_mapping_inhibit_, initial_any_policy_inhibit_, &result);
+    path_builder.AddCertIssuerSource(&sync_certs);
+
+    if (insufficient_limit) {
+      // Set a deadline one millisecond in the past. Path building should fail
+      // since the deadline is already past.
+      path_builder.SetDeadline(base::TimeTicks::Now() -
+                               base::TimeDelta::FromMilliseconds(1));
+    } else {
+      // The other tests in this file exercise the case that |SetDeadline|
+      // isn't called. Therefore set a sufficient limit for the path to be
+      // found.
+      path_builder.SetDeadline(base::TimeTicks::Now() +
+                               base::TimeDelta::FromDays(1));
+    }
+
+    path_builder.Run();
+
+    EXPECT_EQ(!insufficient_limit, result.HasValidPath());
+    EXPECT_EQ(insufficient_limit, result.exceeded_deadline);
+  }
+}
+
 class PathBuilderKeyRolloverTest : public ::testing::Test {
  public:
   PathBuilderKeyRolloverTest()

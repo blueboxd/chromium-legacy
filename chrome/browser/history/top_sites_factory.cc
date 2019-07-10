@@ -78,17 +78,30 @@ void InitializePrepopulatedPageList(
     history::PrepopulatedPageList* prepopulated_pages) {
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
-  bool hide_web_store_icon =
-      profile->GetPrefs()->GetBoolean(prefs::kHideWebStoreIcon);
+  PrefService* pref_service = profile->GetPrefs();
+  bool hide_web_store_icon = pref_service->GetBoolean(prefs::kHideWebStoreIcon);
+
+  // The default shortcut is shown for new profiles, beginning at first run, if
+  // the feature is enabled. A pref is persisted so that the shortcut continues
+  // to be shown through browser restarts, when the profile is no longer
+  // considered "new".
+  bool is_search_shortcut_feature_enabled =
+      base::FeatureList::IsEnabled(features::kFirstRunDefaultSearchShortcut);
+  if (profile->IsNewProfile() && is_search_shortcut_feature_enabled) {
+    pref_service->SetBoolean(prefs::kShowFirstRunDefaultSearchShortcut, true);
+  }
+  bool show_default_search_shortcut =
+      is_search_shortcut_feature_enabled &&
+      pref_service->GetBoolean(prefs::kShowFirstRunDefaultSearchShortcut);
+
   prepopulated_pages->reserve(base::size(kRawPrepopulatedPages));
   for (size_t i = 0; i < base::size(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;
-    if (page.url_id == IDS_NTP_DEFAULT_SEARCH_URL &&
-        !(profile->IsNewProfile() &&
-          base::FeatureList::IsEnabled(
-              features::kFirstRunDefaultSearchShortcut))) {
+
+    if (!show_default_search_shortcut &&
+        page.url_id == IDS_NTP_DEFAULT_SEARCH_URL) {
       continue;
     }
 

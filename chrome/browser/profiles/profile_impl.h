@@ -38,7 +38,7 @@ class KioskTest;
 class LocaleChangeGuard;
 class Preferences;
 class SupervisedUserTestBase;
-}
+}  // namespace chromeos
 #endif
 
 namespace base {
@@ -108,6 +108,8 @@ class ProfileImpl : public Profile {
   download::InProgressDownloadManager* RetriveInProgressDownloadManager()
       override;
   content::SmsService* GetSmsService() override;
+  content::NativeFileSystemPermissionContext*
+  GetNativeFileSystemPermissionContext() override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;

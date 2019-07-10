@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   const NUX_SET_AS_DEFAULT_INTERACTION_METRIC_NAME =
       'FirstRun.NewUserExperience.SetAsDefaultInteraction';
 
@@ -26,7 +26,7 @@ cr.define('nux', function() {
 
   /** @interface */
   class NuxSetAsDefaultProxy {
-    /** @return {!Promise<!nux.DefaultBrowserInfo>} */
+    /** @return {!Promise<!welcome.DefaultBrowserInfo>} */
     requestDefaultBrowserState() {}
     setAsDefault() {}
     recordPageShown() {}
@@ -37,7 +37,7 @@ cr.define('nux', function() {
     recordSuccessfullySetDefault() {}
   }
 
-  /** @implements {nux.NuxSetAsDefaultProxy} */
+  /** @implements {welcome.NuxSetAsDefaultProxy} */
   class NuxSetAsDefaultProxyImpl {
     /** @override */
     requestDefaultBrowserState() {

@@ -10,9 +10,9 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using base::StringPiece;
@@ -39,12 +39,13 @@ using indexed_db::PutVarInt;
 
 namespace {
 
-std::unique_ptr<LevelDBIterator> CreateIterator(LevelDBDatabase* database) {
+std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+    TransactionalLevelDBDatabase* database) {
   return database->CreateIterator(database->DefaultReadOptions());
 }
 
-std::unique_ptr<LevelDBIterator> CreateIterator(
-    LevelDBTransaction* transaction) {
+std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+    TransactionalLevelDBTransaction* transaction) {
   return transaction->CreateIterator();
 }
 
@@ -65,7 +66,8 @@ Status ReadIndexes(DatabaseOrTransaction* db_or_transaction,
 
   DCHECK(indexes->empty());
 
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      CreateIterator(db_or_transaction);
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     IndexMetaDataKey meta_data_key;
@@ -167,7 +169,8 @@ Status ReadObjectStores(
 
   DCHECK(object_stores->empty());
 
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      CreateIterator(db_or_transaction);
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     ObjectStoreMetaDataKey meta_data_key;
@@ -336,7 +339,8 @@ Status ReadDatabaseNamesAndVersionsInternal(
       DatabaseNameKey::EncodeStopKeyForOrigin(origin_identifier);
 
   DCHECK(names_and_versions->empty());
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      CreateIterator(db_or_transaction);
   Status s;
   for (s = it->Seek(start_key);
        s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
@@ -458,7 +462,7 @@ IndexedDBMetadataCoding::IndexedDBMetadataCoding() = default;
 IndexedDBMetadataCoding::~IndexedDBMetadataCoding() = default;
 
 Status IndexedDBMetadataCoding::ReadDatabaseNamesAndVersions(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const std::string& origin_identifier,
     std::vector<blink::mojom::IDBNameAndVersionPtr>* names_and_versions) {
   return ReadDatabaseNamesAndVersionsInternal(db, origin_identifier,
@@ -466,7 +470,7 @@ Status IndexedDBMetadataCoding::ReadDatabaseNamesAndVersions(
 }
 
 Status IndexedDBMetadataCoding::ReadDatabaseNames(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const std::string& origin_identifier,
     std::vector<base::string16>* names) {
   std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions;
@@ -479,7 +483,7 @@ Status IndexedDBMetadataCoding::ReadDatabaseNames(
 }
 
 Status IndexedDBMetadataCoding::ReadDatabaseNames(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     const std::string& origin_identifier,
     std::vector<base::string16>* names) {
   std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions;
@@ -492,7 +496,7 @@ Status IndexedDBMetadataCoding::ReadDatabaseNames(
 }
 
 Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const std::string& origin_identifier,
     const base::string16& name,
     IndexedDBDatabaseMetadata* metadata,
@@ -502,7 +506,7 @@ Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
 }
 
 Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     const std::string& origin_identifier,
     const base::string16& name,
     IndexedDBDatabaseMetadata* metadata,
@@ -512,13 +516,13 @@ Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
 }
 
 Status IndexedDBMetadataCoding::CreateDatabase(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const std::string& origin_identifier,
     const base::string16& name,
     int64_t version,
     IndexedDBDatabaseMetadata* metadata) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
-  scoped_refptr<LevelDBTransaction> transaction =
+  scoped_refptr<TransactionalLevelDBTransaction> transaction =
       indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(db);
 
   int64_t row_id = 0;
@@ -555,7 +559,7 @@ Status IndexedDBMetadataCoding::CreateDatabase(
 }
 
 void IndexedDBMetadataCoding::SetDatabaseVersion(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t row_id,
     int64_t version,
     IndexedDBDatabaseMetadata* c) {
@@ -570,7 +574,7 @@ void IndexedDBMetadataCoding::SetDatabaseVersion(
 }
 
 Status IndexedDBMetadataCoding::FindDatabaseId(
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const std::string& origin_identifier,
     const base::string16& name,
     int64_t* id,
@@ -585,7 +589,7 @@ Status IndexedDBMetadataCoding::FindDatabaseId(
 }
 
 Status IndexedDBMetadataCoding::CreateObjectStore(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
     base::string16 name,
@@ -642,7 +646,7 @@ Status IndexedDBMetadataCoding::CreateObjectStore(
 }
 
 Status IndexedDBMetadataCoding::DeleteObjectStore(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     const IndexedDBObjectStoreMetadata& object_store) {
   if (!KeyPrefix::ValidIds(database_id, object_store.id))
@@ -689,7 +693,7 @@ Status IndexedDBMetadataCoding::DeleteObjectStore(
 }
 
 Status IndexedDBMetadataCoding::RenameObjectStore(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     base::string16 new_name,
     base::string16* old_name,
@@ -725,15 +729,16 @@ Status IndexedDBMetadataCoding::RenameObjectStore(
   return s;
 }
 
-Status IndexedDBMetadataCoding::CreateIndex(LevelDBTransaction* transaction,
-                                            int64_t database_id,
-                                            int64_t object_store_id,
-                                            int64_t index_id,
-                                            base::string16 name,
-                                            IndexedDBKeyPath key_path,
-                                            bool is_unique,
-                                            bool is_multi_entry,
-                                            IndexedDBIndexMetadata* metadata) {
+Status IndexedDBMetadataCoding::CreateIndex(
+    TransactionalLevelDBTransaction* transaction,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
+    base::string16 name,
+    IndexedDBKeyPath key_path,
+    bool is_unique,
+    bool is_multi_entry,
+    IndexedDBIndexMetadata* metadata) {
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
     return InvalidDBKeyStatus();
   Status s = indexed_db::SetMaxIndexId(transaction, database_id,
@@ -766,7 +771,7 @@ Status IndexedDBMetadataCoding::CreateIndex(LevelDBTransaction* transaction,
 }
 
 Status IndexedDBMetadataCoding::DeleteIndex(
-    LevelDBTransaction* transaction,
+    TransactionalLevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBIndexMetadata& metadata) {
@@ -782,12 +787,13 @@ Status IndexedDBMetadataCoding::DeleteIndex(
   return s;
 }
 
-Status IndexedDBMetadataCoding::RenameIndex(LevelDBTransaction* transaction,
-                                            int64_t database_id,
-                                            int64_t object_store_id,
-                                            base::string16 new_name,
-                                            base::string16* old_name,
-                                            IndexedDBIndexMetadata* metadata) {
+Status IndexedDBMetadataCoding::RenameIndex(
+    TransactionalLevelDBTransaction* transaction,
+    int64_t database_id,
+    int64_t object_store_id,
+    base::string16 new_name,
+    base::string16* old_name,
+    IndexedDBIndexMetadata* metadata) {
   if (!KeyPrefix::ValidIds(database_id, object_store_id, metadata->id))
     return InvalidDBKeyStatus();
 

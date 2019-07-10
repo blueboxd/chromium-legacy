@@ -12,7 +12,9 @@
 
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shell_init_params.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/scoped_command_line.h"
 
 class PrefService;
@@ -58,11 +60,26 @@ class AshTestHelper {
   AshTestHelper();
   ~AshTestHelper();
 
-  // Creates the ash::Shell and performs associated initialization.  Set
-  // |start_session| to true if the user should log in before the test is run.
-  // Set |provide_local_state| to true to inject local-state PrefService into
-  // the Shell before the test is run.
-  void SetUp(bool start_session, bool provide_local_state = true);
+  enum ConfigType {
+    // The configuration for shell executable.
+    kShell,
+    // The configuration for unit tests.
+    kUnitTest,
+  };
+
+  struct InitParams {
+    // True if the user should log in.
+    bool start_session = true;
+    // True to inject local-state PrefService into the Shell.
+    bool provide_local_state = true;
+    ConfigType config_type = kUnitTest;
+  };
+
+  // Creates the ash::Shell and performs associated initialization according
+  // to |init_params|. |shell_init_params| is used to initialize ash::Shell,
+  // or it uses test settings if omitted.
+  void SetUp(const InitParams& init_params,
+             base::Optional<ShellInitParams> shell_init_params = base::nullopt);
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
@@ -111,7 +128,8 @@ class AshTestHelper {
 
  private:
   // Called when running in ash to create Shell.
-  void CreateShell(bool provide_local_state);
+  void CreateShell(bool provide_local_state,
+                   base::Optional<ShellInitParams> init_params);
 
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;

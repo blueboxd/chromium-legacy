@@ -667,12 +667,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // resulted in a browser startup.
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
-#if !defined(GOOGLE_CHROME_BUILD)
-// Enables a live-reload for local NTP resources. This only works when Chrome
-// is running from a Chrome source directory.
-const char kLocalNtpReload[]                = "local-ntp-reload";
-#endif
-
 #if defined(OS_ANDROID)
 // Android authentication account type for SPNEGO authentication
 const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";

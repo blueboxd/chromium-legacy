@@ -2818,6 +2818,8 @@ jumbo_split_static_library("ui") {
       "views/native_file_system/native_file_system_access_icon_view.h",
       "views/native_file_system/native_file_system_permission_view.cc",
       "views/native_file_system/native_file_system_permission_view.h",
+      "views/native_file_system/native_file_system_ui_helpers.cc",
+      "views/native_file_system/native_file_system_ui_helpers.h",
       "views/native_file_system/native_file_system_usage_bubble_view.cc",
       "views/native_file_system/native_file_system_usage_bubble_view.h",
       "views/omnibox/omnibox_match_cell_view.cc",

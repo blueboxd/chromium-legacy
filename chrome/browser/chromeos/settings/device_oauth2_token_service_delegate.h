@@ -14,8 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gaia {
@@ -27,14 +28,15 @@ class SharedURLLoaderFactory;
 }
 
 class PrefService;
+class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
 
 namespace chromeos {
 
 class DeviceOAuth2TokenService;
 
 class DeviceOAuth2TokenServiceDelegate
-    : public OAuth2TokenServiceDelegate,
-      public gaia::GaiaOAuthClient::Delegate {
+    : public gaia::GaiaOAuthClient::Delegate {
  public:
   DeviceOAuth2TokenServiceDelegate(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -57,17 +59,13 @@ class DeviceOAuth2TokenServiceDelegate
     robot_account_id_for_testing_ = account_id;
   }
 
-  // Implementation of OAuth2TokenServiceDelegate.
-  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
-      const override;
-
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      OAuth2AccessTokenConsumer* consumer) override;
-
-  std::vector<CoreAccountId> GetAccounts() const override;
+      OAuth2AccessTokenConsumer* consumer);
+  std::vector<CoreAccountId> GetAccounts() const;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnRefreshTokenResponse(const std::string& access_token,
@@ -163,6 +161,10 @@ class DeviceOAuth2TokenServiceDelegate
       service_account_identity_subscription_;
 
   CoreAccountId robot_account_id_for_testing_;
+
+  // TODO(https://crbug.com/967598): Completely merge this class into
+  // DeviceOAuth2TokenService.
+  DeviceOAuth2TokenService* service_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenServiceDelegate> weak_ptr_factory_;
 

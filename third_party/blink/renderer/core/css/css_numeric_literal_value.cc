@@ -24,6 +24,7 @@ void CSSNumericLiteralValue::TraceAfterDispatch(blink::Visitor* visitor) {
 CSSNumericLiteralValue::CSSNumericLiteralValue(double num, UnitType type)
     : CSSPrimitiveValue(kNumericLiteralClass), num_(num) {
   DCHECK(std::isfinite(num));
+  DCHECK_NE(UnitType::kUnknown, type);
   numeric_literal_unit_type_ = static_cast<unsigned>(type);
 }
 

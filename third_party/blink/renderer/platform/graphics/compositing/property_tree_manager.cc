@@ -808,7 +808,7 @@ void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
 }
 
 bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
-    const FloatRoundedRect& rect,
+    const ClipPaintPropertyNode& clip,
     PropertyTreeManager::CcEffectType type) {
   if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
     return false;
@@ -816,11 +816,14 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
   if (type & CcEffectType::kSyntheticFor2dAxisAlignment)
     return false;
 
+  if (clip.ClipPath())
+    return false;
+
   auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
     return size.Width() == size.Height();
   };
 
-  const FloatRoundedRect::Radii& radii = rect.GetRadii();
+  const FloatRoundedRect::Radii& radii = clip.ClipRect().GetRadii();
   if (!WidthAndHeightAreTheSame(radii.TopLeft()) ||
       !WidthAndHeightAreTheSame(radii.TopRight()) ||
       !WidthAndHeightAreTheSame(radii.BottomRight()) ||
@@ -917,7 +920,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
-      if (SupportsShaderBasedRoundedCorner(pending_clip.clip->ClipRect(),
+      if (SupportsShaderBasedRoundedCorner(*pending_clip.clip,
                                            pending_clip.type)) {
         synthetic_effect.rounded_corner_bounds =
             gfx::RRectF(pending_clip.clip->ClipRect());

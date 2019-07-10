@@ -2666,11 +2666,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC connection RTOs, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.quic_connection_options.push_back(quic::k5RTO);
 
@@ -2688,37 +2683,64 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
           priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
-  // TLP 1
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(1, 3, true));
-  // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(2, 4, true));
-  // RTO 1
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(1, 5, true));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(2, 6, true));
-  // RTO 2
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(1, 7, true));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(2, 8, true));
-  // RTO 3
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(1, 9, true));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(2, 10, true));
-  // RTO 4
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(1, 11, true));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRetransmissionPacket(2, 12, true));
-  // RTO 5
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
-                                      13, true, quic::QUIC_TOO_MANY_RTOS,
-                                      "5 consecutive retransmission timeouts"));
+  if (version_.transport_version != quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 3, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 5, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 9, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 11, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    // RTO 5
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           13, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+  } else {
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 2, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 3, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 4, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 5, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 6, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+    // RTO 5
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           8, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+  }
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2764,11 +2786,6 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 // QUIC will not be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        TooManyRtosAfterHandshakeConfirmedAndStreamReset) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   session_params_.quic_connection_options.push_back(quic::k5RTO);
 
   // The request will initially go out over QUIC.
@@ -2785,42 +2802,55 @@ TEST_P(QuicNetworkTransactionTest,
           priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+  if (version_.transport_version != quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+  }
 
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
   if (quic::VersionUsesQpack(version_.transport_version)) {
+    quic_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         2, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
     // Since the headers are sent on the data stream, when the stream is reset
     // the headers are no longer retransmitted.
+    client_maker_.RemoveSavedStreamFrames(
+        GetNthClientInitiatedBidirectionalStreamId(0));
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+                       client_maker_.MakeRetransmissionPacket(1, 3, true));
     // TLP 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 5, true));
+                       client_maker_.MakeRetransmissionPacket(2, 4, true));
     // RTO 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+                       client_maker_.MakeRetransmissionPacket(1, 5, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 7, true));
+                       client_maker_.MakeRetransmissionPacket(2, 6, true));
     // RTO 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+                       client_maker_.MakeRetransmissionPacket(1, 9, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 11, true));
+                       client_maker_.MakeRetransmissionPacket(2, 10, true));
     // RTO 4
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+                       client_maker_.MakeRetransmissionPacket(1, 11, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 13, true));
+                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    // RTO 5
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           13, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
   } else {
+    quic_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 4, true));
@@ -2847,11 +2877,11 @@ TEST_P(QuicNetworkTransactionTest,
                        client_maker_.MakeRetransmissionPacket(3, 12, true));
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 13, true));
-  }
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,
                                       "5 consecutive retransmission timeouts"));
+  }
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2900,11 +2930,6 @@ TEST_P(QuicNetworkTransactionTest,
 // Verify that if a QUIC protocol error occurs after the handshake is confirmed
 // the request fails with QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   session_params_.retry_without_alt_svc_on_quic_errors = false;
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -2919,6 +2944,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Peer sending data from an non-existing stream causes this end to raise
   // error and close connection.
   quic_data.AddRead(
@@ -2957,6 +2983,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
       quic::QuicSession::HANDSHAKE_CONFIRMED);
 
   ASSERT_FALSE(quic_data.AllReadDataConsumed());
+  quic_data.Resume();
 
   // Run the QUIC session to completion.
   base::RunLoop().RunUntilIdle();
@@ -3548,11 +3575,6 @@ TEST_P(QuicNetworkTransactionTest,
 // QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        TooManyRtosAfterHandshakeConfirmedAndStreamResetThenBroken) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   session_params_.mark_quic_broken_when_network_blackholes = true;
   session_params_.quic_connection_options.push_back(quic::k5RTO);
 
@@ -3570,42 +3592,53 @@ TEST_P(QuicNetworkTransactionTest,
           priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
+    quic_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         2, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
     // Since the headers are sent on the data stream, when the stream is reset
     // the headers are no longer retransmitted.
+    client_maker_.RemoveSavedStreamFrames(
+        GetNthClientInitiatedBidirectionalStreamId(0));
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+                       client_maker_.MakeRetransmissionPacket(1, 3, true));
     // TLP 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 5, true));
+                       client_maker_.MakeRetransmissionPacket(2, 4, true));
     // RTO 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+                       client_maker_.MakeRetransmissionPacket(1, 5, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 7, true));
+                       client_maker_.MakeRetransmissionPacket(2, 6, true));
     // RTO 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+                       client_maker_.MakeRetransmissionPacket(1, 9, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 11, true));
+                       client_maker_.MakeRetransmissionPacket(2, 10, true));
     // RTO 4
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+                       client_maker_.MakeRetransmissionPacket(1, 11, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 13, true));
+                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    // RTO 5
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           13, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
   } else {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+    quic_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 4, true));
@@ -3632,12 +3665,11 @@ TEST_P(QuicNetworkTransactionTest,
                        client_maker_.MakeRetransmissionPacket(3, 12, true));
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 13, true));
-  }
-
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,
                                       "5 consecutive retransmission timeouts"));
+  }
 
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -3688,11 +3720,6 @@ TEST_P(QuicNetworkTransactionTest,
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   session_params_.quic_idle_connection_timeout_seconds = 5;
 
   // The request will initially go out over QUIC.
@@ -3703,7 +3730,13 @@ TEST_P(QuicNetworkTransactionTest,
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
                          true, GetRequestHeaders("GET", "https", "/")));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
+  uint64_t packet_number = 2;
+  if (version_.transport_version != quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructInitialSettingsPacket(packet_number++));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+
   // Peer sending data from an non-existing stream causes this end to raise
   // error and close connection.
   quic_data.AddRead(
@@ -3711,10 +3744,10 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientAckAndConnectionClosePacket(
-                         3, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                         quic::QUIC_INVALID_STREAM_ID, quic_error_details));
+  quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
+                       packet_number++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                       quic::QUIC_INVALID_STREAM_ID, quic_error_details));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // After that fails, it will be resent via TCP.
@@ -3754,6 +3787,7 @@ TEST_P(QuicNetworkTransactionTest,
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
+  quic_data.Resume();
 
   // Run the QUIC session to completion.
   base::RunLoop().RunUntilIdle();
@@ -3779,11 +3813,6 @@ TEST_P(QuicNetworkTransactionTest,
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // TODO(rch): Re-enable.
-    return;
-  }
-
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   spdy::SpdyPriority priority =
@@ -3797,7 +3826,10 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
           priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+  if (version_.transport_version != quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
   quic_data.AddRead(ASYNC,
                     ConstructServerRstPacket(
@@ -3844,6 +3876,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
+  quic_data.Resume();
 
   // Run the QUIC session to completion.
   ASSERT_TRUE(quic_data.AllWriteDataConsumed());

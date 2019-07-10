@@ -38,7 +38,7 @@ class Origin;
 }
 
 namespace content {
-class LevelDBDatabase;
+class TransactionalLevelDBDatabase;
 class IndexedDBClassFactory;
 class IndexedDBContextImpl;
 class IndexedDBFactoryImpl;
@@ -137,7 +137,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       indexed_db::LevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
-      std::unique_ptr<LevelDBDatabase> db,
+      std::unique_ptr<TransactionalLevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner);
 
   IndexedDBContextImpl* context() const { return context_; }

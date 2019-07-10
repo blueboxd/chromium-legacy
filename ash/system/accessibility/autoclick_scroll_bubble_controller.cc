@@ -16,6 +16,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/event_utils.h"
 
 namespace ash {
@@ -24,7 +25,17 @@ namespace {
 // Autoclick scroll menu constants.
 constexpr int kAutoclickScrollMenuSizeDips = 192;
 const int kScrollPointBufferDips = 100;
+const int kScrollRectBufferDips = 8;
 
+struct Position {
+  int distance;
+  views::BubbleBorder::Arrow arrow;
+  bool is_horizontal;
+};
+
+bool comparePositions(Position first, Position second) {
+  return first.distance < second.distance;
+}
 }  // namespace
 
 AutoclickScrollBubbleController::AutoclickScrollBubbleController() {}
@@ -38,22 +49,121 @@ void AutoclickScrollBubbleController::UpdateAnchorRect(
     gfx::Rect rect,
     views::BubbleBorder::Arrow alignment) {
   menu_bubble_rect_ = rect;
-  if (set_scroll_point_)
+  menu_bubble_alignment_ = alignment;
+  if (set_scroll_rect_)
     return;
   bubble_view_->SetArrow(alignment);
   bubble_view_->UpdateAnchorRect(rect);
 }
 
-void AutoclickScrollBubbleController::SetScrollPoint(
-    gfx::Point scroll_location_in_dips) {
-  set_scroll_point_ = true;
-  gfx::Rect anchor =
-      gfx::Rect(scroll_location_in_dips.x(), scroll_location_in_dips.y(), 0, 0);
-  // Buffer around the point so that the scroll bubble does not overlap it.
-  // ScrollBubbleController will automatically layout to avoid edges.
-  anchor.Inset(-kScrollPointBufferDips, -kScrollPointBufferDips);
-  bubble_view_->SetArrow(views::BubbleBorder::Arrow::LEFT_CENTER);
-  bubble_view_->UpdateAnchorRect(anchor);
+void AutoclickScrollBubbleController::SetScrollPosition(
+    gfx::Rect scroll_bounds_in_dips,
+    const gfx::Point& scroll_point_in_dips) {
+  // TODO(katie): Support multiple displays.
+  aura::Window* window = Shell::GetPrimaryRootWindow();
+  gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
+
+  // If the on-screen width and height of the scroll bounds are larger than a
+  // threshold size, simply offset the scroll menu bubble from the scroll point
+  // position. This ensures the scroll bubble does not end up too far away from
+  // the user's scroll point.
+  gfx::Rect on_screen_scroll_bounds(scroll_bounds_in_dips);
+  on_screen_scroll_bounds.Intersect(work_area);
+  if (on_screen_scroll_bounds.width() > 2 * kAutoclickScrollMenuSizeDips &&
+      on_screen_scroll_bounds.height() > 2 * kAutoclickScrollMenuSizeDips) {
+    set_scroll_rect_ = true;
+    gfx::Rect anchor =
+        gfx::Rect(scroll_point_in_dips.x(), scroll_point_in_dips.y(), 0, 0);
+    // Buffer around the point so that the scroll bubble does not overlap it.
+    // ScrollBubbleController will automatically layout to avoid edges.
+    anchor.Inset(-kScrollPointBufferDips, -kScrollPointBufferDips);
+    bubble_view_->SetArrow(views::BubbleBorder::Arrow::LEFT_CENTER);
+    bubble_view_->UpdateAnchorRect(anchor);
+    return;
+  }
+
+  // Otherwise, the scrollable area bounds are small compared to the scroll
+  // scroll bubble, so we should not overlap the scroll bubble if possible.
+  // Try to show the scroll bubble on the side of the rect closest to the point.
+  scroll_bounds_in_dips.Inset(
+      -kScrollRectBufferDips, -kScrollRectBufferDips, -kScrollRectBufferDips,
+      -kScrollRectBufferDips - kCollisionWindowWorkAreaInsetsDp);
+
+  // Determine whether there will be space to show the scroll bubble between the
+  // scroll bounds and display bounds.
+  work_area.Inset(kAutoclickScrollMenuSizeDips, kAutoclickScrollMenuSizeDips);
+  bool fits_left = scroll_bounds_in_dips.x() > work_area.x();
+  bool fits_right = scroll_bounds_in_dips.right() < work_area.right();
+  bool fits_above = scroll_bounds_in_dips.y() > work_area.y();
+  bool fits_below = scroll_bounds_in_dips.bottom() < work_area.bottom();
+
+  // The scroll bubble will fit outside the bounds of the scrollable area.
+  // Determine its exact position based on the scroll point:
+  // First, try to lay out the scroll bubble on the side of the scroll bounds
+  // closest to the scroll point.
+  //
+  //   ------------------
+  //   |                |
+  //   |               *|  <-- Here, the scroll point is closest to the right
+  //   |                |      edge so the bubble should be laid out on the
+  //   |                |      right of the scroll bounds.
+  //   ------------------
+  //
+  std::vector<Position> positions;
+  if (fits_right) {
+    positions.push_back(
+        {scroll_bounds_in_dips.right() - scroll_point_in_dips.x(),
+         // Put it on the right. Note that in RTL languages right and left
+         // arrows
+         // are swapped.
+         base::i18n::IsRTL() ? views::BubbleBorder::Arrow::RIGHT_CENTER
+                             : views::BubbleBorder::Arrow::LEFT_CENTER,
+         true});
+  }
+  if (fits_left) {
+    positions.push_back({scroll_point_in_dips.x() - scroll_bounds_in_dips.x(),
+                         // Put it on the left. Note that in RTL languages right
+                         // and left arrows are swapped.
+                         base::i18n::IsRTL()
+                             ? views::BubbleBorder::Arrow::LEFT_CENTER
+                             : views::BubbleBorder::Arrow::RIGHT_CENTER,
+                         true});
+  }
+  if (fits_below) {
+    positions.push_back(
+        {scroll_bounds_in_dips.bottom() - scroll_point_in_dips.y(),
+         views::BubbleBorder::Arrow::TOP_CENTER, false});
+  }
+  if (fits_above) {
+    positions.push_back({scroll_point_in_dips.y() - scroll_bounds_in_dips.y(),
+                         views::BubbleBorder::Arrow::BOTTOM_CENTER, false});
+  }
+
+  // If the scroll bubble doesn't fit between the scroll bounds and display
+  // edges, re-pin the scroll bubble to the menu bubble.
+  set_scroll_rect_ = !positions.empty();
+  if (!set_scroll_rect_) {
+    UpdateAnchorRect(menu_bubble_rect_, menu_bubble_alignment_);
+    return;
+  }
+
+  // Sort positions based on distance.
+  std::stable_sort(positions.begin(), positions.end(), comparePositions);
+
+  // Position on the optimal side depending on the shortest distance.
+  bubble_view_->SetArrow(positions.front().arrow);
+  if (positions.front().is_horizontal) {
+    // Center it vertically on the scroll point.
+    bubble_view_->UpdateAnchorRect(gfx::Rect(scroll_bounds_in_dips.x(),
+                                             scroll_point_in_dips.y(),
+                                             scroll_bounds_in_dips.width(), 0));
+  } else {
+    // Center horizontally on scroll point.
+    bubble_view_->UpdateAnchorRect(gfx::Rect(scroll_point_in_dips.x(),
+                                             scroll_bounds_in_dips.y(), 0,
+                                             scroll_bounds_in_dips.height()));
+  }
 }
 
 void AutoclickScrollBubbleController::ShowBubble(

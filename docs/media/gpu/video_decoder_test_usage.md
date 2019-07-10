@@ -66,7 +66,7 @@ Multiple command line arguments can be given to the command:
     --disable_validator  disable frame validation, useful on old
                          platforms that don't support import mode.
     --output_frames      write all decoded video frames to the
-                         "video_frames" folder.
+                         "<testname>" folder.
     --output_folder      overwrite the default output folder used when
                          "--output_frames" is specified.
     --use_vd             use the new VD-based video decoders, instead of

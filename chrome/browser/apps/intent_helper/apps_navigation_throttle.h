@@ -166,6 +166,12 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   static void CloseOrGoBack(content::WebContents* web_contents);
 
+  static bool ContainsOnlyPwas(
+      const std::vector<apps::IntentPickerAppInfo>& apps);
+
+  static bool ShouldShowRememberSelection(
+      std::vector<apps::IntentPickerAppInfo>& apps);
+
   // Overridden for Chrome OS to allow arc handling.
   virtual void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
                                             const GURL& previous_url,
@@ -189,8 +195,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url);
-
-  virtual bool ShouldShowRememberSelection();
 
   bool navigate_from_link();
 

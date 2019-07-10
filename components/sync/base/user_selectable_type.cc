@@ -45,7 +45,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kExtensions:
       return {"extensions", EXTENSIONS, {EXTENSIONS, EXTENSION_SETTINGS}};
     case UserSelectableType::kApps:
-      return {"apps", APPS, {APPS, APP_SETTINGS, APP_LIST, ARC_PACKAGE}};
+      return {
+          "apps", APPS, {APPS, APP_SETTINGS, APP_LIST, ARC_PACKAGE, WEB_APPS}};
 #if BUILDFLAG(ENABLE_READING_LIST)
     case UserSelectableType::kReadingList:
       return {"readingList", READING_LIST, {READING_LIST}};

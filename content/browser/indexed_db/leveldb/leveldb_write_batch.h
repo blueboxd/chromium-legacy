@@ -29,7 +29,7 @@ class CONTENT_EXPORT LevelDBWriteBatch {
   void Clear();
 
  private:
-  friend class LevelDBDatabase;
+  friend class TransactionalLevelDBDatabase;
   LevelDBWriteBatch();
 
   std::unique_ptr<leveldb::WriteBatch> write_batch_;

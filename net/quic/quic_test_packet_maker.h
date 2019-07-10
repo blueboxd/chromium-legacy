@@ -309,6 +309,9 @@ class QuicTestPacketMaker {
       uint64_t new_packet_number,
       bool should_include_version);
 
+  // Removes all stream frames associated with |stream_id|.
+  void RemoveSavedStreamFrames(quic::QuicStreamId stream_id);
+
   void SetEncryptionLevel(quic::EncryptionLevel level);
 
   spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,

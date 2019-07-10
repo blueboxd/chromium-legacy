@@ -27,6 +27,10 @@ using cups_ipp_parser::mojom::ValueType;
 
 using Printer = chromeos::Printer;
 
+std::string EncodeEndpointForPrinterId(std::string printer_id) {
+  return "/printers/" + printer_id;
+}
+
 // Fake backend for CupsProxyServiceDelegate.
 class FakeServiceDelegate
     : public chromeos::printing::FakeCupsProxyServiceDelegate {
@@ -137,7 +141,7 @@ TEST_F(IppValidatorTest, EndpointIsKnownPrinter) {
   auto request = GetBasicIppRequest();
   std::string printer_id = "abc";
 
-  request->endpoint = printer_id;
+  request->endpoint = EncodeEndpointForPrinterId(printer_id);
   EXPECT_FALSE(RunValidateIppRequest(request));
 
   // Should succeed now that |delegate_| knows about the printer.

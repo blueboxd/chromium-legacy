@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
@@ -19,32 +18,22 @@
 
 namespace ash {
 
-// A class to query output protection status and/or enable output protection.
-// All methods except constructor should be invoked in UI thread.
+// Proxies output protection requests for an associated window, and renews them
+// when the window is reparented to another display.
 class ASH_EXPORT OutputProtectionDelegate : public aura::WindowObserver,
                                             public display::DisplayObserver {
  public:
-  class Controller {
-   public:
-    using QueryStatusCallback = base::OnceCallback<
-        void(bool success, uint32_t connection_mask, uint32_t protection_mask)>;
-    using SetProtectionCallback = base::OnceCallback<void(bool success)>;
-
-    Controller();
-    virtual ~Controller();
-    virtual void QueryStatus(int64_t display_id,
-                             QueryStatusCallback callback) = 0;
-    virtual void SetProtection(int64_t display_id,
-                               uint32_t protection_mask,
-                               SetProtectionCallback callback) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Controller);
-  };
+  using QueryStatusCallback = base::OnceCallback<
+      void(bool success, uint32_t connection_mask, uint32_t protection_mask)>;
+  using SetProtectionCallback = base::OnceCallback<void(bool success)>;
 
   explicit OutputProtectionDelegate(aura::Window* window);
   ~OutputProtectionDelegate() override;
 
+  void QueryStatus(QueryStatusCallback callback);
+  void SetProtection(uint32_t protection_mask, SetProtectionCallback callback);
+
+ private:
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
@@ -54,14 +43,9 @@ class ASH_EXPORT OutputProtectionDelegate : public aura::WindowObserver,
       const aura::WindowObserver::HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  void QueryStatus(Controller::QueryStatusCallback callback);
-  void SetProtection(uint32_t protection_mask,
-                     Controller::SetProtectionCallback callback);
-
- private:
   void OnWindowMayHaveMovedToAnotherDisplay();
 
-  bool InitializeControllerIfNecessary();
+  bool RegisterClientIfNecessary();
 
   // Native window being observed.
   aura::Window* window_ = nullptr;
@@ -73,10 +57,9 @@ class ASH_EXPORT OutputProtectionDelegate : public aura::WindowObserver,
   // window moves to another display.
   uint32_t protection_mask_ = display::CONTENT_PROTECTION_METHOD_NONE;
 
-  // The display content protection controller.
-  std::unique_ptr<Controller> controller_;
-
-  base::WeakPtrFactory<OutputProtectionDelegate> weak_ptr_factory_{this};
+  // RAII wrapper to register/unregister ContentProtectionManager client.
+  struct ClientIdHolder;
+  std::unique_ptr<ClientIdHolder> client_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionDelegate);
 };

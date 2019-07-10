@@ -57,7 +57,7 @@
 
 @media (prefers-color-scheme: dark) {
   .overlay-dialog::backdrop {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
   }
 }
 
@@ -75,7 +75,7 @@
 @media (prefers-color-scheme: dark) {
   .overlay,
   .overlay-hidden {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
   }
 }
 

@@ -154,9 +154,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Returns true when the |window| is a container window.
   bool IsContainerWindow(aura::Window* window);
 
-  // Add a backdrop behind the currently active window on each desktop.
-  void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
-
   // Every window which got touched by our window manager gets added here.
   WindowToState window_state_map_;
 

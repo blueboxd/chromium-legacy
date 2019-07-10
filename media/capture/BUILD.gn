@@ -337,7 +337,10 @@ if (is_chromeos) {
     deps = [
       "//base",
       "//build/config/linux/libdrm",
+      "//gpu/command_buffer/client",
       "//third_party/minigbm",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/geometry",
     ]
   }
 }

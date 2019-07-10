@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   const NUX_LANDING_PAGE_INTERACTION_METRIC_NAME =
       'FirstRun.NewUserExperience.LandingPageInteraction';
 
@@ -33,7 +33,7 @@ cr.define('nux', function() {
     recordExistingUser() {}
   }
 
-  /** @implements {nux.LandingViewProxy} */
+  /** @implements {welcome.LandingViewProxy} */
   class LandingViewProxyImpl {
     /** @override */
     recordPageShown() {

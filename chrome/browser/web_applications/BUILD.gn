@@ -34,6 +34,10 @@ source_set("web_applications") {
     "web_app_install_task.h",
     "web_app_registrar.cc",
     "web_app_registrar.h",
+    "web_app_sync_bridge.cc",
+    "web_app_sync_bridge.h",
+    "web_app_sync_manager.cc",
+    "web_app_sync_manager.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
   ]

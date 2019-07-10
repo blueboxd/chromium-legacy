@@ -12,7 +12,6 @@ import android.graphics.RectF;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.util.Pair;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -41,9 +40,6 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
-import org.chromium.chrome.browser.gesturenav.NavigationHandler;
-import org.chromium.chrome.browser.gesturenav.TabSwitcherActionDelegate;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -230,10 +226,8 @@ public abstract class StackLayoutBase extends Layout {
 
     private final GestureEventFilter mGestureEventFilter;
     private final TabListSceneLayer mSceneLayer;
-    private final boolean mNavigationEnabled;
 
     private StackLayoutGestureHandler mGestureHandler;
-    private NavigationHandler mNavigationHandler;
 
     private final ArrayList<Pair<CompositorAnimator, FloatProperty>> mLayoutAnimations =
             new ArrayList<>();
@@ -248,7 +242,6 @@ public abstract class StackLayoutBase extends Layout {
             mLastOnDownTimeStamp = time;
 
             if (shouldIgnoreTouchInput()) return;
-            if (mNavigationHandler != null) mNavigationHandler.onDown();
             mStacks.get(getTabStackIndex()).onDown(time);
         }
 
@@ -260,15 +253,6 @@ public abstract class StackLayoutBase extends Layout {
         @Override
         public void drag(float x, float y, float dx, float dy, float tx, float ty) {
             if (shouldIgnoreTouchInput()) return;
-
-            if (mNavigationHandler != null) {
-                mNavigationHandler.onScroll(mLastOnDownX * mDpToPx, -dx * mDpToPx, -dy * mDpToPx,
-                        x * mDpToPx, y * mDpToPx);
-                if (mNavigationHandler.isActive()) {
-                    cancelDragTabs(time());
-                    return;
-                }
-            }
 
             @SwipeMode
             int oldInputMode = mInputMode;
@@ -353,10 +337,6 @@ public abstract class StackLayoutBase extends Layout {
 
         private void onUpOrCancel(long time) {
             if (shouldIgnoreTouchInput()) return;
-
-            if (mNavigationHandler != null && mNavigationHandler.isActive()) {
-                mNavigationHandler.onTouchEvent(MotionEvent.ACTION_UP);
-            }
             cancelDragTabs(time);
         }
 
@@ -405,8 +385,6 @@ public abstract class StackLayoutBase extends Layout {
         mStackRects = new ArrayList<RectF>();
         mViewContainer = new FrameLayout(getContext());
         mSceneLayer = new TabListSceneLayer();
-        mNavigationEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
         mDpToPx = context.getResources().getDisplayMetrics().density;
     }
 
@@ -520,16 +498,6 @@ public abstract class StackLayoutBase extends Layout {
                 onTabClosureCancelled(LayoutManager.time(), tab.getId(), tab.isIncognito());
             }
         };
-        if (mNavigationEnabled && mNavigationHandler == null) {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-            if (currentTab != null) {
-                mNavigationHandler = new NavigationHandler(mViewContainer,
-                        new TabSwitcherActionDelegate(currentTab.getActivity()::onBackPressed,
-                                mTabModelSelector::getCurrentTab),
-                        NavigationGlowFactory.forSceneLayer(mViewContainer, mSceneLayer,
-                                currentTab.getActivity().getWindowAndroid()));
-            }
-        }
     }
 
     /**
@@ -1677,7 +1645,6 @@ public abstract class StackLayoutBase extends Layout {
 
     @Override
     public void destroy() {
-        if (mNavigationHandler != null) mNavigationHandler.destroy();
         super.destroy();
     }
 

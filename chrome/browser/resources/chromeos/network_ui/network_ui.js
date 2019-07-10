@@ -457,6 +457,13 @@ const NetworkUI = (function() {
   };
 
   /**
+   * Requests that the "add Wi-Fi network" UI be displayed.
+   */
+  const showAddNewWifi = function() {
+    chrome.send('showAddNewWifi');
+  };
+
+  /**
    * Requests an update of all network info.
    */
   const requestNetworks = function() {
@@ -555,6 +562,7 @@ const NetworkUI = (function() {
     ];
     select.addEventListener('network-item-selected', onNetworkItemSelected);
     $('cellular-activation-button').onclick = openCellularActivationUi;
+    $('add-new-wifi-button').onclick = showAddNewWifi;
     $('refresh').onclick = requestNetworks;
     init();
     requestNetworks();

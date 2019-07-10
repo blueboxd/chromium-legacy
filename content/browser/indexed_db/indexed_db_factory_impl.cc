@@ -37,7 +37,7 @@
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -112,7 +112,8 @@ CreateDatabaseDirectories(const base::FilePath& path_base,
   return {leveldb_path, blob_path, status};
 }
 
-std::tuple<bool, leveldb::Status> AreSchemasKnown(LevelDBDatabase* db) {
+std::tuple<bool, leveldb::Status> AreSchemasKnown(
+    TransactionalLevelDBDatabase* db) {
   int64_t db_schema_version = 0;
   bool found = false;
   leveldb::Status s = indexed_db::GetInt(db, SchemaVersionKey::Encode(),
@@ -702,7 +703,7 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     indexed_db::LevelDBFactory* leveldb_factory,
     const url::Origin& origin,
     const base::FilePath& blob_path,
-    std::unique_ptr<LevelDBDatabase> db,
+    std::unique_ptr<TransactionalLevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, this, leveldb_factory, origin, blob_path,
@@ -773,9 +774,10 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
   if (UNLIKELY(!status.ok()))
     return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};
 
-  std::unique_ptr<LevelDBDatabase> database = std::make_unique<LevelDBDatabase>(
-      std::move(state), leveldb_factory_, context_->TaskRunner(),
-      LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
+  std::unique_ptr<TransactionalLevelDBDatabase> database =
+      std::make_unique<TransactionalLevelDBDatabase>(
+          std::move(state), leveldb_factory_, context_->TaskRunner(),
+          TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
   std::tie(are_schemas_known, status) = AreSchemasKnown(database.get());

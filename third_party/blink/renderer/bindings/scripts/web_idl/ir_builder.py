@@ -2,17 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-try:
-    import _pickle as pickle
-except ImportError:
-    try:
-        import cPickle as pickle
-    except ImportError:
-        import pickle
-
-import idl_parser
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
+from .collection import Collection
 from .common import DebugInfo
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
@@ -51,18 +43,15 @@ def load_and_register_idl_definitions(
     assert callable(register_ir)
 
     for filepath in filepaths:
-        with open(filepath) as pickle_file:
-            asts_per_component = pickle.load(pickle_file)
-            component = asts_per_component.component
-            builder = _IRBuilder(component, create_ref_to_idl_type,
-                                 create_ref_to_idl_def)
+        asts_per_component = Collection.load_from_file(filepath)
+        component = asts_per_component.component
+        builder = _IRBuilder(component, create_ref_to_idl_type,
+                             create_ref_to_idl_def)
 
-            for file_node in asts_per_component.asts:
-                assert isinstance(file_node, idl_parser.idl_node.IDLNode)
-                assert file_node.GetClass() == 'File'
-
-                for top_level_node in file_node.GetChildren():
-                    register_ir(builder.build_top_level_def(top_level_node))
+        for file_node in asts_per_component.asts:
+            assert file_node.GetClass() == 'File'
+            for top_level_node in file_node.GetChildren():
+                register_ir(builder.build_top_level_def(top_level_node))
 
 
 class _IRBuilder(object):
@@ -124,9 +113,7 @@ class _IRBuilder(object):
         extended_attributes = self._take_extended_attributes(child_nodes)
         # TODO(yukishiino): Implement dictionary inheritance.
         _ = self._take_inheritance(child_nodes)
-        own_members = [
-            self._build_dictionary_member(child) for child in child_nodes
-        ]
+        own_members = map(self._build_dictionary_member, child_nodes)
 
         dictionary = Dictionary.IR(
             identifier=node.GetName(),

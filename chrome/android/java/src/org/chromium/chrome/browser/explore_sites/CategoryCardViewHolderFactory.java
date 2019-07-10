@@ -17,7 +17,7 @@ public class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHo
         CategoryCardViewHolderFactory.CategoryCardViewHolder> {
     private int mTileViewResource;
 
-    CategoryCardViewHolderFactory() {
+    public CategoryCardViewHolderFactory() {
         final int exploreSitesDenseVariation = ExploreSitesBridge.getDenseVariation();
         // Set the tile view to use based on the condensed variation.
         if (ExploreSitesBridge.isDense(exploreSitesDenseVariation)) {

@@ -55,6 +55,8 @@
 #include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -1352,6 +1354,11 @@ ProfileImpl::RetriveInProgressDownloadManager() {
 
 content::SmsService* ProfileImpl::GetSmsService() {
   return SmsServiceFactory::GetForProfile(this)->Get();
+}
+
+content::NativeFileSystemPermissionContext*
+ProfileImpl::GetNativeFileSystemPermissionContext() {
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

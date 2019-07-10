@@ -272,22 +272,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerRegistration> controller_registration,
       bool notify_controllerchange);
 
-  // For use by the ServiceWorkerControlleeRequestHandler to disallow a
-  // registration claiming this host while its main resource request is
-  // occurring.
-  //
-  // TODO(crbug.com/866353): This should be unneccessary: registration code
-  // already avoids claiming clients that are not execution ready. However
-  // there may be edge cases with shared workers (pre-NetS13nServiceWorker) and
-  // about:blank iframes, since |is_execution_ready()| is initialized true for
-  // them. Try to remove this after S13nServiceWorker.
-  void AllowSetControllerRegistration(bool allow) {
-    allow_set_controller_registration_ = allow;
-  }
-  bool IsSetControllerRegistrationAllowed() {
-    return allow_set_controller_registration_;
-  }
-
   // Returns an interceptor for a main resource request. May return nullptr if
   // the request doesn't require interception.
   std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
@@ -410,8 +394,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool is_response_committed() const;
 
   // For service worker clients. True if the client is execution ready and
-  // therefore can be exposed to JavaScript. Execution ready implies connected
-  // to renderer.
+  // therefore can be exposed to JavaScript. Execution ready implies response
+  // committed.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
 
@@ -677,7 +661,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the provider host's controller is updated to match it.
   scoped_refptr<ServiceWorkerVersion> controller_;
   scoped_refptr<ServiceWorkerRegistration> controller_registration_;
-  bool allow_set_controller_registration_ = true;
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.

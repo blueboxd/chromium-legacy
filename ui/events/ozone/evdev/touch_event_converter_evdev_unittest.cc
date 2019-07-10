@@ -1543,6 +1543,40 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButton) {
             up_event.pointer_details.pointer_type);
 }
 
+TEST_F(TouchEventConverterEvdevTest, ScalePressure) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveTouchScreen, &devinfo));
+  device()->Initialize(devinfo);
+  timeval time;
+  time = {1507226211, 483601};
+  // Fake abroken input: note the pressure.
+  struct input_event mock_kernel_queue[] = {
+      {time, EV_ABS, ABS_MT_TRACKING_ID, 461},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1795},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 5559},
+      {time, EV_ABS, ABS_MT_PRESSURE,
+       devinfo.GetAbsMaximum(ABS_MT_PRESSURE) * 2},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 14},
+      {time, EV_ABS, ABS_MT_TOUCH_MINOR, 14},
+      {time, EV_KEY, BTN_TOUCH, 1},
+      {time, EV_ABS, ABS_X, 1795},
+      {time, EV_ABS, ABS_Y, 5559},
+      {time, EV_ABS, ABS_PRESSURE, 217},
+      {time, EV_MSC, MSC_TIMESTAMP, 0},
+      {time, EV_SYN, SYN_REPORT, 0},
+  };
+  // Set test now time to ensure above timestamps are in the past.
+  SetTestNowTime(time);
+
+  // Finger pressed with major/minor reported.
+  device()->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue),
+                              0);
+  device()->ReadNow();
+  EXPECT_EQ(1u, size());
+  ui::TouchEventParams event = dispatched_touch_event(0);
+  EXPECT_FLOAT_EQ(1.0, event.pointer_details.force);
+}
+
 // crbug.com/771374
 TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
   ui::MockTouchEventConverterEvdev* dev = device();
@@ -1581,9 +1615,10 @@ TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
   EXPECT_EQ(1795, event.location.x());
   EXPECT_EQ(5559, event.location.y());
   EXPECT_EQ(0, event.slot);
+  EXPECT_FLOAT_EQ(217.0 / devinfo.GetAbsMaximum(ABS_MT_PRESSURE),
+                  event.pointer_details.force);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
             event.pointer_details.pointer_type);
   EXPECT_FLOAT_EQ(280.f, event.pointer_details.radius_x);
-  EXPECT_FLOAT_EQ(0.8509804f, event.pointer_details.force);
 }
 }  // namespace ui

@@ -62,8 +62,7 @@ enum class OverlayFullScreenTypes {
   kMaxValue = kNotAvailable,
 };
 
-void RecordOverlayFullScreenTypes(bool workaround_applied,
-                                  const gfx::Rect& overlay_onscreen_rect) {
+void RecordOverlayFullScreenTypes(const gfx::Rect& overlay_onscreen_rect) {
   OverlayFullScreenTypes full_screen_type;
   const gfx::Size& screen_size =
       DirectCompositionSurfaceWin::GetOverlayMonitorSize();
@@ -91,12 +90,6 @@ void RecordOverlayFullScreenTypes(bool workaround_applied,
 
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFullScreenTypes",
                             full_screen_type);
-
-  // TODO(magchen): To be deleted once we know if this workaround is still
-  // needed
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.DirectComposition.DisableLargerThanScreenOverlaysWorkaround",
-      workaround_applied);
 }
 
 const char* ProtectedVideoTypeToString(gfx::ProtectedVideoType type) {
@@ -373,7 +366,6 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
     swap_chain_size.SetToMin(params.content_rect.size());
   }
 
-  bool workaround_applied = false;
   gfx::Size overlay_monitor_size =
       DirectCompositionSurfaceWin::GetOverlayMonitorSize();
   if (layer_tree_->disable_larger_than_screen_overlays() &&
@@ -393,19 +385,15 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
         (swap_chain_size.width() <=
          overlay_monitor_size.width() + kOversizeMargin)) {
       swap_chain_size.set_width(overlay_monitor_size.width());
-      workaround_applied = true;
     }
 
     if ((swap_chain_size.height() > overlay_monitor_size.height()) &&
         (swap_chain_size.height() <=
          overlay_monitor_size.height() + kOversizeMargin)) {
       swap_chain_size.set_height(overlay_monitor_size.height());
-      workaround_applied = true;
     }
   }
-  RecordOverlayFullScreenTypes(
-      workaround_applied,
-      /*overlay_onscreen_rect*/ gfx::ToEnclosingRect(bounds));
+  RecordOverlayFullScreenTypes(gfx::ToEnclosingRect(bounds));
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
   // subsampled formats like NV12 must have an even width and height.

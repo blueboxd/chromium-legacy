@@ -107,9 +107,8 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
 
   ash_test_helper_ = std::make_unique<ash::AshTestHelper>();
-
-  ash_test_helper_->SetUp(/*start_session=*/true,
-                          /*provide_local_state=*/true);
+  ash::AshTestHelper::InitParams init_params;
+  ash_test_helper_->SetUp(init_params);
   ash::Shell::GetPrimaryRootWindow()->Show();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
   ash::Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));

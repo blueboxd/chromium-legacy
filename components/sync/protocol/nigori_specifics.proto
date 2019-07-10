@@ -179,4 +179,7 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether send tab should be encrypted.
   optional bool encrypt_send_tab_to_self = 47;
+
+  // Boolean corresponding to whether Web Apps data should be encrypted.
+  optional bool encrypt_web_apps = 48;
 }

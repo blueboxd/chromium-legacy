@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace media {
 
@@ -47,6 +50,40 @@ VaapiImageDecoder::GetSupportedProfile() const {
   DCHECK(VaapiWrapper::GetDecodeSupportedInternalFormats(va_profile_).yuv420);
   profile.subsamplings.push_back(gpu::ImageDecodeAcceleratorSubsampling::k420);
   return profile;
+}
+
+scoped_refptr<gfx::NativePixmapDmaBuf>
+VaapiImageDecoder::ExportAsNativePixmapDmaBuf(VaapiImageDecodeStatus* status) {
+  DCHECK(status);
+
+  // We need to take ownership of the VASurface so that the next decode doesn't
+  // attempt to use the same VASurface. Otherwise, it could overwrite the result
+  // of the current decode before it's used by the caller. This VASurface will
+  // self-clean at the end of this scope, but the underlying buffer should stay
+  // alive because of the exported FDs.
+  scoped_refptr<VASurface> va_surface = ReleaseVASurface();
+  if (!va_surface) {
+    DVLOGF(1) << "No decoded image available";
+    *status = VaapiImageDecodeStatus::kInvalidState;
+    return nullptr;
+  }
+
+  DCHECK_NE(VA_INVALID_ID, va_surface->id());
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      vaapi_wrapper_->ExportVASurfaceAsNativePixmapDmaBuf(va_surface->id());
+  if (!pixmap) {
+    *status = VaapiImageDecodeStatus::kCannotExportSurface;
+    return nullptr;
+  }
+
+  // In Intel's iHD driver the size requested for the surface may be different
+  // than the buffer size of the NativePixmap because of additional alignment.
+  // See https://git.io/fj6nA.
+  DCHECK_LE(va_surface->size().width(), pixmap->GetBufferSize().width());
+  DCHECK_LE(va_surface->size().height(), pixmap->GetBufferSize().height());
+
+  *status = VaapiImageDecodeStatus::kSuccess;
+  return pixmap;
 }
 
 }  // namespace media

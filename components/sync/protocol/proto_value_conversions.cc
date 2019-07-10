@@ -362,6 +362,7 @@ IMPLEMENT_PROTO_TO_VALUE(UserEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(WalletMaskedCreditCard)
 IMPLEMENT_PROTO_TO_VALUE(WalletMetadataSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(WalletPostalAddress)
+IMPLEMENT_PROTO_TO_VALUE(WebAppSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(WifiConfigurationSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(WifiCredentialSpecifics)
 

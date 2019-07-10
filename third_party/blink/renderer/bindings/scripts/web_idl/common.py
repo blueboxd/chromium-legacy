@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
+import copy
 
 from .extended_attribute import ExtendedAttributes
 from .exposure import Exposure
@@ -47,7 +47,9 @@ class WithExtendedAttributes(object):
         return self._extended_attributes
 
 
-CodeGeneratorInfo = dict
+class CodeGeneratorInfo(dict):
+    def make_copy(self):
+        return copy.deepcopy(self)
 
 
 class WithCodeGeneratorInfo(object):
@@ -102,9 +104,22 @@ class WithComponent(object):
     fragments that are involved into this object.
     """
 
-    def __init__(self, component):
-        assert isinstance(component, Component)
-        self._components = [component]
+    def __init__(self, component=None, components=None):
+        """
+        Args:
+            component:
+            components: Either of |component| or |components| must be given.
+        """
+        assert component is None or isinstance(component, Component)
+        assert components is None or (isinstance(components, (list, tuple))
+                                      and all(
+                                          isinstance(component, Component)
+                                          for component in components))
+        assert (component or components) and not (component and components)
+        if components:
+            self._components = list(components)
+        else:
+            self._components = [component]
 
     @property
     def components(self):
@@ -113,6 +128,13 @@ class WithComponent(object):
         @return tuple(Component)
         """
         return tuple(self._components)
+
+    def add_components(self, components):
+        assert isinstance(components, (list, tuple)) and all(
+            isinstance(component, Component) for component in components)
+        for component in components:
+            if component not in self.components:
+                self._components.append(component)
 
 
 class DebugInfo(object):
@@ -136,6 +158,12 @@ class DebugInfo(object):
                     text += ':{}'.format(self._column_number)
             return text
 
+        def make_copy(self):
+            return DebugInfo.Location(
+                filepath=self._filepath,
+                line_number=self._line_number,
+                column_number=self._column_number)
+
         @property
         def filepath(self):
             return self._filepath
@@ -148,13 +176,24 @@ class DebugInfo(object):
         def column_number(self):
             return self._column_number
 
-    def __init__(self, location=None):
+    def __init__(self, location=None, locations=None):
         assert location is None or isinstance(location, DebugInfo.Location)
-        location = location or DebugInfo.Location()
+        assert locations is None or (isinstance(
+            locations, (list, tuple)) and all(
+                isinstance(location, DebugInfo.Location)
+                for location in locations))
+        assert not (location and locations)
         # The first entry is the primary location, e.g. location of non-partial
         # interface.  The rest is secondary locations, e.g. location of partial
         # interfaces and mixins.
-        self._locations = [location]
+        if locations:
+            self._locations = locations
+        else:
+            self._locations = [location or DebugInfo.Location()]
+
+    def make_copy(self):
+        return DebugInfo(
+            locations=map(DebugInfo.Location.make_copy, self._locations))
 
     @property
     def location(self):
@@ -172,6 +211,11 @@ class DebugInfo(object):
         @return tuple(DebugInfo.Location)
         """
         return tuple(self._locations)
+
+    def add_locations(self, locations):
+        assert isinstance(locations, (list, tuple)) and all(
+            isinstance(location, DebugInfo.Location) for location in locations)
+        self._locations.extend(locations)
 
 
 class WithDebugInfo(object):

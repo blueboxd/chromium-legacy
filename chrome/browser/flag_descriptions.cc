@@ -2998,6 +2998,10 @@ const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
 const char kCrostiniUsbSupportDescription[] =
     "Enable mounting Usb devices in Crostini.";
 
+const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
+const char kCrostiniWebUIInstallerDescription[] =
+    "Enable the new WebUI Crostini Installer.";
+
 const char kCrosVmCupsProxyName[] = "Chrome OS CUPS Proxy";
 const char kCrosVmCupsProxyDescription[] =
     "Supports printing from VMs on Chrome OS.";

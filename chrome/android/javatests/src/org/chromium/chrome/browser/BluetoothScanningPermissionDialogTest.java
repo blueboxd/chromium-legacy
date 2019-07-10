@@ -16,7 +16,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.annotations.JCaller;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -25,7 +27,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Tests for the BluetoothScanningPermissionDialog class.
@@ -33,45 +34,41 @@ import org.chromium.ui.base.WindowAndroid;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BluetoothScanningPermissionDialogTest {
-    /**
-     * Works like the BluetoothScanningPermissionDialog class, but records calls to native methods
-     * instead of calling back to C++.
-     */
-    static class BluetoothScanningPermissionDialogWithFakeNatives
-            extends BluetoothScanningPermissionDialog {
-        int mFinishedEventType = -1;
-
-        BluetoothScanningPermissionDialogWithFakeNatives(
-                WindowAndroid windowAndroid, String origin, int securityLevel) {
-            super(windowAndroid, origin, securityLevel,
-                    /*nativeBluetoothScanningPermissionDialogPtr=*/42);
-        }
-
-        @Override
-        void nativeOnDialogFinished(long nativeBluetoothScanningPromptAndroid, int eventType) {
-            mFinishedEventType = eventType;
-        }
-    }
-
-    private ActivityWindowAndroid mWindowAndroid;
-    private BluetoothScanningPermissionDialogWithFakeNatives mPermissionDialog;
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    private int mFinishedEventType = -1;
+
+    private ActivityWindowAndroid mWindowAndroid;
+    private BluetoothScanningPermissionDialog mPermissionDialog;
+
+    private class TestBluetoothScanningPermissionDialogJni
+            implements BluetoothScanningPermissionDialog.Natives {
+        @Override
+        public void onDialogFinished(@JCaller BluetoothScanningPermissionDialog self,
+                long nativeBluetoothScanningPromptAndroid, int eventType) {
+            mFinishedEventType = eventType;
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
+        mocker.mock(BluetoothScanningPermissionDialogJni.TEST_HOOKS,
+                new TestBluetoothScanningPermissionDialogJni());
         mActivityTestRule.startMainActivityOnBlankPage();
         mPermissionDialog = createDialog();
     }
 
-    private BluetoothScanningPermissionDialogWithFakeNatives createDialog() {
+    private BluetoothScanningPermissionDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
-            BluetoothScanningPermissionDialogWithFakeNatives dialog =
-                    new BluetoothScanningPermissionDialogWithFakeNatives(mWindowAndroid,
-                            "https://origin.example.com/", ConnectionSecurityLevel.SECURE);
+            BluetoothScanningPermissionDialog dialog = new BluetoothScanningPermissionDialog(
+                    mWindowAndroid, "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
+                    /*nativeBluetoothScanningPermissionDialogPtr=*/42);
             return dialog;
         });
     }
@@ -123,7 +120,7 @@ public class BluetoothScanningPermissionDialogTest {
 
         dialog.cancel();
 
-        CriteriaHelper.pollUiThread(Criteria.equals(BluetoothScanningPermissionEvent.CANCELED,
-                () -> mPermissionDialog.mFinishedEventType));
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                BluetoothScanningPermissionEvent.CANCELED, () -> mFinishedEventType));
     }
 }

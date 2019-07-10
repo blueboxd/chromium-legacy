@@ -133,6 +133,10 @@ class NET_EXPORT CertPathBuilder {
     // configured with |SetIterationLimit|.
     bool exceeded_iteration_limit = false;
 
+    // True if the search stopped because it exceeded the deadline configured
+    // with |SetDeadline|.
+    bool exceeded_deadline = false;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Result);
   };
@@ -177,6 +181,12 @@ class NET_EXPORT CertPathBuilder {
   // new intermediate over all potential paths.
   void SetIterationLimit(uint32_t limit);
 
+  // Sets a deadline for completing path building. If |deadline| has passed and
+  // path building has not completed, path building will stop. Note that this
+  // is not a hard limit, there is no guarantee how far past |deadline| time
+  // will be when path building is aborted.
+  void SetDeadline(base::TimeTicks deadline);
+
   // Executes verification of the target certificate.
   //
   // Upon return results are written to the |result| object passed into the
@@ -196,6 +206,7 @@ class NET_EXPORT CertPathBuilder {
   const InitialPolicyMappingInhibit initial_policy_mapping_inhibit_;
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_;
   uint32_t max_iteration_count_ = 0;
+  base::TimeTicks deadline_;
 
   Result* out_result_;
 

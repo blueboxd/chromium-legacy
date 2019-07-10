@@ -11,8 +11,8 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
-#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
@@ -147,17 +147,19 @@ DefaultLevelDBFactory::OpenLevelDBState(
           status, false};
 }
 
-scoped_refptr<LevelDBTransaction>
-DefaultLevelDBFactory::CreateLevelDBTransaction(LevelDBDatabase* db) {
-  return base::WrapRefCounted(new LevelDBTransaction(db));
+scoped_refptr<TransactionalLevelDBTransaction>
+DefaultLevelDBFactory::CreateLevelDBTransaction(
+    TransactionalLevelDBDatabase* db) {
+  return base::WrapRefCounted(new TransactionalLevelDBTransaction(db));
 }
 
-std::unique_ptr<LevelDBIteratorImpl> DefaultLevelDBFactory::CreateIteratorImpl(
+std::unique_ptr<TransactionalLevelDBIteratorImpl>
+DefaultLevelDBFactory::CreateIteratorImpl(
     std::unique_ptr<leveldb::Iterator> iterator,
-    LevelDBDatabase* db,
+    TransactionalLevelDBDatabase* db,
     const leveldb::Snapshot* snapshot) {
   return base::WrapUnique(
-      new LevelDBIteratorImpl(std::move(iterator), db, snapshot));
+      new TransactionalLevelDBIteratorImpl(std::move(iterator), db, snapshot));
 }
 
 leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(

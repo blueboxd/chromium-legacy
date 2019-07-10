@@ -39,14 +39,12 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/bind_helpers.h"
@@ -1108,15 +1106,10 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
         desks_util::GetActiveDeskContainerId());
   }
 
-  // Turn the top window back drop on / off.
-  void ShowTopWindowBackdropForContainer(aura::Window* container, bool show) {
-    std::unique_ptr<BackdropDelegate> backdrop;
-    if (show)
-      backdrop = std::make_unique<TabletModeBackdropDelegateImpl>();
-    GetWorkspaceLayoutManager(container)->SetBackdropDelegate(
-        std::move(backdrop));
-    // Closing and / or opening can be a delayed operation.
-    base::RunLoop().RunUntilIdle();
+  // Turn tablet mode on / off.
+  void SetTabletModeEnabled(bool enabled) {
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enabled);
+    ASSERT_EQ(enabled, Shell::Get()->tablet_mode_controller()->InTabletMode());
   }
 
   aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
@@ -1172,13 +1165,13 @@ constexpr int kNoSoundKey = -1;
 // Check that creating the BackDrop without destroying it does not lead into
 // a crash.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropCrashTest) {
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
 }
 
 // Verify basic assumptions about the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
   // The background widget will be created when there is a window.
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
   ASSERT_EQ(0u, default_container()->children().size());
 
   {
@@ -1222,9 +1215,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   EXPECT_EQ("C,B,A", GetWindowOrderAsString(backdrop, window1.get(),
                                             window2.get(), window3.get()));
 
-  // Turn on the backdrop mode and check that the window shows up where it
+  // Enter tablet mode and check that the backdrop window shows up where it
   // should be (second highest number).
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
   backdrop = default_container()->children()[2];
   EXPECT_EQ("C,X,B,A", GetWindowOrderAsString(backdrop, window1.get(),
                                               window2.get(), window3.get()));
@@ -1253,7 +1246,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
        ShelfVisibilityDoesNotChangesBounds) {
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
   base::RunLoop().RunUntilIdle();
   const gfx::Size fullscreen_size = GetPrimaryDisplay().size();
 
@@ -1376,9 +1369,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Enabling the backdrop delegate for tablet mode will put the
-  // backdrop on the top most window.
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  // Enabling tablet mode will put the backdrop on the top most window.
+  SetTabletModeEnabled(true);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1408,8 +1400,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Removing the delegate will move the backdrop back to window1.
-  ShowTopWindowBackdropForContainer(default_container(), false);
+  // Exiting tablet mode will move the backdrop back to window1.
+  SetTabletModeEnabled(false);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1419,11 +1411,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Re-enable the backdrop delegate for tablet mode. Clearing the property is a
-  // no-op when the delegate is enabled.
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  // Re-enter tablet mode. Clearing the property is a no-op in this case.
+  SetTabletModeEnabled(true);
   window3->ClearProperty(kBackdropWindowMode);
-  ShowTopWindowBackdropForContainer(default_container(), true);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1459,9 +1449,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   wm::GetWindowState(wallpaper_picker_window.get())->Activate();
 
-  // Enable the backdrop delegate for tablet mode. The backdrop is shown behind
-  // the wallpaper picker window.
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  // Enter tablet mode. The backdrop is shown behind the wallpaper picker
+  // window.
+  SetTabletModeEnabled(true);
   aura::Window* backdrop = test_helper.GetBackdropWindow();
   {
     aura::Window::Windows children =
@@ -1545,7 +1535,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
   // Turn the top window backdrop on.
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   // Enter overview mode.
@@ -1787,7 +1777,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
 // Test that backdrop works in split view mode.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
-  ShowTopWindowBackdropForContainer(default_container(), true);
+  SetTabletModeEnabled(true);
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
@@ -2010,10 +2000,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   always_on_top_window->Show();
   always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window->SetProperty(kBackdropWindowMode,
+                                    BackdropWindowMode::kEnabled);
 
   aura::Window* always_on_top_container =
   always_on_top_controller->GetContainer(always_on_top_window.get());
-  ShowTopWindowBackdropForContainer(always_on_top_container, true);
   // AlwaysOnTopContainer has |always_on_top_window| and a backdrop window
   // at this moment.
   ASSERT_EQ(always_on_top_container->children().size(), 2U);

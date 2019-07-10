@@ -95,7 +95,16 @@ group("telemetry_chrome_test_without_chrome") {
     "//third_party/catapult:telemetry_chrome_test_support",
   ]
   if (is_android) {
-    data += [ "//build/android/stacktrace/" ]
+    data += [
+      "//build/android/stacktrace/",
+      "//build/android/tombstones.py",
+
+      # TODO(httpss://crbug.com/833808): Remove this once bots always set
+      # CHROMIUM_OUTPUT_DIR correctly. Currently, this is necessary in order
+      # for //build/android/pylib/constants/__init__.py to detect the output
+      # directory, which tombstones.py depends on.
+      "$root_out_dir/build.ninja",
+    ]
     data_deps += [
       "//chrome/android/webapk/shell_apk:maps_go_webapk",
       "//build/android:devil_chromium_py",

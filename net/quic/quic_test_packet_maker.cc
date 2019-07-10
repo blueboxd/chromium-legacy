@@ -1455,6 +1455,21 @@ QuicTestPacketMaker::MakeRetransmissionPacket(uint64_t original_packet_number,
       nullptr);
 }
 
+void QuicTestPacketMaker::RemoveSavedStreamFrames(
+    quic::QuicStreamId stream_id) {
+  for (auto& kv : saved_frames_) {
+    auto it = kv.second.begin();
+    while (it != kv.second.end()) {
+      if (it->type == quic::STREAM_FRAME &&
+          it->stream_frame.stream_id == stream_id) {
+        it = kv.second.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+}
+
 void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
   encryption_level_ = level;
     switch (level) {

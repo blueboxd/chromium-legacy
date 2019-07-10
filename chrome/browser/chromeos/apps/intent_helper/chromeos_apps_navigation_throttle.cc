@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -136,7 +135,7 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
       FindPwaForUrl(web_contents, url, std::move(apps));
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps_for_picker),
-      /*show_remember_selection=*/true,
+      ShouldShowRememberSelection(apps_for_picker),
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -266,10 +265,6 @@ IntentPickerResponse ChromeOsAppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool ChromeOsAppsNavigationThrottle::ShouldShowRememberSelection() {
-  return true;
-}
-
 void ChromeOsAppsNavigationThrottle::CloseTab() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
@@ -289,12 +284,7 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
   // until "Remember my choice" is available for desktop PWAs.
   // TODO(crbug.com/826982): show the intent picker when the app registry is
   // available to persist "Remember my choice" for PWAs.
-  bool only_pwa_apps =
-      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
-                  [](const apps::IntentPickerAppInfo& app_info) {
-                    return app_info.type == apps::mojom::AppType::kWeb;
-                  });
-  if (only_pwa_apps)
+  if (ContainsOnlyPwas(apps_for_picker))
     return false;
 
   DCHECK(ui_auto_display_service_);

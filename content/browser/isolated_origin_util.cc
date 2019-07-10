@@ -10,7 +10,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
-const char* kAllSubdomainsWildcard = "**.";
+const char* kAllSubdomainsWildcard = "[*.]";
 
 namespace content {
 

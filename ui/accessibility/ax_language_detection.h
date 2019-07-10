@@ -21,61 +21,28 @@ class AXNode;
 class AXTree;
 
 // This module implements language detection enabling Chrome to automatically
-// detect the language for spans of text within the page without relying on any
-// declared attributes.
+// detect the language for runs of text within the page.
 //
-// Language detection relies on four key data structures:
-//   AXLanguageInfo represents the local language detection data for all text
-//        within an AXNode.
-//   AXLanguageInfoStats records statistics about AXLanguageInfo for all AXNodes
-//        within a single AXTree, this is used to help give language detection
-//        some context to reduce false positive language assignment.
-//   AXLanguageSpan represents local language detection data for spans of text
-//        within an AXNode, this is used by sub-node level language detection.
-//   AXLanguageDetectionManager is in charge of managing all language detection
-//        context for a single AXTree.
+// Node-level language detection runs once per page after the load complete
+// event. This involves two passes:
+//   *Detect* walks the tree from the given root using cld3 to detect up to 3
+//            potential languages per node. A ranked list is created enumerating
+//            all potential languages on a page.
+//   *Label* re-walks the tree, assigning a language to each node considering
+//           the potential languages from the detect phase, page level
+//           statistics, and the assigned languages of ancestor nodes.
 //
-//
-// Language detection is currently separated into two related implementation
-// which are trying to address slightly different use cases, one operates at the
-// node level, while the other operates at the sub-node level.
-//
-//
-// Language detection at the node-level attempts to assign at most one language
-// for each AXNode in order to support mixed-language pages. Node-level language
-// detection is implemented as a two-pass process to reduce the assignment of
-// spurious languages.
-//
-// After the first pass no languages have been assigned to AXNode(s), this is
-// left to the second pass so that we can take use tree-level statistics to
-// better inform the local language assigned.
-//
-// The first pass 'Detect' (entry point DetectLanguageForSubtree) walks the
-// subtree from a given AXNode and attempts to detect the language of any text
-// found. It records results in an instance of AXLanguageInfo which it stores on
-// the AXNode, it also records statistics on the languages found in the
-// AXLanguageInfoStats instance associated with each AXTree.
-//
-// The second pass 'Label' (entry point LabelLanguageForSubtree) walks the
-// subtree from a given AXNode and attempts to find an appropriate language to
-// associate with each AXNode based on a combination of the local detection
-// results (AXLanguageInfo) and the global stats (AXLanguageInfoStats).
-//
-//
-// Language detection at the sub-node level differs from node-level in that it
-// operates at a much finer granularity of text, potentially down to individual
-// characters in order to support mixed language sentences.
-// We would like to detect languages that may only occur once throughout the
-// entire document. Sub-node-level language detection is performed by using a
-// language identifier constructed with a byte minimum of
-// kShortTextIdentifierMinByteLength. This way, it can potentially detect the
-// language of strings that are as short as one character in length.
-//
-// The entry point for sub-nod level language detection is
-// GetLanguageAnnotationForStringAttribute.
+// Optionally an embedder may run *sub-node* language detection which attempts
+// to assign languages for runs of text within a node, potentially down to the
+// individual character level. This is useful in cases where a single paragraph
+// involves switching between multiple languages, and where the speech engine
+// doesn't automatically switch voices to handle different character sets.
+// Due to the potentially small lengths of text runs involved this tends to be
+// lower in accuracy, and works best when a node is composed of multiple
+// languages with easily distinguishable scripts.
 
-// An instance of AXLanguageInfo is used to record the detected and assigned
-// languages for a single AXNode, this data is entirely local to the AXNode.
+// AXLanguageInfo represents the local language detection data for all text
+// within an AXNode. Stored on AXNode.
 struct AX_EXPORT AXLanguageInfo {
   AXLanguageInfo();
   ~AXLanguageInfo();
@@ -121,15 +88,21 @@ struct AX_EXPORT AXLanguageSpan {
   float probability;
 };
 
-// A single AXLanguageInfoStats instance is stored for each AXTree and
-// represents the language detection statistics for every AXNode within that
-// AXTree.
+// A single AXLanguageInfoStats instance is stored on each AXTree and contains
+// statistics on detected languages for all the AXNodes in that tree.
 //
-// We rely on these tree-level statistics to avoid spurious language detection
-// assignments.
+// We rely on these tree-level statistics when labelling individual nodes, to
+// provide extra signals to increase our confidence in assigning a detected
+// language.
 //
 // The Label step will only assign a detected language to a node if that
-// language is one of the dominant languages on the page.
+// language is one of the most frequent languages on the page.
+//
+// For example, if a single node has detected_languages (in order of probability
+// assigned by cld_3): da-DK, en-AU, fr-FR, but the page statistics overall
+// indicate that the page is generally in en-AU and ja-JP, it is more likely to
+// be a mis-recognition of Danish than an accurate assignment, so we assign
+// en-AU instead of da-DK.
 class AX_EXPORT AXLanguageInfoStats {
  public:
   AXLanguageInfoStats();
@@ -163,8 +136,8 @@ class AX_EXPORT AXLanguageInfoStats {
   DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
 };
 
-// An instance of AXLanguageDetectionManager manages all the context needed for
-// language detection within a single AXTree.
+// AXLanguageDetectionManager manages all of the context needed for language
+// detection within an AXTree.
 class AX_EXPORT AXLanguageDetectionManager {
  public:
   AXLanguageDetectionManager();
@@ -182,7 +155,7 @@ class AX_EXPORT AXLanguageDetectionManager {
   // having already completed.
   void LabelLanguageForSubtree(AXNode* subtree_root);
 
-  // Detect and return languages for string attribute.
+  // Sub-node language detection for a given string attribute.
   // For example, if a node has name: "My name is Fred", then calling
   // GetLanguageAnnotationForStringAttribute(*node, ax::mojom::StringAttribute::
   // kName) would return language detection information about "My name is Fred".

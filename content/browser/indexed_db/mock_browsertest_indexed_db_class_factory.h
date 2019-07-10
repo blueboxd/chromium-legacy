@@ -22,8 +22,8 @@ namespace content {
 
 class IndexedDBConnection;
 class IndexedDBMetadataCoding;
-class LevelDBTransaction;
-class LevelDBDatabase;
+class TransactionalLevelDBTransaction;
+class TransactionalLevelDBDatabase;
 
 enum FailClass {
   FAIL_CLASS_NOTHING,
@@ -64,11 +64,11 @@ class MockBrowserTestIndexedDBClassFactory
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
 
-  scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
-      LevelDBDatabase* db) override;
-  std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
+  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
+      TransactionalLevelDBDatabase* db) override;
+  std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
       std::unique_ptr<leveldb::Iterator> iterator,
-      LevelDBDatabase* db,
+      TransactionalLevelDBDatabase* db,
       const leveldb::Snapshot* snapshot) override;
 
   void FailOperation(FailClass failure_class,

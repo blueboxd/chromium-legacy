@@ -74,6 +74,7 @@ source_set("unit_tests") {
       ":test_support",
       "//base",
       "//chrome/services/cups_proxy/public/cpp",
+      "//chrome/services/cups_proxy/public/cpp:unit_tests",
       "//testing/gtest",
     ]
 

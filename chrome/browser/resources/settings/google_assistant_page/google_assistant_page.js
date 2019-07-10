@@ -41,7 +41,7 @@ const ConsentStatus = {
 Polymer({
   is: 'settings-google-assistant-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @private */
@@ -122,6 +122,15 @@ Polymer({
   /** @override */
   created: function() {
     this.browserProxy_ = settings.GoogleAssistantBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  ready: function() {
+    this.addWebUIListener('hotwordDeviceUpdated', (hasHotword) => {
+      this.hotwordDspAvailable_ = hasHotword;
+    });
+
+    chrome.send('initializeGoogleAssistantPage');
   },
 
   /**

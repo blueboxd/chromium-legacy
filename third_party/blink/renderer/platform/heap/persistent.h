@@ -261,7 +261,7 @@ class PersistentBase {
       raw_ = ptr;
     }
     CheckPointer();
-    if (raw_) {
+    if (raw_ && !IsHashTableDeletedValue()) {
       if (!persistent_node_.IsInitialized())
         Initialize();
       return;
@@ -269,11 +269,11 @@ class PersistentBase {
     Uninitialize();
   }
 
-  template <typename VisitorDispatcher>
-  void TracePersistent(VisitorDispatcher visitor) {
+  void TracePersistent(Visitor* visitor) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
+    DCHECK(!IsHashTableDeletedValue());
     if (weaknessConfiguration == kWeakPersistentConfiguration) {
       visitor->RegisterWeakCallback(this, HandleWeakPersistent);
     } else {

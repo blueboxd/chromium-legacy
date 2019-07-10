@@ -689,6 +689,8 @@ void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
 void ServiceWorkerProviderHost::ClaimedByRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK(registration->active_version());
+  DCHECK(is_execution_ready());
+
   // TODO(falken): This should just early return, or DCHECK. claim() should have
   // no effect on a page that's already using the registration.
   if (registration == controller_registration_) {
@@ -696,11 +698,7 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
     return;
   }
 
-  // TODO(crbug.com/866353): It shouldn't be necesary to check
-  // |allow_set_controller_registration_|. See the comment for
-  // AllowSetControllerRegistration().
-  if (allow_set_controller_registration_)
-    SetControllerRegistration(registration, true /* notify_controllerchange */);
+  SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,

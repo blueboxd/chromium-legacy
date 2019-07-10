@@ -306,7 +306,7 @@ bool UpdateEncryptedTypes(const NigoriSpecifics& specifics,
 void UpdateNigoriSpecificsFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     sync_pb::NigoriSpecifics* specifics) {
-  static_assert(45 == ModelType::NUM_ENTRIES,
+  static_assert(46 == ModelType::NUM_ENTRIES,
                 "If adding an encryptable type, update handling below.");
   specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -338,6 +338,7 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
   specifics->set_encrypt_mountain_shares(encrypted_types.Has(MOUNTAIN_SHARES));
   specifics->set_encrypt_send_tab_to_self(
       encrypted_types.Has(SEND_TAB_TO_SELF));
+  specifics->set_encrypt_web_apps(encrypted_types.Has(WEB_APPS));
 }
 
 }  // namespace

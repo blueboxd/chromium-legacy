@@ -61,6 +61,7 @@ web_idl_scripts = get_path_info([
                                   "web_idl/argument.py",
                                   "web_idl/attribute.py",
                                   "web_idl/callback_function.py",
+                                  "web_idl/collection.py",
                                   "web_idl/common.py",
                                   "web_idl/constant.py",
                                   "web_idl/dictionary.py",

@@ -13,13 +13,13 @@ Polymer({
   /** @private {?welcome.WelcomeBrowserProxy} */
   welcomeBrowserProxy_: null,
 
-  /** @private {?nux.SigninViewProxy} */
+  /** @private {?welcome.SigninViewProxy} */
   signinViewProxy_: null,
 
   /** @override */
   ready: function() {
     this.welcomeBrowserProxy_ = welcome.WelcomeBrowserProxyImpl.getInstance();
-    this.signinViewProxy_ = nux.SigninViewProxyImpl.getInstance();
+    this.signinViewProxy_ = welcome.SigninViewProxyImpl.getInstance();
   },
 
   onRouteEnter: function() {

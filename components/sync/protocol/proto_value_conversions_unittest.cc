@@ -60,7 +60,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(45 == syncer::ModelType::NUM_ENTRIES,
+static_assert(46 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -105,6 +105,7 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(typed_url)
 DEFINE_SPECIFICS_TO_VALUE_TEST(user_consent)
 DEFINE_SPECIFICS_TO_VALUE_TEST(user_event)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata)
+DEFINE_SPECIFICS_TO_VALUE_TEST(web_app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_configuration)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_credential)
 

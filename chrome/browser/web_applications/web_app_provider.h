@@ -44,6 +44,7 @@ class WebAppUiDelegate;
 class WebAppDatabase;
 class WebAppDatabaseFactory;
 class WebAppIconManager;
+class WebAppSyncManager;
 
 // Forward declarations for legacy extension-based subsystems.
 class WebAppPolicyManager;
@@ -79,6 +80,9 @@ class WebAppProvider : public WebAppProviderBase,
   PendingAppManager& pending_app_manager() override;
   WebAppPolicyManager* policy_manager() override;
   WebAppUiDelegate& ui_delegate() override;
+
+  WebAppDatabaseFactory& database_factory() { return *database_factory_; }
+  WebAppSyncManager& sync_manager() { return *sync_manager_; }
 
   // KeyedService:
   void Shutdown() override;
@@ -126,6 +130,7 @@ class WebAppProvider : public WebAppProviderBase,
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
+  std::unique_ptr<WebAppSyncManager> sync_manager_;
   WebAppUiDelegate* ui_delegate_ = nullptr;
 
   // New generalized subsystems:

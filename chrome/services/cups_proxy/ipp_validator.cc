@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/services/cups_proxy/ipp_attribute_validator.h"
+#include "chrome/services/cups_proxy/public/cpp/cups_util.h"
 #include "net/http/http_util.h"
 #include "printing/backend/cups_ipp_util.h"
 
@@ -95,9 +96,20 @@ base::Optional<HttpRequestLine> IppValidator::ValidateHttpRequestLine(
     return base::nullopt;
   }
 
-  // Ensure endpoint is either default('/') or known printer
-  auto printer = delegate_->GetPrinter(endpoint.as_string());
-  if (endpoint != "/" && !printer) {
+  // Empty endpoint is allowed.
+  if (endpoint == "/") {
+    return HttpRequestLine{method.as_string(), endpoint.as_string(),
+                           http_version.as_string()};
+  }
+
+  // Ensure endpoint is a known printer.
+  auto printer_id = ParseEndpointForPrinterId(endpoint.as_string());
+  if (!printer_id.has_value()) {
+    return base::nullopt;
+  }
+
+  auto printer = delegate_->GetPrinter(*printer_id);
+  if (!printer.has_value()) {
     return base::nullopt;
   }
 

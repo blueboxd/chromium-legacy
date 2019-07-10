@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('nux', function() {
+cr.define('welcome', function() {
   /**
    * NuxGoogleAppsSelections enum.
    * These values are persisted to logs and should not be renumbered or
@@ -30,7 +30,7 @@ cr.define('nux', function() {
 
     /**
      * Returns a promise for an array of Google apps.
-     * @return {!Promise<!Array<!nux.BookmarkListItem>>}
+     * @return {!Promise<!Array<!welcome.BookmarkListItem>>}
      */
     getAppList() {}
 
@@ -41,7 +41,7 @@ cr.define('nux', function() {
     recordProviderSelected(providerId) {}
   }
 
-  /** @implements {nux.GoogleAppProxy} */
+  /** @implements {welcome.GoogleAppProxy} */
   class GoogleAppProxyImpl {
     /** @override */
     cacheBookmarkIcon(appId) {

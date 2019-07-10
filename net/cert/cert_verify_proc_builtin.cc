@@ -40,6 +40,9 @@ namespace {
 // TODO(https://crbug.com/634470): Make this smaller.
 constexpr uint32_t kPathBuilderIterationLimit = 25000;
 
+constexpr base::TimeDelta kMaxVerificationTime =
+    base::TimeDelta::FromSeconds(60);
+
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
 RevocationPolicy NoRevocationChecking() {
@@ -422,6 +425,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
                   CertIssuerSourceStatic* intermediates,
                   SystemTrustStore* ssl_trust_store,
                   base::Time verification_time,
+                  base::TimeTicks deadline,
                   VerificationType verification_type,
                   SimplePathBuilderDelegate::DigestPolicy digest_policy,
                   int flags,
@@ -475,6 +479,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   }
 
   path_builder.SetIterationLimit(kPathBuilderIterationLimit);
+  path_builder.SetDeadline(deadline);
 
   path_builder.Run();
 }
@@ -584,6 +589,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
   // VerifyInternal() is expected to carry out verifications using the current
   // time stamp.
   base::Time verification_time = base::Time::Now();
+  base::TimeTicks deadline = base::TimeTicks::Now() + kMaxVerificationTime;
 
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target =
@@ -647,12 +653,12 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
     // Run the attempt through the path builder.
     TryBuildPath(target, &intermediates, ssl_trust_store.get(),
-                 verification_time, cur_attempt.verification_type,
+                 verification_time, deadline, cur_attempt.verification_type,
                  cur_attempt.digest_policy, flags, ocsp_response, crl_set,
                  net_fetcher_.get(), ev_metadata, &result,
                  &checked_revocation_for_some_path);
 
-    if (result.HasValidPath())
+    if (result.HasValidPath() || result.exceeded_deadline)
       break;
 
     // If this path building attempt (may have) failed due to the chain using a

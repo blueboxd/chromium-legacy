@@ -27,7 +27,6 @@
 
 namespace webrtc {
 class PeerConnectionInterface;
-class RtpSenderInterface;
 }  // namespace webrtc
 
 namespace remoting {
@@ -88,7 +87,6 @@ class WebrtcVideoStream : public VideoStream,
   scoped_refptr<InputEventTimestampsSource> event_timestamps_source_;
 
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> video_sender_;
 
   HostVideoStatsDispatcher video_stats_dispatcher_;
 

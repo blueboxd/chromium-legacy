@@ -194,9 +194,13 @@ void AutoclickMenuBubbleController::SetPosition(
       resting_bounds, GetScrollAnchorAlignmentForPosition(new_position));
 }
 
-void AutoclickMenuBubbleController::SetScrollPoint(
-    gfx::Point scroll_location_in_dips) {
-  scroll_bubble_controller_->SetScrollPoint(scroll_location_in_dips);
+void AutoclickMenuBubbleController::SetScrollPosition(
+    gfx::Rect scroll_bounds_in_dips,
+    const gfx::Point& scroll_point_in_dips) {
+  if (!scroll_bubble_controller_)
+    return;
+  scroll_bubble_controller_->SetScrollPosition(scroll_bounds_in_dips,
+                                               scroll_point_in_dips);
 }
 
 void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,

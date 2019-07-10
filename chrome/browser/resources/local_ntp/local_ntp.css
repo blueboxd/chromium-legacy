@@ -817,9 +817,8 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 @media (prefers-color-scheme: dark) {
   #customization-menu {
-    background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-        0 4px 8px 3px rgba(0, 0, 0, .15);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    box-shadow: var(--dark-mode-shadow);
     color: rgb(var(--GG200-rgb));
   }
 }
@@ -1243,7 +1242,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 
 @media (prefers-color-scheme: dark) {
   #backgrounds-default-icon {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
     border-color: rgb(var(--GG700-rgb));
   }
 
@@ -1351,7 +1350,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 
 @media (prefers-color-scheme: dark) {
   .sh-option-mini {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
     border-color: rgb(var(--GG700-rgb));
   }
 }
@@ -1369,8 +1368,7 @@ html[dir=rtl] .sh-option-mini {
 @media (prefers-color-scheme: dark) {
   .selected .sh-option-mini {
     border-color: transparent;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
-        0 4px 8px 3px rgba(0, 0, 0, .15);
+    box-shadow: var(--dark-mode-shadow);
   }
 }
 
@@ -1542,7 +1540,7 @@ html[dir=rtl] .sh-option-image .selected-check {
 
 @media (prefers-color-scheme: dark) {
   .switch {
-    background-color: rgb(41, 42, 45);
+    background-color: rgb(var(--dark-mode-dialog-rgb));
   }
 }
 

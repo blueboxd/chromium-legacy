@@ -136,7 +136,7 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
 
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), color_type,
                                        kPremul_SkAlphaType, color_space);
-  sk_sp<PaintImageGenerator> generator;
+  sk_sp<FakePaintImageGenerator> generator;
   if (is_yuv) {
     // TODO(crbug.com/915972): Remove assumption of YUV420 in tests once we
     // support other subsamplings.
@@ -148,6 +148,7 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
         info, std::vector<FrameMetadata>{FrameMetadata()},
         allocate_encoded_data);
   }
+  generator->SetEligibleForAcceleratedDecoding();
   auto paint_image =
       PaintImageBuilder::WithDefault()
           .set_id(id)

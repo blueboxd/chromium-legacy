@@ -30,7 +30,6 @@
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/local_ntp_js_integrity.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
@@ -50,7 +49,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -957,19 +955,6 @@ void LocalNtpSource::StartDataRequest(
     return;
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
-        stripped_path == "local-ntp.css" || stripped_path == "voice.js" ||
-        stripped_path == "voice.css") {
-      base::ReplaceChars(stripped_path, "-", "_", &stripped_path);
-      local_ntp::SendLocalFileResource(stripped_path, callback);
-      return;
-    }
-  }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-
   if (stripped_path == kMainHtmlFilename) {
     if (search_config_provider_->DefaultSearchProviderIsGoogle()) {
       InitiatePromoAndOGBRequests();
@@ -1112,14 +1097,6 @@ bool LocalNtpSource::ShouldAddContentSecurityPolicy() {
 
 std::string LocalNtpSource::GetContentSecurityPolicy() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    // While live-editing the local NTP files, turn off CSP.
-    return "script-src * 'unsafe-inline';";
-  }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
 
   // Allow embedding of the most visited iframe, as well as the account

@@ -42,7 +42,7 @@ constexpr const char* help_msg =
     "  --disable_validator  disable frame validation, useful on old\n"
     "                       platforms that don't support import mode.\n"
     "  --output_frames      write all decoded video frames to the\n"
-    "                       \"video_frames\" folder.\n"
+    "                       \"<testname>\" folder.\n"
     "  --output_folder      overwrite the default output folder used when\n"
     "                       \"--output_frames\" is specified.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
@@ -51,10 +51,6 @@ constexpr const char* help_msg =
     "  --help               display this help and exit.\n";
 
 media::test::VideoPlayerTestEnvironment* g_env;
-
-// Default output folder used to store video frames.
-constexpr const base::FilePath::CharType* kDefaultOutputFolder =
-    FILE_PATH_LITERAL("video_frames");
 
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {
@@ -73,7 +69,7 @@ class VideoDecoderTest : public ::testing::Test {
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
 
-    // Write decoded video frames to the 'video_frames/<test_name/>' folder.
+    // Write decoded video frames to the '<testname>' folder.
     if (g_env->IsFramesOutputEnabled()) {
       base::FilePath output_folder =
           base::FilePath(g_env->OutputFolder())
@@ -265,11 +261,16 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
   if (g_env->IsValidatorEnabled())
     GTEST_SKIP();
 
+  base::FilePath output_folder =
+      base::FilePath(g_env->OutputFolder())
+          .Append(base::FilePath(g_env->GetTestName()));
+
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(
       g_env->Video(), config,
-      FrameRendererThumbnail::Create(g_env->Video()->ThumbnailChecksums()));
+      FrameRendererThumbnail::Create(g_env->Video()->ThumbnailChecksums(),
+                                     output_folder));
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
@@ -308,7 +309,7 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   bool enable_validator = true;
   bool output_frames = false;
-  base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
+  base::FilePath::StringType output_folder = base::FilePath::kCurrentDirectory;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();

@@ -32,6 +32,20 @@ source_set("cpp") {
   }
 }
 
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "cups_util_unittest.cc",
+  ]
+  deps = [
+    ":cpp",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("manifest") {
   sources = [
     "manifest.cc",

@@ -28,7 +28,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_switches.h"
@@ -132,11 +131,6 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   keyboard::KeyboardUIController::Get()->RemoveObserver(this);
-}
-
-void WorkspaceLayoutManager::SetBackdropDelegate(
-    std::unique_ptr<BackdropDelegate> delegate) {
-  backdrop_controller_->SetBackdropDelegate(std::move(delegate));
 }
 
 //////////////////////////////////////////////////////////////////////////////

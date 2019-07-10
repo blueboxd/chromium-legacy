@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -78,8 +77,7 @@ public class TabGroupUiCoordinator
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, null, null, false, null, null, null, null, null,
-                mTabStripToolbarCoordinator.getTabListContainerView(), null, true,
-                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
+                mTabStripToolbarCoordinator.getTabListContainerView(), null, true, COMPONENT_NAME);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             // TODO(yuezhanggg): find a way to enable interactions between grid tab switcher and the

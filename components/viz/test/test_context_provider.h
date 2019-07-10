@@ -119,6 +119,11 @@ class TestContextProvider
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
       bool support_locking);
+  explicit TestContextProvider(
+      std::unique_ptr<TestContextSupport> support,
+      std::unique_ptr<TestGLES2Interface> gl,
+      std::unique_ptr<gpu::raster::RasterInterface> raster,
+      bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;

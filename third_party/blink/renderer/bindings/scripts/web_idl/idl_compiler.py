@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .identifier_ir_map import IdentifierIRMap
+
 
 class IdlCompiler(object):
     """
@@ -45,8 +47,29 @@ class IdlCompiler(object):
         """
         Merges partial definitions with corresponding non-partial definitions.
         """
-        self._ir_map.move_to_new_phase()
+        self._merge_partial_dictionaries()
         # TODO(peria): Implement this. http:///crbug.com/839389
+
+    def _merge_partial_dictionaries(self):
+        old_dictionaries = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.DICTIONARY)
+        old_partial_dictionaries = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.PARTIAL_DICTIONARY)
+
+        self._ir_map.move_to_new_phase()
+
+        for identifier, old_dictionary in old_dictionaries.iteritems():
+            new_dictionary = old_dictionary.make_copy()
+            for partial_dictionary in old_partial_dictionaries.get(
+                    identifier, []):
+                new_dictionary.add_components(partial_dictionary.components)
+                new_dictionary.debug_info.add_locations(
+                    partial_dictionary.debug_info.all_locations)
+                new_dictionary.own_members.extend([
+                    member.make_copy()
+                    for member in partial_dictionary.own_members
+                ])
+            self._ir_map.add(new_dictionary)
 
     def _merge_mixins(self):
         """

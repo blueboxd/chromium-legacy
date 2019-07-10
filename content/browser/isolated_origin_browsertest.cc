@@ -2715,11 +2715,11 @@ class WildcardOriginIsolationTest : public IsolatedOriginTestBase {
   }
 
  private:
-  const char* kAllSubdomainWildcard = "**.";
+  const char* kAllSubdomainWildcard = "[*.]";
 
   // Calling GetURL() on the embedded test server will escape any '*' characters
   // into '%2A', so to create a wildcard origin they must be post-processed to
-  // have the string '**.' inserted at the correct point.
+  // have the string '[*.]' inserted at the correct point.
   std::string MakeWildcard(GURL url) {
     DCHECK(url.is_valid());
     return url.scheme() + url::kStandardSchemeSeparator +

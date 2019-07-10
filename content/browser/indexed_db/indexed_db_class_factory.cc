@@ -10,8 +10,8 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
-#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 
 namespace content {
 

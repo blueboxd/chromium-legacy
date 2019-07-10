@@ -718,7 +718,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/gesturenav/NavigationGlowFactory.java",
   "java/src/org/chromium/chrome/browser/gesturenav/NavigationHandler.java",
   "java/src/org/chromium/chrome/browser/gesturenav/SideSlideLayout.java",
-  "java/src/org/chromium/chrome/browser/gesturenav/TabSwitcherActionDelegate.java",
   "java/src/org/chromium/chrome/browser/gesturenav/TabbedActionDelegate.java",
   "java/src/org/chromium/chrome/browser/gsa/ContextReporter.java",
   "java/src/org/chromium/chrome/browser/gsa/GSAAccountChangeListener.java",

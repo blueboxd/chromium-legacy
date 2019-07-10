@@ -11,7 +11,7 @@ Polymer({
   ],
 
   properties: {
-    /** @type {nux.stepIndicatorModel} */
+    /** @type {welcome.stepIndicatorModel} */
     indicatorModel: Object,
 
     // <if expr="is_win">
@@ -22,7 +22,7 @@ Polymer({
     // </if>
   },
 
-  /** @private {nux.NuxSetAsDefaultProxy} */
+  /** @private {welcome.NuxSetAsDefaultProxy} */
   browserProxy_: null,
 
   /** @private {boolean} */
@@ -30,7 +30,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = nux.NuxSetAsDefaultProxyImpl.getInstance();
+    this.browserProxy_ = welcome.NuxSetAsDefaultProxyImpl.getInstance();
 
     this.addWebUIListener(
         'browser-default-state-changed',
@@ -80,7 +80,7 @@ Polymer({
 
   /**
    * Automatically navigate to the next onboarding step once default changed.
-   * @param {!nux.DefaultBrowserInfo} status
+   * @param {!welcome.DefaultBrowserInfo} status
    * @private
    */
   onDefaultBrowserChange_: function(status) {

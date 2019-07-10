@@ -51,8 +51,7 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
   void CloseBubble() override;
   gfx::Size CalculatePreferredSize() const override;
 
-  void AddPathList(int caption_message_id,
-                   int details_message_id,
+  void AddPathList(int details_message_id,
                    const std::vector<base::FilePath>& paths);
 
   // Singleton instance of the bubble. The bubble can only be shown on the

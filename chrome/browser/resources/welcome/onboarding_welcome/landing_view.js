@@ -15,7 +15,7 @@ Polymer({
     }
   },
 
-  /** @private {?nux.LandingViewProxy} */
+  /** @private {?welcome.LandingViewProxy} */
   landingViewProxy_: null,
 
   /** @private {boolean} */
@@ -23,7 +23,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.landingViewProxy_ = nux.LandingViewProxyImpl.getInstance();
+    this.landingViewProxy_ = welcome.LandingViewProxyImpl.getInstance();
   },
 
   onRouteEnter: function() {

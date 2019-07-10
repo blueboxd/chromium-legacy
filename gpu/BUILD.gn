@@ -545,6 +545,7 @@ test("gpu_unittests") {
     "ipc/service/gpu_channel_test_common.cc",
     "ipc/service/gpu_channel_test_common.h",
     "ipc/service/gpu_channel_unittest.cc",
+    "ipc/service/gpu_watchdog_thread_unittest.cc",
   ]
 
   if (is_chromeos) {

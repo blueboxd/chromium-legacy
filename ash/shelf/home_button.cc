@@ -7,7 +7,6 @@
 #include <math.h>  // std::ceil
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"

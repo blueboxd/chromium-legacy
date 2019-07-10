@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
@@ -38,9 +39,13 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_sync_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
@@ -338,6 +343,18 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
             profile_, syncer::APP_SETTINGS),
         dump_stack, profile_));
   }
+
+  // Web Apps sync is disabled by default.
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsUSS) &&
+      web_app::WebAppProvider::Get(profile_)) {
+    if (!disabled_types.Has(syncer::WEB_APPS)) {
+      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+          syncer::WEB_APPS,
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::WEB_APPS).get())));
+    }
+  }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -516,7 +533,19 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetSyncBridge()
           ->change_processor()
           ->GetControllerDelegate();
-
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    case syncer::WEB_APPS: {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kDesktopPWAsWithoutExtensions));
+      DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsUSS));
+      auto* provider = web_app::WebAppProvider::Get(profile_);
+      DCHECK(provider);
+      return provider->sync_manager()
+          .bridge()
+          .change_processor()
+          ->GetControllerDelegate();
+    }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
     case syncer::AUTOFILL:

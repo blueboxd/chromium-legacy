@@ -14,7 +14,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
       'setBackground',
     ]);
 
-    /** @private {!Array<!nux.NtpBackgroundData} */
+    /** @private {!Array<!welcome.NtpBackgroundData} */
     this.backgroundsList_ = [];
 
     /** @private {boolean} */
@@ -58,7 +58,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
     this.preloadImageSuccess_ = success;
   }
 
-  /** @param {!Array<!nux.NtpBackgroundData>} backgroundsList */
+  /** @param {!Array<!welcome.NtpBackgroundData>} backgroundsList */
   setBackgroundsList(backgroundsList) {
     this.backgroundsList_ = backgroundsList;
   }

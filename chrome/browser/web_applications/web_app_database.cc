@@ -63,14 +63,22 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     const WebApp& web_app) {
   auto proto = std::make_unique<WebAppProto>();
 
+  // Required fields:
+  DCHECK(!web_app.app_id().empty());
   proto->set_app_id(web_app.app_id());
-  proto->set_name(web_app.name());
-  proto->set_description(web_app.description());
+
+  DCHECK(!web_app.launch_url().is_empty() && web_app.launch_url().is_valid());
   proto->set_launch_url(web_app.launch_url().spec());
+
+  proto->set_name(web_app.name());
+
+  DCHECK(web_app.theme_color());
+  proto->set_theme_color(web_app.theme_color().value());
+
+  // Optional fields:
+  proto->set_description(web_app.description());
   if (!web_app.scope().is_empty())
     proto->set_scope(web_app.scope().spec());
-  if (web_app.theme_color())
-    proto->set_theme_color(web_app.theme_color().value());
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
     WebAppIconInfoProto* icon_proto = proto->add_icons();
@@ -85,33 +93,39 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   auto web_app = std::make_unique<WebApp>(proto.app_id());
 
+  // Required fields:
   GURL launch_url(proto.launch_url());
   if (launch_url.is_empty() || !launch_url.is_valid()) {
-    LOG(ERROR) << "WebApp proto launch_url parse error: "
-               << launch_url.possibly_invalid_spec();
+    DLOG(ERROR) << "WebApp proto launch_url parse error: "
+                << launch_url.possibly_invalid_spec();
     return nullptr;
   }
-
   web_app->SetLaunchUrl(launch_url);
+
+  if (!proto.has_name()) {
+    DLOG(ERROR) << "WebApp proto parse error: no name field";
+    return nullptr;
+  }
   web_app->SetName(proto.name());
-  web_app->SetDescription(proto.description());
+
+  if (!proto.has_theme_color()) {
+    DLOG(ERROR) << "WebApp proto parse error: no theme_color field";
+    return nullptr;
+  }
+  web_app->SetThemeColor(proto.theme_color());
+
+  // Optional fields:
+  if (proto.has_description())
+    web_app->SetDescription(proto.description());
 
   if (proto.has_scope()) {
     GURL scope(proto.scope());
     if (scope.is_empty() || !scope.is_valid()) {
-      LOG(ERROR) << "WebApp proto scope parse error: "
-                 << scope.possibly_invalid_spec();
+      DLOG(ERROR) << "WebApp proto scope parse error: "
+                  << scope.possibly_invalid_spec();
       return nullptr;
     }
     web_app->SetScope(scope);
-  }
-
-  if (proto.has_theme_color())
-    web_app->SetThemeColor(proto.theme_color());
-
-  if (proto.icons_size() == 0) {
-    LOG(ERROR) << "WebApp proto parse icons error: no icons";
-    return nullptr;
   }
 
   WebApp::Icons icons;
@@ -120,8 +134,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
 
     GURL icon_url(icon_proto.url());
     if (icon_url.is_empty() || !icon_url.is_valid()) {
-      LOG(ERROR) << "WebApp IconInfo proto url parse error: "
-                 << icon_url.possibly_invalid_spec();
+      DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
+                  << icon_url.possibly_invalid_spec();
       return nullptr;
     }
 
@@ -145,11 +159,8 @@ void WebAppDatabase::CreateStore(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // For now we use syncer:APPS prefix within local isolated LevelDB, no sync.
-  // TODO(loyso): Create separate ModelType::WEB_APPS before implementing sync.
-  // Otherwise it may interfere with existing APPS data.
   std::move(store_factory)
-      .Run(syncer::APPS,
+      .Run(syncer::WEB_APPS,
            base::BindOnce(&WebAppDatabase::OnStoreCreated,
                           weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
 }
@@ -160,7 +171,7 @@ void WebAppDatabase::OnStoreCreated(
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
-    LOG(ERROR) << "WebApps LevelDB opening error: " << error->ToString();
+    DLOG(ERROR) << "WebApps LevelDB opening error: " << error->ToString();
     return;
   }
 
@@ -174,7 +185,7 @@ void WebAppDatabase::OnAllDataRead(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
-    LOG(ERROR) << "WebApps LevelDB read error: " << error->ToString();
+    DLOG(ERROR) << "WebApps LevelDB read error: " << error->ToString();
     return;
   }
 
@@ -194,7 +205,7 @@ void WebAppDatabase::OnDataWritten(
     const base::Optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error)
-    LOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
+    DLOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
 }
 
 // static
@@ -203,7 +214,7 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
   WebAppProto proto;
   const bool parsed = proto.ParseFromString(value);
   if (!parsed || proto.app_id() != app_id) {
-    LOG(ERROR) << "WebApps LevelDB parse error (unknown).";
+    DLOG(ERROR) << "WebApps LevelDB parse error (unknown).";
     return nullptr;
   }
 

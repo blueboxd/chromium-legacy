@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
+#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
@@ -38,8 +40,13 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 namespace {
@@ -138,8 +145,12 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
       base::strict_cast<int>(parse_result.frame_header.coded_width);
   const int coded_height =
       base::strict_cast<int>(parse_result.frame_header.coded_height);
-  if (coded_width != decoded_image.coded_size.width() ||
-      coded_height != decoded_image.coded_size.height()) {
+  // Note the use of > instead of !=. This is to handle the case in the Intel
+  // iHD driver where the coded size we compute for one of the images is
+  // 1280x720 while the size of the VAAPI surface is 1280x736 because of
+  // additional alignment. See https://git.io/fj6nA.
+  if (coded_width > decoded_image.coded_size.width() ||
+      coded_height > decoded_image.coded_size.height()) {
     DLOG(ERROR) << "Wrong expected decoded JPEG coded size, " << coded_width
                 << "x" << coded_height << " versus VaAPI provided "
                 << decoded_image.coded_size.width() << "x"
@@ -352,6 +363,10 @@ class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr);
 
+  scoped_refptr<gfx::NativePixmapDmaBuf> DecodeToNativePixmapDmaBuf(
+      base::span<const uint8_t> encoded_image,
+      VaapiImageDecodeStatus* status = nullptr);
+
  protected:
   std::string test_data_path_;
   VaapiJpegDecoder decoder_;
@@ -386,7 +401,7 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
   scoped_image = decoder_.GetImage(preferred_fourcc, &image_status);
   EXPECT_EQ(!!scoped_image, image_status == VaapiImageDecodeStatus::kSuccess);
 
-  // Record the first fail status.
+  // Return the first fail status.
   if (status) {
     *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
                                                                 : image_status;
@@ -398,6 +413,29 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     VaapiImageDecodeStatus* status) {
   return Decode(encoded_image, VA_FOURCC_I420, status);
+}
+
+scoped_refptr<gfx::NativePixmapDmaBuf>
+VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
+    base::span<const uint8_t> encoded_image,
+    VaapiImageDecodeStatus* status) {
+  VaapiImageDecodeStatus decode_status;
+  scoped_refptr<VASurface> surface =
+      decoder_.Decode(encoded_image, &decode_status);
+  EXPECT_EQ(!!surface, decode_status == VaapiImageDecodeStatus::kSuccess);
+
+  // Still try to get the pixmap when decode fails.
+  VaapiImageDecodeStatus pixmap_status;
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      decoder_.ExportAsNativePixmapDmaBuf(&pixmap_status);
+  EXPECT_EQ(!!pixmap, pixmap_status == VaapiImageDecodeStatus::kSuccess);
+
+  // Return the first fail status.
+  if (status) {
+    *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
+                                                                : pixmap_status;
+  }
+  return pixmap;
 }
 
 // The intention of this test is to ensure that the workarounds added in
@@ -586,6 +624,82 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
         << "The SSIM check unexpectedly failed for size = "
         << test_size.ToString();
   }
+}
+
+// TODO(andrescj): test other JPEG formats besides YUV 4:2:0.
+TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
+  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
+                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
+    // TODO(crbug.com/974438): until we support surfaces with multiple buffer
+    // objects, the AMD driver fails this test.
+    GTEST_SKIP();
+  }
+  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
+                       "Intel i965 driver", base::CompareCase::SENSITIVE)) {
+    // TODO(b/135705575): until the correct offsets are exported, the Intel i965
+    // driver fails this test.
+    GTEST_SKIP();
+  }
+
+  base::FilePath input_file = FindTestDataFilePath(kYuv420Filename);
+  std::string jpeg_data;
+  ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
+      << "failed to read input data from " << input_file.value();
+  const auto encoded_image = base::make_span<const uint8_t>(
+      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+  VaapiImageDecodeStatus status;
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      DecodeToNativePixmapDmaBuf(encoded_image, &status);
+  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
+  ASSERT_TRUE(pixmap);
+
+  // After exporting the surface, we should not be able to obtain a VAImage with
+  // the decoded data.
+  VAImageFormat i420_format{};
+  i420_format.fourcc = VA_FOURCC_I420;
+  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
+  EXPECT_FALSE(decoder_.GetImage(i420_format.fourcc, &status));
+  EXPECT_EQ(VaapiImageDecodeStatus::kInvalidState, status);
+
+  // Workaround: in order to import and map the pixmap using minigbm when the
+  // format is gfx::BufferFormat::YVU_420, we need to reorder the planes so that
+  // the offsets are in increasing order as assumed in https://bit.ly/2NLubNN.
+  // Otherwise, we get a validation error. In essence, we're making minigbm
+  // think that it is mapping a YVU_420, but it's actually mapping a YUV_420.
+  //
+  // TODO(andrescj): revisit this once crrev.com/c/1573718 lands.
+  gfx::NativePixmapHandle handle = pixmap->ExportHandle();
+  if (pixmap->GetBufferFormat() == gfx::BufferFormat::YVU_420)
+    std::swap(handle.planes[1], handle.planes[2]);
+
+  LocalGpuMemoryBufferManager gpu_memory_buffer_manager;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      gpu_memory_buffer_manager.ImportDmaBuf(handle, pixmap->GetBufferSize(),
+                                             pixmap->GetBufferFormat());
+  ASSERT_TRUE(gpu_memory_buffer);
+  ASSERT_TRUE(gpu_memory_buffer->Map());
+  DecodedVAImage decoded_image{};
+  const gfx::BufferFormat format = gpu_memory_buffer->GetFormat();
+  if (format == gfx::BufferFormat::YVU_420) {
+    decoded_image.va_fourcc = VA_FOURCC_I420;
+    decoded_image.number_of_planes = 3u;
+  } else if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+    decoded_image.va_fourcc = VA_FOURCC_NV12;
+    decoded_image.number_of_planes = 2u;
+  } else {
+    ASSERT_TRUE(false) << "Unsupported format "
+                       << gfx::BufferFormatToString(format);
+  }
+  decoded_image.coded_size = gpu_memory_buffer->GetSize();
+  for (size_t plane = 0u;
+       plane < base::strict_cast<size_t>(decoded_image.number_of_planes);
+       plane++) {
+    decoded_image.planes[plane].data =
+        static_cast<uint8_t*>(gpu_memory_buffer->memory(plane));
+    decoded_image.planes[plane].stride = gpu_memory_buffer->stride(plane);
+  }
+  EXPECT_TRUE(CompareImages(encoded_image, decoded_image));
+  gpu_memory_buffer->Unmap();
 }
 
 // Make sure that JPEGs whose size is below the supported size range are

@@ -837,7 +837,12 @@
       'filepath': 'tools/perf/contrib/cros_benchmarks',
     },
     'crostini': {
-      'filepath': 'crostini',
+      'filepath': 'cicerone'\
+                  '|components/exo'\
+                  '|concierge'\
+                  '|crostini'\
+                  '|guest_os'\
+                  '|plugin_vm',
     },
     'cups_printing' : {
       'filepath': 'chrome/browser/resources/settings/printing_page/'\

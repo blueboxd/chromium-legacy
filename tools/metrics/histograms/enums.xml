@@ -4810,6 +4810,7 @@ Unknown properties are collapsed to zero. -->
   <int value="215" label="RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION"/>
   <int value="216" label="RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT"/>
   <int value="217" label="AUTH_INVALID_ICON_URL"/>
+  <int value="218" label="REGISTER_PROTOCOL_HANDLER_INVALID_URL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -33558,6 +33559,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2075807193" label="enable-webusb-on-any-origin"/>
   <int value="-2075725205" label="disable-new-zip-unpacker"/>
   <int value="-2074080173" label="NightLight:disabled"/>
+  <int value="-2073617042" label="CrostiniWebUIInstaller:enabled"/>
   <int value="-2067166422" label="enable-slimming-paint-v2"/>
   <int value="-2066541315" label="Mus:enabled"/>
   <int value="-2064164557" label="DownloadsForeground:disabled"/>
@@ -35818,6 +35820,7 @@ from previous Chrome versions.
   <int value="1173244409" label="AutofillUseMobileLabelDisambiguation:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
   <int value="1177120582" label="InstallableInkDrop:disabled"/>
+  <int value="1178215520" label="CrostiniWebUIInstaller:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
@@ -56554,6 +56557,7 @@ would be helpful to identify which type is being sent.
   <int value="42" label="Send Tab"/>
   <int value="43" label="Security Events"/>
   <int value="44" label="Wi-Fi Configurations"/>
+  <int value="45" label="Web Apps"/>
 </enum>
 
 <enum name="SyncModelTypeStoreInitResult">

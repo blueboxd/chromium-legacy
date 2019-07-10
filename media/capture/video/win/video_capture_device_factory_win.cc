@@ -92,7 +92,7 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // also https://crbug.com/924528
     "04ca:7047", "04ca:7048",
     // HP Elitebook 840 G1
-    "04f2:b3ed"};
+    "04f2:b3ed", "04f2:b3ca"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,

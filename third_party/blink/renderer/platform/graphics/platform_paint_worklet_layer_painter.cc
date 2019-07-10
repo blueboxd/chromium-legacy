@@ -38,4 +38,8 @@ void PlatformPaintWorkletLayerPainter::DispatchWorklets(
                                 std::move(done_callback));
 }
 
+bool PlatformPaintWorkletLayerPainter::HasOngoingDispatch() const {
+  return dispatcher_->HasOngoingDispatch();
+}
+
 }  // namespace blink

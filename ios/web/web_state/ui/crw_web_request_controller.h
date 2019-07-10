@@ -28,10 +28,6 @@ class UserInteractionState;
 - (void)webRequestControllerStopLoading:
     (CRWWebRequestController*)requestController;
 
-// Whether the delegate is being destroyed.
-- (BOOL)webRequestControllerIsBeingDestroyed:
-    (CRWWebRequestController*)requestController;
-
 // Asks proxy to disconnect scroll proxy if needed.
 - (void)webRequestControllerDisconnectScrollViewProxy:
     (CRWWebRequestController*)requestController;
@@ -74,6 +70,11 @@ class UserInteractionState;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// Instructs the receiver to close. This should be called when the receiver's
+// owner is being destroyed. The state of the receiver will be set to
+// "isBeingDestroyed" after this is called.
+- (void)close;
 
 // Checks if a load request of the current navigation item should proceed. If
 // this returns |YES|, caller should create a webView and call

@@ -6,8 +6,15 @@ import("//build/config/ios/asset_catalog.gni")
 
 group("resources") {
   deps = [
+    ":destructive_tint_color",
     ":solid_button_text_color",
     ":tint_color",
+  ]
+}
+
+colorset("destructive_tint_color") {
+  sources = [
+    "destructive_tint_color.colorset/Contents.json",
   ]
 }
 

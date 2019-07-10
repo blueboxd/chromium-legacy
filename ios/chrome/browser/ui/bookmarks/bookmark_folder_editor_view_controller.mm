@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -472,7 +473,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  deleteButton.tintColor = UIColor.redColor;
+  deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
   [self.navigationController.toolbar setShadowImage:[UIImage new]
                                  forToolbarPosition:UIBarPositionAny];
   [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]

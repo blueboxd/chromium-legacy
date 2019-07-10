@@ -106,6 +106,11 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
 PictureLayerImpl::~PictureLayerImpl() {
   if (twin_layer_)
     twin_layer_->twin_layer_ = nullptr;
+  // We only track PaintWorklet-containing PictureLayerImpls on the pending
+  // tree. However this deletion may happen outside the commit flow when we are
+  // on the recycle tree instead, so just check !IsActiveTree().
+  if (!paint_worklet_records_.empty() && !layer_tree_impl()->IsActiveTree())
+    layer_tree_impl()->NotifyLayerHasPaintWorkletsChanged(this, false);
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
 
   // Unregister for all images on the current raster source.
@@ -1589,7 +1594,7 @@ PictureLayerImpl::InvalidateRegionForImages(
   return ImageInvalidationResult::kInvalidated;
 }
 
-void PictureLayerImpl::SetPaintWorkletRecordForTesting(
+void PictureLayerImpl::SetPaintWorkletRecord(
     scoped_refptr<PaintWorkletInput> input,
     sk_sp<PaintRecord> record) {
   DCHECK(paint_worklet_records_.find(input) != paint_worklet_records_.end());
@@ -1626,12 +1631,22 @@ void PictureLayerImpl::UnregisterAnimatedImages() {
 
 void PictureLayerImpl::SetPaintWorkletInputs(
     const std::vector<scoped_refptr<PaintWorkletInput>>& inputs) {
+  bool had_paint_worklets = !paint_worklet_records_.empty();
   PaintWorkletRecordMap new_records;
   for (const auto& input : inputs) {
     // Attempt to re-use an existing PaintRecord if possible.
     new_records[input] = std::move(paint_worklet_records_[input]);
   }
   paint_worklet_records_.swap(new_records);
+
+  // The pending tree tracks which PictureLayerImpls have PaintWorkletInputs as
+  // an optimization to avoid walking all picture layers.
+  bool has_paint_worklets = !paint_worklet_records_.empty();
+  if ((has_paint_worklets != had_paint_worklets) &&
+      layer_tree_impl()->IsPendingTree()) {
+    layer_tree_impl()->NotifyLayerHasPaintWorkletsChanged(this,
+                                                          has_paint_worklets);
+  }
 }
 
 std::unique_ptr<base::DictionaryValue> PictureLayerImpl::LayerAsJson() const {

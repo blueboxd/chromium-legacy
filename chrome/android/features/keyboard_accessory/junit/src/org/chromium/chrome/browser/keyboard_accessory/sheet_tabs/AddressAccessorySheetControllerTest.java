@@ -121,7 +121,7 @@ public class AddressAccessorySheetControllerTest {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
-        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -149,7 +149,7 @@ public class AddressAccessorySheetControllerTest {
         assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("No addresses")));
 
         // As soon UserInfo is available, discard the title.
-        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
         testData.getUserInfoList().get(0).addField(

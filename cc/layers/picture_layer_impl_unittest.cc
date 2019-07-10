@@ -5556,25 +5556,22 @@ TEST_F(PictureLayerImplTest, PaintWorkletInputs) {
 
   // All inputs should be registered on the pending layer.
   SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
-  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMapForTesting().size(), 2u);
-  EXPECT_TRUE(
-      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input1));
-  EXPECT_TRUE(
-      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input2));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMap().size(), 2u);
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input1));
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input2));
 
   // Specify a record for one of the inputs.
   sk_sp<PaintRecord> record1 = sk_make_sp<PaintOpBuffer>();
-  pending_layer()->SetPaintWorkletRecordForTesting(input1, record1);
+  pending_layer()->SetPaintWorkletRecord(input1, record1);
 
   // Now activate and make sure the active layer is registered as well, with the
   // appropriate record.
   ActivateTree();
-  EXPECT_EQ(active_layer()->GetPaintWorkletRecordMapForTesting().size(), 2u);
-  auto it = active_layer()->GetPaintWorkletRecordMapForTesting().find(input1);
-  ASSERT_NE(it, active_layer()->GetPaintWorkletRecordMapForTesting().end());
+  EXPECT_EQ(active_layer()->GetPaintWorkletRecordMap().size(), 2u);
+  auto it = active_layer()->GetPaintWorkletRecordMap().find(input1);
+  ASSERT_NE(it, active_layer()->GetPaintWorkletRecordMap().end());
   EXPECT_EQ(it->second, record1);
-  EXPECT_TRUE(
-      active_layer()->GetPaintWorkletRecordMapForTesting().contains(input2));
+  EXPECT_TRUE(active_layer()->GetPaintWorkletRecordMap().contains(input2));
 
   // Committing new PaintWorkletInputs (in a new raster source) should replace
   // the previous ones.
@@ -5588,9 +5585,8 @@ TEST_F(PictureLayerImplTest, PaintWorkletInputs) {
   raster_source = recording_source->CreateRasterSource();
 
   SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
-  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMapForTesting().size(), 1u);
-  EXPECT_TRUE(
-      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input3));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMap().size(), 1u);
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input3));
 }
 
 }  // namespace

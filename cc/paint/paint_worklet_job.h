@@ -20,17 +20,21 @@ class PaintWorkletInput;
 // and return the results to cc-impl.
 class CC_PAINT_EXPORT PaintWorkletJob {
  public:
-  explicit PaintWorkletJob(scoped_refptr<PaintWorkletInput> input);
+  PaintWorkletJob(int layer_id, scoped_refptr<PaintWorkletInput> input);
   PaintWorkletJob(const PaintWorkletJob& other);
   PaintWorkletJob(PaintWorkletJob&& other);
   ~PaintWorkletJob();
 
+  int layer_id() const { return layer_id_; }
   const scoped_refptr<PaintWorkletInput>& input() const { return input_; }
   const sk_sp<PaintRecord>& output() const { return output_; }
 
   void SetOutput(sk_sp<PaintRecord> output);
 
  private:
+  // The id for the layer that the PaintWorkletInput is associated with.
+  int layer_id_;
+
   // The input for a PaintWorkletJob is encapsulated in a PaintWorkletInput
   // instance; see class-level comments on |PaintWorkletInput| for details.
   scoped_refptr<PaintWorkletInput> input_;

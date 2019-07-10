@@ -478,7 +478,7 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
 # * Sequence of paths to *not* check (regexps).
 _BANNED_CPP_FUNCTIONS = (
     (
-      r'\bNULL\b',
+      r'/\bNULL\b',
       (
        'New code should not use NULL. Use nullptr instead.',
       ),
@@ -498,7 +498,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'XSelectInput|CWEventMask|XCB_CW_EVENT_MASK',
+      r'/XSelectInput|CWEventMask|XCB_CW_EVENT_MASK',
       (
        'Chrome clients wishing to select events on X windows should use',
        'ui::XScopedEventSelector.  It is safe to ignore this warning only if',
@@ -513,7 +513,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'XInternAtom|xcb_intern_atom',
+      r'/XInternAtom|xcb_intern_atom',
       (
        'Use gfx::GetAtom() instead of interning atoms directly.',
       ),
@@ -707,7 +707,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'std::regex',
+      'std::regex',
       (
         'Using std::regex adds unnecessary binary size to Chrome. Please use',
         're2::RE2 instead (crbug.com/755321)',
@@ -935,7 +935,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'RunThisRunLoop',
+      'RunThisRunLoop',
       (
           'RunThisRunLoop is deprecated, use RunLoop directly instead.',
       ),
@@ -943,7 +943,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'RunAllPendingInMessageLoop()',
+      'RunAllPendingInMessageLoop()',
       (
           "Prefer RunLoop over RunAllPendingInMessageLoop, please contact gab@",
           "if you're convinced you need this.",
@@ -952,7 +952,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'RunAllPendingInMessageLoop(BrowserThread',
+      'RunAllPendingInMessageLoop(BrowserThread',
       (
           'RunAllPendingInMessageLoop is deprecated. Use RunLoop for',
           'BrowserThread::UI, TestBrowserThreadBundle::RunIOThreadUntilIdle',
@@ -971,7 +971,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'GetDeferredQuitTaskForRunLoop',
+      'GetDeferredQuitTaskForRunLoop',
       (
           "GetDeferredQuitTaskForRunLoop shouldn't be needed, please contact",
           "gab@ if you found a use case where this is the only solution.",
@@ -1011,7 +1011,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'std::random_shuffle',
+      'std::random_shuffle',
       (
         'std::random_shuffle is deprecated in C++14, and removed in C++17. Use',
         'base::RandomShuffle instead.'

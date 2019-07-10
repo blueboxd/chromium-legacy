@@ -55,10 +55,6 @@ class WKBackForwardListItemHolder;
     legacyNativeContentControllerForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler;
 
-// Returns YES if WKWebView was deallocated or is being deallocated.
-- (BOOL)navigationHandlerWebViewBeingDestroyed:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 // Returns the actual URL of the document object (i.e., the last committed URL
 // of the main frame).
 - (GURL)navigationHandlerDocumentURL:(CRWWKNavigationHandler*)navigationHandler;
@@ -163,6 +159,9 @@ class WKBackForwardListItemHolder;
 
 // Returns the referrer for the current page.
 @property(nonatomic, readonly, assign) web::Referrer currentReferrer;
+
+// Instructs this handler to close.
+- (void)close;
 
 // Instructs this handler to stop loading.
 - (void)stopLoading;

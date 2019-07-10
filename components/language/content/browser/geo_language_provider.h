@@ -82,6 +82,10 @@ class GeoLanguageProvider {
   // necessary.
   void QueryNextPosition();
 
+  // Lookup the languages from the lat/lon pair, and pass them to
+  // SetGeoLanguages. Must be called on the UI thread.
+  void LookupAndSetLanguages(double lat, double lon);
+
   // Updates the list of BCP-47 language codes that will be returned by calls to
   // CurrentGeoLanguages().
   // Must be called on the UI thread.

@@ -10,6 +10,7 @@ from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
+from .idl_reference_proxy import RefByIdFactory
 from .idl_types import IdlType
 from .user_defined_type import UserDefinedType
 from .values import DefaultValue
@@ -24,6 +25,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         def __init__(self,
                      identifier,
                      is_partial,
+                     inherited=None,
                      own_members=None,
                      extended_attributes=None,
                      code_generator_info=None,
@@ -31,6 +33,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                      components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
+            assert inherited is None or RefByIdFactory.is_reference(inherited)
             assert isinstance(own_members, (list, tuple)) and all(
                 isinstance(member, DictionaryMember.IR)
                 for member in own_members)
@@ -45,12 +48,14 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
+            self.inherited = inherited
             self.own_members = own_members
 
         def make_copy(self):
             return Dictionary.IR(
                 identifier=self.identifier,
                 is_partial=self.is_partial,
+                inherited=self.inherited,
                 own_members=map(DictionaryMember.IR.make_copy,
                                 self.own_members),
                 extended_attributes=self.extended_attributes.make_copy(),

@@ -573,11 +573,9 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       scoped_refptr<net::HttpResponseHeaders> response_headers) {
     scoped_refptr<ContentVerifyJob> verify_job;
     if (content_verifier) {
-      verify_job = content_verifier->CreateJobFor(resource.extension_id(),
-                                                  resource.extension_root(),
-                                                  resource.relative_path());
-      if (verify_job)
-        verify_job->Start(content_verifier.get());
+      verify_job = content_verifier->CreateAndStartJobFor(
+          resource.extension_id(), resource.extension_root(),
+          resource.relative_path());
     }
 
     content::CreateFileURLLoader(

@@ -31,6 +31,7 @@ class PLATFORM_EXPORT PlatformPaintWorkletLayerPainter
   // cc::PaintWorkletLayerPainter
   sk_sp<cc::PaintRecord> Paint(const cc::PaintWorkletInput*) override;
   void DispatchWorklets(cc::PaintWorkletJobMap, DoneCallback) override;
+  bool HasOngoingDispatch() const override;
 
  private:
   scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;

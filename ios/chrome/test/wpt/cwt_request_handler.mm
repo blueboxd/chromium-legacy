@@ -4,6 +4,7 @@
 
 #import "ios/chrome/test/wpt/cwt_request_handler.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -81,6 +82,7 @@ const char kWebDriverCapabilitiesValueField[] = "capabilities";
 const char kWebDriverErrorCodeValueField[] = "error";
 const char kWebDriverErrorMessageValueField[] = "message";
 const char kWebDriverSessionIdValueField[] = "sessionId";
+const char kWebDriverStackTraceValueField[] = "stacktrace";
 
 // Field names for the "capabilities" struct that's included in the response
 // when creating a session.
@@ -105,6 +107,8 @@ base::Value CreateErrorValue(const std::string& error,
   base::Value error_value(base::Value::Type::DICTIONARY);
   error_value.SetStringKey(kWebDriverErrorCodeValueField, error);
   error_value.SetStringKey(kWebDriverErrorMessageValueField, message);
+  error_value.SetStringKey(kWebDriverStackTraceValueField,
+                           base::debug::StackTrace().ToString());
   return error_value;
 }
 

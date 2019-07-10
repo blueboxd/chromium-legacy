@@ -2834,7 +2834,8 @@ TEST(SchedulerStateMachineTest, BlockActivationIfPaintWorkletsPending) {
   // until they are done.
   state.NotifyPaintWorkletStateChange(
       SchedulerStateMachine::PaintWorkletState::PROCESSING);
-  EXPECT_DCHECK_DEATH(state.NotifyReadyToActivate());
+  // We (correctly) cannot call state.NotifyReadyToActivate() here as it hits a
+  // DCHECK because PaintWorklets are ongoing.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
   state.NotifyPaintWorkletStateChange(
       SchedulerStateMachine::PaintWorkletState::IDLE);

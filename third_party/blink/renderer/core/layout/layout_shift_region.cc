@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -45,11 +44,12 @@ class BasicIntervals {
 
  private:
   Vector<int> endpoints_;
-  // Avoid WTF::HashMap as key may be 0 or -1.
-  HashMap<int,
+  // Use int64_t which is larger than real |int| since the empty value of the
+  // key is max and deleted value of the key is max - 1 in HashMap.
+  HashMap<int64_t,
           unsigned,
-          WTF::AlreadyHashed,
-          WTF::UnsignedWithZeroKeyHashTraits<int>>
+          WTF::IntHash<int64_t>,
+          WTF::UnsignedWithZeroKeyHashTraits<int64_t>>
       endpoint_to_index_;
 
 #if DCHECK_IS_ON()

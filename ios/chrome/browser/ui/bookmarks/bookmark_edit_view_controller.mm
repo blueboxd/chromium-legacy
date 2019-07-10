@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -70,9 +71,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURL,
   ItemTypeInvalidURLFooter,
 };
-
-// The text color for the invalid URL label.
-const CGFloat kInvalidURLTextColor = 0xEA4335;
 
 // Estimated Table Row height.
 const CGFloat kEstimatedTableRowHeight = 50;
@@ -257,7 +255,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                            target:nil
                            action:nil];
 
-  deleteButton.tintColor = UIColor.redColor;
+  deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
   // Setting the image to nil will cause the default shadowImage to be used,
   // we need to create a new one.
   [self.navigationController.toolbar setShadowImage:[UIImage new]
@@ -541,7 +539,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
         base::mac::ObjCCastStrict<UITableViewHeaderFooterView>(footerView);
     headerFooterView.textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    headerFooterView.textLabel.textColor = UIColorFromRGB(kInvalidURLTextColor);
+    headerFooterView.textLabel.textColor =
+        [UIColor colorNamed:kDestructiveTintColor];
   }
   return footerView;
 }

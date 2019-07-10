@@ -209,4 +209,12 @@ public class GridTabSwitcherCoordinator
     void setBitmapCallbackForTesting(Callback<Bitmap> callback) {
         TabListMediator.ThumbnailFetcher.sBitmapCallbackForTesting = callback;
     }
+
+    /**
+     * @return The number of thumbnail fetching for testing.
+     */
+    @VisibleForTesting
+    int getBitmapFetchCountForTesting() {
+        return TabListMediator.ThumbnailFetcher.sFetchCountForTesting;
+    }
 }

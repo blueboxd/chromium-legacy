@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -56,6 +57,7 @@ import java.util.Map;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    private boolean mVisible;
     private boolean mShownIPH;
 
     /**
@@ -100,6 +102,7 @@ class TabListMediator {
      */
     static class ThumbnailFetcher {
         static Callback<Bitmap> sBitmapCallbackForTesting;
+        static int sFetchCountForTesting;
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
         private boolean mForceUpdate;
@@ -118,6 +121,7 @@ class TabListMediator {
                 if (sBitmapCallbackForTesting != null) sBitmapCallbackForTesting.onResult(bitmap);
                 callback.onResult(bitmap);
             };
+            sFetchCountForTesting++;
             mThumbnailProvider.getTabThumbnailWithCallback(
                     mTab, forking, mForceUpdate, mWriteToCache);
         }
@@ -393,7 +397,8 @@ class TabListMediator {
             }
 
             @Override
-            public void didAddTab(Tab tab, int type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                if (type == TabLaunchType.FROM_RESTORE) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
             }
 
@@ -656,6 +661,7 @@ class TabListMediator {
      * The selected border should re-appear in the final fading-in stage.
      */
     void prepareOverview() {
+        assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
             if (mModel.get(i).get(TabProperties.IS_SELECTED)) count++;
@@ -684,6 +690,7 @@ class TabListMediator {
      * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
+        mVisible = tabs != null;
         if (areTabsUnchanged(tabs)) {
             if (tabs == null) return true;
 
@@ -708,6 +715,10 @@ class TabListMediator {
         return false;
     }
 
+    void postHiding() {
+        mVisible = false;
+    }
+
     private boolean isSelectedTab(int tabId, int tabModelSelectedTabId) {
         SelectionDelegate<Integer> selectionDelegate = getTabSelectionDelegate();
         if (selectionDelegate == null) {
@@ -721,6 +732,7 @@ class TabListMediator {
      * @see GridTabSwitcherMediator.ResetHandler#softCleanup
      */
     void softCleanup() {
+        assert !mVisible;
         for (int i = 0; i < mModel.size(); i++) {
             mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, null);
         }
@@ -757,7 +769,7 @@ class TabListMediator {
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
         boolean forceUpdate = isSelected && !quickMode;
-        if (mThumbnailProvider != null
+        if (mThumbnailProvider != null && mVisible
                 && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || forceUpdate
                         || isUpdatingId)) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
@@ -870,7 +882,7 @@ class TabListMediator {
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
 
-        if (mThumbnailProvider != null) {
+        if (mThumbnailProvider != null && mVisible) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
                     isSelected
                             && !ChromeFeatureList.isEnabled(

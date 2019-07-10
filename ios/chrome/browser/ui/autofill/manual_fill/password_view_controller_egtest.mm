@@ -302,10 +302,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is not present when presenting UI.
 - (void)testPasswordControllerPauses {
-  // For the search bar to appear in password settings at least one password is
-  // needed.
-  SaveExamplePasswordForm();
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -337,9 +333,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
     // failing test for now.
     return;
   }
-
-  // For this test one password is needed.
-  SaveExamplePasswordForm();
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]

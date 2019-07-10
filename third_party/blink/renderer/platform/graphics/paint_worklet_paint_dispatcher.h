@@ -56,6 +56,11 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
   void DispatchWorklets(cc::PaintWorkletJobMap,
                         PlatformPaintWorkletLayerPainter::DoneCallback);
 
+  // Reports whether or not there is an ongoing dispatch (e.g. a set of
+  // PaintWorklet instances have been dispatched to the worklet, but the results
+  // have not yet been received.)
+  bool HasOngoingDispatch() const;
+
   // Register and unregister a PaintWorklet (represented in this context by a
   // PaintWorkletPainter). A given PaintWorklet is registered once all its
   // global scopes have been created, and is usually only unregistered when the

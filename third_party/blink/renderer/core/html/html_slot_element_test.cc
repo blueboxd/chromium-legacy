@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 
-#include <array>
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -22,10 +20,12 @@ using Backtrack = std::pair<size_t, size_t>;
 
 class HTMLSlotElementTest : public testing::Test {
  protected:
-  HTMLSlotElementTest() = default;
+  HTMLSlotElementTest()
+      : lcs_table_(kTableSize), backtrack_table_(kTableSize) {}
   Seq LongestCommonSubsequence(const Seq& seq1, const Seq& seq2);
-  std::array<std::array<size_t, kTableSize>, kTableSize> lcs_table_;
-  std::array<std::array<Backtrack, kTableSize>, kTableSize> backtrack_table_;
+  Vector<HTMLSlotElement::LCSArray<size_t, kTableSize>, kTableSize> lcs_table_;
+  Vector<HTMLSlotElement::LCSArray<Backtrack, kTableSize>, kTableSize>
+      backtrack_table_;
 };
 
 Vector<char> HTMLSlotElementTest::LongestCommonSubsequence(const Seq& seq1,

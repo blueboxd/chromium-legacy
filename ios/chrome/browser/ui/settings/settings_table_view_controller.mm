@@ -72,6 +72,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -1039,7 +1040,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesSyncOnImageName];
   } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
-    googleServicesItem.detailTextColor = UIColor.redColor;
+    googleServicesItem.detailTextColor =
+        [UIColor colorNamed:kDestructiveTintColor];
     googleServicesItem.detailText =
         GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
     googleServicesItem.image =

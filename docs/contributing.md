@@ -279,6 +279,8 @@ be used in emergencies because it will bypass all the safety nets.
 
 ## Tips
 
+### Review etiquette
+
 During the lifetime of a review, you may want to rebase your change onto a newer
 source revision to minimize merge conflicts. The reviewer-friendly way to do
 this is to first address any unresolved comments and upload those changes as a
@@ -291,6 +293,13 @@ Code authors and reviewers should keep in mind that Chromium is a global
 project: contributors and reviewers are often in time zones far apart. Please
 read these guidelines on [minimizing review lag][review-lag] and take them in
 consideration both when writing reviews and responding to review feedback.
+
+### Watchlists
+
+If you would like to be notified about changes to a set of files covering a
+topic or an area of Chromium, you may use the [watchlists][watchlist-doc]
+feature in order to receive email notifications.
+
 
 [//]: # (the reference link section should be alphabetically sorted)
 [checkout-and-build]: https://chromium.googlesource.com/chromium/src/+/master/docs/#checking-out-and-building
@@ -320,3 +329,4 @@ consideration both when writing reviews and responding to review feedback.
 [skia-dev-guide]: https://skia.org/dev/contrib
 [try-job-access]: https://www.chromium.org/getting-involved/become-a-committer#TOC-Try-job-access
 [v8-dev-guide]: https://v8.dev/docs
+[watchlist-doc]: infra/watchlists.md

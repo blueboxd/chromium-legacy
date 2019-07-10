@@ -1310,7 +1310,7 @@ deps = {
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
 
   'src/third_party/snappy/src':
-    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '3f194acb57e0487531c96b97af61dcbd025a78a3',
+    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '156cd8939c5fba7fa68ae08db843377ecc07b4b5',
 
   'src/third_party/sqlite4java': {
       'packages': [

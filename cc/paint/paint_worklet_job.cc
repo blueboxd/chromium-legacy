@@ -8,8 +8,9 @@
 
 namespace cc {
 
-PaintWorkletJob::PaintWorkletJob(scoped_refptr<PaintWorkletInput> input)
-    : input_(std::move(input)) {}
+PaintWorkletJob::PaintWorkletJob(int layer_id,
+                                 scoped_refptr<PaintWorkletInput> input)
+    : layer_id_(layer_id), input_(std::move(input)) {}
 
 PaintWorkletJob::PaintWorkletJob(const PaintWorkletJob& other) = default;
 PaintWorkletJob::PaintWorkletJob(PaintWorkletJob&& other) = default;

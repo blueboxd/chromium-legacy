@@ -56,6 +56,8 @@ std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
 
 UserInfo::UserInfo() = default;
 
+UserInfo::UserInfo(std::string origin) : origin_(std::move(origin)) {}
+
 UserInfo::UserInfo(const UserInfo& user_info) = default;
 
 UserInfo::UserInfo(UserInfo&& field) = default;
@@ -67,11 +69,12 @@ UserInfo& UserInfo::operator=(const UserInfo& user_info) = default;
 UserInfo& UserInfo::operator=(UserInfo&& user_info) = default;
 
 bool UserInfo::operator==(const UserInfo& user_info) const {
-  return fields_ == user_info.fields_;
+  return fields_ == user_info.fields_ && origin_ == user_info.origin_;
 }
 
 std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
-  os << "[\n";
+  os << "origin: \"" << user_info.origin() << "\", \n"
+     << "fields: [\n";
   for (const UserInfo::Field& field : user_info.fields()) {
     os << field << ", \n";
   }
@@ -164,13 +167,15 @@ AccessorySheetData::Builder::Builder(AccessoryTabType type,
 
 AccessorySheetData::Builder::~Builder() = default;
 
-AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo() && {
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo(
+    std::string origin) && {
   // Calls AddUserInfo()& since |this| is an lvalue.
-  return std::move(AddUserInfo());
+  return std::move(AddUserInfo(std::move(origin)));
 }
 
-AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo() & {
-  accessory_sheet_data_.add_user_info(UserInfo());
+AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo(
+    std::string origin) & {
+  accessory_sheet_data_.add_user_info(UserInfo(std::move(origin)));
   return *this;
 }
 

@@ -47,6 +47,12 @@ void LogUpdateUIDismissalReason(UIDismissalReason reason) {
                                 reason, NUM_UI_RESPONSES);
 }
 
+void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.PresavedUpdateUIDismissalReason", reason,
+      NUM_UI_RESPONSES);
+}
+
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
   base::UmaHistogramEnumeration("PasswordBubble.DisplayDisposition",
                                 disposition, NUM_DISPLAY_DISPOSITIONS);
@@ -213,6 +219,10 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
 void LogNewlySavedPasswordIsGenerated(bool value) {
   base::UmaHistogramBoolean("PasswordManager.NewlySavedPasswordIsGenerated",
                             value);
+}
+
+void LogGenerationPresaveConflict(GenerationPresaveConflict value) {
+  base::UmaHistogramEnumeration("PasswordGeneration.PresaveConflict", value);
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

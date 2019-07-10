@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,9 +21,6 @@ const CGFloat kAvatarSize = 40.;
 const CGFloat kTitleOffset = 4;
 const CGFloat kHorizontalAvatarMargin = 16.;
 const CGFloat kVerticalMargin = 12.;
-// Colors
-const CGFloat kTitleTextColorAlpha = .87;
-const CGFloat kSubtitleTextColorAlpha = .54;
 
 }  // namespace
 
@@ -65,7 +63,7 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     _title = [[UILabel alloc] init];
     _title.translatesAutoresizingMaskIntoConstraints = NO;
     _title.numberOfLines = 0;
-    _title.textColor = [UIColor colorWithWhite:0 alpha:kTitleTextColorAlpha];
+    _title.textColor = UIColor.cr_labelColor;
     _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     [self addSubview:_title];
 
@@ -73,8 +71,7 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     _subtitle = [[UILabel alloc] init];
     _subtitle.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitle.numberOfLines = 0;
-    _subtitle.textColor =
-        [UIColor colorWithWhite:0 alpha:kSubtitleTextColorAlpha];
+    _subtitle.textColor = UIColor.cr_secondaryLabelColor;
     _subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     [self addSubview:_subtitle];
 

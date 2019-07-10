@@ -30,6 +30,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -49,8 +50,15 @@ using FillingSource = ManualFillingController::FillingSource;
 namespace {
 
 autofill::UserInfo TranslateCredentials(bool current_field_is_password,
+                                        const GURL& origin_url,
                                         const CredentialPair& data) {
-  UserInfo user_info;
+  std::string user_info_origin;
+  // Use the origin only when it differs from the site origin. Android origins
+  // have a path but empty hosts. Since they are treated as first-party
+  // credentials, they will have an empty origin.
+  if (data.is_public_suffix_match)
+    user_info_origin = data.origin_url.host();
+  UserInfo user_info(user_info_origin);
 
   base::string16 username = GetDisplayUsername(data);
   user_info.add_field(UserInfo::Field(
@@ -243,10 +251,11 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     for (const auto& pair : suggestions) {
       if (pair.is_public_suffix_match &&
           !base::FeatureList::IsEnabled(
-              autofill::features::kAutofillKeyboardAccessory))
+              autofill::features::kAutofillKeyboardAccessory)) {
         continue;  // PSL origins have no representation in V1. Don't show them!
-      // TODO(crbug.com/976761): Mark PSL-matches with their origin.
-      info_to_add.push_back(TranslateCredentials(is_password_field, pair));
+      }
+      info_to_add.push_back(
+          TranslateCredentials(is_password_field, origin.GetURL(), pair));
     }
   }
 

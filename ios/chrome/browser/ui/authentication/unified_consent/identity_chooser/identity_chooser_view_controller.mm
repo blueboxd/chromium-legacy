@@ -57,6 +57,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
   [self.presentationDelegate identityChooserViewControllerDidDisappear:self];
 }
 

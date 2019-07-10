@@ -230,6 +230,7 @@ public class TabListCoordinator implements Destroyable {
 
     void postHiding() {
         mRecyclerView.postHiding();
+        mMediator.postHiding();
     }
 
     /**

@@ -80,7 +80,7 @@ cc::PaintWorkletInput* AddPaintWorkletInputToMap(cc::PaintWorkletJobMap& map,
     map[worklet_id] = base::MakeRefCounted<cc::PaintWorkletJobVector>();
   auto input = base::MakeRefCounted<MockPaintWorkletInput>(worklet_id);
   MockPaintWorkletInput* input_ptr = input.get();
-  map[worklet_id]->data.emplace_back(std::move(input));
+  map[worklet_id]->data.emplace_back(/*layer_id=*/1, std::move(input));
   return input_ptr;
 }
 }  // namespace
@@ -236,6 +236,30 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest,
   dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
 
   WaitForTestCompletion();
+}
+
+TEST_F(PaintWorkletPaintDispatcherAsyncTest,
+       HasOngoingDispatchIsTrackedCorrectly) {
+  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+
+  const int first_worklet_id = 2;
+  auto* first_mock_painter =
+      MakeGarbageCollected<NiceMock<MockPaintWorkletPainter>>(first_worklet_id);
+  std::unique_ptr<Thread> first_thread = CreateTestThread("WorkletThread1");
+  dispatcher->RegisterPaintWorkletPainter(first_mock_painter,
+                                          first_thread->GetTaskRunner());
+
+  // Nothing going on; no dispatch.
+  EXPECT_FALSE(dispatcher->HasOngoingDispatch());
+
+  cc::PaintWorkletJobMap job_map;
+  AddPaintWorkletInputToMap(job_map, first_worklet_id);
+
+  dispatcher->DispatchWorklets(job_map, CreateTestCompleteCallback());
+  EXPECT_TRUE(dispatcher->HasOngoingDispatch());
+
+  WaitForTestCompletion();
+  EXPECT_FALSE(dispatcher->HasOngoingDispatch());
 }
 
 }  // namespace blink

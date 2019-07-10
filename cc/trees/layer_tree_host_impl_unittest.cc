@@ -56,6 +56,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
+#include "cc/test/test_paint_worklet_layer_painter.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
@@ -135,6 +136,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_redraw_(false),
         did_request_next_frame_(false),
         did_request_prepare_tiles_(false),
+        did_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
         reduce_memory_result_(true),
         did_request_impl_side_invalidation_(false) {
@@ -159,6 +161,13 @@ class LayerTreeHostImplTest : public testing::Test,
         host_impl_->active_tree()->GetDeviceViewport().size());
     pending_tree->SetDeviceScaleFactor(
         host_impl_->active_tree()->device_scale_factor());
+    // Normally a pending tree will not be fully painted until the commit has
+    // happened and any PaintWorklets have been resolved. However many of the
+    // unittests never actually commit the pending trees that they create, so to
+    // enable them to still treat the tree as painted we forcibly override the
+    // state here. Note that this marks a distinct departure from reality in the
+    // name of easier testing.
+    host_impl_->set_pending_tree_fully_painted_for_testing(true);
   }
 
   void TearDown() override {
@@ -203,7 +212,7 @@ class LayerTreeHostImplTest : public testing::Test,
             base::TimeTicks::Now()));
   }
   void WillPrepareTiles() override {}
-  void DidPrepareTiles() override {}
+  void DidPrepareTiles() override { did_prepare_tiles_ = true; }
   void DidCompletePageScaleAnimationOnImplThread() override {
     did_complete_page_scale_animation_ = true;
   }
@@ -798,6 +807,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_redraw_;
   bool did_request_next_frame_;
   bool did_request_prepare_tiles_;
+  bool did_prepare_tiles_;
   bool did_complete_page_scale_animation_;
   bool reduce_memory_result_;
   bool did_request_impl_side_invalidation_;
@@ -14818,6 +14828,195 @@ TEST_F(LayerTreeHostImplTest, TouchScrollOnAndroidScrollbar) {
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
       BeginState(gfx::Point(350, 50)).get(), InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
+       CommitWithNoPaintWorkletLayerPainter) {
+  ASSERT_FALSE(host_impl_->GetPaintWorkletLayerPainterForTesting());
+  host_impl_->CreatePendingTree();
+
+  // When there is no PaintWorkletLayerPainter registered, commits should finish
+  // immediately and move onto preparing tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithNoPaintWorklets) {
+  host_impl_->SetPaintWorkletLayerPainter(
+      std::make_unique<TestPaintWorkletLayerPainter>());
+  host_impl_->CreatePendingTree();
+
+  // When there are no PaintWorklets in the committed display lists, commits
+  // should finish immediately and move onto preparing tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
+  auto painter_owned = std::make_unique<TestPaintWorkletLayerPainter>();
+  TestPaintWorkletLayerPainter* painter = painter_owned.get();
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter_owned));
+
+  // Setup the pending tree with a PictureLayerImpl that will contain
+  // PaintWorklets.
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add a PaintWorkletInput to the PictureLayerImpl.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Since we have dirty PaintWorklets, committing will not cause tile
+  // preparation to happen. Instead, it will be delayed until the callback
+  // passed to the PaintWorkletLayerPainter is called.
+  did_prepare_tiles_ = false;
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(did_prepare_tiles_);
+
+  // Set up a result to have been 'painted'.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  scoped_refptr<PaintWorkletInput> input =
+      root->GetPaintWorkletRecordMap().begin()->first;
+  int worklet_id = input->WorkletId();
+
+  PaintWorkletJob painted_job(worklet_id, input);
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  painted_job.SetOutput(record);
+
+  auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+  painted_job_vector->data.push_back(std::move(painted_job));
+  PaintWorkletJobMap painted_job_map;
+  painted_job_map[worklet_id] = std::move(painted_job_vector);
+
+  // Finally, 'paint' the content. This should unlock tile preparation and
+  // update the PictureLayerImpl's map.
+  std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
+       CommitWithNoDirtyPaintWorklets) {
+  host_impl_->SetPaintWorkletLayerPainter(
+      std::make_unique<TestPaintWorkletLayerPainter>());
+
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add some PaintWorklets.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Pretend that our worklets were already painted.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  root->SetPaintWorkletRecord(root->GetPaintWorkletRecordMap().begin()->first,
+                              sk_make_sp<PaintRecord>());
+
+  // Since there are no dirty PaintWorklets, the commit should immediately
+  // prepare tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+class ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest
+    : public CommitToPendingTreeLayerTreeHostImplTest {
+ public:
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override {
+    if (state == Scheduler::PaintWorkletState::IDLE) {
+      // Pretend a force activation happened.
+      host_impl_->ActivateSyncTree();
+      ASSERT_FALSE(host_impl_->pending_tree());
+    }
+  }
+};
+
+TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
+       ForceActivationAfterPaintWorkletsFinishPainting) {
+  auto painter_owned = std::make_unique<TestPaintWorkletLayerPainter>();
+  TestPaintWorkletLayerPainter* painter = painter_owned.get();
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter_owned));
+
+  // Setup the pending tree with a PictureLayerImpl that will contain
+  // PaintWorklets.
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add a PaintWorkletInput to the PictureLayerImpl.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Since we have dirty PaintWorklets, committing will not cause tile
+  // preparation to happen. Instead, it will be delayed until the callback
+  // passed to the PaintWorkletLayerPainter is called.
+  did_prepare_tiles_ = false;
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(did_prepare_tiles_);
+
+  // Set up a result to have been 'painted'.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  scoped_refptr<PaintWorkletInput> input =
+      root->GetPaintWorkletRecordMap().begin()->first;
+  int worklet_id = input->WorkletId();
+
+  PaintWorkletJob painted_job(worklet_id, input);
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  painted_job.SetOutput(record);
+
+  auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+  painted_job_vector->data.push_back(std::move(painted_job));
+  PaintWorkletJobMap painted_job_map;
+  painted_job_map[worklet_id] = std::move(painted_job_vector);
+
+  // Finally, 'paint' the content. The test class causes a forced activation
+  // during NotifyPaintWorkletStateChange. The PictureLayerImpl should still be
+  // updated, but since the tree was force activated there should be no tile
+  // preparation.
+  std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_FALSE(did_prepare_tiles_);
 }
 
 }  // namespace

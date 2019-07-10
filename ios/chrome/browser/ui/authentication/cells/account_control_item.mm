@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,9 +36,9 @@
   cell.textLabel.textColor = UIColor.cr_labelColor;
 
   cell.detailTextLabel.text = self.detailText;
-  cell.detailTextLabel.textColor = self.shouldDisplayError
-                                       ? UIColor.redColor
-                                       : UIColor.cr_secondaryLabelColor;
+  cell.detailTextLabel.textColor =
+      self.shouldDisplayError ? [UIColor colorNamed:kDestructiveTintColor]
+                              : UIColor.cr_secondaryLabelColor;
 }
 
 #pragma mark - Helper methods

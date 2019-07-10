@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -82,5 +83,6 @@ TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
   EXPECT_NSEQ(mainText, accountCell.textLabel.text);
   EXPECT_NSEQ(detailText, accountCell.detailTextLabel.text);
   EXPECT_EQ(UITableViewCellAccessoryCheckmark, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColor.redColor, accountCell.detailTextLabel.textColor);
+  EXPECT_NSEQ([UIColor colorNamed:kDestructiveTintColor],
+              accountCell.detailTextLabel.textColor);
 }

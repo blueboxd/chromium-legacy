@@ -59,6 +59,7 @@ class UserInfo {
   };
 
   UserInfo();
+  explicit UserInfo(std::string origin);
   UserInfo(const UserInfo& user_info);
   UserInfo(UserInfo&& field);
 
@@ -70,10 +71,12 @@ class UserInfo {
   void add_field(Field field) { fields_.push_back(std::move(field)); }
 
   const std::vector<Field>& fields() const { return fields_; }
+  const std::string& origin() const { return origin_; }
 
   bool operator==(const UserInfo& user_info) const;
 
  private:
+  std::string origin_;
   std::vector<Field> fields_;
 };
 
@@ -175,8 +178,8 @@ class AccessorySheetData::Builder {
   ~Builder();
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
-  Builder&& AddUserInfo() &&;
-  Builder& AddUserInfo() &;
+  Builder&& AddUserInfo(std::string origin = std::string()) &&;
+  Builder& AddUserInfo(std::string origin = std::string()) &;
 
   // Appends a selectable, non-obfuscated field to the last UserInfo object.
   Builder&& AppendSimpleField(base::string16 text) &&;

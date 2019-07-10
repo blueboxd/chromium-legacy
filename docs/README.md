@@ -146,6 +146,8 @@ used when committed.
 *   [WebUI Explainer](webui_explainer.md) - An explanation of C++ and JavaScript
     infrastructural code for Chrome UIs implemented with web technologies (i.e.
     chrome:// URLs).
+*   [Watchlists](infra/watchlists.md) - Use watchlists to get notified of CLs
+    you are interested in.
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)

@@ -1216,6 +1216,8 @@ jumbo_split_static_library("ui") {
       "webui/management_ui.h",
       "webui/management_ui_handler.cc",
       "webui/management_ui_handler.h",
+      "webui/management_ui_handler_chromeos.cc",
+      "webui/management_ui_handler_chromeos.h",
       "webui/media_router/media_router_internals_ui.cc",
       "webui/media_router/media_router_internals_ui.h",
       "webui/media_router/media_router_internals_webui_message_handler.cc",

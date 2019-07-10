@@ -16,10 +16,6 @@ class WebStateImpl;
 // Delegate for the NavigationObserver.
 @protocol CRWWebViewNavigationObserverDelegate
 
-// Whether the the web view is being closed.
-- (BOOL)webViewIsBeingDestroyed:
-    (CRWWebViewNavigationObserver*)navigationObserver;
-
 // The WebState.
 - (web::WebStateImpl*)webStateImplForNavigationObserver:
     (CRWWebViewNavigationObserver*)navigationObserver;

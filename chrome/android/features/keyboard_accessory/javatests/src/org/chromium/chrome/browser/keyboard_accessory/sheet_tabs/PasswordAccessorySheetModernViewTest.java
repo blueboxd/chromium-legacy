@@ -112,7 +112,7 @@ public class PasswordAccessorySheetModernViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        UserInfo testInfo = new UserInfo(null);
+        UserInfo testInfo = new UserInfo("", null);
         testInfo.addField(new UserInfoField(
                 "Name Suggestion", "Name Suggestion", "", false, item -> clicked.set(true)));
         testInfo.addField(new UserInfoField(

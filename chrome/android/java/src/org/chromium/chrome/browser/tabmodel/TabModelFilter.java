@@ -171,7 +171,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     @Override
-    public void didAddTab(Tab tab, int type) {
+    public void didAddTab(Tab tab, @TabLaunchType int type) {
         addTab(tab);
         for (TabModelObserver observer : mFilteredObservers) {
             observer.didAddTab(tab, type);

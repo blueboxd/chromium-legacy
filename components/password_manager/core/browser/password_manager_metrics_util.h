@@ -334,6 +334,18 @@ enum class PasswordDropdownSelectedOption {
   kMaxValue = kGenerate
 };
 
+// Type of the conflict with existing credentials when starting password
+// generation.
+enum class GenerationPresaveConflict {
+  // Credential can be presaved as is.
+  kNoUsernameConflict = 0,
+  // Credential can be presaved without username.
+  kNoConflictWithEmptyUsername = 1,
+  // Credential should overwrite one without username.
+  kConflictWithEmptyUsername = 2,
+  kMaxValue = kConflictWithEmptyUsername
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -347,6 +359,10 @@ void LogSaveUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
+
+// Log the |reason| a user dismissed the update password bubble when resolving a
+// conflict during generation.
+void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
@@ -435,6 +451,10 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
 // Log whether a saved password was generated.
 void LogNewlySavedPasswordIsGenerated(bool value);
+
+// Log whether there is a conflict with existing credentials when presaving
+// a generated password.
+void LogGenerationPresaveConflict(GenerationPresaveConflict value);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save sync password change event.

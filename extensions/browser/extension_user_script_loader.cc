@@ -68,11 +68,9 @@ struct VerifyContentInfo {
 void VerifyContent(const VerifyContentInfo& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info.verifier);
-  ContentVerifier* verifier = info.verifier.get();
-  scoped_refptr<ContentVerifyJob> job(verifier->CreateJobFor(
+  scoped_refptr<ContentVerifyJob> job(info.verifier->CreateAndStartJobFor(
       info.extension_id, info.extension_root, info.relative_path));
   if (job.get()) {
-    job->Start(verifier);
     job->BytesRead(info.content.size(), info.content.data());
     job->DoneReading();
   }

@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,8 +51,10 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   if (self.shouldDisplayError) {
-    cell.errorIcon.image = [UIImage imageNamed:@"settings_error"];
-    cell.detailTextLabel.textColor = UIColor.redColor;
+    cell.errorIcon.image = [[UIImage imageNamed:@"settings_error"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    cell.errorIcon.tintColor = [UIColor colorNamed:kDestructiveTintColor];
+    cell.detailTextLabel.textColor = [UIColor colorNamed:kDestructiveTintColor];
   } else {
     cell.errorIcon.image = nil;
     cell.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;

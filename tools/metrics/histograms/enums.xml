@@ -44911,6 +44911,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="Generated password deleted by autofilling"/>
 </enum>
 
+<enum name="PasswordGenerationPresaveConflict">
+  <int value="0" label="No username conflict"/>
+  <int value="1" label="No conflict with empty username"/>
+  <int value="2" label="Conflict with empty username"/>
+</enum>
+
 <enum name="PasswordGenerationUserEvent">
   <int value="0" label="Password accepted"/>
   <int value="1" label="Password edited"/>

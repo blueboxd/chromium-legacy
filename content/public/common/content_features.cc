@@ -31,10 +31,6 @@ const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
     "AllowSignedHTTPExchangeCertsWithoutExtension",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Accounts for resource padding when reporting AppCache usage in the quota API.
-const base::Feature kAppCacheIncludePaddingInQuota{
-    "AppCacheIncludePaddingInQuota", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{"AudioServiceAudioStreams",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

@@ -22,6 +22,15 @@
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
 #endif  // defined(CHROME_EARL_GREY_2)
 
+namespace {
+
+// If true, +setUpForTestCase will be called from -setUp.  This flag is used to
+// ensure that +setUpForTestCase is called exactly once per unique XCTestCase
+// and is reset in +tearDown.
+bool g_needs_set_up_for_test_case = true;
+
+}  // namespace
+
 @implementation BaseEarlGreyTestCase
 
 + (void)setUpForTestCase {
@@ -46,11 +55,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
   [self failIfSetUpIsOverridden];
 #endif
 
-  static dispatch_once_t setupToken;
-  dispatch_once(&setupToken, ^{
+  if (g_needs_set_up_for_test_case) {
+    g_needs_set_up_for_test_case = false;
     [CoverageUtils configureCoverageReportPath];
     [[self class] setUpForTestCase];
-  });
+  }
+}
+
++ (void)tearDown {
+  g_needs_set_up_for_test_case = true;
+  [super tearDown];
 }
 
 // Handles system alerts if any are present, closing them to unblock the UI.

@@ -124,9 +124,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange {
-  if (![self.delegate webViewIsBeingDestroyed:self]) {
-    self.webStateImpl->SendChangeLoadProgress(self.webView.estimatedProgress);
-  }
+  self.webStateImpl->SendChangeLoadProgress(self.webView.estimatedProgress);
 }
 
 // Called when WKWebView loading state has been changed.

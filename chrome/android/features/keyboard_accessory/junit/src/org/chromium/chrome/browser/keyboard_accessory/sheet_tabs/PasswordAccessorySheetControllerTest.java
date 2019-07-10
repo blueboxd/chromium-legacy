@@ -125,7 +125,7 @@ public class PasswordAccessorySheetControllerTest {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords for this site");
-        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -162,7 +162,7 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("No passwords for this")));
 
         // As soon UserInfo is available, discard the title.
-        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -206,15 +206,15 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(1));
 
         // If the tab is shown with X interactive item, record "X" samples.
-        UserInfo userInfo1 = new UserInfo(null);
+        UserInfo userInfo1 = new UserInfo("", null);
         userInfo1.addField(new UserInfoField("Interactive 1", "", "", false, (v) -> {}));
         userInfo1.addField(new UserInfoField("Non-Interactive 1", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo1);
-        UserInfo userInfo2 = new UserInfo(null);
+        UserInfo userInfo2 = new UserInfo("", null);
         userInfo2.addField(new UserInfoField("Interactive 2", "", "", false, (v) -> {}));
         userInfo2.addField(new UserInfoField("Non-Interactive 2", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo2);
-        UserInfo userInfo3 = new UserInfo(null);
+        UserInfo userInfo3 = new UserInfo("other.origin.eg", null);
         userInfo3.addField(new UserInfoField("Interactive 3", "", "", false, (v) -> {}));
         userInfo3.addField(new UserInfoField("Non-Interactive 3", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo3);

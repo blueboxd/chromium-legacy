@@ -124,8 +124,8 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData) {
-        UserInfo userInfo = new UserInfo(this::fetchFavicon);
+    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String title) {
+        UserInfo userInfo = new UserInfo(title, this::fetchFavicon);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }

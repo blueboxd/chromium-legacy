@@ -28,6 +28,9 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       bool use_vd);
   ~VideoPlayerTestEnvironment() override;
 
+  // Set up video test environment, called once for entire test run.
+  void SetUp() override;
+
   // Get the video the tests will be ran on.
   const media::test::Video* Video() const;
   // Check whether frame validation is enabled.
@@ -38,6 +41,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   const base::FilePath& OutputFolder() const;
   // Check whether we should use VD-based video decoders instead of VDA-based.
   bool UseVD() const;
+  // Whether import mode is supported, valid after SetUp() has been called.
+  bool ImportSupported() const;
 
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
@@ -51,6 +56,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   const bool output_frames_;
   const base::FilePath output_folder_;
   const bool use_vd_;
+  // TODO(dstaessens): Remove this once all allocate-only platforms reached EOL.
+  bool import_supported_ = false;
 };
 }  // namespace test
 }  // namespace media

@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 
@@ -25,8 +26,6 @@ const CGFloat kIdentityPickerViewRadius = 8.;
 const CGFloat kArrowDownSize = 24.;
 // Distances/margins.
 const CGFloat kArrowDownMargin = 12.;
-// Colors
-const int kHeaderBackgroundColor = 0xf1f3f4;
 
 }  // namespace
 
@@ -51,7 +50,7 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
   if (self) {
     self.accessibilityIdentifier = kIdentityPickerViewIdentifier;
     self.layer.cornerRadius = kIdentityPickerViewRadius;
-    self.backgroundColor = UIColorFromRGB(kHeaderBackgroundColor);
+    self.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;
     // Adding view elements inside.
     // Ink view.
     _inkView = [[MDCInkView alloc] initWithFrame:CGRectZero];

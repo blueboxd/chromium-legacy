@@ -6,6 +6,7 @@
 
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/clip_node.h"
@@ -2466,6 +2467,61 @@ TEST_F(LayerTreeImplTest, NotPersistentSwapPromisesAreDroppedWhenSwapFails) {
         SwapPromise::DidNotSwapReason::SWAP_FAILS);
     EXPECT_FALSE(weak_promise);
   }
+}
+
+TEST_F(LayerTreeImplTest, TrackPictureLayersWithPaintWorklets) {
+  host_impl().CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl().pending_tree();
+
+  // Initially there are no layers in the set.
+  EXPECT_EQ(pending_tree->picture_layers_with_paint_worklets().size(), 0u);
+
+  // Add three layers; two with PaintWorklets and one without.
+  std::unique_ptr<PictureLayerImpl> child1_owned =
+      PictureLayerImpl::Create(pending_tree, 2, Layer::LayerMaskType::NOT_MASK);
+  child1_owned->SetBounds(gfx::Size(100, 100));
+  std::unique_ptr<PictureLayerImpl> child2_owned =
+      PictureLayerImpl::Create(pending_tree, 3, Layer::LayerMaskType::NOT_MASK);
+  child2_owned->SetBounds(gfx::Size(100, 100));
+  std::unique_ptr<PictureLayerImpl> child3_owned =
+      PictureLayerImpl::Create(pending_tree, 4, Layer::LayerMaskType::NOT_MASK);
+  child3_owned->SetBounds(gfx::Size(100, 100));
+
+  PictureLayerImpl* child1 = child1_owned.get();
+  PictureLayerImpl* child3 = child3_owned.get();
+
+  root_layer()->test_properties()->AddChild(std::move(child1_owned));
+  root_layer()->test_properties()->AddChild(std::move(child2_owned));
+  root_layer()->test_properties()->AddChild(std::move(child3_owned));
+
+  Region empty_invalidation;
+  scoped_refptr<RasterSource> raster_source1(
+      FakeRasterSource::CreateFilledWithPaintWorklet(child1->bounds()));
+  child1->UpdateRasterSource(raster_source1, &empty_invalidation, nullptr,
+                             nullptr);
+  scoped_refptr<RasterSource> raster_source3(
+      FakeRasterSource::CreateFilledWithPaintWorklet(child3->bounds()));
+  child3->UpdateRasterSource(raster_source3, &empty_invalidation, nullptr,
+                             nullptr);
+
+  // The set should correctly track which layers are in it.
+  const base::flat_set<PictureLayerImpl*>& layers =
+      pending_tree->picture_layers_with_paint_worklets();
+  EXPECT_EQ(layers.size(), 2u);
+  EXPECT_TRUE(layers.contains(child1));
+  EXPECT_TRUE(layers.contains(child3));
+
+  // Test explicitly removing a layer from the set.
+  scoped_refptr<RasterSource> empty_raster_source(
+      FakeRasterSource::CreateFilled(child1->bounds()));
+  child1->UpdateRasterSource(empty_raster_source, &empty_invalidation, nullptr,
+                             nullptr);
+  EXPECT_EQ(layers.size(), 1u);
+  EXPECT_FALSE(layers.contains(child1));
+
+  // Deleting a layer should also cause it to be removed from the set.
+  root_layer()->test_properties()->RemoveChild(child3);
+  EXPECT_EQ(layers.size(), 0u);
 }
 
 namespace {

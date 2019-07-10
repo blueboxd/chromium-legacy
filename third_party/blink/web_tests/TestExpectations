@@ -6260,6 +6260,7 @@ crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas-pat
 crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
 crbug.com/982289 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
 crbug.com/982289 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
 
 # Sheriff 2019-07-09
 crbug.com/966249 [ Mac ] external/wpt/css/css-fonts/inheritance.html [ Pass Failure ]

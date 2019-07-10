@@ -124,15 +124,15 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
     const base::Callback<bool(const GURL&)>& origin_filter) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
+  PrimaryKeyToFormMap key_to_form_map;
   PasswordStoreChangeList changes;
-  if (!login_db_ || !login_db_->GetAutoSignInLogins(&forms))
+  if (!login_db_ || !login_db_->GetAutoSignInLogins(&key_to_form_map))
     return changes;
 
   std::set<GURL> origins_to_update;
-  for (const auto& form : forms) {
-    if (origin_filter.Run(form->origin))
-      origins_to_update.insert(form->origin);
+  for (const auto& pair : key_to_form_map) {
+    if (origin_filter.Run(pair.second->origin))
+      origins_to_update.insert(pair.second->origin);
   }
 
   std::set<GURL> origins_updated;
@@ -141,10 +141,10 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
       origins_updated.insert(origin);
   }
 
-  for (const auto& form : forms) {
-    if (origins_updated.count(form->origin)) {
-      changes.push_back(
-          PasswordStoreChange(PasswordStoreChange::UPDATE, *form));
+  for (const auto& pair : key_to_form_map) {
+    if (origins_updated.count(pair.second->origin)) {
+      changes.emplace_back(PasswordStoreChange::UPDATE, *pair.second,
+                           /*primary_key=*/pair.first);
     }
   }
 

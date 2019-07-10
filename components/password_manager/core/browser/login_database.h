@@ -142,8 +142,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
                               forms) WARN_UNUSED_RESULT;
 
   // Gets the list of auto-sign-inable credentials.
-  bool GetAutoSignInLogins(std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                               forms) WARN_UNUSED_RESULT;
+  bool GetAutoSignInLogins(PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure

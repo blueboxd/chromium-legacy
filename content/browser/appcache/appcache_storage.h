@@ -328,7 +328,7 @@ class CONTENT_EXPORT AppCacheStorage {
   int64_t last_group_id_;
   int64_t last_response_id_;
 
-  // Maps origin to usage (includes padding, unless padding feature is disabled)
+  // Maps origin to padded usage.
   std::map<url::Origin, int64_t> usage_map_;
   AppCacheWorkingSet working_set_;
   AppCacheServiceImpl* service_;

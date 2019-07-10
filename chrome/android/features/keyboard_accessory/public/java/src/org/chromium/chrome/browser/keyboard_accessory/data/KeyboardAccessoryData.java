@@ -175,6 +175,7 @@ public class KeyboardAccessoryData {
      * (username + password), to be shown on the manual fallback UI.
      */
     public final static class UserInfo {
+        private final String mTitle;
         private final List<UserInfoField> mFields = new ArrayList<>();
         private final @Nullable FaviconProvider mFaviconProvider;
 
@@ -190,7 +191,8 @@ public class KeyboardAccessoryData {
             void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
         }
 
-        public UserInfo(@Nullable FaviconProvider faviconProvider) {
+        public UserInfo(String title, @Nullable FaviconProvider faviconProvider) {
+            mTitle = title;
             mFaviconProvider = faviconProvider;
         }
 
@@ -203,10 +205,17 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * Returns the list of fields in this group.
+         * @return A list of {@link UserInfoField}s in this group.
          */
         public List<UserInfoField> getFields() {
             return mFields;
+        }
+
+        /**
+         * @return A string to be used as title. May be empty but not null.
+         */
+        public String getTitle() {
+            return mTitle;
         }
 
         /**

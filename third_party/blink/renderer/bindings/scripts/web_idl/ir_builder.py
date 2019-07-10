@@ -68,9 +68,9 @@ class _IRBuilder(object):
         assert callable(create_ref_to_idl_type)
         assert callable(create_ref_to_idl_def)
 
-        self.component = component
-        self.create_ref_to_idl_type = create_ref_to_idl_type
-        self.create_ref_to_idl_def = create_ref_to_idl_def
+        self._component = component
+        self._create_ref_to_idl_type = create_ref_to_idl_type
+        self._create_ref_to_idl_def = create_ref_to_idl_def
 
     def build_top_level_def(self, node):
         build_functions = {
@@ -94,7 +94,7 @@ class _IRBuilder(object):
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
             is_mixin=bool(node.GetProperty('MIXIN')),
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |interface|
         return interface
@@ -103,7 +103,7 @@ class _IRBuilder(object):
         namespace = Namespace.IR(
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |namespace|
         return namespace
@@ -111,18 +111,17 @@ class _IRBuilder(object):
     def _build_dictionary(self, node):
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
-        # TODO(yukishiino): Implement dictionary inheritance.
-        _ = self._take_inheritance(child_nodes)
+        inherited = self._take_inheritance(child_nodes)
         own_members = map(self._build_dictionary_member, child_nodes)
 
-        dictionary = Dictionary.IR(
+        return Dictionary.IR(
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
+            inherited=inherited,
             own_members=own_members,
             extended_attributes=extended_attributes,
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
-        return dictionary
 
     def _build_dictionary_member(self, node):
         assert node.GetClass() == 'Key'
@@ -139,13 +138,13 @@ class _IRBuilder(object):
             is_required=bool(node.GetProperty('REQUIRED')),
             default_value=default_value,
             extended_attributes=extended_attributes,
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
 
     def _build_callback_interface(self, node):
         callback_interface = CallbackInterface.IR(
             identifier=node.GetName(),
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_interface|
         return callback_interface
@@ -153,7 +152,7 @@ class _IRBuilder(object):
     def _build_callback_function(self, node):
         callback_function = CallbackFunction.IR(
             identifier=node.GetName(),
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_function|
         return callback_function
@@ -162,7 +161,7 @@ class _IRBuilder(object):
         enumeration = Enumeration.IR(
             identifier=node.GetName(),
             values=[child.GetName() for child in node.GetChildren()],
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         return enumeration
 
@@ -174,7 +173,7 @@ class _IRBuilder(object):
         typedef = Typedef.IR(
             identifier=node.GetName(),
             idl_type=idl_type,
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         return typedef
 
@@ -182,7 +181,7 @@ class _IRBuilder(object):
         includes = Includes.IR(
             interface_identifier=node.GetName(),
             mixin_identifier=node.GetProperty('REFERENCE'),
-            component=self.component,
+            component=self._component,
             debug_info=self._build_debug_info(node))
         return includes
 
@@ -205,7 +204,7 @@ class _IRBuilder(object):
 
     def _build_inheritance(self, node):
         assert node.GetClass() == 'Inherit'
-        return None
+        return self._create_ref_to_idl_def(node.GetName())
 
     def _build_type(self, node):
         def build_maybe_inner_type(node):
@@ -267,7 +266,7 @@ class _IRBuilder(object):
         def build_reference_type(node):
             identifier = node.GetName()
             ref_type = ReferenceType(
-                ref_to_idl_type=self.create_ref_to_idl_type(identifier),
+                ref_to_idl_type=self._create_ref_to_idl_type(identifier),
                 debug_info=self._build_debug_info(node))
             return ref_type
 

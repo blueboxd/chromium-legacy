@@ -31,8 +31,15 @@ class CC_PAINT_EXPORT PaintWorkletLayerPainter {
   // Asynchronously paints a set of PaintWorklet instances. The results are
   // returned via the provided callback, on the same thread that originally
   // called this method.
+  //
+  // Only one dispatch is allowed at a time; the calling code should not call
+  // |DispatchWorklets| again until the passed |DoneCallback| has been called.
   using DoneCallback = base::OnceCallback<void(PaintWorkletJobMap)>;
   virtual void DispatchWorklets(PaintWorkletJobMap, DoneCallback) = 0;
+
+  // Returns whether or not a dispatched set of PaintWorklet instances is
+  // currently being painted.
+  virtual bool HasOngoingDispatch() const = 0;
 };
 
 }  // namespace cc

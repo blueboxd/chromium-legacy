@@ -141,7 +141,9 @@ class MockWriterBase : public mojom::MhtmlFileWriter {
 
 // This Mock injects our overwritten interface, running the callback
 // SerializeAsMHTMLResponse and immediately disconnecting the message pipe.
-class RespondAndDisconnectMockWriter : public MockWriterBase {
+class RespondAndDisconnectMockWriter
+    : public MockWriterBase,
+      public base::RefCountedThreadSafe<RespondAndDisconnectMockWriter> {
  public:
   RespondAndDisconnectMockWriter() {}
 
@@ -232,26 +234,32 @@ class RespondAndDisconnectMockWriter : public MockWriterBase {
     // as there can be at most two watcher invocations to write a block of
     // data smaller than the data pipe buffer to file.
     download::GetDownloadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&RespondAndDisconnectMockWriter::TaskX,
-                                  base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&RespondAndDisconnectMockWriter::TaskX,
+                       scoped_refptr<RespondAndDisconnectMockWriter>(this)));
   }
 
   void TaskX() {
     download::GetDownloadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&RespondAndDisconnectMockWriter::TaskY,
-                                  base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&RespondAndDisconnectMockWriter::TaskY,
+                       scoped_refptr<RespondAndDisconnectMockWriter>(this)));
   }
 
   void TaskY() {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RespondAndDisconnectMockWriter::TaskZ,
-                       base::Unretained(this)));
+                       scoped_refptr<RespondAndDisconnectMockWriter>(this)));
   }
 
   void TaskZ() { binding_.Unbind(); }
 
  private:
+  friend base::RefCountedThreadSafe<RespondAndDisconnectMockWriter>;
+
+  ~RespondAndDisconnectMockWriter() override = default;
+
   DISALLOW_COPY_AND_ASSIGN(RespondAndDisconnectMockWriter);
 };
 
@@ -467,13 +475,14 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, GenerateMHTML) {
 #endif
 IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
                        MAYBE_GenerateMHTMLAndCloseConnection) {
-  RespondAndDisconnectMockWriter mock_writer;
+  scoped_refptr<RespondAndDisconnectMockWriter> mock_writer =
+      base::MakeRefCounted<RespondAndDisconnectMockWriter>();
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
   base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
-  OverrideInterface(&mock_writer);
+  OverrideInterface(mock_writer.get());
   DisableWellformednessCheck();
 
   MHTMLGenerationParams params(path);

@@ -11,10 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
-#include "content/public/common/content_features.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -767,75 +765,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
-TEST(AppCacheDatabaseTest, OriginUsageWithPaddingDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kAppCacheIncludePaddingInQuota);
-
-  const GURL kManifestUrl("http://blah/manifest");
-  const GURL kManifestUrl2("http://blah/manifest2");
-  const url::Origin kOrigin = url::Origin::Create(kManifestUrl);
-  const GURL kOtherOriginManifestUrl("http://other/manifest");
-  const url::Origin kOtherOrigin = url::Origin::Create(kOtherOriginManifestUrl);
-
-  const base::FilePath kEmptyPath;
-  AppCacheDatabase db(kEmptyPath);
-  EXPECT_TRUE(db.LazyOpen(true));
-
-  std::vector<AppCacheDatabase::CacheRecord> cache_records;
-  EXPECT_EQ(0, db.GetOriginUsage(kOrigin));
-
-  AppCacheDatabase::GroupRecord group_record;
-  group_record.group_id = 1;
-  group_record.manifest_url = kManifestUrl;
-  group_record.origin = kOrigin;
-  EXPECT_TRUE(db.InsertGroup(&group_record));
-  AppCacheDatabase::CacheRecord cache_record;
-  cache_record.cache_id = 1;
-  cache_record.group_id = 1;
-  cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTime;
-  cache_record.cache_size = 100;
-  cache_record.padding_size = 1;
-  EXPECT_TRUE(db.InsertCache(&cache_record));
-
-  EXPECT_EQ(100, db.GetOriginUsage(kOrigin));
-
-  group_record.group_id = 2;
-  group_record.manifest_url = kManifestUrl2;
-  group_record.origin = kOrigin;
-  EXPECT_TRUE(db.InsertGroup(&group_record));
-  cache_record.cache_id = 2;
-  cache_record.group_id = 2;
-  cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTime;
-  cache_record.cache_size = 1000;
-  cache_record.padding_size = 1;
-  EXPECT_TRUE(db.InsertCache(&cache_record));
-
-  EXPECT_EQ(1100, db.GetOriginUsage(kOrigin));
-
-  group_record.group_id = 3;
-  group_record.manifest_url = kOtherOriginManifestUrl;
-  group_record.origin = kOtherOrigin;
-  EXPECT_TRUE(db.InsertGroup(&group_record));
-  cache_record.cache_id = 3;
-  cache_record.group_id = 3;
-  cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTime;
-  cache_record.cache_size = 5000;
-  cache_record.padding_size = 1;
-  EXPECT_TRUE(db.InsertCache(&cache_record));
-
-  EXPECT_EQ(5000, db.GetOriginUsage(kOtherOrigin));
-
-  std::map<url::Origin, int64_t> usage_map;
-  EXPECT_TRUE(db.GetAllOriginUsage(&usage_map));
-  EXPECT_EQ(2U, usage_map.size());
-  EXPECT_EQ(1100, usage_map[kOrigin]);
-  EXPECT_EQ(5000, usage_map[kOtherOrigin]);
-}
-
-TEST(AppCacheDatabaseTest, OriginUsageWithPaddingEnabled) {
+TEST(AppCacheDatabaseTest, OriginUsage) {
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kManifestUrl2("http://blah/manifest2");
   const url::Origin kOrigin = url::Origin::Create(kManifestUrl);

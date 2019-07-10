@@ -81,6 +81,10 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
 
+    // Force allocate mode if import mode is not supported.
+    if (!g_env->ImportSupported())
+      config.allocation_mode = AllocationMode::kAllocate;
+
     return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
   }

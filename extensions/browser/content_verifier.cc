@@ -417,7 +417,7 @@ void ContentVerifier::ShutdownOnIO() {
   hash_helper_.reset();
 }
 
-ContentVerifyJob* ContentVerifier::CreateJobFor(
+scoped_refptr<ContentVerifyJob> ContentVerifier::CreateAndStartJobFor(
     const std::string& extension_id,
     const base::FilePath& extension_root,
     const base::FilePath& relative_path) {
@@ -446,9 +446,11 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
 
   // TODO(asargent) - we can probably get some good performance wins by having
   // a cache of ContentHashReader's that we hold onto past the end of each job.
-  return new ContentVerifyJob(
+  scoped_refptr<ContentVerifyJob> job = base::MakeRefCounted<ContentVerifyJob>(
       extension_id, data->version, extension_root, normalized_unix_path,
       base::BindOnce(&ContentVerifier::VerifyFailed, this, extension_id));
+  job->Start(this);
+  return job;
 }
 
 void ContentVerifier::GetContentHash(

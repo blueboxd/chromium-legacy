@@ -1011,7 +1011,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
 }
 
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
-  std::vector<std::unique_ptr<PasswordForm>> result;
+  PrimaryKeyToFormMap key_to_form_map;
 
   GURL origin("https://example.com");
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin));
@@ -1019,14 +1019,14 @@ TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3", origin));
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin));
 
-  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
-  EXPECT_EQ(4U, result.size());
-  for (const auto& form : result)
-    EXPECT_FALSE(form->skip_zero_click);
+  EXPECT_TRUE(db().GetAutoSignInLogins(&key_to_form_map));
+  EXPECT_EQ(4U, key_to_form_map.size());
+  for (const auto& pair : key_to_form_map)
+    EXPECT_FALSE(pair.second->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin));
-  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
-  EXPECT_EQ(0U, result.size());
+  EXPECT_TRUE(db().GetAutoSignInLogins(&key_to_form_map));
+  EXPECT_EQ(0U, key_to_form_map.size());
 }
 
 TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {

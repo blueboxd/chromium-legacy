@@ -123,6 +123,9 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("cc", "PaintWorkletPaintDispatcher::DispatchWorklets");
 
+  // We must be called with a valid callback to guarantee our internal state.
+  DCHECK(!done_callback.is_null());
+
   // Dispatching to the worklets is an asynchronous process, but there should
   // only be one dispatch going on at once. We store the completion callback and
   // the PaintWorklet job map in the class during the dispatch, then clear them
@@ -185,6 +188,11 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
             WrapCrossThreadPersistent(painter), WTF::Passed(std::move(jobs)),
             WTF::Passed(std::move(on_done_runner))));
   }
+}
+
+bool PaintWorkletPaintDispatcher::HasOngoingDispatch() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return !on_async_paint_complete_.is_null();
 }
 
 void PaintWorkletPaintDispatcher::AsyncPaintDone() {

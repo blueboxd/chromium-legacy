@@ -28,6 +28,9 @@
 @property(nonatomic, assign, readonly)
     web::NavigationManagerImpl* navigationManagerImpl;
 @property(nonatomic, assign, readonly) web::NavigationItemImpl* currentNavItem;
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWLegacyNativeContentController
@@ -194,6 +197,7 @@
 }
 
 - (void)close {
+  self.beingDestroyed = YES;
   self.nativeProvider = nil;
   if ([self.nativeController respondsToSelector:@selector(close)])
     [self.nativeController close];
@@ -234,7 +238,7 @@
 
 - (void)nativeContent:(id)content
     handleContextMenu:(const web::ContextMenuParams&)params {
-  if ([self.delegate legacyNativeContentControllerIsBeingDestroyed:self]) {
+  if (self.beingDestroyed) {
     return;
   }
   self.webStateImpl->HandleContextMenu(params);

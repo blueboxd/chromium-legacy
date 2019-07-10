@@ -22,10 +22,6 @@ class GURL;
 - (BOOL)legacyNativeContentControllerWebUsageEnabled:
     (CRWLegacyNativeContentController*)contentController;
 
-// Whether the delegate is being destroyed.
-- (BOOL)legacyNativeContentControllerIsBeingDestroyed:
-    (CRWLegacyNativeContentController*)contentController;
-
 // Asks the delegate to remove the web view.
 - (void)legacyNativeContentControllerRemoveWebView:
     (CRWLegacyNativeContentController*)contentController;

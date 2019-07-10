@@ -66,6 +66,9 @@ enum class BackForwardNavigationType {
 // Returns The WKNavigationDelegate handler class from delegate.
 @property(nonatomic, readonly) CRWWKNavigationHandler* navigationHandler;
 
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWWebRequestController
@@ -76,6 +79,10 @@ enum class BackForwardNavigationType {
     _webState = webState;
   }
   return self;
+}
+
+- (void)close {
+  self.beingDestroyed = YES;
 }
 
 - (BOOL)maybeLoadRequestForCurrentNavigationItem {
@@ -275,7 +282,7 @@ enum class BackForwardNavigationType {
   DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
   self.webState->ShowRepostFormWarningDialog(
       base::BindOnce(^(bool shouldContinue) {
-        if ([_delegate webRequestControllerIsBeingDestroyed:self])
+        if (self.beingDestroyed)
           return;
 
         if (shouldContinue)

@@ -70,7 +70,27 @@ void TapOnPrimarySignInButtonInRecentTabs() {
   [interaction performAction:grey_tap()];
 }
 
+// Removes all browsing data.
+void RemoveBrowsingData() {
+  __block BOOL browsing_data_removed = NO;
+  [chrome_test_util::GetMainController()
+      removeBrowsingDataForBrowserState:chrome_test_util::
+                                            GetOriginalBrowserState()
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                        completionBlock:^{
+                          browsing_data_removed = YES;
+                        }];
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:@"Wait for removing browsing data."
+                                 block:^BOOL {
+                                   return browsing_data_removed;
+                                 }];
+  GREYAssert([condition waitWithTimeout:base::test::ios::kWaitForActionTimeout],
+             @"Browsing data was not removed.");
 }
+
+}  // namespace
 
 // Sign-in interaction tests that work both with Unified Consent enabled or
 // disabled.
@@ -78,6 +98,13 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 @end
 
 @implementation SigninInteractionControllerTestCase
+
+- (void)setUp {
+  [super setUp];
+  // Remove closed tab history to make sure the sign-in promo is always visible
+  // in recent tabs.
+  RemoveBrowsingData();
+}
 
 // Tests that opening the sign-in screen from the Settings and signing in works
 // correctly when there is already an identity on the device.
@@ -391,9 +418,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: user consent.
-// TODO(crbug.com/976828): Test flaky based on the screen size and the number
-// of recently closed tabs from the previous tests.
-- (void)DISABLED_testDismissSigninFromTabSwitcher {
+- (void)testDismissSigninFromTabSwitcher {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:NO];
 }
@@ -401,9 +426,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: advanced sign-in.
-// TODO(crbug.com/976828): Test flaky based on the screen size and the number
-// of recently closed tabs from the previous tests.
-- (void)DISABLED_testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
+- (void)testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:YES];
 }

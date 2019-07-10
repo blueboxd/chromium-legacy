@@ -531,6 +531,97 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   if (CommitToActiveTree())
     ActivateStateForImages();
 
+  if (!paint_worklet_painter_) {
+    // Blink should not send us any PaintWorklet inputs until we have a painter
+    // registered.
+    DCHECK(sync_tree()->picture_layers_with_paint_worklets().empty());
+    pending_tree_fully_painted_ = true;
+    NotifyPendingTreeFullyPainted();
+    return;
+  }
+
+  PaintWorkletJobMap dirty_paint_worklets = GatherDirtyPaintWorklets();
+  if (!dirty_paint_worklets.size()) {
+    pending_tree_fully_painted_ = true;
+    NotifyPendingTreeFullyPainted();
+    return;
+  }
+
+  client_->NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState::PROCESSING);
+  auto done_callback = base::BindOnce(
+      &LayerTreeHostImpl::OnPaintWorkletResultsReady, base::Unretained(this));
+  paint_worklet_painter_->DispatchWorklets(std::move(dirty_paint_worklets),
+                                           std::move(done_callback));
+}
+
+PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets() const {
+  PaintWorkletJobMap dirty_paint_worklets;
+  for (PictureLayerImpl* layer :
+       sync_tree()->picture_layers_with_paint_worklets()) {
+    for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
+      // If we already have a record we can reuse it and so the
+      // PaintWorkletInput isn't dirty.
+      if (entry.second)
+        continue;
+
+      int id = entry.first->WorkletId();
+      auto result = dirty_paint_worklets.insert(
+          std::make_pair(id, scoped_refptr<PaintWorkletJobVector>{}));
+      scoped_refptr<PaintWorkletJobVector>& job_vector = result.first->second;
+      if (!job_vector)
+        job_vector = base::WrapRefCounted(new PaintWorkletJobVector);
+      job_vector->data.emplace_back(layer->id(), entry.first);
+    }
+  }
+  return dirty_paint_worklets;
+}
+
+void LayerTreeHostImpl::OnPaintWorkletResultsReady(PaintWorkletJobMap results) {
+  // Nothing else should have painted the PaintWorklets while we were waiting,
+  // and the results should have painted every PaintWorklet, so these should be
+  // the same.
+  DCHECK_EQ(results.size(), GatherDirtyPaintWorklets().size());
+
+  for (const auto& entry : results) {
+    for (const PaintWorkletJob& job : entry.second->data) {
+      LayerImpl* layer_impl =
+          pending_tree_->FindPendingTreeLayerById(job.layer_id());
+      // Painting the pending tree occurs asynchronously but stalls the pending
+      // tree pipeline, so nothing should have changed while we were doing that.
+      DCHECK(layer_impl);
+      static_cast<PictureLayerImpl*>(layer_impl)
+          ->SetPaintWorkletRecord(job.input(), job.output());
+    }
+  }
+
+  // While the pending tree is being painted by PaintWorklets, we restrict the
+  // tiles the TileManager is able to see. This may cause the TileManager to
+  // believe that it has finished rastering all the necessary tiles. When we
+  // finish painting the tree and release all the tiles, we need to mark the
+  // tile priorities as dirty so that the TileManager logic properly re-runs.
+  tile_priorities_dirty_ = true;
+
+  // Set the painted state before calling the scheduler, to ensure any callback
+  // running as a result sees the correct painted state.
+  pending_tree_fully_painted_ = true;
+  client_->NotifyPaintWorkletStateChange(Scheduler::PaintWorkletState::IDLE);
+
+  // The pending tree may have been force activated from the signal to the
+  // scheduler above, in which case there is no longer a tree to paint.
+  if (pending_tree_)
+    NotifyPendingTreeFullyPainted();
+}
+
+void LayerTreeHostImpl::NotifyPendingTreeFullyPainted() {
+  // The pending tree must be fully painted at this point.
+  DCHECK(pending_tree_fully_painted_);
+
+  // Nobody should claim the pending tree is fully painted if there is an
+  // ongoing dispatch.
+  DCHECK(!paint_worklet_painter_ ||
+         !paint_worklet_painter_->HasOngoingDispatch());
+
   // Start working on newly created tiles immediately if needed.
   // TODO(vmpstr): Investigate always having PrepareTiles issue
   // NotifyReadyToActivate, instead of handling it here.
@@ -1589,11 +1680,12 @@ std::unique_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "LayerTreeHostImpl::BuildRasterQueue");
 
-  return RasterTilePriorityQueue::Create(active_tree_->picture_layers(),
-                                         pending_tree_
-                                             ? pending_tree_->picture_layers()
-                                             : std::vector<PictureLayerImpl*>(),
-                                         tree_priority, type);
+  return RasterTilePriorityQueue::Create(
+      active_tree_->picture_layers(),
+      pending_tree_ && pending_tree_fully_painted_
+          ? pending_tree_->picture_layers()
+          : std::vector<PictureLayerImpl*>(),
+      tree_priority, type);
 }
 
 std::unique_ptr<EvictionTilePriorityQueue>
@@ -1667,6 +1759,13 @@ size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
+  // The TileManager may call this method while the pending tree is still being
+  // painted, as it isn't aware of the ongoing paint. We shouldn't tell the
+  // scheduler we are ready to activate in that case, as if we do it will
+  // immediately activate once we call NotifyPaintWorkletStateChange, rather
+  // than wait for the TileManager to actually raster the content!
+  if (!pending_tree_fully_painted_)
+    return;
   pending_tree_raster_duration_timer_.reset();
   client_->NotifyReadyToActivate();
 }
@@ -2803,6 +2902,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
         active_tree()->top_controls_shown_ratio(),
         active_tree()->elastic_overscroll());
   }
+  pending_tree_fully_painted_ = false;
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
@@ -3199,6 +3299,9 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
 
 void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  // TODO(crbug.com/907897): Once the raster path for painting PaintWorklets is
+  // removed, LayerTreeHostImpl will take ownership here rather than a pointer.
+  paint_worklet_painter_ = painter.get();
   tile_manager_.SetPaintWorkletLayerPainter(std::move(painter));
 }
 

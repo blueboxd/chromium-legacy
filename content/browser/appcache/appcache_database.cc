@@ -14,7 +14,6 @@
 #include "content/browser/appcache/appcache_backfillers.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
-#include "content/public/common/content_features.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
@@ -249,15 +248,8 @@ int64_t AppCacheDatabase::GetOriginUsage(const url::Origin& origin) {
     return 0;
 
   int64_t origin_usage = 0;
-  bool padding_enabled =
-      base::FeatureList::IsEnabled(features::kAppCacheIncludePaddingInQuota);
-  for (const auto& cache : caches) {
-    if (padding_enabled) {
-      origin_usage += cache.cache_size + cache.padding_size;
-    } else {
-      origin_usage += cache.cache_size;
-    }
-  }
+  for (const auto& cache : caches)
+    origin_usage += cache.cache_size + cache.padding_size;
   return origin_usage;
 }
 

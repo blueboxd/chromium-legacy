@@ -23,7 +23,20 @@ sk_sp<PaintRecord> TestPaintWorkletLayerPainter::Paint(
   return manual_record;
 }
 
-void TestPaintWorkletLayerPainter::DispatchWorklets(PaintWorkletJobMap,
-                                                    DoneCallback) {}
+void TestPaintWorkletLayerPainter::DispatchWorklets(
+    PaintWorkletJobMap,
+    DoneCallback done_callback) {
+  // To enforce good behavior: the new callback should not be null, and the
+  // saved one should be consumed (via |TakeDoneCallback|) before
+  // |DispatchWorklets| is called again.
+  DCHECK(!done_callback.is_null());
+  DCHECK(done_callback_.is_null());
+
+  done_callback_ = std::move(done_callback);
+}
+
+bool TestPaintWorkletLayerPainter::HasOngoingDispatch() const {
+  return !done_callback_.is_null();
+}
 
 }  // namespace cc

@@ -63,6 +63,13 @@ void FakeLayerTreeHostImpl::CreatePendingTree() {
   float arbitrary_large_page_scale = 100000.f;
   pending_tree()->PushPageScaleFromMainThread(
       1.f, 1.f / arbitrary_large_page_scale, arbitrary_large_page_scale);
+  // Normally a pending tree will not be fully painted until the commit has
+  // happened and any PaintWorklets have been resolved. However many of the
+  // unittests never actually commit the pending trees that they create, so to
+  // enable them to still treat the tree as painted we forcibly override the
+  // state here. Note that this marks a distinct departure from reality in the
+  // name of easier testing.
+  set_pending_tree_fully_painted_for_testing(true);
 }
 
 void FakeLayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {

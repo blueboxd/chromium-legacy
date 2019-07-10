@@ -6,6 +6,11 @@
 
 #include <utility>
 
+#include "base/system/sys_info.h"
+#include "media/base/video_types.h"
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#endif  // defined(OS_CHROMEOS)
 #include "media/gpu/test/video_player/video.h"
 
 namespace media {
@@ -49,6 +54,25 @@ VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
 
 VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
 
+void VideoPlayerTestEnvironment::SetUp() {
+  VideoTestEnvironment::SetUp();
+
+  // TODO(dstaessens): Remove this check once all platforms support import mode.
+  // Some older platforms do not support importing buffers, but need to allocate
+  // buffers internally in the decoder.
+#if defined(OS_CHROMEOS)
+  constexpr const char* kImportModeBlacklist[] = {"nyan_big", "nyan_blaze",
+                                                  "nyan_kitty"};
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  import_supported_ = (std::find(std::begin(kImportModeBlacklist),
+                                 std::end(kImportModeBlacklist),
+                                 board) == std::end(kImportModeBlacklist));
+#endif  // defined(OS_CHROMEOS)
+
+  // VideoDecoders always require import mode to be supported.
+  DCHECK(!use_vd_ || import_supported_);
+}
+
 const media::test::Video* VideoPlayerTestEnvironment::Video() const {
   return video_.get();
 }
@@ -67,6 +91,10 @@ const base::FilePath& VideoPlayerTestEnvironment::OutputFolder() const {
 
 bool VideoPlayerTestEnvironment::UseVD() const {
   return use_vd_;
+}
+
+bool VideoPlayerTestEnvironment::ImportSupported() const {
+  return import_supported_;
 }
 
 }  // namespace test

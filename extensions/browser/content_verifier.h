@@ -52,11 +52,13 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   void Start();
   void Shutdown();
 
-  // Call this before reading a file within an extension. The caller owns the
-  // returned job.
-  ContentVerifyJob* CreateJobFor(const std::string& extension_id,
-                                 const base::FilePath& extension_root,
-                                 const base::FilePath& relative_path);
+  // Call this before reading a file within an extension. Returns and starts a
+  // content verify job if the specified resource requires content verification,
+  // otherwise returns nullptr.
+  scoped_refptr<ContentVerifyJob> CreateAndStartJobFor(
+      const std::string& extension_id,
+      const base::FilePath& extension_root,
+      const base::FilePath& relative_path);
 
   // ExtensionRegistryObserver interface
   void OnExtensionLoaded(content::BrowserContext* browser_context,

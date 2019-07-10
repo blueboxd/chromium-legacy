@@ -1215,19 +1215,14 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
   return true;
 }
 
-bool LoginDatabase::GetAutoSignInLogins(
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(forms);
+bool LoginDatabase::GetAutoSignInLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(key_to_form_map);
   DCHECK(!autosignin_statement_.empty());
-  forms->clear();
+  key_to_form_map->clear();
 
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, autosignin_statement_.c_str()));
-  PrimaryKeyToFormMap key_to_form_map;
-  FormRetrievalResult result = StatementToForms(&s, nullptr, &key_to_form_map);
-  for (auto& pair : key_to_form_map) {
-    forms->push_back(std::move(pair.second));
-  }
+  FormRetrievalResult result = StatementToForms(&s, nullptr, key_to_form_map);
   return result == FormRetrievalResult::kSuccess;
 }
 

@@ -139,10 +139,14 @@ class CC_EXPORT PictureLayerImpl
 
   const Region& InvalidationForTesting() const { return invalidation_; }
 
-  void SetPaintWorkletRecordForTesting(scoped_refptr<PaintWorkletInput>,
-                                       sk_sp<PaintRecord>);
+  // Set the paint result (PaintRecord) for a given PaintWorkletInput.
+  void SetPaintWorkletRecord(scoped_refptr<PaintWorkletInput>,
+                             sk_sp<PaintRecord>);
 
-  const PaintWorkletRecordMap& GetPaintWorkletRecordMapForTesting() const {
+  // Retrieve the map of PaintWorkletInputs to their painted results
+  // (PaintRecords). If a PaintWorkletInput has not been painted yet, it will
+  // map to nullptr.
+  const PaintWorkletRecordMap& GetPaintWorkletRecordMap() const {
     return paint_worklet_records_;
   }
 

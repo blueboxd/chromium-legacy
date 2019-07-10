@@ -27,6 +27,7 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -736,8 +737,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                  float autoscroll_velocity);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
+
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter);
+  PaintWorkletLayerPainter* GetPaintWorkletLayerPainterForTesting() const {
+    return paint_worklet_painter_;
+  }
 
   // The viewport has two scroll nodes, corresponding to the visual and layout
   // viewports. However, when we compute the scroll chain we include only one
@@ -772,6 +777,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   CompositorFrameReportingController* compositor_frame_reporting_controller()
       const {
     return compositor_frame_reporting_controller_.get();
+  }
+
+  void set_pending_tree_fully_painted_for_testing(bool painted) {
+    pending_tree_fully_painted_ = painted;
   }
 
  protected:
@@ -842,6 +851,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // finishes or after the sync tree was created to invalidate content on the
   // impl thread.
   void UpdateSyncTreeAfterCommitOrImplSideInvalidation();
+
+  // Returns a job map for all 'dirty' PaintWorklets, e.g. PaintWorkletInputs
+  // that do not map to a PaintRecord.
+  PaintWorkletJobMap GatherDirtyPaintWorklets() const;
+
+  // Called when all PaintWorklet results are ready (i.e. have been painted) for
+  // the current pending tree.
+  void OnPaintWorkletResultsReady(PaintWorkletJobMap results);
+
+  // Called when the pending tree has been fully painted, i.e. all required data
+  // is available to raster the tree.
+  void NotifyPendingTreeFullyPainted();
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
@@ -1214,6 +1235,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // animation completion. ScrollEnd will get called with this deferred state
   // once the animation is over.
   base::Optional<ScrollState> deferred_scroll_end_state_;
+
+  // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
+  // to the worklet thread via |paint_worklet_painter_|.
+  //
+  // TODO(crbug.com/907897): Once the raster path for painting PaintWorklets is
+  // removed, this will change to a std::unique_ptr.
+  PaintWorkletLayerPainter* paint_worklet_painter_ = nullptr;
+
+  // While PaintWorklet painting is ongoing the PendingTree is not yet fully
+  // painted and cannot be rastered or activated. This boolean tracks whether or
+  // not we are in that state.
+  bool pending_tree_fully_painted_ = false;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

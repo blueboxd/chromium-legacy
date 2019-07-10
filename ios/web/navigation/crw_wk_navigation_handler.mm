@@ -120,6 +120,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 @property(nonatomic, readonly, weak)
     CRWLegacyNativeContentController* legacyNativeContentController;
 
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWWKNavigationHandler
@@ -149,7 +152,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   [self didReceiveWKNavigationDelegateCallback];
 
   self.webProcessCrashed = NO;
-  if ([self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+  if (self.beingDestroyed) {
     decisionHandler(WKNavigationActionPolicyCancel);
     return;
   }
@@ -243,7 +246,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         (action.navigationType == WKNavigationTypeFormResubmitted)) {
       self.webStateImpl->ShowRepostFormWarningDialog(
           base::BindOnce(^(bool shouldContinue) {
-            if ([self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+            if (self.beingDestroyed) {
               decisionHandler(WKNavigationActionPolicyCancel);
             } else if (shouldContinue) {
               decisionHandler(WKNavigationActionPolicyAllow);
@@ -340,7 +343,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     allowLoad =
         self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
     // The WebState may have been closed in the ShouldAllowRequest callback.
-    if ([self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+    if (self.beingDestroyed) {
       decisionHandler(WKNavigationActionPolicyCancel);
       return;
     }
@@ -379,7 +382,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         context->ReleaseItem();
       }
 
-      if (![self.delegate navigationHandlerWebViewBeingDestroyed:self] &&
+      if (!self.beingDestroyed &&
           [self shouldClosePageOnNativeApplicationLoad]) {
         // Loading was started for user initiated navigations and should be
         // stopped because no other WKWebView callbacks are called.
@@ -392,7 +395,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       }
     }
 
-    if (![self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+    if (!self.beingDestroyed) {
       // Loading was started for user initiated navigations and should be
       // stopped because no other WKWebView callbacks are called.
       // TODO(crbug.com/767092): Loading should not start until webView.loading
@@ -1214,7 +1217,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 // this point it's too late for a SafeBrowsing warning to be displayed for the
 // navigation for which the timer was started.
 - (void)didReceiveWKNavigationDelegateCallback {
-  if ([self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+  if (self.beingDestroyed) {
     UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
   }
   _safeBrowsingWarningDetectionTimer.Stop();
@@ -2033,6 +2036,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
 #pragma mark - Public methods
 
+- (void)close {
+  self.beingDestroyed = YES;
+}
+
 - (void)stopLoading {
   _stoppedWKNavigation = [self.navigationStates lastAddedNavigation];
   self.pendingNavigationInfo.cancelled = YES;
@@ -2045,7 +2052,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // TODO(crbug.com/821995):  Check if this function should be removed.
   if (self.navigationState != web::WKNavigationState::FINISHED) {
     self.navigationState = web::WKNavigationState::FINISHED;
-    if (![self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+    if (!self.beingDestroyed) {
       self.webStateImpl->SetIsLoading(false);
     }
   }

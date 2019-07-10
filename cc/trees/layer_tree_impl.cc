@@ -1867,6 +1867,23 @@ void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
   auto it = std::find(picture_layers_.begin(), picture_layers_.end(), layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
+
+  // Make sure that |picture_layers_with_paint_worklets_| doesn't get left with
+  // dead layers. They should already have been removed (via calling
+  // NotifyLayerHasPaintWorkletsChanged) before the layer was unregistered.
+  DCHECK(!picture_layers_with_paint_worklets_.contains(layer));
+}
+
+void LayerTreeImpl::NotifyLayerHasPaintWorkletsChanged(PictureLayerImpl* layer,
+                                                       bool has_worklets) {
+  if (has_worklets) {
+    auto insert_pair = picture_layers_with_paint_worklets_.insert(layer);
+    DCHECK(insert_pair.second);
+  } else {
+    auto it = picture_layers_with_paint_worklets_.find(layer);
+    DCHECK(it != picture_layers_with_paint_worklets_.end());
+    picture_layers_with_paint_worklets_.erase(it);
+  }
 }
 
 void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {

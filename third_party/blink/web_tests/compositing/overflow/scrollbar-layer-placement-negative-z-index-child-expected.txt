@@ -18,26 +18,24 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='outer'",
-      "position": [6, 6],
-      "bounds": [340, 282]
+      "name": "LayoutNGBlockFlow (positioned) DIV class='outer'",
+      "bounds": [352, 294]
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='content'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
       "position": [79, 79],
       "bounds": [196, 212],
       "contentsOpaque": true,
       "backgroundColor": "#DDDDDD"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='outer' (foreground) Layer",
-      "position": [6, 6],
-      "bounds": [340, 282]
+      "name": "LayoutNGBlockFlow (positioned) DIV class='outer' (foreground) Layer",
+      "bounds": [352, 294]
     },
     {
-      "name": "LayoutBlockFlow DIV class='scroller'",
-      "position": [38, 38],
-      "bounds": [278, 218],
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [32, 32],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {

@@ -123,7 +123,6 @@ BaseArena::~BaseArena() {
   DCHECK(unswept_pages_.IsEmpty());
   DCHECK(swept_unfinalized_pages_.IsEmpty());
   DCHECK(swept_unfinalized_empty_pages_.IsEmpty());
-  DCHECK(SweepingAndFinalizationCompleted());
 }
 
 void BaseArena::RemoveAllPages() {
@@ -356,6 +355,16 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   return true;
 }
 
+void BaseArena::InvokeFinalizersOnSweptPages() {
+  while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
+    swept_pages_.PushLocked(page);
+    page->FinalizeSweep(SweepResult::kPageNotEmpty);
+  }
+  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
+    page->FinalizeSweep(SweepResult::kPageEmpty);
+  }
+}
+
 void BaseArena::SweepOnConcurrentThread() {
   while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPageOnConcurrentThread(page);
@@ -370,17 +379,13 @@ void BaseArena::CompleteSweep() {
   // Some phases, e.g. verification, require iterability of a page.
   MakeIterable();
 
+  // First, sweep and finalize pages.
   while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPage(page);
   }
 
-  while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
-    swept_pages_.PushLocked(page);
-    page->FinalizeSweep(SweepResult::kPageNotEmpty);
-  }
-  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
-    page->FinalizeSweep(SweepResult::kPageEmpty);
-  }
+  // Then, finalize pages that have been processed by concurrent sweepers.
+  InvokeFinalizersOnSweptPages();
 
   // Verify object start bitmap after all freelists have been merged.
   VerifyObjectStartBitmap();

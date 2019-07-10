@@ -4,16 +4,10 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
 
-#include "base/ios/block_types.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
-#import "ios/chrome/browser/ui/context_menu/context_menu_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -27,7 +21,6 @@ NSString* const kSendTabToSelfActivityType =
     @"com.google.chrome.sendTabToSelfActivity";
 
 const char kClickResultHistogramName[] = "SendTabToSelf.ShareMenu.ClickResult";
-const char kDeviceCountHistogramName[] = "SendTabToSelf.ShareMenu.DeviceCount";
 
 // TODO(crbug.com/970886): Move to a directory accessible on all platforms.
 // State of the send tab to self option in the context menu.
@@ -46,15 +39,6 @@ enum class SendTabToSelfClickResult {
 // The dispatcher that handles when the activity is performed.
 @property(nonatomic, weak, readonly) id<BrowserCommands> dispatcher;
 
-// The dictionary of target devices and their cache guids.
-@property(nonatomic, strong, readonly)
-    NSDictionary<NSString*, NSString*>* sendTabToSelfTargets;
-
-// The presenter that will present the action sheet to show devices.
-@property(nonatomic, weak, readonly) id<ActivityServicePresentation> presenter;
-
-// The title of the shared tab.
-@property(nonatomic, copy, readonly) NSString* title;
 @end
 
 @implementation SendTabToSelfActivity
@@ -63,18 +47,11 @@ enum class SendTabToSelfClickResult {
   return kSendTabToSelfActivityType;
 }
 
-- (instancetype)initWithDispatcher:(id<BrowserCommands>)dispatcher
-              sendTabToSelfTargets:
-                  (NSDictionary<NSString*, NSString*>*)sendTabToSelfTargets
-                         presenter:(id<ActivityServicePresentation>)presenter
-                             title:(NSString*)title {
+- (instancetype)initWithDispatcher:(id<BrowserCommands>)dispatcher {
   base::UmaHistogramEnumeration(kClickResultHistogramName,
                                 SendTabToSelfClickResult::kShowItem);
   if (self = [super init]) {
-    _sendTabToSelfTargets = sendTabToSelfTargets;
     _dispatcher = dispatcher;
-    _presenter = presenter;
-    _title = [title copy];
   }
   return self;
 }
@@ -102,40 +79,7 @@ enum class SendTabToSelfClickResult {
 }
 
 - (void)performActivity {
-  // TODO(crbug.com/970284) once the modal dialog is created this will be
-  // removed.
-  BOOL useContextMenu = YES;
-  if (useContextMenu) {
-    NSMutableArray<ContextMenuItem*>* targetActions =
-        [NSMutableArray arrayWithCapacity:[_sendTabToSelfTargets count]];
-
-    for (NSString* key in _sendTabToSelfTargets) {
-      NSString* deviceID = _sendTabToSelfTargets[key];
-      // Retain |self| here since a |weakSelf| would be deallocated when
-      // displaying the target device sheet, as the ActivitySheet will be gone.
-      ProceduralBlock action = ^{
-        SendTabToSelfCommand* command =
-            [[SendTabToSelfCommand alloc] initWithTargetDeviceID:deviceID];
-        base::UmaHistogramEnumeration(kClickResultHistogramName,
-                                      SendTabToSelfClickResult::kClickItem);
-        [self.dispatcher sendTabToSelf:command];
-      };
-      [targetActions addObject:[[ContextMenuItem alloc] initWithTitle:key
-                                                               action:action]];
-    }
-
-    base::UmaHistogramEnumeration(kClickResultHistogramName,
-                                  SendTabToSelfClickResult::kShowDeviceList);
-    base::UmaHistogramCounts100(kDeviceCountHistogramName,
-                                [targetActions count]);
-
-    NSString* title = l10n_util::GetNSStringF(
-        IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION,
-        base::SysNSStringToUTF16(_title));
-    [_presenter showActivityServiceContextMenu:title items:targetActions];
-  } else {
-    [self.dispatcher showSendTabToSelfUI];
-  }
+  [self.dispatcher showSendTabToSelfUI];
   [self activityDidFinish:YES];
 }
 

@@ -41,7 +41,7 @@ std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
   std::string::const_iterator redact_end = value.begin();
 
   if (redact_begin == redact_end &&
-      !capture_mode.include_cookies_and_credentials()) {
+      !NetLogCaptureIncludesSensitive(capture_mode)) {
     if (base::EqualsCaseInsensitiveASCII(header, "set-cookie") ||
         base::EqualsCaseInsensitiveASCII(header, "set-cookie2") ||
         base::EqualsCaseInsensitiveASCII(header, "cookie") ||

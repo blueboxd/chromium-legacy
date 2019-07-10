@@ -57,6 +57,10 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
             RecyclerView parent, RecyclerView.State state, View child, View focused) {
         if (focused != null) {
             int newChildPos = getPosition(focused);
+
+            // Stop scrolling if we're in the middle of a swipe/fling, see https://crbug.com/982357.
+            parent.stopScroll();
+
             scrollToPosition(newChildPos);
         }
         return true;

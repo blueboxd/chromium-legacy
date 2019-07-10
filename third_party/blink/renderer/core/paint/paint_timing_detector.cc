@@ -120,6 +120,9 @@ void PaintTimingDetector::LayoutObjectWillBeDestroyed(
     const LayoutObject& object) {
   if (text_paint_timing_detector_)
     text_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
+
+  if (image_paint_timing_detector_)
+    image_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
 }
 
 void PaintTimingDetector::NotifyBackgroundImageRemoved(

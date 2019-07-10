@@ -2099,7 +2099,7 @@ TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
   // Testing case: WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE.
   host_content_settings_map->SetContentSettingDefaultScope(
       primary_url, secondary_url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(), CONTENT_SETTING_ASK);
+      std::string(), CONTENT_SETTING_ALLOW);
 
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &settings);

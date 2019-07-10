@@ -160,15 +160,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
            unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
   bool IsAngle() const { return IsAngle(TypeWithCalcResolved()); }
-  bool IsFontRelativeLength() const {
-    return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
-           GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
-           GetType() == UnitType::kChs;
-  }
-  bool IsQuirkyEms() const { return GetType() == UnitType::kQuirkyEms; }
-  bool IsViewportPercentageLength() const {
-    return IsViewportPercentageLength(GetType());
-  }
+  bool IsFontRelativeLength() const;
   static bool IsViewportPercentageLength(UnitType type) {
     return type >= UnitType::kViewportWidth && type <= UnitType::kViewportMax;
   }
@@ -203,9 +195,9 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return type >= UnitType::kDotsPerPixel &&
            type <= UnitType::kDotsPerCentimeter;
   }
-  bool IsResolution() const { return IsResolution(GetType()); }
+  bool IsResolution() const;
   static bool IsFlex(UnitType unit) { return unit == UnitType::kFraction; }
-  bool IsFlex() const { return IsFlex(GetType()); }
+  bool IsFlex() const;
 
   // Creates either a |CSSNumericLiteralValue| or a |CSSMathFunctionValue|,
   // depending on whether |value| is calculated or not. We should never create a
@@ -271,11 +263,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static UnitType StringToUnitType(const UChar*, unsigned length);
 
   double ComputeLengthDouble(const CSSToLengthConversionData&) const;
-
-  // TODO(crbug.com/979895): This should be moved to CSSNumericLiteralValue
-  inline UnitType GetType() const {
-    return static_cast<UnitType>(numeric_literal_unit_type_);
-  }
 };
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;

@@ -24,13 +24,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace device {
 
-// static
-PlatformSensorProviderAndroid* PlatformSensorProviderAndroid::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderAndroid,
-      base::LeakySingletonTraits<PlatformSensorProviderAndroid>>::get();
-}
-
 PlatformSensorProviderAndroid::PlatformSensorProviderAndroid() {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(Java_PlatformSensorProvider_create(env));

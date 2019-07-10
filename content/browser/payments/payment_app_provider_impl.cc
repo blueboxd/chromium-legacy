@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -206,6 +207,8 @@ class RespondWithCallbacks
     } else if (service_worker_status ==
                blink::ServiceWorkerStatusCode::kErrorTimeout) {
       response_type = PaymentEventResponseType::PAYMENT_EVENT_TIMEOUT;
+      UMA_HISTOGRAM_BOOLEAN("PaymentRequest.ServiceWorkerStatusCodeTimeout",
+                            true);
     }
 
     RespondWithErrorAndDeleteSelf(response_type);

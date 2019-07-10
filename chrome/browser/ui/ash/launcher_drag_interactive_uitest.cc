@@ -63,9 +63,9 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
   ash::ShellTestApi shell_test_api;
 
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
-  gfx::Point start_point =
-      gfx::Point(display_bounds.width() / 4,
-                 display_bounds.bottom() - ash::kShelfSize / 2);
+  gfx::Point start_point = gfx::Point(
+      display_bounds.width() / 4,
+      display_bounds.bottom() - ash::ShelfConstants::shelf_size() / 2);
   gfx::Point end_point(start_point);
   end_point.set_y(10);
   ui_test_utils::DragEventGenerator generator(
@@ -94,7 +94,8 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
   gfx::Point start_point = gfx::Point(display_bounds.width() / 4, 10);
   gfx::Point end_point(start_point);
-  end_point.set_y(display_bounds.bottom() - ash::kShelfSize / 2);
+  end_point.set_y(display_bounds.bottom() -
+                  ash::ShelfConstants::shelf_size() / 2);
   ui_test_utils::DragEventGenerator generator(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),

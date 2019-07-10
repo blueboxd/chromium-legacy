@@ -1946,8 +1946,7 @@ TEST_F(DnsTransactionTest, HttpsPostLookupWithLog) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             kT0RecordCount);
   CountingObserver observer;
-  helper0.net_log()->AddObserver(&observer,
-                                 NetLogCaptureMode::IncludeSocketBytes());
+  helper0.net_log()->AddObserver(&observer, NetLogCaptureMode::kEverything);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.count(), 5);

@@ -9,10 +9,10 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_hints_util.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +47,8 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
     const base::DictionaryValue* top_host_blacklist =
         pref_service_->GetDictionary(
             optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
-    return top_host_blacklist->FindKey(previews::HashHostForDictionary(host));
+    return top_host_blacklist->FindKey(
+        optimization_guide::HashHostForDictionary(host));
   }
 
   void PopulateTopHostBlacklist(size_t num_hosts) {
@@ -58,8 +59,9 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
             ->CreateDeepCopy();
 
     for (size_t i = 1; i <= num_hosts; i++) {
-      top_host_filter->SetBoolKey(
-          HashHostForDictionary(base::StringPrintf("domain%zu.com", i)), true);
+      top_host_filter->SetBoolKey(optimization_guide::HashHostForDictionary(
+                                      base::StringPrintf("domain%zu.com", i)),
+                                  true);
     }
     pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
                        *top_host_filter);
@@ -71,7 +73,8 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
             ->GetDictionary(
                 optimization_guide::prefs::kHintsFetcherTopHostBlacklist)
             ->CreateDeepCopy();
-    top_host_filter->SetBoolKey(previews::HashHostForDictionary(host), true);
+    top_host_filter->SetBoolKey(optimization_guide::HashHostForDictionary(host),
+                                true);
     pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
                        *top_host_filter);
   }
@@ -97,8 +100,8 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
             ->CreateDeepCopy();
 
     for (size_t i = 1; i <= num_hosts_navigated; i++) {
-      top_host_filter->RemoveKey(
-          HashHostForDictionary(base::StringPrintf("domain%zu.com", i)));
+      top_host_filter->RemoveKey(optimization_guide::HashHostForDictionary(
+          base::StringPrintf("domain%zu.com", i)));
     }
     pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
                        *top_host_filter);

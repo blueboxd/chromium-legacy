@@ -297,20 +297,45 @@ def _process_dom_module(js_file, html_file):
   html_template = _extract_template(html_file, 'dom-module')
   js_imports = _generate_js_imports(html_file)
 
+  IIFE_OPENING = '(function() {\n'
+  IIFE_CLOSING = '})();'
+
   with open(js_file) as f:
     lines = f.readlines()
 
+  imports_added = False
+  iife_found = False
+
   for i, line in enumerate(lines):
-    # Place the JS imports right before the opening "Polymer({" line.
-    # Note: Currently assuming there is only one Polymer declaration per page,
-    # and no other code precedes it.
+    if not imports_added:
+      if line.startswith(IIFE_OPENING):
+        # Replace the IIFE opening line with the JS imports.
+        line = '\n'.join(js_imports) + '\n\n'
+        imports_added = True
+        iife_found = True
+      elif line.startswith('Polymer({\n'):
+        # Place the JS imports right before the opening "Polymer({" line.
+        line = line.replace(
+            r'Polymer({', '%s\n\nPolymer({' % '\n'.join(js_imports))
+        imports_added = True
+
     # Place the HTML content right after the opening "Polymer({" line.
+    # Note: There is currently an assumption that only one Polymer() declaration
+    # exists per file.
     line = line.replace(
         r'Polymer({',
-        '%s\nPolymer({\n  _template: html`%s`,' % (
-            '\n'.join(js_imports) + '\n', html_template))
+        'Polymer({\n  _template: html`%s`,' % html_template)
+
+    if line.startswith('cr.exportPath('):
+      line = ''
+
     line = _rewrite_namespaces(line)
     lines[i] = line
+
+  if iife_found:
+    last_line = lines[-1]
+    assert last_line.startswith(IIFE_CLOSING), 'Could not detect IIFE closing'
+    lines[-1] = ''
 
   # Use .m.js extension for the generated JS file, since both files need to be
   # served by a chrome:// URL side-by-side.

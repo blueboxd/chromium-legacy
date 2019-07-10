@@ -178,7 +178,7 @@ bool CupsPrinter::StartDocument(int job_id,
   http_status_t start_doc_status =
       cupsStartDestDocument(cups_http_, destination_.get(), dest_info_.get(),
                             job_id, document_name.c_str(), CUPS_FORMAT_PDF,
-                            options.size(), data, last_document ? 0 : 1);
+                            options.size(), data, last_document ? 1 : 0);
 
   cupsSetUser(nullptr);  // reset to default username ("anonymous")
   return start_doc_status == HTTP_CONTINUE;

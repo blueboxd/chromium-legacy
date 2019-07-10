@@ -14,32 +14,18 @@
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
 #endif
 
-namespace {
-
-static device::PlatformSensorProvider* g_provider_for_testing = nullptr;
-
-}  // namespace
-
 namespace device {
 
 // static
-void PlatformSensorProvider::SetProviderForTesting(
-    PlatformSensorProvider* provider) {
-  g_provider_for_testing = provider;
-}
-
-// static
-PlatformSensorProvider* PlatformSensorProvider::GetInstance() {
-  if (g_provider_for_testing)
-    return g_provider_for_testing;
+std::unique_ptr<PlatformSensorProvider> PlatformSensorProvider::Create() {
 #if defined(OS_MACOSX)
-  return PlatformSensorProviderMac::GetInstance();
+  return std::make_unique<PlatformSensorProviderMac>();
 #elif defined(OS_ANDROID)
-  return PlatformSensorProviderAndroid::GetInstance();
+  return std::make_unique<PlatformSensorProviderAndroid>();
 #elif defined(OS_WIN)
-  return PlatformSensorProviderWin::GetInstance();
+  return std::make_unique<PlatformSensorProviderWin>();
 #elif defined(OS_LINUX) && defined(USE_UDEV)
-  return PlatformSensorProviderLinux::GetInstance();
+  return std::make_unique<PlatformSensorProviderLinux>();
 #else
   return nullptr;
 #endif

@@ -3299,10 +3299,7 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
 
 void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
-  // TODO(crbug.com/907897): Once the raster path for painting PaintWorklets is
-  // removed, LayerTreeHostImpl will take ownership here rather than a pointer.
-  paint_worklet_painter_ = painter.get();
-  tile_manager_.SetPaintWorkletLayerPainter(std::move(painter));
+  paint_worklet_painter_ = std::move(painter);
 }
 
 LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {

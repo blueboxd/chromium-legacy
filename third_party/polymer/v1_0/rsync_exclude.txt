@@ -46,6 +46,7 @@ iron-checked-element-behavior/*
 iron-form-element-behavior/*
 
 # paper-behaviors
+paper-behaviors/paper-button-behavior.html
 paper-behaviors/paper-checked-element-behavior.html
 paper-behaviors/paper-inky-focus-behavior.html
 

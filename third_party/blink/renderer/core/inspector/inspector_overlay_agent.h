@@ -158,6 +158,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response getHighlightObjectForTest(
       int node_id,
       protocol::Maybe<bool> include_distance,
+      protocol::Maybe<bool> include_style,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
   // InspectorBaseAgent overrides.

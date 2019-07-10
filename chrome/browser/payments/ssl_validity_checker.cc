@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/url_util.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"

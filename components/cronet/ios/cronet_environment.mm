@@ -175,8 +175,8 @@ void CronetEnvironment::StartNetLogOnNetworkThread(const base::FilePath& path,
     return;
 
   net::NetLogCaptureMode capture_mode =
-      log_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
-                : net::NetLogCaptureMode::Default();
+      log_bytes ? net::NetLogCaptureMode::kEverything
+                : net::NetLogCaptureMode::kDefault;
 
   file_net_log_observer_ =
       net::FileNetLogObserver::CreateUnbounded(path, nullptr);

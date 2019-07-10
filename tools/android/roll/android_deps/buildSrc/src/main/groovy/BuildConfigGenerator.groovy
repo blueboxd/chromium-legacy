@@ -239,6 +239,10 @@ class BuildConfigGenerator extends DefaultTask {
             }
         }
         switch(dependencyId) {
+            case 'android_arch_lifecycle_runtime_java':
+                sb.append('  # https://crbug.com/887942#c1\n')
+                sb.append('  ignore_proguard_configs = true\n')
+                break
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439

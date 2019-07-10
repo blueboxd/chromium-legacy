@@ -35,8 +35,6 @@
 
 namespace net {
 
-class NetLogCaptureMode;
-
 // Allows DoVerifyOnWorkerThread to wait on a base::WaitableEvent.
 // DoVerifyOnWorkerThread may wait on network operations done on a separate
 // sequence. For instance when using the NSS-based implementation of certificate

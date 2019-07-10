@@ -1103,15 +1103,6 @@ void InputHandlerProxy::DeliverInputForBeginFrame(
         scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
                                                 args.frame_time);
 
-    // TODO(eirage): Remove this component as it's same as
-    // LATENCY_BEGIN_FRAME_RENDERER_*.
-    // Save the rAF time in the latency info to be able to compute the
-    // output latency.
-    LatencyInfo* latency_info = event_with_callback->mutable_latency_info();
-    latency_info->AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT,
-        args.frame_time);
-
     DispatchSingleInputEvent(std::move(event_with_callback), args.frame_time);
   }
 }

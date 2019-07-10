@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.native_test.NativeBrowserTestApplication;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * A basic chrome.browser.tests {@link android.app.Application}.
@@ -27,6 +28,9 @@ public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication 
         if (isBrowserProcess) {
             // Test-only stuff, see also NativeUnitTest.java.
             PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+            // ResourceBundle asserts that locale paks have been given to it.
+            // In test targets there is no list of paks generated.
+            ResourceBundle.setNoAvailableLocalePaks();
         }
     }
 }

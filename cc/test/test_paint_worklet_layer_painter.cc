@@ -13,16 +13,6 @@ TestPaintWorkletLayerPainter::TestPaintWorkletLayerPainter() = default;
 
 TestPaintWorkletLayerPainter::~TestPaintWorkletLayerPainter() = default;
 
-sk_sp<PaintRecord> TestPaintWorkletLayerPainter::Paint(
-    const PaintWorkletInput*) {
-  auto manual_record = sk_make_sp<PaintOpBuffer>();
-  scoped_refptr<TestPaintWorkletInput> input =
-      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));
-  PaintImage image = CreatePaintWorkletPaintImage(input);
-  manual_record->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
-  return manual_record;
-}
-
 void TestPaintWorkletLayerPainter::DispatchWorklets(
     PaintWorkletJobMap,
     DoneCallback done_callback) {

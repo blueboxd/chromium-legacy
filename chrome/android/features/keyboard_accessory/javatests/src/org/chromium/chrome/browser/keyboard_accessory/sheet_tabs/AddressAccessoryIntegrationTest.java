@@ -23,6 +23,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -50,13 +52,13 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for address accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
 @RetryOnFailure
 @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -112,7 +114,7 @@ public class AddressAccessoryIntegrationTest {
 
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(allOf(withContentDescription(R.string.address_accessory_sheet_toggle),
@@ -126,11 +128,10 @@ public class AddressAccessoryIntegrationTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testFillsSuggestionOnClick()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testFillsSuggestionOnClick() throws InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
         // Scroll to last element and click the second icon:
         whenDisplayed(withId(R.id.bar_items_view))

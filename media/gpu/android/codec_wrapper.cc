@@ -107,14 +107,20 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
 
 CodecOutputBuffer::CodecOutputBuffer(scoped_refptr<CodecWrapperImpl> codec,
                                      int64_t id,
-                                     gfx::Size size)
+                                     const gfx::Size& size)
     : codec_(std::move(codec)), id_(id), size_(size) {}
+
+// For testing.
+CodecOutputBuffer::CodecOutputBuffer(int64_t id, const gfx::Size& size)
+    : id_(id), size_(size) {}
 
 CodecOutputBuffer::~CodecOutputBuffer() {
   // While it will work if we re-release the buffer, since CodecWrapper handles
   // it properly, we can save a lock + (possibly) post by checking here if we
   // know that it has been rendered already.
-  if (!was_rendered_)
+  //
+  // |codec_| might be null, but only for tests.
+  if (!was_rendered_ && codec_)
     codec_->ReleaseCodecOutputBuffer(id_, false);
 }
 

@@ -10,11 +10,6 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
-
 namespace device {
 
 class PlatformSensorReaderWin;
@@ -26,7 +21,8 @@ class PlatformSensorReaderWin;
 // - Constructs PlatformSensorWin on IPC thread and returns it to requester.
 class PlatformSensorProviderWin final : public PlatformSensorProvider {
  public:
-  static PlatformSensorProviderWin* GetInstance();
+  PlatformSensorProviderWin();
+  ~PlatformSensorProviderWin() override;
 
   // Overrides ISensorManager COM interface provided by the system, used
   // only for testing purposes.
@@ -34,18 +30,12 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
       Microsoft::WRL::ComPtr<ISensorManager> sensor_manager);
 
  protected:
-  ~PlatformSensorProviderWin() override;
-
   // PlatformSensorProvider interface implementation.
   void CreateSensorInternal(mojom::SensorType type,
                             SensorReadingSharedBuffer* reading_buffer,
                             const CreateSensorCallback& callback) override;
 
  private:
-  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWin>;
-
-  PlatformSensorProviderWin();
-
   void InitSensorManager();
   void OnInitSensorManager(mojom::SensorType type,
                            SensorReadingSharedBuffer* reading_buffer,

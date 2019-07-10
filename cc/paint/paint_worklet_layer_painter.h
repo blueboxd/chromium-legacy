@@ -12,21 +12,12 @@
 
 namespace cc {
 
-class PaintWorkletInput;
-
 // PaintWorkletLayerPainter bridges between the compositor and the PaintWorklet
 // thread, providing hooks for the compositor to paint PaintWorklet content that
 // Blink has deferred on.
 class CC_PAINT_EXPORT PaintWorkletLayerPainter {
  public:
   virtual ~PaintWorkletLayerPainter() {}
-
-  // Synchronously paints a PaintWorklet instance (represented by a
-  // PaintWorkletInput), returning the resultant PaintRecord.
-  //
-  // TODO(crbug.com/907897): Once we remove the raster thread path, we will only
-  // be using |DispatchWorklets| and this can be removed.
-  virtual sk_sp<PaintRecord> Paint(const PaintWorkletInput*) = 0;
 
   // Asynchronously paints a set of PaintWorklet instances. The results are
   // returned via the provided callback, on the same thread that originally

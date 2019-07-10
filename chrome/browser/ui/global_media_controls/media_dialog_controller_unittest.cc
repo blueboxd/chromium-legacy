@@ -48,15 +48,20 @@ class MediaDialogControllerTest : public testing::Test {
   }
 
  protected:
-  void SimulateFocusGained(const base::UnguessableToken& id,
-                           bool controllable) {
+  AudioFocusRequestStatePtr CreateFocusRequest(const base::UnguessableToken& id,
+                                               bool controllable) {
     MediaSessionInfoPtr session_info(MediaSessionInfo::New());
     session_info->is_controllable = controllable;
 
     AudioFocusRequestStatePtr focus(AudioFocusRequestState::New());
     focus->request_id = id;
     focus->session_info = std::move(session_info);
-    controller_->OnFocusGained(std::move(focus));
+    return focus;
+  }
+
+  void SimulateFocusGained(const base::UnguessableToken& id,
+                           bool controllable) {
+    controller_->OnFocusGained(CreateFocusRequest(id, controllable));
   }
 
   void SimulateFocusLost(const base::UnguessableToken& id) {
@@ -79,6 +84,11 @@ class MediaDialogControllerTest : public testing::Test {
     metadata.title = base::ASCIIToUTF16("title");
     metadata.artist = base::ASCIIToUTF16("artist");
     item_itr->second.MediaSessionMetadataChanged(std::move(metadata));
+  }
+
+  void SimulateReceivedAudioFocusRequests(
+      std::vector<AudioFocusRequestStatePtr> requests) {
+    controller_->OnReceivedAudioFocusRequests(std::move(requests));
   }
 
   MockMediaDialogControllerDelegate& delegate() { return delegate_; }
@@ -112,4 +122,26 @@ TEST_F(MediaDialogControllerTest, DoesNotShowUncontrollableSession) {
 
   SimulateFocusGained(id, false);
   SimulateNecessaryMetadata(id);
+}
+
+TEST_F(MediaDialogControllerTest, ShowsAllInitialControllableSessions) {
+  base::UnguessableToken controllable1_id = base::UnguessableToken::Create();
+  base::UnguessableToken uncontrollable_id = base::UnguessableToken::Create();
+  base::UnguessableToken controllable2_id = base::UnguessableToken::Create();
+
+  EXPECT_CALL(delegate(), ShowMediaSession(controllable1_id.ToString(), _));
+  EXPECT_CALL(delegate(), ShowMediaSession(uncontrollable_id.ToString(), _))
+      .Times(0);
+  EXPECT_CALL(delegate(), ShowMediaSession(controllable2_id.ToString(), _));
+
+  std::vector<AudioFocusRequestStatePtr> requests;
+  requests.push_back(CreateFocusRequest(controllable1_id, true));
+  requests.push_back(CreateFocusRequest(uncontrollable_id, false));
+  requests.push_back(CreateFocusRequest(controllable2_id, true));
+
+  SimulateReceivedAudioFocusRequests(std::move(requests));
+
+  SimulateNecessaryMetadata(controllable1_id);
+  SimulateNecessaryMetadata(uncontrollable_id);
+  SimulateNecessaryMetadata(controllable2_id);
 }

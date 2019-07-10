@@ -259,11 +259,9 @@ class TraceEventDataSourceTest : public testing::Test {
     }
     if (filtering_enabled) {
       EXPECT_FALSE(packet->thread_descriptor().has_thread_name());
-    } else {
-      EXPECT_EQ(kTestThread, packet->thread_descriptor().thread_name());
+      EXPECT_EQ(perfetto::protos::ThreadDescriptor::CHROME_THREAD_MAIN,
+                packet->thread_descriptor().chrome_thread_type());
     }
-    EXPECT_EQ(perfetto::protos::ThreadDescriptor::CHROME_THREAD_MAIN,
-              packet->thread_descriptor().chrome_thread_type());
 
     last_timestamp_ = packet->thread_descriptor().reference_timestamp_us();
     last_thread_time_ = packet->thread_descriptor().reference_thread_time_us();

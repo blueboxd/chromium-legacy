@@ -335,7 +335,7 @@ void MCSProbe::InitializeNetworkState() {
     base::FilePath log_path = command_line_.GetSwitchValuePath(kLogFileSwitch);
     logger_ = net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
     net::NetLogCaptureMode capture_mode =
-        net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+        net::NetLogCaptureMode::kIncludeSensitive;
     logger_->StartObserving(&net_log_, capture_mode);
   }
 

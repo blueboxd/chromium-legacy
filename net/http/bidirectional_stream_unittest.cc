@@ -408,7 +408,7 @@ class BidirectionalStreamTest : public TestWithScopedTaskEnvironment {
     ssl_data_.next_proto = kProtoHTTP2;
     ssl_data_.ssl_info.cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
-    net_log_.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
+    net_log_.SetCaptureMode(NetLogCaptureMode::kEverything);
     socket_factory_ = new MockTaggingClientSocketFactory();
     session_deps_.socket_factory.reset(socket_factory_);
   }

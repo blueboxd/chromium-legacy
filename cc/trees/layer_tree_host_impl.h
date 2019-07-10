@@ -741,7 +741,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter);
   PaintWorkletLayerPainter* GetPaintWorkletLayerPainterForTesting() const {
-    return paint_worklet_painter_;
+    return paint_worklet_painter_.get();
   }
 
   // The viewport has two scroll nodes, corresponding to the visual and layout
@@ -1238,10 +1238,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
   // to the worklet thread via |paint_worklet_painter_|.
-  //
-  // TODO(crbug.com/907897): Once the raster path for painting PaintWorklets is
-  // removed, this will change to a std::unique_ptr.
-  PaintWorkletLayerPainter* paint_worklet_painter_ = nullptr;
+  std::unique_ptr<PaintWorkletLayerPainter> paint_worklet_painter_;
 
   // While PaintWorklet painting is ongoing the PendingTree is not yet fully
   // painted and cannot be rastered or activated. This boolean tracks whether or

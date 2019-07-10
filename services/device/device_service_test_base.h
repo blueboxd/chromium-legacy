@@ -31,6 +31,7 @@ class DeviceServiceTestBase : public testing::Test {
 
  protected:
   service_manager::Connector* connector() { return connector_.get(); }
+  DeviceService* device_service() { return service_.get(); }
 
   // Can optionally be called to destroy the service before a child test fixture
   // shuts down, in case the DeviceService has dependencies on objects created

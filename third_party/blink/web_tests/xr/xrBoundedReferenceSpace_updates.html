@@ -13,7 +13,12 @@
 let testName =
   "'XRBoundedReferenceSpace updates properly when the changes are applied";
 
-let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
+let fakeDeviceInitParams = {
+    supportsImmersive: true,
+    views: VALID_VIEWS,
+    viewerOrigin: IDENTITY_TRANSFORM,
+    localToFloorLevelTransform: VALID_LOCAL_TO_FLOOR_TRANSFORM
+};
 
 let requestSessionModes = [
   'immersive-vr',
@@ -25,7 +30,8 @@ let testFunction = function(session, t, fakeDeviceController) {
     baseLayer: new XRWebGLLayer(session, gl)
   });
 
-  fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
+  // If the array bounds aren't set, but the stage size is, then Chrome should
+  // fake the stage size.
   fakeDeviceController.setStageSize(2.0, 3.0);
 
   return new Promise((resolve, reject) => {
@@ -42,7 +48,7 @@ let testFunction = function(session, t, fakeDeviceController) {
               assert_not_equals(pose, null);
 
               let poseMatrix = pose.transform.matrix;
-              assert_matrices_approx_equal(poseMatrix, VALID_STAGE_TRANSFORM);
+              assert_matrices_approx_equal(poseMatrix, VALID_LOCAL_TO_FLOOR_MATRIX);
 
               // If an explicit array of bounds points was not provided then the
               // bounds geometry should represent the four corners of the rectangle
@@ -58,7 +64,7 @@ let testFunction = function(session, t, fakeDeviceController) {
             });
 
             // Now set the bounds explicitly and check again on the next frame.
-            fakeDeviceController.setStageBounds(VALID_BOUNDS);
+            fakeDeviceController.setBoundsGeometry(VALID_BOUNDS);
             session.requestAnimationFrame(onFrame);
           }
 
@@ -71,9 +77,9 @@ let testFunction = function(session, t, fakeDeviceController) {
                 let valid_point = VALID_BOUNDS[i];
                 let bounds_point = referenceSpace.boundsGeometry[i];
                 assert_equals(valid_point.x, bounds_point.x);
-                assert_equals(point.y, 0.0);
+                assert_equals(bounds_point.y, 0.0);
                 assert_equals(valid_point.z, bounds_point.z);
-                assert_equals(point.w, 1.0);
+                assert_equals(bounds_point.w, 1.0);
               }
             });
 

@@ -59,6 +59,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -210,14 +211,26 @@ void ProcessMirrorHeaderUIThread(
     //
     // - Going Incognito (already handled in above switch-case).
     // - Displaying the Account Manager for managing accounts.
+    // - Displaying a reauthentication window: Enterprise GSuite Accounts could
+    // have been forced through an online in-browser sign-in for sensitive
+    // webpages, thereby decreasing their session validity. After their session
+    // expires, they will receive a "Mirror" re-authentication request for all
+    // Google web properties.
 
     // Do not display Account Manager if the navigation happened in the
     // "background".
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
 
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile, chrome::kAccountManagerSubPage);
+    if (manage_accounts_params.email.empty()) {
+      // Display Account Manager for managing accounts.
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile, chrome::kAccountManagerSubPage);
+    } else {
+      // Display a re-authentication dialog.
+      chromeos::InlineLoginHandlerDialogChromeOS::Show(
+          manage_accounts_params.email);
+    }
     return;
   }
 

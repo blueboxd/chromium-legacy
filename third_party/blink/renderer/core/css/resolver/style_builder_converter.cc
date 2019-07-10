@@ -1232,8 +1232,8 @@ Length StyleBuilderConverter::ConvertQuirkyLength(StyleResolverState& state,
                                                   const CSSValue& value) {
   Length length = ConvertLengthOrAuto(state, value);
   // This is only for margins which use __qem
-  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  length.SetQuirk(primitive_value && primitive_value->IsQuirkyEms());
+  auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
+  length.SetQuirk(numeric_literal && numeric_literal->IsQuirkyEms());
   return length;
 }
 

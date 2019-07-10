@@ -392,7 +392,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
                           base::Unretained(this)),
                net_log.bound());
   base::RunLoop run_loop;
-  net_log.SetCaptureMode(NetLogCaptureMode::Default());
+  net_log.SetCaptureMode(NetLogCaptureMode::kDefault);
   store_->LoadCookiesForKey(
       "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
                             base::Unretained(this), run_loop.QuitClosure()));

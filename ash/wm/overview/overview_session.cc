@@ -80,7 +80,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   // shown, but we want to place the thumbnails as if the shelf was shown, so
   // manually update the work area.
   if (Shelf::ForWindow(root_window)->GetVisibilityState() == SHELF_AUTO_HIDE) {
-    const int inset = kShelfSize;
+    const int inset = ShelfConstants::shelf_size();
     switch (Shelf::ForWindow(root_window)->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:

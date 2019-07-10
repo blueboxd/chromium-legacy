@@ -480,13 +480,15 @@ void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
   if (fetch_request_data_->Integrity().IsEmpty() &&
       !response_has_no_store_header_) {
     // BufferingBytesConsumer reads chunks from |bytes_consumer| as soon as
-    // they get available to relieve backpressure.
+    // they get available to relieve backpressure.  Buffering starts after
+    // a short delay, however, to allow the Response to be drained; e.g.
+    // when the Response is passed to FetchEvent.respondWith(), etc.
     //
     // https://fetch.spec.whatwg.org/#fetching
     // The user agent should ignore the suspension request if the ongoing
     // fetch is updating the response in the HTTP cache for the request.
-    place_holder_body_->Update(
-        MakeGarbageCollected<BufferingBytesConsumer>(&body));
+    place_holder_body_->Update(BufferingBytesConsumer::CreateWithDelay(
+        &body, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking)));
   } else {
     place_holder_body_->Update(&body);
   }

@@ -28,15 +28,27 @@ class Image;
 // TODO(crbug/960502): we should limit the access of these properties.
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
-  unsigned record_id;
+  ImageRecord(DOMNodeId new_node_id,
+              const ImageResourceContent* new_cached_image,
+              uint64_t new_first_size)
+      : node_id(new_node_id),
+        cached_image(new_cached_image),
+        first_size(new_first_size) {
+    static unsigned next_insertion_index_ = 1;
+    insertion_index = next_insertion_index_++;
+  }
+
+  ImageRecord() {}
+
   DOMNodeId node_id = kInvalidDOMNodeId;
+  WeakPersistent<const ImageResourceContent> cached_image;
   // Mind that |first_size| has to be assigned before pusing to
   // |size_ordered_set_| since it's the sorting key.
   uint64_t first_size = 0;
   unsigned frame_index = 0;
+  unsigned insertion_index;
   // The time of the first paint after fully loaded. 0 means not painted yet.
   base::TimeTicks paint_time = base::TimeTicks();
-  WeakPersistent<const ImageResourceContent> cached_image;
   bool loaded = false;
 };
 
@@ -56,16 +68,15 @@ class CORE_EXPORT ImageRecordsManager {
       std::set<base::WeakPtr<ImageRecord>, NodesQueueComparator>;
 
  public:
-  // Set a big enough limit for the number of nodes to ensure memory usage is
-  // capped. Exceeding such limit will make the detactor stops recording
-  // entries.
-  static constexpr size_t kImageNodeNumberLimit = 5000;
-
   ImageRecordsManager();
   ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
 
+  inline void RemoveInvisibleRecordIfNeeded(
+      const DOMNodeId& invisible_node_id) {
+    invisible_node_ids_.erase(invisible_node_id);
+  }
   inline void RemoveVisibleRecord(
       const BackgroundImageId& background_image_id) {
     base::WeakPtr<ImageRecord> record =
@@ -78,7 +89,6 @@ class CORE_EXPORT ImageRecordsManager {
   }
 
   inline void RecordInvisibleNode(const DOMNodeId& node_id) {
-    DCHECK(!RecordedTooManyNodes());
     invisible_node_ids_.insert(node_id);
   }
   void RecordVisibleNode(const BackgroundImageId& background_image_id,
@@ -90,11 +100,6 @@ class CORE_EXPORT ImageRecordsManager {
   }
   bool IsRecordedInvisibleNode(const DOMNodeId& node_id) const {
     return invisible_node_ids_.Contains(node_id);
-  }
-
-  inline bool RecordedTooManyNodes() const {
-    return visible_background_image_map_.size() + invisible_node_ids_.size() >
-           kImageNodeNumberLimit;
   }
 
   inline bool WasVisibleNodeLoaded(
@@ -151,7 +156,6 @@ class CORE_EXPORT ImageRecordsManager {
     record->loaded = true;
   }
 
-  unsigned max_record_id_ = 0;
   HashMap<BackgroundImageId, std::unique_ptr<ImageRecord>>
       visible_background_image_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
@@ -201,7 +205,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
       const ImageResourceContent& cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
   void OnPaintFinished();
-  void LayoutObjectWillBeDestroyed(DOMNodeId);
+  void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyBackgroundImageRemoved(DOMNodeId, const ImageResourceContent*);
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if
@@ -230,7 +234,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
   void Deactivate();
-  void HandleTooManyNodes();
 
   void UpdateCandidate();
 

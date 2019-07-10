@@ -33,11 +33,11 @@ const int kEvents = 100;
 // this internal value is not exposed. These tests need to serialize a
 // NetLogCaptureMode to a base::Value, so create our own private mapping.
 int CaptureModeToInt(NetLogCaptureMode capture_mode) {
-  if (capture_mode == NetLogCaptureMode::Default())
+  if (capture_mode == NetLogCaptureMode::kDefault)
     return 0;
-  if (capture_mode == NetLogCaptureMode::IncludeCookiesAndCredentials())
+  if (capture_mode == NetLogCaptureMode::kIncludeSensitive)
     return 1;
-  if (capture_mode == NetLogCaptureMode::IncludeSocketBytes())
+  if (capture_mode == NetLogCaptureMode::kEverything)
     return 2;
 
   ADD_FAILURE() << "Unknown capture mode";
@@ -75,9 +75,9 @@ TEST(NetLogTest, Basic) {
 // Check that the correct CaptureMode is sent to NetLog Value callbacks.
 TEST(NetLogTest, CaptureModes) {
   NetLogCaptureMode kModes[] = {
-      NetLogCaptureMode::Default(),
-      NetLogCaptureMode::IncludeCookiesAndCredentials(),
-      NetLogCaptureMode::IncludeSocketBytes(),
+      NetLogCaptureMode::kDefault,
+      NetLogCaptureMode::kIncludeSensitive,
+      NetLogCaptureMode::kEverything,
   };
 
   TestNetLog net_log;
@@ -218,17 +218,14 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
     for (int i = 0; i < kEvents; ++i) {
       ASSERT_FALSE(observer_.net_log());
 
-      net_log_->AddObserver(&observer_,
-                            NetLogCaptureMode::IncludeCookiesAndCredentials());
+      net_log_->AddObserver(&observer_, NetLogCaptureMode::kIncludeSensitive);
       ASSERT_EQ(net_log_, observer_.net_log());
-      ASSERT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-                observer_.capture_mode());
+      ASSERT_EQ(NetLogCaptureMode::kIncludeSensitive, observer_.capture_mode());
 
       net_log_->SetObserverCaptureMode(&observer_,
-                                       NetLogCaptureMode::IncludeSocketBytes());
+                                       NetLogCaptureMode::kEverything);
       ASSERT_EQ(net_log_, observer_.net_log());
-      ASSERT_EQ(NetLogCaptureMode::IncludeSocketBytes(),
-                observer_.capture_mode());
+      ASSERT_EQ(NetLogCaptureMode::kEverything, observer_.capture_mode());
 
       net_log_->RemoveObserver(&observer_);
       ASSERT_TRUE(!observer_.net_log());
@@ -268,7 +265,7 @@ TEST(NetLogTest, NetLogEventThreads) {
   // safely detach themselves on destruction.
   CountingObserver observers[3];
   for (size_t i = 0; i < base::size(observers); ++i) {
-    net_log.AddObserver(&observers[i], NetLogCaptureMode::IncludeSocketBytes());
+    net_log.AddObserver(&observers[i], NetLogCaptureMode::kEverything);
   }
 
   // Run a bunch of threads to completion, each of which will emit events to
@@ -292,22 +289,19 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_FALSE(net_log.IsCapturing());
 
   // Add the observer and add an event.
-  net_log.AddObserver(&observer,
-                      NetLogCaptureMode::IncludeCookiesAndCredentials());
+  net_log.AddObserver(&observer, NetLogCaptureMode::kIncludeSensitive);
   EXPECT_TRUE(net_log.IsCapturing());
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-            observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer.capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   AddEvent(&net_log);
   EXPECT_EQ(1, observer.count());
 
   // Change the observer's logging level and add an event.
-  net_log.SetObserverCaptureMode(&observer,
-                                 NetLogCaptureMode::IncludeSocketBytes());
+  net_log.SetObserverCaptureMode(&observer, NetLogCaptureMode::kEverything);
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kEverything, observer.capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   AddEvent(&net_log);
@@ -322,9 +316,9 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_EQ(2, observer.count());
 
   // Add the observer a final time, and add an event.
-  net_log.AddObserver(&observer, NetLogCaptureMode::IncludeSocketBytes());
+  net_log.AddObserver(&observer, NetLogCaptureMode::kEverything);
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kEverything, observer.capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   AddEvent(&net_log);
@@ -337,22 +331,18 @@ TEST(NetLogTest, NetLogTwoObservers) {
   LoggingObserver observer[2];
 
   // Add first observer.
-  net_log.AddObserver(&observer[0],
-                      NetLogCaptureMode::IncludeCookiesAndCredentials());
+  net_log.AddObserver(&observer[0], NetLogCaptureMode::kIncludeSensitive);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-            observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer[0].capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   // Add second observer observer.
-  net_log.AddObserver(&observer[1], NetLogCaptureMode::IncludeSocketBytes());
+  net_log.AddObserver(&observer[1], NetLogCaptureMode::kEverything);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(&net_log, observer[1].net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-            observer[0].capture_mode());
-  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(),
-            observer[1].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kEverything, observer[1].capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   // Add event and make sure both observers receive it at their respective log
@@ -370,8 +360,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   net_log.RemoveObserver(&observer[1]);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-            observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::kIncludeSensitive, observer[0].capture_mode());
   EXPECT_TRUE(net_log.IsCapturing());
 
   // Add event and make sure only second observer gets it.
@@ -516,7 +505,7 @@ TEST(NetLogTest, NetLogEntryToValueEmptyParams) {
   NetLogEntryData entry_data1(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
                               NetLogEventPhase::BEGIN, base::TimeTicks(),
                               nullptr);
-  NetLogEntry entry1(&entry_data1, NetLogCaptureMode::Default());
+  NetLogEntry entry1(&entry_data1, NetLogCaptureMode::kDefault);
 
   // NetLogEntry with a parameters callback that returns a NONE value.
   NetLogParametersCallback callback2 =
@@ -524,7 +513,7 @@ TEST(NetLogTest, NetLogEntryToValueEmptyParams) {
   NetLogEntryData entry_data2(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
                               NetLogEventPhase::BEGIN, base::TimeTicks(),
                               &callback2);
-  NetLogEntry entry2(&entry_data2, NetLogCaptureMode::Default());
+  NetLogEntry entry2(&entry_data2, NetLogCaptureMode::kDefault);
 
   ASSERT_FALSE(entry_data1.parameters_callback);
   ASSERT_TRUE(entry_data2.parameters_callback);

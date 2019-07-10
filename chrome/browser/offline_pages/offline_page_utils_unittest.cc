@@ -350,12 +350,7 @@ TEST_F(OfflinePageUtilsTest, CheckDuplicateDownloads) {
   EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND, result);
 }
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_ScheduleDownload DISABLED_ScheduleDownload
-#else
-#define MAYBE_ScheduleDownload ScheduleDownload
-#endif
-TEST_F(OfflinePageUtilsTest, MAYBE_ScheduleDownload) {
+TEST_F(OfflinePageUtilsTest, ScheduleDownload) {
   // Pre-check.
   ASSERT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage1Url));
   ASSERT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage3Url));
@@ -394,14 +389,7 @@ TEST_F(OfflinePageUtilsTest, ScheduleDownloadWithFailedFileAcecssRequest) {
 }
 #endif
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_TestGetCachedOfflinePageSizeBetween \
-  DISABLED_TestGetCachedOfflinePageSizeBetween
-#else
-#define MAYBE_TestGetCachedOfflinePageSizeBetween \
-  TestGetCachedOfflinePageSizeBetween
-#endif
-TEST_F(OfflinePageUtilsTest, MAYBE_TestGetCachedOfflinePageSizeBetween) {
+TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeBetween) {
   // The clock will be at 03:00:00 after adding pages.
   CreateCachedOfflinePages();
 

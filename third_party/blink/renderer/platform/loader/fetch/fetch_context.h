@@ -142,6 +142,10 @@ class PLATFORM_EXPORT FetchContext
     return false;
   }
 
+  virtual WebURLRequest::PreviewsState previews_state() const {
+    return WebURLRequest::kPreviewsUnspecified;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FetchContext);
 };

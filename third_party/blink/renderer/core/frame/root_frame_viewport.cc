@@ -291,7 +291,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   PhysicalRect rect_in_document = rect_in_absolute;
   rect_in_document.Move(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+      PhysicalOffset::FromFloatSizeFloor(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(

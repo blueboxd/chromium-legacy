@@ -6,6 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 
 namespace payments {
 

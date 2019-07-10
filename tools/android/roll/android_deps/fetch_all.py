@@ -340,8 +340,8 @@ def main():
   parser.add_argument('--reset-workspace', action='store_true',
       help='Reset your Chromium workspace to its HEAD state, but preserves '
       'build.gradle changes. Use this to undo previous --update-all changes.')
-  parser.add_argument('--log-level', help='Set log level (e.g. \'info\' or '
-                      '\'debug\')')
+  parser.add_argument(
+      '--debug', actino='store_true', help='Enable debug logging')
   args = parser.parse_args()
 
   # Determine Chromium source tree.
@@ -373,8 +373,8 @@ def main():
 
   logging.basicConfig(format='%(message)s')
   logger = logging.getLogger()
-  if args.log_level:
-    logger.setLevel(args.log_level.upper())
+  if args.debug:
+    logger.setLevel('DEBUG')
 
   # Handle --reset-workspace here.
   if args.reset_workspace:
@@ -435,6 +435,9 @@ def main():
         'setupRepository',
         '--stacktrace',
     ]
+    if args.debug:
+      gradle_cmd.append('--debug')
+
     RunCommand(gradle_cmd)
 
     libs_dir = os.path.join(build_dir, args.git_dir, _ANDROID_DEPS_LIBS_SUBDIR)

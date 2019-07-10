@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace payments {

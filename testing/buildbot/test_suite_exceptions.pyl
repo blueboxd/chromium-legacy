@@ -28,9 +28,6 @@
       'Marshmallow Tablet Tester',
       # chromium.fyi.json
       'android-code-coverage',
-      # chromium.memory.json
-      'Android CFI',
-      'android-asan',
     ],
   },
   'android_webview_unittests': {

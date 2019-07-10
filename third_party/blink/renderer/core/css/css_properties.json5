@@ -2497,6 +2497,20 @@
       type_name: "EOverflow",
     },
     {
+      name: "overscroll-behavior-inline",
+      direction_aware_options: {
+        resolver: "inline",
+        physical_group: "overscroll-behavior",
+      },
+    },
+    {
+      name: "overscroll-behavior-block",
+      direction_aware_options: {
+        resolver: "block",
+        physical_group: "overscroll-behavior",
+      },
+    },
+    {
       name: "overscroll-behavior-x",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",

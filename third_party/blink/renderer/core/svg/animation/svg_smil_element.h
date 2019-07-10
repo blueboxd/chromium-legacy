@@ -185,9 +185,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
 
-  enum RestartedInterval { kDidNotRestartInterval, kDidRestartInterval };
-
-  RestartedInterval MaybeRestartInterval(double elapsed);
+  base::Optional<SMILInterval> CheckForNewRestartInterval(double elapsed);
   void BeginListChanged(SMILTime event_time);
   void EndListChanged(SMILTime event_time);
 

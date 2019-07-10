@@ -268,8 +268,8 @@ void RawResource::ResponseBodyReceived(
   if (!client && GetResourceRequest().UseStreamOnResponse()) {
     // For preload, we want to store the body while dispatching
     // onload and onerror events.
-    bytes_consumer_for_preload_ = MakeGarbageCollected<BufferingBytesConsumer>(
-        &body_loader.DrainAsBytesConsumer());
+    bytes_consumer_for_preload_ =
+        BufferingBytesConsumer::Create(&body_loader.DrainAsBytesConsumer());
     return;
   }
 

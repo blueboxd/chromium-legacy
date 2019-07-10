@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -285,6 +287,16 @@ const char* BuildDescriptionFromHeaders(AXPlatformNodeDelegate* delegate,
   }
 
   std::string result = base::JoinString(names, " ");
+
+#if defined(LEAK_SANITIZER) && !defined(OS_NACL)
+  // http://crbug.com/982839
+  // atk_table_get_column_description and atk_table_get_row_description return
+  // const gchar*, which suggests the caller does not gain ownership of the
+  // returned string. The g_strdup below causes a new allocation, which does not
+  // fit that pattern and causes a leak in tests.
+  ScopedLeakSanitizerDisabler lsan_disabler;
+#endif
+
   return g_strdup(result.c_str());
 }
 

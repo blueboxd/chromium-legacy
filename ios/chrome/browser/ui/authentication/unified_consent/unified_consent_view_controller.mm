@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -168,7 +169,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   UILabel* title =
       [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE
                        fontStyle:kAuthenticationTitleFontStyle
-                  textColorAlpha:kAuthenticationTitleColorAlpha
+                       textColor:UIColor.cr_labelColor
                       parentView:container];
 
   // Identity picker view.
@@ -184,20 +185,19 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   UILabel* syncTitleLabel =
       [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE
                        fontStyle:kAuthenticationTextFontStyle
-                  textColorAlpha:kAuthenticationTitleColorAlpha
+                       textColor:UIColor.cr_labelColor
                       parentView:container];
 
   UILabel* syncSubtitleLabel =
       [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE
                        fontStyle:kAuthenticationTextFontStyle
-                  textColorAlpha:kAuthenticationTextColorAlpha
+                       textColor:UIColor.cr_secondaryLabelColor
                       parentView:container];
 
   // Separator.
   UIView* separator = [[UIView alloc] initWithFrame:CGRectZero];
   separator.translatesAutoresizingMaskIntoConstraints = NO;
-  separator.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kAuthenticationSeparatorColorAlpha];
+  separator.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;
   [container addSubview:separator];
 
   // Customize label.
@@ -205,7 +205,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   self.customizeSyncLabel =
       [self addLabelWithStringId:self.openSettingsStringId
                        fontStyle:kAuthenticationTextFontStyle
-                  textColorAlpha:kAuthenticationTextColorAlpha
+                       textColor:UIColor.cr_secondaryLabelColor
                       parentView:container];
 
   // Layouts
@@ -356,14 +356,14 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 // Adds label with title |stringId| into |parentView|.
 - (UILabel*)addLabelWithStringId:(int)stringId
                        fontStyle:(UIFontTextStyle)fontStyle
-                  textColorAlpha:(CGFloat)textColorAlpha
+                       textColor:(UIColor*)textColor
                       parentView:(UIView*)parentView {
   DCHECK(stringId);
   DCHECK(parentView);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.font = [UIFont preferredFontForTextStyle:fontStyle];
-  label.textColor = [UIColor colorWithWhite:0 alpha:textColorAlpha];
+  label.textColor = textColor;
   label.text = l10n_util::GetNSString(stringId);
   _consentStringIds.push_back(stringId);
   label.numberOfLines = 0;

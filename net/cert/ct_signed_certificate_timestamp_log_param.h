@@ -9,14 +9,13 @@
 
 #include "base/strings/string_piece.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
+#include "net/log/net_log_capture_mode.h"
 
 namespace base {
 class Value;
 }
 
 namespace net {
-
-class NetLogCaptureMode;
 
 // Creates a dictionary of processed Signed Certificate Timestamps to be
 // logged in the NetLog.

@@ -183,6 +183,11 @@ base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {
          scope_data[kUnifiedAtomicMarkingTransitiveClosure];
 }
 
+base::TimeDelta ThreadHeapStatsCollector::Event::atomic_sweep_and_compact_time()
+    const {
+  return scope_data[ThreadHeapStatsCollector::kAtomicSweepAndCompact];
+}
+
 base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
   return incremental_marking_time() + atomic_marking_time();
 }
@@ -196,11 +201,16 @@ double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
 base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
   // Note that scopes added here also have to have a proper BlinkGCInV8Scope
   // scope if they are nested in a V8 scope.
-  return marking_time() +
+  return incremental_marking_time() + atomic_marking_time() +
+         atomic_sweep_and_compact_time() +
          scope_data[ThreadHeapStatsCollector::kAtomicSweepAndCompact] +
          scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
          scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
          scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::atomic_pause_time() const {
+  return atomic_marking_time() + atomic_sweep_and_compact_time();
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::foreground_sweeping_time()

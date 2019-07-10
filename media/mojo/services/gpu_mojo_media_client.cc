@@ -30,6 +30,7 @@
 #include "media/filters/android/media_codec_audio_decoder.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
 #include "media/gpu/android/codec_allocator.h"
+#include "media/gpu/android/direct_shared_image_video_provider.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/media_codec_video_decoder.h"
 #include "media/gpu/android/video_frame_factory_impl.h"
@@ -203,6 +204,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   auto get_stub_cb =
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
+  auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
+      gpu_task_runner_, std::move(get_stub_cb));
   video_decoder = std::make_unique<MediaCodecVideoDecoder>(
       gpu_preferences_, gpu_feature_info_, DeviceInfo::GetInstance(),
       CodecAllocator::GetInstance(gpu_task_runner_),
@@ -210,7 +213,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       std::make_unique<VideoFrameFactoryImpl>(
-          gpu_task_runner_, std::move(get_stub_cb), gpu_preferences_,
+          gpu_task_runner_, gpu_preferences_, std::move(image_provider),
           MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 
 #elif defined(OS_CHROMEOS)

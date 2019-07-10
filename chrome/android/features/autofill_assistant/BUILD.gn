@@ -155,6 +155,7 @@ android_library("test_java") {
   java_files = [
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDetailsUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestTestHelper.java",

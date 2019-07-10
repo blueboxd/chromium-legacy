@@ -10,10 +10,10 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/previews/content/previews_hints_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -24,7 +24,8 @@ bool IsHostBlacklisted(const base::DictionaryValue* top_host_blacklist,
                        const std::string& host) {
   if (!top_host_blacklist)
     return false;
-  return top_host_blacklist->FindKey(previews::HashHostForDictionary(host));
+  return top_host_blacklist->FindKey(
+      optimization_guide::HashHostForDictionary(host));
 }
 
 }  // namespace
@@ -74,7 +75,8 @@ void PreviewsTopHostProviderImpl::InitializeHintsFetcherTopHostBlacklist() {
     }
     if (detail.origin.SchemeIsHTTPOrHTTPS()) {
       top_host_blacklist->SetBoolKey(
-          HashHostForDictionary(detail.origin.host()), true);
+          optimization_guide::HashHostForDictionary(detail.origin.host()),
+          true);
     }
   }
 
@@ -107,12 +109,12 @@ void PreviewsTopHostProviderImpl::MaybeUpdateTopHostBlacklist(
 
   DictionaryPrefUpdate blacklist_pref(pref_service,
                                       kHintsFetcherTopHostBlacklist);
-  if (!blacklist_pref->FindKey(previews::HashHostForDictionary(
+  if (!blacklist_pref->FindKey(optimization_guide::HashHostForDictionary(
           navigation_handle->GetURL().host()))) {
     return;
   }
-  blacklist_pref->RemovePath(
-      previews::HashHostForDictionary(navigation_handle->GetURL().host()));
+  blacklist_pref->RemovePath(optimization_guide::HashHostForDictionary(
+      navigation_handle->GetURL().host()));
   if (blacklist_pref->empty()) {
     blacklist_pref->Clear();
     pref_service->SetInteger(

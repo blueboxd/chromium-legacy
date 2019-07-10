@@ -275,16 +275,16 @@ void OverlayProcessor::UpdateDamageRect(
     bool previous_frame_underlay_was_unoccluded,
     const QuadList* quad_list,
     gfx::Rect* damage_rect) {
-  gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
   for (const OverlayCandidate& overlay : *candidates) {
     if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
           ToEnclosedRect(overlay.display_rect);
-      if (overlay.use_output_surface_for_resource) {
-        if (overlay.plane_z_order > 0)
-          output_surface_overlay_damage_rect.Union(overlay_display_rect);
-      } else {
+      // If an overlay candidate comes from output surface, its z-order should
+      // be 0.
+      DCHECK(!overlay.use_output_surface_for_resource ||
+             overlay.plane_z_order == 0);
+      if (!overlay.use_output_surface_for_resource) {
         overlay_damage_rect_.Union(overlay_display_rect);
         if (overlay.is_opaque)
           damage_rect->Subtract(overlay_display_rect);
@@ -336,8 +336,6 @@ void OverlayProcessor::UpdateDamageRect(
     damage_rect->Union(previous_frame_underlay_rect);
 
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
-
-  damage_rect->Union(output_surface_overlay_damage_rect);
 }
 
 bool OverlayProcessor::NeedsSurfaceOccludingDamageRect() const {

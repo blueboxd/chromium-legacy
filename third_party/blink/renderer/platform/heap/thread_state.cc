@@ -642,8 +642,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 
   if (sweep_completed) {
-    // TODO(bikineev): We need to synchronize with concurrent sweepers here
-    // using the same bottleneck as in CompleteSweep().
+    SynchronizeAndFinishConcurrentSweeping();
     PostSweep();
   }
 }
@@ -950,20 +949,24 @@ void ThreadState::CompleteSweep() {
         "forced",
         current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
     Heap().CompleteSweep();
-
-    // Wait for concurrent sweepers.
-    sweeper_scheduler_.CancelAndWait();
-
-    // Concurrent sweepers may perform some work at the last stage (e.g.
-    // sweeping the last page and preparing finalizers).
-    // TODO(bikineev): This should be changed to Heap.Finalize() to only call
-    // remaining finalizers, not perform complete sweeping once again.
-    Heap().CompleteSweep();
+    SynchronizeAndFinishConcurrentSweeping();
 
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
   }
   PostSweep();
+}
+
+void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
+  DCHECK(CheckThread());
+  DCHECK(IsSweepingInProgress());
+
+  // Wait for concurrent sweepers.
+  sweeper_scheduler_.CancelAndWait();
+
+  // Concurrent sweepers may perform some work at the last stage (e.g.
+  // sweeping the last page and preparing finalizers).
+  Heap().InvokeFinalizersOnSweptPages();
 }
 
 BlinkGCObserver::BlinkGCObserver(ThreadState* thread_state)
@@ -1036,6 +1039,9 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
 void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_ENUMERATION("BlinkGC.GCReason", event.reason);
 
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForAtomicPhase", event.atomic_pause_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForAtomicPhaseMarking",
+                      event.atomic_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", event.gc_cycle_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       event.incremental_marking_time());
@@ -1049,7 +1055,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForCompleteSweep",
       event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
-
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForInvokingPreFinalizers",
       event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
@@ -1073,11 +1078,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     UMA_HISTOGRAM_COUNTS_100000("BlinkGC.MainThreadMarkingThroughput",
                                 main_thread_marking_throughput_mb_per_s);
   }
-
-  // TODO(mlippautz): Convert the following histograms to "TimeFor..." notation.
-
-  UMA_HISTOGRAM_TIMES("BlinkGC.AtomicPhaseMarking",
-                      event.atomic_marking_time());
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,

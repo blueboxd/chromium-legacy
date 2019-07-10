@@ -31,6 +31,7 @@ class AwWebResourceResponse {
   AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
   ~AwWebResourceResponse();
 
+  bool HasInputStream(JNIEnv* env) const;
   std::unique_ptr<InputStream> GetInputStream(JNIEnv* env) const;
   bool GetMimeType(JNIEnv* env, std::string* mime_type) const;
   bool GetCharset(JNIEnv* env, std::string* charset) const;

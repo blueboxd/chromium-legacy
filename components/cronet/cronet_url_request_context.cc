@@ -632,8 +632,8 @@ void CronetURLRequestContext::NetworkTasks::StartNetLog(
   CreateNetLogEntriesForActiveObjects({context_.get()},
                                       net_log_file_observer_.get());
   net::NetLogCaptureMode capture_mode =
-      include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
-                           : net::NetLogCaptureMode::Default();
+      include_socket_bytes ? net::NetLogCaptureMode::kEverything
+                           : net::NetLogCaptureMode::kDefault;
   net_log_file_observer_->StartObserving(g_net_log.Get().net_log(),
                                          capture_mode);
 }
@@ -671,8 +671,8 @@ void CronetURLRequestContext::NetworkTasks::StartNetLogToBoundedFile(
                                       net_log_file_observer_.get());
 
   net::NetLogCaptureMode capture_mode =
-      include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
-                           : net::NetLogCaptureMode::Default();
+      include_socket_bytes ? net::NetLogCaptureMode::kEverything
+                           : net::NetLogCaptureMode::kDefault;
   net_log_file_observer_->StartObserving(g_net_log.Get().net_log(),
                                          capture_mode);
 }

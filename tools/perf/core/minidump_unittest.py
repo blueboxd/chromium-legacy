@@ -88,7 +88,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       self.assertTrue(crash_function in sections[4])
 
   @decorators.Isolated
-  @decorators.Disabled('chromeos', 'android', 'win7')
+  # Disabled on Mac 10.12 (Sierra) due to it not getting a stack trace to
+  # symbolize from the second crash.
+  @decorators.Disabled('chromeos', 'android', 'win7', 'sierra')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')

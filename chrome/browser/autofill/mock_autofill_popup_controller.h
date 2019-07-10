@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -18,7 +19,9 @@
 
 namespace autofill {
 
-class MockAutofillPopupController : public AutofillPopupController {
+class MockAutofillPopupController
+    : public AutofillPopupController,
+      public base::SupportsWeakPtr<MockAutofillPopupController> {
  public:
   MockAutofillPopupController();
   ~MockAutofillPopupController();

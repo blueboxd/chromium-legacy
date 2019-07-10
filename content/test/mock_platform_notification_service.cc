@@ -90,7 +90,7 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
     displayed_notifications.insert(notification_id);
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }

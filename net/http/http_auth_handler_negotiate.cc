@@ -36,7 +36,7 @@ base::Value NetLogParameterChannelBindings(
     const std::string& channel_binding_token,
     NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
-  if (!capture_mode.include_socket_bytes())
+  if (!NetLogCaptureIncludesSocketBytes(capture_mode))
     return std::move(dict);
 
   dict.Clear();

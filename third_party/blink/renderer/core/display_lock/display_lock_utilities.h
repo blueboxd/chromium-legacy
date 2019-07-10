@@ -18,17 +18,20 @@ class CORE_EXPORT DisplayLockUtilities {
 
  public:
   // This class forces updates on display locks from the given node up the
-  // ancestor chain until the root.
+  // ancestor chain until the local frame root.
   class ScopedChainForcedUpdate {
-    STACK_ALLOCATED();
     DISALLOW_COPY_AND_ASSIGN(ScopedChainForcedUpdate);
 
    public:
-    explicit ScopedChainForcedUpdate(const Node* node);
+    explicit ScopedChainForcedUpdate(const Node* node,
+                                     bool include_self = false);
     ~ScopedChainForcedUpdate() = default;
+
+    void CreateParentFrameScopeIfNeeded(const Node* node);
 
    private:
     Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list_;
+    std::unique_ptr<ScopedChainForcedUpdate> parent_frame_scope_;
   };
   // Activates all the nodes within a find-in-page match |range|.
   // Returns true if at least one node gets activated.

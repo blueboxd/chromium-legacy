@@ -3624,36 +3624,6 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
 }
 
-class RedirectBlankToTopClient
-    : public ViewCreatingWebViewClient,
-      private ScopedRedirectBlankNavigationToTopForTest {
- public:
-  RedirectBlankToTopClient()
-      : ScopedRedirectBlankNavigationToTopForTest(true) {}
-};
-
-TEST_F(WebViewTest, BlankRedirectsToTop) {
-  RedirectBlankToTopClient client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(nullptr, &client);
-  WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
-  frame->SetName("_start");
-
-  // Make a request that will open a new window
-  WebURLRequest web_url_request(KURL("about:blank"));
-  FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest());
-  const FrameTree::FindResult& found_frame =
-      To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
-          ->Tree()
-          .FindOrCreateFrameForNavigation(request, "_blank");
-  ASSERT_FALSE(client.CreatedWebView());
-  WebLocalFrameImpl* found_local_frame = WebLocalFrameImpl::FromFrame(
-      DynamicTo<LocalFrame>(found_frame.frame.Get()));
-  EXPECT_EQ(found_local_frame, frame);
-
-  web_view_helper.Reset();  // Remove dependency on locally scoped client.
-}
-
 class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
  public:
   ViewReusingWebViewClient() = default;

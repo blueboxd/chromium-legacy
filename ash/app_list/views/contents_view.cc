@@ -137,6 +137,9 @@ void ContentsView::Init(AppListModel* model) {
   GetAppsContainerView()->UpdateSuggestionChips();
 
   ActivePageChanged();
+
+  // Hide the search results initially.
+  ShowSearchResults(false);
 }
 
 void ContentsView::ResetForShow() {

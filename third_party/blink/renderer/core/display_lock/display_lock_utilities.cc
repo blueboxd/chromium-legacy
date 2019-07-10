@@ -15,6 +15,19 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
+namespace {
+
+// Returns the frame owner node for the frame that contains the given child, if
+// one exists. Returns nullptr otherwise.
+const Node* GetFrameOwnerNode(const Node* child) {
+  if (!child || !child->GetDocument().GetFrame() ||
+      !child->GetDocument().GetFrame()->OwnerLayoutObject()) {
+    return nullptr;
+  }
+  return child->GetDocument().GetFrame()->OwnerLayoutObject()->GetNode();
+}
+
+}  // namespace
 
 bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
@@ -64,22 +77,28 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(Element& element) {
 }
 
 DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
-    const Node* node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
-      node->GetDocument().LockedDisplayLockCount() == 0) {
+    const Node* node,
+    bool include_self) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
     return;
-  }
+
+  CreateParentFrameScopeIfNeeded(node);
+
+  if (node->GetDocument().LockedDisplayLockCount() == 0)
+    return;
   const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
 
   // Get the right ancestor view. Only use inclusive ancestors if the node
   // itself is locked and it prevents self layout. If self layout is not
   // prevented, we don't need to force the subtree layout, so use exclusive
   // ancestors in that case.
-  auto ancestor_view = [node] {
+  auto ancestor_view = [node, include_self] {
     if (auto* element = DynamicTo<Element>(node)) {
       auto* context = element->GetDisplayLockContext();
-      if (context && !context->ShouldLayout(DisplayLockContext::kSelf))
+      if (context &&
+          (include_self || !context->ShouldLayout(DisplayLockContext::kSelf))) {
         return FlatTreeTraversal::InclusiveAncestorsOf(*node);
+      }
     }
     return FlatTreeTraversal::AncestorsOf(*node);
   }();
@@ -95,6 +114,15 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
       continue;
     if (auto* context = ancestor_node->GetDisplayLockContext())
       scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
+  }
+}
+
+void DisplayLockUtilities::ScopedChainForcedUpdate::
+    CreateParentFrameScopeIfNeeded(const Node* node) {
+  auto* owner_node = GetFrameOwnerNode(node);
+  if (owner_node) {
+    parent_frame_scope_ =
+        std::make_unique<ScopedChainForcedUpdate>(owner_node, true);
   }
 }
 
@@ -187,26 +215,18 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
       return true;
   }
 
-  auto get_frame_owner_node = [](const Node* child) -> const Node* {
-    if (!child || !child->GetDocument().GetFrame() ||
-        !child->GetDocument().GetFrame()->OwnerLayoutObject()) {
-      return nullptr;
-    }
-    return child->GetDocument().GetFrame()->OwnerLayoutObject()->GetNode();
-  };
-
   // Since we handled the self-check above, we need to do inclusive checks
   // starting from the parent.
   node = FlatTreeTraversal::Parent(*node);
   // If we don't have a flat-tree parent, get the |source_node|'s owner node
   // instead.
   if (!node)
-    node = get_frame_owner_node(&source_node);
+    node = GetFrameOwnerNode(&source_node);
 
   while (node) {
     if (NearestLockedInclusiveAncestor(*node))
       return true;
-    node = get_frame_owner_node(node);
+    node = GetFrameOwnerNode(node);
   }
   return false;
 }

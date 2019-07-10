@@ -341,9 +341,7 @@ void TaskTracker::StartShutdown() {
   }
 }
 
-// TODO(gab): Figure out why TS_UNCHECKED_READ is insufficient to make thread
-// analysis of |shutdown_event_| happy on POSIX.
-void TaskTracker::CompleteShutdown() NO_THREAD_SAFETY_ANALYSIS {
+void TaskTracker::CompleteShutdown() {
   // It is safe to access |shutdown_event_| without holding |lock_| because the
   // pointer never changes after being set by StartShutdown(), which must be
   // called before this.

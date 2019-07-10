@@ -128,16 +128,28 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
     std::string value = command_line.GetSwitchValueASCII(switch_name);
 
     if (value == "Default")
-      return net::NetLogCaptureMode::Default();
-    if (value == "IncludeCookiesAndCredentials")
-      return net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-    if (value == "IncludeSocketBytes")
-      return net::NetLogCaptureMode::IncludeSocketBytes();
+      return net::NetLogCaptureMode::kDefault;
+    if (value == "IncludeSensitive")
+      return net::NetLogCaptureMode::kIncludeSensitive;
+    if (value == "Everything")
+      return net::NetLogCaptureMode::kEverything;
+
+    // Warn when using the old command line switches.
+    if (value == "IncludeCookiesAndCredentials") {
+      LOG(ERROR) << "Deprecated value for --" << switch_name
+                 << ". Use IncludeSensitive instead";
+      return net::NetLogCaptureMode::kIncludeSensitive;
+    }
+    if (value == "IncludeSocketBytes") {
+      LOG(ERROR) << "Deprecated value for --" << switch_name
+                 << ". Use Everything instead";
+      return net::NetLogCaptureMode::kEverything;
+    }
 
     LOG(ERROR) << "Unrecognized value for --" << switch_name;
   }
 
-  return net::NetLogCaptureMode::Default();
+  return net::NetLogCaptureMode::kDefault;
 }
 
 }  // namespace

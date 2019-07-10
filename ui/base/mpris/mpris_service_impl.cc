@@ -12,7 +12,7 @@
 #include "base/process/process.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
-#include "components/dbus/dbus_thread_linux.h"
+#include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"

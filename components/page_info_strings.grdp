@@ -150,7 +150,7 @@
     <message name="IDS_PAGE_INFO_PARTIAL_ADDRESS" desc="Locality with missing state as reported in the EV identity text.">
       <ph name="CITY">$1<ex>Mountain View</ex></ph>, <ph name="COUNTRY">$2<ex>US</ex></ph>
     </message>
-    <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="The text of the identity section when the page is secured with a valid EV cert.">
+    <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="Describes the legal entity that the current page's HTTPS certificate was issued to. Shown in the certificate area in the Page Info bubble when a HTTPS site with a valid EV certificate is loaded.">
       Issued to: <ph name="ORGANIZATION">$1<ex>Google LLC</ex></ph> [<ph name="JURISDICTION">$2<ex>US</ex></ph>]
     </message>
 

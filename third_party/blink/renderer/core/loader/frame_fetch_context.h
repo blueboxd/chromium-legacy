@@ -130,6 +130,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
       const override;
+  WebURLRequest::PreviewsState previews_state() const override;
   bool AllowScriptFromSource(const KURL&) const override;
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,

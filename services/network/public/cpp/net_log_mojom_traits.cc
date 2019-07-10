@@ -12,13 +12,13 @@ bool EnumTraits<network::mojom::NetLogCaptureMode, net::NetLogCaptureMode>::
               net::NetLogCaptureMode* out) {
   switch (capture_mode) {
     case network::mojom::NetLogCaptureMode::DEFAULT:
-      *out = net::NetLogCaptureMode::Default();
+      *out = net::NetLogCaptureMode::kDefault;
       return true;
-    case network::mojom::NetLogCaptureMode::INCLUDE_COOKIES_AND_CREDENTIALS:
-      *out = net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+    case network::mojom::NetLogCaptureMode::INCLUDE_PRIVACY_INFO:
+      *out = net::NetLogCaptureMode::kIncludeSensitive;
       return true;
-    case network::mojom::NetLogCaptureMode::INCLUDE_SOCKET_BYTES:
-      *out = net::NetLogCaptureMode::IncludeSocketBytes();
+    case network::mojom::NetLogCaptureMode::EVERYTHING:
+      *out = net::NetLogCaptureMode::kEverything;
       return true;
   }
   return false;
@@ -28,12 +28,16 @@ bool EnumTraits<network::mojom::NetLogCaptureMode, net::NetLogCaptureMode>::
 network::mojom::NetLogCaptureMode
 EnumTraits<network::mojom::NetLogCaptureMode, net::NetLogCaptureMode>::ToMojom(
     net::NetLogCaptureMode capture_mode) {
-  if (capture_mode.include_cookies_and_credentials())
-    return network::mojom::NetLogCaptureMode::INCLUDE_COOKIES_AND_CREDENTIALS;
-  if (capture_mode.include_socket_bytes())
-    return network::mojom::NetLogCaptureMode::INCLUDE_SOCKET_BYTES;
+  switch (capture_mode) {
+    case net::NetLogCaptureMode::kDefault:
+      return network::mojom::NetLogCaptureMode::DEFAULT;
+    case net::NetLogCaptureMode::kIncludeSensitive:
+      return network::mojom::NetLogCaptureMode::INCLUDE_PRIVACY_INFO;
+    case net::NetLogCaptureMode::kEverything:
+      return network::mojom::NetLogCaptureMode::EVERYTHING;
+  }
 
-  // TODO(eroman): Should fail if unrecognized mode rather than defaulting.
+  NOTREACHED();
   return network::mojom::NetLogCaptureMode::DEFAULT;
 }
 

@@ -412,26 +412,6 @@
 -dontwarn com.google.protobuf.nano.NanoEnumValue
 
 ################################################################################
-# gen/third_party/android_deps/android_arch_lifecycle_runtime_java/proguard.txt
-################################################################################
--keepattributes *Annotation*
-
--keepclassmembers enum android.arch.lifecycle.Lifecycle$Event {
-    <fields>;
-}
-
--keep class * implements android.arch.lifecycle.LifecycleObserver {
-}
-
--keep class * implements android.arch.lifecycle.GeneratedAdapter {
-    <init>(...);
-}
-
--keepclassmembers class ** {
-    @android.arch.lifecycle.OnLifecycleEvent *;
-}
-
-################################################################################
 # gen/third_party/android_deps/com_android_support_animated_vector_drawable_java/proguard.txt
 ################################################################################
 # Copyright (C) 2016 The Android Open Source Project

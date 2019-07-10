@@ -217,8 +217,9 @@ class ScopedTaskEnvironment::MockTimeDomain
     if (!run_time)
       return base::nullopt;
 
-    // Check if we have a task that should be running now.
-    if (run_time <= now_ticks_)
+    // Check if we have a task that should be running now. Reading |now_ticks_|
+    // from the main thread doesn't require the lock.
+    if (run_time <= TS_UNCHECKED_READ(now_ticks_))
       return base::TimeDelta();
 
     // The next task is a future delayed task. Since we're using mock time, we
@@ -293,7 +294,8 @@ class ScopedTaskEnvironment::MockTimeDomain
 
   // Only ever written to from the main sequence. Start from real Now() instead
   // of zero to give a more realistic view to tests.
-  TimeTicks now_ticks_{base::subtle::TimeTicksNowIgnoringOverride()};
+  TimeTicks now_ticks_ GUARDED_BY(now_ticks_lock_){
+      base::subtle::TimeTicksNowIgnoringOverride()};
 };
 
 ScopedTaskEnvironment::MockTimeDomain*

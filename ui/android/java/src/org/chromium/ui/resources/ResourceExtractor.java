@@ -6,7 +6,6 @@ package org.chromium.ui.resources;
 
 import android.content.res.AssetManager;
 
-import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
@@ -18,6 +17,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
 import java.io.IOException;
@@ -158,14 +158,15 @@ public class ResourceExtractor {
         // Currenty (Apr 2018), this array can be as big as 6 entries, so using a capacity
         // that allows a bit of growth, but is still in the right ballpark..
         ArrayList<String> activeLocales = new ArrayList<String>(6);
-        for (String locale : BuildConfig.COMPRESSED_LOCALES) {
+        String[] compressedLocales = ResourceBundle.getAvailableCompressedPakLocales();
+        for (String locale : compressedLocales) {
             if (LocalizationUtils.chromiumLocaleMatchesLanguage(locale, uiLanguage)) {
                 activeLocales.add(locale);
             }
         }
         if (activeLocales.isEmpty()) {
-            assert BuildConfig.COMPRESSED_LOCALES.length > 0;
-            assert Arrays.asList(BuildConfig.COMPRESSED_LOCALES).contains(FALLBACK_LOCALE);
+            assert compressedLocales.length > 0;
+            assert Arrays.asList(compressedLocales).contains(FALLBACK_LOCALE);
             activeLocales.add(FALLBACK_LOCALE);
         }
 
@@ -357,6 +358,6 @@ public class ResourceExtractor {
     private static boolean shouldSkipPakExtraction() {
         // Certain apks like ContentShell.apk don't have any compressed locale
         // assets however, so skip extraction entirely for them.
-        return BuildConfig.COMPRESSED_LOCALES.length == 0;
+        return ResourceBundle.getAvailableCompressedPakLocales().length == 0;
     }
 }

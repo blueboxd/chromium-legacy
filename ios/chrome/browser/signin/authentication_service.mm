@@ -287,6 +287,7 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() const {
 
 void AuthenticationService::SignIn(ChromeIdentity* identity,
                                    const std::string& hosted_domain) {
+  DCHECK(!hosted_domain.empty());
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
@@ -294,33 +295,36 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   ResetPromptForSignIn();
   sync_setup_service_->PrepareForFirstSyncSetup();
 
-  // The account info needs to be seeded for the primary account id before
-  // signing in.
-  AccountInfo info;
-  info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
-  info.email = GetCanonicalizedEmailForIdentity(identity);
-  info.hosted_domain = hosted_domain;
-  std::string new_authenticated_account_id =
-      identity_manager_->LegacySeedAccountInfo(info);
-  std::string old_authenticated_account_id =
-      identity_manager_->GetPrimaryAccountId();
+  const CoreAccountId account_id = identity_manager_->PickAccountIdForAccount(
+      base::SysNSStringToUTF8(identity.gaiaID),
+      GetCanonicalizedEmailForIdentity(identity));
+
+  // Load all credentials from SSO library. This must load the credentials
+  // for the primary account too.
+  identity_manager_->LegacyReloadAccountsFromSystem();
+
+  // Ensure that the account the user is trying to sign into has been loaded
+  // from the SSO library and that hosted_domain is set to the provided value.
+  const base::Optional<AccountInfo> account_info =
+      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_id);
+  CHECK(account_info.has_value());
+  CHECK_EQ(hosted_domain, account_info->hosted_domain);
+
   // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
   // if there is already a signed in user. Check that there is no signed in
   // account or that the new signed in account matches the old one to avoid a
   // mismatch between the old and the new authenticated accounts.
-  if (!old_authenticated_account_id.empty())
-    CHECK_EQ(new_authenticated_account_id, old_authenticated_account_id);
+  if (!identity_manager_->HasPrimaryAccount()) {
+    DCHECK(identity_manager_->GetPrimaryAccountMutator());
+    const bool success =
+        identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
+            account_id);
+    CHECK(success);
+  }
 
-  // Update the PrimaryAccountManager with the new logged in identity.
-  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  DCHECK(account_mutator);
-  account_mutator->SetPrimaryAccount(new_authenticated_account_id);
-
-  // Reload all credentials to match the desktop model. Exclude all the
-  // accounts ids that are the primary account ids on other profiles.
-  // TODO(crbug.com/930094): Eliminate this.
-  identity_manager_->LegacyReloadAccountsFromSystem();
-  StoreAccountsInPrefs();
+  // The primary account should now be set to the expected account_id.
+  CHECK_EQ(account_id, identity_manager_->GetPrimaryAccountId());
 
   // Kick-off sync: The authentication error UI (sign in infobar and warning
   // badge in settings screen) check the sync auth error state. Sync

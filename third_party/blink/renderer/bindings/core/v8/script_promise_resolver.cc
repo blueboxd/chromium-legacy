@@ -28,7 +28,9 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
   }
 }
 
-ScriptPromiseResolver::~ScriptPromiseResolver() {
+ScriptPromiseResolver::~ScriptPromiseResolver() = default;
+
+void ScriptPromiseResolver::Dispose() {
 #if DCHECK_IS_ON()
   // This assertion fails if:
   //  - promise() is called at least once and
@@ -51,6 +53,9 @@ ScriptPromiseResolver::~ScriptPromiseResolver() {
         << create_stack_trace_.ToString();
   }
 #endif
+  deferred_resolve_task_.Cancel();
+  resolver_.Clear();
+  value_.Clear();
 }
 
 void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {

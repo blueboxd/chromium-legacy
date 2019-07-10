@@ -131,8 +131,8 @@ bool HomeButton::DoesIntersectRect(const views::View* target,
   // Increase clickable area for the button from
   // (kShelfControlSize x kShelfButtonSize) to
   // (kShelfButtonSize x kShelfButtonSize).
-  int left_offset = button_bounds.width() - kShelfButtonSize;
-  int bottom_offset = button_bounds.height() - kShelfButtonSize;
+  int left_offset = button_bounds.width() - ShelfConstants::button_size();
+  int bottom_offset = button_bounds.height() - ShelfConstants::button_size();
   button_bounds.Inset(gfx::Insets(0, left_offset, bottom_offset, 0));
   return button_bounds.Intersects(rect);
 }

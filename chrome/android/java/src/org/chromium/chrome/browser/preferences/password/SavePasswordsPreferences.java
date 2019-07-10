@@ -22,6 +22,7 @@ import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
@@ -128,6 +129,14 @@ public class SavePasswordsPreferences
             mSearchQuery = savedInstanceState.getString(SAVED_STATE_SEARCH_QUERY);
             mSearchRecorded = mSearchQuery != null; // We record a search when a query is set.
         }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Disable animations of preference changes.
+        getListView().setItemAnimator(null);
     }
 
     @Override
@@ -394,7 +403,7 @@ public class SavePasswordsPreferences
         mSavePasswordsSwitch.setManagedPreferenceDelegate(
                 preference -> PrefServiceBridge.getInstance().isRememberPasswordsManaged());
 
-        try (StrictModeContext ctx = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             getPreferenceScreen().addPreference(mSavePasswordsSwitch);
         }
 

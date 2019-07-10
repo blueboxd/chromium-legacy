@@ -6703,10 +6703,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // specific cases. Check if this is one of those cases.
     bool is_commit_allowed_to_proceed = false;
 
-    //  1) This was a renderer-initiated navigation to a URL that doesn't need
-    //  to be handled by the network stack (eg. about:blank).
+    //  1) This was a renderer-initiated navigation to an empty document. Most
+    //  of the time: about:blank.
     is_commit_allowed_to_proceed |=
-        !IsURLHandledByNetworkStack(validated_params->url);
+        validated_params->url.SchemeIs(url::kAboutScheme) &&
+        validated_params->url != GURL(url::kAboutSrcdocURL);
 
     //  2) This was a same-document navigation.
     //  TODO(clamy): We should enforce having a request on browser-initiated

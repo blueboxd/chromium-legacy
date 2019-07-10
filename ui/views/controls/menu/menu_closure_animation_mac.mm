@@ -39,7 +39,7 @@ void MenuClosureAnimationMac::Start() {
     step_ = AnimationStep::kFading;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&MenuClosureAnimationMac::AdvanceAnimation,
-                                  base::Unretained(this)));
+                                  AsWeakPtr()));
     return;
   }
   AdvanceAnimation();

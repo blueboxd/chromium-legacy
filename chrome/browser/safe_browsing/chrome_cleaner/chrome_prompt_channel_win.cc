@@ -27,8 +27,8 @@
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "base/win/win_util.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/chrome_cleaner/public/constants/result_codes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
@@ -37,6 +37,7 @@
 namespace safe_browsing {
 
 using base::win::ScopedHandle;
+using chrome_cleaner::ChromePromptRequest;
 using content::BrowserThread;
 using CleanerProcessDelegate = ChromePromptChannel::CleanerProcessDelegate;
 
@@ -141,13 +142,59 @@ void AppendHandleToCommandLine(base::CommandLine* command_line,
       switch_string, base::NumberToString(base::win::HandleToUint32(handle)));
 }
 
+// Reads |buffer_size| bytes from a pipe of PIPE_TYPE_MESSAGE.
+bool ReadMessageFromPipe(HANDLE handle, LPVOID buffer, DWORD buffer_size) {
+  // If the process at the other end of the pipe is behaving correctly it will
+  // write exactly |buffer_size| bytes to the pipe and PIPE_TYPE_MESSAGE
+  // ensures that we read all of them at once. If the process writes more bytes
+  // than expected, ::ReadFile will return ERROR_MORE_DATA. If it writes less
+  // we treat that as an error.
+  DWORD bytes_read = 0;
+  if (!::ReadFile(handle, buffer, buffer_size, &bytes_read, nullptr)) {
+    PLOG(ERROR) << "ReadFile failed";
+    return false;
+  }
+  CHECK_LE(bytes_read, buffer_size);
+  if (bytes_read != buffer_size) {
+    PLOG(ERROR) << "Short read (read " << bytes_read << " of " << buffer_size
+                << ")";
+    return false;
+  }
+  return true;
+}
+
+// Loop doing blocking reads from the IPC pipe with |request_read_handle| until
+// a CloseConnection message is received or an error occurs. For each message
+// deserialized from the pipe a handler method on |channel| will be called.
+//
+// |request_read_handle| is owned by |channel|, which is never deleted until
+// after the cleaner process at the other end of the pipe exits.
+//
+// This should be invoked from a CONTINUE_ON_SHUTDOWN task so that it does not
+// block Chrome shutdown.
+//
+// Exit conditions:
+// * If the cleaner process sends a CloseConnection message the loop will exit
+//   cleanly.
+// * If the cleaner process exits without sending a CloseConnection message,
+//   the next ::ReadFile call will return ERROR_BROKEN_PIPE.
+// * If |channel| is deleted or channel->CloseHandles is called, the next
+//   ::ReadFile call will return ERROR_INVALID_HANDLE.
+//
+// Important: it is not safe to dereference |channel| on this sequence. Always
+// post to |task_runner| instead. Since |channel| is deleted on |task_runner|,
+// dereferencing the weak pointer on any other sequence is racy.
+//
+// When done, calls |on_connection_closed|. On error also slays
+// |cleaner_process|, which is the other end of the pipe.
 void ServiceChromePromptRequests(
     base::WeakPtr<ChromePromptChannelProtobuf> channel,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     HANDLE request_read_handle,
-    HANDLE response_write_handle,
     std::unique_ptr<CleanerProcessDelegate> cleaner_process,
     base::OnceClosure on_connection_closed) {
+  static constexpr uint32_t kMaxMessageLength = 1 * 1024 * 1024;  // 1M bytes
+
   // Always call OnConnectionClosed when finished whether it's with an error or
   // because a CloseConnectionRequest was received.
   base::ScopedClosureRunner call_connection_closed(
@@ -158,13 +205,89 @@ void ServiceChromePromptRequests(
   base::ScopedClosureRunner kill_cleaner_on_error(base::BindOnce(
       &CleanerProcessDelegate::TerminateOnError, std::move(cleaner_process)));
 
-  // TODO(crbug.com/969139): Read requests and send responses. Any errors that
-  // happen during this stage will call |kill_cleaner_on_error|. It will never
-  // be called until this TODO is implemented.
+  // Wait for the cleaner to write a single version byte and make sure it's
+  // using a recognized version.
+  DWORD bytes_read = 0;
+  uint8_t version = 0;
+  // Since the field is only 1 byte it's not possible to have a short read.
+  static_assert(sizeof(version) == 1,
+                "version field must be readable in 1 byte");
+  if (!::ReadFile(request_read_handle, &version, sizeof(version), &bytes_read,
+                  nullptr)) {
+    PLOG(ERROR) << "Failed to read protocol version";
+    return;
+  }
+  CHECK_EQ(bytes_read, sizeof(version));
+  if (version != 1) {
+    LOG(ERROR) << "Cleaner requested unsupported version " << version;
+    return;
+  }
 
-  // Normal exit: do not kill the cleaner. OnConnectionClosed will still be
-  // called.
-  kill_cleaner_on_error.ReplaceClosure(base::DoNothing());
+  // Repeatedly wait for requests from the cleaner.
+  while (true) {
+    // Read the request length followed by a request.
+    uint32_t request_length = 0;
+    if (!ReadMessageFromPipe(request_read_handle, &request_length,
+                             sizeof(request_length))) {
+      return;
+    }
+    if (request_length < 1 || request_length > kMaxMessageLength) {
+      PLOG(ERROR) << "Bad request length: " << request_length;
+      return;
+    }
+    std::string request;
+    // Include space for the null terminator in the WriteInto call.
+    if (!ReadMessageFromPipe(request_read_handle,
+                             base::WriteInto(&request, request_length + 1),
+                             request_length)) {
+      return;
+    }
+
+    ChromePromptRequest chrome_prompt_request;
+    if (!chrome_prompt_request.ParseFromString(request)) {
+      PLOG(ERROR) << "Read invalid message";
+      return;
+    }
+    switch (chrome_prompt_request.request_case()) {
+      case ChromePromptRequest::kQueryCapability:
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ChromePromptChannelProtobuf::HandleQueryCapabilityRequest,
+                channel, chrome_prompt_request.query_capability()));
+        break;
+      case ChromePromptRequest::kPromptUser:
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ChromePromptChannelProtobuf::HandlePromptUserRequest, channel,
+                chrome_prompt_request.prompt_user()));
+        break;
+      case ChromePromptRequest::kRemoveExtensions:
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest,
+                channel, chrome_prompt_request.remove_extensions()));
+        break;
+      case ChromePromptRequest::kCloseConnection: {
+        // Normal exit: do not kill the cleaner. OnConnectionClosed will still
+        // be called.
+        kill_cleaner_on_error.ReplaceClosure(base::DoNothing());
+
+        // The cleaner process will continue running but the pipe handles are
+        // no longer needed.
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ChromePromptChannelProtobuf::CloseHandles,
+                           channel));
+        return;
+      }
+      default:
+        PLOG(ERROR) << "Read unknown request";
+        return;
+    }
+  }
 }
 
 }  // namespace
@@ -370,16 +493,184 @@ void ChromePromptChannelProtobuf::ConnectToCleaner(
   // methods on |task_runner_|.
   //
   // This object continues to own the pipe handles. ServiceChromePromptRequests
-  // gets raw handles, which can go invalid at any time either because the
+  // gets a raw handle, which can go invalid at any time either because the
   // other end of the pipe closes or CloseHandles is called. When that happens
   // the next call to ::ReadFile will return an error and
   // ServiceChromePromptRequests will return.
   base::PostTask(
-      FROM_HERE, {base::MayBlock()},
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ServiceChromePromptRequests, weak_factory_.GetWeakPtr(),
                      task_runner_, request_read_handle_.Get(),
-                     response_write_handle_.Get(), std::move(cleaner_process),
+                     std::move(cleaner_process),
                      std::move(on_connection_closed_)));
+}
+
+void ChromePromptChannelProtobuf::WriteResponseMessage(
+    const google::protobuf::MessageLite& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedClosureRunner error_handler(base::BindOnce(
+      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+
+  std::string response_string;
+  if (!message.SerializeToString(&response_string)) {
+    LOG(ERROR) << "Failed to serialize response message";
+    return;
+  }
+
+  DWORD bytes_written = 0;
+  uint32_t message_size = response_string.size();
+  if (!::WriteFile(response_write_handle_.Get(), &message_size,
+                   sizeof(uint32_t), &bytes_written, nullptr)) {
+    PLOG(ERROR) << "Failed to write message size";
+    return;
+  }
+  CHECK_EQ(bytes_written, sizeof(uint32_t));
+  if (!::WriteFile(response_write_handle_.Get(), response_string.data(),
+                   message_size, &bytes_written, nullptr)) {
+    PLOG(ERROR) << "Failed to write message of length " << message_size;
+    return;
+  }
+  CHECK_EQ(bytes_written, message_size);
+
+  // No error occurred.
+  error_handler.ReplaceClosure(base::DoNothing());
+}
+
+void ChromePromptChannelProtobuf::CloseHandles() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This will cause the next ::ReadFile call in ServiceChromePromptRequests to
+  // fail, triggering the error handler that kills the cleaner process.
+  request_read_handle_.Close();
+  response_write_handle_.Close();
+}
+
+void ChromePromptChannelProtobuf::HandleQueryCapabilityRequest(
+    const chrome_cleaner::QueryCapabilityRequest&) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // No optional capabilities are supported. Send back an empty response.
+  WriteResponseMessage(chrome_cleaner::QueryCapabilityResponse());
+}
+
+void ChromePromptChannelProtobuf::HandlePromptUserRequest(
+    const chrome_cleaner::PromptUserRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedClosureRunner error_handler(base::BindOnce(
+      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+
+  // If there are any fields we don't know how to display, do not prompt. (Not
+  // an error, could just be a more recent cleaner version.)
+  if (!request.unknown_fields().empty()) {
+    LOG(ERROR) << "Discarding PromptUserRequest with unknown fields.";
+    return;
+  }
+
+  std::vector<base::FilePath> files_to_delete;
+  files_to_delete.reserve(request.files_to_delete_size());
+  for (const std::string& file_path : request.files_to_delete()) {
+    base::string16 file_path_utf16;
+    if (!base::UTF8ToUTF16(file_path.c_str(), file_path.size(),
+                           &file_path_utf16)) {
+      LOG(ERROR) << "Undisplayable file path in PromptUserRequest.";
+      return;
+    }
+    files_to_delete.push_back(base::FilePath(file_path_utf16));
+  }
+
+  base::Optional<std::vector<base::string16>> optional_registry_keys;
+  if (request.registry_keys_size()) {
+    std::vector<base::string16> registry_keys;
+    registry_keys.reserve(request.registry_keys_size());
+    for (const std::string& registry_key : request.registry_keys()) {
+      base::string16 registry_key_utf16;
+      if (!base::UTF8ToUTF16(registry_key.c_str(), registry_key.size(),
+                             &registry_key_utf16)) {
+        LOG(ERROR) << "Undisplayable registry key in PromptUserRequest.";
+        return;
+      }
+      registry_keys.push_back(registry_key_utf16);
+    }
+    optional_registry_keys = registry_keys;
+  }
+
+  base::Optional<std::vector<base::string16>> optional_extension_ids;
+  if (request.extension_ids_size()) {
+    std::vector<base::string16> extension_ids;
+    extension_ids.reserve(request.extension_ids_size());
+    for (const std::string& extension_id : request.extension_ids()) {
+      base::string16 extension_id_utf16;
+      // TODO(crbug.com/969139): change ChromePromptActions to use strings for
+      // extension_id and skip this conversion.
+      if (!base::UTF8ToUTF16(extension_id.c_str(), extension_id.size(),
+                             &extension_id_utf16)) {
+        LOG(ERROR) << "Undisplayable extension id in PromptUserRequest.";
+        return;
+      }
+      extension_ids.push_back(extension_id_utf16);
+    }
+    optional_extension_ids = extension_ids;
+  }
+
+  // No error occurred.
+  error_handler.ReplaceClosure(base::DoNothing());
+
+  // Ensure SendPromptUserResponse runs on this sequence.
+  auto response_callback = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> task_runner,
+         base::WeakPtr<ChromePromptChannelProtobuf> channel,
+         ChromePromptActions::PromptAcceptance acceptance) {
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ChromePromptChannelProtobuf::SendPromptUserResponse,
+                           channel, acceptance));
+      },
+      task_runner_, weak_factory_.GetWeakPtr());
+  actions_->PromptUser(files_to_delete, optional_registry_keys,
+                       optional_extension_ids, std::move(response_callback));
+}
+
+void ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest(
+    const chrome_cleaner::RemoveExtensionsRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedClosureRunner error_handler(base::BindOnce(
+      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+
+  // extension_ids are mandatory.
+  if (!request.extension_ids_size()) {
+    LOG(ERROR) << "Bad RemoveExtensionsRequest";
+    return;
+  }
+
+  std::vector<base::string16> extension_ids;
+  extension_ids.reserve(request.extension_ids_size());
+  for (const std::string& extension_id : request.extension_ids()) {
+    base::string16 extension_id_utf16;
+    // TODO(crbug.com/969139): change ChromePromptActions to use strings for
+    // extension_id and skip this conversion.
+    if (!base::UTF8ToUTF16(extension_id.c_str(), extension_id.size(),
+                           &extension_id_utf16)) {
+      LOG(ERROR) << "Unusable extension id in RemoveExtensionsReqest.";
+      return;
+    }
+    extension_ids.push_back(extension_id_utf16);
+  }
+
+  // No error occurred.
+  error_handler.ReplaceClosure(base::DoNothing());
+
+  chrome_cleaner::RemoveExtensionsResponse response;
+  response.set_success(actions_->DisableExtensions(extension_ids));
+  WriteResponseMessage(response);
+}
+
+void ChromePromptChannelProtobuf::SendPromptUserResponse(
+    ChromePromptActions::PromptAcceptance acceptance) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  chrome_cleaner::PromptUserResponse response;
+  response.set_prompt_acceptance(
+      static_cast<chrome_cleaner::PromptUserResponse::PromptAcceptance>(
+          acceptance));
+  WriteResponseMessage(response);
 }
 
 }  // namespace safe_browsing

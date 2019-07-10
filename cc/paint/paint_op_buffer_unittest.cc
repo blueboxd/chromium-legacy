@@ -2732,15 +2732,10 @@ class MockImageProvider : public ImageProvider {
 
   ~MockImageProvider() override = default;
 
-  void DoNothing() {}
-
   ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override {
-    if (draw_image.paint_image().IsPaintWorklet()) {
-      auto callback =
-          base::BindOnce(&MockImageProvider::DoNothing, base::Unretained(this));
-      return ScopedResult(record_, std::move(callback));
-    }
+    if (draw_image.paint_image().IsPaintWorklet())
+      return ScopedResult(record_);
 
     if (fail_all_decodes_)
       return ImageProvider::ScopedResult();

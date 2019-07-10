@@ -175,7 +175,8 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   const gfx::Size content_size = GetPreferredSize();
   const gfx::Rect anchor_rect = GetAnchorRect();
   const int distance_to_overflow_button =
-      kDistanceToMainShelf + (kShelfSize - kShelfControlSize) / 2;
+      kDistanceToMainShelf +
+      (ShelfConstants::shelf_size() - ShelfConstants::control_size()) / 2;
   gfx::Rect monitor_rect =
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())

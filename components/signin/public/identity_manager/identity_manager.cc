@@ -416,10 +416,6 @@ void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
 
-CoreAccountId IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
-  return account_tracker_service_->SeedAccountInfo(info);
-}
-
 void IdentityManager::LegacyAddAccountFromSystem(
     const CoreAccountId& account_id) {
   token_service_->GetDelegate()->AddAccountFromSystem(account_id);

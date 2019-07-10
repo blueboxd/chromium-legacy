@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 /**
@@ -239,5 +240,11 @@ public class MaterialProgressBar extends View implements AnimatorUpdateListener 
         } else {
             canvas.drawRect(start, 0, end, canvas.getHeight(), paint);
         }
+    }
+
+    /** @return The current progress value. */
+    @VisibleForTesting
+    public int getProgressForTesting() {
+        return mProgress;
     }
 }

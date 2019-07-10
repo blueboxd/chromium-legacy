@@ -8,11 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/accessory_controller.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
+class AutofillPopupController;
 struct Suggestion;
 }
 
@@ -46,7 +48,10 @@ class TouchToFillController
   static bool AllowedForWebContents(content::WebContents* web_contents);
 
   // Instructs the controller to show the provided |suggestions| to the user.
-  void Show(const std::vector<autofill::Suggestion>& suggestions);
+  // Invokes AcceptSuggestion() on popup_controller once the user made a
+  // selection.
+  void Show(base::span<const autofill::Suggestion> suggestions,
+            base::WeakPtr<autofill::AutofillPopupController> popup_controller);
 
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
@@ -69,6 +74,9 @@ class TouchToFillController
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_ = nullptr;
+
+  // Popup controller passed from the latest invocation of Show().
+  base::WeakPtr<autofill::AutofillPopupController> popup_controller_;
 
   // The manual filling controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;

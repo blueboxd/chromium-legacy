@@ -533,6 +533,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void EagerSweep();
 
+  void SynchronizeAndFinishConcurrentSweeping();
+
   void InvokePreFinalizers();
 
   void ReportMemoryToV8();

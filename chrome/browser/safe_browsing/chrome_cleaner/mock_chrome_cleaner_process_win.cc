@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -50,8 +51,6 @@ using ::chrome_cleaner::mojom::ChromePromptPtr;
 using ::chrome_cleaner::mojom::ChromePromptPtrInfo;
 using mojo::core::ScopedIPCSupport;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
-using ExtensionCleaningFeatureStatus =
-    MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
 using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
 using PromptAcceptance = ChromePromptActions::PromptAcceptance;
 using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
@@ -195,19 +194,106 @@ class MockCleanerResultsProtobuf : public MockCleanerResults {
   ~MockCleanerResultsProtobuf() override = default;
 
   void SendScanResults(base::OnceClosure done_closure) override {
+    base::ScopedClosureRunner call_done_closure(std::move(done_closure));
     if (!read_handle_.IsValid() || !write_handle_.IsValid()) {
       LOG(ERROR) << "IPC pipes were not connected correctly";
-      std::move(done_closure).Run();
       return;
     }
     // TODO(crbug.com/969139): Populate a request proto based on |options_| and
     // send it.
+
+    // Send the protocol version number.
+    DWORD bytes_written = 0;
+    static const uint8_t kVersion = 1;
+    if (!::WriteFile(write_handle_.Get(), &kVersion, sizeof(kVersion),
+                     &bytes_written, nullptr)) {
+      PLOG(ERROR) << "Error writing protocol version";
+      return;
+    }
+
+    // Send a PromptUser request.
+    chrome_cleaner::ChromePromptRequest request;
+    chrome_cleaner::PromptUserRequest* prompt_user =
+        request.mutable_prompt_user();
+    for (const base::FilePath& file : options_.files_to_delete()) {
+      prompt_user->add_files_to_delete(file.AsUTF8Unsafe());
+    }
+    if (options_.registry_keys().has_value()) {
+      for (const base::string16& key : options_.registry_keys().value()) {
+        prompt_user->add_registry_keys(base::UTF16ToUTF8(key));
+      }
+    }
+    if (options_.extension_ids().has_value()) {
+      for (const base::string16& id : options_.extension_ids().value()) {
+        prompt_user->add_extension_ids(base::UTF16ToUTF8(id));
+      }
+    }
+    if (!WriteMessage(request.SerializeAsString()))
+      return;
+
     if (options_.crash_point() == CrashPoint::kAfterRequestSent) {
       ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
     }
+
+    // Wait for the response.
+    std::string response_message = ReadResponse();
+    if (response_message.empty())
+      return;
+    chrome_cleaner::PromptUserResponse response;
+    if (!response.ParseFromString(response_message)) {
+      LOG(ERROR) << "Read invalid PromptUser response: " << response_message;
+      return;
+    }
+    ReceivePromptAcceptance(
+        base::BindOnce(&MockCleanerResultsProtobuf::SendCloseConnectionRequest,
+                       base::Unretained(this), call_done_closure.Release()),
+        static_cast<PromptAcceptance>(response.prompt_acceptance()));
+  }
+
+  void SendCloseConnectionRequest(base::OnceClosure done_closure) {
+    chrome_cleaner::ChromePromptRequest request;
+    // Initialize a CloseConnectionRequest
+    request.mutable_close_connection();
+    WriteMessage(request.SerializeAsString());
+    std::move(done_closure).Run();
   }
 
  private:
+  bool WriteMessage(const std::string& message) {
+    uint32_t message_length = message.size();
+    DWORD bytes_written = 0;
+    if (!::WriteFile(write_handle_.Get(), &message_length,
+                     sizeof(message_length), &bytes_written, nullptr)) {
+      PLOG(ERROR) << "Error writing message length";
+      return false;
+    }
+    if (!::WriteFile(write_handle_.Get(), message.c_str(), message_length,
+                     &bytes_written, nullptr)) {
+      PLOG(ERROR) << "Error writing message";
+      return false;
+    }
+    return true;
+  }
+
+  std::string ReadResponse() {
+    uint32_t response_length = 0;
+    DWORD bytes_read = 0;
+    // Include space for the null terminator in the WriteInto call.
+    if (!::ReadFile(read_handle_.Get(), &response_length,
+                    sizeof(response_length), &bytes_read, nullptr)) {
+      PLOG(ERROR) << "Error reading response length";
+      return std::string();
+    }
+    std::string response_message;
+    if (!::ReadFile(read_handle_.Get(),
+                    base::WriteInto(&response_message, response_length + 1),
+                    response_length, &bytes_read, nullptr)) {
+      PLOG(ERROR) << "Error reading response message";
+      return std::string();
+    }
+    return response_message;
+  }
+
   base::win::ScopedHandle read_handle_;
   base::win::ScopedHandle write_handle_;
 };
@@ -570,9 +656,16 @@ std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
   return out << "UwS" << static_cast<int>(status);
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         ExtensionCleaningFeatureStatus status) {
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ExtensionCleaningFeatureStatus status) {
   return out << "Ext" << static_cast<int>(status);
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ProtobufIPCFeatureStatus status) {
+  return out << "Ipc" << static_cast<int>(status);
 }
 
 std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {

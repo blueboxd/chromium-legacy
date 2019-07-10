@@ -28,7 +28,7 @@ const CGFloat kBannerViewShadowOpacity = 0.23;
 const CGFloat kTappedBannerViewScale = 0.98;
 const CGFloat kSelectedBannerViewScale = 1.02;
 const CGFloat kSelectBannerAnimationDurationInSeconds = 0.2;
-const CGFloat kTappedBannerAnimationDurationInSeconds = 0.1;
+const CGFloat kTappedBannerAnimationDurationInSeconds = 0.05;
 const CGFloat kSelectedBannerViewYShadowOffset = 8.0;
 
 // Bottom Grip constants.
@@ -390,6 +390,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // state. After the animation it presentd the Infobar Modal.
 - (void)animateBannerTappedAndPresentModal {
   [self.interactionDelegate infobarBannerStartedInteraction];
+  // TODO(crbug.com/961343): Interrupt this animation in case the Banner needs
+  // to be dismissed mid tap (Currently it will be dismmissed after the
+  // animation).
   [UIView animateWithDuration:kTappedBannerAnimationDurationInSeconds
       animations:^{
         self.view.superview.transform = CGAffineTransformMakeScale(

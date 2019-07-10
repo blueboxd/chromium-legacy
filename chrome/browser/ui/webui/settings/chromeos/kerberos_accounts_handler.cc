@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -74,10 +76,19 @@ void KerberosAccountsHandler::OnListAccounts(
   for (int n = 0; n < response.accounts_size(); ++n) {
     const kerberos::Account& account = response.accounts(n);
 
+    // Format validity time as 'xx hours yy minutes' for validity < 1 day and
+    // 'nn days' otherwise.
+    base::TimeDelta tgt_validity =
+        base::TimeDelta::FromSeconds(account.tgt_validity_seconds());
+    const base::string16 valid_for_duration = ui::TimeFormat::Detailed(
+        ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
+        tgt_validity < base::TimeDelta::FromDays(1) ? -1 : 0, tgt_validity);
+
     base::DictionaryValue account_dict;
     account_dict.SetString("principalName", account.principal_name());
     account_dict.SetString("config", account.krb5conf());
     account_dict.SetBoolean("isSignedIn", account.tgt_validity_seconds() > 0);
+    account_dict.SetString("validForDuration", valid_for_duration);
     account_dict.SetBoolean("isActive",
                             account.principal_name() == active_principal);
     account_dict.SetBoolean("isManaged", account.is_managed());
@@ -107,8 +118,8 @@ void KerberosAccountsHandler::HandleAddKerberosAccount(
   const bool allow_existing = args->GetList()[5].GetBool();
 
   KerberosCredentialsManager::Get().AddAccountAndAuthenticate(
-      std::move(principal_name), false /* is_managed */, password,
-      remember_password, config, allow_existing,
+      principal_name, false /* is_managed */, password, remember_password,
+      config, allow_existing,
       base::BindOnce(&KerberosAccountsHandler::OnAddAccountAndAuthenticate,
                      weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -124,15 +135,19 @@ void KerberosAccountsHandler::HandleRemoveKerberosAccount(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
-  const std::string& principal_name = args->GetList()[0].GetString();
+  CHECK_EQ(2U, args->GetSize());
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& principal_name = args->GetList()[1].GetString();
 
-  // Note that we're observing the credentials manager, so OnAccountsChanged()
-  // is called when an account is removed, which calls RefreshUI(). Thus, it's
-  // fine to pass an EmptyResultCallback() in here and not something that calls
-  // RefreshUI().
   KerberosCredentialsManager::Get().RemoveAccount(
-      principal_name, KerberosCredentialsManager::EmptyResultCallback());
+      principal_name, base::BindOnce(&KerberosAccountsHandler::OnRemoveAccount,
+                                     weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void KerberosAccountsHandler::OnRemoveAccount(const std::string& callback_id,
+                                              kerberos::ErrorType error) {
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(static_cast<int>(error)));
 }
 
 void KerberosAccountsHandler::HandleSetAsActiveKerberosAccount(

@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GURL;
@@ -22,8 +23,6 @@ class Value;
 }
 
 namespace net {
-
-class NetLogCaptureMode;
 
 // Returns a Value containing NetLog parameters for constructing a URLRequest.
 NET_EXPORT base::Value NetLogURLRequestConstructorCallback(

@@ -28,9 +28,9 @@ class PrefService;
 class SharingSyncPreference {
  public:
   struct Device {
-    Device(const std::string& fcm_token,
-           const std::string& p256dh,
-           const std::string& auth_secret,
+    Device(std::string fcm_token,
+           std::string p256dh,
+           std::string auth_secret,
            const int capabilities);
     Device(Device&& other);
     ~Device();

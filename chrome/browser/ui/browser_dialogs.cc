@@ -37,4 +37,14 @@ void ShowNativeFileSystemPermissionDialog(
   // if the dialog was instantly cancelled.
   std::move(callback).Run(PermissionAction::DISMISSED);
 }
+
+void ShowNativeFileSystemRestrictedDirectoryDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceClosure callback,
+    content::WebContents* web_contents) {
+  // There's no dialog version of this available outside views, run callback as
+  // if the dialog was instantly dismissed.
+  std::move(callback).Run();
+}
 #endif  // !defined(TOOLKIT_VIEWS)

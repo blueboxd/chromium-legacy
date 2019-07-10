@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 extern NSString* const kDestructiveTintColor;
+extern NSString* const kDisabledTintColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTintColor;
 

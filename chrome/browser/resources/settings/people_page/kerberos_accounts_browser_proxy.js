@@ -19,6 +19,7 @@ cr.exportPath('settings');
  *   isManaged: boolean,
  *   passwordWasRemembered: boolean,
  *   pic: string,
+ *   validForDuration: string
  * }}
  */
 settings.KerberosAccount;
@@ -75,6 +76,7 @@ cr.define('settings', function() {
     /**
      * Removes |account| from the set of Kerberos accounts.
      * @param {!settings.KerberosAccount} account
+     * @return {!Promise<!settings.KerberosErrorType>}
      */
     removeAccount(account) {}
 
@@ -105,7 +107,7 @@ cr.define('settings', function() {
 
     /** @override */
     removeAccount(account) {
-      chrome.send('removeKerberosAccount', [account.principalName]);
+      return cr.sendWithPromise('removeKerberosAccount', account.principalName);
     }
 
     /** @override */

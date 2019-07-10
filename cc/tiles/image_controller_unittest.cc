@@ -315,28 +315,6 @@ class ImageControllerTest : public testing::Test {
   base::WeakPtrFactory<ImageControllerTest> weak_ptr_factory_{this};
 };
 
-// Test that GetTasksForImagesAndRef does not generate task for PaintWorklet
-// images.
-TEST_F(ImageControllerTest, GetTasksForImagesAndRefForPaintWorkletImages) {
-  std::vector<DrawImage> images(1);
-  ImageDecodeCache::TracingInfo tracing_info;
-
-  PaintImage paint_image = CreatePaintImage(100, 100);
-  DrawImage draw_image(
-      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
-      kNone_SkFilterQuality, CreateMatrix(SkSize::Make(1.f, 1.f), true),
-      PaintImage::kDefaultFrameIndex);
-  images[0] = draw_image;
-
-  ASSERT_EQ(1u, images.size());
-
-  std::vector<scoped_refptr<TileTask>> tasks;
-  bool has_at_raster_images = false;
-  controller()->ConvertDataImagesToTasks(&images, &tasks, &has_at_raster_images,
-                                         tracing_info);
-  EXPECT_EQ(tasks.size(), 0u);
-}
-
 TEST_F(ImageControllerTest, NullControllerUnrefsImages) {
   std::vector<DrawImage> images(10);
   ImageDecodeCache::TracingInfo tracing_info;

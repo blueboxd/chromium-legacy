@@ -58,46 +58,53 @@ function setTextDirection(direction) {
   document.body.setAttribute('dir', direction);
 }
 
-// Maps JS Font Family to CSS class and then changes body class name.
-// CSS classes must agree with distilledpage.css.
-function useFontFamily(fontFamily) {
-  var cssClass;
-  if (fontFamily == 'serif') {
-    cssClass = 'serif';
-  } else if (fontFamily == 'monospace') {
-    cssClass = 'monospace';
-  } else {
-    cssClass = 'sans-serif';
-  }
-  // Relies on the classname order of the body being Theme class, then Font
-  // Family class.
-  var themeClass = document.body.className.split(' ')[0];
-  document.body.className = themeClass + ' ' + cssClass;
+function removeAll(source, elementsToRemove) {
+  elementsToRemove.forEach(function(element) {
+    source.remove(element)
+  });
 }
 
-// Maps JS theme to CSS class and then changes body class name.
-// CSS classes must agree with distilledpage.css.
-function useTheme(theme) {
-  var cssClass;
-  if (theme == 'sepia') {
-    cssClass = 'sepia';
-  } else if (theme == 'dark') {
-    cssClass = 'dark';
-  } else {
-    cssClass = 'light';
+// These classes must agree with the font classes in distilledpage.css.
+const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
+function getFontFamilyClass(fontFamily) {
+  if (fontFamilyClasses.includes(fontFamily)) {
+    return fontFamily;
   }
-  // Relies on the classname order of the body being Theme class, then Font
-  // Family class.
-  var fontFamilyClass = document.body.className.split(' ')[1];
-  document.body.className = cssClass + ' ' + fontFamilyClass;
+  return fontFamilyClasses[0];
+}
 
+function useFontFamily(fontFamily) {
+  removeAll(document.body.classList, fontFamilyClasses);
+  document.body.classList.add(getFontFamilyClass(fontFamily));
+}
+
+// These classes must agree with the theme classes in distilledpage.css.
+const themeClasses = ['light', 'dark', 'sepia'];
+function getThemeClass(theme) {
+  if (themeClasses.includes(theme)) {
+    return theme;
+  }
+  return themeClasses[0];
+}
+
+function useTheme(theme) {
+  removeAll(document.body.classList, themeClasses);
+  document.body.classList.add(getThemeClass(theme));
   updateToolbarColor();
 }
 
+function getThemeFromElement(element) {
+  var foundTheme = themeClasses[0];
+  themeClasses.forEach(function(theme) {
+    if (element.classList.contains(theme)) {
+      foundTheme = theme;
+    }
+  });
+  return foundTheme;
+}
+
 function updateToolbarColor() {
-  // Relies on the classname order of the body being Theme class, then Font
-  // Family class.
-  var themeClass = document.body.className.split(' ')[0];
+  var themeClass = getThemeFromElement(document.body);
 
   var toolbarColor;
   if (themeClass == 'sepia') {

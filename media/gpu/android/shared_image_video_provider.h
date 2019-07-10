@@ -14,6 +14,8 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
+class CommandBufferStub;
+class SharedContextState;
 struct SyncToken;
 }  // namespace gpu
 
@@ -22,6 +24,10 @@ namespace media {
 // Provider class for shared images.
 class MEDIA_GPU_EXPORT SharedImageVideoProvider {
  public:
+  using GetStubCB = base::RepeatingCallback<gpu::CommandBufferStub*()>;
+  using GpuInitCB =
+      base::OnceCallback<void(scoped_refptr<gpu::SharedContextState>)>;
+
   // Description of the underlying properties of the shared image.
   struct ImageSpec {
     ImageSpec(const gfx::Size& size);
@@ -65,6 +71,12 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
   virtual ~SharedImageVideoProvider() = default;
 
   using ImageReadyCB = base::OnceCallback<void(ImageRecord)>;
+
+  // Initialize this provider.  On success, |gpu_init_cb| will be run with the
+  // SharedContextState (and the context current), on the gpu main thread.  This
+  // is mostly a hack to allow VideoFrameFactoryImpl to create a TextureOwner on
+  // the right context.  Will call |gpu_init_cb| with nullptr otherwise.
+  virtual void Initialize(GpuInitCB gpu_init_cb) = 0;
 
   // Call |cb| when we have a shared image that matches |spec|.  We may call
   // |cb| back before returning, or we might post it for later.

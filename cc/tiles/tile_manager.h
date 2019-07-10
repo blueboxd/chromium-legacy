@@ -294,9 +294,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   void set_active_url(const GURL& url) { active_url_ = url; }
 
-  void SetPaintWorkletLayerPainter(
-      std::unique_ptr<PaintWorkletLayerPainter> painter);
-
  protected:
   friend class Tile;
   // Must be called by tile during destruction.

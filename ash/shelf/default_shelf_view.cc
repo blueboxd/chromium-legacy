@@ -56,13 +56,13 @@ bool IsTabletModeEnabled() {
 // button.
 int GetSizeOfAppIcons(int count, bool with_overflow) {
   if (count == 0)
-    return with_overflow ? kShelfControlSize : 0;
+    return with_overflow ? ShelfConstants::control_size() : 0;
 
-  const int app_size = count * kShelfButtonSize;
+  const int app_size = count * ShelfConstants::button_size();
   int overflow_size = 0;
   int total_padding = ShelfConstants::button_spacing() * (count - 1);
   if (with_overflow) {
-    overflow_size += kShelfControlSize;
+    overflow_size += ShelfConstants::control_size();
     total_padding += kMarginBetweenAppsAndOverflow;
   }
   return app_size + total_padding + overflow_size;
@@ -81,24 +81,27 @@ void DefaultShelfView::CalculateBackAndHomeButtonsIdealBounds() {
   if (is_overflow_mode())
     return;
 
+  const int control_size = ShelfConstants::control_size();
+  const int button_size = ShelfConstants::button_size();
   const int button_spacing = ShelfConstants::button_spacing();
+
   int x = shelf()->PrimaryAxisValue(button_spacing, 0);
   int y = shelf()->PrimaryAxisValue(0, button_spacing);
 
-  GetBackButton()->set_ideal_bounds(gfx::Rect(
-      x, y, shelf()->PrimaryAxisValue(kShelfControlSize, kShelfButtonSize),
-      shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfControlSize)));
+  GetBackButton()->set_ideal_bounds(
+      gfx::Rect(x, y, shelf()->PrimaryAxisValue(control_size, button_size),
+                shelf()->PrimaryAxisValue(button_size, control_size)));
 
   // If we are not in tablet mode, the home button will get placed on top of
   // the (invisible) back button.
   if (IsTabletModeEnabled()) {
-    x = shelf()->PrimaryAxisValue(x + kShelfControlSize + button_spacing, x);
-    y = shelf()->PrimaryAxisValue(y, y + kShelfControlSize + button_spacing);
+    x = shelf()->PrimaryAxisValue(x + control_size + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + control_size + button_spacing);
   }
 
-  GetHomeButton()->set_ideal_bounds(gfx::Rect(
-      x, y, shelf()->PrimaryAxisValue(kShelfControlSize, kShelfButtonSize),
-      shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfControlSize)));
+  GetHomeButton()->set_ideal_bounds(
+      gfx::Rect(x, y, shelf()->PrimaryAxisValue(control_size, button_size),
+                shelf()->PrimaryAxisValue(button_size, control_size)));
 }
 
 void DefaultShelfView::Init() {
@@ -181,7 +184,7 @@ void DefaultShelfView::CalculateIdealBounds() {
     } else {
       padding_for_centering =
           kShelfButtonSpacing +
-          (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize +
+          (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() +
           kAppIconGroupMargin + (available_size_for_app_icons - icons_size) / 2;
     }
 
@@ -199,11 +202,13 @@ void DefaultShelfView::CalculateIdealBounds() {
       continue;
     }
 
-    view_model()->set_ideal_bounds(
-        i, gfx::Rect(x, y, kShelfButtonSize, kShelfButtonSize));
+    const int button_size = ShelfConstants::button_size();
 
-    x = shelf()->PrimaryAxisValue(x + kShelfButtonSize + button_spacing, x);
-    y = shelf()->PrimaryAxisValue(y, y + kShelfButtonSize + button_spacing);
+    view_model()->set_ideal_bounds(i,
+                                   gfx::Rect(x, y, button_size, button_size));
+
+    x = shelf()->PrimaryAxisValue(x + button_size + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + button_size + button_spacing);
 
     if (i == separator_index) {
       // Place the separator halfway between the two icons it separates,
@@ -262,16 +267,17 @@ void DefaultShelfView::LayoutAppListAndBackButtonHighlight() {
   const int button_spacing = ShelfConstants::button_spacing();
   // "Secondary" as in "orthogonal to the shelf primary axis".
   const int control_secondary_padding =
-      (ShelfConstants::shelf_size() - kShelfControlSize) / 2;
+      (ShelfConstants::shelf_size() - ShelfConstants::control_size()) / 2;
   const int back_and_app_list_background_size =
-      kShelfControlSize +
-      (IsTabletModeEnabled() ? kShelfControlSize + button_spacing : 0);
+      ShelfConstants::control_size() +
+      (IsTabletModeEnabled() ? ShelfConstants::control_size() + button_spacing
+                             : 0);
   back_and_app_list_background_->SetBounds(
       shelf()->PrimaryAxisValue(button_spacing, control_secondary_padding),
       shelf()->PrimaryAxisValue(control_secondary_padding, button_spacing),
       shelf()->PrimaryAxisValue(back_and_app_list_background_size,
-                                kShelfControlSize),
-      shelf()->PrimaryAxisValue(kShelfControlSize,
+                                ShelfConstants::control_size()),
+      shelf()->PrimaryAxisValue(ShelfConstants::control_size(),
                                 back_and_app_list_background_size));
 }
 
@@ -287,7 +293,7 @@ int DefaultShelfView::GetAvailableSpaceForAppIcons() const {
   // Subtract space already allocated to the home button, and the back
   // button if applicable.
   return shelf()->PrimaryAxisValue(width(), height()) - kShelfButtonSpacing -
-         (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize -
+         (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() -
          2 * kAppIconGroupMargin;
 }
 

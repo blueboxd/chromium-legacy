@@ -116,11 +116,19 @@ class InterceptAndCancelDidCommitProvisionalLoad
     intercepted_navigations_.push_back(navigation_request);
     intercepted_messages_.push_back(*params);
     intercepted_requests_.push_back(
-        std::move((*interface_params)->interface_provider_request));
-    intercepted_broker_content_requests_.push_back(std::move(
-        (*interface_params)->document_interface_broker_content_request));
-    intercepted_broker_blink_requests_.push_back(std::move(
-        (*interface_params)->document_interface_broker_blink_request));
+        *interface_params
+            ? std::move((*interface_params)->interface_provider_request)
+            : nullptr);
+    intercepted_broker_content_requests_.push_back(
+        *interface_params
+            ? std::move((*interface_params)
+                            ->document_interface_broker_content_request)
+            : nullptr);
+    intercepted_broker_blink_requests_.push_back(
+        *interface_params
+            ? std::move(
+                  (*interface_params)->document_interface_broker_blink_request)
+            : nullptr);
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -2022,17 +2030,14 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
     NavigationHandleObserver handle_observer(shell()->web_contents(),
                                              GURL(url));
     // TODO(arthursonzogni): It shouldn't be possible to navigate to
-    // about:srcdoc by executing location.href="about:srcdoc". Other web
+    // about:srcdoc by executing location.href= "about:srcdoc". Other web
     // browsers like Firefox aren't allowing this.
     EXPECT_TRUE(ExecJs(main_frame, JsReplace("location.href = $1", url)));
-
     start_observer.Wait();
     WaitForLoadStop(shell()->web_contents());
-
-    // TODO(arthursonzogni): The navigation should be blocked.
     EXPECT_TRUE(handle_observer.has_committed());
-    EXPECT_FALSE(handle_observer.is_error());
-    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+    EXPECT_TRUE(handle_observer.is_error());
+    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
   }
 
   // 2. Subframe navigations to variations of about:srcdoc are blocked.
@@ -2046,17 +2051,14 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
                                              GURL(url));
     FrameTreeNode* subframe = main_frame->child_at(0);
     // TODO(arthursonzogni): It shouldn't be possible to navigate to
-    // about:srcdoc by executing location.href="about:srcdoc". Other web
+    // about:srcdoc by executing location.href= "about:srcdoc". Other web
     // browsers like Firefox aren't allowing this.
     EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url)));
-
     start_observer.Wait();
     WaitForLoadStop(shell()->web_contents());
-
-    // TODO(arthursonzogni): The navigation should be blocked.
     EXPECT_TRUE(handle_observer.has_committed());
-    EXPECT_FALSE(handle_observer.is_error());
-    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+    EXPECT_TRUE(handle_observer.is_error());
+    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
   }
 
   // 3. Subframe navigation to about:srcdoc are not blocked.
@@ -2081,6 +2083,29 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
     EXPECT_FALSE(handle_observer.is_error());
     EXPECT_EQ(net::OK, handle_observer.net_error_code());
   }
+}
+
+// Test renderer initiated navigations to about:srcdoc are routed through the
+// browser process. It means RenderFrameHostImpl::BeginNavigation() is called.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, AboutSrcDocUsesBeginNavigation) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), url);
+
+  // If DidStartNavigation is called before DidCommitProvisionalLoad, then it
+  // means the navigation was driven by the browser process, otherwise by the
+  // renderer process. This tests it was driven by the browser process:
+  InterceptAndCancelDidCommitProvisionalLoad interceptor(
+      shell()->web_contents());
+  DidStartNavigationObserver observer(shell()->web_contents());
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    let iframe = document.createElement("iframe");
+    iframe.srcdoc = "foo"
+    document.body.appendChild(iframe);
+  )"));
+
+  observer.Wait();      // BeginNavigation is called.
+  interceptor.Wait(1);  // DidCommitNavigation is called.
 }
 
 }  // namespace content

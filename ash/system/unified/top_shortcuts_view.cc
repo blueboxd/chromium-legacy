@@ -7,7 +7,6 @@
 #include <numeric>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -171,7 +170,6 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   bool is_on_login_screen =
       shell->session_controller()->login_status() == LoginStatus::NOT_LOGGED_IN;
-  bool is_kiosk_next = shell->kiosk_next_shell_controller()->IsEnabled();
   bool can_show_settings = TrayPopupUtils::CanOpenWebUISettings();
   bool can_lock_screen = shell->session_controller()->CanLockScreen();
 
@@ -185,16 +183,14 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     container_->AddSignOutButton(sign_out_button_);
   }
 
-  if (!is_kiosk_next) {
-    bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
-    power_button_ = new TopShortcutButton(
-        this, kUnifiedMenuPowerIcon,
-        reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
-    power_button_->SetID(VIEW_ID_POWER_BUTTON);
-    container_->AddChildView(power_button_);
-  }
+  bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
+  power_button_ = new TopShortcutButton(
+      this, kUnifiedMenuPowerIcon,
+      reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
+  power_button_->SetID(VIEW_ID_POWER_BUTTON);
+  container_->AddChildView(power_button_);
 
-  if (can_show_settings && can_lock_screen && !is_kiosk_next) {
+  if (can_show_settings && can_lock_screen) {
     lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
                                          IDS_ASH_STATUS_TRAY_LOCK);
     container_->AddChildView(lock_button_);

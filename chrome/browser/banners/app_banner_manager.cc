@@ -242,7 +242,11 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
   AppBannerSettingsHelper::UpdateFromFieldTrial();
 }
 
-AppBannerManager::~AppBannerManager() { }
+AppBannerManager::~AppBannerManager() {
+  for (Observer& observer : observer_list_)
+    observer.ObserveAppBannerManager(nullptr);
+  CHECK(!observer_list_.might_have_observers());
+}
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
   if (ShouldBypassEngagementChecks())

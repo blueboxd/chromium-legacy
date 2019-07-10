@@ -57,16 +57,15 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
  private:
   // identity::mojom::IdentityAccessor:
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override {
-    CoreAccountInfo account_info;
-    account_info.account_id = "account_id";
-    account_info.gaia = "fakegaiaid";
-    account_info.email = "fake@email";
+    CoreAccountId account_id("account_id");
+    std::string gaia = "fakegaiaid";
+    std::string email = "fake@email";
 
     identity::AccountState account_state;
     account_state.has_refresh_token = true;
     account_state.is_primary_account = true;
 
-    std::move(callback).Run(account_info, account_state);
+    std::move(callback).Run(account_id, gaia, email, account_state);
   }
 
   void GetPrimaryAccountWhenAvailable(

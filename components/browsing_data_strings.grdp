@@ -34,16 +34,16 @@
   <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has. The list of example domains associated with the user's passwords is denoted by the placeholder DOMAIN_LIST.">
     {COUNT, plural,
      =0 {None}
-     =1 {1 password for <ph name="DOMAIN_LIST">$1<ex>google.com</ex></ph>}
-     =2 {2 passwords for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com</ex></ph>}
-     other {# passwords for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com, and 2 more</ex></ph>}}
+     =1 {1 password (for <ph name="DOMAIN_LIST">$1<ex>google.com</ex></ph>)}
+     =2 {2 passwords (for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com</ex></ph>)}
+     other {# passwords (for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com, and 2 more</ex></ph>)}}
   </message>
   <message name="IDS_DEL_PASSWORDS_COUNTER_SYNCED" desc="A counter showing how many passwords the user has and that they are synced. The list of example domains associated with the user's passwords is denoted by the placeholder DOMAIN_LIST.">
     {COUNT, plural,
      =0 {None}
-     =1 {1 password for <ph name="DOMAIN_LIST">$1<ex>google.com</ex></ph> (synced)}
-     =2 {2 passwords for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com</ex></ph> (synced)}
-     other {# passwords for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com, and 2 more</ex></ph> (synced)}}
+     =1 {1 password (for <ph name="DOMAIN_LIST">$1<ex>google.com</ex></ph>, synced)}
+     =2 {2 passwords (for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com</ex></ph>, synced)}
+     other {# passwords (for <ph name="DOMAIN_LIST">$1<ex>google.com, chrome.com, and 2 more</ex></ph>, synced)}}
   </message>
   <message name="IDS_DEL_PASSWORDS_DOMAINS_DISPLAY" desc="This message is shown alongside the passwords count displaying example domains. If there is at least one password, we will show at most two example domain names, denoted by the placeholders EXAMPLE_DOMAIN_1 and EXAMPLE_DOMAIN_2. If there are more than two domains, we will also say 'and X more.'">
     {COUNT, plural,

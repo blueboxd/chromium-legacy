@@ -24,19 +24,14 @@ import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
-import android.support.design.widget.CoordinatorLayout;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -46,54 +41,37 @@ import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceLis
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantTermsAndConditionsState;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for the Autofill Assistant payment request UI.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantPaymentRequestUiTest {
-    private AutofillAssistantPaymentRequestTestHelper mHelper;
-
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
+    private AutofillAssistantPaymentRequestTestHelper mHelper;
 
     @Before
     public void setUp() throws Exception {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), "about:blank"));
+        AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
         mHelper = new AutofillAssistantPaymentRequestTestHelper();
-    }
-
-    private CustomTabActivity getActivity() {
-        return mCustomTabActivityTestRule.getActivity();
-    }
-
-    private WebContents getWebContents() {
-        return mCustomTabActivityTestRule.getWebContents();
     }
 
     /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
     private AssistantPaymentRequestCoordinator createPaymentRequestCoordinator(
-            AssistantPaymentRequestModel model) {
-        ThreadUtils.assertOnUiThread();
-        AssistantPaymentRequestCoordinator coordinator =
-                new AssistantPaymentRequestCoordinator(getActivity(), model);
+            AssistantPaymentRequestModel model) throws Exception {
+        AssistantPaymentRequestCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AssistantPaymentRequestCoordinator(mTestRule.getActivity(), model));
 
-        CoordinatorLayout.LayoutParams lp = new CoordinatorLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.BOTTOM;
-
-        ViewGroup chromeCoordinatorView = getActivity().findViewById(R.id.coordinator);
-        chromeCoordinatorView.addView(coordinator.getView(), lp);
-
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillAssistantUiTestUtil.attachToCoordinator(
+                                mTestRule.getActivity(), coordinator.getView()));
         return coordinator;
     }
 
@@ -104,8 +82,7 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testInitialState() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
 
         /* Test initial model state. */
         assertThat(model.get(AssistantPaymentRequestModel.VISIBLE), is(false));
@@ -153,8 +130,7 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testSectionVisibility() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
@@ -221,8 +197,7 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testEmptyPaymentRequest() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
                 new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
         AutofillAssistantPaymentRequestTestHelper
@@ -301,15 +276,14 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testContactDetailsLiveUpdate() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
-            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, getWebContents());
+            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
@@ -357,15 +331,14 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testPaymentMethodsLiveUpdate() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
-            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, getWebContents());
+            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
         });
@@ -424,8 +397,7 @@ public class AutofillAssistantPaymentRequestUiTest {
         mHelper.setCreditCard(creditCard);
 
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
                 new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
         AutofillAssistantPaymentRequestTestHelper
@@ -513,8 +485,7 @@ public class AutofillAssistantPaymentRequestUiTest {
     @MediumTest
     public void testRemoveLastItemImplicitSelection() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
         AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
                 new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
         AutofillAssistantPaymentRequestTestHelper

@@ -6,13 +6,6 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
-js_library("paper-button-behavior-extracted") {
-  deps = [
-    ":paper-ripple-behavior-extracted",
-    "../iron-behaviors:iron-button-state-extracted",
-  ]
-}
-
 js_library("paper-ripple-behavior-extracted") {
   deps = [
     "../iron-behaviors:iron-button-state-extracted",

@@ -12,14 +12,15 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/services/quarantine/common.h"
 #include "components/services/quarantine/common_mac.h"
 #include "url/gurl.h"
 
 namespace quarantine {
 
 bool IsFileQuarantined(const base::FilePath& file,
-                       const GURL& expected_source_url,
-                       const GURL& referrer_url) {
+                       const GURL& expected_source_url_unsafe,
+                       const GURL& expected_referrer_url_unsafe) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -32,6 +33,11 @@ bool IsFileQuarantined(const base::FilePath& file,
   if (!success || !properties)
     return false;
 
+  GURL expected_source_url =
+      SanitizeUrlForQuarantine(expected_source_url_unsafe);
+  GURL expected_referrer_url =
+      SanitizeUrlForQuarantine(expected_referrer_url_unsafe);
+
   NSString* source_url =
       [[properties valueForKey:(NSString*)kLSQuarantineDataURLKey] description];
 
@@ -43,10 +49,11 @@ bool IsFileQuarantined(const base::FilePath& file,
     return false;
   }
 
-  return !referrer_url.is_valid() ||
+  return !expected_referrer_url.is_valid() ||
          [[[properties valueForKey:(NSString*)kLSQuarantineOriginURLKey]
              description]
-             isEqualToString:base::SysUTF8ToNSString(referrer_url.spec())];
+             isEqualToString:base::SysUTF8ToNSString(
+                                 expected_referrer_url.spec())];
 }
 
 }  // namespace quarantine

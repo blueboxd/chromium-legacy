@@ -955,6 +955,17 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
     return;
   }
 
+  // If the divider is animating, then |gained_active| cannot be snapped (and is
+  // not already snapped either, because then we would have bailed out by now).
+  // Then if |gained_active| is user-positionable, we should end split view
+  // mode, but the cannot snap toast would be inappropriate because the user
+  // still might be able to snap |gained_active|.
+  if (IsDividerAnimating()) {
+    if (wm::GetWindowState(gained_active)->IsUserPositionable())
+      EndSplitView(EndReason::kUnsnappableWindowActivated);
+    return;
+  }
+
   // If it's a user positionable window but can't be snapped, end split view
   // mode and show the cannot snap toast.
   if (!CanSnapInSplitview(gained_active)) {

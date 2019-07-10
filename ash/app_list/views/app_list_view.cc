@@ -1004,11 +1004,6 @@ void AppListView::SetChildViewsForStateTransition(
   if (target_state == ash::AppListViewState::kHalf)
     return;
 
-  if (target_state == ash::AppListViewState::kClosed) {
-    app_list_main_view_->contents_view()->CancelDrag();
-    return;
-  }
-
   if (GetAppsContainerView()->IsInFolderView())
     GetAppsContainerView()->ResetForShowApps();
 
@@ -1022,6 +1017,11 @@ void AppListView::SetChildViewsForStateTransition(
         pagination_model->selected_page() != 0) {
       pagination_model->SelectPage(0, false /* animate */);
     }
+  }
+  if (target_state == ash::AppListViewState::kClosed && is_side_shelf_) {
+    // Reset the search box to be shown again. This is done after the animation
+    // is complete normally, but there is no animation when |is_side_shelf_|.
+    search_box_view_->ClearSearchAndDeactivateSearchBox();
   }
 }
 

@@ -123,6 +123,8 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPluginVm;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeLimitPolicy;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWilcoDtc;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kUploadZippedSystemLogs;
 #endif
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)

@@ -30,9 +30,9 @@ void InstanceID::NotifyTokenRefresh(bool update_id) {
 }
 
 void InstanceID::GetEncryptionInfo(const std::string& authorized_entity,
-                                   const GetEncryptionInfoCallback& callback) {
+                                   GetEncryptionInfoCallback callback) {
   gcm_driver_->GetEncryptionProviderInternal()->GetEncryptionInfo(
-      app_id_, authorized_entity, callback);
+      app_id_, authorized_entity, std::move(callback));
 }
 
 void InstanceID::DeleteToken(const std::string& authorized_entity,

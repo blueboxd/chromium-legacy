@@ -92,12 +92,12 @@ const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
 // When enabled, will remove the option to save unmasked server cards as
 // FULL_SERVER_CARDs upon successful unmask.
 const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
-    "AutofillNoLocalSaveOnUnmaskSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillNoLocalSaveOnUnmaskSuccess", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, no local copy of server card will be saved when upload
 // succeeds.
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
-    "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, local and upload credit card save dialogs will be updated to
 // new M72 guidelines, including a [No thanks] cancel button and an extended

@@ -158,12 +158,12 @@ TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {
       body {
         height: 4000px;
       }
-      h2 {
+      div {
         position: absolute;
         top: 3000px;
       }
     </style>
-    <h2 id="target">Target</h2>
+    <div id="target">Target</h2>
   )HTML");
   main_resource.Finish();
   css_resource.Complete();
@@ -174,7 +174,7 @@ TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {
   test::RunPendingTasks();
 
   ScrollableArea* layout_viewport = GetDocument().View()->LayoutViewport();
-  EXPECT_EQ(3001, layout_viewport->GetScrollOffset().Height());
+  EXPECT_EQ(3000, layout_viewport->GetScrollOffset().Height());
 }
 
 }  // namespace blink

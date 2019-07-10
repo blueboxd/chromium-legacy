@@ -48,6 +48,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
@@ -175,10 +176,21 @@
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/certificate_manager_model.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/net/nss_context.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_util_nss.h"
 #endif  // defined(USE_NSS_CERTS)
+
+#if defined(OS_CHROMEOS)
+#include "base/path_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "components/session_manager/core/session_manager.h"
+#endif  // defined(OS_CHROMEOS)
 
 using namespace ssl_test_util;
 
@@ -5893,6 +5905,148 @@ IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
   EXPECT_FALSE(IsShowingInterstitial(tab));
+}
+
+// A test class which prepares two profiles and allows importing certificates
+// into their NSS databases.
+class SSLUITestCustomCACerts : public SSLUITestNoCert {
+ public:
+  SSLUITestCustomCACerts() = default;
+  ~SSLUITestCustomCACerts() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SSLUITestNoCert::SetUpCommandLine(command_line);
+    // Don't require policy for our sessions - this is required so the policy
+    // code knows not to expect cached policy for the secondary profile.
+    command_line->AppendSwitchASCII(chromeos::switches::kProfileRequiresPolicy,
+                                    "false");
+  }
+
+  void SetUpOnMainThread() override {
+    SSLUITestNoCert::SetUpOnMainThread();
+
+    profile_1_ = browser()->profile();
+
+    // Create a second profile.
+    {
+      static const char kSecondProfileAccount[] = "profile2@test.com";
+      static const char kSecondProfileGaiaId[] = "9876543210";
+      static const char kSecondProfileHash[] = "testProfile2";
+
+      base::FilePath user_data_directory;
+      base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+      session_manager::SessionManager::Get()->CreateSession(
+          AccountId::FromUserEmailGaiaId(kSecondProfileAccount,
+                                         kSecondProfileGaiaId),
+          kSecondProfileHash, false);
+      // Set up the secondary profile.
+      base::FilePath profile_dir = user_data_directory.Append(
+          chromeos::ProfileHelper::GetUserProfileDir(kSecondProfileHash)
+              .BaseName());
+      profile_2_ =
+          g_browser_process->profile_manager()->GetProfile(profile_dir);
+    }
+
+    // Get cert databases for both profiles.
+    {
+      base::RunLoop loop;
+      GetNSSCertDatabaseForProfile(
+          profile_1_,
+          base::Bind(&SSLUITestCustomCACerts::DidGetCertDatabase,
+                     base::Unretained(this), &loop, &profile_1_cert_db_));
+      loop.Run();
+    }
+
+    {
+      base::RunLoop loop;
+      GetNSSCertDatabaseForProfile(
+          profile_2_,
+          base::Bind(&SSLUITestCustomCACerts::DidGetCertDatabase,
+                     base::Unretained(this), &loop, &profile_2_cert_db_));
+      loop.Run();
+    }
+
+    // Double-check that the profile initialization was correct and the two
+    // profiles have distinct NSS databases with distinc NSS public slots.
+    EXPECT_NE(profile_1_cert_db_, profile_2_cert_db_);
+    EXPECT_NE(profile_1_cert_db_->GetPublicSlot().get(),
+              profile_2_cert_db_->GetPublicSlot().get());
+  }
+
+ protected:
+  void ImportCACertAsTrusted(const std::string& cert_file_name,
+                             net::NSSCertDatabase* cert_db) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    net::ScopedCERTCertificateList ca_cert_list =
+        net::CreateCERTCertificateListFromFile(
+            net::GetTestCertsDirectory(), cert_file_name,
+            net::X509Certificate::FORMAT_AUTO);
+    ASSERT_FALSE(ca_cert_list.empty());
+    net::NSSCertDatabase::ImportCertFailureList failures;
+    ASSERT_TRUE(cert_db->ImportCACerts(
+        ca_cert_list, net::NSSCertDatabase::TRUSTED_SSL, &failures));
+    ASSERT_TRUE(failures.empty());
+  }
+
+  // The first profile.
+  Profile* profile_1_;
+  // The second profile.
+  Profile* profile_2_;
+
+  // The NSSCertDatabase for |profile_1_|.
+  net::NSSCertDatabase* profile_1_cert_db_;
+
+  // The NSSCertDatabase for |profile_2_|.
+  net::NSSCertDatabase* profile_2_cert_db_;
+
+ private:
+  void DidGetCertDatabase(base::RunLoop* loop,
+                          net::NSSCertDatabase** out_cert_db,
+                          net::NSSCertDatabase* cert_db) {
+    *out_cert_db = cert_db;
+    loop->Quit();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SSLUITestCustomCACerts);
+};
+
+// Imports a trusted CA certiifcate into a profile's NSS database.
+// Verifies that the certificate is trusted in the context of the profile it was
+// imported for.
+// Verifies that the certificate is *not* trusted in the context of a different
+// profile.
+IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
+                       TrustedCertOnlyRespectedInProfileThatOwnsIt) {
+  ASSERT_TRUE(https_server_.Start());
+
+  ASSERT_NO_FATAL_FAILURE(
+      ImportCACertAsTrusted("root_ca_cert.pem", profile_2_cert_db_));
+
+  // Flush the network service instance so persistent NSS Database changes are
+  // reflected in the network service.
+  content::FlushNetworkServiceInstanceForTesting();
+
+  // The certificate that is trusted in |profile_2_| should not be respected in
+  // browsers that belong to |profile_1_|.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+
+  WebContents* tab_for_profile_1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab_for_profile_1);
+  CheckAuthenticationBrokenState(tab_for_profile_1,
+                                 net::CERT_STATUS_AUTHORITY_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  // The certificate that is trusted in |profile_2_| should be respected in
+  // browsers that belong to |profile_2_|.
+  Browser* browser_for_profile_2 = CreateBrowser(profile_2_);
+  ui_test_utils::NavigateToURL(browser_for_profile_2,
+                               https_server_.GetURL("/ssl/google.html"));
+  WebContents* tab_for_profile_2 =
+      browser_for_profile_2->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab_for_profile_2, AuthState::NONE);
 }
 
 #endif  // defined(OS_CHROMEOS)

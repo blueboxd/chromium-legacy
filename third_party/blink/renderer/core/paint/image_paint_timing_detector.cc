@@ -65,9 +65,7 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
     return a->first_size > b->first_size;
   // This make sure that two different nodes with the same |first_size| wouldn't
   // be merged in the set.
-  if (a->node_id != b->node_id)
-    return a->node_id > b->node_id;
-  return a->record_id > b->record_id;
+  return a->insertion_index < b->insertion_index;
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
@@ -153,6 +151,19 @@ void ImagePaintTimingDetector::OnPaintFinished() {
 
   last_registered_frame_index_ = records_manager_.LastQueuedFrameIndex();
   RegisterNotifySwapTime();
+}
+
+void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(
+    const LayoutObject& object) {
+  if (!is_recording_)
+    return;
+
+  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
+  if (node_id == kInvalidDOMNodeId)
+    return;
+  // The visible record removal has been handled by
+  // |NotifyBackgroundImageRemoved|.
+  records_manager_.RemoveInvisibleRecordIfNeeded(node_id);
 }
 
 void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
@@ -272,15 +283,6 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
       need_update_timing_at_frame_end_ = true;
     }
   }
-
-  if (records_manager_.RecordedTooManyNodes())
-    HandleTooManyNodes();
-}
-
-void ImagePaintTimingDetector::HandleTooManyNodes() {
-  TRACE_EVENT_INSTANT0("loading", "ImagePaintTimingDetector::OverNodeLimit",
-                       TRACE_EVENT_SCOPE_THREAD);
-  StopRecordEntries();
 }
 
 ImageRecordsManager::ImageRecordsManager()
@@ -313,13 +315,9 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const DOMNodeId& node_id,
     const ImageResourceContent* cached_image,
     const uint64_t& visual_size) {
-  DCHECK(!RecordedTooManyNodes());
   DCHECK_GT(visual_size, 0u);
-  std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
-  record->record_id = max_record_id_++;
-  record->node_id = node_id;
-  record->first_size = visual_size;
-  record->cached_image = cached_image;
+  std::unique_ptr<ImageRecord> record =
+      std::make_unique<ImageRecord>(node_id, cached_image, visual_size);
   return record;
 }
 

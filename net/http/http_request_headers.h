@@ -17,14 +17,13 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/log/net_log_capture_mode.h"
 
 namespace base {
 class Value;
 }
 
 namespace net {
-
-class NetLogCaptureMode;
 
 class NET_EXPORT HttpRequestHeaders {
  public:

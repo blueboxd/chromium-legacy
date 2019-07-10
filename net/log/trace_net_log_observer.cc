@@ -116,7 +116,7 @@ void TraceNetLogObserver::OnTraceLogEnabled() {
   if (!enabled)
     return;
 
-  net_log_to_watch_->AddObserver(this, NetLogCaptureMode::Default());
+  net_log_to_watch_->AddObserver(this, NetLogCaptureMode::kDefault);
 }
 
 void TraceNetLogObserver::OnTraceLogDisabled() {

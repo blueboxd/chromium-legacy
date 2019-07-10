@@ -42,11 +42,6 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
 
   PaintWorkletPaintDispatcher();
 
-  // Dispatches a single paint class instance - represented by a
-  // PaintWorkletInput - to the appropriate PaintWorklet thread, and blocks
-  // until it receives the result.
-  sk_sp<cc::PaintRecord> Paint(const cc::PaintWorkletInput*);
-
   // Dispatches a set of paint class instances - each represented by a
   // PaintWorkletInput - to the appropriate PaintWorklet threads, asynchronously
   // returning the results on the calling thread via the passed callback.

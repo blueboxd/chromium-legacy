@@ -272,8 +272,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddAccountFromSystem(
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
-    const CoreAccountId& primary_account_id) {
-  DCHECK(!primary_account_id.empty());
+    const CoreAccountId& /* ignored */) {
   ReloadCredentials();
 }
 

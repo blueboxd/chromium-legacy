@@ -91,11 +91,11 @@ class FakeInstanceID : public InstanceID {
 
 class FakeEncryptionGCMDriver : public FakeGCMDriver {
  public:
-  FakeEncryptionGCMDriver() {}
-  ~FakeEncryptionGCMDriver() override {}
+  FakeEncryptionGCMDriver() = default;
+  ~FakeEncryptionGCMDriver() override = default;
 
   void GetEncryptionInfo(const std::string& app_id,
-                         const GetEncryptionInfoCallback& callback) override {
+                         GetEncryptionInfoCallback callback) override {
     std::move(callback).Run(kDevicep256dh, kDeviceAuthSecret);
   }
 

@@ -10,7 +10,6 @@
 #include <iomanip>
 
 #include "base/bind.h"
-#include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -22,23 +21,16 @@
 
 namespace device {
 
-// static
-PlatformSensorProviderWin* PlatformSensorProviderWin::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderWin,
-      base::LeakySingletonTraits<PlatformSensorProviderWin>>::get();
-}
-
-void PlatformSensorProviderWin::SetSensorManagerForTesting(
-    Microsoft::WRL::ComPtr<ISensorManager> sensor_manager) {
-  sensor_manager_ = sensor_manager;
-}
-
 PlatformSensorProviderWin::PlatformSensorProviderWin()
     : com_sta_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
           base::TaskPriority::USER_VISIBLE)) {}
 
 PlatformSensorProviderWin::~PlatformSensorProviderWin() = default;
+
+void PlatformSensorProviderWin::SetSensorManagerForTesting(
+    Microsoft::WRL::ComPtr<ISensorManager> sensor_manager) {
+  sensor_manager_ = sensor_manager;
+}
 
 void PlatformSensorProviderWin::CreateSensorInternal(
     mojom::SensorType type,

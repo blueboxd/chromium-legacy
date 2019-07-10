@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace device {
@@ -14,19 +16,18 @@ namespace device {
 class PlatformSensorProvider;
 class PlatformSensor;
 
-// Implementation of SensorProvider mojo interface.
-// Uses PlatformSensorProvider singleton to create platform specific instances
-// of PlatformSensor which are used by SensorImpl.
+// Implementation of SensorProvider mojo interface. Owns an instance of
+// PlatformSensorProvider singleton to create platform specific instances
+// of PlatformSensor which are used by SensorImpl. A single instance of this
+// class is owned by DeviceService.
 class SensorProviderImpl final : public mojom::SensorProvider {
  public:
-  static void Create(
-      mojom::SensorProviderRequest request);
-
+  explicit SensorProviderImpl(std::unique_ptr<PlatformSensorProvider> provider);
   ~SensorProviderImpl() override;
 
- private:
-  explicit SensorProviderImpl(PlatformSensorProvider* provider);
+  void Bind(mojom::SensorProviderRequest request);
 
+ private:
   // SensorProvider implementation.
   void GetSensor(mojom::SensorType type,
                  GetSensorCallback callback) override;
@@ -37,7 +38,9 @@ class SensorProviderImpl final : public mojom::SensorProvider {
                      GetSensorCallback callback,
                      scoped_refptr<PlatformSensor> sensor);
 
-  PlatformSensorProvider* provider_;
+  std::unique_ptr<PlatformSensorProvider> provider_;
+  mojo::BindingSet<mojom::SensorProvider> bindings_;
+  mojo::StrongBindingSet<mojom::Sensor> sensor_bindings_;
   base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderImpl);

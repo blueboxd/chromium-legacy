@@ -121,7 +121,7 @@ HitTestTransformChangeObserver::HitTestTransformChangeObserver(
 
 HitTestTransformChangeObserver::~HitTestTransformChangeObserver() = default;
 
-void HitTestTransformChangeObserver::WaitForHitTestDataChange() {
+void HitTestTransformChangeObserver::WaitForTransformChangeInHitTestData() {
   DCHECK(!run_loop_);
 
   // If the transform has already changed then don't run RunLoop.

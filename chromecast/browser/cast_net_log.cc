@@ -49,7 +49,7 @@ CastNetLog::CastNetLog() {
   if (command_line->HasSwitch(network::switches::kLogNetLog)) {
     base::FilePath log_path =
         command_line->GetSwitchValuePath(network::switches::kLogNetLog);
-    net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::Default();
+    net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::kDefault;
 
     file_net_log_observer_ =
         net::FileNetLogObserver::CreateUnbounded(log_path, GetShellConstants());

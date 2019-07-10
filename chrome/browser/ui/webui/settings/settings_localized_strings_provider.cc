@@ -1806,7 +1806,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"kerberosAccountsSubMenuLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
     {"kerberosAccountsPageTitle", IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE},
-    {"kerberosAccountsDescription", IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION},
     {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
     {"kerberosAccountsAddAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
@@ -1816,17 +1815,25 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL},
     {"kerberosAccountsRemoveAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
+    {"kerberosAccountsAccountRemovedTip",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REMOVED_TIP},
     {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},
     {"kerberosAccountsSignedOut", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT},
     {"kerberosAccountsReauthenticationLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
+    {"kerberosAccountsTicketActive",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_TICKET_ACTIVE},
     {"addKerberosAccount", IDS_SETTINGS_ADD_KERBEROS_ACCOUNT},
+    {"refreshKerberosAccount", IDS_SETTINGS_REFRESH_KERBEROS_ACCOUNT},
+    {"addKerberosAccountDescription",
+     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_DESCRIPTION},
     {"addKerberosAccountRememberPassword",
      IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD},
+    {"addKerberosAccountRefreshButtonLabel",
+     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REFRESH_BUTTON_LABEL},
     {"kerberosUsername", IDS_SETTINGS_KERBEROS_USERNAME},
     {"kerberosPassword", IDS_SETTINGS_KERBEROS_PASSWORD},
-    {"kerberosConfig", IDS_SETTINGS_KERBEROS_CONFIG},
-    {"kerberosAdvancedConfigLabel",
+    {"kerberosAccountsAdvancedConfigLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL},
     {"kerberosAdvancedConfigTitle",
      IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE},
@@ -2157,6 +2164,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddString(
       "defaultKerberosConfig",
       chromeos::KerberosCredentialsManager::GetDefaultKerberosConfig());
+
+  // Kerberos accounts page with "Learn more" link.
+  html_source->AddString(
+      "kerberosAccountsDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION,
+          GetHelpUrlWithBoard(chrome::kKerberosAccountsLearnMoreURL)));
 #endif
 }
 

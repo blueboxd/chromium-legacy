@@ -619,6 +619,7 @@ Response InspectorOverlayAgent::hideHighlight() {
 Response InspectorOverlayAgent::getHighlightObjectForTest(
     int node_id,
     Maybe<bool> include_distance,
+    Maybe<bool> include_style,
     std::unique_ptr<protocol::DictionaryValue>* result) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
@@ -634,10 +635,12 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
     is_locked_ancestor = true;
   }
 
-  InspectorHighlight highlight(
-      node, InspectorHighlight::DefaultConfig(),
-      InspectorHighlightContrastInfo(), true /* append_element_info */,
-      include_distance.fromMaybe(false), is_locked_ancestor);
+  InspectorHighlightConfig config = InspectorHighlight::DefaultConfig();
+  config.show_styles = include_style.fromMaybe(false);
+  InspectorHighlight highlight(node, config, InspectorHighlightContrastInfo(),
+                               true /* append_element_info */,
+                               include_distance.fromMaybe(false),
+                               is_locked_ancestor);
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }

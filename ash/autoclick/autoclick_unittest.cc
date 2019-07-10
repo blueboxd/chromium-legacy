@@ -35,6 +35,10 @@
 
 namespace ash {
 
+namespace {
+const int kScrollToMenuBoundsBuffer = 18;
+}
+
 class MouseEventCapturer : public ui::EventHandler {
  public:
   MouseEventCapturer() { Reset(); }
@@ -1305,6 +1309,69 @@ TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
     EXPECT_EQ(0u, events.size());
     ClearMouseEvents();
   }
+
+  EnableExperimentalAutoclickFlag(false);
+}
+
+TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
+  UpdateDisplay("800x600");
+  EnableExperimentalAutoclickFlag(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomRight);
+  GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
+
+  ASSERT_TRUE(GetAutoclickScrollView());
+
+  // Set the bounds to be the entire window.
+  gfx::Rect display_bounds = gfx::Rect(0, 0, 800, 600);
+  GetAutoclickController()->OnAutoclickScrollableBoundsFound(display_bounds);
+
+  // The scroll bubble should start near the autoclick menu.
+  gfx::Rect scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  gfx::Rect menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // Moving the autoclick menu around the screen moves the scroll bubble too.
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomLeft);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kTopLeft);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kTopRight);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // However, if we dwell somewhere else, the autoclick scroll menu will now
+  // move out of the corner and near that point when the display bounds are
+  // found.
+  gfx::Point scroll_point = gfx::Point(0, 0);
+  GetEventGenerator()->MoveMouseTo(scroll_point);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->OnAutoclickScrollableBoundsFound(display_bounds);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  EXPECT_GT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // Moving the bubble menu now does not change the scroll bubble's position,
+  // it remains near its point.
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomRight);
+  EXPECT_EQ(GetAutoclickScrollView()->GetBoundsInScreen(), scroll_bounds);
 
   EnableExperimentalAutoclickFlag(false);
 }

@@ -553,10 +553,15 @@ void TrackEventThreadLocalEventSink::EmitThreadDescriptor(
     thread_name_ = maybe_new_name;
     thread_type_ = GetThreadType(maybe_new_name);
   }
-  if (!privacy_filtering_enabled_ && !thread_name_.empty()) {
-    thread_descriptor->set_thread_name(thread_name_.c_str());
+  // TODO(ssid): Adding name and type to thread descriptor adds thread names
+  // from killed processes. The catapult trace importer can't handle different
+  // processes with same process ids. To workaround this issue, we do not emit
+  // name and type when filtering is enabled (when metadata is not emitted).
+  // Thread names will be emitted by trace log at metadata generation step when
+  // filtering is not enabled. See crbug/978093.
+  if (privacy_filtering_enabled_) {
+    thread_descriptor->set_chrome_thread_type(thread_type_);
   }
-  thread_descriptor->set_chrome_thread_type(thread_type_);
 
   if (explicit_timestamp || !trace_event) {
     // Don't use a user-provided timestamp as a reference timestamp.

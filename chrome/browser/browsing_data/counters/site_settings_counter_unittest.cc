@@ -20,6 +20,8 @@
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/host_zoom_map.h"
+#else
+#include "base/android/build_info.h"
 #endif
 
 namespace {
@@ -109,6 +111,14 @@ TEST_F(SiteSettingsCounterTest, Count) {
 
 // Test that the counter counts correctly when using a time period.
 TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/981972)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+#endif
+
   base::SimpleTestClock test_clock;
   map()->SetClockForTesting(&test_clock);
 

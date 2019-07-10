@@ -88,16 +88,6 @@ void MediaDialogController::HideNotification(const std::string& id) {
 
 void MediaDialogController::OnReceivedAudioFocusRequests(
     std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions) {
-  // TODO(steimel): Show all controllable sessions.
-  media_session::mojom::AudioFocusRequestStatePtr active_session;
-  for (auto& session : base::Reversed(sessions)) {
-    if (!session->session_info->is_controllable)
-      continue;
-
-    active_session = session.Clone();
-    break;
-  }
-
-  if (active_session)
-    OnFocusGained(std::move(active_session));
+  for (auto& session : sessions)
+    OnFocusGained(std::move(session));
 }

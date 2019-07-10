@@ -232,17 +232,14 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Kerberos ticket expiry notifications -->
-      <message name="IDS_KERBEROS_TICKET_EXPIRY_DISPLAY_SOURCE" desc="Display source of the notification shown when a Kerberos ticket is about to expire (shown on the top of the notification).">
-        Kerberos ticket expiring
-      </message>
       <message name="IDS_KERBEROS_TICKET_EXPIRY_TITLE" desc="Title of the notification shown when a Kerberos ticket is about to expire (shown below the display source and above the body).">
-        Your Kerberos ticket is expiring
+        Kerberos ticket expires soon
       </message>
       <message name="IDS_KERBEROS_TICKET_EXPIRY_BODY" desc="Body of the notification shown when a Kerberos ticket is about to expire (shown below the title).">
-        Please refresh the ticket for <ph name="PRINCIPAL_NAME">$1<ex>user@EXAMPLE.COM</ex></ph> soon
+        Refresh ticket for <ph name="PRINCIPAL_NAME">$1<ex>user@EXAMPLE.COM</ex></ph>
       </message>
       <message name="IDS_KERBEROS_TICKET_EXPIRY_BUTTON" desc="Button label of the notification shown when a Kerberos ticket is about to expire.">
-        REFRESH TICKET
+        REFRESH
       </message>
 
       <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">

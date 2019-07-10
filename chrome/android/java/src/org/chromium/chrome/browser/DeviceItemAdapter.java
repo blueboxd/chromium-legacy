@@ -23,9 +23,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * An adapter for keeping track of which items to show in the dialog.
@@ -70,9 +68,6 @@ public class DeviceItemAdapter
     // or -1 (INVALID_POSITION) if nothing is selected.
     private int mSelectedItem = ListView.INVALID_POSITION;
 
-    // A set of keys that are marked as disabled in the dialog.
-    private Set<String> mDisabledEntries = new HashSet<String>();
-
     // Item descriptions are counted in a map.
     private Map<String, Integer> mItemDescriptionMap = new HashMap<>();
 
@@ -105,7 +100,6 @@ public class DeviceItemAdapter
         boolean isEmpty = super.isEmpty();
         if (isEmpty) {
             assert mKeyToItemMap.isEmpty();
-            assert mDisabledEntries.isEmpty();
             assert mItemDescriptionMap.isEmpty();
         } else {
             assert !mKeyToItemMap.isEmpty();
@@ -175,7 +169,6 @@ public class DeviceItemAdapter
     @Override
     public void clear() {
         mKeyToItemMap.clear();
-        mDisabledEntries.clear();
         mItemDescriptionMap.clear();
         updateSelectedItemPosition(ListView.INVALID_POSITION);
         super.clear();
@@ -207,28 +200,6 @@ public class DeviceItemAdapter
     }
 
     /**
-     * Sets whether the item is enabled. Disabled items are grayed out.
-     * @param id The id of the item to affect.
-     * @param enabled Whether the item should be enabled or not.
-     */
-    public void setEnabled(String id, boolean enabled) {
-        if (enabled) {
-            mDisabledEntries.remove(id);
-        } else {
-            mDisabledEntries.add(id);
-        }
-
-        if (mSelectedItem != ListView.INVALID_POSITION) {
-            DeviceItemRow selectedRow = getItem(mSelectedItem);
-            if (id.equals(selectedRow.mKey) && !enabled) {
-                updateSelectedItemPosition(ListView.INVALID_POSITION);
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    /**
      * Sets the observer to be notified of the item selection change in the adapter.
      * @param observer The observer to be notified.
      */
@@ -238,9 +209,7 @@ public class DeviceItemAdapter
 
     @Override
     public boolean isEnabled(int position) {
-        if (!mItemsSelectable) return false;
-        DeviceItemRow item = getItem(position);
-        return !mDisabledEntries.contains(item.mKey);
+        return mItemsSelectable;
     }
 
     @Override

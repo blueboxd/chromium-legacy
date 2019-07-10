@@ -43,13 +43,6 @@ bool IsFusionSensorType(mojom::SensorType type) {
 }
 }  // namespace
 
-// static
-PlatformSensorProviderLinux* PlatformSensorProviderLinux::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderLinux,
-      base::LeakySingletonTraits<PlatformSensorProviderLinux>>::get();
-}
-
 PlatformSensorProviderLinux::PlatformSensorProviderLinux()
     : sensor_nodes_enumerated_(false),
       sensor_nodes_enumeration_started_(false),

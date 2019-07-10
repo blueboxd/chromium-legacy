@@ -11,51 +11,44 @@
 
 namespace net {
 
-// NetLogCaptureMode specifies the granularity of events that should be emitted
-// to the log. It is a simple wrapper around an integer, so it should be passed
-// to functions by value rather than by reference.
-class NET_EXPORT NetLogCaptureMode {
- public:
-  // NOTE: Default assignment and copy constructor are OK.
+// NetLogCaptureMode specifies the logging level.
+//
+// It is used to control which events are emitted to the log, and what level of
+// detail is included in their parameters.
+//
+// The capture mode is expressed as a number, where higher values imply more
+// information. The exact numeric values should not be depended on.
+enum class NetLogCaptureMode : uint32_t {
+  // Default logging level, which is expected to be light-weight and
+  // does best-effort stripping of privacy/security sensitive data.
+  //
+  //  * Includes most HTTP request/response headers, but strips cookies and
+  //    auth.
+  //  * Does not include the full bytes read/written to sockets.
+  kDefault,
 
-  // The default constructor creates a capture mode equivalent to
-  // Default().
-  NetLogCaptureMode();
+  // Logging level that includes everything from kDefault, plus sensitive data
+  // that it may have strippped.
+  //
+  //  * Includes cookies and authentication headers.
+  //  * Does not include the full bytes read/written to sockets.
+  kIncludeSensitive,
 
-  // Constructs a capture mode which logs basic events and event parameters.
-  //    include_cookies_and_credentials() --> false
-  //    include_socket_bytes() --> false
-  static NetLogCaptureMode Default();
-
-  // Constructs a capture mode which logs basic events, and additionally makes
-  // no effort to strip cookies and credentials.
-  //    include_cookies_and_credentials() --> true
-  //    include_socket_bytes() --> false
-  // TODO(bnc): Consider renaming to IncludePrivacyInfo().
-  static NetLogCaptureMode IncludeCookiesAndCredentials();
-
-  // Constructs a capture mode which logs the data sent/received from sockets.
-  //    include_cookies_and_credentials() --> true
-  //    include_socket_bytes() --> true
-  static NetLogCaptureMode IncludeSocketBytes();
-
-  // If include_cookies_and_credentials() is true , then it is OK to log
-  // events which contain cookies, credentials or other privacy sensitive data.
-  // TODO(bnc): Consider renaming to include_privacy_info().
-  bool include_cookies_and_credentials() const;
-
-  // If include_socket_bytes() is true, then it is OK to output the actual
-  // bytes read/written from the network, even if it contains private data.
-  bool include_socket_bytes() const;
-
-  bool operator==(NetLogCaptureMode mode) const;
-  bool operator!=(NetLogCaptureMode mode) const;
-
- private:
-  explicit NetLogCaptureMode(uint32_t value);
-
-  int32_t value_;
+  // Logging level that includes everything that is possible to be logged.
+  //
+  //  * Includes the actual bytes read/written to sockets
+  //  * Will result in large log files.
+  kEverything,
 };
+
+// Returns true if |capture_mode| permits logging sensitive values such as
+// cookies and credentials.
+NET_EXPORT bool NetLogCaptureIncludesSensitive(NetLogCaptureMode capture_mode);
+
+// Returns true if |capture_mode| permits logging the full request/response
+// bytes from sockets.
+NET_EXPORT bool NetLogCaptureIncludesSocketBytes(
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

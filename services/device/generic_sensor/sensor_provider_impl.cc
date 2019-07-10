@@ -37,22 +37,17 @@ bool IsExtraSensorClass(mojom::SensorType type) {
 
 }  // namespace
 
-// static
-void SensorProviderImpl::Create(
-    mojom::SensorProviderRequest request) {
-  PlatformSensorProvider* provider = PlatformSensorProvider::GetInstance();
-  if (provider) {
-    mojo::MakeStrongBinding(base::WrapUnique(new SensorProviderImpl(provider)),
-                            std::move(request));
-  }
-}
-
-SensorProviderImpl::SensorProviderImpl(PlatformSensorProvider* provider)
-    : provider_(provider) {
+SensorProviderImpl::SensorProviderImpl(
+    std::unique_ptr<PlatformSensorProvider> provider)
+    : provider_(std::move(provider)) {
   DCHECK(provider_);
 }
 
 SensorProviderImpl::~SensorProviderImpl() {}
+
+void SensorProviderImpl::Bind(mojom::SensorProviderRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
 
 void SensorProviderImpl::GetSensor(mojom::SensorType type,
                                    GetSensorCallback callback) {
@@ -99,8 +94,8 @@ void SensorProviderImpl::SensorCreated(
   init_params->client_request = sensor_impl->GetClient();
 
   mojom::SensorPtrInfo sensor_ptr_info;
-  mojo::MakeStrongBinding(std::move(sensor_impl),
-                          mojo::MakeRequest(&sensor_ptr_info));
+  sensor_bindings_.AddBinding(std::move(sensor_impl),
+                              mojo::MakeRequest(&sensor_ptr_info));
   init_params->sensor = std::move(sensor_ptr_info);
 
   init_params->memory = std::move(cloned_handle);

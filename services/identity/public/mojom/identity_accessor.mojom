@@ -5,29 +5,32 @@
 module identity.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "services/identity/public/mojom/account.mojom";
 import "services/identity/public/mojom/core_account_id.mojom";
-import "services/identity/public/mojom/core_account_info.mojom";
 import "services/identity/public/mojom/account_state.mojom";
 import "services/identity/public/mojom/google_service_auth_error.mojom";
 import "services/identity/public/mojom/scope_set.mojom";
 
 // Gives access to information about the user's Google accounts.
 interface IdentityAccessor {
-  // Returns the CoreAccountInfo for the Google account that serves as the
-  // user's primary account, or null if the user has no primary account (e.g.,
-  // if they are not signed in). |account_state| gives the current state of the
-  // account (relevant only if |account_info| is non-null).
-  GetPrimaryAccountInfo() => (CoreAccountInfo? account_info,
+  // Returns the information for the Google account that serves as the
+  // user's primary account. |account_id|, |gaia|, and |email| will be null if
+  // the user has no primary account (e.g., if they are not signed in).
+  // |account_state| gives the current state of the account (relevant only if
+  // |account_id| is non-null).
+  GetPrimaryAccountInfo() => (CoreAccountId? account_id,
+                              string? gaia,
+                              string? email,
                               AccountState account_state);
 
-  // Returns the CoreAccountInfo for the Google account that serves as the
+  // Returns the information for the Google account that serves as the
   // user's primary account once this account is available (i.e., the user is
   // signed in, a refresh token is available, and the refresh token is in a
   // non-error state). |account_state| gives the current state of the account.
   // Overlapping requests are permitted; all pending requests will be called
   // back when the primary account is available.
-  GetPrimaryAccountWhenAvailable() => (CoreAccountInfo account_info,
+  GetPrimaryAccountWhenAvailable() => (CoreAccountId account_id,
+                                       string gaia,
+                                       string email,
                                        AccountState account_state);
 
   // Returns an access token with the requested scopes for the given

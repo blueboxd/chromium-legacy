@@ -59,6 +59,10 @@ const base::Feature kNewPasswordFormParsingForSaving = {
 const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables editing saved passwords for Android.
+const base::Feature kPasswordEditingAndroid = {
+    "PasswordEditingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

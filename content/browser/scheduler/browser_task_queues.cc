@@ -61,6 +61,8 @@ const char* GetUITaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "ui_default_tq";
     case BrowserTaskQueues::QueueType::kUserBlocking:
       return "ui_user_blocking_tq";
+    case BrowserTaskQueues::QueueType::kUserVisible:
+      return "ui_user_visible_tq";
   }
 }
 
@@ -76,6 +78,8 @@ const char* GetIOTaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "io_default_tq";
     case BrowserTaskQueues::QueueType::kUserBlocking:
       return "io_user_blocking_tq";
+    case BrowserTaskQueues::QueueType::kUserVisible:
+      return "io_user_visible_tq";
   }
 }
 
@@ -212,6 +216,9 @@ BrowserTaskQueues::BrowserTaskQueues(
   default_task_queue_ = sequence_manager->CreateTaskQueue(
       base::sequence_manager::TaskQueue::Spec(GetDefaultQueueName(thread_id))
           .SetTimeDomain(time_domain));
+
+  GetBrowserTaskQueue(QueueType::kUserVisible)
+      ->SetQueuePriority(QueuePriority::kLowPriority);
 
   // Best effort queue
   GetBrowserTaskQueue(QueueType::kBestEffort)

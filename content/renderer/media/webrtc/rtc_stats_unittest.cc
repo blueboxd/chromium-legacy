@@ -42,6 +42,9 @@ TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_Iteration) {
       new webrtc::RTCPeerConnectionStats(whitelisted_id, 42)));
 
   RTCStatsReport report(webrtc_report.get(), {});
+  // Only whitelisted stats are counted.
+  EXPECT_EQ(report.Size(), 1u);
+
   std::unique_ptr<blink::WebRTCStats> stats = report.Next();
   EXPECT_TRUE(stats);
   EXPECT_EQ(stats->Id(), whitelisted_id);

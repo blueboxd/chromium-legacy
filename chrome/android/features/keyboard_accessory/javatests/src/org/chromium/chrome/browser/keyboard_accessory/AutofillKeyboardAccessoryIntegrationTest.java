@@ -18,11 +18,10 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
 import android.app.Activity;
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.autofill.mojom.FocusedFieldType;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -50,6 +50,7 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for autofill keyboard accessory.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
 @RetryOnFailure
 @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -117,19 +118,19 @@ public class AutofillKeyboardAccessoryIntegrationTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("EMAIL_ADDRESS");
-        mHelper.waitForKeyboardAccessoryToBeShown();
-        CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null); // Wait for suggestions.
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
         // Scroll to the second position and check it actually happened.
-        TestThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mHelper.getAccessoryBarView().scrollToPosition(2); });
         CriteriaHelper.pollUiThread(() -> {
-            return getSuggestionsComponent().computeHorizontalScrollOffset() > 0;
+            return mHelper.getAccessoryBarView().computeHorizontalScrollOffset() > 0;
         }, "Should keep the manual scroll position.");
 
         // Clicking any other node should now scroll the items back to the initial position.
         mHelper.clickNodeAndShowKeyboard("NAME_LAST");
         CriteriaHelper.pollUiThread(() -> {
-            return getSuggestionsComponent().computeHorizontalScrollOffset() == 0;
+            return mHelper.getAccessoryBarView().computeHorizontalScrollOffset() == 0;
         }, "Should be scrolled back to position 0.");
     }
 
@@ -143,10 +144,10 @@ public class AutofillKeyboardAccessoryIntegrationTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
-        CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> getFirstSuggestion().performClick());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mHelper.getFirstAccessorySuggestion().performClick());
         mHelper.waitForKeyboardAccessoryToDisappear();
     }
 
@@ -157,10 +158,10 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
-        CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> getFirstSuggestion().performClick());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mHelper.getFirstAccessorySuggestion().performClick());
         mHelper.waitForKeyboardAccessoryToDisappear();
     }
 
@@ -170,7 +171,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
             throws InterruptedException, TimeoutException, ExecutionException {
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isKeyboardAccessoryTabLayout()))
@@ -191,7 +192,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);
-        mHelper.waitForKeyboardAccessoryToBeShown();
+        mHelper.waitForKeyboardAccessoryToBeShown(true);
 
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isKeyboardAccessoryTabLayout()),
@@ -212,19 +213,5 @@ public class AutofillKeyboardAccessoryIntegrationTest {
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet);
             return sheetView.getHeight() == 0 || !sheetView.isShown();
         });
-    }
-
-    private RecyclerView getSuggestionsComponent() {
-        final ViewGroup keyboardAccessory = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
-        assert keyboardAccessory != null;
-        return (RecyclerView) keyboardAccessory.findViewById(R.id.bar_items_view);
-    }
-
-    private View getFirstSuggestion() {
-        ViewGroup recyclerView = getSuggestionsComponent();
-        assert recyclerView != null;
-        View view = recyclerView.getChildAt(0);
-        return isKeyboardAccessoryTabLayout().matches(view) ? null : view;
     }
 }

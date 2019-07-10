@@ -98,7 +98,8 @@ base::Value NetLogNumberValueHelper(T num) {
 
 }  // namespace
 
-NetLog::ThreadSafeObserver::ThreadSafeObserver() : net_log_(nullptr) {}
+NetLog::ThreadSafeObserver::ThreadSafeObserver()
+    : capture_mode_(NetLogCaptureMode::kDefault), net_log_(nullptr) {}
 
 NetLog::ThreadSafeObserver::~ThreadSafeObserver() {
   // Make sure we aren't watching a NetLog on destruction.  Because the NetLog
@@ -180,7 +181,7 @@ void NetLog::RemoveObserver(NetLog::ThreadSafeObserver* observer) {
   observers_.erase(it);
 
   observer->net_log_ = nullptr;
-  observer->capture_mode_ = NetLogCaptureMode();
+  observer->capture_mode_ = NetLogCaptureMode::kDefault;
   UpdateIsCapturing();
 }
 

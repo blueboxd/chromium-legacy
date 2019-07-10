@@ -847,6 +847,7 @@ class PLATFORM_EXPORT BaseArena {
   bool LazySweepWithDeadline(base::TimeTicks deadline);
   void CompleteSweep();
   void SweepOnConcurrentThread();
+  void InvokeFinalizersOnSweptPages();
 
   ThreadState* GetThreadState() { return thread_state_; }
   int ArenaIndex() const { return index_; }

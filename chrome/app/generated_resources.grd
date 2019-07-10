@@ -9543,6 +9543,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       }
     </message>
 
+    <!-- Native File System restricted directory dialog. -->
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE" desc="Title of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
+      Can't save to this folder
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT" desc="Text of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can't save your changes to this folder because it contains system files.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON" desc="Text of the button in dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
+      Choose a different folder
+    </message>
+
     <!-- Relaunch notification bubble and dialog. -->
     <if expr="not is_android">
       <if expr="not chromeos">

@@ -445,11 +445,6 @@ void AppsGridView::ResetForShowApps() {
   ClearDragState();
   layer()->SetOpacity(1.0f);
   SetVisible(true);
-  // Set all views to visible in case they weren't made visible again by an
-  // incomplete animation.
-  for (int i = 0; i < view_model_.view_size(); ++i) {
-    view_model_.view_at(i)->SetVisible(true);
-  }
 
   // The number of non-page-break-items should be the same as item views.
   int item_count = 0;
@@ -1000,10 +995,7 @@ void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
 
   const bool fullscreen_apps_in_drag =
       app_list_state == ash::AppListViewState::kFullscreenAllApps || is_in_drag;
-  for (int i = 0; i < view_model_.view_size(); ++i) {
-    AppListItemView* view = GetItemViewAt(i);
-    view->SetVisible(fullscreen_apps_in_drag);
-  }
+  SetVisible(fullscreen_apps_in_drag);
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1971,10 +1963,6 @@ void AppsGridView::OnFolderItemRemoved() {
 void AppsGridView::UpdateOpacity() {
   if (view_structure_.pages().empty())
     return;
-  const int selected_page = pagination_model_.selected_page();
-  auto current_page = view_structure_.pages()[selected_page];
-  if (current_page.empty())
-    return;
 
   // Updates the opacity of the apps in current page. The opacity of the app
   // starting at 0.f when the ceterline of the app is |kAllAppsOpacityStartPx|
@@ -1984,11 +1972,15 @@ void AppsGridView::UpdateOpacity() {
   const bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
       (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
-  float opacity = 1.f;
-  if (!should_restore_opacity) {
-    gfx::Rect view_bounds = current_page[0]->bounds();
+  const int selected_page = pagination_model_.selected_page();
+  auto current_page = view_structure_.pages()[selected_page];
+  float centerline_above_work_area = 0.f;
+  float opacity = 0.f;
+  for (size_t i = 0; i < current_page.size(); i += cols_) {
+    AppListItemView* item_view = current_page[i];
+    gfx::Rect view_bounds = item_view->bounds();
     views::View::ConvertRectToScreen(this, &view_bounds);
-    float centerline_above_work_area = std::max<float>(
+    centerline_above_work_area = std::max<float>(
         app_list_view->GetScreenBottom() - view_bounds.CenterPoint().y(), 0.f);
     const float start_px =
         AppListConfig::instance().all_apps_opacity_start_px();
@@ -1998,9 +1990,27 @@ void AppsGridView::UpdateOpacity() {
                       start_px),
                  0.f),
         1.0f);
+
+    opacity = should_restore_opacity ? 1.0f : opacity;
+
+    const bool has_change =
+        ((opacity == 1.0f || opacity == 0.f) && item_view->layer()) ||
+        (!item_view->layer() || opacity != item_view->layer()->opacity());
+    if (!has_change)
+      continue;
+
+    const size_t end_index = std::min(current_page.size() - 1, i + cols_ - 1);
+    for (size_t j = i; j <= end_index; ++j) {
+      if (current_page[j] != drag_view_) {
+        if (opacity == 1.0f) {
+          current_page[j]->DestroyLayer();
+        } else {
+          current_page[j]->EnsureLayer();
+          current_page[j]->layer()->SetOpacity(opacity);
+        }
+      }
+    }
   }
-  if (opacity != layer()->opacity())
-    layer()->SetOpacity(opacity);
 }
 
 bool AppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
@@ -2564,12 +2574,6 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     int model_index = GetTargetModelIndexFromItemIndex(index);
     view_model_.Add(view, model_index);
     AddChildViewAt(view, model_index);
-
-    // Ensure that AppListItems that are added to the AppListItemList are not
-    // shown while in PEEKING. The visibility of the app icons will be updated
-    // on drag/animation from PEEKING.
-    view->SetVisible(model_->state_fullscreen() !=
-                     ash::AppListViewState::kPeeking);
   }
 
   if (!folder_delegate_)

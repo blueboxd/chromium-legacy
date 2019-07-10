@@ -247,7 +247,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
     file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
         net_log_path, std::move(constants_dict));
     file_net_log_observer_->StartObserving(net_log_,
-                                           net::NetLogCaptureMode::Default());
+                                           net::NetLogCaptureMode::kDefault);
   }
 }
 

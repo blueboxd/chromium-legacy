@@ -258,8 +258,8 @@ class CC_PAINT_EXPORT PaintImage {
   sk_sp<SkImage> GetSkImageForFrame(size_t index,
                                     GeneratorClientId client_id) const;
 
-  PaintWorkletInput* paint_worklet_input() const {
-    return paint_worklet_input_.get();
+  const scoped_refptr<PaintWorkletInput>& paint_worklet_input() const {
+    return paint_worklet_input_;
   }
 
   std::string ToString() const;

@@ -16,8 +16,6 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
   PlatformSensorProviderAndroid();
   ~PlatformSensorProviderAndroid() override;
 
-  static PlatformSensorProviderAndroid* GetInstance();
-
   void SetSensorManagerToNullForTesting();
 
  protected:

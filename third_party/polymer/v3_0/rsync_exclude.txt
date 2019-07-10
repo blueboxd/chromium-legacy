@@ -41,6 +41,7 @@ iron-checked-element-behavior/*
 iron-form-element-behavior/*
 
 # paper-behaviors
+paper-behaviors/paper-button-behavior.js
 paper-behaviors/paper-checked-element-behavior.js
 
 # paper-input

@@ -44,6 +44,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -100,6 +101,16 @@ ArticleEntry CreateEntry(const std::string& entry_id,
     page->set_url(page_url);
   }
   return entry;
+}
+
+void ExpectBodyHasThemeAndFont(content::WebContents* contents,
+                               const std::string& expected_theme,
+                               const std::string& expected_font) {
+  std::string result;
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
+  EXPECT_THAT(result, HasSubstr(expected_theme));
+  EXPECT_THAT(result, HasSubstr(expected_font));
 }
 
 }  // namespace
@@ -557,10 +568,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ViewSingleDistilledPage(url, "text/html");
   content::WaitForLoadStop(contents);
-  std::string result;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("light sans-serif", result);
+  ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
 
   DistilledPagePrefs* distilled_page_prefs =
       DomDistillerServiceFactory::GetForBrowserContext(browser()->profile())
@@ -569,21 +577,19 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   // Test theme.
   distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark sans-serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "sans-serif");
 
   // Verify that the theme color for the tab is updated as well.
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   // Test font family.
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
+  distilled_page_prefs->SetFontFamily(
+      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
 
   // Test font scaling.
+  std::string result;
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetFontSize, &result));
   double oldFontSize;
@@ -621,13 +627,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   // Set preference.
   const double kScale = 1.23;
   distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
+  distilled_page_prefs->SetFontFamily(
+      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
   distilled_page_prefs->SetFontScaling(kScale);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
+
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetFontSize, &result));
@@ -643,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   EXPECT_TRUE(

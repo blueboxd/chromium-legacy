@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/previews/content/hint_update_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
@@ -405,7 +406,7 @@ bool PreviewsHints::IsWhitelisted(
   }
 
   const optimization_guide::proto::PageHint* matched_page_hint =
-      FindPageHintForURL(url, hint);
+      optimization_guide::FindPageHintForURL(url, hint);
   if (!matched_page_hint) {
     return false;
   }
@@ -413,7 +414,8 @@ bool PreviewsHints::IsWhitelisted(
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
     // Skip over any disabled experimental optimizations.
-    if (IsDisabledPerOptimizationHintExperiment(optimization)) {
+    if (optimization_guide::IsDisabledPerOptimizationHintExperiment(
+            optimization)) {
       continue;
     }
     if (!IsEnabledOptimizationType(optimization.optimization_type())) {
@@ -492,7 +494,8 @@ bool PreviewsHints::GetResourceLoadingHints(
 
   // First find matched page hint.
   const optimization_guide::proto::PageHint* matched_page_hint =
-      FindPageHintForURL(url, hint_cache_->GetHintIfLoaded(url.host()));
+      optimization_guide::FindPageHintForURL(
+          url, hint_cache_->GetHintIfLoaded(url.host()));
   if (!matched_page_hint) {
     return false;
   }
@@ -505,7 +508,8 @@ bool PreviewsHints::GetResourceLoadingHints(
       continue;
     }
 
-    if (IsDisabledPerOptimizationHintExperiment(optimization)) {
+    if (optimization_guide::IsDisabledPerOptimizationHintExperiment(
+            optimization)) {
       continue;
     }
 
@@ -553,7 +557,7 @@ void PreviewsHints::LogHintCacheMatch(const GURL& url,
         UMA_HISTOGRAM_ENUMERATION(
             "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit", ect,
             net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        if (FindPageHintForURL(url, hint)) {
+        if (optimization_guide::FindPageHintForURL(url, hint)) {
           UMA_HISTOGRAM_ENUMERATION(
               "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", ect,
               net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);

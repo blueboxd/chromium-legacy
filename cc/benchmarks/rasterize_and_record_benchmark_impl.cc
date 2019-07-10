@@ -116,6 +116,10 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->RequiresHighResToDraw();
   }
 
+  const PaintWorkletRecordMap& GetPaintWorkletRecords() const override {
+    return base_client_->GetPaintWorkletRecords();
+  }
+
  private:
   PictureLayerTilingClient* base_client_;
   Region invalidation_;

@@ -74,8 +74,7 @@ class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
 };
 
 TestNetLog::TestNetLog() : observer_(new Observer()) {
-  AddObserver(observer_.get(),
-              NetLogCaptureMode::IncludeCookiesAndCredentials());
+  AddObserver(observer_.get(), NetLogCaptureMode::kIncludeSensitive);
 }
 
 TestNetLog::~TestNetLog() {

@@ -20,7 +20,7 @@ class AppContainerProfile;
 class TargetPolicy {
  public:
   // Windows subsystems that can have specific rules.
-  // Note: The process subsystem(SUBSY_PROCESS) does not evaluate the request
+  // Note: The process subsystem(SUBSYS_PROCESS) does not evaluate the request
   // exactly like the CreateProcess API does. See the comment at the top of
   // process_thread_dispatcher.cc for more details.
   enum SubSystem {

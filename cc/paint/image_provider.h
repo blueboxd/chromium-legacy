@@ -27,8 +27,8 @@ class CC_PAINT_EXPORT ImageProvider {
 
     ScopedResult();
     explicit ScopedResult(DecodedDrawImage image);
+    explicit ScopedResult(sk_sp<PaintRecord> record);
     ScopedResult(DecodedDrawImage image, DestructionCallback callback);
-    ScopedResult(sk_sp<PaintRecord> record, DestructionCallback callback);
     ScopedResult(const ScopedResult&) = delete;
     ScopedResult(ScopedResult&& other);
     ~ScopedResult();

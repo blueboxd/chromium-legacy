@@ -75,8 +75,8 @@ class SharingDeviceRegistration {
   void OnEncryptionInfoReceived(RegistrationCallback callback,
                                 std::string public_key,
                                 const std::string& fcm_registration_token,
-                                const std::string& p256dh,
-                                const std::string& auth_secret);
+                                std::string p256dh,
+                                std::string auth_secret);
 
   // Computes and returns a bitmask of all capabilities supported by the device.
   int GetDeviceCapabilities() const;

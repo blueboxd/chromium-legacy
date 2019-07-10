@@ -27,6 +27,7 @@ extern const base::Feature kMigrateLinuxToLoginDB;
 extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kNewPasswordFormParsingForSaving;
 extern const base::Feature kOnlyNewParser;
+extern const base::Feature kPasswordEditingAndroid;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kRecoverPasswordsForSyncUsers;
 extern const base::Feature kTouchToFillAndroid;

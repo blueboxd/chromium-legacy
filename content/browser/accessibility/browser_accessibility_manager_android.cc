@@ -213,6 +213,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+    case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
     case ui::AXEventGenerator::Event::GRABBED_CHANGED:

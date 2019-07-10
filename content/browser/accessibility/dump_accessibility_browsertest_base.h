@@ -8,10 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
@@ -111,11 +109,6 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   // The node filters loaded from the test file.
   std::vector<AccessibilityTreeFormatter::NodeFilter> node_filters_;
-
-#if defined(LEAK_SANITIZER) && !defined(OS_NACL)
-  // http://crbug.com/568674
-  ScopedLeakSanitizerDisabler lsan_disabler;
-#endif
 
   // The current tree-formatter and event-recorder factories.
   AccessibilityTreeFormatter::FormatterFactory formatter_factory_;

@@ -78,4 +78,9 @@ bool FakePictureLayerTilingClient::RequiresHighResToDraw() const {
   return false;
 }
 
+const PaintWorkletRecordMap&
+FakePictureLayerTilingClient::GetPaintWorkletRecords() const {
+  return paint_worklet_records_;
+}
+
 }  // namespace cc

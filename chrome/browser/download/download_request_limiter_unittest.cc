@@ -911,10 +911,10 @@ TEST_F(DownloadRequestLimiterTest, RendererInitiatedDownloadFromAnotherOrigin) {
   // Trigger a renderer initiated download from the other origin.
   CanDownloadFor(web_contents(),
                  url::Origin::Create(GURL("http://foobar.com")));
-  ExpectAndResetCounts(0, 1, 0, __LINE__);
-  EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
-  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED,
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 
   // The current tab is not affected, still allowing one download.
@@ -945,12 +945,56 @@ TEST_F(DownloadRequestLimiterTest, RendererInitiatedDownloadFromAnotherOrigin) {
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 
-  // Download should proceed work for the other origin.
+  // Download should proceed for the other origin.
   CanDownloadFor(web_contents(),
                  url::Origin::Create(GURL("http://foobar.com")));
   ExpectAndResetCounts(1, 0, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+}
+
+// Test that user interaction on the current page won't reset download status
+// for another origin.
+TEST_F(DownloadRequestLimiterTest,
+       DownloadStatusForOtherOriginsNotResetOnUserInteraction) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+
+  // Trigger a renderer initiated download from the other origin.
+  CanDownloadFor(web_contents(),
+                 url::Origin::Create(GURL("http://foobar.com")));
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // The current tab is not affected, still allowing one download.
+  CanDownloadFor(web_contents());
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // On user interaction, the current page should reset its download status.
+  OnUserInteraction(blink::WebInputEvent::kTouchStart);
+  CanDownloadFor(web_contents());
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // Download status from the other origin does not reset and should prompt.
+  UpdateExpectations(CANCEL);
+  CanDownloadFor(web_contents(),
+                 url::Origin::Create(GURL("http://foobar.com")));
+  ExpectAndResetCounts(0, 1, 1, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 }

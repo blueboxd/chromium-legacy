@@ -67,9 +67,9 @@ class LogNetLogTest : public InProcessBrowserTest,
 
     // Verify that cookies were stripped when the --net-log-capture-mode flag
     // was omitted, and not stripped when it was given a value of
-    // IncludeCookiesAndCredentials
-    bool include_cookies = GetParam() && base::StringPiece(GetParam()) ==
-                                             "IncludeCookiesAndCredentials";
+    // IncludeSensitive
+    bool include_cookies =
+        GetParam() && base::StringPiece(GetParam()) == "IncludeSensitive";
 
     if (include_cookies) {
       EXPECT_TRUE(file_contents.find("Set-Cookie: name=Good;Max-Age=3600") !=
@@ -88,8 +88,7 @@ class LogNetLogTest : public InProcessBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          LogNetLogTest,
-                         ::testing::Values(nullptr,
-                                           "IncludeCookiesAndCredentials"));
+                         ::testing::Values(nullptr, "IncludeSensitive"));
 
 IN_PROC_BROWSER_TEST_P(LogNetLogTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());

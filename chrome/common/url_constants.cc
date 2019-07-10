@@ -308,6 +308,9 @@ const char kGoogleNameserversLearnMoreURL[] =
 const char kInstantTetheringLearnMoreURL[] =
     "https://support.google.com/chromebook?p=instant_tethering";
 
+const char kKerberosAccountsLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=kerberos_accounts";
+
 const char kMultiDeviceLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=multi_device";
 

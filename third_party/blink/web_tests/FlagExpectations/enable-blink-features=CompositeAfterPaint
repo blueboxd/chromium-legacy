@@ -21,10 +21,14 @@ Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
-crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
-crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Pass ]
+crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-scroll.html [ Pass ]
+crbug.com/918155 scrollbars/overlay-scrollbar-over-child-layer.html [ Pass ]
+crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Pass ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer.html [ Pass ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Pass ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 
 Bug(none) virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Crash ]
@@ -74,7 +78,6 @@ Bug(none) compositing/overflow/overflow-scroll-with-opaque-background.html [ Fai
 Bug(none) compositing/overflow/overflow-scroll-with-transparent-background.html [ Failure ]
 Bug(none) compositing/overflow/resize-painting.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
-Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
@@ -115,6 +118,7 @@ Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Fai
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
+Bug(none) http/tests/input/discard-events-to-unstable-iframe.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
@@ -211,9 +215,6 @@ crbug.com/707444 svg/custom/clip-mask-negative-scale.svg [ Failure ]
 
 # Subpixel or 1-pixel differences. May be real subpixel handling bugs.
 Bug(none) fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Failure ]
-Bug(none) fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
-Bug(none) virtual/threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Skip ]
-Bug(none) virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Skip ]
 Bug(none) svg/custom/grayscale-gradient-mask-2.svg [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
@@ -440,9 +441,6 @@ crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-edge-clippi
 
 crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
-
-crbug.com/918155 scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
-crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
 
 crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 

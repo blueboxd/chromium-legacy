@@ -17,6 +17,7 @@
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
 #include "cc/cc_export.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/occlusion.h"
@@ -48,6 +49,7 @@ class CC_EXPORT PictureLayerTilingClient {
       const PictureLayerTiling* tiling) const = 0;
   virtual bool HasValidTilePriorities() const = 0;
   virtual bool RequiresHighResToDraw() const = 0;
+  virtual const PaintWorkletRecordMap& GetPaintWorkletRecords() const = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -133,6 +135,9 @@ class CC_EXPORT PictureLayerTiling {
 
   const scoped_refptr<RasterSource>& raster_source() const {
     return raster_source_;
+  }
+  const PaintWorkletRecordMap& GetPaintWorkletRecords() const {
+    return client_->GetPaintWorkletRecords();
   }
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }

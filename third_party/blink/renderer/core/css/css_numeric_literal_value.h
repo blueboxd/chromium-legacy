@@ -18,6 +18,24 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
 
   CSSNumericLiteralValue(double num, UnitType type);
 
+  UnitType GetType() const {
+    return static_cast<UnitType>(numeric_literal_unit_type_);
+  }
+
+  bool IsFontRelativeLength() const {
+    return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
+           GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
+           GetType() == UnitType::kChs;
+  }
+  bool IsQuirkyEms() const { return GetType() == UnitType::kQuirkyEms; }
+  bool IsViewportPercentageLength() const {
+    return CSSPrimitiveValue::IsViewportPercentageLength(GetType());
+  }
+  bool IsResolution() const {
+    return CSSPrimitiveValue::IsResolution(GetType());
+  }
+  bool IsFlex() const { return CSSPrimitiveValue::IsFlex(GetType()); }
+
   bool IsZero() const { return !DoubleValue(); }
 
   double DoubleValue() const { return num_; }

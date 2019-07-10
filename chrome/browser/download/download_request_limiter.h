@@ -298,6 +298,11 @@ class DownloadRequestLimiter
   static HostContentSettingsMap* GetContentSettings(
       content::WebContents* contents);
 
+  // Gets the content setting for a particular request initiator.
+  static ContentSetting GetAutoDownloadContentSetting(
+      content::WebContents* contents,
+      const GURL& request_initiator);
+
   // Sets the callback for tests to know the result of OnCanDownloadDecided().
   using CanDownloadDecidedCallback =
       base::RepeatingCallback<void(bool /*allow*/)>;

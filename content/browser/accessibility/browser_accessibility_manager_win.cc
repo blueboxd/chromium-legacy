@@ -396,6 +396,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+    case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:

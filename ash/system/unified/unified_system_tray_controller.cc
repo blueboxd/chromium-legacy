@@ -4,7 +4,6 @@
 
 #include "ash/system/unified/unified_system_tray_controller.h"
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
@@ -332,10 +331,6 @@ void UnifiedSystemTrayController::OnAudioSettingsButtonClicked() {
 }
 
 void UnifiedSystemTrayController::InitFeaturePods() {
-  // No feature pods in Kisok Next.
-  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled())
-    return;
-
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));

@@ -158,15 +158,18 @@ class WebViewSyncControllerObserverBridge
   _dataSource = dataSource;
   _currentIdentity = identity;
 
-  AccountInfo info;
-  info.gaia = base::SysNSStringToUTF8(identity.gaiaID);
-  info.email = base::SysNSStringToUTF8(identity.email);
-  std::string newAuthenticatedAccountID =
-      _identityManager->LegacySeedAccountInfo(info);
-  auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
-  primaryAccountMutator->SetPrimaryAccount(newAuthenticatedAccountID);
+  DCHECK(_dataSource);
+  DCHECK(_currentIdentity);
 
-  [self reloadCredentials];
+  const CoreAccountId accountId = _identityManager->PickAccountIdForAccount(
+      base::SysNSStringToUTF8(identity.gaiaID),
+      base::SysNSStringToUTF8(identity.email));
+
+  _identityManager->LegacyReloadAccountsFromSystem();
+  CHECK(_identityManager->HasAccountWithRefreshToken(accountId));
+
+  _identityManager->GetPrimaryAccountMutator()->SetPrimaryAccount(accountId);
+  CHECK_EQ(_identityManager->GetPrimaryAccountId(), accountId);
 }
 
 - (void)stopSyncAndClearIdentity {

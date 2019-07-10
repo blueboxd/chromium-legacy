@@ -14,7 +14,7 @@ namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
-class MediaNotificationContainerImpl;
+class MediaNotificationListView;
 
 // Dialog that shows media controls that control the active media session.
 class MediaDialogView : public views::BubbleDialogDelegateView,
@@ -54,11 +54,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
 
   MediaDialogController controller_;
 
-  // TODO(steimel): We should support showing multiple sessions instead of just
-  // the active one.
-  MediaNotificationContainerImpl* active_session_container_ = nullptr;
-
-  base::Optional<std::string> active_session_id_;
+  MediaNotificationListView* const active_sessions_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogView);
 };

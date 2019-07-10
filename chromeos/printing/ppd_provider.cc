@@ -491,9 +491,17 @@ class PpdProviderImpl : public PpdProvider {
         RunPpdReferenceResolutionSucceeded(std::move(next.cb),
                                            kEpsonGenericPPD);
       } else {
-        // We don't have anything else left to try. We've reached unsupported
-        // USB printer, try to grab the manufacturer name.
-        ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
+        // We don't have anything else left to try.
+        if (search_data.discovery_type ==
+            PrinterSearchData::PrinterDiscoveryType::kUsb) {
+          // We've reached unsupported USB printer, try to grab the manufacturer
+          // name.
+          ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
+        } else {
+          // Non-USB printer, so we fail resolution normally.
+          RunPpdReferenceResolutionNotFound(std::move(next.cb),
+                                            "" /* Empty Manufacturer */);
+        }
       }
     }
     // Didn't start any fetches.

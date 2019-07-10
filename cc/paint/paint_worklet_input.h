@@ -5,11 +5,16 @@
 #ifndef CC_PAINT_PAINT_WORKLET_INPUT_H_
 #define CC_PAINT_PAINT_WORKLET_INPUT_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "cc/paint/paint_export.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
+
+class PaintOpBuffer;
+using PaintRecord = PaintOpBuffer;
 
 class CC_PAINT_EXPORT PaintWorkletInput
     : public base::RefCountedThreadSafe<PaintWorkletInput> {
@@ -21,6 +26,11 @@ class CC_PAINT_EXPORT PaintWorkletInput
   friend class base::RefCountedThreadSafe<PaintWorkletInput>;
   virtual ~PaintWorkletInput() = default;
 };
+
+// PaintWorkletRecordMap ties the input for a PaintWorklet (PaintWorkletInput)
+// to the painted output (a PaintRecord).
+using PaintWorkletRecordMap =
+    base::flat_map<scoped_refptr<PaintWorkletInput>, sk_sp<PaintRecord>>;
 
 }  // namespace cc
 

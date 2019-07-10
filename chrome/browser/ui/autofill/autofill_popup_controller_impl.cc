@@ -82,7 +82,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
-    const std::vector<autofill::Suggestion>& suggestions,
+    const std::vector<Suggestion>& suggestions,
     bool autoselect_first_suggestion,
     PopupType popup_type) {
   SetValues(suggestions);
@@ -121,7 +121,8 @@ void AutofillPopupControllerImpl::Show(
 #if defined(OS_ANDROID)
     if (popup_type == PopupType::kPasswords &&
         TouchToFillController::AllowedForWebContents(web_contents_)) {
-      TouchToFillController::GetOrCreate(web_contents_)->Show(suggestions);
+      TouchToFillController::GetOrCreate(web_contents_)
+          ->Show(suggestions, GetWeakPtr());
     }
 
     ManualFillingController::GetOrCreate(web_contents_)
@@ -185,7 +186,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   // Add a separator if there are any other values.
   if (!suggestions_.empty() &&
       suggestions_[0].frontend_id != POPUP_ITEM_ID_SEPARATOR) {
-    suggestions_.insert(suggestions_.begin(), autofill::Suggestion());
+    suggestions_.insert(suggestions_.begin(), Suggestion());
     suggestions_[0].frontend_id = POPUP_ITEM_ID_SEPARATOR;
     elided_values_.insert(elided_values_.begin(), base::string16());
     elided_labels_.insert(elided_labels_.begin(), base::string16());
@@ -313,7 +314,7 @@ bool AutofillPopupControllerImpl::HasSelection() const {
 }
 
 void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
-  const autofill::Suggestion& suggestion = suggestions_[index];
+  const Suggestion& suggestion = suggestions_[index];
 #if defined(OS_ANDROID)
   auto mf_controller = ManualFillingController::GetOrCreate(web_contents_);
   // Accepting a suggestion should hide all suggestions. To prevent them from
@@ -349,8 +350,7 @@ bool AutofillPopupControllerImpl::IsRTL() const {
   return controller_common_.text_direction == base::i18n::RIGHT_TO_LEFT;
 }
 
-const std::vector<autofill::Suggestion>
-AutofillPopupControllerImpl::GetSuggestions() {
+const std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() {
   return suggestions_;
 }
 
@@ -376,8 +376,7 @@ int AutofillPopupControllerImpl::GetLineCount() const {
   return suggestions_.size();
 }
 
-const autofill::Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(
-    int row) const {
+const Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(int row) const {
   return suggestions_[row];
 }
 
@@ -511,7 +510,7 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
 }
 
 void AutofillPopupControllerImpl::SetValues(
-    const std::vector<autofill::Suggestion>& suggestions) {
+    const std::vector<Suggestion>& suggestions) {
   suggestions_ = suggestions;
   elided_values_.resize(suggestions.size());
   elided_labels_.resize(suggestions.size());

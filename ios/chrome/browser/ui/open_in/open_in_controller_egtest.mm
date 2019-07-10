@@ -4,6 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -23,6 +24,14 @@ namespace {
 // Path which leads to a PDF file.
 const char kPDFPath[] = "/testpage.pdf";
 
+id<GREYMatcher> ShareMenuDismissButton() {
+  if (@available(iOS 13, *)) {
+    return chrome_test_util::CloseButton();
+  } else {
+    return chrome_test_util::CancelButton();
+  }
+}
+
 }  // namespace
 
 // Tests Open in Feature for PDF files.
@@ -39,12 +48,23 @@ const char kPDFPath[] = "/testpage.pdf";
 // Tests that open in button appears when opening a PDF, and that tapping on it
 // will open the activity view.
 - (void)testOpenIn {
+  // TODO(crbug.com/982845): A bug is causing the "Open in" toolbar to disappear
+  // after any VC is presented fullscreen over the BVC.  The iOS 13 share menu
+  // is presented fullscreen, but only when compiling with the iOS 12 SDK.
+  // Disable this test in this configuration until the underlying bug is fixed.
+#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled on iOS 13 when compiled with the iOS 12 SDK.");
+  }
+#endif
+
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPDFPath)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OpenInButton()]
       performAction:grey_tap()];
   // Check and tap on the Cancel button that appears below the activity menu.
   // Other actions buttons can't be checked from EarlGrey.
-  [[[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
+  [[[EarlGrey selectElementWithMatcher:ShareMenuDismissButton()]
       assertWithMatcher:grey_interactable()] performAction:grey_tap()];
 
   // Check that after dismissing the activity view, tapping on the web view will

@@ -143,8 +143,7 @@ class VIEWS_EXPORT TabbedPane : public View {
 // The tab view shown in the tab strip.
 class VIEWS_EXPORT Tab : public View {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Tab);
 
   Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents);
   ~Tab() override;
@@ -163,7 +162,6 @@ class VIEWS_EXPORT Tab : public View {
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
@@ -203,11 +201,10 @@ class VIEWS_EXPORT Tab : public View {
 // The tab strip shown above/left of the tab contents.
 class TabStrip : public View {
  public:
+  METADATA_HEADER(TabStrip);
+
   // The return value of GetSelectedTabIndex() when no tab is selected.
   static constexpr size_t kNoSelectedTab = size_t{-1};
-
-  // Internal class name.
-  static const char kViewClassName[];
 
   TabStrip(TabbedPane::Orientation orientation,
            TabbedPane::TabStripStyle style);
@@ -219,7 +216,6 @@ class TabStrip : public View {
   virtual void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab);
 
   // Overridden from View:
-  const char* GetClassName() const override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
   Tab* GetSelectedTab() const;
@@ -227,9 +223,9 @@ class TabStrip : public View {
   Tab* GetTabAtIndex(size_t index) const;
   size_t GetSelectedTabIndex() const;
 
-  TabbedPane::Orientation orientation() const { return orientation_; }
+  TabbedPane::Orientation GetOrientation() const;
 
-  TabbedPane::TabStripStyle style() const { return style_; }
+  TabbedPane::TabStripStyle GetStyle() const;
 
  private:
   // The orientation of the tab alignment.

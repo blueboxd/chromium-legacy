@@ -137,7 +137,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   const base::Value::ListStorage& params = list->GetList();
 
   // Determine the capture mode.
-  net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::Default();
+  net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::kDefault;
   if (params.size() > 0 && params[0].is_string()) {
     capture_mode = net_log::NetExportFileWriter::CaptureModeFromString(
         params[0].GetString());

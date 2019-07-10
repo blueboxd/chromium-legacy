@@ -39,13 +39,14 @@
 #include "ios/chrome/browser/ui/authentication/signin_account_selector_view_controller.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -144,7 +145,6 @@ enum AuthenticationState {
     SigninAccountSelectorViewControllerDelegate,
     UnifiedConsentCoordinatorDelegate>
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
-
 @end
 
 @implementation ChromeSigninViewController {
@@ -340,20 +340,21 @@ enum AuthenticationState {
 }
 
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
-  [button setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
+  [button setBackgroundColor:[UIColor colorNamed:kTintColor]
                     forState:UIControlStateNormal];
   [button setImage:nil forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-  [button setUnderlyingColorHint:[UIColor blackColor]];
+  [button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
+               forState:UIControlStateNormal];
+  [button setUnderlyingColorHint:UIColor.cr_systemBackgroundColor];
   [button setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
 }
 
 - (void)setSecondaryButtonStyling:(MDCButton*)button {
-  [button setBackgroundColor:self.backgroundColor
+  [button setBackgroundColor:UIColor.cr_systemBackgroundColor
                     forState:UIControlStateNormal];
-  [button setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+  [button setTitleColor:[UIColor colorNamed:kTintColor]
                forState:UIControlStateNormal];
-  [button setUnderlyingColorHint:[UIColor whiteColor]];
+  [button setUnderlyingColorHint:UIColor.cr_systemBackgroundColor];
   [button setInkColor:[UIColor colorWithWhite:0 alpha:0.06f]];
 }
 
@@ -461,6 +462,13 @@ enum AuthenticationState {
       setCenter:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
 }
 
+- (void)updateGradientColors {
+  _gradientLayer.colors = @[
+    (id)[UIColor.cr_systemBackgroundColor colorWithAlphaComponent:0].CGColor,
+    (id)UIColor.cr_systemBackgroundColor.CGColor
+  ];
+}
+
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
@@ -477,11 +485,6 @@ enum AuthenticationState {
 
 - (id<ChromeSigninViewControllerDelegate>)delegate {
   return _delegate;
-}
-
-- (UIColor*)backgroundColor {
-  return _unifiedConsentEnabled ? [UIColor whiteColor]
-                                : [[MDCPalette greyPalette] tint50];
 }
 
 - (NSString*)identityPickerTitle {
@@ -923,7 +926,7 @@ enum AuthenticationState {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = self.backgroundColor;
+  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
 
   _primaryButton = [[MDCFlatButton alloc] init];
   [self setPrimaryButtonStyling:_primaryButton];
@@ -947,17 +950,14 @@ enum AuthenticationState {
         [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
     [_activityIndicator setDelegate:self];
     [_activityIndicator setStrokeWidth:3];
-    [_activityIndicator
-        setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
+    [_activityIndicator setCycleColors:@[ [UIColor colorNamed:kTintColor] ]];
     [self.view addSubview:_activityIndicator];
   }
 
   _gradientView = [[UIView alloc] initWithFrame:CGRectZero];
   _gradientLayer = [CAGradientLayer layer];
   [_gradientView setUserInteractionEnabled:NO];
-  _gradientLayer.colors = [NSArray
-      arrayWithObjects:(id)[[UIColor colorWithWhite:1 alpha:0] CGColor],
-                       (id)[self.backgroundColor CGColor], nil];
+  [self updateGradientColors];
   [[_gradientView layer] insertSublayer:_gradientLayer atIndex:0];
   [self.view addSubview:_gradientView];
 }
@@ -978,6 +978,23 @@ enum AuthenticationState {
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
   [self updateLayout];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      [self updateGradientColors];
+      // As of iOS 13 Beta 3, MDCFlatButton doesn't update it's colors
+      // automatically. These lines do it instead.
+      [self updatePrimaryButtonForIdentityPickerState];
+      [self setSecondaryButtonStyling:_secondaryButton];
+    }
+  }
+#endif
 }
 
 #pragma mark - Events

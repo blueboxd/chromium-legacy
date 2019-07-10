@@ -70,6 +70,11 @@ class MockChromeCleanerProcess {
     kDisabled,
   };
 
+  enum class ProtobufIPCFeatureStatus {
+    kEnabled,
+    kDisabled,
+  };
+
   static constexpr int kInternalTestFailureExitCode = 100001;
   static constexpr int kDeliberateCrashExitCode = 100002;
   static constexpr int kNothingFoundExitCode = 2;
@@ -188,6 +193,10 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(
     std::ostream& out,
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus status);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ProtobufIPCFeatureStatus status);
 
 std::ostream& operator<<(
     std::ostream& out,

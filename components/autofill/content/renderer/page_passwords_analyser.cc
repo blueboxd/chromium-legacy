@@ -4,7 +4,10 @@
 
 #include "components/autofill/content/renderer/page_passwords_analyser.h"
 
+#include <map>
 #include <stack>
+#include <string>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
@@ -111,7 +114,8 @@ struct InputHint {
   const re2::RE2* regex;
   size_t match;
 
-  InputHint(const re2::RE2* regex) : regex(regex), match(std::string::npos) {}
+  explicit InputHint(const re2::RE2* regex)
+      : regex(regex), match(std::string::npos) {}
 
   void MatchLabel(std::string& label_content, size_t index) {
     if (re2::RE2::FullMatch(label_content, *regex))
@@ -151,15 +155,15 @@ void TrackElementId(
 // example if an invalid attribute is added), but these cases are assumed
 // to be rare, and are ignored for the sake of simplicity.
 // The id of |node| will additionally be added to the corresponding |ids| set.
-bool TrackElementIfUntracked(
-    const blink::WebElement& node,
-    std::set<blink::WebNode>* skip_nodes,
+bool TrackElementByRendererIdIfUntracked(
+    const blink::WebElement& element,
+    const uint32_t renderer_id,
+    std::set<uint32_t>* skip_renderer_ids,
     std::map<std::string, std::vector<blink::WebNode>>* nodes_for_id) {
-  if (skip_nodes->count(node))
+  if (skip_renderer_ids->count(renderer_id))
     return true;
-  skip_nodes->insert(node);
-  // If we don't skip the node, we want to make sure its id is tracked.
-  TrackElementId(node, nodes_for_id);
+  skip_renderer_ids->insert(renderer_id);
+  TrackElementId(element, nodes_for_id);
   return false;
 }
 
@@ -168,7 +172,8 @@ bool TrackElementIfUntracked(
 // analysis.
 std::vector<FormInputCollection> ExtractFormsForAnalysis(
     const blink::WebDocument& document,
-    std::set<blink::WebNode>* skip_nodes,
+    std::set<uint32_t>* skip_form_ids,
+    std::set<uint32_t>* skip_control_ids,
     PageFormAnalyserLogger* logger) {
   std::vector<FormInputCollection> form_input_collections;
 
@@ -185,7 +190,9 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
     blink::WebVector<blink::WebFormControlElement> form_control_elements;
     form.GetFormControlElements(form_control_elements);
     for (const blink::WebFormControlElement& input : form_control_elements) {
-      if (TrackElementIfUntracked(input, skip_nodes, &nodes_for_id))
+      if (TrackElementByRendererIdIfUntracked(
+              input, input.UniqueRendererFormControlId(), skip_control_ids,
+              &nodes_for_id))
         continue;
       // We are only interested in a subset of input elements -- those likely
       // to be username or password fields.
@@ -197,14 +204,18 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
         inputs_with_forms.insert(input);
       }
     }
-
-    TrackElementIfUntracked(form, skip_nodes, &nodes_for_id);
+    TrackElementByRendererIdIfUntracked(form, form.UniqueRendererFormId(),
+                                        skip_form_ids, &nodes_for_id);
   }
 
   // Check for password fields that are not contained inside forms.
   auto password_inputs = document.QuerySelectorAll("input[type=\"password\"]");
   for (unsigned i = 0; i < password_inputs.size(); ++i) {
-    if (TrackElementIfUntracked(password_inputs[i], skip_nodes, &nodes_for_id))
+    if (TrackElementByRendererIdIfUntracked(
+            password_inputs[i],
+            blink::ToWebInputElement(&password_inputs[i])
+                ->UniqueRendererFormControlId(),
+            skip_control_ids, &nodes_for_id))
       continue;
     // Any password fields inside <form> elements will have been skipped,
     // leaving just those without associated forms.
@@ -221,7 +232,10 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
   auto text_inputs =
       document.QuerySelectorAll(blink::WebString::FromUTF8(selector));
   for (const blink::WebElement& text_input : text_inputs)
-    TrackElementIfUntracked(text_input, skip_nodes, &nodes_for_id);
+    TrackElementByRendererIdIfUntracked(
+        text_input,
+        blink::ToWebInputElement(&text_input)->UniqueRendererFormControlId(),
+        skip_control_ids, &nodes_for_id);
 
   // Warn against elements sharing an id attribute. Duplicate id attributes both
   // are against the HTML specification and can cause issues with password
@@ -419,7 +433,8 @@ PagePasswordsAnalyser::PagePasswordsAnalyser() {}
 PagePasswordsAnalyser::~PagePasswordsAnalyser() {}
 
 void PagePasswordsAnalyser::Reset() {
-  skip_nodes_.clear();
+  skip_control_element_renderer_ids_.clear();
+  skip_form_element_renderer_ids_.clear();
 }
 
 void PagePasswordsAnalyser::AnalyseDocumentDOM(blink::WebLocalFrame* frame,
@@ -429,7 +444,8 @@ void PagePasswordsAnalyser::AnalyseDocumentDOM(blink::WebLocalFrame* frame,
   blink::WebDocument document(frame->GetDocument());
   // Extract all the forms from the DOM, and provide relevant warnings.
   std::vector<FormInputCollection> forms(
-      ExtractFormsForAnalysis(document, &skip_nodes_, logger));
+      ExtractFormsForAnalysis(document, &skip_form_element_renderer_ids_,
+                              &skip_control_element_renderer_ids_, logger));
 
   // Analyse each form in turn, for example with respect to autocomplete
   // attributes.

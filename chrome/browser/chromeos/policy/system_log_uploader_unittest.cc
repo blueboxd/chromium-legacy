@@ -143,6 +143,9 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
                                            system_logs_.size() + 1);
   }
 
+  void ZipSystemLogs(std::unique_ptr<SystemLogUploader::SystemLogs> system_logs,
+                     ZippedLogUploadCallback upload_callback) override {}
+
   void set_upload_allowed(bool is_upload_allowed) {
     is_upload_allowed_ = is_upload_allowed;
   }

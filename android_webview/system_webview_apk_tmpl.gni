@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//android_webview/variables.gni")
 import("//base/android/proguard/proguard.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
@@ -33,6 +34,7 @@ template("system_webview_apk_tmpl") {
     ]
 
     target_sdk_version = android_sdk_version
+    locale_config_java_packages = [ webview_locale_config_java_package ]
 
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep

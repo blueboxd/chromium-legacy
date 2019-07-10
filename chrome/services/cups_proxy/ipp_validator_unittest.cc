@@ -22,7 +22,6 @@ namespace {
 using cups_ipp_parser::mojom::IppAttributePtr;
 using cups_ipp_parser::mojom::IppMessagePtr;
 using cups_ipp_parser::mojom::IppRequestPtr;
-using cups_ipp_parser::mojom::Value;
 using cups_ipp_parser::mojom::ValueType;
 
 using Printer = chromeos::Printer;
@@ -84,6 +83,7 @@ IppAttributePtr BuildAttributePtr(std::string name,
   ret->name = name;
   ret->group_tag = group_tag;
   ret->value_tag = value_tag;
+  ret->value = cups_ipp_parser::mojom::IppAttributeValue::New();
   return ret;
 }
 
@@ -116,12 +116,12 @@ IppRequestPtr GetBasicIppRequest() {
   IppAttributePtr attr_charset = BuildAttributePtr(
       "attributes-charset", IPP_TAG_OPERATION, IPP_TAG_CHARSET);
   attr_charset->type = ValueType::STRING;
-  attr_charset->values.push_back(Value::NewStringValue("utf-8"));
+  attr_charset->value->set_strings({"utf-8"});
 
   IppAttributePtr attr_natlang = BuildAttributePtr(
       "attributes-natural-language", IPP_TAG_OPERATION, IPP_TAG_LANGUAGE);
   attr_natlang->type = ValueType::STRING;
-  attr_natlang->values.push_back(Value::NewStringValue("en"));
+  attr_natlang->value->set_strings({"en"});
 
   ipp_message->attributes.push_back(std::move(attr_charset));
   ipp_message->attributes.push_back(std::move(attr_natlang));
@@ -177,7 +177,7 @@ TEST_F(IppValidatorTest, MissingHeaderValue) {
   EXPECT_TRUE(RunValidateIppRequest(request));
 }
 
-// TODO(luum): Test IPP validation.
+// TODO(crbug.com/945409): Test IPP validation.
 
 }  // namespace
 }  // namespace cups_proxy

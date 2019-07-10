@@ -309,7 +309,10 @@ def _GetCrossPlatformMediaPages(page_set):
           page_set=page_set,
           tags=['vp9', 'opus', 'audio_video']),
 
-      # Basic MSE test pages for common configurations.
+      # Basic MSE test pages for common configurations. Note: By default the
+      # test will only append the first 128k of the specified files, so when
+      # adding tests ensure that is enough to trigger a timeupdate event. If not
+      # you'll need to specify an additional appendSize parameter.
       _MSEPage(
           url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
           page_set=page_set,

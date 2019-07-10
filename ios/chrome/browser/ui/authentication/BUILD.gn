@@ -63,6 +63,7 @@ source_set("authentication") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/unified_consent",
     "//ios/chrome/common",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",

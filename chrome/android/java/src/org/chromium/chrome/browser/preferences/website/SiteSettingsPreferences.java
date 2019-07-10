@@ -98,6 +98,10 @@ public class SiteSettingsPreferences
             if (FeatureUtilities.isNoTouchModeEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
             }
+            CommandLine commandLine = CommandLine.getInstance();
+            if (!commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+                getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
+            }
         }
     }
 

@@ -17,6 +17,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/services/quarantine/common.h"
 #include "components/services/quarantine/common_mac.h"
 #include "url/gurl.h"
 
@@ -194,11 +195,14 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
 }  // namespace
 
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
-                                    const GURL& source_url,
-                                    const GURL& referrer_url,
+                                    const GURL& source_url_unsafe,
+                                    const GURL& referrer_url_unsafe,
                                     const std::string& client_guid) {
   if (!base::PathExists(file))
     return QuarantineFileResult::FILE_MISSING;
+
+  GURL source_url = SanitizeUrlForQuarantine(source_url_unsafe);
+  GURL referrer_url = SanitizeUrlForQuarantine(referrer_url_unsafe);
 
   // Don't consider it an error if we fail to add origin metadata.
   AddOriginMetadataToFile(file, source_url, referrer_url);

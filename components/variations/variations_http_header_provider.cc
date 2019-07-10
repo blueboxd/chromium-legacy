@@ -194,8 +194,6 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   base::FieldTrialList::AddObserver(this);
 
-  base::TimeTicks before_time = base::TimeTicks::Now();
-
   base::FieldTrial::ActiveGroups initial_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&initial_groups);
 
@@ -208,11 +206,6 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
                       GOOGLE_WEB_PROPERTIES_TRIGGER);
   }
   UpdateVariationIDsHeaderValue();
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Variations.HeaderConstructionTime",
-      (base::TimeTicks::Now() - before_time).InMicroseconds(), 1,
-      base::TimeDelta::FromSeconds(1).InMicroseconds(), 50);
 
   variation_ids_cache_initialized_ = true;
 }

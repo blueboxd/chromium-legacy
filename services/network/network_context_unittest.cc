@@ -2479,7 +2479,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporter) {
 
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(std::move(out_file), std::move(dict_start),
-                          net::NetLogCaptureMode::Default(), 100 * 1024,
+                          net::NetLogCaptureMode::kDefault, 100 * 1024,
                           start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
@@ -2524,7 +2524,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
-      net::NetLogCaptureMode::Default(),
+      net::NetLogCaptureMode::kDefault,
       mojom::NetLogExporter::kUnlimitedFileSize, start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
@@ -2566,7 +2566,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      net::NetLogCaptureMode::Default(), 100 * 1024, start_callback.callback());
+      net::NetLogCaptureMode::kDefault, 100 * 1024, start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
   // Can't start twice.
@@ -2577,10 +2577,9 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   ASSERT_TRUE(temp_file2.IsValid());
 
   net::TestCompletionCallback start_callback2;
-  net_log_exporter->Start(std::move(temp_file2),
-                          base::Value(base::Value::Type::DICTIONARY),
-                          net::NetLogCaptureMode::Default(), 100 * 1024,
-                          start_callback2.callback());
+  net_log_exporter->Start(
+      std::move(temp_file2), base::Value(base::Value::Type::DICTIONARY),
+      net::NetLogCaptureMode::kDefault, 100 * 1024, start_callback2.callback());
   EXPECT_EQ(net::ERR_UNEXPECTED, start_callback2.WaitForResult());
 
   base::DeleteFile(temp_path, false);
@@ -2624,7 +2623,7 @@ TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
 
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      net::NetLogCaptureMode::Default(), 100, base::BindOnce([](int) {}));
+      net::NetLogCaptureMode::kDefault, 100, base::BindOnce([](int) {}));
   net_log_exporter = nullptr;
   block_mktemp.Signal();
 
@@ -3992,7 +3991,7 @@ TEST_F(NetworkContextTest, ForceReloadProxyConfig) {
     net_log_exporter->Start(
         std::move(net_log_file),
         /*extra_constants=*/base::Value(base::Value::Type::DICTIONARY),
-        net::NetLogCaptureMode::Default(),
+        net::NetLogCaptureMode::kDefault,
         network::mojom::NetLogExporter::kUnlimitedFileSize, start_callback);
     run_loop.Run();
     EXPECT_EQ(net::OK, start_param);

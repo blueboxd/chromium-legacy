@@ -325,6 +325,11 @@ struct NetworkContextParams {
   [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
 
+  // If true, the built-in cert verifier will be used. If false, the platform
+  // cert verifier will be used.
+  [EnableIf=is_chromeos]
+  bool use_builtin_cert_verifier = false;
+
   // Parameters for the cert verifier comparison trial. This is a temporary
   // interface and embedders should not use it.
   // See https://crbug.com/649026

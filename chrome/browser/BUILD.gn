@@ -3793,7 +3793,7 @@ jumbo_split_static_library("browser") {
     ]
 
     if (use_dbus) {
-      deps += [ "//components/dbus:dbus_thread_linux" ]
+      deps += [ "//components/dbus/thread_linux" ]
     }
 
     if (enable_native_notifications) {

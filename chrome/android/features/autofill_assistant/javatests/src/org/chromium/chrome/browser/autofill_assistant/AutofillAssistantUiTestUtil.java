@@ -6,13 +6,21 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.test.InstrumentationRegistry;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 
@@ -68,5 +76,27 @@ class AutofillAssistantUiTestUtil {
                 description.appendText("isTextMaxLines");
             }
         };
+    }
+
+    /**
+     * Attaches the specified view to the Chrome coordinator. Must be called from the UI thread.
+     */
+    public static void attachToCoordinator(CustomTabActivity activity, View view) {
+        ThreadUtils.assertOnUiThread();
+        ViewGroup chromeCoordinatorView =
+                activity.findViewById(org.chromium.chrome.autofill_assistant.R.id.coordinator);
+        CoordinatorLayout.LayoutParams lp = new CoordinatorLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.BOTTOM;
+        chromeCoordinatorView.addView(view, lp);
+    }
+
+    /**
+     * Starts the CCT test rule on a blank page.
+     */
+    public static void startOnBlankPage(CustomTabActivityTestRule testRule)
+            throws InterruptedException {
+        testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(), "about:blank"));
     }
 }

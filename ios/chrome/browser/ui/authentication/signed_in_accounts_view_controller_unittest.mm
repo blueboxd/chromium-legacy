@@ -41,7 +41,7 @@ class SignedInAccountsViewControllerTest : public BlockCleanupTest {
         @[ @"identity1", @"identity2", @"identity3" ]);
     auth_service_->SignIn(
         [identity_service->GetAllIdentitiesSortedForDisplay() objectAtIndex:0],
-        std::string());
+        kNoHostedDomainFound);
   }
 
  protected:

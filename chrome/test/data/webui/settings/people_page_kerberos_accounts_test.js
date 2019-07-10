@@ -15,6 +15,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       isManaged: false,
       passwordWasRemembered: false,
       pic: 'pic',
+      validForDuration: '1 lightyear',
     },
     {
       principalName: 'user2@REALM2',
@@ -24,6 +25,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       isManaged: false,
       passwordWasRemembered: true,
       pic: 'pic2',
+      validForDuration: 'zero googolseconds',
     },
     {
       principalName: 'user3@REALM3',
@@ -33,6 +35,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       isManaged: true,
       passwordWasRemembered: true,
       pic: 'pic2',
+      validForDuration: 'one over inf seconds',
     }
   ];
 
@@ -68,6 +71,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     /** @override */
     removeAccount(account) {
       this.methodCalled('removeAccount', account);
+      return Promise.resolve(settings.KerberosErrorType.kNone);
     }
 
     /** @override */
@@ -135,6 +139,33 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         Polymer.dom.flush();
         // The test accounts were added in |getAccounts()| mock above.
         assertEquals(testAccounts.length, accountList.items.length);
+      });
+    });
+
+    test('AccountListSignedInSignedOutLabels', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        accountList =
+            kerberosAccounts.shadowRoot.querySelectorAll('.account-list-item');
+        assertEquals(testAccounts.length, accountList.length);
+
+        // Show 'Valid for <duration>' for accounts that are signed in.
+        let signedIn = accountList[0].querySelector('.signed-in');
+        let signedOut = accountList[0].querySelector('.signed-out');
+        assertTrue(testAccounts[0].isSignedIn);
+        assertFalse(signedIn.hidden);
+        assertTrue(signedOut.hidden);
+        assertEquals(
+            'Valid for ' + testAccounts[0].validForDuration,
+            signedIn.innerText);
+
+        // Show 'Expired' for accounts that are not signed in.
+        signedIn = accountList[1].querySelector('.signed-in');
+        signedOut = accountList[1].querySelector('.signed-out');
+        assertFalse(testAccounts[1].isSignedIn);
+        assertTrue(signedIn.hidden);
+        assertFalse(signedOut.hidden);
+        assertEquals('Expired', signedOut.innerText);
       });
     });
 
@@ -220,6 +251,24 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       });
     });
 
+    test('RemoveAccountShowsToast', function(done) {
+      const toast = kerberosAccounts.$$('#account-removed-toast');
+      assertTrue(!!toast);
+      assertFalse(toast.open);
+
+      browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        clickMoreActions(Account.FIRST, MoreActions.REMOVE_ACCOUNT);
+        browserProxy.whenCalled('removeAccount').then(() => {
+          setTimeout(() => {
+            Polymer.dom.flush();
+            assertTrue(toast.open);
+            done();
+          });
+        });
+      });
+    });
+
     test('AccountListIsUpdatedWhenKerberosAccountsUpdates', function() {
       assertEquals(1, browserProxy.getCallCount('getAccounts'));
       cr.webUIListenerCallback('kerberos-accounts-changed');
@@ -253,17 +302,23 @@ cr.define('settings_people_page_kerberos_accounts', function() {
 
         for (let i = 0; i < testAccounts.length; i++) {
           // Assert account has policy indicator iff account is managed.
-          const hasPolicyIndicator =
+          const hasAccountPolicyIndicator =
               !!accountList[i].querySelector('.account-policy-indicator');
-          assertEquals(testAccounts[i].isManaged, hasPolicyIndicator);
+          assertEquals(testAccounts[i].isManaged, hasAccountPolicyIndicator);
 
           // Assert 'Remove' button is disabled iff account is managed.
           accountList[i].querySelector('.more-actions').click();
           const moreActions =
               kerberosAccounts.$$('cr-action-menu').querySelectorAll('button');
-          const removeAccountDisabled =
-              moreActions[MoreActions.REMOVE_ACCOUNT].disabled;
-          assertEquals(testAccounts[i].isManaged, removeAccountDisabled);
+          const removeAccountButton = moreActions[MoreActions.REMOVE_ACCOUNT];
+          assertEquals(testAccounts[i].isManaged, removeAccountButton.disabled);
+
+          // Assert 'Remove' button has policy indicator iff account is managed.
+          Polymer.dom.flush();
+          const hasRemovalPolicyIndicator = !!removeAccountButton.querySelector(
+              '#remove-account-policy-indicator');
+          assertEquals(testAccounts[i].isManaged, hasRemovalPolicyIndicator);
+
           kerberosAccounts.$$('cr-action-menu').close();
         }
       });
@@ -299,8 +354,9 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     let password = null;
     let rememberPassword = null;
     let advancedConfigButton = null;
-    let addButton = null;
+    let actionButton = null;
     let generalError = null;
+    let title = null;
 
     // Indices of 'addAccount' params.
     const AddParams = {
@@ -346,11 +402,14 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       advancedConfigButton = dialog.$.advancedConfigButton;
       assertTrue(!!advancedConfigButton);
 
-      addButton = addDialog.querySelector('.action-button');
-      assertTrue(!!addButton);
+      actionButton = addDialog.querySelector('.action-button');
+      assertTrue(!!actionButton);
 
       generalError = dialog.$['general-error-message'];
       assertTrue(!!generalError);
+
+      title = dialog.$$('[slot=title]').innerText;
+      assertTrue(!!title);
     }
 
     // Sets |error| as error result for addAccount(), simulates a click on the
@@ -360,7 +419,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       Polymer.dom.flush();
       assertEquals(0, errorElement.innerText.length);
       browserProxy.addAccountError = error;
-      addButton.click();
+      actionButton.click();
       return browserProxy.whenCalled('addAccount').then(function() {
         Polymer.dom.flush();
         assertNotEquals(0, errorElement.innerText.length);
@@ -393,6 +452,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
 
     // Verifies expected states if no account is preset.
     test('StatesWithoutPresetAccount', function() {
+      assertTrue(title.startsWith('Add'));
+      assertEquals('Add', actionButton.innerText);
       assertFalse(username.disabled);
       assertEquals('', username.value);
       assertEquals('', password.value);
@@ -403,6 +464,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     // Verifies expected states if an account is preset.
     test('StatesWithPresetAccount', function() {
       createDialog(testAccounts[0]);
+      assertTrue(title.startsWith('Refresh'));
+      assertEquals('Refresh', actionButton.innerText);
       assertTrue(username.readonly);
       assertEquals(testAccounts[0].principalName, username.value);
       assertConfig(testAccounts[0].config);
@@ -454,9 +517,9 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       loadTimeData.overrideValues({kerberosRememberPasswordEnabled: true});
     });
 
-    // By clicking the "Add account", all field values are passed to the
+    // By clicking the action button, all field values are passed to the
     // 'addAccount' browser proxy method.
-    test('AddButtonPassesFieldValues', function() {
+    test('ActionButtonPassesFieldValues', function() {
       const EXPECTED_USER = 'testuser';
       const EXPECTED_PASS = 'testpass';
       const EXPECTED_REMEMBER_PASS = true;
@@ -467,8 +530,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       setConfig(EXPECTED_CONFIG);
       rememberPassword.checked = EXPECTED_REMEMBER_PASS;
 
-      assertFalse(addButton.disabled);
-      addButton.click();
+      assertFalse(actionButton.disabled);
+      actionButton.click();
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertEquals(EXPECTED_USER, args[AddParams.PRINCIPAL_NAME]);
         assertEquals(EXPECTED_PASS, args[AddParams.PASSWORD]);
@@ -485,19 +548,19 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     test('AllowExistingIsTrueForPresetAccounts', function() {
       // Populate dialog with preset account.
       createDialog(testAccounts[1]);
-      addButton.click();
+      actionButton.click();
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertTrue(args[AddParams.ALLOW_EXISTING]);
       });
     });
 
-    // While an account is being added, the "Add account" is disabled.
-    test('AddButtonDisableWhileInProgress', function() {
-      assertFalse(addButton.disabled);
-      addButton.click();
-      assertTrue(addButton.disabled);
+    // While an account is being added, the action button is disabled.
+    test('ActionButtonDisableWhileInProgress', function() {
+      assertFalse(actionButton.disabled);
+      actionButton.click();
+      assertTrue(actionButton.disabled);
       return browserProxy.whenCalled('addAccount').then(function(args) {
-        assertFalse(addButton.disabled);
+        assertFalse(actionButton.disabled);
       });
     });
 
@@ -506,7 +569,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     test('SubmitsEmptyPasswordIfRememberedPasswordIsUsed', function() {
       assertTrue(testAccounts[1].passwordWasRemembered);
       createDialog(testAccounts[1]);
-      addButton.click();
+      actionButton.click();
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertEquals('', args[AddParams.PASSWORD]);
         assertTrue(args[AddParams.REMEMBER_PASSWORD]);
@@ -514,13 +577,14 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     });
 
     // If the account has passwordWasRemembered == true and the user changes the
-    // password before clicking 'Add' button, the changed password is submitted.
+    // password before clicking the action button, the changed password is
+    // submitted.
     test('SubmitsChangedPasswordIfRememberedPasswordIsChanged', function() {
       assertTrue(testAccounts[1].passwordWasRemembered);
       createDialog(testAccounts[1]);
       password.inputElement.value = 'some edit';
       password.dispatchEvent(new CustomEvent('input'));
-      addButton.click();
+      actionButton.click();
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertNotEquals('', args[AddParams.PASSWORD]);
         assertTrue(args[AddParams.REMEMBER_PASSWORD]);

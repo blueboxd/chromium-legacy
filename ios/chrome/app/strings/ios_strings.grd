@@ -1502,9 +1502,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_ACTION" desc="Text label to the Send Tab To Self action in the extension menu that sends the current tab to the user's other devices. [iOS only]">
         Send To Your Devices
       </message>
-      <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION" desc="Text label for the Send Tab To Self action sheet that chooses the device to which the current tab will be sent. [iOS only]">
-        Send <ph name="Title">$1<ex>Webpage Title</ex></ph> to one of your devices.
-      </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the tab is being sent to the target device. [Length: 35em]" meaning="The is being sent to the target device. [Length: 35em]">
         Sending...
       </message>

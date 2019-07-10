@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserTaskQueues {
   enum class QueueType {
     // Catch all for tasks that don't fit other categories.
     // TODO(alexclarke): Introduce new semantic types as needed to minimize the
-    // number of default tasks.
+    // number of default tasks. Has the same priority as kUserBlocking.
     kDefault,
 
     // For non-urgent work, that will only execute if there's nothing else to
@@ -55,11 +55,17 @@ class CONTENT_EXPORT BrowserTaskQueues {
     // For navigation and preconnection related tasks.
     kNavigationAndPreconnection,
 
-    // A generic high priority queue.  Long term we should replace this with
-    // additional semantic annotations.
+    // base::TaskPriority::kUserBlocking maps to this task queue. It's for tasks
+    // that affect the UI immediately after a user interaction. Has the same
+    // priority as kDefault.
     kUserBlocking,
 
-    kMaxValue = kUserBlocking
+    // base::TaskPriority::kUserVisible maps to this task queue. The result of
+    // these tasks are visible to the user (in the UI or as a side-effect on the
+    // system) but they are not an immediate response to a user interaction.
+    kUserVisible,
+
+    kMaxValue = kUserVisible
   };
 
   static constexpr size_t kNumQueueTypes =

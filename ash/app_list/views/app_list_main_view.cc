@@ -85,9 +85,6 @@ void AppListMainView::AddContentsViews() {
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
-
-  // Clear the old query and start search.
-  search_box_view_->ClearSearch();
 }
 
 void AppListMainView::ShowAppListWhenReady() {

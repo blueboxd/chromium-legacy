@@ -1,0 +1,48 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("menu") {
+  sources = [
+    "menu.cc",
+    "menu.h",
+    "properties_interface.cc",
+    "properties_interface.h",
+    "types.cc",
+    "types.h",
+  ]
+  defines = [ "IS_DBUS_IMPL" ]
+  deps = [
+    "//base:i18n",
+    "//dbus",
+    "//skia",
+    "//ui/base",
+    "//ui/gfx",
+  ]
+  public_deps = [
+    ":success_barrier_callback",
+  ]
+}
+
+source_set("success_barrier_callback") {
+  sources = [
+    "success_barrier_callback.cc",
+    "success_barrier_callback.h",
+  ]
+  defines = [ "IS_DBUS_IMPL" ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "success_barrier_callback_unittest.cc",
+  ]
+  deps = [
+    ":success_barrier_callback",
+    "//base",
+    "//testing/gtest",
+  ]
+}

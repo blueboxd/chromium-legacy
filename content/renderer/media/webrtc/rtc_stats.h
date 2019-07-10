@@ -37,6 +37,8 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
   webrtc::RTCStatsReport::ConstIterator it_;
   const webrtc::RTCStatsReport::ConstIterator end_;
   blink::WebVector<webrtc::NonStandardGroupId> exposed_group_ids_;
+  // Number of whitelisted webrtc::RTCStats in |stats_report_|.
+  const size_t size_;
 };
 
 class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {

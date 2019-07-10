@@ -147,8 +147,16 @@ Polymer({
    * @private
    */
   onRemoveAccountClick_: function() {
-    this.browserProxy_.removeAccount(
-        /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
+    this.browserProxy_
+        .removeAccount(
+            /** @type {!settings.KerberosAccount} */ (this.selectedAccount_))
+        .then(error => {
+          if (error == settings.KerberosErrorType.kNone) {
+            this.$$('#account-removed-toast').show();
+          } else {
+            console.error('Unexpected error removing account: ' + error);
+          }
+        });
     this.closeActionMenu_();
   },
 
@@ -168,15 +176,5 @@ Polymer({
    */
   onRefreshNowClick_: function() {
     this.showAddAccountDialog_ = true;
-  },
-
-  /**
-   * @param {boolean} isActive Whether a Kerberos account is active.
-   * @return {string} Localized label for the active/inactive state.
-   * @private
-   */
-  getActiveLabel_: function(isActive) {
-    // TODO(https://crbug.com/969850): Localize.
-    return isActive ? ', active' : '';
   }
 });

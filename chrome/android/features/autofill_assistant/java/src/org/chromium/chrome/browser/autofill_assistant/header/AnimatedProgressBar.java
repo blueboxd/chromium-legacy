@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
@@ -28,6 +29,7 @@ class AnimatedProgressBar {
     private boolean mIsRunningProgressAnimation;
     private int mLastProgress;
     private Queue<ValueAnimator> mPendingIncreaseAnimations = new ArrayDeque<>();
+    private int mProgressBarSpeedMs = PROGRESS_BAR_SPEED_MS;
 
     AnimatedProgressBar(MaterialProgressBar progressBar) {
         mProgressBar = progressBar;
@@ -51,7 +53,7 @@ class AnimatedProgressBar {
         }
         ValueAnimator progressAnimation = ValueAnimator.ofInt(mLastProgress, progress);
         progressAnimation.setDuration(
-                PROGRESS_BAR_SPEED_MS * Math.abs(progress - mLastProgress) / 100);
+                mProgressBarSpeedMs * Math.abs(progress - mLastProgress) / 100);
         progressAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
         progressAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -74,5 +76,10 @@ class AnimatedProgressBar {
             mIsRunningProgressAnimation = true;
             progressAnimation.start();
         }
+    }
+
+    @VisibleForTesting
+    void disableAnimationsForTesting(boolean disable) {
+        mProgressBarSpeedMs = disable ? 0 : PROGRESS_BAR_SPEED_MS;
     }
 }

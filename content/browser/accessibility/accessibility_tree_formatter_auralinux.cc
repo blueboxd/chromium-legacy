@@ -509,6 +509,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
       states->AppendString(atk_state_type_get_name(state_type));
   }
   dict->Set("states", std::move(states));
+  g_object_unref(state_set);
 
   AtkRelationSet* relation_set = atk_object_ref_relation_set(atk_object);
   auto relations = std::make_unique<base::ListValue>();
@@ -518,6 +519,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
       relations->AppendString(atk_relation_type_get_name(relation_type));
   }
   dict->Set("relations", std::move(relations));
+  g_object_unref(relation_set);
 
   AtkAttributeSet* attributes = atk_object_get_attributes(atk_object);
   for (AtkAttributeSet* attr = attributes; attr; attr = attr->next) {

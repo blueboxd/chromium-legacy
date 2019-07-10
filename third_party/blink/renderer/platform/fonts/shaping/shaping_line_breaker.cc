@@ -306,19 +306,29 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
     // offset. If the resulting width exceeds the available space the
     // preceding boundary is tried until the available space is sufficient.
     while (true) {
-      DCHECK_LE(first_safe, break_opportunity.offset);
-      last_safe = std::max(
-          result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset),
-          first_safe);
+      DCHECK_LE(start, break_opportunity.offset);
+      last_safe =
+          result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset);
       DCHECK_LE(last_safe, break_opportunity.offset);
-      DCHECK_GE(last_safe, first_safe);
+      // No need to reshape the line end because this opportunity is safe.
       if (last_safe == break_opportunity.offset)
         break;
+
+      // Moved the opportunity back enough to require reshaping the whole line.
+      if (UNLIKELY(last_safe < first_safe)) {
+        DCHECK_LT(last_safe, start);
+        last_safe = start;
+        line_start_result = nullptr;
+      }
+
+      // If previously determined to let it overflow, reshape the line end.
       DCHECK_LE(break_opportunity.offset, range_end);
-      if (is_overflow) {
+      if (UNLIKELY(is_overflow)) {
         line_end_result = Shape(last_safe, break_opportunity.offset);
         break;
       }
+
+      // Check if this opportunity can fit after reshaping the line end.
       LayoutUnit safe_position = SnapStart(
           result_->CachedPositionForOffset(last_safe - range_start), direction);
       line_end_result = Shape(last_safe, break_opportunity.offset);

@@ -35,7 +35,7 @@ bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
     return a->first_size > b->first_size;
   // This make sure that two different nodes with the same |first_size| wouldn't
   // be merged in the set.
-  return a->node_id > b->node_id;
+  return a->insertion_index_ < b->insertion_index_;
 }
 
 }  // namespace

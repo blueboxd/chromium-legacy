@@ -450,6 +450,10 @@ bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
 }
 
 void SearchBoxViewBase::ClearSearch() {
+  // Avoid setting |search_box_| text to empty if it is already empty.
+  if (search_box_->text() == base::string16())
+    return;
+
   search_box_->SetText(base::string16());
   UpdateButtonsVisisbility();
   // Updates model and fires query changed manually because SetText() above

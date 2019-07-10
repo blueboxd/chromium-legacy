@@ -7,9 +7,11 @@ package org.chromium.android_webview.shell;
 import android.app.Application;
 import android.content.Context;
 
+import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * The android_webview shell Application subclass.
@@ -23,5 +25,7 @@ public class AwShellApplication extends Application {
         ContextUtils.initApplicationContext(this);
         PathUtils.setPrivateDataDirectorySuffix("webview");
         CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
+        ResourceBundle.setAvailablePakLocales(
+                new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
     }
 }

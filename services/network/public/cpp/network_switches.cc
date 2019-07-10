@@ -43,11 +43,11 @@ const char kLogNetLog[] = "log-net-log";
 // Sets the granularity of events to capture in the network log. The mode can be
 // set to one of the following values:
 //   "Default"
-//   "IncludeCookiesAndCredentials"
-//   "IncludeSocketBytes"
+//   "IncludeSensitive"
+//   "Everything"
 //
-// See the functions of the corresponding name in net_log_capture_mode.h for a
-// description of their meaning.
+// See the enums of the corresponding name in net_log_capture_mode.h for a
+// description of their meanings.
 const char kNetLogCaptureMode[] = "net-log-capture-mode";
 
 // Causes SSL key material to be logged to the specified file for debugging

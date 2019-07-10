@@ -47,7 +47,7 @@ namespace {
 
 base::Value CookieKeyedLoadNetLogCallback(const std::string& key,
                                           net::NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!net::NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::DictionaryValue dict;
   dict.SetString("key", key);

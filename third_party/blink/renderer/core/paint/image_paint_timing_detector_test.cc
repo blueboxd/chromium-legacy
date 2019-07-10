@@ -102,8 +102,17 @@ class ImagePaintTimingDetectorTest
         ->records_manager_.visible_background_image_map_.size();
   }
 
+  size_t CountInvisibleRecords() {
+    return GetPaintTimingDetector()
+        .GetImagePaintTimingDetector()
+        ->records_manager_.invisible_node_ids_.size();
+  }
+
   size_t ContainerTotalSize() {
     return GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.invisible_node_ids_.size() +
+           GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
                ->records_manager_.visible_background_image_map_.size() +
            GetPaintTimingDetector()
@@ -233,6 +242,31 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 25ul);
   EXPECT_TRUE(record->loaded);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, InsertionOrderIsSecondaryRankingKey) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+
+  auto* image1 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image1->setAttribute("id", "image1");
+  GetDocument().body()->AppendChild(image1);
+  SetImageAndPaint("image1", 5, 5);
+
+  auto* image2 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image2->setAttribute("id", "image2");
+  GetDocument().body()->AppendChild(image2);
+  SetImageAndPaint("image2", 5, 5);
+
+  auto* image3 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image3->setAttribute("id", "image3");
+  GetDocument().body()->AppendChild(image3);
+  SetImageAndPaint("image3", 5, 5);
+
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+
+  EXPECT_EQ(FindLargestPaintCandidate()->node_id,
+            DOMNodeIds::ExistingIdForNode(image1));
 }
 
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_Candidate) {
@@ -569,6 +603,35 @@ TEST_F(ImagePaintTimingDetectorTest,
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));
   EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       RemoveRecordFromAllContainersAfterInvisibleImageRemoved) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        position: relative;
+        left: 100px;
+      }
+      #parent {
+        background-color: yellow;
+        height: 50px;
+        width: 50px;
+        overflow: scroll;
+      }
+    </style>
+    <div id='parent'>
+      <img id='target'></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(ContainerTotalSize(), 1u);
+  EXPECT_EQ(CountInvisibleRecords(), 1u);
+
+  GetDocument().body()->RemoveChild(GetDocument().getElementById("parent"));
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+  EXPECT_EQ(CountInvisibleRecords(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,

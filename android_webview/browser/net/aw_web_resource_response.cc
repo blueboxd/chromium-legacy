@@ -26,6 +26,12 @@ AwWebResourceResponse::AwWebResourceResponse(
 
 AwWebResourceResponse::~AwWebResourceResponse() {}
 
+bool AwWebResourceResponse::HasInputStream(JNIEnv* env) const {
+  ScopedJavaLocalRef<jobject> jstream =
+      Java_AwWebResourceResponse_getData(env, java_object_);
+  return !jstream.is_null();
+}
+
 std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
     JNIEnv* env) const {
   ScopedJavaLocalRef<jobject> jstream =

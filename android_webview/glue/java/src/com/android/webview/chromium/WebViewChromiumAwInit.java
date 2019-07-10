@@ -25,6 +25,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwFirebaseConfig;
+import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
 import org.chromium.android_webview.AwQuotaManagerBridge;
@@ -54,6 +55,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Class controlling the Chromium initialization for WebView.
@@ -140,6 +142,9 @@ public class WebViewChromiumAwInit {
             BuildInfo.setFirebaseAppId(AwFirebaseConfig.getFirebaseAppId());
 
             JNIUtils.setClassLoader(WebViewChromiumAwInit.class.getClassLoader());
+
+            ResourceBundle.setAvailablePakLocales(
+                    new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
 
             // We are rewriting Java resources in the background.
             // NOTE: Any reference to Java resources will cause a crash.

@@ -310,17 +310,30 @@ bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
 }
 
 void DownloadRequestLimiter::TabDownloadState::OnUserInteraction() {
-  bool promptable =
-      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
-
   // See PromptUserForDownload(): if there's no PermissionRequestManager, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
-      (!promptable ||
-       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
-    // Revert to default status.
-    host_->Remove(this, web_contents());
-    // WARNING: We've been deleted.
+  bool need_prompt =
+      (PermissionRequestManager::FromWebContents(web_contents()) == nullptr &&
+       status_ == DOWNLOADS_NOT_ALLOWED) ||
+      status_ == PROMPT_BEFORE_DOWNLOAD;
+
+  // If content setting blocks automatic downloads, don't reset the
+  // PROMPT_BEFORE_DOWNLOAD status for the current page because doing
+  // that will default the download status to ALLOW_ONE_DOWNLOAD. That
+  // will allow an extra download when CanDownloadImpl() is called.
+  ContentSetting setting = GetAutoDownloadContentSetting(
+      web_contents(), web_contents()->GetVisibleURL());
+  if (status_ == ALLOW_ONE_DOWNLOAD ||
+      (need_prompt && setting != CONTENT_SETTING_BLOCK)) {
+    GURL origin = web_contents()->GetVisibleURL().GetOrigin();
+
+    // Revert to default status and notify if needed.
+    if (!origin.is_empty())
+      download_status_map_.erase(origin);
+    if (download_status_map_.empty()) {
+      host_->Remove(this, web_contents());
+      // WARNING: We've been deleted.
+    }
   }
 }
 
@@ -553,6 +566,19 @@ HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
       Profile::FromBrowserContext(contents->GetBrowserContext()));
 }
 
+ContentSetting DownloadRequestLimiter::GetAutoDownloadContentSetting(
+    content::WebContents* contents,
+    const GURL& request_initiator) {
+  HostContentSettingsMap* content_settings = GetContentSettings(contents);
+  ContentSetting setting = CONTENT_SETTING_ASK;
+  if (content_settings) {
+    setting = content_settings->GetContentSetting(
+        request_initiator, request_initiator,
+        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
+  }
+  return setting;
+}
+
 void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
     const std::string& request_method,
@@ -574,22 +600,18 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // Always check for the content setting first. Having an content setting
   // observer won't work as |request_initiator| might be different from the tab
   // URL.
-  HostContentSettingsMap* content_settings =
-      GetContentSettings(originating_contents);
-  ContentSetting setting = CONTENT_SETTING_ASK;
-  if (content_settings) {
-    setting = content_settings->GetContentSetting(
-        initiator, initiator, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-        std::string());
-    // Override the status if content setting is block. If the content setting
-    // is always allow, only reset the status if it is |DOWNLOADS_NOT_ALLOWED|
-    // so unnecessary notifications will not be triggered.
-    if (setting == CONTENT_SETTING_BLOCK) {
-      status = DOWNLOADS_NOT_ALLOWED;
-    } else if (setting == CONTENT_SETTING_ALLOW &&
-               status == DOWNLOADS_NOT_ALLOWED) {
-      status = ALLOW_ALL_DOWNLOADS;
-    }
+  ContentSetting setting =
+      GetAutoDownloadContentSetting(originating_contents, initiator);
+  // Override the status if content setting is block or allow. If the content
+  // setting is always allow, only reset the status if it is
+  // DOWNLOADS_NOT_ALLOWED so unnecessary notifications will not be triggered.
+  // If the content setting is block, allow only one download to proceed if the
+  // current status is ALLOW_ALL_DOWNLOADS.
+  if (setting == CONTENT_SETTING_BLOCK && status == ALLOW_ALL_DOWNLOADS) {
+    status = ALLOW_ONE_DOWNLOAD;
+  } else if (setting == CONTENT_SETTING_ALLOW &&
+             status == DOWNLOADS_NOT_ALLOWED) {
+    status = ALLOW_ALL_DOWNLOADS;
   }
 
   // Always call SetDownloadStatusAndNotify since we may need to change the

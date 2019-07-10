@@ -98,6 +98,8 @@ jumbo_static_library("error_strings") {
   sources = [
     "error_strings.cc",
     "error_strings.h",
+    "native_error_strings.cc",
+    "native_error_strings.h",
   ]
 }
 

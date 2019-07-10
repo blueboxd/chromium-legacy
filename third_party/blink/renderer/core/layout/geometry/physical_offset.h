@@ -105,6 +105,10 @@ struct CORE_EXPORT PhysicalOffset {
     return {LayoutUnit::FromFloatRound(point.X()),
             LayoutUnit::FromFloatRound(point.Y())};
   }
+  static PhysicalOffset FromFloatSizeFloor(const FloatSize& size) {
+    return {LayoutUnit::FromFloatFloor(size.Width()),
+            LayoutUnit::FromFloatFloor(size.Height())};
+  }
   static PhysicalOffset FromFloatSizeRound(const FloatSize& size) {
     return {LayoutUnit::FromFloatRound(size.Width()),
             LayoutUnit::FromFloatRound(size.Height())};

@@ -2036,7 +2036,7 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   PhysicalOffset border_origin_to_scroll_origin(-GetLayoutBox()->BorderLeft(),
                                                 -GetLayoutBox()->BorderTop());
   border_origin_to_scroll_origin +=
-      PhysicalOffset::FromFloatSizeRound(GetScrollOffset());
+      PhysicalOffset::FromFloatSizeFloor(GetScrollOffset());
   // Represent the rect in the container's scroll-origin coordinate.
   local_expose_rect.Move(border_origin_to_scroll_origin);
   PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();

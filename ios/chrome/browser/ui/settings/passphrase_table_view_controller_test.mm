@@ -92,7 +92,7 @@ void PassphraseTableViewControllerTest::SetUp() {
   ChromeIdentity* identity =
       [identityService->GetAllIdentitiesSortedForDisplay() objectAtIndex:0];
   AuthenticationServiceFactory::GetForBrowserState(chrome_browser_state_.get())
-      ->SignIn(identity, "");
+      ->SignIn(identity, kNoHostedDomainFound);
 }
 
 void PassphraseTableViewControllerTest::SetUpNavigationController(

@@ -18,6 +18,7 @@
 #include "base/win/windows_version.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "components/services/quarantine/quarantine.h"
+#include "components/services/quarantine/test_support.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -36,7 +37,7 @@ const char* const kUntrustedURLs[] = {
     "ftp://example.com/foo",
     "ftp://example.com:2121/foo",
     "data:text/plain,Hello%20world",
-    "blob://example.com/126278b3-58f3-4b4a-a914-1d1185d634f6",
+    "blob:https://example.com/126278b3-58f3-4b4a-a914-1d1185d634f6",
     "about:internet",
     ""};
 
@@ -139,6 +140,9 @@ class QuarantineWinTest : public ::testing::Test {
     scoped_zone_for_restricted_site_ = std::make_unique<ScopedZoneForSite>(
         GetRestrictedSite(), L"https",
         ScopedZoneForSite::ZoneIdentifierType::kRestrictedSitesZone);
+    scoped_zone_for_internet_site_ = std::make_unique<ScopedZoneForSite>(
+        GetInternetSite(), L"https",
+        ScopedZoneForSite::ZoneIdentifierType::kInternetZone);
   }
 
   base::FilePath GetTempDir() { return scoped_temp_dir_.GetPath(); }
@@ -146,6 +150,8 @@ class QuarantineWinTest : public ::testing::Test {
   const wchar_t* GetTrustedSite() { return L"thisisatrustedsite.com"; }
 
   const wchar_t* GetRestrictedSite() { return L"thisisarestrictedsite.com"; }
+
+  const wchar_t* GetInternetSite() { return L"example.com"; }
 
  private:
   registry_util::RegistryOverrideManager registry_override_;
@@ -155,6 +161,7 @@ class QuarantineWinTest : public ::testing::Test {
   // Due to caching, these sites zone must be set for all tests, so that the
   // order the tests are run does not matter.
   std::unique_ptr<ScopedZoneForSite> scoped_zone_for_trusted_site_;
+  std::unique_ptr<ScopedZoneForSite> scoped_zone_for_internet_site_;
   std::unique_ptr<ScopedZoneForSite> scoped_zone_for_restricted_site_;
 
   DISALLOW_COPY_AND_ASSIGN(QuarantineWinTest);
@@ -402,6 +409,48 @@ TEST_F(QuarantineWinTest, RestrictedSite_AlreadyQuarantined) {
 
   std::string zone_identifier;
   EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+}
+
+TEST_F(QuarantineWinTest, MetaData_ApplyMOTW_Directly) {
+  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+  ASSERT_TRUE(CreateFile(test_file));
+
+  GURL host_url = GURL(base::StringPrintf(
+      L"https://user:pass@%ls/folder/foo.exe?x#y", GetInternetSite()));
+  GURL host_url_clean = GURL(
+      base::StringPrintf(L"https://%ls/folder/foo.exe?x#y", GetInternetSite()));
+  GURL referrer_url = GURL(base::StringPrintf(
+      L"https://user:pass@%ls/folder/index?x#y", GetInternetSite()));
+  GURL referrer_url_clean = GURL(
+      base::StringPrintf(L"https://%ls/folder/index?x#y", GetInternetSite()));
+
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, host_url, referrer_url, std::string()));
+
+  EXPECT_TRUE(IsFileQuarantined(test_file, host_url_clean, referrer_url_clean));
+}
+
+TEST_F(QuarantineWinTest, MetaData_InvokeAS) {
+  base::test::ScopedFeatureList invoke_as_feature;
+  invoke_as_feature.InitAndEnableFeature(kInvokeAttachmentServices);
+
+  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+  ASSERT_TRUE(CreateFile(test_file));
+
+  GURL host_url = GURL(
+      base::StringPrintf(L"https://%ls/folder/foo.exe?x#y", GetInternetSite()));
+  GURL host_url_clean = GURL(
+      base::StringPrintf(L"https://%ls/folder/foo.exe?x#y", GetInternetSite()));
+  GURL referrer_url = GURL(base::StringPrintf(
+      L"https://user:pass@%ls/folder/index?x#y", GetInternetSite()));
+  GURL referrer_url_clean = GURL(
+      base::StringPrintf(L"https://%ls/folder/index?x#y", GetInternetSite()));
+
+  EXPECT_EQ(
+      QuarantineFileResult::OK,
+      QuarantineFile(test_file, host_url, referrer_url, kDummyClientGuid));
+
+  EXPECT_TRUE(IsFileQuarantined(test_file, host_url_clean, referrer_url_clean));
 }
 
 }  // namespace quarantine

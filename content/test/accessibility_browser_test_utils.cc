@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -151,6 +152,9 @@ void AccessibilityNotificationWaiter::BindOnGeneratedEvent(
     manager->SetGeneratedEventCallbackForTesting(
         base::BindRepeating(&AccessibilityNotificationWaiter::OnGeneratedEvent,
                             weak_factory_.GetWeakPtr()));
+    manager->SetFocusChangeCallbackForTesting(
+        base::BindRepeating(&AccessibilityNotificationWaiter::OnFocusChanged,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -165,6 +169,20 @@ void AccessibilityNotificationWaiter::OnGeneratedEvent(
     event_target_id_ = event_target_id;
     event_render_frame_host_ = static_cast<RenderFrameHostImpl*>(delegate);
     loop_runner_->Quit();
+  }
+}
+
+// TODO(982776): Remove this method once we migrate to using AXEventGenerator
+// for focus changed events.
+void AccessibilityNotificationWaiter::OnFocusChanged() {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  const BrowserAccessibilityManager* manager =
+      web_contents_impl->GetRootBrowserAccessibilityManager();
+  if (manager && manager->delegate() && manager->GetFocus()) {
+    OnGeneratedEvent(manager->delegate(),
+                     ui::AXEventGenerator::Event::FOCUS_CHANGED,
+                     manager->GetFocus()->GetId());
   }
 }
 

@@ -140,9 +140,12 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
         initWithTransitionMode:InfobarModalTransitionBase];
     self.modalTransitionDriver.modalPositioner = self;
+    __weak __typeof(self) weakSelf = self;
     [self presentInfobarModalFrom:self.baseViewController
-                           driver:self.modalTransitionDriver];
-    [self infobarModalPresentedFromBanner:NO];
+                           driver:self.modalTransitionDriver
+                       completion:^{
+                         [weakSelf infobarModalPresentedFromBanner:NO];
+                       }];
   };
 
   // Dismiss InfobarBanner first if being presented.
@@ -193,9 +196,12 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
       initWithTransitionMode:InfobarModalTransitionBanner];
   self.modalTransitionDriver.modalPositioner = self;
+  __weak __typeof(self) weakSelf = self;
   [self presentInfobarModalFrom:self.bannerViewController
-                         driver:self.modalTransitionDriver];
-  [self infobarModalPresentedFromBanner:YES];
+                         driver:self.modalTransitionDriver
+                     completion:^{
+                       [weakSelf infobarModalPresentedFromBanner:YES];
+                     }];
 }
 
 - (void)dismissInfobarBanner:(id)sender
@@ -327,8 +333,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 #pragma mark InfobarCoordinatorImplementation
 
-- (void)configureModalViewController {
+- (BOOL)configureModalViewController {
   NOTREACHED() << "Subclass must implement.";
+  return NO;
 }
 
 - (void)infobarBannerWasPresented {
@@ -358,9 +365,19 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 #pragma mark - Private
 
+// |presentingViewController| presents the InfobarModal using |driver|. If
+// Modal is presented successfully |completion| will be executed.
 - (void)presentInfobarModalFrom:(UIViewController*)presentingViewController
-                         driver:(InfobarModalTransitionDriver*)driver {
-  [self configureModalViewController];
+                         driver:(InfobarModalTransitionDriver*)driver
+                     completion:(ProceduralBlock)completion {
+  BOOL infobarWasConfigured = [self configureModalViewController];
+  if (!infobarWasConfigured) {
+    if (driver.transitionMode == InfobarModalTransitionBanner) {
+      [self dismissInfobarBannerAnimated:NO completion:nil];
+    }
+    return;
+  }
+
   DCHECK(self.modalViewController);
   UINavigationController* navController = [[UINavigationController alloc]
       initWithRootViewController:self.modalViewController];
@@ -369,7 +386,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.modalNavigationController = navController;
   [presentingViewController presentViewController:navController
                                          animated:YES
-                                       completion:nil];
+                                       completion:completion];
   [self.badgeDelegate infobarModalWasPresented:self.infobarType];
 }
 

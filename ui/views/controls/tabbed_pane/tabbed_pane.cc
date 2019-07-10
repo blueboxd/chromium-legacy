@@ -121,8 +121,6 @@ class MdTabStrip : public TabStrip, public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MdTabStrip);
 };
 
-// static
-const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
@@ -272,10 +270,6 @@ gfx::Size Tab::CalculatePreferredSize() const {
   return size;
 }
 
-const char* Tab::GetClassName() const {
-  return kViewClassName;
-}
-
 void Tab::SetState(State state) {
   if (state == state_)
     return;
@@ -358,6 +352,10 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
          tabbed_pane_->MoveSelectionBy(key == ui::VKEY_DOWN ? 1 : -1);
 }
 
+BEGIN_METADATA(Tab)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 MdTab::MdTab(TabbedPane* tabbed_pane,
              const base::string16& title,
              View* contents)
@@ -428,7 +426,6 @@ void MdTab::OnBlur() {
 
 // static
 constexpr size_t TabStrip::kNoSelectedTab;
-const char TabStrip::kViewClassName[] = "TabStrip";
 
 TabStrip::TabStrip(TabbedPane::Orientation orientation,
                    TabbedPane::TabStripStyle style)
@@ -458,10 +455,6 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
 TabStrip::~TabStrip() = default;
 
 void TabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {}
-
-const char* TabStrip::GetClassName() const {
-  return kViewClassName;
-}
 
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // Do not draw border line in kHighlight mode.
@@ -558,6 +551,33 @@ Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
                        num_children);
 }
 
+TabbedPane::Orientation TabStrip::GetOrientation() const {
+  return orientation_;
+}
+
+TabbedPane::TabStripStyle TabStrip::GetStyle() const {
+  return style_;
+}
+
+DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,
+                       {TabbedPane::Orientation::kHorizontal,
+                        base::ASCIIToUTF16("HORIZONTAL")},
+                       {TabbedPane::Orientation::kVertical,
+                        base::ASCIIToUTF16("VERTICAL")})
+
+DEFINE_ENUM_CONVERTERS(TabbedPane::TabStripStyle,
+                       {TabbedPane::TabStripStyle::kBorder,
+                        base::ASCIIToUTF16("BORDER")},
+                       {TabbedPane::TabStripStyle::kHighlight,
+                        base::ASCIIToUTF16("HIGHLIGHT")})
+
+BEGIN_METADATA(TabStrip)
+METADATA_PARENT_CLASS(View)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, int, SelectedTabIndex)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::Orientation, Orientation)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::TabStripStyle, Style)
+END_METADATA()
+
 MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
                        TabbedPane::TabStripStyle style)
     : TabStrip(orientation, style) {
@@ -586,7 +606,7 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
   DCHECK(!from_tab->selected());
   DCHECK(to_tab->selected());
 
-  if (orientation() == TabbedPane::Orientation::kHorizontal) {
+  if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
     animating_from_ = gfx::Range(from_tab->GetMirroredX(),
                                  from_tab->GetMirroredX() + from_tab->width());
     animating_to_ = gfx::Range(to_tab->GetMirroredX(),
@@ -604,13 +624,13 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
 
 void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // Do not draw border line in kHighlight mode.
-  if (style() == TabbedPane::TabStripStyle::kHighlight)
+  if (GetStyle() == TabbedPane::TabStripStyle::kHighlight)
     return;
 
   constexpr int kUnselectedBorderThickness = 1;
   constexpr int kSelectedBorderThickness = 2;
   const bool is_horizontal =
-      orientation() == TabbedPane::Orientation::kHorizontal;
+      GetOrientation() == TabbedPane::Orientation::kHorizontal;
 
   int max_cross_axis;
 
@@ -785,11 +805,11 @@ gfx::Size TabbedPane::CalculatePreferredSize() const {
 }
 
 TabbedPane::Orientation TabbedPane::GetOrientation() const {
-  return tab_strip_->orientation();
+  return tab_strip_->GetOrientation();
 }
 
 TabbedPane::TabStripStyle TabbedPane::GetStyle() const {
-  return tab_strip_->style();
+  return tab_strip_->GetStyle();
 }
 
 Tab* TabbedPane::GetTabAt(size_t index) {

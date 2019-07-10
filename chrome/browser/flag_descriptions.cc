@@ -1498,6 +1498,10 @@ const char kPassiveDocumentWheelEventListenersDescription[] =
     "Forces wheel, and mousewheel event listeners on document level targets "
     "(which haven't requested otherwise) to be treated as passive.";
 
+const char kPasswordEditingAndroidName[] = "Password editing for Android";
+const char kPasswordEditingAndroidDescription[] =
+    "Adds the editing option for saved passwords.";
+
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";

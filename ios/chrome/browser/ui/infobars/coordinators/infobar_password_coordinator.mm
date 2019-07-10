@@ -102,7 +102,13 @@
 
 #pragma mark - InfobarCoordinatorImplementation
 
-- (void)configureModalViewController {
+- (BOOL)configureModalViewController {
+  // Return early if there's no delegate. e.g. A Modal presentation has been
+  // triggered after the Infobar was destroyed, but before the badge/banner
+  // were dismissed.
+  if (!self.passwordInfoBarDelegate)
+    return NO;
+
   // Do not use |self.infobarBannerType| since the modal type might change each
   // time is presented. e.g. We present a Modal of type Save and tap on "Save".
   // The next time the Modal is presented we'll present a Modal of Type "Update"
@@ -137,6 +143,7 @@
       self.passwordInfoBarDelegate->IsCurrentPasswordSaved();
 
   [self recordModalPresentationMetricsUsingModalType:infobarModalType];
+  return YES;
 }
 
 - (void)infobarBannerWasPresented {

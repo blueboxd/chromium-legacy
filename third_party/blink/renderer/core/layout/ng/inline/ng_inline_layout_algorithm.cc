@@ -863,17 +863,19 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
           !opportunity.IsBlockDeltaBelowShapes(block_delta)) {
         block_delta += LayoutUnit(1);
         line_block_size = LayoutUnit();
-      } else {
-        // We've either don't have any shapes, or run out of block-delta space
-        // to test, proceed to the next layout opportunity.
+        continue;
+      }
+      // We've either don't have any shapes, or run out of block-delta space
+      // to test, proceed to the next layout opportunity.
+      if (opportunities_it + 1 != opportunities.end()) {
         block_delta = LayoutUnit();
         line_block_size = LayoutUnit();
         ++opportunities_it;
+        continue;
       }
-      // There must be at least one more opportunity, or we fail to call
-      // |CreateLine()|.
-      DCHECK_NE(opportunities_it, opportunities.end());
-      continue;
+      // Normally the last opportunity should fit the line, but arithmetic
+      // overflow can lead to failures for all opportunities. Just let the line
+      // to overflow in that case.
     }
 
     PrepareBoxStates(line_info, break_token);

@@ -32,10 +32,16 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
              const FloatRect& element_timing_rect)
       : node_id(new_node_id),
         first_size(new_first_size),
-        element_timing_rect_(element_timing_rect) {}
+        element_timing_rect_(element_timing_rect) {
+    static unsigned next_insertion_index_ = 1;
+    insertion_index_ = next_insertion_index_++;
+  }
 
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
+  // |insertion_index_| is ordered by insertion time, used as a secondary key
+  // for ranking.
+  unsigned insertion_index_ = 0;
   FloatRect element_timing_rect_;
   // The time of the first paint after fully loaded.
   base::TimeTicks paint_time = base::TimeTicks();

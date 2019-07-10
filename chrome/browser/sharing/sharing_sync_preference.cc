@@ -71,13 +71,13 @@ bool ShouldUseLocalDeviceData(const base::Value& local_value,
 
 }  // namespace
 
-SharingSyncPreference::Device::Device(const std::string& fcm_token,
-                                      const std::string& p256dh,
-                                      const std::string& auth_secret,
+SharingSyncPreference::Device::Device(std::string fcm_token,
+                                      std::string p256dh,
+                                      std::string auth_secret,
                                       const int capabilities)
-    : fcm_token(fcm_token),
-      p256dh(p256dh),
-      auth_secret(auth_secret),
+    : fcm_token(std::move(fcm_token)),
+      p256dh(std::move(p256dh)),
+      auth_secret(std::move(auth_secret)),
       capabilities(capabilities) {}
 
 SharingSyncPreference::Device::Device(Device&& other) = default;
@@ -235,5 +235,6 @@ SharingSyncPreference::ValueToDevice(const base::Value& value) {
     return base::nullopt;
   }
 
-  return Device(*fcm_token, p256dh, auth_secret, *capabilities);
+  return Device(*fcm_token, std::move(p256dh), std::move(auth_secret),
+                *capabilities);
 }

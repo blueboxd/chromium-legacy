@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+#include "components/signin/core/browser/account_info.h"
+
 @implementation FakeChromeIdentity {
   NSString* _userEmail;
   NSString* _gaiaID;
@@ -49,6 +51,10 @@
 
 - (NSString*)hashedGaiaID {
   return _hashedGaiaID;
+}
+
+- (NSString*)hostedDomain {
+  return @(kNoHostedDomainFound);
 }
 
 @end

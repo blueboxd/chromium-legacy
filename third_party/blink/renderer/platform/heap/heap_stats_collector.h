@@ -243,11 +243,17 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // sweeping time.
     base::TimeDelta gc_cycle_time() const;
 
+    // Time spent in the final atomic pause of a GC cycle.
+    base::TimeDelta atomic_pause_time() const;
+
+    // Time spent in the final atomic pause for marking the heap.
+    base::TimeDelta atomic_marking_time() const;
+
+    // Time spent in the final atomic pause in sweeping and compacting the heap.
+    base::TimeDelta atomic_sweep_and_compact_time() const;
+
     // Time spent incrementally marking the heap.
     base::TimeDelta incremental_marking_time() const;
-
-    // Time spent in atomically marking the heap.
-    base::TimeDelta atomic_marking_time() const;
 
     // Overall time spent marking the heap.
     base::TimeDelta marking_time() const;

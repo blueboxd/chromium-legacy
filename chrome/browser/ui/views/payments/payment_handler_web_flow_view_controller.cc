@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/icon/icon_size.h"
-#include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/url_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"

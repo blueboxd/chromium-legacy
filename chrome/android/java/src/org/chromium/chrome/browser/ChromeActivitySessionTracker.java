@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.util.Locale;
 
@@ -261,9 +262,19 @@ public class ChromeActivitySessionTracker {
         String systemLanguage =
                 LocaleUtils.toLanguage(LocaleUtils.toLanguageTag(Locale.getDefault()));
         boolean isWrongLanguage = !systemLanguage.equals(uiLanguage)
-                && LocaleUtils.isLanguageSupported(systemLanguage);
+                && isLanguageSupported(
+                        systemLanguage, ResourceBundle.getAvailableCompressedPakLocales());
         RecordHistogram.recordBooleanHistogram(
                 "Android.Language.WrongLanguageAfterResume", isWrongLanguage);
+    }
+
+    private static boolean isLanguageSupported(String language, String[] compressedLocales) {
+        for (String languageTag : compressedLocales) {
+            if (LocaleUtils.toLanguage(languageTag).equals(language)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

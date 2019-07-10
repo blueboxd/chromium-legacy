@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//android_webview/variables.gni")
 import("//build/config/android/rules.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
@@ -46,6 +47,7 @@ android_apk("webview_instrumentation_apk") {
     ":android_webview_apk_assets",
     ":android_webview_apk_resources",
     "//android_webview:android_webview_java",
+    "//android_webview:android_webview_locale_config_java",
     "//android_webview:locale_pak_assets",
     "//android_webview:platform_service_bridge_upstream_implementation_java",
     "//android_webview/apk:apk_java",
@@ -75,6 +77,7 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/test/OnlyRunIn.java",
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
+  locale_config_java_packages = [ webview_locale_config_java_package ]
 
   shared_libraries = [ ":libstandalonelibwebviewchromium" ]
 

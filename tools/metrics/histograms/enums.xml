@@ -34199,6 +34199,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1234740672" label="UsePdfCompositorServiceForPrint:disabled"/>
   <int value="-1232629319" label="ResamplingScrollEvents:disabled"/>
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
+  <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
@@ -35155,6 +35156,7 @@ from previous Chrome versions.
   <int value="149914698" label="SearchReadyOmnibox:disabled"/>
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
+  <int value="152867897" label="PasswordEditingAndroid:disabled"/>
   <int value="153347646" label="SmartDimModelV3:disabled"/>
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
@@ -37867,6 +37869,8 @@ Called by update_use_counter_css.py.-->
   <int value="638" label="overflow-inline"/>
   <int value="639" label="overflow-block"/>
   <int value="640" label="forced-color-adjust"/>
+  <int value="641" label="overscroll-behavior-inline"/>
+  <int value="642" label="overscroll-behavior-block"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -59322,13 +59326,17 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Failed - Parse Error"/>
   <int value="3" label="Failed - Signature Mismatch"/>
   <int value="4" label="Failed - Gzip Compress Error"/>
-  <int value="5" label="Delta Count"/>
+  <int value="5" label="Delta Count (obsolete)"/>
   <int value="6" label="Failed - Delta: Read Seed"/>
   <int value="7" label="Failed - Delta: Apply"/>
   <int value="8" label="Failed - Delta: Store Seed"/>
   <int value="9" label="Failed - Gzip Uncompress Error"/>
   <int value="10" label="Failed - Empty Gzip Contents"/>
   <int value="11" label="Failed - Unsupported Seed Format"/>
+  <int value="12" label="Gzip Delta Count"/>
+  <int value="13" label="Non-Gzip Delta Count"/>
+  <int value="14" label="Gzip Full Count"/>
+  <int value="15" label="Non-Gzip Full Count"/>
 </enum>
 
 <enum name="VaryType">

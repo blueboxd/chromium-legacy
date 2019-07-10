@@ -263,26 +263,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate" ||
          (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
 
-  if (!IsInertialScroll(latency) && input_modality == "Touch") {
-    average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
-                                           scroll_name);
-
-    base::TimeTicks last_scroll_event_timestamp, frame_time;
-    if (latency.FindLatency(
-            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
-            &last_scroll_event_timestamp) &&
-        latency.FindLatency(
-            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT,
-            &frame_time)) {
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.EventTimeToRAFTime",
-          last_scroll_event_timestamp, frame_time);
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.RAFTimeToFrameSwapEnd",
-          frame_time, gpu_swap_end_timestamp);
-    }
-  }
-
   base::TimeTicks rendering_scheduled_timestamp;
   bool rendering_scheduled_on_main = latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
@@ -292,6 +272,24 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
         ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
         &rendering_scheduled_timestamp);
     DCHECK_AND_RETURN_ON_FAIL(found_component);
+  }
+
+  if (!IsInertialScroll(latency) && input_modality == "Touch") {
+    average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
+                                           scroll_name);
+
+    base::TimeTicks last_scroll_event_timestamp;
+    if (!rendering_scheduled_on_main &&
+        latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+            &last_scroll_event_timestamp)) {
+      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+          "Event.Latency." + scroll_name + ".Touch.EventTimeToRAFTime",
+          last_scroll_event_timestamp, rendering_scheduled_timestamp);
+      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+          "Event.Latency." + scroll_name + ".Touch.RAFTimeToFrameSwapEnd",
+          rendering_scheduled_timestamp, gpu_swap_end_timestamp);
+    }
   }
 
   // Inertial and scrollbar scrolls are excluded from Ukm metrics.

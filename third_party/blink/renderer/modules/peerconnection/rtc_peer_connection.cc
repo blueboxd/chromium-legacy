@@ -1724,12 +1724,20 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
+  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
+      ExecutionContext::From(script_state), candidate);
+
+  // Temporary mitigation to avoid throwing an exception when candidate is
+  // empty.
+  // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
+  // handles the empty candidate field correctly.
+  if (web_candidate->Candidate().IsEmpty())
+    return ScriptPromise::CastUndefined(script_state);
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
-  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
-      ExecutionContext::From(script_state), candidate);
   bool implemented =
       peer_handler_->AddICECandidate(request, std::move(web_candidate));
   if (!implemented) {
@@ -1759,11 +1767,19 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
+  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
+      ExecutionContext::From(script_state), candidate);
+
+  // Temporary mitigation to avoid throwing an exception when candidate is
+  // empty.
+  // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
+  // handles the empty candidate field correctly.
+  if (web_candidate->Candidate().IsEmpty())
+    return ScriptPromise::CastUndefined(script_state);
+
   auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
       GetExecutionContext(), base::nullopt, this, success_callback,
       error_callback);
-  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
-      ExecutionContext::From(script_state), candidate);
   bool implemented =
       peer_handler_->AddICECandidate(request, std::move(web_candidate));
   if (!implemented) {

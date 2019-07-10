@@ -80,6 +80,10 @@ PhysicalGroup<2> CSSDirectionAwareResolver::OverflowGroup() {
   return PhysicalGroup<2>(overflowShorthand());
 }
 
+PhysicalGroup<2> CSSDirectionAwareResolver::OverscrollBehaviorGroup() {
+  return PhysicalGroup<2>(overscrollBehaviorShorthand());
+}
+
 PhysicalGroup<4> CSSDirectionAwareResolver::PaddingGroup() {
   return PhysicalGroup<4>(paddingShorthand());
 }

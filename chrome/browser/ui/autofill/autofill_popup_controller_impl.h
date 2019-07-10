@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
@@ -49,7 +51,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
       base::i18n::TextDirection text_direction);
 
   // Shows the popup, or updates the existing popup with the given values.
-  virtual void Show(const std::vector<autofill::Suggestion>& suggestions,
+  virtual void Show(const std::vector<Suggestion>& suggestions,
                     bool autoselect_first_suggestion,
                     PopupType popup_type);
 
@@ -90,7 +92,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const gfx::RectF& element_bounds() const override;
   void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;
-  const std::vector<autofill::Suggestion> GetSuggestions() override;
+  const std::vector<Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
   void SetTypesetter(gfx::Typesetter typesetter) override;
   int GetElidedValueWidthForRow(int row) override;
@@ -101,7 +103,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void OnSuggestionsChanged() override;
   void AcceptSuggestion(int index) override;
   int GetLineCount() const override;
-  const autofill::Suggestion& GetSuggestionAt(int row) const override;
+  const Suggestion& GetSuggestionAt(int row) const override;
   const base::string16& GetElidedValueAt(int row) const override;
   const base::string16& GetElidedLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int list_index,
@@ -129,7 +131,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Set the Autofill entry values. Exposed to allow tests to set these values
   // without showing the popup.
-  void SetValues(const std::vector<autofill::Suggestion>& suggestions);
+  void SetValues(const std::vector<Suggestion>& suggestions);
 
   AutofillPopupView* view() { return view_; }
 
@@ -166,7 +168,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   base::i18n::TextDirection text_direction_;
 
   // The current Autofill query values.
-  std::vector<autofill::Suggestion> suggestions_;
+  std::vector<Suggestion> suggestions_;
 
   // Elided values and labels corresponding to the suggestions_ vector to
   // ensure that it fits on the screen.

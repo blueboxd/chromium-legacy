@@ -388,10 +388,6 @@
              file="cr_elements/md_select_css.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_PAPER_BUTTON_STYLE_CSS_HTML"
-             file="cr_elements/paper_button_style_css.html"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_SEARCH_HIGHLIGHT_STYLE_CSS_HTML"
              file="cr_elements/search_highlight_style_css.html"
              type="chrome_html"

@@ -598,6 +598,9 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragmentCom
         clearButton.setOnClickListener((View v) -> onClearButtonClicked());
         view.addView(clearButton);
 
+        // Disable animations of preference changes.
+        getListView().setItemAnimator(null);
+
         return view;
     }
 

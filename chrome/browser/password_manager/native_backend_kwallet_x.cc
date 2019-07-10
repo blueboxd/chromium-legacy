@@ -23,7 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/dbus/dbus_thread_linux.h"
+#include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

@@ -15,11 +15,13 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace base {
 class CommandLine;
@@ -146,11 +148,34 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
   void ConnectToCleaner(
       std::unique_ptr<CleanerProcessDelegate> cleaner_process) override;
 
+  // Handles |request| and sends a QueryCapabilityResponse in reply.
+  void HandleQueryCapabilityRequest(
+      const chrome_cleaner::QueryCapabilityRequest& request);
+
+  // Handles |request| and sends a PromptUserResponse in reply.
+  void HandlePromptUserRequest(
+      const chrome_cleaner::PromptUserRequest& request);
+
+  // Handles |request| and sends a RemoveExtensionsResponse in reply.
+  void HandleRemoveExtensionsRequest(
+      const chrome_cleaner::RemoveExtensionsRequest& request);
+
+  // Closes request_read_handle_ and request_write_handle_, which will trigger
+  // an error handler in ServiceChromePromptRequests.
+  void CloseHandles();
+
  private:
   ChromePromptChannelProtobuf(const ChromePromptChannelProtobuf& other) =
       delete;
   ChromePromptChannelProtobuf& operator=(
       const ChromePromptChannelProtobuf& other) = delete;
+
+  // Serializes |message| to response_write_handle_. Calls CloseHandles on
+  // error.
+  void WriteResponseMessage(const google::protobuf::MessageLite& message);
+
+  // Sends a PromptUserResponse with the given |acceptance| value.
+  void SendPromptUserResponse(ChromePromptActions::PromptAcceptance acceptance);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

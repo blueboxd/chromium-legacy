@@ -6,10 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "account.mojom",
     "account_state.mojom",
     "core_account_id.mojom",
-    "core_account_info.mojom",
     "google_service_auth_error.mojom",
     "identity_accessor.mojom",
     "scope_set.mojom",

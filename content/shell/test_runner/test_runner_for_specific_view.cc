@@ -627,7 +627,7 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
-  if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL &&
+  if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||
       world_id >= blink::IsolatedWorldId::kEmbedderWorldIdLimit) {
     return;
   }

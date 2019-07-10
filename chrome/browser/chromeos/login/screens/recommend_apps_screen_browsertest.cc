@@ -557,7 +557,8 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
+// Disabled due to flakiness: https://crbug.com/982161
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_NoRecommendedApps) {
   recommend_apps_screen_->Show();
 
   OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);

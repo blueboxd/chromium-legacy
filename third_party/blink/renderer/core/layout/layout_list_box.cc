@@ -83,7 +83,7 @@ LayoutUnit LayoutListBox::ItemHeight() const {
     return LayoutUnit();
 
   const auto& items = select->GetListItems();
-  if (items.IsEmpty())
+  if (items.IsEmpty() || ShouldApplySizeContainment())
     return DefaultItemHeight();
 
   LayoutUnit max_height;

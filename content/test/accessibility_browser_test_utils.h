@@ -82,18 +82,24 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   // Helper to bind the OnAccessibilityEvent callback
   void BindOnAccessibilityEvent(RenderFrameHostImpl* frame_host);
 
+  // Helper to bind the OnGeneratedEvent callback
+  void BindOnGeneratedEvent(RenderFrameHostImpl* frame_host);
+
   // Callback from RenderViewHostImpl.
   void OnAccessibilityEvent(RenderFrameHostImpl* rfhi,
                             ax::mojom::Event event,
                             int event_target_id);
 
-  // Helper to bind the OnGeneratedEvent callback
-  void BindOnGeneratedEvent(RenderFrameHostImpl* frame_host);
-
-  // Callback from BrowserAccessibilityManager
+  // Callback from BrowserAccessibilityManager for all generated events.
   void OnGeneratedEvent(BrowserAccessibilityDelegate* delegate,
                         ui::AXEventGenerator::Event event,
                         int event_target_id);
+
+  // Callback from BrowserAccessibilityManager for the focus changed event.
+  //
+  // TODO(982776): Remove this method once we migrate to using AXEventGenerator
+  // for focus changed events.
+  void OnFocusChanged();
 
   // Helper function to determine if the accessibility tree in
   // GetAXTree() is about the page with the url "about:blank".

@@ -9,5 +9,6 @@
 #endif
 
 NSString* const kDestructiveTintColor = @"destructive_tint_color";
+NSString* const kDisabledTintColor = @"disabled_tint_color";
 NSString* const kSolidButtonTextColor = @"solid_button_text_color";
 NSString* const kTintColor = @"tint_color";

@@ -72,9 +72,10 @@ void ShelfControlButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // maximize the click target, but we still want their "visual" size to be
   // the same, so we find the center point and draw a square around that.
   const gfx::Point center = GetCenterPoint();
-  const int half_size = kShelfControlSize / 2;
+  const int half_size = ShelfConstants::control_size() / 2;
   const gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
-                              kShelfControlSize, kShelfControlSize);
+                              ShelfConstants::control_size(),
+                              ShelfConstants::control_size());
   auto path = std::make_unique<SkPath>();
   path->addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
                      border_radius);

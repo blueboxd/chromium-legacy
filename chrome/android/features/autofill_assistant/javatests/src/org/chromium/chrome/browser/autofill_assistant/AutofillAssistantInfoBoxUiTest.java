@@ -4,19 +4,20 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.junit.Before;
@@ -24,126 +25,108 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBox;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for the Autofill Assistant infobox.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantInfoBoxUiTest {
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
-
-    @Before
-    public void setUp() throws Exception {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), "about:blank"));
-    }
-
-    private CustomTabActivity getActivity() {
-        return mCustomTabActivityTestRule.getActivity();
-    }
+    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
     private TextView getExplanationView(AssistantInfoBoxCoordinator coordinator) {
         return coordinator.getView().findViewById(R.id.info_box_explanation);
     }
 
     /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
-    private AssistantInfoBoxCoordinator createCoordinator(AssistantInfoBoxModel model) {
-        ThreadUtils.assertOnUiThread();
+    private AssistantInfoBoxCoordinator createCoordinator(AssistantInfoBoxModel model)
+            throws Exception {
+        AssistantInfoBoxCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Bitmap testImage = BitmapFactory.decodeResource(
+                    mTestRule.getActivity().getResources(), R.drawable.btn_close);
 
-        Bitmap testImage =
-                BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.btn_close);
+            return new AssistantInfoBoxCoordinator(InstrumentationRegistry.getTargetContext(),
+                    model, new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null));
+        });
 
-        AssistantInfoBoxCoordinator coordinator =
-                new AssistantInfoBoxCoordinator(InstrumentationRegistry.getTargetContext(), model,
-                        new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null));
-
-        CoordinatorLayout.LayoutParams lp = new CoordinatorLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.BOTTOM;
-
-        ViewGroup chromeCoordinatorView = getActivity().findViewById(R.id.coordinator);
-        chromeCoordinatorView.addView(coordinator.getView(), lp);
-
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AutofillAssistantUiTestUtil.attachToCoordinator(
+                                mTestRule.getActivity(), coordinator.getView()));
         return coordinator;
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 
     /** Tests assumptions about the initial state of the infobox. */
     @Test
     @MediumTest
-    public void testInitialState() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantInfoBoxModel model = new AssistantInfoBoxModel();
-            AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+    public void testInitialState() throws Exception {
+        AssistantInfoBoxModel model = new AssistantInfoBoxModel();
+        AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
 
-            assertNull(model.get(AssistantInfoBoxModel.INFO_BOX));
-            assertFalse(coordinator.getView().isShown());
-        });
+        assertThat(model.get(AssistantInfoBoxModel.INFO_BOX), nullValue());
+        onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
     }
 
     /** Tests for an infobox with a message, but without an image. */
     @Test
     @MediumTest
-    public void testMessageNoImage() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantInfoBoxModel model = new AssistantInfoBoxModel();
-            AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+    public void testMessageNoImage() throws Exception {
+        AssistantInfoBoxModel model = new AssistantInfoBoxModel();
+        AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+        AssistantInfoBox infoBox = new AssistantInfoBox("", "Message");
 
-            AssistantInfoBox infoBox = new AssistantInfoBox("", "Message");
-            model.set(AssistantInfoBoxModel.INFO_BOX, infoBox);
-
-            assertTrue(getExplanationView(coordinator).isShown());
-            assertNull("Image should not be set",
-                    getExplanationView(coordinator).getCompoundDrawables()[1]);
-            assertEquals(infoBox.getExplanation(), getExplanationView(coordinator).getText());
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantInfoBoxModel.INFO_BOX, infoBox));
+        onView(is(coordinator.getView())).check(matches(isDisplayed()));
+        // Image should not be set.
+        assertThat(getExplanationView(coordinator).getCompoundDrawables()[1], nullValue());
+        onView(is(getExplanationView(coordinator))).check(matches(withText("Message")));
     }
 
     /** Tests for an infobox with message and image. */
     @Test
     @MediumTest
-    public void testImage() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantInfoBoxModel model = new AssistantInfoBoxModel();
-            AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+    public void testImage() throws Exception {
+        AssistantInfoBoxModel model = new AssistantInfoBoxModel();
+        AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+        AssistantInfoBox infoBox = new AssistantInfoBox("x", "Message");
 
-            AssistantInfoBox infoBox = new AssistantInfoBox("x", "Message");
-            model.set(AssistantInfoBoxModel.INFO_BOX, infoBox);
-
-            assertTrue(getExplanationView(coordinator).isShown());
-            assertNotNull("Image should be set",
-                    getExplanationView(coordinator).getCompoundDrawables()[1]);
-            assertEquals(infoBox.getExplanation(), getExplanationView(coordinator).getText());
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantInfoBoxModel.INFO_BOX, infoBox));
+        onView(is(getExplanationView(coordinator))).check(matches(isDisplayed()));
+        // Image should be set.
+        assertThat(getExplanationView(coordinator).getCompoundDrawables()[1], not(nullValue()));
+        onView(is(getExplanationView(coordinator))).check(matches(withText("Message")));
     }
 
     @Test
     @MediumTest
-    public void testVisibility() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantInfoBoxModel model = new AssistantInfoBoxModel();
-            AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+    public void testVisibility() throws Exception {
+        AssistantInfoBoxModel model = new AssistantInfoBoxModel();
+        AssistantInfoBoxCoordinator coordinator = createCoordinator(model);
+        AssistantInfoBox infoBox = new AssistantInfoBox("", "");
 
-            AssistantInfoBox infoBox = new AssistantInfoBox("", "");
-            model.set(AssistantInfoBoxModel.INFO_BOX, infoBox);
-            assertTrue(coordinator.getView().isShown());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantInfoBoxModel.INFO_BOX, infoBox));
+        onView(is(coordinator.getView())).check(matches(isDisplayed()));
 
-            model.set(AssistantInfoBoxModel.INFO_BOX, null);
-            assertFalse(coordinator.getView().isShown());
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantInfoBoxModel.INFO_BOX, null));
+        onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
     }
 }

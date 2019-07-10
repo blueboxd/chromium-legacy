@@ -210,6 +210,10 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
 // More info about the project may be found here:
 // https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo
 const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable uploading of a zip archive of system logs instead of individual files.
+const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)

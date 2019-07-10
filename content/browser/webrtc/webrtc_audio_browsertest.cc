@@ -90,8 +90,45 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
   base::test::ScopedFeatureList audio_service_features_;
 };
 
+#if defined(OS_MACOSX)
+
+// Flaky on MacOS: http://crbug.com/982421
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio \
+  DISABLED_CanMakeVideoCallAndThenRenegotiateToAudio
+#define MAYBE_EstablishAudioVideoCallAndEnsureAudioIsPlaying \
+  DISABLED_EstablishAudioVideoCallAndEnsureAudioIsPlaying
+#define MAYBE_EstablishAudioOnlyCallAndEnsureAudioIsPlaying \
+  DISABLED_EstablishAudioOnlyCallAndEnsureAudioIsPlaying
+#define MAYBE_EstablishIsac16KCallAndEnsureAudioIsPlaying \
+  DISABLED_EstablishIsac16KCallAndEnsureAudioIsPlaying
+#define MAYBE_EnsureLocalVideoMuteDoesntMuteAudio \
+  DISABLED_EnsureLocalVideoMuteDoesntMuteAudio
+#define MAYBE_EnsureRemoteVideoMuteDoesntMuteAudio \
+  DISABLED_EnsureRemoteVideoMuteDoesntMuteAudio
+#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
+  DISABLED_EstablishAudioVideoCallAndVerifyUnmutingWorks
+
+#else
+
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio \
+  CanMakeVideoCallAndThenRenegotiateToAudio
+#define MAYBE_EstablishAudioVideoCallAndEnsureAudioIsPlaying \
+  EstablishAudioVideoCallAndEnsureAudioIsPlaying
+#define MAYBE_EstablishAudioOnlyCallAndEnsureAudioIsPlaying \
+  EstablishAudioOnlyCallAndEnsureAudioIsPlaying
+#define MAYBE_EstablishIsac16KCallAndEnsureAudioIsPlaying \
+  EstablishIsac16KCallAndEnsureAudioIsPlaying
+#define MAYBE_EnsureLocalVideoMuteDoesntMuteAudio \
+  EnsureLocalVideoMuteDoesntMuteAudio
+#define MAYBE_EnsureRemoteVideoMuteDoesntMuteAudio \
+  EnsureRemoteVideoMuteDoesntMuteAudio
+#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
+  EstablishAudioVideoCallAndVerifyUnmutingWorks
+
+#endif  // defined(OS_MACOSX)
+
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       CanMakeVideoCallAndThenRenegotiateToAudio) {
+                       MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   std::string audio_only_constraints = BuildConstraints(kAudioConstraints, "");
@@ -101,7 +138,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
+                       MAYBE_EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioIsPlaying(" +
@@ -109,7 +146,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
+                       MAYBE_EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioIsPlaying(" +
@@ -117,7 +154,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EstablishIsac16KCallAndEnsureAudioIsPlaying) {
+                       MAYBE_EstablishIsac16KCallAndEnsureAudioIsPlaying) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
@@ -141,7 +178,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EnsureLocalVideoMuteDoesntMuteAudio) {
+                       MAYBE_EnsureLocalVideoMuteDoesntMuteAudio) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
@@ -149,7 +186,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EnsureRemoteVideoMuteDoesntMuteAudio) {
+                       MAYBE_EnsureRemoteVideoMuteDoesntMuteAudio) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
@@ -157,14 +194,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
-                       EstablishAudioVideoCallAndVerifyUnmutingWorks) {
+                       MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks) {
   std::string constraints =
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioTrackUnmutingWorks(" +
                                        constraints + ");");
 }
 
-// We run these tests with the audio service both in and out of the the browser
+// We run these tests with the audio service both in and out of the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

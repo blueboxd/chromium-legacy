@@ -276,6 +276,7 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
   states = base::CollapseWhitespaceASCII(states, false);
   base::ReplaceChars(states, " ", ",", &states);
   log += base::StringPrintf(" %s", states.c_str());
+  g_object_unref(state_set);
 
   OnEvent(log);
 }

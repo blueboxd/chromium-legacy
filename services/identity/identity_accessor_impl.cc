@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/mojom/account.mojom.h"
 
 namespace identity {
 
@@ -44,7 +43,8 @@ void IdentityAccessorImpl::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
   CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
-  std::move(callback).Run(account_info, account_state);
+  std::move(callback).Run(account_info.account_id, account_info.gaia,
+                          account_info.email, account_state);
 }
 
 void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
@@ -62,7 +62,8 @@ void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
   DCHECK(!account_info.account_id.empty());
   DCHECK(!account_info.email.empty());
   DCHECK(!account_info.gaia.empty());
-  std::move(callback).Run(account_info, account_state);
+  std::move(callback).Run(account_info.account_id, account_info.gaia,
+                          account_info.email, account_state);
 }
 
 void IdentityAccessorImpl::GetAccessToken(const CoreAccountId& account_id,
@@ -115,7 +116,8 @@ void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {
       DCHECK(!account_info->gaia.empty());
 
       for (auto&& callback : primary_account_available_callbacks_) {
-        std::move(callback).Run(account_info.value(), account_state);
+        std::move(callback).Run(account_info->account_id, account_info->gaia,
+                                account_info->email, account_state);
       }
       primary_account_available_callbacks_.clear();
     }

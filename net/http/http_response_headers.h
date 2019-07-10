@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/http/http_version.h"
+#include "net/log/net_log_capture_mode.h"
 
 namespace base {
 class Pickle;
@@ -30,7 +31,6 @@ class Value;
 namespace net {
 
 class HttpByteRange;
-class NetLogCaptureMode;
 
 enum ValidationType {
   VALIDATION_NONE,          // The resource is fresh.

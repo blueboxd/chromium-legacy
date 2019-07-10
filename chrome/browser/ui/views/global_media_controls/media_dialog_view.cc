@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -48,27 +49,13 @@ bool MediaDialogView::IsShowing() {
 void MediaDialogView::ShowMediaSession(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
-  // Do nothing if we're already showing this media session.
-  if (active_session_id_.has_value() && *active_session_id_ == id)
-    return;
-
-  active_session_id_ = id;
-
-  auto active_session_container =
-      std::make_unique<MediaNotificationContainerImpl>(this, item);
-  active_session_container_ = AddChildView(std::move(active_session_container));
+  active_sessions_view_->ShowNotification(
+      id, std::make_unique<MediaNotificationContainerImpl>(this, item));
   OnAnchorBoundsChanged();
 }
 
 void MediaDialogView::HideMediaSession(const std::string& id) {
-  // Do nothing if we're not showing this media session.
-  if (!active_session_id_.has_value() || active_session_id_ != id)
-    return;
-
-  active_session_id_ = base::nullopt;
-
-  RemoveChildView(active_session_container_);
-  active_session_container_ = nullptr;
+  active_sessions_view_->HideNotification(id);
   OnAnchorBoundsChanged();
 }
 
@@ -86,7 +73,7 @@ bool MediaDialogView::Close() {
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {
   // If we have an active session, then fit to it.
-  if (active_session_container_)
+  if (!active_sessions_view_->empty())
     return views::BubbleDialogDelegateView::CalculatePreferredSize();
 
   // Otherwise, use a standard size for bubble dialogs.
@@ -98,7 +85,9 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 MediaDialogView::MediaDialogView(views::View* anchor_view,
                                  service_manager::Connector* connector)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      controller_(connector, this) {}
+      controller_(connector, this),
+      active_sessions_view_(
+          AddChildView(std::make_unique<MediaNotificationListView>())) {}
 
 MediaDialogView::~MediaDialogView() = default;
 

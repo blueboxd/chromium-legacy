@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/dbus/dbus_thread_linux.h"
+#include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"

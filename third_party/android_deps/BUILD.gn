@@ -88,6 +88,9 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
     ":android_arch_core_common_java",
     ":android_arch_lifecycle_common_java",
   ]
+
+  # https://crbug.com/887942#c1
+  ignore_proguard_configs = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

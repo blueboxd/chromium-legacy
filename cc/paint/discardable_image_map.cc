@@ -361,7 +361,8 @@ class DiscardableImageGenerator {
       paint_worklet_inputs_.push_back(paint_image.paint_worklet_input());
     } else {
       // Make a note if any image was originally specified in a non-sRGB color
-      // space.
+      // space. PaintWorklets do not have the concept of a color space, so
+      // should not be used to accumulate either counter.
       SkColorSpace* source_color_space = paint_image.color_space();
       color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
       color_stats_total_image_count_++;
@@ -394,12 +395,20 @@ class DiscardableImageGenerator {
           paint_image.reset_animation_sequence_id());
     }
 
-    // If we are iterating images in a record shader, only track them if they
-    // are animated. We defer decoding of images in record shaders to skia, but
-    // we still need to track animated images to invalidate and advance the
-    // animation in cc.
-    bool add_image =
-        !only_gather_animated_images_ || paint_image.ShouldAnimate();
+    bool add_image = true;
+    if (paint_image.IsPaintWorklet()) {
+      // PaintWorklet-backed images don't go through the image decode pipeline
+      // (they are painted pre-raster from LayerTreeHostImpl), so do not need to
+      // be added to the |image_set_|.
+      add_image = false;
+    } else if (only_gather_animated_images_) {
+      // If we are iterating images in a record shader, only track them if they
+      // are animated. We defer decoding of images in record shaders to skia,
+      // but we still need to track animated images to invalidate and advance
+      // the animation in cc.
+      add_image = paint_image.ShouldAnimate();
+    }
+
     if (add_image) {
       image_set_.emplace_back(
           DrawImage(std::move(paint_image), src_irect, filter_quality, matrix),

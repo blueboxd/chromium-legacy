@@ -72,8 +72,10 @@ class SerialPortManagerImpl;
 #endif
 
 class DeviceService;
+class PlatformSensorProvider;
 class PowerMonitorMessageBroadcaster;
 class PublicIpAddressLocationNotifier;
+class SensorProviderImpl;
 class TimeZoneMonitor;
 
 #if defined(OS_ANDROID)
@@ -124,6 +126,9 @@ class DeviceService : public service_manager::Service {
       service_manager::mojom::ServiceRequest request);
 #endif
   ~DeviceService() override;
+
+  void SetPlatformSensorProviderForTesting(
+      std::unique_ptr<PlatformSensorProvider> provider);
 
  private:
   // service_manager::Service:
@@ -178,6 +183,7 @@ class DeviceService : public service_manager::Service {
       power_monitor_message_broadcaster_;
   std::unique_ptr<PublicIpAddressGeolocationProvider>
       public_ip_address_geolocation_provider_;
+  std::unique_ptr<SensorProviderImpl> sensor_provider_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
   std::unique_ptr<usb::DeviceManagerImpl> usb_device_manager_;
   std::unique_ptr<usb::DeviceManagerTest> usb_device_manager_test_;

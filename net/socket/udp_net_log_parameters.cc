@@ -21,7 +21,7 @@ base::Value NetLogUDPDataTranferCallback(int byte_count,
                                          NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetInteger("byte_count", byte_count);
-  if (capture_mode.include_socket_bytes())
+  if (NetLogCaptureIncludesSocketBytes(capture_mode))
     dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   if (address)
     dict.SetString("address", address->ToString());

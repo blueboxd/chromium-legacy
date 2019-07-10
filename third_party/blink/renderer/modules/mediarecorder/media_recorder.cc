@@ -172,11 +172,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                                       "Execution context is detached.");
     return;
   }
-  DCHECK(stream_->getTracks().size());
   recorder_handler_ = MediaRecorderHandler::Create(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
-  DCHECK(recorder_handler_);
-
   if (!recorder_handler_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
@@ -230,13 +227,21 @@ void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
+
+  if (stream_->getTracks().size() == 0) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "The MediaRecorder cannot start because"
+                                      "there are no audio or video tracks "
+                                      "available.");
+    return;
+  }
+
   state_ = State::kRecording;
 
   if (!recorder_handler_->Start(time_slice)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
-                                      "The MediaRecorder failed to start "
-                                      "because there are no audio or video "
-                                      "tracks available.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kUnknownError,
+        "There was an error starting the MediaRecorder.");
     return;
   }
   ScheduleDispatchEvent(Event::Create(event_type_names::kStart));

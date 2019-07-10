@@ -236,16 +236,26 @@ TEST_F(ImageDocumentTest, MAYBE(ImageCenteredAtDeviceScaleFactor)) {
   GetDocument().ImageClicked(15, 27);
   ScrollOffset offset =
       GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
-  EXPECT_EQ(22, offset.Width());
-  EXPECT_EQ(42, offset.Height());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(22.5f, offset.Width());
+    EXPECT_EQ(42, offset.Height());
+  } else {
+    EXPECT_EQ(22, offset.Width());
+    EXPECT_EQ(42, offset.Height());
+  }
 
   GetDocument().ImageClicked(20, 20);
 
   GetDocument().ImageClicked(12, 15);
   offset =
       GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
-  EXPECT_EQ(11, offset.Width());
-  EXPECT_EQ(22, offset.Height());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(11.25f, offset.Width());
+    EXPECT_EQ(22.5f, offset.Height());
+  } else {
+    EXPECT_EQ(11, offset.Width());
+    EXPECT_EQ(22, offset.Height());
+  }
 }
 
 class ImageDocumentViewportTest : public SimTest {

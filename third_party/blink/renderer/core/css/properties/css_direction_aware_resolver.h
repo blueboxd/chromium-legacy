@@ -40,6 +40,7 @@ class CSSDirectionAwareResolver {
   static PhysicalGroup<2> MaxSizeGroup();
   static PhysicalGroup<2> MinSizeGroup();
   static PhysicalGroup<2> OverflowGroup();
+  static PhysicalGroup<2> OverscrollBehaviorGroup();
   static PhysicalGroup<4> PaddingGroup();
   static PhysicalGroup<4> ScrollMarginGroup();
   static PhysicalGroup<4> ScrollPaddingGroup();

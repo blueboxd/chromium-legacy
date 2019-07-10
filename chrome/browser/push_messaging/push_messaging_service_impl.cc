@@ -12,7 +12,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -707,8 +706,8 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const PushMessagingAppIdentifier& app_identifier,
     RegisterCallback callback,
     const std::string& subscription_id,
-    const std::string& p256dh,
-    const std::string& auth_secret) {
+    std::string p256dh,
+    std::string auth_secret) {
   if (p256dh.empty()) {
     SubscribeEndWithError(
         std::move(callback),
@@ -772,14 +771,14 @@ void PushMessagingServiceImpl::DidValidateSubscription(
 
   GetEncryptionInfoForAppId(
       app_id, sender_id,
-      base::Bind(&PushMessagingServiceImpl::DidGetEncryptionInfo,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&PushMessagingServiceImpl::DidGetEncryptionInfo,
+                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void PushMessagingServiceImpl::DidGetEncryptionInfo(
     const SubscriptionInfoCallback& callback,
-    const std::string& p256dh,
-    const std::string& auth_secret) const {
+    std::string p256dh,
+    std::string auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   bool is_valid = !p256dh.empty();
   callback.Run(is_valid, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
@@ -1127,11 +1126,9 @@ void PushMessagingServiceImpl::GetEncryptionInfoForAppId(
     gcm::GCMEncryptionProvider::EncryptionInfoCallback callback) {
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->GetEncryptionInfo(
-        NormalizeSenderInfo(sender_id),
-        base::AdaptCallbackForRepeating(std::move(callback)));
+        NormalizeSenderInfo(sender_id), std::move(callback));
   } else {
-    GetGCMDriver()->GetEncryptionInfo(
-        app_id, base::AdaptCallbackForRepeating(std::move(callback)));
+    GetGCMDriver()->GetEncryptionInfo(app_id, std::move(callback));
   }
 }
 

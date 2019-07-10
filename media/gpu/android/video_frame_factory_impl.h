@@ -10,12 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "gpu/command_buffer/service/abstract_texture.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/vulkan_ycbcr_info.h"
-#include "gpu/ipc/service/command_buffer_stub.h"
+#include "gpu/config/gpu_preferences.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_wrapper.h"
@@ -23,7 +18,6 @@
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
-#include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -48,8 +42,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // |get_stub_cb| will be run on |gpu_task_runner|.
   VideoFrameFactoryImpl(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      GetStubCb get_stub_cb,
       const gpu::GpuPreferences& gpu_preferences,
+      std::unique_ptr<SharedImageVideoProvider> image_provider,
       std::unique_ptr<MaybeRenderEarlyManager> mre_manager);
   ~VideoFrameFactoryImpl() override;
 
@@ -93,7 +87,6 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   std::unique_ptr<SharedImageVideoProvider> image_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  GetStubCb get_stub_cb_;
 
   // The texture owner that video frames should use, or nullptr.
   scoped_refptr<TextureOwner> texture_owner_;
@@ -115,61 +108,6 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   base::WeakPtrFactory<VideoFrameFactoryImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryImpl);
-};
-
-// GpuSharedImageVideoFactory creates SharedImageVideo objects.  It must be run
-// on the gpu main thread.
-//
-// GpuSharedImageVideoFactory is an implementation detail of
-// DirectSharedImageVideoProvider.  It really should be split out into its own
-// file from here, but in the interest of making CL diffs more readable, that
-// is left for later.
-class GpuSharedImageVideoFactory
-    : public gpu::CommandBufferStub::DestructionObserver {
- public:
-  GpuSharedImageVideoFactory();
-  ~GpuSharedImageVideoFactory() override;
-
-  // TODO(liberato): Now that this is used as part of an image provider, it
-  // doesn't really make sense for it to call back with a TextureOwner.  That
-  // should be handled by VideoFrameFactoryImpl if it wants.
-  void Initialize(VideoFrameFactory::OverlayMode overlay_mode,
-                  VideoFrameFactory::GetStubCb get_stub_cb,
-                  VideoFrameFactory::InitCb init_cb);
-
-  // Similar to SharedImageVideoProvider::ImageReadyCB, but provides additional
-  // details for the provider that's using us.
-  using FactoryImageReadyCB = SharedImageVideoProvider::ImageReadyCB;
-
-  // Creates a SharedImage for |spec|, and returns it via the callback.
-  // TODO(liberato): |texture_owner| is only needed to get the service id, to
-  // create the per-frame texture.  All of that is only needed for legacy
-  // mailbox support, where we have to have one texture per CodecImage.
-  void CreateImage(FactoryImageReadyCB cb,
-                   const SharedImageVideoProvider::ImageSpec& spec,
-                   scoped_refptr<TextureOwner> texture_owner);
-
- private:
-  // Creates a SharedImage for |mailbox|, and returns success or failure.
-  bool CreateImageInternal(const SharedImageVideoProvider::ImageSpec& spec,
-                           scoped_refptr<TextureOwner> texture_owner,
-                           gpu::Mailbox mailbox,
-                           scoped_refptr<CodecImage> image);
-
-  void OnWillDestroyStub(bool have_context) override;
-
-  gpu::CommandBufferStub* stub_ = nullptr;
-
-  // A helper for creating textures. Only valid while |stub_| is valid.
-  std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
-
-  // Sampler conversion information which is used in vulkan context. This is
-  // constant for all the frames in a video and hence we cache it.
-  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
-
-  THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<GpuSharedImageVideoFactory> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GpuSharedImageVideoFactory);
 };
 
 }  // namespace media

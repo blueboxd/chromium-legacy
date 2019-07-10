@@ -60,8 +60,6 @@ void OnClick(ClickCallback click_callback,
 void Show(Profile* profile,
           const std::string& principal_name,
           ClickCallback click_callback) {
-  const base::string16 kDisplaySource =
-      l10n_util::GetStringUTF16(IDS_KERBEROS_TICKET_EXPIRY_DISPLAY_SOURCE);
   const base::string16 kTitle =
       l10n_util::GetStringUTF16(IDS_KERBEROS_TICKET_EXPIRY_TITLE);
   const base::string16 kBody = l10n_util::GetStringFUTF16(
@@ -75,6 +73,9 @@ void Show(Profile* profile,
   // No origin URL is needed since the notification comes from the system.
   const GURL kEmptyOriginUrl;
 
+  // Empty display source to show OS name as source.
+  const base::string16 kEmptyDisplaySource;
+
   // Office building.
   const gfx::VectorIcon& kIcon = vector_icons::kBusinessIcon;
 
@@ -87,7 +88,7 @@ void Show(Profile* profile,
       base::BindRepeating(&OnClick, click_callback, principal_name);
 
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
-      kNotificationType, kNotificationId, kTitle, kBody, kDisplaySource,
+      kNotificationType, kNotificationId, kTitle, kBody, kEmptyDisplaySource,
       kEmptyOriginUrl, kNotifierId, notification_data,
       base::MakeRefCounted<HandleNotificationClickDelegate>(callback_wrapper),
       kIcon, kWarningLevel);

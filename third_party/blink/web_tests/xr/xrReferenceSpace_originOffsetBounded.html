@@ -32,11 +32,18 @@ const VIEWS_WITH_OFFSET = [{
     resolution: VALID_RESOLUTION
 }];
 
+const FLOOR_TRANSFORM = {
+  position: [0.1, 0.2, 0.3],
+  orientation: [0, 0, 0, 1]
+};
+
 const fakeDeviceInitParams = {
   supportsImmersive: true,
   views: VIEWS_WITH_OFFSET,
-  viewerOrigin: IDENTITY_TRANSFORM
+  viewerOrigin: IDENTITY_TRANSFORM,
+  localToFloorLevelTransform: FLOOR_TRANSFORM
 };
+
 const requestSessionModes = ['immersive-vr'];
 
 function testFunction(session, t, fakeDeviceController) {
@@ -58,14 +65,6 @@ function testFunction(session, t, fakeDeviceController) {
     0.01, 0.02, 0.03, 1,
   ];
 
-  const STAGE_TRANSFORM = [
-    1,   0,   0,   0,
-    0,   1,   0,   0,
-    0,   0,   1,   0,
-    0.1, 0.2, 0.3, 1,
-  ];
-
-  fakeDeviceController.setStageTransform(STAGE_TRANSFORM);
   fakeDeviceController.setStageSize(2.0, 3.0);
 
   let input_source = new MockXRInputSource();

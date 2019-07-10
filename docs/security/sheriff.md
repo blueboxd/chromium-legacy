@@ -54,14 +54,18 @@ various important responsibilities:
 * Look at every incoming security bug report on the
   [dashboard](http://go/chrome-security-bugs). Ensure each is accurately
   triaged, and actively progressing towards getting fixed.
+* Don't forget to fully triage the low severity bugs. Once a bug is labeled with
+  `Security_Severity-Low `, it disappears from the first sheet and may slip
+  under your radar.
 * Keep the [Sheriff Handoff Log](http://go/chrome-security-sheriff-handoff) up
   to date.
 * Shout for help if the incoming bug rate is too high ([suggested vocal
   exercises](https://youtu.be/5y_SbnPx_cE?t=37s)). The first person to ask is
   the marshal.
-* Make sure all new bug reports are triaged completely. That means no red cells
-  on the dashboard. Double-check that OS are set properly. For most of the bugs,
-  more than one OS is affected, but the dashboard will not highlight it in red.
+* Make sure all **new bug reports** are triaged completely. That means no red
+  cells on the top of the dashboard. Double-check that OS flags are set
+  properly. For most of the bugs, typically more than one OS is affected, but
+  the dashboard will not highlight it in red.
 * Stay sharp, keep in shape ([hand-stand
   pushups](https://www.youtube.com/watch?v=jZ1ZDlLImF8#t=50) are standard for
   the sheriff), and remember you may be [called upon during
@@ -79,14 +83,16 @@ various important responsibilities:
   * Note: external emails will always come in on security@chromium.org as
     chrome-security@google.com is a Google-only list, but both need to be
     triaged.
-* Change bugs status to **Fixed** for those that the developer forgets to
-  close. Make sure to read bug comments where developer might point out that it
-  needs more CLs, et c. Wait 24 hours before closing ClusterFuzz bugs, to give
+* Change bugs status to **Fixed** for those that the developer forgets to close.
+  Make sure to read bug comments where developer might point out that it needs
+  more CLs, et c. Wait 24 hours before closing ClusterFuzz bugs, to give
   ClusterFuzz a chance to close it automatically.
   * [Starting point](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Type%3D%22Bug-Security%22+%22Change-Id:%22)
-* Look at open security bug reports and check that progress is occurring. That
-  includes the Low Severity Bugs page of the dashboard. The rule of thumb is
-  *if there is any red cell on the dashboard, it needs your attention*.
+* Look at the open security bug reports and check that progress is occurring.
+  This does not apply to the **new bug reports** (these are handled by the
+  sheriff), but does apply to the issues on the *Low Severity Bugs* page of the
+  dashboard. The rule of thumb is *if there is any red cell on the dashboard, it
+  needs your attention*.
 * Stay sharp, keep in shape ([finger
   exercises](https://youtu.be/20elMaVZ9lg?t=47s) are standard for the marshal),
   and remember you may be called upon during emergencies.

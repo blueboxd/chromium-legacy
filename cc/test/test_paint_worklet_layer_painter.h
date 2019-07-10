@@ -10,14 +10,11 @@
 
 namespace cc {
 
-class PaintWorkletInput;
-
 class TestPaintWorkletLayerPainter : public PaintWorkletLayerPainter {
  public:
   TestPaintWorkletLayerPainter();
   ~TestPaintWorkletLayerPainter() override;
 
-  sk_sp<PaintRecord> Paint(const PaintWorkletInput*) override;
   void DispatchWorklets(PaintWorkletJobMap, DoneCallback) override;
   bool HasOngoingDispatch() const override;
 

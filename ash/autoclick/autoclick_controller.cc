@@ -265,9 +265,10 @@ void AutoclickController::OnExitedScrollButton() {
 
 void AutoclickController::OnAutoclickScrollableBoundsFound(
     gfx::Rect& bounds_in_screen) {
-  // TODO(katie): Don't call this on the very first time scrollable bounds
-  // are found for each time the type is changed to scroll. We want the
-  // default first position of the scrollbar to be next to the menu bubble.
+  // The very first time scrollable bounds are found, the default first
+  // position of the scrollbar to be next to the menu bubble.
+  if (is_initial_scroll_location_)
+    return;
   menu_bubble_controller_->SetScrollPosition(bounds_in_screen,
                                              scroll_location_);
 }
@@ -341,6 +342,7 @@ void AutoclickController::DoAutoclickAction() {
                                                    mouse_event_flags_);
     } else {
       scroll_location_ = gesture_anchor_location_;
+      is_initial_scroll_location_ = false;
       UpdateScrollPosition(scroll_location_);
       Shell::Get()
           ->accessibility_controller()
@@ -498,13 +500,12 @@ void AutoclickController::UpdateRingSize() {
 }
 
 void AutoclickController::InitializeScrollLocation() {
-  // TODO(katie): Set the first scroll location to the center of the active
-  // window or view, which will be found using the automation API. Currently
-  // just setting it to the center of the root window.
+  // Sets the scroll location to the center of the root window.
   scroll_location_ = ash::Shell::Get()
                          ->GetPrimaryRootWindow()
                          ->GetBoundsInScreen()
                          .CenterPoint();
+  is_initial_scroll_location_ = true;
   Shell::Get()
       ->accessibility_controller()
       ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);

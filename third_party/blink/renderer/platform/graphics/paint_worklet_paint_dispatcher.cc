@@ -74,49 +74,6 @@ void PaintWorkletPaintDispatcher::UnregisterPaintWorkletPainter(
   painter_map_.erase(worklet_id);
 }
 
-// TODO(xidachen): we should bundle all PaintWorkletInputs and send them to the
-// |worklet_queue| once, instead of sending one PaintWorkletInput at a time.
-// This avoids thread hop and boost performance.
-sk_sp<cc::PaintRecord> PaintWorkletPaintDispatcher::Paint(
-    const cc::PaintWorkletInput* input) {
-  TRACE_EVENT0("cc", "PaintWorkletPaintDispatcher::Paint");
-  sk_sp<cc::PaintRecord> output = sk_make_sp<cc::PaintOpBuffer>();
-
-  PaintWorkletPainterToTaskRunnerMap copied_painter_map = GetPainterMapCopy();
-  if (copied_painter_map.IsEmpty())
-    return output;
-
-  base::WaitableEvent done_event;
-
-  auto it = copied_painter_map.find(input->WorkletId());
-  if (it == copied_painter_map.end())
-    return output;
-
-  PaintWorkletPainter* painter = it->value.first;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner = it->value.second;
-  DCHECK(!task_runner->BelongsToCurrentThread());
-  std::unique_ptr<AutoSignal> done = std::make_unique<AutoSignal>(&done_event);
-
-  PostCrossThreadTask(
-      *task_runner, FROM_HERE,
-      CrossThreadBindOnce(
-          [](PaintWorkletPainter* painter, const cc::PaintWorkletInput* input,
-             std::unique_ptr<AutoSignal> completion,
-             sk_sp<cc::PaintRecord>* output) {
-            *output = painter->Paint(input);
-          },
-          WrapCrossThreadPersistent(painter), WTF::CrossThreadUnretained(input),
-          WTF::Passed(std::move(done)), WTF::CrossThreadUnretained(&output)));
-
-  done_event.Wait();
-
-  // If the paint fails, PaintWorkletPainter should return an empty record
-  // rather than a nullptr.
-  DCHECK(output);
-
-  return output;
-}
-
 void PaintWorkletPaintDispatcher::DispatchWorklets(
     cc::PaintWorkletJobMap worklet_job_map,
     PlatformPaintWorkletLayerPainter::DoneCallback done_callback) {

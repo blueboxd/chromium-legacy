@@ -11,6 +11,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "base/values.h"
 #include "net/http/http_util.h"
 
 namespace ipp_converter {
@@ -20,6 +21,8 @@ using ValueType = cups_ipp_parser::mojom::ValueType;
 
 const char kStatusDelimiter[] = " ";
 const char kHeaderDelimiter[] = ": ";
+
+const size_t kIppDateSize = 11;
 
 // Callback used with ippReadIO (libCUPS API),
 // Repeatedly used to copy IPP request buffer -> ipp_t.
@@ -87,6 +90,7 @@ base::Optional<ValueType> ValueTagToType(const int value_tag) {
     case IPP_TAG_DATE:
       return ValueType::DATE;
     case IPP_TAG_INTEGER:
+    case IPP_TAG_ENUM:
       return ValueType::INTEGER;
 
     // Below string cases take from libCUPS ippAttributeString API
@@ -107,9 +111,44 @@ base::Optional<ValueType> ValueTagToType(const int value_tag) {
   }
 
   // Fail to convert any unrecognized types.
+  DVLOG(1) << "Failed to convert CUPS value tag, type " << value_tag;
   return base::nullopt;
 }
 
+std::vector<bool> IppGetBools(ipp_attribute_t* attr) {
+  std::vector<bool> ret;
+  for (int i = 0; i < ippGetCount(attr); ++i) {
+    // No decipherable failure condition for this libCUPS method.
+    bool v = ippGetBoolean(attr, i);
+    ret.emplace_back(v);
+  }
+  return ret;
+}
+
+base::Optional<std::vector<int>> IppGetInts(ipp_attribute_t* attr) {
+  std::vector<int> ret;
+  for (int i = 0; i < ippGetCount(attr); ++i) {
+    int v = ippGetInteger(attr, i);
+    if (!v) {
+      return base::nullopt;
+    }
+    ret.emplace_back(v);
+  }
+  return ret;
+}
+
+base::Optional<std::vector<std::string>> IppGetStrings(ipp_attribute_t* attr) {
+  std::vector<std::string> ret;
+  for (int i = 0; i < ippGetCount(attr); ++i) {
+    const char* v = ippGetString(
+        attr, i, nullptr /* TODO(crbug.com/945409): figure out language */);
+    if (!v) {
+      return base::nullopt;
+    }
+    ret.emplace_back(v);
+  }
+  return ret;
+}
 }  // namespace
 
 base::Optional<std::vector<std::string>> ParseRequestLine(
@@ -316,49 +355,41 @@ cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
     }
     attrptr->type = type.value();
 
-    std::vector<cups_ipp_parser::mojom::ValuePtr> values;
-    for (int i = 0; i < ippGetCount(attr); ++i) {
-      auto value = cups_ipp_parser::mojom::Value::New();
-      switch (attrptr->type) {
-        case ValueType::BOOLEAN: {
-          auto v = ippGetBoolean(attr, i);
-          if (!v) {
-            return nullptr;
-          }
-          value->set_bool_value(v);
-          break;
-        }
-        case ValueType::DATE: {
-          auto* v = ippGetDate(attr, i);
-          if (!v) {
-            return nullptr;
-          }
-          value->set_char_value(*v);
-          break;
-        }
-        case ValueType::INTEGER: {
-          auto v = ippGetInteger(attr, i);
-          if (!v) {
-            return nullptr;
-          }
-          value->set_int_value(v);
-          break;
-        }
-        case ValueType::STRING: {
-          auto* v = ippGetString(
-              attr, i, NULL /* TODO(crbug/781061): figure out language */);
-          if (!v) {
-            return nullptr;
-          }
-          value->set_string_value(v);
-          break;
-        }
-        default:
-          NOTREACHED();
+    attrptr->value = cups_ipp_parser::mojom::IppAttributeValue::New();
+    switch (attrptr->type) {
+      case ValueType::BOOLEAN: {
+        attrptr->value->set_bools(IppGetBools(attr));
+        break;
       }
-      values.emplace_back(std::move(value));
+      case ValueType::DATE: {
+        // Note: We never expect date-attributes to be single-valued.
+        const uint8_t* v =
+            reinterpret_cast<const uint8_t*>(ippGetDate(attr, 0));
+        if (!v) {
+          return nullptr;
+        }
+        attrptr->value->set_date(std::vector<uint8_t>(v, v + kIppDateSize));
+        break;
+      }
+      case ValueType::INTEGER: {
+        auto vals = IppGetInts(attr);
+        if (!vals.has_value()) {
+          return nullptr;
+        }
+        attrptr->value->set_ints(*vals);
+        break;
+      }
+      case ValueType::STRING: {
+        auto vals = IppGetStrings(attr);
+        if (!vals.has_value()) {
+          return nullptr;
+        }
+        attrptr->value->set_strings(*vals);
+        break;
+      }
+      default:
+        NOTREACHED();
     }
-    attrptr->values = std::move(values);
 
     attributes.emplace_back(std::move(attrptr));
   }

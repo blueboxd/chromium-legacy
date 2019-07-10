@@ -95,13 +95,35 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::TypeWithCalcResolved() const {
   if (IsNumericLiteralValue())
-    return GetType();
+    return To<CSSNumericLiteralValue>(this)->GetType();
   return To<CSSMathFunctionValue>(this)->TypeWithMathFunctionResolved();
 }
 
 bool CSSPrimitiveValue::IsCalculatedPercentageWithLength() const {
+  // TODO(crbug.com/979895): Move this function to |CSSMathFunctionValue|.
   return IsCalculated() &&
          To<CSSMathFunctionValue>(this)->Category() == kCalcPercentLength;
+}
+
+bool CSSPrimitiveValue::IsFontRelativeLength() const {
+  // TODO(crbug.com/979895): Move this function to |CSSNumericLiteralValue|.
+  return IsNumericLiteralValue() &&
+         To<CSSNumericLiteralValue>(this)->IsFontRelativeLength();
+}
+
+bool CSSPrimitiveValue::IsResolution() const {
+  // TODO(style-dev): Either support math functions on resolutions; or provide a
+  // justification for not supporting it, and move this function to
+  // |CSSNumericLiteralValue|.
+  return IsNumericLiteralValue() &&
+         To<CSSNumericLiteralValue>(this)->IsResolution();
+}
+
+bool CSSPrimitiveValue::IsFlex() const {
+  // TODO(style-dev): Either support math functions on flexible lengths; or
+  // provide a justification for not supporting it, and move this function to
+  // |CSSNumericLiteralValue|.
+  return IsNumericLiteralValue() && To<CSSNumericLiteralValue>(this)->IsFlex();
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(ClassType class_type)

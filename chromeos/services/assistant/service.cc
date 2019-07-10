@@ -26,6 +26,7 @@
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -289,22 +290,30 @@ identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
 }
 
 void Service::GetPrimaryAccountInfoCallback(
-    const base::Optional<CoreAccountInfo>& account_info,
+    const base::Optional<CoreAccountId>& account_id,
+    const base::Optional<std::string>& gaia,
+    const base::Optional<std::string>& email,
     const identity::AccountState& account_state) {
-  if (!account_info.has_value() || !account_state.has_refresh_token ||
-      account_info.value().gaia.empty()) {
+  // Validate the remotely-supplied parameters before using them below: if
+  // |account_id| is non-null, the other two should be non-null as well per
+  // the stated contract of IdentityAccessor::GetPrimaryAccountInfo().
+  CHECK((!account_id.has_value() || (gaia.has_value() && email.has_value())));
+
+  if (!account_id.has_value() || !account_state.has_refresh_token ||
+      gaia->empty()) {
     LOG(ERROR) << "Failed to retrieve primary account info.";
     RetryRefreshToken();
     return;
   }
-  account_id_ = AccountIdFromAccountInfo(account_info.value());
+  account_id_ = user_manager::known_user::GetAccountId(*email, *gaia,
+                                                       AccountType::GOOGLE);
   identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
   if (features::IsClearCutLogEnabled())
     scopes.insert(kScopeClearCutLog);
   identity_accessor_->GetAccessToken(
-      account_info.value().account_id, scopes, "cros_assistant",
+      *account_id, scopes, "cros_assistant",
       base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
 }
 

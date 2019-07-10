@@ -33,6 +33,11 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
                                              const MIDIOptions* options)
     : ScriptPromiseResolver(script_state), options_(options) {}
 
+void MIDIAccessInitializer::Dispose() {
+  accessor_.reset();
+  permission_service_.reset();
+}
+
 void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
   accessor_.reset();
   permission_service_.reset();

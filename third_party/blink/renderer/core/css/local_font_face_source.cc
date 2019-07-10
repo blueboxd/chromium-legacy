@@ -99,9 +99,6 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
           unstyled_description, font_name_,
           AlternateFontName::kLocalUniqueFace);
   histograms_.Record(font_data.get());
-  if (font_data) {
-    LOG(ERROR) << "LOCAL FONT DATA CREATED FOR UNIQUE NAME: " << font_name_;
-  }
   return font_data;
 }
 

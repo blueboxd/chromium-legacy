@@ -151,11 +151,10 @@ void GCMDriver::Send(const std::string& app_id,
   SendImpl(app_id, receiver_id, message);
 }
 
-void GCMDriver::GetEncryptionInfo(
-    const std::string& app_id,
-    const GetEncryptionInfoCallback& callback) {
+void GCMDriver::GetEncryptionInfo(const std::string& app_id,
+                                  GetEncryptionInfoCallback callback) {
   encryption_provider_.GetEncryptionInfo(app_id, "" /* authorized_entity */,
-                                         callback);
+                                         std::move(callback));
 }
 
 void GCMDriver::UnregisterWithSenderIdImpl(const std::string& app_id,

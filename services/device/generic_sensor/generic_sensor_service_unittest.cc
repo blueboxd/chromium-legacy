@@ -6,21 +6,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/platform_thread.h"
-#include "build/build_config.h"
-#include "device/base/synchronization/one_writer_seqlock.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/device_service.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/platform_sensor.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
-#include "services/device/generic_sensor/sensor_provider_impl.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -154,51 +147,23 @@ class TestSensorClient : public mojom::SensorClient {
 
 class GenericSensorServiceTest : public DeviceServiceTestBase {
  public:
-  GenericSensorServiceTest()
-      : io_loop_finished_event_(
-            base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  GenericSensorServiceTest() = default;
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
     DeviceServiceTestBase::SetUp();
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GenericSensorServiceTest::SetUpOnIOThread,
-                                  base::Unretained(this)));
-    io_loop_finished_event_.Wait();
 
+    fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
+    device_service()->SetPlatformSensorProviderForTesting(
+        base::WrapUnique(fake_platform_sensor_provider_));
     connector()->BindInterface(mojom::kServiceName, &sensor_provider_);
   }
 
-  void TearDown() override {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GenericSensorServiceTest::TearDownOnIOThread,
-                                  base::Unretained(this)));
-    io_loop_finished_event_.Wait();
-  }
-
-  void SetUpOnIOThread() {
-    fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
-    PlatformSensorProvider::SetProviderForTesting(
-        fake_platform_sensor_provider_);
-    io_loop_finished_event_.Signal();
-  }
-
-  void TearDownOnIOThread() {
-    PlatformSensorProvider::SetProviderForTesting(nullptr);
-
-    DCHECK(fake_platform_sensor_provider_);
-    delete fake_platform_sensor_provider_;
-    fake_platform_sensor_provider_ = nullptr;
-
-    io_loop_finished_event_.Signal();
-  }
   mojom::SensorProviderPtr sensor_provider_;
-  base::WaitableEvent io_loop_finished_event_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  // FakePlatformSensorProvider must be created and deleted in IO thread.
+  // This object is owned by the DeviceService instance.
   FakePlatformSensorProvider* fake_platform_sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericSensorServiceTest);

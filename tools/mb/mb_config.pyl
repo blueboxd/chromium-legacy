@@ -123,7 +123,7 @@
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinuxOfficial': 'clang_tot_official',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
-      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer',
+      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_release_with_libfuzzer',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
@@ -133,7 +133,7 @@
       'ToTLinuxUBSanVptr': 'clang_tot_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMacOfficial': 'clang_tot_official',
-      'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
+      'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
       'ToTMacASan': 'asan_disable_nacl_clang_tot_minimal_symbols_static_release',
       'ToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
@@ -1276,12 +1276,12 @@
       'clang_tot', 'minimal_symbols', 'shared', 'release',
     ],
 
-    'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer': [
-      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'shared', 'release', 'libfuzzer',
+    'clang_tot_coverage_minimal_symbols_release_with_libfuzzer': [
+      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'release', 'libfuzzer',
     ],
 
-    'clang_tot_coverage_minimal_symbols_shared_release': [
-      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'shared', 'release',
+    'clang_tot_coverage_minimal_symbols_release': [
+      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'release',
     ],
 
     'clang_tot_shared_release_dcheck': [

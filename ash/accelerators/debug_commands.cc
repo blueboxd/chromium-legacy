@@ -4,9 +4,13 @@
 
 #include "ash/accelerators/debug_commands.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/toast/toast_manager_impl.h"
@@ -23,6 +27,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -85,6 +90,14 @@ void PrintWindowHierarchy(const aura::Window* active_window,
   std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
   if (tree_id)
     *out << " ax_tree_id=" << *tree_id;
+  base::string16 title(window->GetTitle());
+  if (!title.empty())
+    *out << " title=" << title;
+  int app_type = window->GetProperty(aura::client::kAppType);
+  *out << " app_type=" << app_type;
+  std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
+  if (pkg_name)
+    *out << " pkg_name=" << *pkg_name;
   *out << '\n';
 
   for (aura::Window* child : window->children())

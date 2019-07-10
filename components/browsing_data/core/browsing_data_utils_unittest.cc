@@ -115,17 +115,17 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   } kTestCases[] = {
       {0, false, {}, "None"},
       {0, true, {}, "None"},
-      {1, false, {"domain1.com"}, "1 password for domain1.com"},
-      {1, true, {"domain1.com"}, "1 password for domain1.com (synced)"},
+      {1, false, {"domain1.com"}, "1 password (for domain1.com)"},
+      {1, true, {"domain1.com"}, "1 password (for domain1.com, synced)"},
       {5,
        false,
        {"domain1.com", "domain2.com", "domain3.com", "domain4.com"},
-       "5 passwords for domain1.com, domain2.com, and 3 more"},
+       "5 passwords (for domain1.com, domain2.com, and 3 more)"},
       {5,
        true,
        {"domain1.com", "domain2.com", "domain3.com", "domain4.com",
         "domain5.com"},
-       "5 passwords for domain1.com, domain2.com, and 3 more (synced)"},
+       "5 passwords (for domain1.com, domain2.com, and 3 more, synced)"},
   };
 
   for (const TestCase& test_case : kTestCases) {

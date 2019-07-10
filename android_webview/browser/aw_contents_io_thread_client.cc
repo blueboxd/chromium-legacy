@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "android_webview/common/devtools_instrumentation.h"
@@ -19,6 +20,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -358,7 +360,7 @@ enum class InterceptionType {
 };
 
 // Record UMA whether the request was intercepted and if so what kind of scheme.
-void RecordInterceptedType(bool response_is_null, const std::string& url) {
+void RecordInterceptedScheme(bool response_is_null, const std::string& url) {
   InterceptionType type = InterceptionType::kNoIntercept;
   if (!response_is_null) {
     GURL gurl(url);
@@ -376,6 +378,37 @@ void RecordInterceptedType(bool response_is_null, const std::string& url) {
   }
   UMA_HISTOGRAM_ENUMERATION(
       "Android.WebView.ShouldInterceptRequest.InterceptionType", type);
+}
+
+// Record UMA for the custom response status code for the intercepted requests
+// where input stream is null. UMA is recorded only when the status codes and
+// reason phrases are actually valid.
+void RecordResponseStatusCode(JNIEnv* env, AwWebResourceResponse* response) {
+  DCHECK(response);
+  DCHECK(!response->HasInputStream(env));
+
+  int status_code;
+  std::string reason_phrase;
+  bool status_info_valid =
+      response->GetStatusInfo(env, &status_code, &reason_phrase);
+
+  if (!status_info_valid) {
+    // Status code is not necessary set properly in the response,
+    // e.g. Webview's WebResourceResponse(String, String, InputStream) [*]
+    // does not actually set the status code or the reason phrase. In this case
+    // we just record a zero status code.
+    // The other constructor (long version) or the #setStatusCodeAndReasonPhrase
+    // method does actually perform validity checks on status code and reason
+    // phrase arguments.
+    // [*]
+    // https://developer.android.com/reference/android/webkit/WebResourceResponse.html
+    status_code = 0;
+  }
+
+  base::UmaHistogramSparse(
+      "Android.WebView.ShouldInterceptRequest.NullInputStream."
+      "ResponseStatusCode",
+      status_code);
 }
 
 std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
@@ -401,10 +434,19 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
           java_web_resource_request.jheader_names,
           java_web_resource_request.jheader_values);
 
-  RecordInterceptedType(ret.is_null(), request.url);
+  RecordInterceptedScheme(ret.is_null(), request.url);
 
-  return std::unique_ptr<AwWebResourceResponse>(
-      ret.is_null() ? nullptr : new AwWebResourceResponse(ret));
+  if (ret.is_null())
+    return std::unique_ptr<AwWebResourceResponse>(nullptr);
+
+  AwWebResourceResponse* response = new AwWebResourceResponse(ret);
+  if (!response->HasInputStream(env)) {
+    // Only record UMA for cases where the input stream is null (see
+    // crbug.com/974273).
+    RecordResponseStatusCode(env, response);
+  }
+
+  return std::unique_ptr<AwWebResourceResponse>(response);
 }
 
 std::unique_ptr<AwWebResourceResponse> ReturnNull() {

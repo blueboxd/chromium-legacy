@@ -100,7 +100,7 @@ class GCMDriver {
   using SendCallback = base::Callback<void(const std::string& message_id,
                                            GCMClient::Result result)>;
   using GetEncryptionInfoCallback =
-      base::Callback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
   using SendWebPushMessageCallback =
@@ -191,7 +191,7 @@ class GCMDriver {
   // created. The |callback| will be invoked when it is available. Only use with
   // GCM registrations; use InstanceID::GetEncryptionInfo for InstanceID tokens.
   virtual void GetEncryptionInfo(const std::string& app_id,
-                                 const GetEncryptionInfoCallback& callback);
+                                 GetEncryptionInfoCallback callback);
 
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
 

@@ -428,6 +428,12 @@ void ThreadHeap::CompleteSweep() {
     arenas_[i]->CompleteSweep();
 }
 
+void ThreadHeap::InvokeFinalizersOnSweptPages() {
+  for (size_t i = BlinkGC::kEagerSweepArenaIndex + 1;
+       i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->InvokeFinalizersOnSweptPages();
+}
+
 void ThreadHeap::ClearArenaAges() {
   memset(arena_ages_, 0, sizeof(size_t) * BlinkGC::kNumberOfArenas);
   memset(likely_to_be_promptly_freed_.get(), 0,

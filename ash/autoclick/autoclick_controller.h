@@ -189,6 +189,10 @@ class ASH_EXPORT AutoclickController
   // The point at which the next scroll event will occur.
   gfx::Point scroll_location_{-kDefaultAutoclickMovementThreshold,
                               -kDefaultAutoclickMovementThreshold};
+  // Whether the current scroll_location_ is the initial one set automatically,
+  // or if false, it was chosen explicitly by the user. The scroll bubble
+  // positions are different in these two cases.
+  bool is_initial_scroll_location_ = true;
   // Whether the cursor is currently over a scroll button. If true, new gestures
   // will not be started. This ensures the autoclick ring is not drawn over
   // the scroll position buttons, and extra clicks will not be generated there.

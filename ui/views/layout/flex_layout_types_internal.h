@@ -160,6 +160,7 @@ class NormalizedSizeBounds {
   void set_cross(const base::Optional<int>& cross) { cross_ = cross; }
 
   void Expand(int main, int cross);
+  void Inset(const NormalizedInsets& insets);
 
   bool operator==(const NormalizedSizeBounds& other) const;
   bool operator!=(const NormalizedSizeBounds& other) const;

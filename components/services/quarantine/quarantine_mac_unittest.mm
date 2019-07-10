@@ -55,8 +55,8 @@ class QuarantineMacTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath test_file_;
-  GURL source_url_;
-  GURL referrer_url_;
+  const GURL source_url_;
+  const GURL referrer_url_;
   base::scoped_nsobject<NSURL> file_url_;
 };
 
@@ -103,6 +103,18 @@ TEST_F(QuarantineMacTest, IsFileQuarantined_FullMetadata) {
   EXPECT_TRUE(IsFileQuarantined(test_file_, GURL(), referrer_url_));
   EXPECT_FALSE(IsFileQuarantined(test_file_, source_url_, source_url_));
   EXPECT_FALSE(IsFileQuarantined(test_file_, referrer_url_, referrer_url_));
+}
+
+TEST_F(QuarantineMacTest, IsFileQuarantined_Sanitize) {
+  GURL host_url{"https://user:pass@example.com/foo/bar?x#y"};
+  GURL host_url_clean{"https://example.com/foo/bar?x#y"};
+  GURL referrer_url{"https://user:pass@example.com/foo/index?x#y"};
+  GURL referrer_url_clean{"https://example.com/foo/index?x#y"};
+
+  ASSERT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file_, host_url, referrer_url, std::string()));
+  EXPECT_TRUE(
+      IsFileQuarantined(test_file_, host_url_clean, referrer_url_clean));
 }
 
 TEST_F(QuarantineMacTest, NoWhereFromsKeyIfNoURLs) {

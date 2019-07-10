@@ -13,8 +13,9 @@
 @protocol InfobarCoordinatorImplementation
 
 // Initializes and configures the ModalViewController that will be presented by
-// the InfobarCoordinator.
-- (void)configureModalViewController;
+// the InfobarCoordinator. Returns YES if the modalViewController was configured
+// successfully. If it returns NO no Modal should be presented.
+- (BOOL)configureModalViewController;
 
 // Performs any actions related to an Infobar Banner presentation.
 - (void)infobarBannerWasPresented;

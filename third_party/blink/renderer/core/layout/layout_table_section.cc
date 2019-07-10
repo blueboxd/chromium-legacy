@@ -1920,7 +1920,8 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
     if (!child->IsText() &&
         child->StyleRef().LogicalHeight().IsPercentOrCalc() &&
         (flex_all_children || ShouldFlexCellChild(cell, child)) &&
-        (!child->IsTable() || ToLayoutTable(child)->HasSections())) {
+        (!child->IsTable() || (!child->IsOutOfFlowPositioned() &&
+                               ToLayoutTable(child)->HasSections()))) {
       cell_children_flex = true;
       break;
     }

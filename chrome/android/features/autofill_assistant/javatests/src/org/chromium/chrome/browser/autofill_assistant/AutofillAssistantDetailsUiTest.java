@@ -21,12 +21,9 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,18 +39,19 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.Calendar;
 import java.util.Locale;
 
 /** Tests for the Autofill Assistant details. */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantDetailsUiTest {
+    @Rule
+    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     private static class ViewHolder {
         final ImageView mImageView;
         final TextView mTitleView;
@@ -78,20 +76,6 @@ public class AutofillAssistantDetailsUiTest {
         }
     }
 
-    @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
-
-    @Before
-    public void setUp() throws Exception {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), "about:blank"));
-    }
-
-    private CustomTabActivity getActivity() {
-        return mCustomTabActivityTestRule.getActivity();
-    }
-
     private AssistantDetailsCoordinator createCoordinator(AssistantDetailsModel model)
             throws Exception {
         return createCoordinator(model, Locale.getDefault());
@@ -102,23 +86,22 @@ public class AutofillAssistantDetailsUiTest {
             AssistantDetailsModel model, Locale locale) throws Exception {
         AssistantDetailsCoordinator coordinator = runOnUiThreadBlocking(() -> {
             Bitmap testImage = BitmapFactory.decodeResource(
-                    getActivity().getResources(), R.drawable.btn_close);
+                    mTestRule.getActivity().getResources(), R.drawable.btn_close);
 
             return new AssistantDetailsCoordinator(InstrumentationRegistry.getTargetContext(),
                     locale, model,
                     new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null));
         });
 
-        runOnUiThreadBlocking(() -> {
-            CoordinatorLayout.LayoutParams lp = new CoordinatorLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.gravity = Gravity.BOTTOM;
-
-            ViewGroup chromeCoordinatorView = getActivity().findViewById(R.id.coordinator);
-            chromeCoordinatorView.addView(coordinator.getView(), lp);
-        });
-
+        runOnUiThreadBlocking(()
+                                      -> AutofillAssistantUiTestUtil.attachToCoordinator(
+                                              mTestRule.getActivity(), coordinator.getView()));
         return coordinator;
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 
     /** Tests assumptions about the initial state of the details. */

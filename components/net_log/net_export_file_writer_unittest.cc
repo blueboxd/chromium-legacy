@@ -48,8 +48,8 @@ base::FilePath::CharType kLogRelativePath[] =
     FILE_PATH_LITERAL("net-export/chrome-net-export-log.json");
 
 const char kCaptureModeDefaultString[] = "STRIP_PRIVATE_DATA";
-const char kCaptureModeIncludeCookiesAndCredentialsString[] = "NORMAL";
-const char kCaptureModeIncludeSocketBytesString[] = "LOG_BYTES";
+const char kCaptureModeIncludeSensitiveString[] = "NORMAL";
+const char kCaptureModeIncludeEverythingString[] = "LOG_BYTES";
 
 const char kStateUninitializedString[] = "UNINITIALIZED";
 const char kStateInitializingString[] = "INITIALIZING";
@@ -499,13 +499,13 @@ TEST_F(NetExportFileWriterTest, InitWithExistingLog) {
 
 TEST_F(NetExportFileWriterTest, StartAndStopWithAllCaptureModes) {
   const net::NetLogCaptureMode capture_modes[3] = {
-      net::NetLogCaptureMode::Default(),
-      net::NetLogCaptureMode::IncludeCookiesAndCredentials(),
-      net::NetLogCaptureMode::IncludeSocketBytes()};
+      net::NetLogCaptureMode::kDefault,
+      net::NetLogCaptureMode::kIncludeSensitive,
+      net::NetLogCaptureMode::kEverything};
 
   const std::string capture_mode_strings[3] = {
-      kCaptureModeDefaultString, kCaptureModeIncludeCookiesAndCredentialsString,
-      kCaptureModeIncludeSocketBytesString};
+      kCaptureModeDefaultString, kCaptureModeIncludeSensitiveString,
+      kCaptureModeIncludeEverythingString};
 
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
@@ -555,7 +555,7 @@ TEST_F(NetExportFileWriterTest, StartClearsFile) {
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
@@ -576,7 +576,7 @@ TEST_F(NetExportFileWriterTest, StartClearsFile) {
   // Start and stop again and make sure the file is back to the size it was
   // before adding the junk data.
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
@@ -594,7 +594,7 @@ TEST_F(NetExportFileWriterTest, AddEvent) {
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
@@ -605,7 +605,7 @@ TEST_F(NetExportFileWriterTest, AddEvent) {
   EXPECT_TRUE(base::GetFileSize(default_log_path(), &stop_file_size));
 
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   net_log()->AddGlobalEntry(net::NetLogEventType::CANCELLED);
@@ -631,9 +631,9 @@ TEST_F(NetExportFileWriterTest, AddEventCustomPath) {
   EXPECT_TRUE(
       base::CreateDirectoryAndGetError(custom_log_path.DirName(), nullptr));
 
-  ASSERT_TRUE(StartThenVerifyNewState(
-      custom_log_path, net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, network_context()));
+  ASSERT_TRUE(
+      StartThenVerifyNewState(custom_log_path, net::NetLogCaptureMode::kDefault,
+                              kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr,
                                             kCaptureModeDefaultString));
@@ -642,9 +642,9 @@ TEST_F(NetExportFileWriterTest, AddEventCustomPath) {
   int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(custom_log_path, &stop_file_size));
 
-  ASSERT_TRUE(StartThenVerifyNewState(
-      custom_log_path, net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, network_context()));
+  ASSERT_TRUE(
+      StartThenVerifyNewState(custom_log_path, net::NetLogCaptureMode::kDefault,
+                              kCaptureModeDefaultString, network_context()));
 
   net_log()->AddGlobalEntry(net::NetLogEventType::CANCELLED);
 
@@ -668,7 +668,7 @@ TEST_F(NetExportFileWriterTest, StopWithPolledData) {
   dummy_polled_data->SetString(kDummyPolledDataPath, kDummyPolledDataString);
 
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(),
@@ -753,7 +753,7 @@ TEST_F(NetExportFileWriterTest, StartWithNetworkContextActive) {
   // thing since the post-redirect URL will get blocked by the custom handler.
   run_loop.Run();
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::FilePath(), net::NetLogCaptureMode::kDefault,
       kCaptureModeDefaultString, network_context()));
 
   ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
@@ -789,9 +789,9 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileInitializing) {
   // process from completing, so this ensures that StartNetLog() is received
   // before |file_writer_| finishes initialization, which means this
   // should be a no-op.
-  file_writer()->StartNetLog(
-      base::FilePath(), net::NetLogCaptureMode::Default(), kMaxLogSizeBytes,
-      base::CommandLine::StringType(), kChannelString, network_context());
+  file_writer()->StartNetLog(base::FilePath(), net::NetLogCaptureMode::kDefault,
+                             kMaxLogSizeBytes, base::CommandLine::StringType(),
+                             kChannelString, network_context());
 
   // Now run the main message loop. Make sure StartNetLog() was ignored by
   // checking that the next two states are "initializing" followed by
@@ -809,8 +809,8 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
 
   // Call StartNetLog() on |file_writer_| and wait for the state change.
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::IncludeSocketBytes(),
-      kCaptureModeIncludeSocketBytesString, network_context()));
+      base::FilePath(), net::NetLogCaptureMode::kEverything,
+      kCaptureModeIncludeEverythingString, network_context()));
 
   // Tell |file_writer_| to stop logging.
   file_writer()->StopNetLog(nullptr);
@@ -820,9 +820,9 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
   // from completing, so this ensures StartNetLog() is received before
   // |file_writer_| finishes stopping, which means this should be a
   // no-op.
-  file_writer()->StartNetLog(
-      base::FilePath(), net::NetLogCaptureMode::Default(), kMaxLogSizeBytes,
-      base::CommandLine::StringType(), kChannelString, network_context());
+  file_writer()->StartNetLog(base::FilePath(), net::NetLogCaptureMode::kDefault,
+                             kMaxLogSizeBytes, base::CommandLine::StringType(),
+                             kChannelString, network_context());
 
   // Now run the main message loop. Make sure the last StartNetLog() was
   // ignored by checking that the next two states are "stopping-log" followed by
@@ -833,7 +833,7 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
   ASSERT_TRUE(VerifyState(std::move(state), kStateStoppingLogString));
   state = test_state_observer()->WaitForNewState();
   ASSERT_TRUE(VerifyState(std::move(state), kStateNotLoggingString, true, true,
-                          kCaptureModeIncludeSocketBytesString));
+                          kCaptureModeIncludeEverythingString));
 }
 
 TEST_F(NetExportFileWriterTest, HandleCrash) {
@@ -841,8 +841,8 @@ TEST_F(NetExportFileWriterTest, HandleCrash) {
 
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
   ASSERT_TRUE(StartThenVerifyNewState(
-      base::FilePath(), net::NetLogCaptureMode::IncludeSocketBytes(),
-      kCaptureModeIncludeSocketBytesString, &fake_network_context));
+      base::FilePath(), net::NetLogCaptureMode::kEverything,
+      kCaptureModeIncludeEverythingString, &fake_network_context));
 
   // Break the pipe, as if network service crashed.
   fake_network_context.Disconnect();

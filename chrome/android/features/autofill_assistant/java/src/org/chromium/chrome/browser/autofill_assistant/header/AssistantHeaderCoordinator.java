@@ -10,7 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderViewBinder.ViewHolder;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.ChromeSigninController;
@@ -26,6 +28,7 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     private final ViewGroup mView;
     private final ImageView mProfileView;
     private final String mSignedInAccountName;
+    private final ViewHolder mViewHolder;
 
     public AssistantHeaderCoordinator(Context context, AssistantHeaderModel model) {
         // Create the poodle and insert it before the status message. We have to create a view
@@ -48,10 +51,9 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
         setupProfileImage();
 
         // Bind view and mediator through the model.
-        AssistantHeaderViewBinder.ViewHolder viewHolder =
-                new AssistantHeaderViewBinder.ViewHolder(context, mView, poodle);
+        mViewHolder = new AssistantHeaderViewBinder.ViewHolder(context, mView, poodle);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
-        PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
+        PropertyModelChangeProcessor.create(model, mViewHolder, viewBinder);
 
         model.set(AssistantHeaderModel.PROGRESS_VISIBLE, true);
     }
@@ -85,16 +87,21 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     }
 
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.
+
     private void setupProfileImage() {
         if (mSignedInAccountName != null) {
             mProfileCache.addObserver(this);
             mProfileCache.update(Collections.singletonList(mSignedInAccountName));
         }
     }
-
     private void setProfileImageFor(String signedInAccountName) {
         DisplayableProfileData profileData =
                 mProfileCache.getProfileDataOrDefault(signedInAccountName);
         mProfileView.setImageDrawable(profileData.getImage());
+    }
+
+    @VisibleForTesting
+    public void disableAnimationsForTesting(boolean disable) {
+        mViewHolder.disableAnimationsForTesting(disable);
     }
 }

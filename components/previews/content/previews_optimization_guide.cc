@@ -24,7 +24,6 @@
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_hints_util.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"

@@ -197,6 +197,17 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OneText) {
             DOMNodeIds::ExistingIdForNode(only_text));
 }
 
+TEST_F(TextPaintTimingDetectorTest, InsertionOrderIsSecondaryRankingKey) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  Element* first = AppendDivElementToBody("text");
+  AppendDivElementToBody("text");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
+            DOMNodeIds::ExistingIdForNode(first));
+}
+
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_Candidate) {
   using trace_analyzer::Query;
   trace_analyzer::Start("*");

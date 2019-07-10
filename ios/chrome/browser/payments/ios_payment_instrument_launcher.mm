@@ -13,7 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 </if>
+<title>Flags</title>
 
 <link rel="stylesheet" href="flags.css">
 
@@ -88,14 +89,16 @@
                     : 'experiment-switched flex-container'">
               <div class="flex">
                 <h3 class="experiment-name" jscontent="name"
-                    jsvalues="title: is_default ? '' : 'Experiment enabled'"></h3>
+                    jsvalues="title: is_default ? '' : 'Experiment enabled';
+                        id:internal_name + '_name'"></h3>
                 <p>
                   <span jsvalues=".innerHTML:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <div jsdisplay="origin_list_value!==null">
                   <textarea class="experiment-origin-list-value"
-                      jsvalues=".internal_name:internal_name; .value:origin_list_value"
+                      jsvalues=".internal_name:internal_name; .value:origin_list_value;
+                          aria-labelledby:internal_name + '_name'"
                       tabindex="7"></textarea>
                 </div>
                 <a class="permalink" jsvalues="href: '#' + internal_name"
@@ -104,7 +107,8 @@
               <div class="flex experiment-actions">
                 <div jsdisplay="options && options.length > 0">
                   <select class="experiment-select" tabindex="6"
-                      jsvalues=".internal_name:internal_name;.disabled:!enabled;">
+                      jsvalues=".internal_name:internal_name;.disabled:!enabled;
+                          aria-labelledby:internal_name + '_name'">
                     <option jsvalues=".selected:selected;"
                         jsselect="options"
                         jscontent="description">
@@ -113,12 +117,12 @@
                 </div>
                 <select class="experiment-enable-disable" tabindex="6"
                     jsdisplay="enabled !== undefined"
-                    jsvalues=".internal_name:internal_name;">
+                    jsvalues=".internal_name:internal_name;
+                        aria-labelledby:internal_name + '_name'">
                   <option jsvalues=".selected:!enabled; data-default: enabled ? 1 : 0"
                       value="disabled">Disabled</option>
                   <option jsvalues=".selected:enabled; data-default: !enabled ? 1 : 0"
                       value="enabled">Enabled</option>
-                  </option>
                 </select>
               </div>
             </div>
@@ -132,14 +136,16 @@
                     : 'experiment-switched flex-container'">
               <div class="flex">
                 <h3 class="experiment-name" jscontent="name"
-                    jsvalues="title: is_default ? '' : 'Experiment enabled'"></h3>
+                    jsvalues="title: is_default ? '' : 'Experiment enabled';
+                        id:internal_name + '_name'"></h3>
                 <p>
                   <span jsvalues=".innerHTML:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <div jsdisplay="origin_list_value!==null">
                   <textarea class="experiment-origin-list-value"
-                      jsvalues=".internal_name:internal_name; .value:origin_list_value"
+                      jsvalues=".internal_name:internal_name; .value:origin_list_value;
+                          aria-labelledby:internal_name + '_name'"
                       tabindex="7"></textarea>
                 </div>
                 <a class="permalink" jsvalues="href: '#' + internal_name"
@@ -148,7 +154,8 @@
               <div class="flex experiment-actions">
                 <div jsdisplay="options && options.length > 0">
                   <select class="experiment-select" tabindex="6"
-                      jsvalues=".internal_name:internal_name;.disabled:!enabled">
+                      jsvalues=".internal_name:internal_name;.disabled:!enabled;
+                          aria-labelledby:internal_name + '_name'">
                     <option jsvalues=".selected:selected;"
                         jsselect="options"
                         jscontent="description">
@@ -158,7 +165,8 @@
                 <!-- Represent enabled / disabled options in a drop down -->
                 <select class="experiment-enable-disable" tabindex="6"
                     jsdisplay="enabled !== undefined"
-                    jsvalues=".internal_name:internal_name;">
+                    jsvalues=".internal_name:internal_name;
+                        aria-labelledby:internal_name + '_name'">
                   <option jsvalues=".selected:!enabled; data-default:!enabled ? 1 : 0"
                       value="disabled">Disabled</option>
                   <option jsvalues=".selected:enabled; data-default: enabled ? 1 : 0"

@@ -4,18 +4,6 @@
  * for interal tests. The main mocked objects are found in
  * ../external/wpt/resources/chromium/webxr-test.js. */
 
-let default_standing = new gfx.mojom.Transform();
-default_standing.matrix = [1, 0, 0, 0,
-                           0, 1, 0, 0,
-                           0, 0, 1, 0,
-                           0, 1.65, 0, 1];
-const default_stage_parameters = {
-  standingTransform: default_standing,
-  sizeX: 1.5,
-  sizeZ: 1.5,
-  bounds: null
-};
-
 MockRuntime.prototype.base_getFrameData = MockRuntime.prototype.getFrameData;
 
 MockRuntime.prototype.getFrameData = function() {
@@ -72,27 +60,6 @@ MockRuntime.prototype.requestHitTest = function(ray) {
   return Promise.resolve(hit_results);
 };
 
-MockRuntime.prototype.setResetPose = function(to) {
-  if (this.pose_) {
-    this.pose_.poseReset = to;
-  }
-};
-
-MockRuntime.prototype.setStageTransform = function(value) {
-  if (value) {
-    if (!this.displayInfo_.stageParameters) {
-      this.displayInfo_.stageParameters = default_stage_parameters;
-    }
-
-    this.displayInfo_.stageParameters.standingTransform = new gfx.mojom.Transform();
-    this.displayInfo_.stageParameters.standingTransform.matrix = value;
-  } else if (this.displayInfo_.stageParameters) {
-    this.displayInfo_.stageParameters = null;
-  }
-
-  this.sessionClient_.onChanged(this.displayInfo_);
-};
-
 MockRuntime.prototype.setStageSize = function(x, z) {
   if (!this.displayInfo_.stageParameters) {
     this.displayInfo_.stageParameters = default_stage_parameters;
@@ -100,16 +67,6 @@ MockRuntime.prototype.setStageSize = function(x, z) {
 
   this.displayInfo_.stageParameters.sizeX = x;
   this.displayInfo_.stageParameters.sizeZ = z;
-
-  this.sessionClient_.onChanged(this.displayInfo_);
-};
-
-MockRuntime.prototype.setStageBounds = function(value) {
-  if (!this.displayInfo_.stageParameters) {
-    this.displayInfo_.stageParameters = default_stage_parameters;
-  }
-
-  this.displayInfo_.stageParameters.bounds = value;
 
   this.sessionClient_.onChanged(this.displayInfo_);
 };

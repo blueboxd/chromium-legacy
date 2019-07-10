@@ -1092,6 +1092,22 @@ android_library("android_webview_services_java") {
   min_sdk_version = 21
 }
 
+# Generate LocaleConfig.java so that android_webview_locale_config_java's
+# compile step works.
+generate_locale_config_srcjar("webview_locale_config") {
+  java_package = webview_locale_config_java_package
+}
+
+# LocaleConfig.java is excluded from the generated .jar
+# (via. jar_excluded_patterns) and the final version is inserted at the APK
+# level - with the list of pak locales populated by looking at the assets that
+# are listed in the final APK's .build_config.
+android_library("android_webview_locale_config_java") {
+  java_files = [ "java/src/org/chromium/android_webview/AwLocaleConfig.java" ]
+  srcjar_deps = [ ":webview_locale_config" ]
+  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
+}
+
 android_aidl("crash_receiver_aidl") {
   import_include = [ "java/src" ]
   sources = [

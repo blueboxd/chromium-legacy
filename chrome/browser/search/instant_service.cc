@@ -190,6 +190,7 @@ InstantService::InstantService(Profile* profile)
       pref_service_(profile_->GetPrefs()),
       theme_observer_(this),
       native_theme_(ui::NativeTheme::GetInstanceForNativeUi()),
+      background_updated_timestamp_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -441,12 +442,14 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   RemoveLocalBackgroundImageCopy();
 
+  background_updated_timestamp_ = base::TimeTicks::Now();
+
   if (background_url.is_valid() && is_backdrop_url) {
     const GURL& thumbnail_url =
         background_service_->GetThumbnailUrl(background_url);
-    FetchCustomBackground(background_url, thumbnail_url.is_valid()
-                                              ? thumbnail_url
-                                              : background_url);
+    FetchCustomBackground(
+        background_updated_timestamp_,
+        thumbnail_url.is_valid() ? thumbnail_url : background_url);
 
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url);
@@ -464,6 +467,7 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
 }
 
 void InstantService::SetBackgroundToLocalResource() {
+  background_updated_timestamp_ = base::TimeTicks::Now();
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
   UpdateThemeInfo();
 }
@@ -796,7 +800,7 @@ void InstantService::ResetToDefault() {
 }
 
 void InstantService::UpdateCustomBackgroundColorAsync(
-    const GURL& image_url,
+    base::TimeTicks timestamp,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   // Calculate the bitmap color asynchronously as it is slow (1-2 seconds for
@@ -806,11 +810,11 @@ void InstantService::UpdateCustomBackgroundColorAsync(
         FROM_HERE, {base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
         base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
-                       weak_ptr_factory_.GetWeakPtr(), image_url));
+                       weak_ptr_factory_.GetWeakPtr(), timestamp));
   }
 }
 
-void InstantService::FetchCustomBackground(const GURL& image_url,
+void InstantService::FetchCustomBackground(base::TimeTicks timestamp,
                                            const GURL& fetch_url) {
   DCHECK(!fetch_url.is_empty());
 
@@ -837,9 +841,9 @@ void InstantService::FetchCustomBackground(const GURL& image_url,
   image_fetcher::ImageFetcherParams params(traffic_annotation,
                                            kCustomBackgroundsUmaClientName);
   image_fetcher_->FetchImage(
-      image_url,
+      fetch_url,
       base::BindOnce(&InstantService::UpdateCustomBackgroundColorAsync,
-                     weak_ptr_factory_.GetWeakPtr(), image_url),
+                     weak_ptr_factory_.GetWeakPtr(), timestamp),
       std::move(params));
 }
 
@@ -881,8 +885,9 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kNtpShortcutsVisible, true);
 }
 
-void InstantService::UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,
-                                                          SkColor color) {
+void InstantService::UpdateCustomBackgroundPrefsWithColor(
+    base::TimeTicks timestamp,
+    SkColor color) {
   // Update background color only if the selected background is still the same.
   const base::DictionaryValue* background_info =
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
@@ -891,7 +896,7 @@ void InstantService::UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,
 
   GURL current_bg_url(
       background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
-  if (current_bg_url == image_url) {
+  if (timestamp == background_updated_timestamp_) {
     pref_service_->Set(prefs::kNtpCustomBackgroundDict,
                        GetBackgroundInfoWithColor(background_info, color));
   }

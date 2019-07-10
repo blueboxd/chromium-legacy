@@ -59,7 +59,9 @@ void DriveFsAuth::GetAccessToken(
       &DriveFsAuth::AccountReady, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveFsAuth::AccountReady(const CoreAccountInfo& info,
+void DriveFsAuth::AccountReady(const CoreAccountId& account_id,
+                               const std::string& gaia,
+                               const std::string& email,
                                const identity::AccountState& state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_ptr_factory_.InvalidateWeakPtrs();

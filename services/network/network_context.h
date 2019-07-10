@@ -51,13 +51,19 @@
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
+#if defined(OS_CHROMEOS)
+#include "crypto/scoped_nss_types.h"
+#endif
+
 namespace base {
 class UnguessableToken;
 }  // namespace base
 
 namespace net {
+class CertNetFetcher;
 class CertNetFetcherImpl;
 class CertVerifier;
+class CertVerifyProc;
 class HostPortPair;
 class ReportSender;
 class StaticHttpUserAgentSettings;
@@ -448,6 +454,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
 #if defined(OS_CHROMEOS)
   void TrustAnchorUsed();
+
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProcForUser(
+      scoped_refptr<net::CertNetFetcher> net_fetcher,
+      crypto::ScopedPK11Slot user_public_slot);
+
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProcWithoutUserSlots(
+      scoped_refptr<net::CertNetFetcher> net_fetcher);
 #endif
 
 #if BUILDFLAG(IS_CT_SUPPORTED)

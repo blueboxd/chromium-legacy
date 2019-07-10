@@ -10,7 +10,6 @@
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "ash/highlighter/highlighter_result_view.h"
 #include "ash/highlighter/highlighter_view.h"
-#include "ash/public/cpp/scale_utility.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/shell_state.h"
@@ -41,20 +40,6 @@ gfx::RectF AdjustHorizontalStroke(const gfx::RectF& box,
   return gfx::RectF(box.x() - pen_tip_size.width() / 2,
                     box.CenterPoint().y() - pen_tip_size.height() / 2,
                     box.width() + pen_tip_size.width(), pen_tip_size.height());
-}
-
-// This method computes the scale required to convert window-relative DIP
-// coordinates to the coordinate space of the screenshot taken from that window.
-// The transform returned by WindowTreeHost::GetRootTransform translates points
-// from DIP to physical screen pixels (by taking into account not only the
-// scale but also the rotation and the offset).
-// However, the screenshot bitmap is always oriented the same way as the window
-// from which it was taken, and has zero offset.
-// The code below deduces the scale from the transform by applying it to a pair
-// of points separated by the distance of 1, and measuring the distance between
-// the transformed points.
-float GetScreenshotScale(aura::Window* window) {
-  return GetScaleFactorForTransform(window->GetHost()->GetRootTransform());
 }
 
 }  // namespace
@@ -209,17 +194,7 @@ void HighlighterController::RecognizeGesture() {
     Shell::Get()->shell_state()->SetRootWindowForNewWindows(
         current_window->GetRootWindow());
 
-    // TODO(muyuanli): Delete the check when native assistant is default on.
-    // This is a temporary workaround to support both ARC-based assistant
-    // and native assistant. In ARC-based assistant, we send the rect in pixels
-    // to ARC side, where the app will crop the screenshot. In native assistant,
-    // we pass the rect directly to UI snapshot API, which assumes coordinates
-    // in DP.
-    const gfx::Rect selection_rect =
-        chromeos::switches::IsAssistantEnabled()
-            ? gfx::ToEnclosingRect(box)
-            : gfx::ToEnclosingRect(
-                  gfx::ScaleRect(box, GetScreenshotScale(current_window)));
+    const gfx::Rect selection_rect = gfx::ToEnclosingRect(box);
     for (auto& observer : observers_)
       observer.OnHighlighterSelectionRecognized(selection_rect);
 

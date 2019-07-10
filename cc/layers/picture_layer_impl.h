@@ -60,6 +60,7 @@ class CC_EXPORT PictureLayerImpl
   void ReleaseTileResources() override;
   void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
+  gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
   // PictureLayerTilingClient overrides.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
@@ -69,7 +70,7 @@ class CC_EXPORT PictureLayerImpl
       const PictureLayerTiling* tiling) const override;
   bool HasValidTilePriorities() const override;
   bool RequiresHighResToDraw() const override;
-  gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  const PaintWorkletRecordMap& GetPaintWorkletRecords() const override;
 
   // ImageAnimationController::AnimationDriver overrides.
   bool ShouldAnimate(PaintImage::Id paint_image_id) const override;
@@ -82,8 +83,6 @@ class CC_EXPORT PictureLayerImpl
     return gpu_raster_max_texture_size_;
   }
 
-  using PaintWorkletRecordMap =
-      base::flat_map<scoped_refptr<PaintWorkletInput>, sk_sp<PaintRecord>>;
   void UpdateRasterSource(
       scoped_refptr<RasterSource> raster_source,
       Region* new_invalidation,

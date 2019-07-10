@@ -15,7 +15,7 @@ component("mpris") {
 
   deps = [
     "//base",
-    "//components/dbus:dbus_thread_linux",
+    "//components/dbus/thread_linux",
     "//dbus",
   ]
 }
@@ -29,7 +29,7 @@ source_set("unit_tests") {
     ":mpris",
     "//base",
     "//base/test:test_support",
-    "//components/dbus:dbus_thread_linux",
+    "//components/dbus/thread_linux",
     "//dbus",
     "//dbus:test_support",
     "//testing/gmock",

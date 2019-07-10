@@ -1249,6 +1249,10 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 642;
     case CSSPropertyID::kSyntax:
       return 643;
+    case CSSPropertyID::kOverscrollBehaviorInline:
+      return 644;
+    case CSSPropertyID::kOverscrollBehaviorBlock:
+      return 645;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

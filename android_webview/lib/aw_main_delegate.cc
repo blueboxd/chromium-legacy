@@ -204,6 +204,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // Network service for WebView is still being evaluated. Once enabled
     // by default the following line can be deleted.
     features.DisableIfNotSet(network::features::kNetworkService);
+
+    // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
+    // WebView.
+    features.DisableIfNotSet(features::kSmsReceiver);
   }
 
   android_webview::RegisterPathProvider();

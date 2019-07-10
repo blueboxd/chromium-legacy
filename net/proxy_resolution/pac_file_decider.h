@@ -32,7 +32,6 @@ namespace net {
 
 class DhcpPacFileFetcher;
 class NetLog;
-class NetLogCaptureMode;
 class ProxyResolver;
 class PacFileFetcher;
 

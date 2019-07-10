@@ -107,10 +107,13 @@
 #if defined(OS_CHROMEOS)
 #include "crypto/nss_util_internal.h"
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/cert_verify_proc_builtin.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
 #include "services/network/cert_verify_proc_chromeos.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
+#include "services/network/system_trust_store_provider_chromeos.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -2104,7 +2107,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_CHROMEOS) || \
     BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
     cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
 #endif
@@ -2112,7 +2115,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     if (params_->username_hash.empty()) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<CertVerifyProcChromeOS>()));
+              CreateCertVerifyProcWithoutUserSlots(cert_net_fetcher_)));
     } else {
       // Make sure NSS is initialized for the user.
       crypto::InitializeNSSForChromeOSUser(params_->username_hash,
@@ -2120,8 +2123,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
       crypto::ScopedPK11Slot public_slot =
           crypto::GetPublicSlotForChromeOSUser(params_->username_hash);
-      scoped_refptr<net::CertVerifyProc> verify_proc(
-          new CertVerifyProcChromeOS(std::move(public_slot)));
+      scoped_refptr<net::CertVerifyProc> verify_proc =
+          CreateCertVerifyProcForUser(cert_net_fetcher_,
+                                      std::move(public_slot));
 
       cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
           base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
@@ -2299,6 +2303,30 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
   network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
+}
+
+scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(
+    scoped_refptr<net::CertNetFetcher> net_fetcher,
+    crypto::ScopedPK11Slot user_public_slot) {
+  if (params_->use_builtin_cert_verifier) {
+    return net::CreateCertVerifyProcBuiltin(
+        std::move(net_fetcher),
+        std::make_unique<SystemTrustStoreProviderChromeOS>(
+            std::move(user_public_slot)));
+  }
+  return base::MakeRefCounted<CertVerifyProcChromeOS>(
+      std::move(user_public_slot));
+}
+
+scoped_refptr<net::CertVerifyProc>
+NetworkContext::CreateCertVerifyProcWithoutUserSlots(
+    scoped_refptr<net::CertNetFetcher> net_fetcher) {
+  if (params_->use_builtin_cert_verifier) {
+    return net::CreateCertVerifyProcBuiltin(
+        std::move(net_fetcher),
+        std::make_unique<SystemTrustStoreProviderChromeOS>());
+  }
+  return base::MakeRefCounted<CertVerifyProcChromeOS>();
 }
 #endif
 

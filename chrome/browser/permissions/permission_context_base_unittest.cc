@@ -570,8 +570,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   // Don't call this more than once in the same test, as it persists data to
   // HostContentSettingsMap.
   void TestParallelRequests(ContentSetting response) {
-    TestPermissionContext permission_context(
-        profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    TestPermissionContext permission_context(profile(),
+                                             CONTENT_SETTINGS_TYPE_GEOLOCATION);
     GURL url("http://www.google.com");
     SetUpUrl(url);
 
@@ -611,8 +611,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                       const GURL& virtual_url,
                       const ContentSetting want_response,
                       const PermissionStatusSource& want_source) {
-    TestPermissionContext permission_context(
-        profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    TestPermissionContext permission_context(profile(),
+                                             CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
     NavigateAndCommit(loaded_url);
     web_contents()->GetController().GetVisibleEntry()->SetVirtualURL(

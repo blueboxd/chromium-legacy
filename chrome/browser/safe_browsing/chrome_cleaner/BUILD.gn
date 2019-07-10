@@ -63,6 +63,7 @@ jumbo_static_library("chrome_cleaner") {
     "//chrome/installer/util:with_no_strings",
     "//components/chrome_cleaner/public/constants",
     "//components/chrome_cleaner/public/interfaces",
+    "//components/chrome_cleaner/public/proto",
     "//components/component_updater",
     "//components/crx_file",
     "//components/pref_registry",
@@ -70,5 +71,6 @@ jumbo_static_library("chrome_cleaner") {
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//content/public/browser",
     "//extensions/browser",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }

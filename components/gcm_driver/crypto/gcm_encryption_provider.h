@@ -38,8 +38,7 @@ class GCMEncryptionProvider {
  public:
   // Callback to be invoked when the public key and auth secret are available.
   using EncryptionInfoCallback =
-      base::OnceCallback<void(const std::string& p256dh,
-                              const std::string& auth_secret)>;
+      base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
 
   // Callback to be invoked when a message may have been decrypted, as indicated
   // by the |result|. The |message| contains the dispatchable message in success

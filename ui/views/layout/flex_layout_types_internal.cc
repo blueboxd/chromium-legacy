@@ -142,6 +142,10 @@ void NormalizedSizeBounds::Expand(int main, int cross) {
     cross_ = std::max(0, *cross_ + cross);
 }
 
+void NormalizedSizeBounds::Inset(const NormalizedInsets& insets) {
+  Expand(-insets.main_size(), -insets.cross_size());
+}
+
 bool NormalizedSizeBounds::operator==(const NormalizedSizeBounds& other) const {
   return main_ == other.main_ && cross_ == other.cross_;
 }

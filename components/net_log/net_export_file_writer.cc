@@ -86,7 +86,7 @@ NetExportFileWriter::NetExportFileWriter()
     : state_(STATE_UNINITIALIZED),
       log_exists_(false),
       log_capture_mode_known_(false),
-      log_capture_mode_(net::NetLogCaptureMode::Default()),
+      log_capture_mode_(net::NetLogCaptureMode::kDefault),
       default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
       weak_ptr_factory_(this) {}
 
@@ -294,11 +294,11 @@ void NetExportFileWriter::GetFilePathToCompletedLog(
 
 std::string NetExportFileWriter::CaptureModeToString(
     net::NetLogCaptureMode capture_mode) {
-  if (capture_mode == net::NetLogCaptureMode::Default())
+  if (capture_mode == net::NetLogCaptureMode::kDefault)
     return "STRIP_PRIVATE_DATA";
-  if (capture_mode == net::NetLogCaptureMode::IncludeCookiesAndCredentials())
+  if (capture_mode == net::NetLogCaptureMode::kIncludeSensitive)
     return "NORMAL";
-  if (capture_mode == net::NetLogCaptureMode::IncludeSocketBytes())
+  if (capture_mode == net::NetLogCaptureMode::kEverything)
     return "LOG_BYTES";
   NOTREACHED();
   return "STRIP_PRIVATE_DATA";
@@ -307,13 +307,13 @@ std::string NetExportFileWriter::CaptureModeToString(
 net::NetLogCaptureMode NetExportFileWriter::CaptureModeFromString(
     const std::string& capture_mode_string) {
   if (capture_mode_string == "STRIP_PRIVATE_DATA")
-    return net::NetLogCaptureMode::Default();
+    return net::NetLogCaptureMode::kDefault;
   if (capture_mode_string == "NORMAL")
-    return net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+    return net::NetLogCaptureMode::kIncludeSensitive;
   if (capture_mode_string == "LOG_BYTES")
-    return net::NetLogCaptureMode::IncludeSocketBytes();
+    return net::NetLogCaptureMode::kEverything;
   NOTREACHED();
-  return net::NetLogCaptureMode::Default();
+  return net::NetLogCaptureMode::kDefault;
 }
 
 void NetExportFileWriter::SetDefaultLogBaseDirectoryGetterForTest(

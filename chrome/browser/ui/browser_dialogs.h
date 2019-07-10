@@ -313,4 +313,13 @@ void ShowNativeFileSystemPermissionDialog(
     base::OnceCallback<void(PermissionAction result)> callback,
     content::WebContents* web_contents);
 
+// Displays a dialog to inform the user that the directory |path| they picked
+// using the native file system API is blocked by chrome.
+// |callback| is called when the user has dismissed the dialog.
+void ShowNativeFileSystemRestrictedDirectoryDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceClosure callback,
+    content::WebContents* web_contents);
+
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

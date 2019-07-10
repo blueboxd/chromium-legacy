@@ -21,6 +21,7 @@
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_instrument.h"

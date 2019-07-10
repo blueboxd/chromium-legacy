@@ -177,7 +177,9 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
       withHostedDomain:(NSString*)hostedDomain
         toBrowserState:(ios::ChromeBrowserState*)browserState {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignIn(identity, base::SysNSStringToUTF8(hostedDomain));
+      ->SignIn(identity, [hostedDomain length] > 0
+                             ? base::SysNSStringToUTF8(hostedDomain)
+                             : kNoHostedDomainFound);
 }
 
 - (void)signOutBrowserState:(ios::ChromeBrowserState*)browserState {

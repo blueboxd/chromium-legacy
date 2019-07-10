@@ -208,6 +208,8 @@ jumbo_component("network_service") {
       "cert_verify_proc_chromeos.h",
       "nss_temp_certs_cache_chromeos.cc",
       "nss_temp_certs_cache_chromeos.h",
+      "system_trust_store_provider_chromeos.cc",
+      "system_trust_store_provider_chromeos.h",
     ]
   }
 

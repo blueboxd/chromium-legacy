@@ -18,7 +18,6 @@
 
 namespace net {
 
-class NetLogCaptureMode;
 struct NetLogSource;
 
 // TestNetLog is NetLog subclass which records all NetLog events that occur and

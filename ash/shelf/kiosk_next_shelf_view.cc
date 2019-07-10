@@ -134,7 +134,7 @@ void KioskNextShelfView::Init() {
 void KioskNextShelfView::CalculateIdealBounds() {
   DCHECK(shelf()->IsHorizontalAlignment());
   DCHECK_EQ(0, model()->item_count());
-  DCHECK_GE(kShelfSize, kKioskNextShelfControlHeightDp);
+  DCHECK_GE(ShelfConstants::shelf_size(), kKioskNextShelfControlHeightDp);
 
   // TODO(https://crbug.com/965690): Button spacing might be relative to shelf
   // width. Reevaluate this piece once visual spec is available.
@@ -146,7 +146,7 @@ void KioskNextShelfView::CalculateIdealBounds() {
       shelf_widget()->GetWindowBoundsInScreen().width();
   int x = total_shelf_width / 2 - kKioskNextShelfControlWidthDp -
           control_buttons_spacing / 2;
-  int y = (kShelfSize - kKioskNextShelfControlHeightDp) / 2;
+  int y = (ShelfConstants::shelf_size() - kKioskNextShelfControlHeightDp) / 2;
 
   GetBackButton()->set_ideal_bounds(gfx::Rect(
       x, y, kKioskNextShelfControlWidthDp, kKioskNextShelfControlHeightDp));

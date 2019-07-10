@@ -76,6 +76,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/disks:test_support",
+    "//components/account_id",
     "//components/drive",
     "//components/invalidation/impl:test_support",
     "//mojo/public/cpp/bindings",

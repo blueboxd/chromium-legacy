@@ -17,7 +17,7 @@
 <dom-module id="settings-kerberos-accounts">
   <template>
     <style include="settings-shared iron-flex iron-flex-alignment">
-      .profile-icon {
+      .account-icon {
         background: center / cover no-repeat;
         border-radius: 20px;
         flex-shrink: 0;
@@ -34,7 +34,8 @@
         padding-bottom: 1em;
       }
 
-      .account-policy-indicator {
+      .account-toolbar,
+      #remove-account-policy-indicator {
         margin-inline-start: 1em;
       }
 
@@ -48,6 +49,11 @@
         height: 24px;
         margin-inline-end: 0.5em;
         width: 24px;
+      }
+
+      #remove-account-container {
+        align-items: center;
+        display: flex;
       }
 
       .error-badge {
@@ -66,7 +72,13 @@
       }
     </style>
 
-    <div class="settings-box first">$i18n{kerberosAccountsDescription}</div>
+    <div class="settings-box first">
+      <h2 class="first">
+        <!-- Inner div needed to get spacing right in front of 'Learn more'. -->
+        <div inner-h-t-m-l="[[i18nAdvanced('kerberosAccountsDescription')]]">
+        </div>
+      </h2>
+    </div>
 
     <div class="settings-box first">
       <div id="account-list-header" class="flex">
@@ -88,7 +100,7 @@
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
         <div class="settings-box account-list-item">
 
-          <div class="profile-icon"
+          <div class="account-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
             <img class="error-badge" hidden$="[[item.isSignedIn]]"
                 src="chrome://resources/images/error_badge.svg">
@@ -98,22 +110,29 @@
             <div class="flex text-elide">
               <span>[[item.principalName]]</span>
 
-              <div class="secondary" hidden$="[[!item.isSignedIn]]">
-                $i18n{kerberosAccountsSignedIn}[[getActiveLabel_(item.isActive)]]
+              <div class="secondary signed-in" hidden$="[[!item.isSignedIn]]">
+                [[i18n('kerberosAccountsSignedIn', item.validForDuration)]]
               </div>
-              <div class="secondary warning" hidden$="[[item.isSignedIn]]">
-                $i18n{kerberosAccountsSignedOut}[[getActiveLabel_(item.isActive)]]
+              <div class="secondary warning signed-out"
+                  hidden$="[[item.isSignedIn]]">
+                $i18n{kerberosAccountsSignedOut}
               </div>
             </div>
           </div>
 
-          <cr-button class="reauth-button" hidden$="[[item.isSignedIn]]"
+          <div class="secondary account-toolbar active-indicator"
+              hidden$="[[!item.isActive]]">
+            $i18n{kerberosAccountsTicketActive}
+          </div>
+
+          <cr-button class="account-toolbar reauth-button"
+              hidden$="[[item.isSignedIn]]"
               on-click="onReauthenticationClick_">
             $i18n{kerberosAccountsReauthenticationLabel}
           </cr-button>
 
           <template is="dom-if" if="[[item.isManaged]]">
-            <cr-policy-indicator class="account-policy-indicator"
+            <cr-policy-indicator class="account-toolbar account-policy-indicator"
                 indicator-type="userPolicy">
             </cr-policy-indicator>
           </template>
@@ -137,10 +156,24 @@
         </button>
         <button class="dropdown-item" on-click="onRemoveAccountClick_"
             disabled="[[selectedAccount_.isManaged]]">
-          $i18n{kerberosAccountsRemoveAccountLabel}
+          <div id="remove-account-container">
+            $i18n{kerberosAccountsRemoveAccountLabel}
+            <template is="dom-if" if="[[selectedAccount_.isManaged]]">
+              <cr-policy-indicator id="remove-account-policy-indicator"
+                  indicator-type="userPolicy">
+              </cr-policy-indicator>
+            </template>
+          </div>
         </button>
       </cr-action-menu>
     </div>
+
+    <cr-toast id="account-removed-toast" duration="3000">
+      <!-- Gets displayed with black font without div and id :-/ -->
+      <div id="account-removed-toast-label">
+        $i18n{kerberosAccountsAccountRemovedTip}
+      </div>
+    </cr-toast>
 
     <template is="dom-if" if="[[showAddAccountDialog_]]" restamp>
       <kerberos-add-account-dialog preset-account="[[selectedAccount_]]"

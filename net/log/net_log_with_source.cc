@@ -28,7 +28,7 @@ base::Value BytesTransferredCallback(int byte_count,
                                      NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetInteger("byte_count", byte_count);
-  if (capture_mode.include_socket_bytes() && byte_count > 0)
+  if (NetLogCaptureIncludesSocketBytes(capture_mode) && byte_count > 0)
     dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   return std::move(dict);
 }

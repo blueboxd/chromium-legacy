@@ -153,8 +153,7 @@ class GCMDriverTest : public testing::Test {
   void RegisterCompleted(const std::string& registration_id,
                          GCMClient::Result result);
   void SendCompleted(const std::string& message_id, GCMClient::Result result);
-  void GetEncryptionInfoCompleted(const std::string& p256dh,
-                                  const std::string& auth_secret);
+  void GetEncryptionInfoCompleted(std::string p256dh, std::string auth_secret);
   void UnregisterCompleted(GCMClient::Result result);
 
   const base::Closure& async_operation_completed_callback() const {
@@ -311,8 +310,8 @@ void GCMDriverTest::GetEncryptionInfo(const std::string& app_id,
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->GetEncryptionInfo(
-      app_id, base::Bind(&GCMDriverTest::GetEncryptionInfoCompleted,
-                         base::Unretained(this)));
+      app_id, base::BindOnce(&GCMDriverTest::GetEncryptionInfoCompleted,
+                             base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -350,10 +349,10 @@ void GCMDriverTest::SendCompleted(const std::string& message_id,
     async_operation_completed_callback_.Run();
 }
 
-void GCMDriverTest::GetEncryptionInfoCompleted(const std::string& p256dh,
-                                               const std::string& auth_secret) {
-  p256dh_ = p256dh;
-  auth_secret_ = auth_secret;
+void GCMDriverTest::GetEncryptionInfoCompleted(std::string p256dh,
+                                               std::string auth_secret) {
+  p256dh_ = std::move(p256dh);
+  auth_secret_ = std::move(auth_secret);
   if (!async_operation_completed_callback_.is_null())
     async_operation_completed_callback_.Run();
 }

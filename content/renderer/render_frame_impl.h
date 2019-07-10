@@ -1237,8 +1237,13 @@ class CONTENT_EXPORT RenderFrameImpl
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info,
                                bool is_history_navigation_in_new_child_frame);
 
-  // Commit a navigation that isn't handled by the browser (e.g., an empty
-  // document, about:srcdoc or an MHTML archive).
+  // Used to load the initial empty document. This one is special, since it
+  // isn't the result of a navigation.
+  //
+  // TODO(arthursonzogni): This function is also used for renderer initiated
+  // navigations to about:blank pages. The browser initiated ones uses the
+  // normal code path in the browser process. Stop maintaining two code path by
+  // removing this one.
   void CommitSyncNavigation(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Commit navigation with |navigation_params| prepared.
@@ -1753,9 +1758,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
-  // Used by renderer initiated navigations not driven by the browser process:
-  // - navigation to about:blank.
-  // - navigation to about:srcdoc.
+  // Used by renderer initiated navigations to about:blank pages. This edge case
+  // doesn't use yet the normal code path in the browser process.
   // TODO(arthursonzogni): Remove this. Everything should use the default code
   // path and be driven by the browser process.
   base::CancelableOnceCallback<void()> sync_navigation_callback_;

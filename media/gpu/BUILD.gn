@@ -112,6 +112,8 @@ component("gpu") {
       "android/codec_wrapper.h",
       "android/device_info.cc",
       "android/device_info.h",
+      "android/direct_shared_image_video_provider.cc",
+      "android/direct_shared_image_video_provider.h",
       "android/image_reader_gl_owner.cc",
       "android/image_reader_gl_owner.h",
       "android/maybe_render_early_manager.cc",
@@ -191,6 +193,8 @@ component("gpu") {
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
+      "windows/supported_profile_helpers.cc",
+      "windows/supported_profile_helpers.h",
     ]
     configs += [
       # TODO(https://crbug.com/167187): Fix size_t to int truncations.

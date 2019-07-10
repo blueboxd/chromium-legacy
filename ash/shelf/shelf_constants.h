@@ -116,6 +116,9 @@ class ShelfConstants {
   // Size of the icons within shelf buttons.
   static int button_icon_size() { return kShelfButtonIconSize; }
 
+  // Size for controls like the home button, back button, etc.
+  static int control_size() { return kShelfControlSize; }
+
   // The radius of shelf control buttons.
   static int control_border_radius() { return kShelfControlSize / 2; }
 

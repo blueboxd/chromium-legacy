@@ -201,9 +201,9 @@ void AppendStyleInfo(Node* node,
                      const InspectorHighlightContrastInfo& node_contrast) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
-  CSSStyleDeclaration* style =
+  CSSComputedStyleDeclaration* style =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
-  Vector<AtomicString> properties;
+  Vector<CSSPropertyID> properties;
 
   // For text nodes, we can show color & font properties.
   bool has_text_children = false;
@@ -212,25 +212,26 @@ void AppendStyleInfo(Node* node,
     has_text_children = child->IsTextNode();
   }
   if (has_text_children) {
-    properties.push_back("color");
-    properties.push_back("font-family");
-    properties.push_back("font-size");
-    properties.push_back("line-height");
+    properties.push_back(CSSPropertyID::kColor);
+    properties.push_back(CSSPropertyID::kFontFamily);
+    properties.push_back(CSSPropertyID::kFontSize);
+    properties.push_back(CSSPropertyID::kLineHeight);
   }
 
-  properties.push_back("padding");
-  properties.push_back("margin");
-  properties.push_back("background-color");
+  properties.push_back(CSSPropertyID::kPadding);
+  properties.push_back(CSSPropertyID::kMargin);
+  properties.push_back(CSSPropertyID::kBackgroundColor);
 
   for (size_t i = 0; i < properties.size(); ++i) {
-    const CSSValue* value = style->GetPropertyCSSValueInternal(properties[i]);
+    const CSSValue* value = style->GetPropertyCSSValue(properties[i]);
     if (!value)
       continue;
+    AtomicString name = CSSPropertyName(properties[i]).ToAtomicString();
     if (value->IsColorValue()) {
       Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      computed_style->setString(properties[i], ToHEXA(color));
+      computed_style->setString(name, ToHEXA(color));
     } else {
-      computed_style->setString(properties[i], value->CssText());
+      computed_style->setString(name, value->CssText());
     }
   }
   element_info->setValue("style", std::move(computed_style));
@@ -479,11 +480,11 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   if (!layout_object)
     return;
 
-  CSSStyleDeclaration* style =
+  CSSComputedStyleDeclaration* style =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   for (size_t i = 0; i < style->length(); ++i) {
     AtomicString name(style->item(i));
-    const CSSValue* value = style->GetPropertyCSSValueInternal(name);
+    const CSSValue* value = style->GetPropertyCSSValue(cssPropertyID(name));
     if (!value)
       continue;
     if (value->IsColorValue()) {

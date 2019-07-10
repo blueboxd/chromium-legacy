@@ -21,7 +21,6 @@
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hint_update_data.h"
-#include "components/previews/content/previews_hints_util.h"
 #include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_features.h"
 #include "testing/gtest/include/gtest/gtest.h"

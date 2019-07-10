@@ -52,6 +52,9 @@ class XMLHttpRequest;
 class XMLHttpRequestProgressEventThrottle final
     : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>,
       public TimerBase {
+  // Need to promptly stop this timer when it is deemed finalizable.
+  USING_PRE_FINALIZER(XMLHttpRequestProgressEventThrottle, Stop);
+
  public:
   explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
   ~XMLHttpRequestProgressEventThrottle() override;
@@ -80,8 +83,6 @@ class XMLHttpRequestProgressEventThrottle final
   // depending on the value of the ProgressEventAction argument.
   void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
-  // Need to promptly stop this timer when it is deemed finalizable.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*);
 
  private:

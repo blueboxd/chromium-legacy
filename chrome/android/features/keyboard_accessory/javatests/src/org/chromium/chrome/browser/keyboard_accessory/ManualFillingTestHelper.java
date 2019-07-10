@@ -12,6 +12,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.autofill.mojom.FocusedFieldType.FILLABLE_NON_SEARCH_FIELD;
+import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
@@ -141,6 +142,20 @@ public class ManualFillingTestHelper {
                 .getManualFillingComponent();
     }
 
+    public RecyclerView getAccessoryBarView() {
+        final ViewGroup keyboardAccessory = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
+        assert keyboardAccessory != null;
+        return (RecyclerView) keyboardAccessory.findViewById(R.id.bar_items_view);
+    }
+
+    public View getFirstAccessorySuggestion() {
+        ViewGroup recyclerView = getAccessoryBarView();
+        assert recyclerView != null;
+        View view = recyclerView.getChildAt(0);
+        return isKeyboardAccessoryTabLayout().matches(view) ? null : view;
+    }
+
     public void focusPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -222,6 +237,10 @@ public class ManualFillingTestHelper {
     }
 
     public void waitForKeyboardAccessoryToBeShown() {
+        waitForKeyboardAccessoryToBeShown(false);
+    }
+
+    public void waitForKeyboardAccessoryToBeShown(boolean waitForSuggestionsToLoad) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             KeyboardAccessoryCoordinator accessory =
                     getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
@@ -231,6 +250,11 @@ public class ManualFillingTestHelper {
             View accessory = mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
             return accessory != null && accessory.isShown();
         });
+        if (waitForSuggestionsToLoad) {
+            CriteriaHelper.pollUiThread(()
+                                                -> getFirstAccessorySuggestion() != null,
+                    "Waited for suggestions that never appeared.");
+        }
     }
 
     public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput) {

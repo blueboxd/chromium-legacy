@@ -581,8 +581,9 @@ void PlatformNotificationContextImpl::DoReDisplayNotifications(
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
     DestroyDatabase();
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), display_count));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(std::move(callback), display_count));
 }
 
 void PlatformNotificationContextImpl::ReadNotificationResources(

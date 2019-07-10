@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
 #include <memory>
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -202,9 +203,39 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   EXPECT_TRUE(generator->HasAlpha());
 }
 
-TEST_F(PaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
+class MainOrOffThreadPaintWorkletTest
+    : public PageTestBase,
+      public ::testing::WithParamInterface<bool>,
+      private ScopedOffMainThreadCSSPaintForTest {
+ public:
+  MainOrOffThreadPaintWorkletTest()
+      : ScopedOffMainThreadCSSPaintForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(, MainOrOffThreadPaintWorkletTest, ::testing::Bool());
+
+class MockObserver final : public CSSPaintImageGenerator::Observer {
+ public:
+  MOCK_METHOD0(PaintImageGeneratorReady, void());
+};
+
+TEST_P(MainOrOffThreadPaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
   PaintWorklet* paint_worklet_to_test =
       PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+
+  MockObserver* observer = MakeGarbageCollected<MockObserver>();
+  CSSPaintImageGeneratorImpl* generator_foo =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "foo");
+  paint_worklet_to_test->AddPendingGenerator("foo", generator_foo);
+  CSSPaintImageGeneratorImpl* generator_bar =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "bar");
+  paint_worklet_to_test->AddPendingGenerator("bar", generator_bar);
+
+  // The generator should not fire unless it is the second registration
+  // for the main thread case
+  EXPECT_CALL(*observer, PaintImageGeneratorReady).Times(0);
 
   Vector<Persistent<PaintWorkletGlobalScope>> global_scopes;
   for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; ++i) {
@@ -247,6 +278,12 @@ TEST_F(PaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
   EXPECT_TRUE(global_scopes[0]->FindDefinition("bar"));
   EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
 
+  // When running in main-thread mode, the generator is now ready after this
+  // call. For off-thread, we are still waiting on the cross-thread
+  // registration.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    EXPECT_CALL(*observer, PaintImageGeneratorReady).Times(1);
+
   global_scopes[1]->ScriptController()->Evaluate(
       ScriptSourceCode(bar), SanitizeScriptErrors::kDoNotSanitize);
 
@@ -254,8 +291,31 @@ TEST_F(PaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
 }
 
 TEST_F(PaintWorkletTest, ConsistentGlobalScopeCrossThread) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   PaintWorklet* paint_worklet_to_test =
       PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+
+  MockObserver* observer = MakeGarbageCollected<MockObserver>();
+  CSSPaintImageGeneratorImpl* generator_foo =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "foo");
+  paint_worklet_to_test->AddPendingGenerator("foo", generator_foo);
+  CSSPaintImageGeneratorImpl* generator_bar =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "bar");
+  paint_worklet_to_test->AddPendingGenerator("bar", generator_bar);
+  CSSPaintImageGeneratorImpl* generator_loo =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "loo");
+  paint_worklet_to_test->AddPendingGenerator("loo", generator_loo);
+  CSSPaintImageGeneratorImpl* generator_gar =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "gar");
+  paint_worklet_to_test->AddPendingGenerator("gar", generator_gar);
+
+  // None of the situations covered in this test should cause the generator to
+  // fire.
+  EXPECT_CALL(*observer, PaintImageGeneratorReady).Times(0);
 
   Vector<Persistent<PaintWorkletGlobalScope>> global_scopes;
   for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; ++i) {
@@ -399,18 +459,63 @@ TEST_F(PaintWorkletTest, ConsistentGlobalScopeCrossThread) {
   EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("gar"));
 }
 
-class OffThreadPaintWorkletTest : public PageTestBase,
-                                  public ::testing::WithParamInterface<bool> {
- public:
-  OffThreadPaintWorkletTest() : off_main_thread_css_paint_(GetParam()) {}
+TEST_F(PaintWorkletTest, GeneratorNotifiedAfterAllRegistrations) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+  PaintWorklet* paint_worklet_to_test =
+      PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
 
- private:
-  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint_;
-};
+  MockObserver* observer = MakeGarbageCollected<MockObserver>();
+  CSSPaintImageGeneratorImpl* generator =
+      MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+          observer, paint_worklet_to_test, "foo");
+  paint_worklet_to_test->AddPendingGenerator("foo", generator);
 
-INSTANTIATE_TEST_SUITE_P(, OffThreadPaintWorkletTest, ::testing::Bool());
+  // The generator should not fire until the cross thread check
+  EXPECT_CALL(*observer, PaintImageGeneratorReady).Times(0);
 
-TEST_P(OffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
+  Vector<Persistent<PaintWorkletGlobalScope>> global_scopes;
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; ++i) {
+    paint_worklet_to_test->AddGlobalScopeForTesting();
+    global_scopes.push_back(
+        PaintWorkletGlobalScopeProxy::From(
+            paint_worklet_to_test->GetGlobalScopesForTesting()[i])
+            ->global_scope());
+  }
+
+  String foo = R"JS(registerPaint('foo', class {
+        static get inputProperties() { return ['--foo']; }
+        paint() {}
+      });)JS";
+
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("foo"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  CSSPaintDefinition* definition = global_scopes[0]->FindDefinition("foo");
+  Vector<String> custom_properties;
+  for (const auto& s : definition->CustomInvalidationProperties()) {
+    custom_properties.push_back(s);
+  }
+
+  // The cross thread check should cause the generator to fire
+  EXPECT_CALL(*observer, PaintImageGeneratorReady).Times(1);
+
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "foo", definition->NativeInvalidationProperties(), custom_properties,
+      definition->InputArgumentTypes(),
+      definition->GetPaintRenderingContext2DSettings()->alpha());
+
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+}
+
+TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
   PaintWorklet* paint_worklet_to_test =
       MakeGarbageCollected<PaintWorklet>(&GetFrame());
 

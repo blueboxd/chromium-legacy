@@ -734,7 +734,7 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
   base::File log_file(log_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   network_service_->StartNetLog(
-      std::move(log_file), net::NetLogCaptureMode::Default(), std::move(dict));
+      std::move(log_file), net::NetLogCaptureMode::kDefault, std::move(dict));
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);

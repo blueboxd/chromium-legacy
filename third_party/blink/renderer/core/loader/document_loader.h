@@ -282,6 +282,10 @@ class CORE_EXPORT DocumentLoader
 
   void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
 
+  WebURLRequest::PreviewsState previews_state() const {
+    return previews_state_;
+  }
+
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
 

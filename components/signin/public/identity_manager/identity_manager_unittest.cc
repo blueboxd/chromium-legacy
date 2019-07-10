@@ -1291,29 +1291,6 @@ TEST_F(IdentityManagerTest, DeprecatedLoadCredentialsForSupervisedUser) {
 #endif
 
 #if defined(OS_IOS)
-TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
-  ASSERT_FALSE(
-      identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(kTestEmail2)
-          .has_value());
-  ASSERT_FALSE(
-      identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByGaiaId(kTestGaiaId2)
-          .has_value());
-
-  AccountInfo input_info;
-  input_info.email = kTestEmail2;
-  input_info.gaia = kTestGaiaId2;
-  const std::string account_id =
-      identity_manager()->LegacySeedAccountInfo(input_info);
-
-  AccountInfo account_info = account_tracker()->GetAccountInfo(account_id);
-
-  EXPECT_EQ(account_info.account_id, account_id);
-  EXPECT_EQ(account_info.email, kTestEmail2);
-  EXPECT_EQ(account_info.gaia, kTestGaiaId2);
-}
-
 TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(

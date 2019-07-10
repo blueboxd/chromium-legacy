@@ -315,15 +315,6 @@ public class ItemChooserDialog implements DeviceItemAdapter.Observer {
     }
 
     /**
-     * Sets whether the item is enabled.
-     * @param key Unique indetifier for the item.
-     * @param enabled Whether the item should be enabled or not.
-     */
-    public void setEnabled(String key, boolean enabled) {
-        mItemAdapter.setEnabled(key, enabled);
-    }
-
-    /**
      * Indicates the adapter is being initialized.
      */
     public void signalInitializingAdapter() {

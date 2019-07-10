@@ -148,7 +148,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void GetPrimaryAccountInfoCallback(
-      const base::Optional<CoreAccountInfo>& account_info,
+      const base::Optional<CoreAccountId>& account_id,
+      const base::Optional<std::string>& gaia,
+      const base::Optional<std::string>& email,
       const identity::AccountState& account_state);
 
   void GetAccessTokenCallback(const base::Optional<std::string>& token,

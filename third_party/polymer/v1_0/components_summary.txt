@@ -172,12 +172,6 @@ Tree: v2.1.0
 Revision: ddde7f8cf41078b7a7b724473558421d6bc37f57
 Tree link: https://github.com/PolymerElements/paper-behaviors/tree/v2.1.0
 
-Name: paper-button
-Repository: https://github.com/PolymerElements/paper-button.git
-Tree: v2.0.0
-Revision: b37655b85e1c3364ce9f5ca0470ddf1071cca3aa
-Tree link: https://github.com/PolymerElements/paper-button/tree/v2.0.0
-
 Name: paper-input
 Repository: https://github.com/PolymerElements/paper-input.git
 Tree: v2.2.2

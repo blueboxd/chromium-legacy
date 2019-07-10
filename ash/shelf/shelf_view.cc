@@ -1176,7 +1176,8 @@ void ShelfView::LayoutOverflowButton() const {
   int x = 0;
   int y = 0;
   if (last_visible_index_ != -1) {
-    const int offset = (kShelfButtonSize - kShelfControlSize) / 2;
+    const int offset =
+        (ShelfConstants::button_size() - ShelfConstants::control_size()) / 2;
     x = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).right(),
         offset + view_model_->ideal_bounds(last_visible_index_).x());
@@ -1194,8 +1195,8 @@ void ShelfView::LayoutOverflowButton() const {
     y = shelf_->PrimaryAxisValue(y, y + extra_space_before_overflow);
   }
 
-  overflow_button_->SetBoundsRect(
-      gfx::Rect(x, y, kShelfControlSize, kShelfControlSize));
+  overflow_button_->SetBoundsRect(gfx::Rect(
+      x, y, ShelfConstants::control_size(), ShelfConstants::control_size()));
 }
 
 void ShelfView::AnimateToIdealBounds() {

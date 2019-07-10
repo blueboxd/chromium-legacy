@@ -2667,6 +2667,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "password-editing-android",
+    "owners": [ "izuzic", "fhorschig" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "passwords-keyboard-accessory",
     "owners": [ "fhorschig" ],
     "expiry_milestone": 76

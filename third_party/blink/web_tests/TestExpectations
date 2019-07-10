@@ -143,10 +143,6 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 
-# Fails due to flaws in the SPv1 architecture. Can be fixed with composite-after-paint.
-crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
 ########## Ref tests can't be rebaselined ##########
@@ -240,9 +236,7 @@ crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-ev
 crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
 
 # Tests not yet passing with Blink FractionalScrollOffsets enabled.
-crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
-crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
@@ -1043,7 +1037,7 @@ crbug.com/591099 [ Mac10.13 ] fast/dynamic/012.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/insert-before-table-part-in-continuation.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/noninlinebadness.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+#crbug.com/591099 [ Mac ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/basic-inputs.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/button/button-inner-block-reuse.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/formmove2.html [ Failure ]
@@ -1331,10 +1325,15 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/image-map-anchor-
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflowing-circle-focus-ring.html [ Failure ]
-crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+#crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
-crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+#crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+
+# A few other lines for this test are commented out above to avoid conflicting expectations.
+# If they are not also fixed, reinstate them when removing these lines.
+crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
+crbug.com/982211 virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
@@ -2640,7 +2639,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar.html [ Skip
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
@@ -2658,7 +2656,6 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
@@ -2676,7 +2673,6 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
@@ -3216,12 +3212,6 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
@@ -3390,10 +3380,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/request/request-headers.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-https/iframe-tag/no-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/request/request-bad-port.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-002.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ Failure ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/script-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/script-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
@@ -4549,6 +4535,8 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/background-image-tiled.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/geometry-background-image-tiled-001.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
+
+crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
 # Shared memory growth temporarily disabled.
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]

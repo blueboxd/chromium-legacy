@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.autofill;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
 
@@ -27,9 +28,10 @@ public class AutofillProfileEditorPreference extends Preference {
     private AutofillAddress mAutofillAddress;
     private String mGUID;
 
+    // TODO(crbug.com/982338): Remove Activity usage for Support Library migration.
     public AutofillProfileEditorPreference(
-            Activity activity, EditorObserverForTest observerForTest) {
-        super(activity);
+            Activity activity, Context styledContext, EditorObserverForTest observerForTest) {
+        super(styledContext);
         mActivity = activity;
         mObserverForTest = observerForTest;
     }

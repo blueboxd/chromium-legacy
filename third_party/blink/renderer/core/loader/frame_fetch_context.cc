@@ -323,6 +323,10 @@ FrameFetchContext::GetPreviewsResourceLoadingHints() const {
   return document_loader->GetPreviewsResourceLoadingHints();
 }
 
+WebURLRequest::PreviewsState FrameFetchContext::previews_state() const {
+  return GetLocalFrameClient()->GetPreviewsStateForFrame();
+}
+
 LocalFrame* FrameFetchContext::GetFrame() const {
   return &frame_or_imported_document_->GetFrame();
 }

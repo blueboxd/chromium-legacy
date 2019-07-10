@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/google/core/common/google_util.h"
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -12,19 +13,15 @@
 
 using google_util::IsGoogleDomainUrl;
 
-
 // Helpers --------------------------------------------------------------------
 
 namespace {
 
-const std::string kValidSearchSchemes[] = {
-  "http",
-  "https"
-};
+const std::string kValidSearchSchemes[] = {"http", "https"};
 
 const std::string kValidSearchQueryParams[] = {
-  "q",
-  "as_q"  // Advanced search uses "as_q" instead of "q" as the query param.
+    "q",
+    "as_q"  // Advanced search uses "as_q" instead of "q" as the query param.
 };
 
 // These functions merely provide brevity in the callers.
@@ -42,7 +39,6 @@ bool StartsWithBaseURL(const std::string& url) {
 }
 
 }  // namespace
-
 
 // Actual tests ---------------------------------------------------------------
 
@@ -174,7 +170,8 @@ TEST(GoogleUtilTest, GoodSearches) {
       "%s://ipv6.google.com?name=bob#age=24&%s=something",
 
       // Trailing dots in the hosts.
-      "%s://www.google.com./#%s=something", "%s://www.google.de./#%s=something",
+      "%s://www.google.com./#%s=something",
+      "%s://www.google.de./#%s=something",
       "%s://ipv4.google.com./#%s=something",
       "%s://ipv6.google.com./#%s=something",
   };
@@ -182,8 +179,7 @@ TEST(GoogleUtilTest, GoodSearches) {
   for (const std::string& pattern : patterns) {
     for (const std::string& scheme : kValidSearchSchemes) {
       for (const std::string& query_param : kValidSearchQueryParams) {
-        EXPECT_TRUE(IsSearch(base::StringPrintf(pattern.c_str(),
-                                                scheme.c_str(),
+        EXPECT_TRUE(IsSearch(base::StringPrintf(pattern.c_str(), scheme.c_str(),
                                                 query_param.c_str())));
       }
     }
@@ -203,45 +199,39 @@ TEST(GoogleUtilTest, BadSearches) {
   // Empty URL is invalid.
   EXPECT_FALSE(IsSearch(std::string()));
 
-  const std::string patterns[] = {
-    "%s://google.com",
-    "%s://www.google.com",
-    "%s://www.google.com/search",
-    "%s://www.google.com/search?"
-  };
+  const std::string patterns[] = {"%s://google.com", "%s://www.google.com",
+                                  "%s://www.google.com/search",
+                                  "%s://www.google.com/search?"};
 
   for (const std::string& pattern : patterns) {
     for (const std::string& scheme : kValidSearchSchemes) {
-      EXPECT_FALSE(IsSearch(base::StringPrintf(pattern.c_str(),
-                                               scheme.c_str())));
+      EXPECT_FALSE(
+          IsSearch(base::StringPrintf(pattern.c_str(), scheme.c_str())));
     }
   }
 
   const std::string patterns_q[] = {
-    // Home page searches without a hash fragment query parameter are invalid.
-    "%s://www.google.com/webhp?%s=something",
-    "%s://www.google.com/webhp?%s=something#no=good",
-    "%s://www.google.com/webhp?name=bob&%s=something",
-    "%s://www.google.com/?%s=something",
-    "%s://www.google.com?%s=something",
+      // Home page searches without a hash fragment query parameter are invalid.
+      "%s://www.google.com/webhp?%s=something",
+      "%s://www.google.com/webhp?%s=something#no=good",
+      "%s://www.google.com/webhp?name=bob&%s=something",
+      "%s://www.google.com/?%s=something", "%s://www.google.com?%s=something",
 
-    // Some paths are outright invalid as searches.
-    "%s://www.google.com/notreal?%s=something",
-    "%s://www.google.com/chrome?%s=something",
-    "%s://www.google.com/search/nogood?%s=something",
-    "%s://www.google.com/webhp/nogood#%s=something",
+      // Some paths are outright invalid as searches.
+      "%s://www.google.com/notreal?%s=something",
+      "%s://www.google.com/chrome?%s=something",
+      "%s://www.google.com/search/nogood?%s=something",
+      "%s://www.google.com/webhp/nogood#%s=something",
 
-    // Case sensitive paths.
-    "%s://www.google.com/SEARCH?%s=something",
-    "%s://www.google.com/WEBHP#%s=something"
-  };
+      // Case sensitive paths.
+      "%s://www.google.com/SEARCH?%s=something",
+      "%s://www.google.com/WEBHP#%s=something"};
 
   for (const std::string& pattern : patterns_q) {
     for (const std::string& scheme : kValidSearchSchemes) {
       for (const std::string& query_param : kValidSearchQueryParams) {
-        EXPECT_FALSE(IsSearch(base::StringPrintf(pattern.c_str(),
-                                                 scheme.c_str(),
-                                                 query_param.c_str())));
+        EXPECT_FALSE(IsSearch(base::StringPrintf(
+            pattern.c_str(), scheme.c_str(), query_param.c_str())));
       }
     }
   }
@@ -341,8 +331,8 @@ TEST(GoogleUtilTest, GoogleBaseURLNotSpecified) {
 
   // By default, none of the IsGoogleXXX functions should return true for a
   // "foo.com" URL.
-  EXPECT_FALSE(IsGoogleHostname("www.foo.com",
-                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(
+      IsGoogleHostname("www.foo.com", google_util::DISALLOW_SUBDOMAIN));
   EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.foo.com/xyz"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
@@ -409,8 +399,8 @@ TEST(GoogleUtilTest, YoutubeDomains) {
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
   EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://notyoutube.com"),
-                                 google_util::ALLOW_SUBDOMAIN,
-                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+                                  google_util::ALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
 
   // TLD checks.
   EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.ca"),

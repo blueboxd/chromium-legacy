@@ -860,6 +860,10 @@ bool PictureLayerImpl::RequiresHighResToDraw() const {
   return layer_tree_impl()->RequiresHighResToDraw();
 }
 
+const PaintWorkletRecordMap& PictureLayerImpl::GetPaintWorkletRecords() const {
+  return paint_worklet_records_;
+}
+
 gfx::Rect PictureLayerImpl::GetEnclosingRectInTargetSpace() const {
   return GetScaledEnclosingRectInTargetSpace(MaximumTilingContentsScale());
 }

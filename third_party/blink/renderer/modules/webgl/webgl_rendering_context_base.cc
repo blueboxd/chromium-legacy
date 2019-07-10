@@ -743,6 +743,8 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
 }
 
 void WebGLRenderingContextBase::commit() {
+  if (!GetDrawingBuffer())
+    return;
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
 

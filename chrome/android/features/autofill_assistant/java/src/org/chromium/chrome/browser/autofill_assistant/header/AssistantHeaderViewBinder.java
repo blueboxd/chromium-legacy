@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
@@ -45,7 +46,7 @@ class AssistantHeaderViewBinder
         @Nullable
         TextBubble mTextBubble;
 
-        public ViewHolder(Context context, ViewGroup headerView, AnimatedPoodle poodle) {
+        ViewHolder(Context context, ViewGroup headerView, AnimatedPoodle poodle) {
             mContext = context;
             mPoodle = poodle;
             mHeader = headerView;
@@ -55,6 +56,11 @@ class AssistantHeaderViewBinder
             mProfileIconMenu = new PopupMenu(context, mProfileIconView);
             mProfileIconMenu.inflate(R.menu.profile_icon_menu);
             mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
+        }
+
+        @VisibleForTesting
+        void disableAnimationsForTesting(boolean disable) {
+            mProgressBar.disableAnimationsForTesting(disable);
         }
     }
 

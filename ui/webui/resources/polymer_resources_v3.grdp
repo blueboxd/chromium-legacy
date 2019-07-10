@@ -218,20 +218,12 @@
                type="chrome_html"
                compress="gzip" />
   </if>
-  <structure name="IDR_POLYMER_3_0_PAPER_BEHAVIORS_PAPER_BUTTON_BEHAVIOR_JS"
-             file="../../../third_party/polymer/v3_0/components-chromium/paper-behaviors/paper-button-behavior.js"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_POLYMER_3_0_PAPER_BEHAVIORS_PAPER_INKY_FOCUS_BEHAVIOR_JS"
              file="../../../third_party/polymer/v3_0/components-chromium/paper-behaviors/paper-inky-focus-behavior.js"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_POLYMER_3_0_PAPER_BEHAVIORS_PAPER_RIPPLE_BEHAVIOR_JS"
              file="../../../third_party/polymer/v3_0/components-chromium/paper-behaviors/paper-ripple-behavior.js"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_3_0_PAPER_BUTTON_PAPER_BUTTON_JS"
-             file="../../../third_party/polymer/v3_0/components-chromium/paper-button/paper-button.js"
              type="chrome_html"
              compress="gzip" />
   <if expr="chromeos">

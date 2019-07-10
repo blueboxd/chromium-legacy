@@ -30,6 +30,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "components/services/quarantine/common.h"
 #include "components/services/quarantine/common_win.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "url/gurl.h"
@@ -229,8 +230,8 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
 }
 
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
-                                    const GURL& source_url,
-                                    const GURL& referrer_url,
+                                    const GURL& source_url_unsafe,
+                                    const GURL& referrer_url_unsafe,
                                     const std::string& client_guid) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -246,6 +247,9 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
     if (FAILED(hr))
       guid = GUID_NULL;
   }
+
+  GURL source_url = SanitizeUrlForQuarantine(source_url_unsafe);
+  GURL referrer_url = SanitizeUrlForQuarantine(referrer_url_unsafe);
 
   if (file_size == 0 || IsEqualGUID(guid, GUID_NULL)) {
     // Calling InvokeAttachmentServices on an empty file can result in the file

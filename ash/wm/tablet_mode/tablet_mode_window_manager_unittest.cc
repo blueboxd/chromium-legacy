@@ -2017,7 +2017,8 @@ TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
   // First test 1 window case.
   const wm::WMEvent left_snap_event(wm::WM_EVENT_SNAP_LEFT);
   wm::GetWindowState(window.get())->OnWMEvent(&left_snap_event);
-  const gfx::Rect left_snapped_bounds = gfx::Rect(1200 / 2, 800 - kShelfSize);
+  const gfx::Rect left_snapped_bounds =
+      gfx::Rect(1200 / 2, 800 - ShelfConstants::shelf_size());
   EXPECT_EQ(window->bounds().width(), left_snapped_bounds.width());
   // Change its bounds horizontally a bit and then enter tablet mode.
   window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));

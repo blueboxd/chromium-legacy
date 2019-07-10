@@ -273,17 +273,17 @@
               label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
         </template>
 
+        <cr-link-row id="manage-other-people-subpage-trigger"
+            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            hidden="[[!pageVisibility.people.manageUsers]]">
+        </cr-link-row>
+
         <template is="dom-if" if="[[shouldShowKerberos_(
             isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
               label="$i18n{kerberosAccountsSubMenuLabel}"></cr-link-row>
         </template>
-
-        <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
-            hidden="[[!pageVisibility.people.manageUsers]]">
-        </cr-link-row>
 </if>
 
 <if expr="not chromeos">

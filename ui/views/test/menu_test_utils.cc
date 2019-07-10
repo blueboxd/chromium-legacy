@@ -85,6 +85,7 @@ void DisableMenuClosureAnimations() {
 
 void WaitForMenuClosureAnimation() {
 #if defined(OS_MACOSX)
+  // TODO(https://crbug.com/982815): Replace this with Quit+Run.
   base::RunLoop().RunUntilIdle();
 #endif
 }

@@ -42,9 +42,11 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for password accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PasswordAccessoryIntegrationTest {
+@DisableIf
+        .Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
+        @RetryOnFailure
+        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+        public class PasswordAccessoryIntegrationTest {
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -101,7 +103,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testFillsPasswordOnTap() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mpark@abc.com", "ShorterPassword");

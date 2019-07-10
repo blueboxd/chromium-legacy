@@ -153,11 +153,15 @@ TEST_F(BrowsingDataCounterUtilsTest, DeletePasswordsAndSigninData) {
   } kTestCases[] = {
       {0, 0, false, {}, "None"},
       {0, 0, true, {}, "None"},
-      {1, 0, false, {"a.com"}, "1 password for a.com"},
-      {1, 0, true, {"a.com"}, "1 password for a.com (synced)"},
-      {2, 0, false, {"a.com"}, "2 passwords for a.com"},
-      {2, 0, false, {"a.com", "b.com"}, "2 passwords for a.com, b.com"},
-      {2, 0, true, {"a.com", "b.com"}, "2 passwords for a.com, b.com (synced)"},
+      {1, 0, false, {"a.com"}, "1 password (for a.com)"},
+      {1, 0, true, {"a.com"}, "1 password (for a.com, synced)"},
+      {2, 0, false, {"a.com"}, "2 passwords (for a.com)"},
+      {2, 0, false, {"a.com", "b.com"}, "2 passwords (for a.com, b.com)"},
+      {2,
+       0,
+       true,
+       {"a.com", "b.com"},
+       "2 passwords (for a.com, b.com, synced)"},
       {0, 1, false, {}, "sign-in data for 1 account"},
       {0, 1, true, {}, "sign-in data for 1 account"},
       {0, 2, false, {}, "sign-in data for 2 accounts"},
@@ -166,29 +170,29 @@ TEST_F(BrowsingDataCounterUtilsTest, DeletePasswordsAndSigninData) {
        2,
        false,
        {"a.de"},
-       "1 password for a.de; sign-in data for 2 accounts"},
+       "1 password (for a.de); sign-in data for 2 accounts"},
       {2,
        1,
        false,
        {"a.de", "b.de"},
-       "2 passwords for a.de, b.de; sign-in data for 1 account"},
+       "2 passwords (for a.de, b.de); sign-in data for 1 account"},
       {2,
        3,
        true,
        {"a.de", "b.de"},
-       "2 passwords for a.de, b.de (synced); sign-in data for 3 "
+       "2 passwords (for a.de, b.de, synced); sign-in data for 3 "
        "accounts"},
       {4,
        2,
        false,
        {"a.de", "b.de"},
-       "4 passwords for a.de, b.de, and 2 more; sign-in data for 2 "
+       "4 passwords (for a.de, b.de, and 2 more); sign-in data for 2 "
        "accounts"},
       {8,
        0,
        true,
        {"a.de", "b.de", "c.de", "d.de", "e.de", "f.de", "g.de", "h.de"},
-       "8 passwords for a.de, b.de, and 6 more (synced)"}};
+       "8 passwords (for a.de, b.de, and 6 more, synced)"}};
   for (const auto& test_case : kTestCases) {
     browsing_data::SigninDataCounter::SigninDataResult result(
         &counter, test_case.num_passwords, test_case.num_webauthn_credentials,

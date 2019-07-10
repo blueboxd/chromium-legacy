@@ -15,7 +15,7 @@ namespace net {
 
 base::Value ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
                                           base::StringPiece debug_data) {
-  if (capture_mode.include_cookies_and_credentials())
+  if (NetLogCaptureIncludesSensitive(capture_mode))
     return NetLogStringValue(debug_data);
 
   return NetLogStringValue(base::StrCat(

@@ -507,12 +507,12 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     NetLogParametersCallback callback =
         base::Bind(&GetRequestStateAsValue, base::Unretained(request));
 
-    // Note that passing the hardcoded NetLogCaptureMode::Default() below is
+    // Note that passing the hardcoded NetLogCaptureMode::kDefault below is
     // fine, since GetRequestStateAsValue() ignores the capture mode.
     NetLogEntryData entry_data(
         NetLogEventType::REQUEST_ALIVE, request->net_log().source(),
         NetLogEventPhase::BEGIN, request->creation_time(), &callback);
-    NetLogEntry entry(&entry_data, NetLogCaptureMode::Default());
+    NetLogEntry entry(&entry_data, NetLogCaptureMode::kDefault);
     observer->OnAddEntry(entry);
   }
 }

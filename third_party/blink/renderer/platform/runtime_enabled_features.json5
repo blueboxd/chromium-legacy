@@ -1267,9 +1267,6 @@
       status: "experimental",
     },
     {
-      name: "RedirectBlankNavigationToTop",
-    },
-    {
       name: "ReducedReferrerGranularity",
     },
     {
@@ -1463,7 +1460,7 @@
     },
     {
       name: "SmsReceiver",
-      status: "experimental",
+      status: {"Android": "experimental", "default": "test"},
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.

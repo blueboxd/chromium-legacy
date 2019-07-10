@@ -190,8 +190,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       RegisterCallback callback,
       const std::string& subscription_id,
-      const std::string& p256dh,
-      const std::string& auth_secret);
+      std::string p256dh,
+      std::string auth_secret);
 
   // GetSubscriptionInfo methods -----------------------------------------------
 
@@ -201,8 +201,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                bool is_valid);
 
   void DidGetEncryptionInfo(const SubscriptionInfoCallback& callback,
-                            const std::string& p256dh,
-                            const std::string& auth_secret) const;
+                            std::string p256dh,
+                            std::string auth_secret) const;
 
   // Unsubscribe methods -------------------------------------------------------
 

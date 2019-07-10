@@ -16,11 +16,15 @@ enum ValueType {
   STRING,
 };
 
-union Value {
-  bool bool_value;
-  int64 int_value;
-  uint8 char_value;
-  string string_value;
+union IppAttributeValue {
+  array<bool> bools;
+
+  // Per the RFC1903 DateAndTime specification, date's are serialized as a
+  // string of 11 octets.
+  array<uint8> date;
+
+  array<int32> ints;
+  array<string> strings;
 };
 
 struct IppAttribute {
@@ -28,7 +32,7 @@ struct IppAttribute {
   int64 group_tag;
   int64 value_tag;
   ValueType type;
-  array<Value> values;
+  IppAttributeValue value;
 };
 
 struct IppMessage {

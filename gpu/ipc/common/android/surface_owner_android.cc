@@ -102,7 +102,12 @@ ImageReader::ImageReader(GLuint texture_id)
   // Set the width, height and format to some default value. This parameters
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
-  int32_t width = 1, height = 1, max_images = 3;
+  // Note that max_images should be as small as possible to limit the memory
+  // usage. ImageReader needs 2 images to mimic the behavior of SurfaceTexture.
+  // Also note that we always acquire an image before deleting the
+  // previous acquired image. This causes 2 acquired images to be in flight at
+  // the image acquisition point until the previous image is deleted.
+  int32_t width = 1, height = 1, max_images = 2;
   AIMAGE_FORMATS format = AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
   // The usage flag below should be used when the buffer will be read from by
@@ -194,7 +199,12 @@ void ImageReader::UpdateTexImage() {
 
   // This method duplicates the fence file descriptor and the caller is
   // responsible for closing the returend file descriptor.
-  return_code = loader_.AImageReader_acquireLatestImageAsync(
+  // We now use AcquireNextImageAsync() instead of AcquireLatestImageAsync()
+  // because AcquireLatestImageAsync() only works when
+  // max_images-number_of_acquired_images >= 2. This is now not true for our
+  // AImageReader use case with max_images=2 since we always have one previously
+  // acquired image when we try to acquire a new image.
+  return_code = loader_.AImageReader_acquireNextImageAsync(
       image_reader_, &image, &acquire_fence_fd);
 
   // Log the error return code.

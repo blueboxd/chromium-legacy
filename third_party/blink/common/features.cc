@@ -343,5 +343,12 @@ const base::Feature kBlinkHeapIncrementalMarkingStress{
 const base::Feature kBlinkHeapUnifiedGCScheduling{
     "BlinkHeapUnifiedGCScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables a delay before BufferingBytesConsumer begins reading from its
+// underlying consumer when instantiated with CreateWithDelay().
+const base::Feature kBufferingBytesConsumerDelay{
+    "BufferingBytesConsumerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
+    &kBufferingBytesConsumerDelay, "milliseconds", 50};
+
 }  // namespace features
 }  // namespace blink

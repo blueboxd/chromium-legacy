@@ -73,11 +73,12 @@
 
 #pragma mark - InfobarCoordinatorImplementation
 
-- (void)configureModalViewController {
+- (BOOL)configureModalViewController {
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
   self.modalViewController.title =
       base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
+  return YES;
 }
 
 - (void)infobarBannerWasPresented {

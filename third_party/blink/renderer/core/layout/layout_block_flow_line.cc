@@ -197,16 +197,17 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
       line_layout_item = LineLayoutItem(this);
     }
 
-    SECURITY_DCHECK(line_layout_item.IsLayoutInline() ||
-                    line_layout_item.IsEqual(this));
-
-    LineLayoutInline inline_flow(
-        !line_layout_item.IsEqual(this) ? line_layout_item : nullptr);
-
     // Get the last box we made for this layout object.
-    parent_box = inline_flow
-                     ? inline_flow.LastLineBox()
-                     : LineLayoutBlockFlow(line_layout_item).LastLineBox();
+    bool allowed_to_construct_new_box;
+    if (line_layout_item.IsLayoutInline()) {
+      LineLayoutInline inline_flow(line_layout_item);
+      parent_box = inline_flow.LastLineBox();
+      allowed_to_construct_new_box = inline_flow.AlwaysCreateLineBoxes();
+    } else {
+      DCHECK(line_layout_item.IsEqual(this));
+      parent_box = LineLayoutBlockFlow(line_layout_item).LastLineBox();
+      allowed_to_construct_new_box = true;
+    }
 
     // If this box or its ancestor is constructed then it is from a previous
     // line, and we need to make a new box for our line.  If this box or its
@@ -215,8 +216,6 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
     // inline has actually been split in two on the same line (this can happen
     // with very fancy language mixtures).
     bool constructed_new_box = false;
-    bool allowed_to_construct_new_box =
-        !inline_flow || inline_flow.AlwaysCreateLineBoxes();
     bool can_use_existing_parent_box =
         parent_box && !ParentIsConstructedOrHaveNext(parent_box);
     if (allowed_to_construct_new_box && !can_use_existing_parent_box) {

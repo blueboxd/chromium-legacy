@@ -2674,7 +2674,7 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
 
   // Ensure that Shelf is higher than the default height, required by the bug
   // reproduction procedures.
-  delta_y = -kShelfSize - 1;
+  delta_y = -ShelfConstants::shelf_size() - 1;
 
   timestamp += base::TimeDelta::FromMilliseconds(200);
   ui::GestureEvent update_event = ui::GestureEvent(
@@ -2757,7 +2757,7 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
 
   // Verify that the shelf has expected bounds.
   EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
-                gfx::Point(0, -kShelfSize).OffsetFromOrigin(),
+                gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
             GetPrimaryShelf()
                 ->GetShelfViewForTesting()
                 ->GetBoundsInScreen()

@@ -34,10 +34,6 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
 
-HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
-_HERMETIC_FILE_ATTR = (0o644 << 16)
-
-
 try:
   string_types = basestring
 except NameError:
@@ -314,6 +310,14 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
   return extracted
 
 
+def HermeticZipInfo(*args, **kwargs):
+  """Creates a ZipInfo with a constant timestamp and external_attr."""
+  ret = zipfile.ZipInfo(*args, **kwargs)
+  ret.date_time = (2001, 1, 1, 0, 0, 0)
+  ret.external_attr = (0o644 << 16)
+  return ret
+
+
 def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
                      compress=None):
   """Adds a file to the given ZipFile with a hard-coded modified time.
@@ -329,8 +333,7 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   assert (src_path is None) != (data is None), (
       '|src_path| and |data| are mutually exclusive.')
   _CheckZipPath(zip_path)
-  zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=HERMETIC_TIMESTAMP)
-  zipinfo.external_attr = _HERMETIC_FILE_ATTR
+  zipinfo = HermeticZipInfo(filename=zip_path)
 
   if src_path and os.path.islink(src_path):
     zipinfo.filename = zip_path

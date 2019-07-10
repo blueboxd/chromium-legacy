@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
-#include "components/previews/content/previews_hints_util.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/host_filter.h"
 #include "net/nqe/effective_connection_type.h"

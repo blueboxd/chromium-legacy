@@ -26,11 +26,6 @@ PlatformPaintWorkletLayerPainter::~PlatformPaintWorkletLayerPainter() {
       "PlatformPaintWorkletLayerPainter::~PlatformPaintWorkletLayerPainter");
 }
 
-sk_sp<PaintRecord> PlatformPaintWorkletLayerPainter::Paint(
-    const cc::PaintWorkletInput* input) {
-  return dispatcher_->Paint(input);
-}
-
 void PlatformPaintWorkletLayerPainter::DispatchWorklets(
     cc::PaintWorkletJobMap worklet_data_map,
     DoneCallback done_callback) {

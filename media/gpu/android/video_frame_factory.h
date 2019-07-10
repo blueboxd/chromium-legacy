@@ -15,10 +15,6 @@
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gpu {
-class CommandBufferStub;
-}  // namespace gpu
-
 namespace media {
 
 class CodecOutputBuffer;
@@ -30,7 +26,6 @@ class VideoFrame;
 // safe. Virtual for testing; see VideoFrameFactoryImpl.
 class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
-  using GetStubCb = base::Callback<gpu::CommandBufferStub*()>;
   using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
   using OnceOutputCb = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 

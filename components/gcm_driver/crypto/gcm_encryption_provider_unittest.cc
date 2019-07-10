@@ -79,10 +79,10 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   // To be used as a callback for GCMEncryptionProvider::GetEncryptionInfo().
   void DidGetEncryptionInfo(std::string* p256dh_out,
                             std::string* auth_secret_out,
-                            const std::string& p256dh,
-                            const std::string& auth_secret) {
-    *p256dh_out = p256dh;
-    *auth_secret_out = auth_secret;
+                            std::string p256dh,
+                            std::string auth_secret) {
+    *p256dh_out = std::move(p256dh);
+    *auth_secret_out = std::move(auth_secret);
   }
 
   // To be used as a callback for GCMKeyStore::{GetKeys,CreateKeys}.

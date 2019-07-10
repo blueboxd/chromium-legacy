@@ -879,6 +879,9 @@ extern const char kOverscrollHistoryNavigationDescription[];
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
+extern const char kPasswordEditingAndroidName[];
+extern const char kPasswordEditingAndroidDescription[];
+
 extern const char kPassiveEventListenerDefaultName[];
 extern const char kPassiveEventListenerDefaultDescription[];
 extern const char kPassiveEventListenerTrue[];

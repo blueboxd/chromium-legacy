@@ -198,6 +198,7 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+    case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
     case ui::AXEventGenerator::Event::GRABBED_CHANGED:

@@ -102,8 +102,6 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
-@property(nonatomic, readonly) UIColor* backgroundColor;
-
 // Vertical padding used underneath buttons. Default value is 18.
 @property(nonatomic, assign) CGFloat buttonVerticalPadding;
 

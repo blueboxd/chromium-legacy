@@ -22,7 +22,6 @@ import android.support.test.filters.MediumTest;
 import android.util.DisplayMetrics;
 
 import org.json.JSONArray;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,14 +32,12 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
@@ -48,46 +45,33 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the Autofill Assistant overlay.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantOverlayUiTest {
+    @Rule
+    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     // TODO(crbug.com/806868): Create a more specific test site for overlay testing.
     private static final String TEST_PAGE =
             "/components/test/data/autofill_assistant/autofill_assistant_target_website.html";
 
-    private EmbeddedTestServer mTestServer;
-
-    @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
-
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
-        String testPage = mTestServer.getURL(TEST_PAGE);
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), testPage));
-        mCustomTabActivityTestRule.getActivity().getScrim().disableAnimationForTesting(true);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-    }
-
-    private CustomTabActivity getActivity() {
-        return mCustomTabActivityTestRule.getActivity();
+        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                mTestRule.getTestServer().getURL(TEST_PAGE)));
+        mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
     }
 
     private WebContents getWebContents() {
-        return mCustomTabActivityTestRule.getWebContents();
+        return mTestRule.getWebContents();
     }
 
     /** Creates a coordinator for use in UI tests. */
     private AssistantOverlayCoordinator createCoordinator(AssistantOverlayModel model)
             throws ExecutionException {
-        return runOnUiThreadBlocking(() -> new AssistantOverlayCoordinator(getActivity(), model));
+        return runOnUiThreadBlocking(
+                () -> new AssistantOverlayCoordinator(mTestRule.getActivity(), model));
     }
 
     /** Tests assumptions about the initial state of the infobox. */
@@ -190,15 +174,15 @@ public class AutofillAssistantOverlayUiTest {
         // The scrim view is only attached to the view hierarchy when needed, preventing us from
         // using regular espresso facilities.
         boolean scrimInHierarchy =
-                runOnUiThreadBlocking(() -> getActivity().getScrim().getParent() != null);
+                runOnUiThreadBlocking(() -> mTestRule.getActivity().getScrim().getParent() != null);
         if (expected && !scrimInHierarchy) {
             throw new Exception("Expected scrim view visible, but scrim was not in view hierarchy");
         }
         if (scrimInHierarchy) {
             if (expected) {
-                onView(is(getActivity().getScrim())).check(matches(isDisplayed()));
+                onView(is(mTestRule.getActivity().getScrim())).check(matches(isDisplayed()));
             } else {
-                onView(is(getActivity().getScrim())).check(matches(not(isDisplayed())));
+                onView(is(mTestRule.getActivity().getScrim())).check(matches(not(isDisplayed())));
             }
         }
     }
@@ -210,7 +194,7 @@ public class AutofillAssistantOverlayUiTest {
         float y = coords.top + 0.5f * (coords.bottom - coords.top);
 
         // Sanity check, can only click on coordinates on screen.
-        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = mTestRule.getActivity().getResources().getDisplayMetrics();
         if (x < 0 || x > displayMetrics.widthPixels || y < 0 || y > displayMetrics.heightPixels) {
             throw new IllegalArgumentException(elementId + " not on screen: tried to tap x=" + x
                     + ", y=" + y + ", which is outside of display with w="
@@ -230,13 +214,14 @@ public class AutofillAssistantOverlayUiTest {
          * - Then, convert compositor space to screen space (add content offset).
          */
         Rect viewport = getViewport();
-        float cssToPysicalPixels = (((float) getActivity().getCompositorViewHolder().getWidth()
-                / (float) viewport.width()));
+        float cssToPysicalPixels =
+                (((float) mTestRule.getActivity().getCompositorViewHolder().getWidth()
+                        / (float) viewport.width()));
 
         int[] compositorLocation = new int[2];
-        getActivity().getCompositorViewHolder().getLocationOnScreen(compositorLocation);
-        int offsetY =
-                compositorLocation[1] + getActivity().getFullscreenManager().getContentOffset();
+        mTestRule.getActivity().getCompositorViewHolder().getLocationOnScreen(compositorLocation);
+        int offsetY = compositorLocation[1]
+                + mTestRule.getActivity().getFullscreenManager().getContentOffset();
         return new Rect((int) ((elementRect.left - viewport.left) * cssToPysicalPixels),
                 (int) ((elementRect.top - viewport.top) * cssToPysicalPixels + offsetY),
                 (int) ((elementRect.right - viewport.left) * cssToPysicalPixels),

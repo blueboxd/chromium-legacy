@@ -467,9 +467,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
 #if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager &&
-      policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
-          profile_)) {
+  if (user_manager) {
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     // No need to initialize NSS for users with empty username hash:
@@ -479,15 +477,17 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     if (user && !user->username_hash().empty()) {
       network_context_params->username_hash = user->username_hash();
       network_context_params->nss_path = profile_->GetPath();
-
-      policy::PolicyCertService* service =
-          policy::PolicyCertServiceFactory::GetForProfile(profile_);
-      network_context_params->initial_additional_certificates =
-          network::mojom::AdditionalCertificates::New();
-      network_context_params->initial_additional_certificates
-          ->all_certificates = service->all_server_and_authority_certs();
-      network_context_params->initial_additional_certificates->trust_anchors =
-          service->trust_anchors();
+      if (policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
+              profile_)) {
+        policy::PolicyCertService* service =
+            policy::PolicyCertServiceFactory::GetForProfile(profile_);
+        network_context_params->initial_additional_certificates =
+            network::mojom::AdditionalCertificates::New();
+        network_context_params->initial_additional_certificates
+            ->all_certificates = service->all_server_and_authority_certs();
+        network_context_params->initial_additional_certificates->trust_anchors =
+            service->trust_anchors();
+      }
     }
   }
 #endif

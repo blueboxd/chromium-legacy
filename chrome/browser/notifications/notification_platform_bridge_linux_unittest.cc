@@ -21,7 +21,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/dbus/dbus_thread_linux.h"
+#include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"

@@ -2407,19 +2407,15 @@ jumbo_split_static_library("ui") {
       sources += [
         "views/status_icons/concat_menu_model.cc",
         "views/status_icons/concat_menu_model.h",
-        "views/status_icons/dbus_menu.cc",
-        "views/status_icons/dbus_menu.h",
-        "views/status_icons/dbus_properties_interface.cc",
-        "views/status_icons/dbus_properties_interface.h",
-        "views/status_icons/dbus_types.cc",
-        "views/status_icons/dbus_types.h",
         "views/status_icons/status_icon_linux_dbus.cc",
         "views/status_icons/status_icon_linux_dbus.h",
-        "views/status_icons/success_barrier_callback.cc",
-        "views/status_icons/success_barrier_callback.h",
       ]
       defines += [ "USE_DBUS" ]
-      deps += [ "//components/dbus:dbus_thread_linux" ]
+      deps += [
+        "//components/dbus/menu",
+        "//components/dbus/menu:success_barrier_callback",
+        "//components/dbus/thread_linux",
+      ]
     }
 
     if (use_x11) {
@@ -2738,6 +2734,8 @@ jumbo_split_static_library("ui") {
       "views/global_media_controls/media_dialog_view.h",
       "views/global_media_controls/media_notification_container_impl.cc",
       "views/global_media_controls/media_notification_container_impl.h",
+      "views/global_media_controls/media_notification_list_view.cc",
+      "views/global_media_controls/media_notification_list_view.h",
       "views/global_media_controls/media_toolbar_button_view.cc",
       "views/global_media_controls/media_toolbar_button_view.h",
       "views/hover_button.cc",
@@ -2820,6 +2818,8 @@ jumbo_split_static_library("ui") {
       "views/native_file_system/native_file_system_access_icon_view.h",
       "views/native_file_system/native_file_system_permission_view.cc",
       "views/native_file_system/native_file_system_permission_view.h",
+      "views/native_file_system/native_file_system_restricted_directory_dialog_view.cc",
+      "views/native_file_system/native_file_system_restricted_directory_dialog_view.h",
       "views/native_file_system/native_file_system_ui_helpers.cc",
       "views/native_file_system/native_file_system_ui_helpers.h",
       "views/native_file_system/native_file_system_usage_bubble_view.cc",

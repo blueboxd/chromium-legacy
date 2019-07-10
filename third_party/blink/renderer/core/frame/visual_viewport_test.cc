@@ -1264,8 +1264,13 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
 
-  EXPECT_EQ(ScrollOffset(0, 900),
-            layout_viewport_scrollable_area->GetScrollOffset());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(ScrollOffset(0, 900.75),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  } else {
+    EXPECT_EQ(ScrollOffset(0, 900),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  }
   EXPECT_EQ(FloatSize(250.25f, 100.25f), visual_viewport.GetScrollOffset());
 
   // Change the fractional part of the frameview to one that would round down.
@@ -1273,8 +1278,13 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
 
-  EXPECT_EQ(ScrollOffset(0, 900),
-            layout_viewport_scrollable_area->GetScrollOffset());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(ScrollOffset(0, 900.125),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  } else {
+    EXPECT_EQ(ScrollOffset(0, 900),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  }
   EXPECT_EQ(FloatSize(250.25f, 100.25f), visual_viewport.GetScrollOffset());
 
   // Repeat both tests above with the visual viewport at a high fractional.
@@ -1283,8 +1293,13 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
 
-  EXPECT_EQ(ScrollOffset(0, 900),
-            layout_viewport_scrollable_area->GetScrollOffset());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(ScrollOffset(0, 900.75),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  } else {
+    EXPECT_EQ(ScrollOffset(0, 900),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  }
   EXPECT_EQ(FloatSize(250.875f, 100.875f), visual_viewport.GetScrollOffset());
 
   // Change the fractional part of the frameview to one that would round down.
@@ -1292,8 +1307,13 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
 
-  EXPECT_EQ(ScrollOffset(0, 900),
-            layout_viewport_scrollable_area->GetScrollOffset());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(ScrollOffset(0, 900.125),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  } else {
+    EXPECT_EQ(ScrollOffset(0, 900),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  }
   EXPECT_EQ(FloatSize(250.875f, 100.875f), visual_viewport.GetScrollOffset());
 
   // Both viewports with a 0.5 fraction.
@@ -1302,8 +1322,13 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
 
-  EXPECT_EQ(ScrollOffset(0, 900),
-            layout_viewport_scrollable_area->GetScrollOffset());
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    EXPECT_EQ(ScrollOffset(0, 900.5),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  } else {
+    EXPECT_EQ(ScrollOffset(0, 900),
+              layout_viewport_scrollable_area->GetScrollOffset());
+  }
   EXPECT_EQ(FloatSize(250.5f, 100.5f), visual_viewport.GetScrollOffset());
 }
 

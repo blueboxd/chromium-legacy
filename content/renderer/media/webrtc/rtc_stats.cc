@@ -93,6 +93,17 @@ std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
   return stats_members;
 }
 
+size_t CountWhitelistedStats(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report) {
+  size_t size = 0;
+  for (const auto& stats : *stats_report) {
+    if (IsWhitelistedStats(stats)) {
+      ++size;
+    }
+  }
+  return size;
+}
+
 }  // namespace
 
 RTCStatsReport::RTCStatsReport(
@@ -101,7 +112,8 @@ RTCStatsReport::RTCStatsReport(
     : stats_report_(stats_report),
       it_(stats_report_->begin()),
       end_(stats_report_->end()),
-      exposed_group_ids_(exposed_group_ids) {
+      exposed_group_ids_(exposed_group_ids),
+      size_(CountWhitelistedStats(stats_report)) {
   DCHECK(stats_report_);
 }
 
@@ -135,10 +147,7 @@ std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
 }
 
 size_t RTCStatsReport::Size() const {
-  // TODO(crbug.com/908072): If there are non-whitelisted stats objects in the
-  // report, this would return the wrong thing; DCHECK that all objects are
-  // whitelisted or make this method return the whitelisted count
-  return stats_report_->size();
+  return size_;
 }
 
 RTCStats::RTCStats(

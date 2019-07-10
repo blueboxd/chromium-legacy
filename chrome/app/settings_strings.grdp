@@ -1701,91 +1701,103 @@
     </message>
   </if>
 
-  <!-- Kerberos Accounts -->
+  <!-- Kerberos tickets -->
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL" desc="Label of Kerberos Accounts submenu in Settings page.">
-      Kerberos Accounts
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL" desc="Label of 'Kerberos tickets' submenu in Settings page.">
+      Kerberos tickets
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE" desc="Title of Kerberos Accounts Settings page.">
-      Kerberos Accounts
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE" desc="Title of 'Kerberos tickets' Settings page.">
+      Kerberos tickets
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION" desc="Description of the Kerberos Accounts Settings page. Shown just below the title of the page.">
-      All Kerberos Accounts for single sign-on into certain apps and websites and file shares can be managed here.
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION" desc="Description of the 'Kerberos tickets' Settings page. Shown just below the title of the page.">
+      Choose a ticket to use for authentication. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER" desc="List header for the account list on Kerberos Accounts Settings page.">
-      Accounts
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER" desc="List header for the ticket list on 'Kerberos tickets' Settings page.">
+      Tickets
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL" desc="Label of the Add account button on Kerberos Accounts Settings page.">
-      Add account
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL" desc="Label of the 'Add a ticket' button on 'Kerberos tickets' Settings page.">
+      Add a ticket
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL" desc="Label of the 'Refresh now' button on Kerberos Accounts Settings page.">
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL" desc="Label of the 'Refresh now' button on 'Kerberos tickets' Settings page.">
       Refresh now
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL" desc="Label of the 'Set as active account' button on Kerberos Accounts Settings page.">
-      Set as active account
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL" desc="Label of the 'Set as ticket ticket' button on 'Kerberos tickets' Settings page.">
+      Set as active ticket
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the 'Remove account' button on Kerberos Accounts Settings page.">
-      Remove account from this device
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the 'Remove from this device' button on 'Kerberos tickets' Settings page.">
+      Remove from this device
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL" desc="Label of the button on Kerberos Accounts Settings page to get to the Advanced configuration dialog.">
-      Advanced configuration
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REMOVED_TIP" desc="Tip shown when a Kerberos ticket was removed on 'Kerberos tickets' Settings page.">
+      Ticket removed
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN" desc="Text displayed if a Kerberos account is in signed-in state on Kerberos Accounts Settings page.">
-      Signed in
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN" desc="Text displayed if a Kerberos ticket is in signed-in state on 'Kerberos tickets' Settings page.">
+      Valid for <ph name="TICKET_TIME_LEFT">$1<ex>7 hours 12 minutes</ex></ph>
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT" desc="Text displayed if a Kerberos account is in signed-out state on Kerberos Accounts Settings page.">
-      Sign in again
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT" desc="Text displayed if a Kerberos ticket is in signed-out state on 'Kerberos tickets' Settings page.">
+      Expired
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on Kerberos Accounts Settings page.">
-      Sign in
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on 'Kerberos tickets' Settings page.">
+      Refresh
     </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="In Add Kerberos Accounts dialog, the title of the dialog.">
-      Add Kerberos Account
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_TICKET_ACTIVE" desc="Text displayed if a Kerberos ticket is selected to be the currently active ticket on 'Kerberos tickets' Settings page.">
+      Active
     </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD" desc="In Add Kerberos Accounts dialog, label of the checkbox to remember the password.">
-      Remember password
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="Title of the 'Add a Kerberos ticket' dialog.">
+      Add a Kerberos ticket
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE" desc="In Kerberos Advanced Configuration dialog, the title of the dialog.">
-      Advanced Kerberos configuration
+    <message name="IDS_SETTINGS_REFRESH_KERBEROS_ACCOUNT" desc="Title of the 'Refresh a Kerberos ticket' dialog.">
+      Refresh a Kerberos ticket
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC" desc="In Kerberos Advanced Configuration dialog, the description of the dialog (below the title).">
-      Edit the Kerberos configuration file here.
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_DESCRIPTION" desc="Description of the 'Add a Kerberos ticket' dialog. Shown just below the title of the dialog.">
+      To automatically refresh a ticket, check “Remember password.” Your password will be stored on your device only.
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos account.">
-      Username
+    <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos ticket.">
+      Kerberos username
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos account.">
+    <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos ticket.">
       Password
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG" desc="In Kerberos Advanced Configuration dialog, label of the Kerberos configuration text area.">
-      Configuration
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD" desc="Label of the checkbox to remember the password in the 'Add a Kerberos ticket' dialog.">
+      Remember password
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM" desc="Error message displayed in the Add Kerberos Account dialog when the user has no network connection or enters a bad realm.">
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REFRESH_BUTTON_LABEL" desc="Label of the action button on the 'Refresh a Kerberos tickets' dialog.">
+      Refresh
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL" desc="Label of the button in 'Add a Kerberos ticket' dialog to get to the Advanced configuration dialog.">
+      Advanced
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE" desc="In Kerberos Advanced Configuration dialog, the title of the dialog.">
+      Configure Kerberos
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC" desc="In Kerberos Advanced Configuration dialog, the description of the dialog (below the title).">
+      Edit the configuration file
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user has no network connection or enters a bad realm.">
       Network problem or bad realm
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a badly formatted username.">
-      Username invalid (should be user@realm.com)
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a badly formatted username.">
+      Username invalid
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a username that is not known to the Kerberos realm.">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a username that is not known to the Kerberos realm.">
       Username not known to server
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a username for which there is already an account.">
-      An account with this username already exists
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a username for which there is already a ticket.">
+      A ticket with this username already exists
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER" desc="Error message displayed in the Add Kerberos Account dialog when the OS is not able to contact the server for the given realm.">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the OS is not able to contact the server for the given realm.">
       Contacting server for realm failed
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID" desc="Error message displayed in the Add Kerberos Account dialog when the user enters the wrong password.">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters the wrong password.">
       Password invalid
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED" desc="Error message displayed in the Add Kerberos Account dialog when the user's password is expired.">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user's password is expired.">
       Password expired
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE" desc="Error message displayed in the Add Kerberos Account dialog when the KDC does not support the encryption types specified in the Kerberos configuration (KDC = Key Distribution Center, part of Kerberos infrastructure).">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the KDC does not support the encryption types specified in the Kerberos configuration (KDC = Key Distribution Center, part of Kerberos infrastructure).">
       KDC does not support encryption type
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_GENERAL" desc="Fallback error message displayed in the Add Kerberos dialog.">
-      Oops! Something went wrong (error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_GENERAL" desc="Fallback error message displayed in the 'Add a Kerberos ticket' dialog.">
+      Couldn't get Kerberos ticket. Try again, or contact your organization's device admin. (Error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
     </message>
   </if>
 

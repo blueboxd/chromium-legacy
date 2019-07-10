@@ -16,12 +16,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 
-import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.junit.Before;
@@ -29,86 +26,71 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for the autofill assistant actions carousel.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantActionsCarouselUiTest {
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
+    /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
+    private AssistantActionsCarouselCoordinator createCoordinator(AssistantCarouselModel model)
+            throws Exception {
+        AssistantActionsCarouselCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> new AssistantActionsCarouselCoordinator(
+                                InstrumentationRegistry.getTargetContext(), model));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Note: apparently, we need an intermediate container for this coordinator's view,
+            // otherwise the view will be invisible.
+            // @TODO(crbug.com/806868) figure out why this is the case.
+            LinearLayout container = new LinearLayout(InstrumentationRegistry.getTargetContext());
+            container.addView(coordinator.getView());
+            AutofillAssistantUiTestUtil.attachToCoordinator(mTestRule.getActivity(), container);
+        });
+
+        return coordinator;
+    }
 
     @Before
     public void setUp() throws Exception {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), "about:blank"));
-    }
-
-    private CustomTabActivity getActivity() {
-        return mCustomTabActivityTestRule.getActivity();
-    }
-
-    /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
-    private AssistantActionsCarouselCoordinator createCoordinator(AssistantCarouselModel model) {
-        ThreadUtils.assertOnUiThread();
-        AssistantActionsCarouselCoordinator coordinator = new AssistantActionsCarouselCoordinator(
-                InstrumentationRegistry.getTargetContext(), model);
-
-        // Note: apparently, we need an intermediate container for this coordinator's view,
-        // otherwise the view will be invisible.
-        // @TODO(crbug.com/806868) figure out why this is the case.
-        LinearLayout container = new LinearLayout(InstrumentationRegistry.getTargetContext());
-        container.addView(coordinator.getView());
-
-        CoordinatorLayout.LayoutParams lp = new CoordinatorLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.BOTTOM;
-
-        ViewGroup chromeCoordinatorView =
-                getActivity().findViewById(org.chromium.chrome.autofill_assistant.R.id.coordinator);
-        chromeCoordinatorView.addView(container, lp);
-
-        return coordinator;
+        AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 
     /** Tests assumptions about the initial state of the carousel. */
     @Test
     @MediumTest
-    public void testInitialState() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantCarouselModel model = new AssistantCarouselModel();
-            AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
+    public void testInitialState() throws Exception {
+        AssistantCarouselModel model = new AssistantCarouselModel();
+        AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertThat(((DefaultItemAnimator) coordinator.getView().getItemAnimator())
                                .getSupportsChangeAnimations(),
                     is(false));
-            assertThat(model.getChipsModel().size(), is(0));
-            assertThat(coordinator.getView().getAdapter().getItemCount(), is(0));
         });
+        assertThat(model.getChipsModel().size(), is(0));
+        assertThat(coordinator.getView().getAdapter().getItemCount(), is(0));
     }
 
     /** Adds a single chip and tests assumptions about the view state after the change. */
     @Test
     @MediumTest
-    public void testAddSingleChip() throws ExecutionException {
+    public void testAddSingleChip() throws Exception {
         AssistantCarouselModel model = new AssistantCarouselModel();
-        AssistantActionsCarouselCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createCoordinator(model));
+        AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -126,10 +108,9 @@ public class AutofillAssistantActionsCarouselUiTest {
     /** Adds multiple chips and tests assumptions about the view state after the change. */
     @Test
     @MediumTest
-    public void testAddMultipleChips() throws ExecutionException {
+    public void testAddMultipleChips() throws Exception {
         AssistantCarouselModel model = new AssistantCarouselModel();
-        AssistantActionsCarouselCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createCoordinator(model));
+        AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
         // Note: this should be a small number that fits on screen without scrolling.
         int numChips = 3;
@@ -154,10 +135,9 @@ public class AutofillAssistantActionsCarouselUiTest {
     /** Adds many chips and tests that the cancel chip is always visible. */
     @Test
     @MediumTest
-    public void testCancelChipAlwaysVisible() throws ExecutionException {
+    public void testCancelChipAlwaysVisible() throws Exception {
         AssistantCarouselModel model = new AssistantCarouselModel();
-        AssistantActionsCarouselCoordinator coordinator =
-                TestThreadUtils.runOnUiThreadBlocking(() -> createCoordinator(model));
+        AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
         // Note: this should be a large number that does not fit on screen without scrolling.
         int numChips = 30;

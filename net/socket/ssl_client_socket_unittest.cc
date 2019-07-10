@@ -2387,7 +2387,7 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
 
   TestCompletionCallback callback;
   TestNetLog log;
-  log.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
+  log.SetCaptureMode(NetLogCaptureMode::kEverything);
   std::unique_ptr<StreamSocket> transport(
       new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
   int rv = callback.GetResult(transport->Connect(callback.callback()));

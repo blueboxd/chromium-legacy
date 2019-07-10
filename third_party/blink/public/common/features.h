@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
@@ -105,6 +106,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkHeapIncrementalMarkingStress;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapUnifiedGCScheduling;
+
+BLINK_COMMON_EXPORT extern const base::Feature kBufferingBytesConsumerDelay;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBufferingBytesConsumerDelayMilliseconds;
 
 }  // namespace features
 }  // namespace blink

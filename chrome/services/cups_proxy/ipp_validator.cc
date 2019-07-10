@@ -29,55 +29,57 @@ namespace {
 // TODO(crbug.com/945409): Extending to supporting arbitrary locales.
 const char kLocaleEnglish[] = "en";
 
-// Following ParseXxx methods translate mojom objects representing IPP
-// attribute values to formats libCUPS APIs accept.
+// Following ConvertXxx methods translate IPP attribute values to formats'
+// libCUPS APIs accept.
 
 // Converting to vector<char> for libCUPS API:
 // ippAddBooleans(..., int num_values, const char *values)
-// TODO(crbug.com/945409): Convert cups_ipp_parser::mojom::Value to using
-// mojo_base::Value.
-base::Optional<std::vector<char>> ParseBooleans(
-    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
+std::vector<char> ConvertBooleans(std::vector<bool> bools) {
   std::vector<char> ret;
-  for (auto& value : values) {
-    if (!value->is_bool_value()) {
-      return base::nullopt;
-    }
-
-    ret.push_back(value->get_bool_value() ? 1 : 0);
-  }
-  return ret;
-}
-
-// Converting to vector<int> for libCUPS API:
-// ippAddIntegers(..., int num_values, const int *values)
-base::Optional<std::vector<int>> ParseIntegers(
-    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
-  std::vector<int> ret;
-  for (auto& value : values) {
-    if (!value->is_int_value()) {
-      return base::nullopt;
-    }
-
-    ret.push_back(value->get_int_value());
+  for (bool value : bools) {
+    ret.push_back(value ? 1 : 0);
   }
   return ret;
 }
 
 // Converting to vector<const char*> for libCUPS API:
 // ippAddStrings(..., int num_values, const char *const *values)
-base::Optional<std::vector<const char*>> ParseStrings(
-    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
+// Note: The values in the returned vector refer to |strings|; so |strings|
+// must outlive them.
+std::vector<const char*> ConvertStrings(
+    const std::vector<std::string>& strings) {
   std::vector<const char*> ret;
-  for (auto& value : values) {
-    if (!value->is_string_value()) {
-      return base::nullopt;
-    }
-
-    // ret's cstrings reference |values| strings, so |values| MUST outlive it.
-    ret.push_back(value->get_string_value().c_str());
+  for (auto& value : strings) {
+    ret.push_back(value.c_str());
   }
   return ret;
+}
+
+// Depending on |type|, returns the number of values associated with
+// |attr_value|.
+size_t GetAttributeValuesSize(
+    const cups_ipp_parser::mojom::IppAttributePtr& attr) {
+  const auto& attr_value = attr->value;
+  switch (attr->type) {
+    case cups_ipp_parser::mojom::ValueType::DATE:
+      return 1;
+
+    case cups_ipp_parser::mojom::ValueType::BOOLEAN:
+      DCHECK(attr_value->is_bools());
+      return attr_value->get_bools().size();
+    case cups_ipp_parser::mojom::ValueType::INTEGER:
+      DCHECK(attr_value->is_ints());
+      return attr_value->get_ints().size();
+    case cups_ipp_parser::mojom::ValueType::STRING:
+      DCHECK(attr_value->is_strings());
+      return attr_value->get_strings().size();
+
+    default:
+      break;
+  }
+
+  DVLOG(1) << "Unknown CupsIppParser ValueType " << attr->type;
+  return 0;
 }
 
 }  // namespace
@@ -154,71 +156,71 @@ ipp_t* IppValidator::ValidateIppMessage(
     cups_ipp_parser::mojom::IppAttributePtr attribute =
         std::move(ipp_message->attributes[i]);
 
-    if (ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
-                          attribute->values.size()))
+    size_t num_values = GetAttributeValuesSize(attribute);
+    if (!num_values) {
       return nullptr;
+    }
+
+    if (!ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
+                           num_values)) {
+      return nullptr;
+    }
 
     switch (attribute->type) {
       case cups_ipp_parser::mojom::ValueType::BOOLEAN: {
-        base::Optional<std::vector<char>> values =
-            ParseBooleans(attribute->values);
-        if (!values.has_value()) {
-          return nullptr;
-        }
+        DCHECK(attribute->value->is_bools());
+        std::vector<char> values =
+            ConvertBooleans(attribute->value->get_bools());
 
         auto* attr = ippAddBooleans(
             ipp.get(), static_cast<ipp_tag_t>(attribute->group_tag),
-            attribute->name.c_str(), values->size(), values->data());
+            attribute->name.c_str(), values.size(), values.data());
         if (!attr) {
           return nullptr;
         }
         break;
       }
-      // TODO(crbug.com/945409): Include for multiple value checking.
       case cups_ipp_parser::mojom::ValueType::DATE: {
-        if (!attribute->values.front()->is_char_value()) {
-          return nullptr;
-        }
+        DCHECK(attribute->value->is_date());
+        std::vector<uint8_t> date = attribute->value->get_date();
 
-        auto date = attribute->values.front()->get_char_value();
-        auto* attr = ippAddDate(
-            ipp.get(), static_cast<ipp_tag_t>(attribute->group_tag),
-            attribute->name.c_str(), static_cast<ipp_uchar_t*>(&date));
+        // Per RFC2910, ipp_uchar_t is defined as an OCTET, so below
+        // reinterpret_cast is safe.
+        auto* attr =
+            ippAddDate(ipp.get(), static_cast<ipp_tag_t>(attribute->group_tag),
+                       attribute->name.c_str(),
+                       reinterpret_cast<const ipp_uchar_t*>(date.data()));
         if (!attr) {
           return nullptr;
         }
         break;
       }
       case cups_ipp_parser::mojom::ValueType::INTEGER: {
-        base::Optional<std::vector<int>> values =
-            ParseIntegers(attribute->values);
-        if (!values.has_value()) {
-          return nullptr;
-        }
+        DCHECK(attribute->value->is_ints());
+        std::vector<int> values = attribute->value->get_ints();
 
         auto* attr = ippAddIntegers(
             ipp.get(), static_cast<ipp_tag_t>(attribute->group_tag),
             static_cast<ipp_tag_t>(attribute->value_tag),
-            attribute->name.c_str(), values->size(), values->data());
+            attribute->name.c_str(), values.size(), values.data());
         if (!attr) {
           return nullptr;
         }
         break;
       }
       case cups_ipp_parser::mojom::ValueType::STRING: {
-        // Note: cstrings_values references attribute->values, i.e.
-        // cstrings_values MUST outlive attribute->values.
-        base::Optional<std::vector<const char*>> cstrings_values =
-            ParseStrings(attribute->values);
-        if (!cstrings_values.has_value()) {
-          return nullptr;
-        }
+        DCHECK(attribute->value->is_strings());
+
+        // Note: cstrings_values references attribute->value's strings, i.e.
+        // attribute->value MUST outlive cstrings_values.
+        std::vector<const char*> cstrings_values =
+            ConvertStrings(attribute->value->get_strings());
 
         auto* attr = ippAddStrings(
             ipp.get(), static_cast<ipp_tag_t>(attribute->group_tag),
             static_cast<ipp_tag_t>(attribute->value_tag),
-            attribute->name.c_str(), cstrings_values->size(), kLocaleEnglish,
-            cstrings_values->data());
+            attribute->name.c_str(), cstrings_values.size(), kLocaleEnglish,
+            cstrings_values.data());
         if (!attr) {
           return nullptr;
         }

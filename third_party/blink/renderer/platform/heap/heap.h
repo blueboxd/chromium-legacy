@@ -366,6 +366,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void PrepareForSweep();
   void RemoveAllPages();
+  void InvokeFinalizersOnSweptPages();
   void CompleteSweep();
 
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };

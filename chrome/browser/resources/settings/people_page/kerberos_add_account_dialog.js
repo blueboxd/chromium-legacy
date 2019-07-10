@@ -99,11 +99,22 @@ Polymer({
   /** @private {string} */
   config_: '',
 
+  /** @private {string} */
+  title_: '',
+
+  /** @private {string} */
+  actionButtonLabel_: '',
+
   /** @override */
   attached: function() {
     this.$.addDialog.showModal();
 
     if (this.presetAccount) {
+      // Refresh an existing account.
+      this.title_ = this.i18n('refreshKerberosAccount');
+      this.actionButtonLabel_ =
+          this.i18n('addKerberosAccountRefreshButtonLabel');
+
       // Preset username and make UI read-only.
       // Note: At least the focus() part needs to be after showModal.
       this.username_ = this.presetAccount.principalName;
@@ -126,6 +137,10 @@ Polymer({
 
       this.config_ = this.presetAccount.config;
     } else {
+      // Add a new Kerberos account.
+      this.title_ = this.i18n('addKerberosAccount');
+      this.actionButtonLabel_ = this.i18n('add');
+
       // Set a default configuration.
       this.config_ = loadTimeData.getString('defaultKerberosConfig');
     }

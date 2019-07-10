@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   SynchronizeThreads();
 
   // Wait for hit test data to change after scroll happens.
-  observer.WaitForHitTestDataChange();
+  observer.WaitForTransformChangeInHitTestData();
 
   // Fling and wait for the parent to scroll up.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(

@@ -12,6 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
+#include "components/account_id/account_id.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -107,11 +108,9 @@ class FakeIdentityService
       return;
     }
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
-    CoreAccountInfo account_info;
-    account_info.email = account_id.GetUserEmail();
-    account_info.gaia = account_id.GetGaiaId();
-    account_info.account_id = account_id.GetAccountIdKey();
-    std::move(callback).Run(account_info, {});
+    std::move(callback).Run(CoreAccountId(account_id.GetAccountIdKey()),
+                            account_id.GetGaiaId(), account_id.GetUserEmail(),
+                            {});
   }
 
   void GetAccessToken(const CoreAccountId& account_id,

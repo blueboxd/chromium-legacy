@@ -75,6 +75,9 @@ void LocaleNotificationDelegate::Click(
 
   std::move(callback_).Run(button_index ? LocaleNotificationResult::kRevert
                                         : LocaleNotificationResult::kAccept);
+
+  message_center::MessageCenter::Get()->RemoveNotification(
+      kLocaleChangeNotificationId, true /* by_user */);
 }
 
 }  // namespace

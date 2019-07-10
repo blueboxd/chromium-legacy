@@ -41,6 +41,7 @@ component("lib") {
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/services/assistant/public/proto",
     "//components/account_id",
+    "//components/user_manager",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",

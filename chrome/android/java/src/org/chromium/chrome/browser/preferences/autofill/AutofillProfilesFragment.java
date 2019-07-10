@@ -92,14 +92,14 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             // Add a preference for the profile.
             Preference pref;
             if (profile.getIsLocal()) {
-                AutofillProfileEditorPreference localPref =
-                        new AutofillProfileEditorPreference(getActivity(), sObserverForTest);
+                AutofillProfileEditorPreference localPref = new AutofillProfileEditorPreference(
+                        getActivity(), getStyledContext(), sObserverForTest);
                 localPref.setTitle(profile.getFullName());
                 localPref.setSummary(profile.getLabel());
                 localPref.setKey(localPref.getTitle().toString()); // For testing.
                 pref = localPref;
             } else {
-                pref = new Preference(getActivity());
+                pref = new Preference(getStyledContext());
                 pref.setWidgetLayoutResource(R.layout.autofill_server_data_label);
                 pref.setFragment(AutofillServerProfilePreferences.class.getName());
             }
@@ -113,8 +113,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         // Add 'Add address' button. Tap of it brings up address editor which allows users type in
         // new addresses.
         if (PersonalDataManager.isAutofillProfileEnabled()) {
-            AutofillProfileEditorPreference pref =
-                    new AutofillProfileEditorPreference(getActivity(), sObserverForTest);
+            AutofillProfileEditorPreference pref = new AutofillProfileEditorPreference(
+                    getActivity(), getStyledContext(), sObserverForTest);
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(

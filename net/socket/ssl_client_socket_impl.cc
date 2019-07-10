@@ -140,7 +140,7 @@ base::Value NetLogSSLMessageCallback(bool is_write,
   // (that's the private key which isn't sent over the wire), but it may contain
   // information on the user's identity.
   if (!is_write || type != SSL3_MT_CERTIFICATE ||
-      capture_mode.include_socket_bytes()) {
+      NetLogCaptureIncludesSocketBytes(capture_mode)) {
     dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   }
 

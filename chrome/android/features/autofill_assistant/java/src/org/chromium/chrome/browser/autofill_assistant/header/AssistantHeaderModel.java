@@ -22,7 +22,8 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> BUBBLE_MESSAGE =
             new WritableObjectPropertyKey<>();
 
-    static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
+    @VisibleForTesting
+    public static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 
     @VisibleForTesting
     public static final WritableBooleanPropertyKey PROGRESS_VISIBLE =
@@ -30,7 +31,8 @@ public class AssistantHeaderModel extends PropertyModel {
 
     static final WritableBooleanPropertyKey SPIN_POODLE = new WritableBooleanPropertyKey();
 
-    static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
+    @VisibleForTesting
+    public static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<AssistantChip> CHIP =

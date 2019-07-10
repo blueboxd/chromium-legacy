@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/bluetooth/bluetooth_system_factory.h"
 #include "services/device/fingerprint/fingerprint.h"
+#include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
 #include "services/device/geolocation/geolocation_config.h"
 #include "services/device/geolocation/geolocation_context.h"
@@ -132,6 +133,12 @@ DeviceService::~DeviceService() {
   serial_port_manager_task_runner_->DeleteSoon(FROM_HERE,
                                                std::move(serial_port_manager_));
 #endif
+}
+
+void DeviceService::SetPlatformSensorProviderForTesting(
+    std::unique_ptr<PlatformSensorProvider> provider) {
+  DCHECK(!sensor_provider_);
+  sensor_provider_ = std::make_unique<SensorProviderImpl>(std::move(provider));
 }
 
 void DeviceService::OnStart() {
@@ -314,11 +321,14 @@ void DeviceService::BindScreenOrientationListenerRequest(
 
 void DeviceService::BindSensorProviderRequest(
     mojom::SensorProviderRequest request) {
-  if (io_task_runner_) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&device::SensorProviderImpl::Create,
-                                  std::move(request)));
+  if (!sensor_provider_) {
+    auto platform_provider = PlatformSensorProvider::Create();
+    if (!platform_provider)
+      return;
+    sensor_provider_ =
+        std::make_unique<SensorProviderImpl>(std::move(platform_provider));
   }
+  sensor_provider_->Bind(std::move(request));
 }
 
 void DeviceService::BindTimeZoneMonitorRequest(

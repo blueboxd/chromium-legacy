@@ -13,15 +13,12 @@ ImageProvider::ScopedResult::ScopedResult() = default;
 ImageProvider::ScopedResult::ScopedResult(DecodedDrawImage image)
     : image_(std::move(image)) {}
 
+ImageProvider::ScopedResult::ScopedResult(sk_sp<PaintRecord> record)
+    : record_(std::move(record)) {}
+
 ImageProvider::ScopedResult::ScopedResult(DecodedDrawImage image,
                                           DestructionCallback callback)
     : image_(std::move(image)), destruction_callback_(std::move(callback)) {}
-
-ImageProvider::ScopedResult::ScopedResult(sk_sp<PaintRecord> record,
-                                          DestructionCallback callback)
-    : record_(std::move(record)), destruction_callback_(std::move(callback)) {
-  DCHECK(!destruction_callback_.is_null());
-}
 
 ImageProvider::ScopedResult::ScopedResult(ScopedResult&& other)
     : image_(std::move(other.image_)),

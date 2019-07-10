@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -55,7 +56,7 @@ QueueType GetQueueType(const base::TaskTraits& traits,
       return QueueType::kBestEffort;
 
     case base::TaskPriority::USER_VISIBLE:
-      return QueueType::kDefault;
+      return QueueType::kUserVisible;
 
     case base::TaskPriority::USER_BLOCKING:
       return QueueType::kUserBlocking;

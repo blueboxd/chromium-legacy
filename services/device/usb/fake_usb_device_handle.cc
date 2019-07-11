@@ -4,6 +4,9 @@
 
 #include "services/device/usb/fake_usb_device_handle.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -115,7 +118,7 @@ void FakeUsbDeviceHandle::GenericTransfer(
   NOTIMPLEMENTED();
 }
 
-const UsbInterfaceDescriptor* FakeUsbDeviceHandle::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* FakeUsbDeviceHandle::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   NOTIMPLEMENTED();
   return nullptr;

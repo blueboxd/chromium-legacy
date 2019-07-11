@@ -38,6 +38,8 @@ class TimeTicks;
 
 namespace autofill {
 
+class AutofillInternalsBuffer;
+
 // Password attributes (whether a password has special symbols, numeric, etc.)
 enum class PasswordAttribute {
   kHasLowercaseLetter,
@@ -627,6 +629,9 @@ class FormStructure {
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
+
+AutofillInternalsBuffer& operator<<(AutofillInternalsBuffer& buffer,
+                                    const FormStructure& form);
 
 }  // namespace autofill
 

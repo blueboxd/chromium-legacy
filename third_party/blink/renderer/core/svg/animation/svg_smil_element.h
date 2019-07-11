@@ -87,9 +87,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void SeekToIntervalCorrespondingToTime(double elapsed);
 
   bool NeedsToProgress(double elapsed, bool seek_to_time);
-  void TriggerPendingEvents(double elapsed);
-  void UpdateNextProgressTime(double elapsed);
   void Progress(double elapsed, bool seek_to_time);
+  void TriggerPendingEvents(double elapsed);
+  void UpdateSyncbases();
+  void UpdateNextProgressTime(double elapsed);
 
   SMILTime NextProgressTime() const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
@@ -295,6 +296,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_max_;
 
   bool animated_property_locked_;
+  bool interval_has_changed_;
 
   friend class ConditionEventListener;
 };

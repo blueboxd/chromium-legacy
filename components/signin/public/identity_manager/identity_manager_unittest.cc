@@ -17,24 +17,25 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
-#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
-#include "components/signin/core/browser/signin_switches.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/list_accounts_test_utils.h"
+#include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -360,7 +361,7 @@ class IdentityManagerTest : public testing::Test {
         std::move(gaia_cookie_manager_service),
         std::move(primary_account_manager), std::move(account_fetcher_service),
         nullptr, nullptr, std::move(accounts_cookie_mutator),
-        std::move(diagnostics_provider)));
+        std::move(diagnostics_provider), nullptr));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(

@@ -332,8 +332,8 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       weighted_score_ += weighted_jank_fraction;
       if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
         weighted_jank_fraction *= move_distance_factor;
-      frame.Client()->DidObserveLayoutJank(weighted_jank_fraction,
-                                           observed_input_or_scroll_);
+      frame.Client()->DidObserveLayoutShift(weighted_jank_fraction,
+                                            observed_input_or_scroll_);
     }
   }
 

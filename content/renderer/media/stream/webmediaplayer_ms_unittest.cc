@@ -79,7 +79,7 @@ static const int kStandardWidth = 320;
 static const int kStandardHeight = 240;
 
 class FakeWebMediaPlayerDelegate
-    : public media::WebMediaPlayerDelegate,
+    : public blink::WebMediaPlayerDelegate,
       public base::SupportsWeakPtr<FakeWebMediaPlayerDelegate> {
  public:
   FakeWebMediaPlayerDelegate() {}

@@ -33,6 +33,7 @@ class ServiceWorkerRegistration final
       public mojom::blink::ServiceWorkerRegistrationObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
+  USING_PRE_FINALIZER(ServiceWorkerRegistration, Dispose);
 
  public:
   // Called from CallbackPromiseAdapter.
@@ -47,11 +48,6 @@ class ServiceWorkerRegistration final
   ServiceWorkerRegistration(
       ExecutionContext*,
       mojom::blink::ServiceWorkerRegistrationObjectInfoPtr);
-
-  // Eager finalization needed to promptly invalidate the corresponding entry of
-  // the (registration id, WeakMember<ServiceWorkerRegistration>) map inside
-  // ServiceWorkerContainer.
-  EAGERLY_FINALIZE();
 
   // Called in 2 scenarios:
   //   - when constructing |this|.
@@ -91,6 +87,8 @@ class ServiceWorkerRegistration final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound)
 
   ~ServiceWorkerRegistration() override;
+
+  void Dispose();
 
   void Trace(blink::Visitor*) override;
 

@@ -841,13 +841,22 @@ interface NetworkContext {
   // "sec-websocket-protocol" is constructed from  |requested_protocols| in
   // this message). |site_for_cookies| represents the first-party origin for
   // the request. |options| may be a combination of the kWebSocketOption* flags.
-  // The connection will be shut down when |handshake_client| gets disconnected
-  // during the handshake phase, or |connection_client| gets disconnected.
+  //
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
   // request headers and Cookie response headers to be modified. This has a
   // performance impact because of the extra process hops, so use should be
   // minimized.
+  //
+  // Detect mojo connection errors on |handshake_client| in the caller side.
+  // Do *NOT* interpret mojo connection errors on |auth_handler| and
+  // |header_client| as WebSocket connection errors. They are disconnected when
+  // the connection is established, and due to message ordering uncertainty we
+  // cannot know what happened. |handshake_client| doesn't have such an issue
+  // because OnConnectionEstablished will be called when the connection is
+  // established, but it is still recommended to rely only on
+  // |connection_client| because |connection_client| can be disconnected with
+  // custom reasons.
   CreateWebSocket(
         url.mojom.Url url,
         array<string> requested_protocols,

@@ -877,7 +877,7 @@ class IDLParser(object):
     if len(p) > 2:
       p[0] = ListFromConcat(p[2], p[3])
 
-  # Moved BYTESTRING, DOMSTRING, OBJECT, DATE, REGEXP to PrimitiveType
+  # Moved BYTESTRING, DOMSTRING, OBJECT to PrimitiveType
   # Moving all built-in types into PrimitiveType makes it easier to
   # differentiate between them and 'identifier', since p[1] would be a string in
   # both cases.
@@ -909,7 +909,7 @@ class IDLParser(object):
       p[0] = p[1]
 
 
-  # Added StringType, OBJECT, DATE, REGEXP
+  # Added StringType, OBJECT
   def p_PrimitiveType(self, p):
     """PrimitiveType : UnsignedIntegerType
                      | UnrestrictedFloatType
@@ -917,9 +917,7 @@ class IDLParser(object):
                      | BOOLEAN
                      | BYTE
                      | OCTET
-                     | OBJECT
-                     | DATE
-                     | REGEXP"""
+                     | OBJECT"""
     if type(p[1]) == str:
       p[0] = self.BuildNamed('PrimitiveType', p, 1)
     else:

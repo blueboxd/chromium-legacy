@@ -219,14 +219,10 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 @property(weak, nonatomic, readonly) CRWSessionController* sessionController;
 // The associated NavigationManagerImpl.
 @property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
-// Whether the associated WebState has an opener.
-@property(nonatomic, readonly) BOOL hasOpener;
 // TODO(crbug.com/692871): Remove these functions and replace with more
 // appropriate NavigationItem getters.
 // Returns the navigation item for the current page.
 @property(nonatomic, readonly) web::NavigationItemImpl* currentNavItem;
-// Returns the referrer for current navigation item. May be empty.
-@property(nonatomic, readonly) web::Referrer currentNavItemReferrer;
 
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
@@ -280,8 +276,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
-// Clears WebUI, if one exists.
-- (void)clearWebUI;
 
 @end
 
@@ -556,19 +550,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                            : nil;
 }
 
-- (BOOL)hasOpener {
-  return self.webStateImpl ? self.webStateImpl->HasOpener() : NO;
-}
-
 - (web::NavigationItemImpl*)currentNavItem {
   return self.navigationManagerImpl
              ? self.navigationManagerImpl->GetCurrentItemImpl()
              : nullptr;
-}
-
-- (web::Referrer)currentNavItemReferrer {
-  web::NavigationItem* currentItem = self.currentNavItem;
-  return currentItem ? currentItem->GetReferrer() : web::Referrer();
 }
 
 #pragma mark - ** Public Methods **
@@ -617,6 +602,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   _jsWindowErrorManager.reset();
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
+  [self.requestController close];
 
   // Mark the destruction sequence has started, in case someone else holds a
   // strong reference and tries to continue using the tab.
@@ -687,67 +673,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // cancelled.
   _userInteractionState.SetLastUserInteraction(nullptr);
   base::RecordAction(base::UserMetricsAction("Reload"));
-  GURL URL = self.currentNavItem->GetURL();
-  if ([self.legacyNativeController shouldLoadURLInNativeView:URL]) {
-    std::unique_ptr<web::NavigationContextImpl> navigationContext =
-        [_requestController
-            registerLoadRequestForURL:URL
-                             referrer:self.currentNavItemReferrer
-                           transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
-               sameDocumentNavigation:NO
-                       hasUserGesture:YES
-                    rendererInitiated:rendererInitiated
-                placeholderNavigation:NO];
-    self.webStateImpl->OnNavigationStarted(navigationContext.get());
-    [self didStartLoading];
-    self.navigationManagerImpl->CommitPendingItem(
-        navigationContext->ReleaseItem());
-    [self.legacyNativeController reload];
-    navigationContext->SetHasCommitted(true);
-    self.webStateImpl->OnNavigationFinished(navigationContext.get());
-    [self loadCompleteWithSuccess:YES forContext:nullptr];
-  } else {
-    web::NavigationItem* transientItem =
-        self.navigationManagerImpl->GetTransientItem();
-    if (transientItem) {
-      // If there's a transient item, a reload is considered a new navigation to
-      // the transient item's URL (as on other platforms).
-      NavigationManager::WebLoadParams reloadParams(transientItem->GetURL());
-      reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
-      reloadParams.extra_headers =
-          [transientItem->GetHttpRequestHeaders() copy];
-      self.webState->GetNavigationManager()->LoadURLWithParams(reloadParams);
-    } else {
-      self.currentNavItem->SetTransitionType(
-          ui::PageTransition::PAGE_TRANSITION_RELOAD);
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-          !web::GetWebClient()->IsAppSpecificURL(
-              net::GURLWithNSURL(self.webView.URL))) {
-        // New navigation manager can delegate directly to WKWebView to reload
-        // for non-app-specific URLs. The necessary navigation states will be
-        // updated in WKNavigationDelegate callbacks.
-        WKNavigation* navigation = [self.webView reload];
-        [self.navigationHandler.navigationStates
-                 setState:web::WKNavigationState::REQUESTED
-            forNavigation:navigation];
-        std::unique_ptr<web::NavigationContextImpl> navigationContext =
-            [_requestController
-                registerLoadRequestForURL:URL
-                                 referrer:self.currentNavItemReferrer
-                               transition:ui::PageTransition::
-                                              PAGE_TRANSITION_RELOAD
-                   sameDocumentNavigation:NO
-                           hasUserGesture:YES
-                        rendererInitiated:rendererInitiated
-                    placeholderNavigation:NO];
-        [self.navigationHandler.navigationStates
-               setContext:std::move(navigationContext)
-            forNavigation:navigation];
-      } else {
-        [self loadCurrentURLWithRendererInitiatedNavigation:rendererInitiated];
-      }
-    }
-  }
+  [_requestController reloadWithRendererInitiatedNavigation:rendererInitiated];
 }
 
 - (void)stopLoading {
@@ -792,50 +718,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   _currentURLLoadWasTrigerred = YES;
 
-  // Reset current WebUI if one exists.
-  [self clearWebUI];
-
-  // Abort any outstanding page load. This ensures the delegate gets informed
-  // about the outgoing page, and further messages from the page are suppressed.
-  if (self.navigationHandler.navigationState !=
-      web::WKNavigationState::FINISHED) {
-    [self.webView stopLoading];
-    [self.navigationHandler stopLoading];
-  }
-
-  self.webStateImpl->ClearTransientContent();
-
-  web::NavigationItem* item = self.currentNavItem;
-  const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
-  const bool isCurrentURLAppSpecific =
-      web::GetWebClient()->IsAppSpecificURL(currentURL);
-  // If it's a chrome URL, but not a native one, create the WebUI instance.
-  if (isCurrentURLAppSpecific &&
-      ![self.legacyNativeController shouldLoadURLInNativeView:currentURL]) {
-    if (!(item->GetTransitionType() & ui::PAGE_TRANSITION_TYPED ||
-          item->GetTransitionType() & ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
-        self.hasOpener) {
-      // WebUI URLs can not be opened by DOM to prevent cross-site scripting as
-      // they have increased power. WebUI URLs may only be opened when the user
-      // types in the URL or use bookmarks.
-      self.navigationManagerImpl->DiscardNonCommittedItems();
-      return;
-    } else {
-      [self createWebUIForURL:currentURL];
-    }
-  }
-
-  // Loading a new url, must check here if it's a native chrome URL and
-  // replace the appropriate view if so, or transition back to a web view from
-  // a native view.
-  if ([self.legacyNativeController shouldLoadURLInNativeView:currentURL]) {
-    [self.legacyNativeController
-        loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
-            rendererInitiated];
-  } else if ([_requestController maybeLoadRequestForCurrentNavigationItem]) {
-    [self ensureWebViewCreated];
-    [_requestController loadRequestForCurrentNavigationItem];
-  }
+  [_requestController
+      loadCurrentURLWithRendererInitiatedNavigation:rendererInitiated];
 }
 
 - (void)loadCurrentURLIfNecessary {
@@ -863,12 +747,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Loads the HTML into the page at the given URL. Only for testing purpose.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
-  // Web View should not be created for App Specific URLs.
-  if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
-    [self ensureWebViewCreated];
-    DCHECK(self.webView) << "self.webView null while trying to load HTML";
-  }
-
   [_requestController loadHTML:HTML forURL:URL];
 }
 
@@ -1418,19 +1296,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Page is reset as a precaution.
   DLOG(WARNING) << "Unexpected message received: " << command;
   return NO;
-}
-
-#pragma mark - WebUI
-
-// Sets up WebUI for URL.
-- (void)createWebUIForURL:(const GURL&)URL {
-  // |CreateWebUI| will do nothing if |URL| is not a WebUI URL and then
-  // |HasWebUI| will return false.
-  self.webStateImpl->CreateWebUI(URL);
-}
-
-- (void)clearWebUI {
-  self.webStateImpl->ClearWebUI();
 }
 
 #pragma mark - CRWWebViewScrollViewProxyObserver
@@ -2184,7 +2049,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL {
-  [self createWebUIForURL:URL];
+  [_requestController createWebUIForURL:URL];
 }
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
@@ -2275,6 +2140,22 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webRequestControllerStopLoading:
     (CRWWebRequestController*)requestController {
   [self stopLoading];
+}
+
+- (void)webRequestControllerEnsureWebViewCreated:
+    (CRWWebRequestController*)requestController {
+  [self ensureWebViewCreated];
+}
+
+- (void)webRequestControllerDidStartLoading:
+    (CRWWebRequestController*)requestController {
+  [self didStartLoading];
+}
+
+- (void)webRequestController:(CRWWebRequestController*)requestController
+    didCompleteLoadWithSuccess:(BOOL)loadSuccess
+                    forContext:(web::NavigationContextImpl*)context {
+  [self loadCompleteWithSuccess:loadSuccess forContext:context];
 }
 
 - (void)webRequestControllerDisconnectScrollViewProxy:

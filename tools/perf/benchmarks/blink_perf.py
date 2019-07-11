@@ -247,6 +247,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     with open(os.path.join(os.path.dirname(__file__),
                            'blink_perf.js'), 'r') as f:
       self._blink_perf_js = f.read()
+    self._is_tracing = False
     self._extra_chrome_categories = None
     self._enable_systrace = None
 
@@ -256,9 +257,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 
   def DidNavigateToPage(self, page, tab):
     tab.WaitForJavaScriptCondition('testRunner.isWaitingForTelemetry')
-    tracing_categories = tab.EvaluateJavaScript('testRunner.tracingCategories')
-    if tracing_categories:
-      self._StartTracing(tab, tracing_categories)
+    self._StartTracingIfNeeded(tab)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -277,13 +276,20 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if options.enable_systrace:
       self._enable_systrace = True
 
-  def _StartTracing(self, tab, tracing_categories):
+  def _StartTracingIfNeeded(self, tab):
+    tracing_categories = tab.EvaluateJavaScript('testRunner.tracingCategories')
+    if (not tracing_categories and not self._extra_chrome_categories and
+        not self._enable_systrace):
+      return
+
+    self._is_tracing = True
     config = tracing_config.TracingConfig()
     config.enable_chrome_trace = True
     config.chrome_trace_config.category_filter.AddFilterString(
         'blink.console')  # This is always required for js land trace event
-    config.chrome_trace_config.category_filter.AddFilterString(
-        tracing_categories)
+    if tracing_categories:
+      config.chrome_trace_config.category_filter.AddFilterString(
+          tracing_categories)
     if self._extra_chrome_categories:
       config.chrome_trace_config.category_filter.AddFilterString(
           self._extra_chrome_categories)
@@ -311,16 +317,17 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     trace_cpu_time_metrics = {}
-    if tab.EvaluateJavaScript('testRunner.tracingCategories'):
+    if self._is_tracing:
       trace_data = tab.browser.platform.tracing_controller.StopTracing()
       results.AddTraces(trace_data)
 
       trace_events_to_measure = tab.EvaluateJavaScript(
           'window.testRunner.traceEventsToMeasure')
-      model = model_module.TimelineModel(trace_data)
-      renderer_thread = model.GetFirstRendererThread(tab.id)
-      trace_cpu_time_metrics = _ComputeTraceEventsThreadTimeForBlinkPerf(
-          model, renderer_thread, trace_events_to_measure)
+      if trace_events_to_measure:
+        model = model_module.TimelineModel(trace_data)
+        renderer_thread = model.GetFirstRendererThread(tab.id)
+        trace_cpu_time_metrics = _ComputeTraceEventsThreadTimeForBlinkPerf(
+            model, renderer_thread, trace_events_to_measure)
 
     log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')
 

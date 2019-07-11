@@ -815,7 +815,7 @@ void UsbDeviceHandleImpl::GenericTransfer(
   SubmitTransfer(std::move(transfer));
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -989,21 +989,19 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(device_);
   endpoint_map_.clear();
   const UsbConfigDescriptor* config = device_->active_configuration();
-  if (config) {
-    for (const auto& map_entry : claimed_interfaces_) {
-      int interface_number = map_entry.first;
-      const scoped_refptr<InterfaceClaimer>& claimed_iface = map_entry.second;
+  if (!config)
+    return;
 
-      for (const UsbInterfaceDescriptor& iface : config->interfaces) {
-        if (iface.interface_number == interface_number &&
-            iface.alternate_setting == claimed_iface->alternate_setting()) {
-          for (const auto& endpoint : iface.endpoints) {
-            endpoint_map_[ConvertEndpointNumberToAddress(*endpoint)] = {
-                &iface, endpoint.get()};
-          }
-          break;
-        }
-      }
+  for (const auto& map_entry : claimed_interfaces_) {
+    CombinedInterfaceInfo interface_info = FindInterfaceInfoFromConfig(
+        config, map_entry.first, map_entry.second->alternate_setting());
+
+    if (!interface_info.IsValid())
+      return;
+
+    for (const auto& endpoint : interface_info.alternate->endpoints) {
+      endpoint_map_[ConvertEndpointNumberToAddress(*endpoint)] = {
+          interface_info.interface, endpoint.get()};
     }
   }
 }

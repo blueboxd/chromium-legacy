@@ -191,10 +191,20 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
       aria_properties_events_.insert(node);
       break;
-    case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
-      FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
-      FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered, node);
+    case ui::AXEventGenerator::Event::CHILDREN_CHANGED: {
+      // If this node is ignored, notify from the platform parent if available,
+      // since it will be unignored.
+      BrowserAccessibility* target_node =
+          node->GetData().HasState(ax::mojom::State::kIgnored)
+              ? node->PlatformGetParent()
+              : node;
+      if (target_node) {
+        FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, target_node);
+        FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered,
+                                     target_node);
+      }
       break;
+    }
     case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_ClassNamePropertyId, node);
       break;
@@ -252,7 +262,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
       }
-      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
@@ -465,16 +474,10 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-
-  // Suppress events when |IGNORED_CHANGED| with the exception for firing
-  // UIA_AriaPropertiesPropertyId-hidden event on non-text node marked as
-  // ignored.
+  // Suppress events when |IGNORED_CHANGED|
   if (node->HasState(ax::mojom::State::kIgnored) ||
-      base::Contains(ignored_changed_nodes_, node)) {
-    if (uia_property != UIA_AriaPropertiesPropertyId ||
-        node->IsTextOnlyObject())
-      return;
-  }
+      base::Contains(ignored_changed_nodes_, node))
+    return;
 
   // The old value is not used by the system
   VARIANT old_value = {};

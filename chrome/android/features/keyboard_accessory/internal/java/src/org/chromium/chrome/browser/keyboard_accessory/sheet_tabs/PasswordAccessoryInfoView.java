@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.ui.widget.ChipView;
@@ -24,6 +25,7 @@ import org.chromium.ui.widget.ChipView;
  * This view represents a section of user credentials in the password tab of the keyboard accessory.
  */
 class PasswordAccessoryInfoView extends LinearLayout {
+    private TextView mTitle;
     private ImageView mIcon;
     private ChipView mUsername;
     private ChipView mPassword;
@@ -59,6 +61,7 @@ class PasswordAccessoryInfoView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
+        mTitle = findViewById(R.id.password_info_title);
         mIcon = findViewById(R.id.favicon);
         mUsername = findViewById(R.id.suggestion_text);
         mPassword = findViewById(R.id.password_text);
@@ -75,6 +78,10 @@ class PasswordAccessoryInfoView extends LinearLayout {
                 R.dimen.keyboard_accessory_suggestion_icon_size);
         icon.setBounds(0, 0, kIconSize, kIconSize);
         mIcon.setImageDrawable(icon);
+    }
+
+    TextView getTitle() {
+        return mTitle;
     }
 
     ChipView getUsername() {

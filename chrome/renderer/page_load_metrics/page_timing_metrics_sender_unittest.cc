@@ -351,9 +351,9 @@ TEST_F(PageTimingMetricsSenderTest, SendPageRenderData) {
   metrics_sender_->Send(timing.Clone());
   validator_.ExpectPageLoadTiming(timing);
 
-  metrics_sender_->DidObserveLayoutJank(0.5, false);
-  metrics_sender_->DidObserveLayoutJank(0.5, false);
-  metrics_sender_->DidObserveLayoutJank(0.5, true);
+  metrics_sender_->DidObserveLayoutShift(0.5, false);
+  metrics_sender_->DidObserveLayoutShift(0.5, false);
+  metrics_sender_->DidObserveLayoutShift(0.5, true);
 
   mojom::FrameRenderDataUpdate render_data(1.5, 1.0);
   validator_.UpdateExpectFrameRenderDataUpdate(render_data);

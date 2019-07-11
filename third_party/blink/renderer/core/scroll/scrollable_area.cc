@@ -96,12 +96,13 @@ ScrollableArea::ScrollableArea()
 ScrollableArea::~ScrollableArea() = default;
 
 void ScrollableArea::Dispose() {
-  RunScrollCompleteCallbacks();
-  fade_overlay_scrollbars_timer_.reset();
-  PreFinalize();
+  DisposeImpl();
 }
 
-void ScrollableArea::PreFinalize() {}
+void ScrollableArea::DisposeImpl() {
+  RunScrollCompleteCallbacks();
+  fade_overlay_scrollbars_timer_.reset();
+}
 
 void ScrollableArea::ClearScrollableArea() {
 #if defined(OS_MACOSX)

@@ -50,6 +50,9 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
   // Gets the input method pointer.
   virtual InputMethod* GetInputMethod() = 0;
+
+  // Commits any composition text.
+  virtual void ConfirmCompositionText() = 0;
 };
 
 }  // namespace ui

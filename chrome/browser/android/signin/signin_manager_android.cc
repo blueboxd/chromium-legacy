@@ -11,13 +11,12 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -25,26 +24,38 @@ using base::android::JavaParamRef;
 
 namespace {
 // Clears the information about the last signed-in user from |profile|.
-void ClearLastSignedInUserForProfile(Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
+void ClearLastSignedInUserForProfile(SigninClient* signin_client) {
+  signin_client->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+  signin_client->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 }
 }  // namespace
 
 SigninManagerAndroid::SigninManagerAndroid(
-    Profile* profile,
-    identity::IdentityManager* identity_manager)
-    : profile_(profile), identity_manager_(identity_manager) {
-  DCHECK(profile_);
+    SigninClient* signin_client,
+    PrefService* local_state_pref_service,
+    identity::IdentityManager* identity_manager,
+    std::unique_ptr<SigninManagerDelegate> signin_manager_delegate)
+    : signin_client_(signin_client),
+      identity_manager_(identity_manager),
+      signin_manager_delegate_(std::move(signin_manager_delegate)) {
+  DCHECK(signin_client_);
+  DCHECK(local_state_pref_service);
   DCHECK(identity_manager_);
+  DCHECK(signin_manager_delegate_);
   identity_manager_->AddObserver(this);
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kSigninAllowed,
+
+  signin_allowed_.Init(
+      prefs::kSigninAllowed, signin_client_->GetPrefs(),
       base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
                  base::Unretained(this)));
+
+  force_browser_signin_.Init(prefs::kForceBrowserSignin,
+                             local_state_pref_service);
+
   java_signin_manager_ = Java_SigninManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      signin_manager_delegate_->GetJavaObject(),
+      identity_manager_->LegacyGetAccountTrackerServiceJavaObject());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -52,13 +63,13 @@ SigninManagerAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_signin_manager_);
 }
 
-SigninManagerAndroid::~SigninManagerAndroid() {
-  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
-                             java_signin_manager_);
-}
+SigninManagerAndroid::~SigninManagerAndroid() {}
 
 void SigninManagerAndroid::Shutdown() {
   identity_manager_->RemoveObserver(this);
+  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
+                             java_signin_manager_);
+  signin_manager_delegate_.reset();
 }
 
 void SigninManagerAndroid::OnSignInCompleted(
@@ -92,7 +103,7 @@ void SigninManagerAndroid::SignOut(JNIEnv* env,
 void SigninManagerAndroid::ClearLastSignedInUser(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ClearLastSignedInUserForProfile(profile_);
+  ClearLastSignedInUserForProfile(signin_client_);
 }
 
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
@@ -103,18 +114,20 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
   identity_manager_->LegacyReloadAccountsFromSystem();
 }
 
+bool SigninManagerAndroid::IsSigninAllowed() const {
+  return signin_allowed_.GetValue();
+}
+
 jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+    const JavaParamRef<jobject>& obj) const {
+  return IsSigninAllowed();
 }
 
 jboolean SigninManagerAndroid::IsForceSigninEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  // prefs::kForceBrowserSignin is set in Local State, not in user prefs.
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kForceBrowserSignin);
+  return force_browser_signin_.GetValue();
 }
 
 jboolean SigninManagerAndroid::IsSignedInOnNative(
@@ -130,10 +143,10 @@ void SigninManagerAndroid::OnPrimaryAccountCleared(
                                      java_signin_manager_);
 }
 
-void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
+void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_,
-      profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+      IsSigninAllowed());
 }
 
 base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(

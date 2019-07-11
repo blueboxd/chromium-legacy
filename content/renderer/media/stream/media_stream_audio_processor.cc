@@ -457,7 +457,6 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int audio_delay_milliseconds) {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
-  DCHECK_LE(audio_bus->channels(), 2);
   int frames_per_10_ms = sample_rate / 100;
   if (audio_bus->frames() != frames_per_10_ms) {
     if (unsupported_buffer_size_log_count_ < 10) {
@@ -474,15 +473,22 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  std::vector<const float*> channel_ptrs(audio_bus->channels());
-  for (int i = 0; i < audio_bus->channels(); ++i)
+  // Limit the number of channels to two (stereo) now when multi-channel audio
+  // sources are supported. We still want to prevent the AEC from "seeing" the
+  // full signal.
+  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
+  // supported.
+  int channels = std::min(2, audio_bus->channels());
+
+  std::vector<const float*> channel_ptrs(channels);
+  for (int i = 0; i < channels; ++i)
     channel_ptrs[i] = audio_bus->channel(i);
 
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
       channel_ptrs.data(), audio_bus->frames(), sample_rate,
-      ChannelsToLayout(audio_bus->channels()));
+      ChannelsToLayout(channels));
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="

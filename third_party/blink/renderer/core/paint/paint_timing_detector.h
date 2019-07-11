@@ -50,8 +50,7 @@ class CORE_EXPORT PaintTimingDetector
   inline static void NotifyTextPaint(const IntRect& text_visual_rect);
 
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
-  void NotifyBackgroundImageRemoved(const LayoutObject&,
-                                    const ImageResourceContent*);
+  void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll() const;

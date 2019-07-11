@@ -22,39 +22,26 @@ namespace password_manager {
 
 CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     PasswordManagerClient* client,
-    const PasswordForm& observed_form,
-    std::unique_ptr<autofill::PasswordForm> saved_form,
+    std::unique_ptr<PasswordForm> saved_form,
     CredentialManagerPasswordFormManagerDelegate* delegate,
     std::unique_ptr<FormSaver> form_saver,
     std::unique_ptr<FormFetcher> form_fetcher)
-    : PasswordFormManager(client->GetPasswordManager(),
-                          client,
-                          nullptr,
-                          observed_form,
-                          (form_saver ? std::move(form_saver)
-                                      : std::make_unique<FormSaverImpl>(
-                                            client->GetPasswordStore())),
-                          form_fetcher.get()),
+    : NewPasswordFormManager(client,
+                             std::move(saved_form),
+                             std::move(form_fetcher),
+                             (form_saver ? std::move(form_saver)
+                                         : std::make_unique<FormSaverImpl>(
+                                               client->GetPasswordStore()))),
       delegate_(delegate),
-      saved_form_(std::move(saved_form)),
-      weak_factory_(this) {
-  DCHECK(saved_form_);
-  // This condition is only false on iOS.
-  if (form_fetcher)
-    form_fetcher->Fetch();
-  GrabFetcher(std::move(form_fetcher));
-}
+      weak_factory_(this) {}
 
-CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
-}
+CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() =
+    default;
 
 void CredentialManagerPasswordFormManager::OnFetchCompleted() {
-  PasswordFormManager::OnFetchCompleted();
+  NewPasswordFormManager::OnFetchCompleted();
 
-  // Mark the form as "preferred", as we've been told by the API that this is
-  // indeed the credential set that the user used to sign into the site.
-  saved_form_->preferred = true;
-  ProvisionallySave(*saved_form_);
+  CreatePendingCredentials();
 
   // Notify the delegate. This might result in deleting |this|, while
   // OnFetchCompleted is being called from FormFetcherImpl, owned by |this|. If

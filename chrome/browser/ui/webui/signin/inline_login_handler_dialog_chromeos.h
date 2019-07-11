@@ -28,6 +28,9 @@ class InlineLoginHandlerDialogChromeOS
   // account re-authentication.
   static void Show(const std::string& email = std::string());
 
+  // ui::SystemWebDialogDelegate overrides.
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+
   // web_modal::WebContentsModalDialogHost overrides.
   gfx::Size GetMaximumDialogSize() override;
   gfx::NativeView GetHostView() const override;

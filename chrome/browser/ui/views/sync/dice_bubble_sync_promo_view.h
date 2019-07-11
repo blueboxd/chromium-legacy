@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"

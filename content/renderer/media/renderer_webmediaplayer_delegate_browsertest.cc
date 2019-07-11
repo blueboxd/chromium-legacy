@@ -32,7 +32,7 @@ constexpr base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(1);
 }
 
 class MockWebMediaPlayerDelegateObserver
-    : public WebMediaPlayerDelegate::Observer {
+    : public blink::WebMediaPlayerDelegate::Observer {
  public:
   MockWebMediaPlayerDelegateObserver() {}
   ~MockWebMediaPlayerDelegateObserver() {}

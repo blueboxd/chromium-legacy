@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "media/base/scopedfd_helper.h"
+#include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -82,9 +83,14 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   const OutputRequestType type;
   // The surface to be outputted.
   scoped_refptr<V4L2DecodeSurface> surface;
+  // The timestamp of the output frame. Because a surface might be outputted
+  // multiple times with different timestamp, we need to store timestamp out of
+  // surface.
+  base::TimeDelta timestamp;
 
-  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s) {
-    return OutputRequest(std::move(s));
+  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s,
+                               base::TimeDelta t) {
+    return OutputRequest(std::move(s), t);
   }
 
   static OutputRequest FlushFence() { return OutputRequest(kFlushFence); }
@@ -101,8 +107,8 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   OutputRequest(OutputRequest&&) = default;
 
  private:
-  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
-      : type(kSurface), surface(std::move(s)) {}
+  OutputRequest(scoped_refptr<V4L2DecodeSurface> s, base::TimeDelta t)
+      : type(kSurface), surface(std::move(s)), timestamp(t) {}
   explicit OutputRequest(OutputRequestType t) : type(t) {}
 
   DISALLOW_COPY_AND_ASSIGN(OutputRequest);
@@ -372,9 +378,9 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   visible_rect_ = config.visible_rect();
-  natural_size_ = config.natural_size();
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size_);
+  UpdateVideoFramePoolFormat();
 
   // Create Input/Output V4L2Queue
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
@@ -474,6 +480,11 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(uint32_t output_format_fourcc) {
   return true;
 }
 
+void V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat() {
+  gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
+}
+
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DVLOGF(3);
@@ -547,6 +558,10 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
 
+  if (!request.buffer->end_of_stream()) {
+    bitstream_id_to_timestamp_.emplace(request.bitstream_id,
+                                       request.buffer->timestamp());
+  }
   decode_request_queue_.push(std::move(request));
   // If we are already decoding, then we don't need to pump again.
   if (!current_decode_request_)
@@ -671,7 +686,8 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
         scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
 
         DCHECK(surface->video_frame());
-        RunOutputCB(surface->video_frame());
+        RunOutputCB(surface->video_frame(), surface->visible_rect(),
+                    request.timestamp);
         break;
     }
   }
@@ -726,9 +742,14 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
     return false;
   }
   frame_layout_ = VideoFrameLayout::Create(frame_layout_->format(), coded_size);
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size_);
+  DCHECK(frame_layout_);
+
+  visible_rect_ = avd_->GetVisibleRect();
+  UpdateVideoFramePoolFormat();
 
   // Allocate new output buffers.
+  if (!output_queue_->DeallocateBuffers())
+    return false;
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   DCHECK_GT(num_output_frames, 0u);
   if (output_queue_->AllocateBuffers(num_output_frames, V4L2_MEMORY_DMABUF) ==
@@ -859,10 +880,19 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  // TODO(akahuang): Update visible_rect at the output frame.
-  dec_surface->SetVisibleRect(visible_rect);
+  if (visible_rect_ != visible_rect) {
+    visible_rect_ = visible_rect;
+    UpdateVideoFramePoolFormat();
+  }
 
-  output_request_queue_.push(OutputRequest::Surface(std::move(dec_surface)));
+  auto it = bitstream_id_to_timestamp_.find(bitstream_id);
+  DCHECK(it != bitstream_id_to_timestamp_.end());
+  base::TimeDelta timestamp = it->second;
+  bitstream_id_to_timestamp_.erase(it);
+
+  dec_surface->SetVisibleRect(visible_rect);
+  output_request_queue_.push(
+      OutputRequest::Surface(std::move(dec_surface), timestamp));
   PumpOutputSurfaces();
 }
 
@@ -1041,10 +1071,29 @@ void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
                                 base::BindOnce(std::move(cb), status));
 }
 
-void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame) {
+void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
+                                        const gfx::Rect& visible_rect,
+                                        base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4) << "timestamp: " << timestamp;
 
+  // We need to update one or more attributes of the frame. Since we can't
+  // modify the attributes of the frame directly, we wrap the frame into a new
+  // frame with updated attributes. The old frame is bound to a destruction
+  // observer so it's not destroyed before the wrapped frame.
+  if (frame->visible_rect() != visible_rect ||
+      frame->timestamp() != timestamp) {
+    gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
+    scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
+        *frame, frame->format(), visible_rect, natural_size);
+    wrapped_frame->set_timestamp(timestamp);
+    wrapped_frame->AddDestructionObserver(base::BindOnce(
+        base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame)));
+
+    frame = std::move(wrapped_frame);
+  }
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   scoped_refptr<VideoFrame> converted_frame =
       frame_converter_->ConvertFrame(std::move(frame));
   if (!converted_frame) {
@@ -1052,6 +1101,7 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame) {
     SetState(State::kError);
     return;
   }
+
   // Although the document of VideoDecoder says "should run |output_cb| as soon
   // as possible (without thread trampolining)", MojoVideoDecoderService still
   // assumes the callback is called at original thread.

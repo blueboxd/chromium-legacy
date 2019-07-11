@@ -136,17 +136,17 @@ bool DeviceImpl::HasControlTransferPermission(
   if (!config)
     return false;
 
-  const UsbInterfaceDescriptor* interface = nullptr;
+  const mojom::UsbInterfaceInfo* interface = nullptr;
   if (recipient == UsbControlTransferRecipient::ENDPOINT) {
     interface = device_handle_->FindInterfaceByEndpoint(index & 0xff);
   } else {
     auto interface_it =
         std::find_if(config->interfaces.begin(), config->interfaces.end(),
-                     [index](const UsbInterfaceDescriptor& this_iface) {
-                       return this_iface.interface_number == (index & 0xff);
+                     [index](const mojom::UsbInterfaceInfoPtr& this_iface) {
+                       return this_iface->interface_number == (index & 0xff);
                      });
     if (interface_it != config->interfaces.end())
-      interface = &*interface_it;
+      interface = interface_it->get();
   }
 
   return interface != nullptr;
@@ -226,11 +226,11 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  auto interface_it =
-      std::find_if(config->interfaces.begin(), config->interfaces.end(),
-                   [interface_number](const UsbInterfaceDescriptor& interface) {
-                     return interface.interface_number == interface_number;
-                   });
+  auto interface_it = std::find_if(
+      config->interfaces.begin(), config->interfaces.end(),
+      [interface_number](const mojom::UsbInterfaceInfoPtr& interface) {
+        return interface->interface_number == interface_number;
+      });
   if (interface_it == config->interfaces.end()) {
     std::move(callback).Run(false);
     return;

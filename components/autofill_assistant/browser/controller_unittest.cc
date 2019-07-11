@@ -475,12 +475,13 @@ TEST_F(ControllerTest, Stop) {
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   testing::InSequence seq;
-  EXPECT_CALL(fake_client_, Shutdown(Metrics::SCRIPT_SHUTDOWN));
+  EXPECT_CALL(fake_client_, Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN));
   EXPECT_TRUE(controller_->PerformUserAction(0));
 
   // Simulates Client::Shutdown(SCRIPT_SHUTDOWN)
-  EXPECT_CALL(mock_ui_controller_, WillShutdown(Metrics::SCRIPT_SHUTDOWN));
-  controller_->WillShutdown(Metrics::SCRIPT_SHUTDOWN);
+  EXPECT_CALL(mock_ui_controller_,
+              WillShutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN));
+  controller_->WillShutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
 }
 
 TEST_F(ControllerTest, Reset) {
@@ -657,7 +658,7 @@ TEST_F(ControllerTest, ShowUIWhenContentsFocused) {
   EXPECT_CALL(fake_client_, ShowUI());
   SimulateWebContentsFocused();  // must call ShowUI
 
-  controller_->OnFatalError("test", Metrics::TAB_CHANGED);
+  controller_->OnFatalError("test", Metrics::DropOutReason::TAB_CHANGED);
   SimulateWebContentsFocused();  // must not call ShowUI
 }
 

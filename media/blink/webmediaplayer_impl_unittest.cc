@@ -37,7 +37,6 @@
 #include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/video_decode_stats_reporter.h"
-#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
@@ -48,6 +47,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
+#include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -175,12 +175,12 @@ class MockWebMediaPlayerEncryptedMediaClient
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaPlayerEncryptedMediaClient);
 };
 
-class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
+class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
  public:
   MockWebMediaPlayerDelegate() = default;
   ~MockWebMediaPlayerDelegate() override = default;
 
-  // WebMediaPlayerDelegate implementation.
+  // blink::WebMediaPlayerDelegate implementation.
   int AddObserver(Observer* observer) override {
     DCHECK_EQ(nullptr, observer_);
     observer_ = observer;

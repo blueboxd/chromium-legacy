@@ -13,6 +13,7 @@
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
@@ -49,34 +50,25 @@ void HeapProfilerController::Start() {
       base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
     base::SamplingHeapProfiler::Get()->Start();
   }
-  ScheduleNextSnapshot(task_runner_ ? std::move(task_runner_)
-                                    : base::CreateTaskRunnerWithTraits(
-                                          {base::TaskPriority::BEST_EFFORT}),
-                       stopped_);
+  ScheduleNextSnapshot(stopped_);
 }
 
 // static
 void HeapProfilerController::ScheduleNextSnapshot(
-    scoped_refptr<base::TaskRunner> task_runner,
     scoped_refptr<StoppedFlag> stopped) {
-  // TODO(https://crbug.com/946657): Remove the task_runner and replace the call
-  // with base::PostDelayedTaskWithTraits once test::ScopedTaskEnvironment
-  // supports mock time in thread pools.
-  task_runner->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&HeapProfilerController::TakeSnapshot,
-                     std::move(task_runner), std::move(stopped)),
+  base::PostDelayedTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(stopped)),
       RandomInterval(kHeapCollectionInterval));
 }
 
 // static
 void HeapProfilerController::TakeSnapshot(
-    scoped_refptr<base::TaskRunner> task_runner,
     scoped_refptr<StoppedFlag> stopped) {
   if (stopped->data.IsSet())
     return;
   RetrieveAndSendSnapshot();
-  ScheduleNextSnapshot(std::move(task_runner), std::move(stopped));
+  ScheduleNextSnapshot(std::move(stopped));
 }
 
 // static

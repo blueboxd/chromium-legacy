@@ -56,9 +56,9 @@ namespace {
 namespace password_form_manager_helpers {
 
 // Filter sensitive information, duplicates and |username_value| out from
-// |form->other_possible_usernames|.
+// |form->all_possible_usernames|.
 void SanitizePossibleUsernames(PasswordForm* form) {
-  auto& usernames = form->other_possible_usernames;
+  auto& usernames = form->all_possible_usernames;
 
   // Deduplicate.
   std::sort(usernames.begin(), usernames.end());
@@ -348,7 +348,7 @@ void PasswordFormManager::Update(
 void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   PasswordForm credential(*submitted_form_);
   credential.username_value = new_username;
-  // If |new_username| is not found in |other_possible_usernames|, store empty
+  // If |new_username| is not found in |all_possible_usernames|, store empty
   // |username_element|.
   credential.username_element.clear();
 
@@ -357,13 +357,13 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   // uploaded.
   votes_uploader_.set_has_username_edited_vote(false);
   if (!new_username.empty()) {
-    for (size_t i = 0; i < credential.other_possible_usernames.size(); ++i) {
-      if (credential.other_possible_usernames[i].first == new_username) {
+    for (size_t i = 0; i < credential.all_possible_usernames.size(); ++i) {
+      if (credential.all_possible_usernames[i].first == new_username) {
         credential.username_element =
-            credential.other_possible_usernames[i].second;
+            credential.all_possible_usernames[i].second;
 
-        credential.other_possible_usernames.erase(
-            credential.other_possible_usernames.begin() + i);
+        credential.all_possible_usernames.erase(
+            credential.all_possible_usernames.begin() + i);
 
         // Set |corrected_username_element_| to upload a username vote.
         votes_uploader_.set_has_username_edited_vote(true);
@@ -375,7 +375,7 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   // |username_value| and |username_element| of the submitted form. When the
   // user has to override the username, Chrome will send a username vote.
   if (!submitted_form_->username_value.empty()) {
-    credential.other_possible_usernames.push_back(ValueElementPair(
+    credential.all_possible_usernames.push_back(ValueElementPair(
         submitted_form_->username_value, submitted_form_->username_element));
   }
 
@@ -817,8 +817,8 @@ void PasswordFormManager::CreatePendingCredentialsForNewCredentials(
   pending_credentials_ = observed_form_;
   pending_credentials_.username_element = submitted_form_->username_element;
   pending_credentials_.username_value = submitted_form_->username_value;
-  pending_credentials_.other_possible_usernames =
-      submitted_form_->other_possible_usernames;
+  pending_credentials_.all_possible_usernames =
+      submitted_form_->all_possible_usernames;
   pending_credentials_.all_possible_passwords =
       submitted_form_->all_possible_passwords;
 

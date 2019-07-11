@@ -36,6 +36,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -117,6 +118,7 @@ const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
 const char kManagementPrinting[] = "managementPrinting";
+const char kManagementCrostini[] = "managementCrostini";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kOverview[] = "overview";
@@ -153,7 +155,8 @@ enum class DeviceReportingType {
   kDeviceStatistics,
   kDevice,
   kLogs,
-  kPrint
+  kPrint,
+  kCrostini
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -171,6 +174,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "logs";
     case DeviceReportingType::kPrint:
       return "print";
+    case DeviceReportingType::kCrostini:
+      return "crostini";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -231,6 +236,12 @@ void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
           prefs::kPrintingSendUsernameAndFilenameEnabled)) {
     AddDeviceReportingElement(report_sources, kManagementPrinting,
                               DeviceReportingType::kPrint);
+  }
+
+  if (profile->GetPrefs()->GetBoolean(
+          crostini::prefs::kReportCrostiniUsageEnabled)) {
+    AddDeviceReportingElement(report_sources, kManagementCrostini,
+                              DeviceReportingType::kCrostini);
   }
 }
 #endif  // defined(OS_CHROMEOS)

@@ -41,14 +41,6 @@ struct CompressionTaskParams;
 class PLATFORM_EXPORT ParkableStringImpl final
     : public RefCounted<ParkableStringImpl> {
  public:
-  // Histogram buckets, exported for testing.
-  enum class ParkingAction {
-    kParkedInBackground = 0,
-    kUnparkedInBackground = 1,
-    kUnparkedInForeground = 2,
-    kMaxValue = kUnparkedInForeground
-  };
-
   enum class ParkableState { kParkable, kNotParkable };
   enum class ParkingMode { kIfCompressedDataExists, kAlways };
   enum class AgeOrParkResult {

@@ -227,7 +227,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
-    media::WebMediaPlayerDelegate* delegate,
+    blink::WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
     std::unique_ptr<blink::WebMediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
@@ -736,7 +736,7 @@ double WebMediaPlayerMS::CurrentTime() const {
 }
 
 blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::GetNetworkState() const {
-  DVLOG(1) << __func__ << ", state:" << network_state_;
+  DVLOG(2) << __func__ << ", state:" << network_state_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return network_state_;
 }

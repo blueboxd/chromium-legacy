@@ -109,6 +109,13 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Returns true if |*this| manages http authentication.
   bool IsHttpAuth() const;
 
+  // Returns true if |*this| manages saving with Credentials API. This class is
+  // not used for filling with Credentials API.
+  bool IsCredentialAPISave() const;
+
+  // Returns scheme of the observed form or http authentication.
+  autofill::PasswordForm::Scheme GetScheme() const;
+
   // Selects from |predictions| predictions that corresponds to
   // |observed_form_|, initiates filling and stores predictions in
   // |predictions_|.
@@ -209,8 +216,18 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   }
 
  protected:
+  // Constructor for Credentials API.
+  NewPasswordFormManager(PasswordManagerClient* client,
+                         std::unique_ptr<autofill::PasswordForm> saved_form,
+                         std::unique_ptr<FormFetcher> form_fetcher,
+                         std::unique_ptr<FormSaver> form_saver);
+
   // FormFetcher::Consumer:
   void OnFetchCompleted() override;
+
+  // Create pending credentials from |parsed_submitted_form_| and forms received
+  // from the password store.
+  void CreatePendingCredentials();
 
  private:
   // Delegating constructor.
@@ -238,10 +255,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Report the time between receiving credentials from the password store and
   // the autofill server responding to the lookup request.
   void ReportTimeBetweenStoreAndServerUMA();
-
-  // Create pending credentials from |submitted_form_| and forms received from
-  // the password store.
-  void CreatePendingCredentials();
 
   // Create pending credentials from provisionally saved form when this form
   // represents credentials that were not previosly saved.
@@ -290,10 +303,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   base::WeakPtr<PasswordManagerDriver> driver_;
 
   // TODO(https://crbug.com/943045): use std::variant for keeping
-  // |observed_form_| and |observed_http_auth_digest_|.
+  // |observed_form_| and |observed_not_web_form_digest_|.
   autofill::FormData observed_form_;
 
-  base::Optional<PasswordStore::FormDigest> observed_http_auth_digest_;
+  // Used for retrieving credentials in case http authentication or Credentials
+  // API.
+  base::Optional<PasswordStore::FormDigest> observed_not_web_form_digest_;
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. The PasswordForms are owned

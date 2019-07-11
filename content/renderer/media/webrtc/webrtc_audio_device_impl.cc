@@ -71,7 +71,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   const int frames_per_10_ms = sample_rate / 100;
   DCHECK_EQ(audio_bus->frames(), frames_per_10_ms);
   DCHECK_GE(audio_bus->channels(), 1);
-  DCHECK_LE(audio_bus->channels(), 2);
+  DCHECK_LE(audio_bus->channels(), 8);
 
   // Get 10ms audio and copy result to temporary byte buffer.
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
@@ -398,6 +398,7 @@ void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
 void WebRtcAudioDeviceImpl::AddPlayoutSink(
     blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DVLOG(1) << "WebRtcAudioDeviceImpl::AddPlayoutSink()";
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
   DCHECK(!base::Contains(playout_sinks_, sink));
@@ -407,6 +408,7 @@ void WebRtcAudioDeviceImpl::AddPlayoutSink(
 void WebRtcAudioDeviceImpl::RemovePlayoutSink(
     blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DVLOG(1) << "WebRtcAudioDeviceImpl::RemovePlayoutSink()";
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
   playout_sinks_.remove(sink);

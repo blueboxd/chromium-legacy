@@ -15,24 +15,67 @@ namespace chromeos {
 namespace device_sync {
 
 // Information about the result of a CryptAuth v2 DeviceSync attempt.
-// TODO(nohle): Add a HaveDevicesChanged() function that returns true if the
-// synced-device registry changes.
 class CryptAuthDeviceSyncResult {
  public:
   // Enum class to denote the result of a CryptAuth v2 DeviceSync attempt.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. If entries are added, kMaxValue
   // should be updated.
-  // TODO(nohle): Add more values after DeviceSync flow is implemented.
+  // TODO(nohle): Add numeric values.
   enum class ResultCode {
-    kSuccess = 0,
-    kError = 1,
+    kSuccess,
+    kErrorMissingUserKeyPair,
+    kErrorEncryptingDeviceMetadata,
+    kErrorEstablishingGroupPublicKey,
+    kErrorNoMetadataInResponse,
+    kErrorInvalidMetadataInResponse,
+    kErrorDuplicateDeviceIdsInResponse,
+    kErrorNoLocalDeviceMetadataInResponse,
+    kErrorMissingFeatureStatuses,
+    kErrorMissingLocalDeviceSyncBetterTogetherKey,
+    kErrorDecryptingGroupPrivateKey,
+    kErrorInconsistentGroupPrivateKeys,
+    kErrorDecryptingMetadata,
+    kErrorParsingMetadata,
+    kErrorInconsistentLocalDeviceMetadata,
+    kErrorEncryptingGroupPrivateKey,
+    kErrorSyncMetadataApiCallOffline,
+    kErrorSyncMetadataApiCallEndpointNotFound,
+    kErrorSyncMetadataApiCallAuthenticationError,
+    kErrorSyncMetadataApiCallBadRequest,
+    kErrorSyncMetadataApiCallResponseMalformed,
+    kErrorSyncMetadataApiCallInternalServerError,
+    kErrorSyncMetadataApiCallUnknownError,
+    kErrorBatchGetFeatureStatusesApiCallOffline,
+    kErrorBatchGetFeatureStatusesApiCallEndpointNotFound,
+    kErrorBatchGetFeatureStatusesApiCallAuthenticationError,
+    kErrorBatchGetFeatureStatusesApiCallBadRequest,
+    kErrorBatchGetFeatureStatusesApiCallResponseMalformed,
+    kErrorBatchGetFeatureStatusesApiCallInternalServerError,
+    kErrorBatchGetFeatureStatusesApiCallUnknownError,
+    kErrorShareGroupPrivateKeyApiCallOffline,
+    kErrorShareGroupPrivateKeyApiCallEndpointNotFound,
+    kErrorShareGroupPrivateKeyApiCallAuthenticationError,
+    kErrorShareGroupPrivateKeyApiCallBadRequest,
+    kErrorShareGroupPrivateKeyApiCallResponseMalformed,
+    kErrorShareGroupPrivateKeyApiCallInternalServerError,
+    kErrorShareGroupPrivateKeyApiCallUnknownError,
+    kErrorTimeoutWaitingForGroupKeyCreation,
+    kErrorTimeoutWaitingForLocalDeviceMetadataEncryption,
+    kErrorTimeoutWaitingForFirstSyncMetadataResponse,
+    kErrorTimeoutWaitingForSecondSyncMetadataResponse,
+    kErrorTimeoutWaitingForGroupPrivateKeyDecryption,
+    kErrorTimeoutWaitingForDeviceMetadataDecryption,
+    kErrorTimeoutWaitingForBatchGetFeatureStatusesResponse,
+    kErrorTimeoutWaitingForGroupPrivateKeyEncryption,
+    kErrorTimeoutWaitingForShareGroupPrivateKeyResponse,
     // Used for UMA logs.
-    kMaxValue = kError
+    kMaxValue = kErrorTimeoutWaitingForShareGroupPrivateKeyResponse
   };
 
   CryptAuthDeviceSyncResult(
       ResultCode result_code,
+      bool did_device_registry_change,
       const base::Optional<cryptauthv2::ClientDirective>& client_directive);
   CryptAuthDeviceSyncResult(const CryptAuthDeviceSyncResult& other);
 
@@ -44,6 +87,10 @@ class CryptAuthDeviceSyncResult {
     return client_directive_;
   }
 
+  bool did_device_registry_change() const {
+    return did_device_registry_change_;
+  }
+
   bool IsSuccess() const;
 
   bool operator==(const CryptAuthDeviceSyncResult& other) const;
@@ -51,6 +98,7 @@ class CryptAuthDeviceSyncResult {
 
  private:
   ResultCode result_code_;
+  bool did_device_registry_change_;
   base::Optional<cryptauthv2::ClientDirective> client_directive_;
 };
 

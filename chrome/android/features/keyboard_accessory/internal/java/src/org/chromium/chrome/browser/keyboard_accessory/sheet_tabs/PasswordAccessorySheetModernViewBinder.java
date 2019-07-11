@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.keyboard_accessory.R;
@@ -48,6 +49,9 @@ class PasswordAccessorySheetModernViewBinder {
         protected void bind(KeyboardAccessoryData.UserInfo info, PasswordAccessoryInfoView view) {
             bindChipView(view.getUsername(), info.getFields().get(0));
             bindChipView(view.getPassword(), info.getFields().get(1));
+
+            view.getTitle().setVisibility(info.getTitle().isEmpty() ? View.GONE : View.VISIBLE);
+            view.getTitle().setText(info.getTitle());
 
             view.setIconForBitmap(null); // Set the default icon, then try to get a better one.
             if (info.getFaviconProvider() != null) {

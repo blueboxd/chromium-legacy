@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 
@@ -126,11 +125,6 @@ public class SigninFragment extends SigninFragmentBase {
     @Override
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
-        if (PrefServiceBridge.getInstance().getSyncLastAccountName() != null) {
-            AccountSigninActivity.recordSwitchAccountSourceHistogram(
-                    AccountSigninActivity.SwitchAccountSource.SIGNOUT_SIGNIN);
-        }
-
         IdentityServicesProvider.getSigninManager().signIn(
                 accountName, getActivity(), new SigninManager.SignInCallback() {
                     @Override

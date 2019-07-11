@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_AUTH_UTIL_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_AUTH_UTIL_H_
 
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 class GoogleServiceAuthError;
 

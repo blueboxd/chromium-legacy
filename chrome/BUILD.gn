@@ -1765,7 +1765,7 @@ if (is_android) {
 
   java_cpp_enum("signin_metrics_enum_javagen") {
     sources = [
-      "../components/signin/core/browser/signin_metrics.h",
+      "../components/signin/public/base/signin_metrics.h",
     ]
   }
 

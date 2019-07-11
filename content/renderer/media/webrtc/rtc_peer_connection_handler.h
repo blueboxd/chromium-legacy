@@ -242,6 +242,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       int sdp_mline_index,
                       int component,
                       int address_family);
+  void OnIceCandidateError(const std::string& host_candidate,
+                           const std::string& url,
+                           int error_code,
+                           const std::string& error_text);
   void OnInterestingUsage(int usage_pattern);
 
  private:

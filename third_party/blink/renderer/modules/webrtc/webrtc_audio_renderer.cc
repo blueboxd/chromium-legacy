@@ -46,8 +46,6 @@ namespace {
 // Audio parameters that don't change.
 const media::AudioParameters::Format kFormat =
     media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
-const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
-const int kChannels = 2;
 
 // Used for UMA histograms.
 const int kRenderTimeHistogramMinMicroseconds = 100;
@@ -194,7 +192,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       source_(nullptr),
       play_ref_count_(0),
       start_ref_count_(0),
-      sink_params_(kFormat, kChannelLayout, 0, 0),
+      sink_params_(kFormat, media::CHANNEL_LAYOUT_STEREO, 0, 0),
       output_device_id_(device_id) {
   WebRtcLogMessage(base::StringPrintf("WAR::WAR. session_id=%d, effects=%i",
                                       session_id, sink_params_.effects()));
@@ -464,7 +462,7 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
     const int source_frames_per_buffer = sink_params_.sample_rate() / 100;
     if (!audio_fifo_ && prior_frames_skipped != source_frames_per_buffer) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
-          kChannels, source_frames_per_buffer,
+          sink_params_.channels(), source_frames_per_buffer,
           ConvertToBaseCallback(
               CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
                                        CrossThreadUnretained(this))));
@@ -498,7 +496,7 @@ void WebRtcAudioRenderer::SourceCallback(int fifo_frame_delay,
   DCHECK(sink_->CurrentThreadIsRenderingThread());
   base::TimeTicks start_time = base::TimeTicks::Now();
   DVLOG(2) << "WebRtcAudioRenderer::SourceCallback(" << fifo_frame_delay << ", "
-           << audio_bus->frames() << ")";
+           << audio_bus->channels() << ", " << audio_bus->frames() << ")";
 
   int output_delay_milliseconds =
       static_cast<int>(audio_delay_.InMilliseconds());
@@ -656,6 +654,7 @@ void WebRtcAudioRenderer::OnPlayStateRemoved(PlayingState* state) {
 }
 
 void WebRtcAudioRenderer::PrepareSink() {
+  DVLOG(1) << "WebRtcAudioRenderer::PrepareSink()";
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   media::AudioParameters new_sink_params;
   {
@@ -665,6 +664,9 @@ void WebRtcAudioRenderer::PrepareSink() {
 
   const media::OutputDeviceInfo& device_info = sink_->GetOutputDeviceInfo();
   DCHECK_EQ(device_info.device_status(), media::OUTPUT_DEVICE_STATUS_OK);
+  DVLOG(1) << "Sink parameters: " << sink_params_.AsHumanReadableString();
+  DVLOG(1) << "Hardware parameters: "
+           << device_info.output_params().AsHumanReadableString();
 
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
@@ -693,11 +695,22 @@ void WebRtcAudioRenderer::PrepareSink() {
   const int source_frames_per_buffer = (sample_rate / 100);
   DVLOG(1) << "Using WebRTC output buffer size: " << source_frames_per_buffer;
 
-  // Setup sink parameters.
+  // Setup sink parameters using same channel configuration as the source.
+  // This sink is an AudioRendererSink which is implemented by an
+  // AudioOutputDevice. Note that we used to use hard-coded settings for
+  // stereo here but this has been changed since crbug.com/982276.
+  const int channels = device_info.output_params().channels();
+  const media::ChannelLayout channel_layout =
+      device_info.output_params().channel_layout();
   const int sink_frames_per_buffer = media::AudioLatency::GetRtcBufferSize(
       sample_rate, device_info.output_params().frames_per_buffer());
-  new_sink_params.set_sample_rate(sample_rate);
-  new_sink_params.set_frames_per_buffer(sink_frames_per_buffer);
+  new_sink_params.Reset(kFormat, channel_layout, sample_rate,
+                        sink_frames_per_buffer);
+  if (channel_layout == media::CHANNEL_LAYOUT_DISCRETE) {
+    new_sink_params.set_channels_for_discrete(channels);
+  }
+  DVLOG(1) << new_sink_params.AsHumanReadableString();
+  DCHECK(new_sink_params.IsValid());
 
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as
@@ -714,7 +727,7 @@ void WebRtcAudioRenderer::PrepareSink() {
         (audio_fifo_ &&
          audio_fifo_->SizeInFrames() != source_frames_per_buffer)) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
-          kChannels, source_frames_per_buffer,
+          channels, source_frames_per_buffer,
           ConvertToBaseCallback(
               CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
                                        CrossThreadUnretained(this))));

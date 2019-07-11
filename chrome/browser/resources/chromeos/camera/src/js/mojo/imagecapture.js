@@ -342,12 +342,21 @@ cca.mojo.getUserMedia = function(deviceId, constraints) {
     streamHeight = constraints.video.height;
   }
 
+  let hasSpecifiedFrameRateRange = minFrameRate > 0 && maxFrameRate > 0;
+  // If the frame rate range is specified in |constraints|, we should try to set
+  // the frame rate range and should report error if fails since it is
+  // unexpected.
+  //
+  // Otherwise, if the frame rate is incomplete or totally missing in
+  // |constraints| , we assume the app wants to use default frame rate range.
+  // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
+  // will fallback to use the default one.
   try {
     return cca.mojo.MojoInterface.getProxy()
         .setFpsRange(
             deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate)
         .then(({isSuccess}) => {
-          if (!isSuccess) {
+          if (!isSuccess && hasSpecifiedFrameRateRange) {
             console.error('Failed to negotiate the frame rate range.');
           }
           return navigator.mediaDevices.getUserMedia(constraints);

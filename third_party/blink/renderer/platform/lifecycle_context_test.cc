@@ -143,8 +143,10 @@ TEST(LifecycleContextTest, ObserverRemovedDuringNotifyDestroyed) {
 // This is a regression test for http://crbug.com/854639.
 TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      blink::features::kBlinkHeapIncrementalMarking);
+  // Disable concurrent sweeping as worker_pool task environment is not set.
+  scoped_feature_list.InitWithFeatures(
+      {blink::features::kBlinkHeapIncrementalMarking},
+      {blink::features::kBlinkHeapConcurrentSweeping});
   ThreadState* thread_state = ThreadState::Current();
   thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
 

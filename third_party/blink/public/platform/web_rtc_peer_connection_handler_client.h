@@ -44,6 +44,7 @@ namespace blink {
 class WebRTCICECandidate;
 class WebRTCRtpReceiver;
 class WebRTCRtpTransceiver;
+class WebString;
 
 struct BLINK_PLATFORM_EXPORT WebRTCSctpTransportSnapshot {
   rtc::scoped_refptr<webrtc::SctpTransportInterface> transport;
@@ -59,6 +60,10 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
 
   virtual void NegotiationNeeded() = 0;
   virtual void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) = 0;
+  virtual void DidFailICECandidate(const WebString& host_candidate,
+                                   const WebString& url,
+                                   int error_code,
+                                   const WebString& error_text) = 0;
   virtual void DidChangeSignalingState(
       webrtc::PeerConnectionInterface::SignalingState) = 0;
   virtual void DidChangeIceGatheringState(

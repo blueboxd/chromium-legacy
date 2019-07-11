@@ -27,7 +27,7 @@ jumbo_static_library("sync_user_events") {
     "//components/sync/protocol",
   ]
   deps = [
-    "//components/signin/core/browser:shared",
+    "//components/signin/public/base",
     "//google_apis",
   ]
 }

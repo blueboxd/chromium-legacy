@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using signin_metrics::AccountEquality;

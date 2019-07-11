@@ -47,7 +47,7 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
 
                 @ChildAccountStatus.Status
                 int childAccountStatus = freProperties.getInt(
-                        AccountFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+                        SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
                 onChildAccountKnown(ChildAccountStatus.isChild(childAccountStatus));
             }
         };

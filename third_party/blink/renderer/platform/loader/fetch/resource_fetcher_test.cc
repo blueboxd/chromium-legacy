@@ -996,66 +996,66 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
   ResourceRequest request(KURL("https://www.example.com/"));
 
   {
-    // Subframe depriotization is disabled (main frame case).
+    // Subframe deprioritization is disabled (main frame case).
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(false);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is disabled (nested frame case).
+    // Subframe deprioritization is disabled (nested frame case).
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(false);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is enabled (main frame case), kHigh.
+    // Subframe deprioritization is enabled (main frame case), kHigh.
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is enabled (nested frame case), kHigh => kLow.
+    // Subframe deprioritization is enabled (nested frame case), kHigh => kLow.
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLow);
   }
   {
-    // Subframe depriotization is enabled (main frame case), kMedium.
+    // Subframe deprioritization is enabled (main frame case), kMedium.
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kMock, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kMedium);
   }
 
   {
-    // Subframe depriotization is enabled (nested frame case), kMedium =>
+    // Subframe deprioritization is enabled (nested frame case), kMedium =>
     // kLowest.
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(true);
@@ -1063,7 +1063,7 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
         ResourceType::kMock, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLowest);
   }
 }

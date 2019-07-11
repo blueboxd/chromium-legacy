@@ -12,9 +12,9 @@
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 class Profile;
 class Browser;

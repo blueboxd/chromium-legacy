@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"

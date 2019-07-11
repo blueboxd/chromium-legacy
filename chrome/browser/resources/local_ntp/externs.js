@@ -325,6 +325,11 @@ window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility;
 /**
  * No params.
  */
+window.chrome.embeddedSearch.newTabPage.useDefaultTheme;
+
+/**
+ * No params.
+ */
 window.chrome.embeddedSearch.newTabPage.undoAllMostVisitedDeletions;
 
 /**

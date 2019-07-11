@@ -456,19 +456,19 @@ void ResourceFetcher::AddPriorityObserverForTesting(
       std::move(callback));
 }
 
+// This method simply takes in information about a ResourceRequest, and returns
+// a priority. It will not be called for ResourceRequests that already have a
+// pre-set priority (e.g., requests coming from a Service Worker) except for
+// images, which may need to be reprioritized.
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
     const ResourceRequest& resource_request,
     ResourcePriority::VisibilityStatus visibility,
     FetchParameters::DeferOption defer_option,
     FetchParameters::SpeculativePreloadType speculative_preload_type,
-    bool is_link_preload,
-    bool is_stale_revalidation) {
-  // Stale revalidation resource requests should be very low regardless of
-  // the |type|.
-  if (is_stale_revalidation)
-    return ResourceLoadPriority::kVeryLow;
-
+    bool is_link_preload) {
+  DCHECK(!resource_request.PriorityHasBeenSet() ||
+         type == ResourceType::kImage);
   ResourceLoadPriority priority = TypeToPriority(type);
 
   // Visible resources (images in practice) get a boost to High priority.
@@ -565,12 +565,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     }
   }
 
-  // A manually set priority acts as a floor. This is used to ensure that
-  // synchronous requests are always given the highest possible priority, as
-  // well as to ensure that there isn't priority churn if images move in and out
-  // of the viewport, or are displayed more than once, both in and out of the
-  // viewport.
-  return std::max(resource_request.Priority(), priority);
+  return priority;
 }
 
 ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
@@ -868,10 +863,19 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
 
-  resource_request.SetPriority(ComputeLoadPriority(
-      resource_type, params.GetResourceRequest(), ResourcePriority::kNotVisible,
-      params.Defer(), params.GetSpeculativePreloadType(),
-      params.IsLinkPreload(), params.IsStaleRevalidation()));
+  ResourceLoadPriority computed_load_priority = resource_request.Priority();
+  // We should only compute the priority for ResourceRequests whose priority has
+  // not already been set.
+  if (!resource_request.PriorityHasBeenSet()) {
+    computed_load_priority = ComputeLoadPriority(
+        resource_type, params.GetResourceRequest(),
+        ResourcePriority::kNotVisible, params.Defer(),
+        params.GetSpeculativePreloadType(), params.IsLinkPreload());
+  }
+
+  DCHECK_NE(computed_load_priority, ResourceLoadPriority::kUnresolved);
+  resource_request.SetPriority(computed_load_priority);
+
   if (resource_request.GetCacheMode() == mojom::FetchCacheMode::kDefault) {
     resource_request.SetCacheMode(Context().ResourceRequestCachePolicy(
         resource_request, resource_type, params.Defer()));
@@ -2026,22 +2030,27 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
       continue;
 
     ResourcePriority resource_priority = resource->PriorityFromObservers();
-    ResourceLoadPriority resource_load_priority = ComputeLoadPriority(
+    ResourceLoadPriority computed_load_priority = ComputeLoadPriority(
         ResourceType::kImage, resource->GetResourceRequest(),
         resource_priority.visibility);
-    if (resource_load_priority == resource->GetResourceRequest().Priority())
+    // Only boost the priority of an image, never lower it. This ensures that
+    // there isn't priority churn if images move in and out of the viewport, or
+    // are displayed more than once, both in and out of the viewport.
+    if (computed_load_priority <= resource->GetResourceRequest().Priority())
       continue;
 
-    resource->DidChangePriority(resource_load_priority,
+    DCHECK_GT(computed_load_priority,
+              resource->GetResourceRequest().Priority());
+    resource->DidChangePriority(computed_load_priority,
                                 resource_priority.intra_priority_value);
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
         TRACE_ID_WITH_SCOPE("BlinkResourceID",
                             TRACE_ID_LOCAL(resource->InspectorId())),
-        "data", ResourcePrioritySetData(resource_load_priority));
+        "data", ResourcePrioritySetData(computed_load_priority));
     DCHECK(!IsDetached());
     resource_load_observer_->DidChangePriority(
-        resource->InspectorId(), resource_load_priority,
+        resource->InspectorId(), computed_load_priority,
         resource_priority.intra_priority_value);
   }
 }
@@ -2139,6 +2148,9 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   FetchParameters params(stale_resource->GetResourceRequest());
   params.SetStaleRevalidation(true);
   params.MutableResourceRequest().SetSkipServiceWorker(true);
+  // Stale revalidation resource requests should be very low regardless of
+  // the |type|.
+  params.MutableResourceRequest().SetPriority(ResourceLoadPriority::kVeryLow);
   RawResource::Fetch(
       params, this,
       MakeGarbageCollected<StaleRevalidationResourceClient>(stale_resource));

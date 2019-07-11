@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 namespace autofill {
 

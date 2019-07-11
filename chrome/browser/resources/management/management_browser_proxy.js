@@ -51,7 +51,8 @@ management.DeviceReportingType = {
   STATISTIC: 'device statistics',
   DEVICE: 'device',
   LOGS: 'logs',
-  PRINT: 'print'
+  PRINT: 'print',
+  CROSTINI: 'crostini'
 };
 
 

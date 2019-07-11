@@ -5169,10 +5169,6 @@ crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints-get
 crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getSettings.html [ Pass Failure ]
 crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
 
-# Cookie Store API
-crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.html [ Pass Failure ]
-crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure ]
-
 # Failing SameSite cookies tests
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.html [ Failure ]

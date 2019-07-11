@@ -55,8 +55,6 @@ source_set("browser") {
     "installation_notifier.mm",
     "ios_chrome_field_trials.cc",
     "ios_chrome_field_trials.h",
-    "ios_chrome_flag_descriptions.cc",
-    "ios_chrome_flag_descriptions.h",
     "ios_chrome_io_thread.h",
     "ios_chrome_io_thread.mm",
     "ios_first_run_field_trials.cc",

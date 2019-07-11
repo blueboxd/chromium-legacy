@@ -507,7 +507,7 @@ void Controller::OnGetScripts(const GURL& url,
   if (!result) {
     DVLOG(1) << "Failed to get assistant scripts for " << script_domain_;
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::GET_SCRIPTS_FAILED);
+                 Metrics::DropOutReason::GET_SCRIPTS_FAILED);
     return;
   }
 
@@ -516,7 +516,7 @@ void Controller::OnGetScripts(const GURL& url,
     DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
              << "unparseable response";
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::GET_SCRIPTS_UNPARSABLE);
+                 Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
     return;
   }
   if (response_proto.has_client_settings())
@@ -585,7 +585,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   if (!result.success) {
     DVLOG(1) << "Failed to execute script " << script_path;
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::SCRIPT_FAILED);
+                 Metrics::DropOutReason::SCRIPT_FAILED);
     return;
   }
 
@@ -595,16 +595,16 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
-      client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
+      client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
       return;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       EnterStoppedState();
-      client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
+      client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
       return;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      client_->Shutdown(Metrics::CUSTOM_TAB_CLOSED);
+      client_->Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED);
       return;
 
     case ScriptExecutor::RESTART:
@@ -922,14 +922,14 @@ void Controller::OnNoRunnableScripts() {
     // any scripts or didn't get scripts that could possibly become runnable
     // with a DOM change.
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::NO_INITIAL_SCRIPTS);
+                 Metrics::DropOutReason::NO_INITIAL_SCRIPTS);
     return;
   }
 
   // We're navigated to a page that has no scripts or the scripts have reached a
   // state from which they cannot recover through a DOM change.
   OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-               Metrics::NO_SCRIPTS);
+               Metrics::DropOutReason::NO_SCRIPTS);
 }
 
 void Controller::OnRunnableScriptsChanged(
@@ -984,7 +984,7 @@ void Controller::OnRunnableScriptsChanged(
 }
 
 void Controller::DidAttachInterstitialPage() {
-  client_->Shutdown(Metrics::INTERSTITIAL_PAGE);
+  client_->Shutdown(Metrics::DropOutReason::INTERSTITIAL_PAGE);
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -1025,7 +1025,7 @@ void Controller::DidStartNavigation(
       !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsRendererInitiated()) {
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-                 Metrics::NAVIGATION);
+                 Metrics::DropOutReason::NAVIGATION);
   }
 }
 
@@ -1055,7 +1055,7 @@ void Controller::DocumentAvailableInMainFrame() {
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {
-  client_->Shutdown(Metrics::RENDER_PROCESS_GONE);
+  client_->Shutdown(Metrics::DropOutReason::RENDER_PROCESS_GONE);
 }
 
 void Controller::OnWebContentsFocused(

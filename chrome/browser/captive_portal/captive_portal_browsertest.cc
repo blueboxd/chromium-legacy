@@ -762,26 +762,37 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   // Waits for exactly |num_jobs| kMockHttps* requests.
   void WaitForJobs(int num_jobs) {
-    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+    if (BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+      SetNumJobsToWaitForOnInterceptorThread(num_jobs);
+    } else {
       base::PostTaskWithTraits(
           FROM_HERE, {GetInterceptorThreadID()},
-          base::BindOnce(&CaptivePortalBrowserTest::WaitForJobs,
-                         base::Unretained(this), num_jobs));
-      run_loop_ = std::make_unique<base::RunLoop>();
-      run_loop_->Run();
-      return;
+          base::BindOnce(
+              &CaptivePortalBrowserTest::SetNumJobsToWaitForOnInterceptorThread,
+              base::Unretained(this), num_jobs));
     }
 
+    run_loop_ = std::make_unique<base::RunLoop>();
+    // Will be exited via QuitRunLoop() when the interceptor has received
+    // |num_jobs|.
+    run_loop_->Run();
+  }
+
+  void SetNumJobsToWaitForOnInterceptorThread(int num_jobs) {
+    DCHECK_CURRENTLY_ON(GetInterceptorThreadID());
     DCHECK(!num_jobs_to_wait_for_);
-    EXPECT_LE(static_cast<int>(ongoing_mock_requests_.size()), num_jobs);
-    if (num_jobs == static_cast<int>(ongoing_mock_requests_.size())) {
+
+    int num_ongoing_jobs = static_cast<int>(ongoing_mock_requests_.size());
+    if (num_ongoing_jobs == num_jobs) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
                          base::Unretained(this)));
-    } else {
-      num_jobs_to_wait_for_ = num_jobs;
+      return;
     }
+
+    EXPECT_LT(num_ongoing_jobs, num_jobs);
+    num_jobs_to_wait_for_ = num_jobs;
   }
 
   // Fails all active kMockHttps* requests with connection timeouts.
@@ -887,7 +898,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
  protected:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  // Only accessed on the IO thread.
+  // Only accessed on the |GetInterceptorThreadID()| thread.
   int num_jobs_to_wait_for_ = 0;
   std::vector<content::URLLoaderInterceptor::RequestParams>
       ongoing_mock_requests_;

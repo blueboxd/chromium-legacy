@@ -37,11 +37,11 @@
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/video_frame_compositor.h"
-#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
+#include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -49,10 +49,10 @@
 #include "url/gurl.h"
 
 namespace blink {
+class WebAudioSourceProviderImpl;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
-class WebAudioSourceProviderImpl;
 }
 
 namespace base {
@@ -79,14 +79,13 @@ class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
 class WatchTimeReporter;
-class WebMediaPlayerDelegate;
 
 // The canonical implementation of blink::WebMediaPlayer that's backed by
 // Pipeline. Handles normal resource loading, Media Source, and
 // Encrypted Media.
 class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     : public blink::WebMediaPlayer,
-      public WebMediaPlayerDelegate::Observer,
+      public blink::WebMediaPlayerDelegate::Observer,
       public Pipeline::Client,
       public MediaObserverClient,
       public blink::WebSurfaceLayerBridgeObserver {
@@ -97,7 +96,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      WebMediaPlayerDelegate* delegate,
+      blink::WebMediaPlayerDelegate* delegate,
       std::unique_ptr<RendererFactorySelector> renderer_factory_selector,
       UrlIndex* url_index,
       std::unique_ptr<VideoFrameCompositor> compositor,
@@ -225,7 +224,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnHasNativeControlsChanged(bool) override;
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
-  // WebMediaPlayerDelegate::Observer implementation.
+  // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
   void OnFrameClosed() override;
   void OnFrameShown() override;
@@ -698,7 +697,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Document::shutdown() is called before the frame detaches (and before the
   // frame is destroyed). RenderFrameImpl owns |delegate_| and is guaranteed
   // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
-  media::WebMediaPlayerDelegate* const delegate_;
+  blink::WebMediaPlayerDelegate* const delegate_;
   int delegate_id_ = 0;
 
   WebMediaPlayerParams::DeferLoadCB defer_load_cb_;

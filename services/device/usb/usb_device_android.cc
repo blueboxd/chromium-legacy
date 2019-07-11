@@ -153,6 +153,7 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
     for (auto interface : interfaces) {
       config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
     }
+    AggregateInterfacesForConfig(&config);
     descriptor_.configurations.push_back(config);
   }
 

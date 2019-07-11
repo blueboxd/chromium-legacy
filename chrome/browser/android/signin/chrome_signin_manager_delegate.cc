@@ -16,7 +16,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -101,7 +101,7 @@ bool ShouldLoadPolicyForUser(const std::string& username) {
 
 }  // namespace
 
-ChromeSigninManagerDelegate::ChromeSigninManagerDelegate(JNIEnv* env)
+ChromeSigninManagerDelegate::ChromeSigninManagerDelegate()
     : profile_(ProfileManager::GetActiveUserProfile()),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
       user_cloud_policy_manager_(profile_->GetUserCloudPolicyManager()),
@@ -112,14 +112,20 @@ ChromeSigninManagerDelegate::ChromeSigninManagerDelegate(JNIEnv* env)
   DCHECK(identity_manager_);
   DCHECK(user_cloud_policy_manager_);
   DCHECK(user_policy_signin_service_);
+
+  java_signin_manager_delegate_ = Java_ChromeSigninManagerDelegate_create(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
 }
 
-ChromeSigninManagerDelegate::~ChromeSigninManagerDelegate() {}
+ChromeSigninManagerDelegate::~ChromeSigninManagerDelegate() {
+  Java_ChromeSigninManagerDelegate_destroy(base::android::AttachCurrentThread(),
+                                           java_signin_manager_delegate_);
+}
 
-void ChromeSigninManagerDelegate::Destroy(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  delete this;
+base::android::ScopedJavaLocalRef<jobject>
+ChromeSigninManagerDelegate::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(
+      java_signin_manager_delegate_);
 }
 
 void ChromeSigninManagerDelegate::StopApplyingCloudPolicy(
@@ -272,11 +278,4 @@ void ChromeSigninManagerDelegate::WipeData(Profile* profile,
                                            base::OnceClosure callback) {
   // The ProfileDataRemover deletes itself once done.
   new ProfileDataRemover(profile, all_data, std::move(callback));
-}
-
-// instantiates ChromeSigninManagerDelegate
-static jlong JNI_ChromeSigninManagerDelegate_Init(JNIEnv* env) {
-  ChromeSigninManagerDelegate* chrome_signin_manager_delegate =
-      new ChromeSigninManagerDelegate(env);
-  return reinterpret_cast<intptr_t>(chrome_signin_manager_delegate);
 }

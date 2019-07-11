@@ -36,10 +36,12 @@ class CONTENT_EXPORT ContentIndexContext
                                           BrowserThread::DeleteOnIOThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
-  void ShutdownOnIO();
   ~ContentIndexContext();
 
   ContentIndexDatabase content_index_database_;
+
+  // Whether initialization DB tasks should run on start-up.
+  bool should_initialize_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContext);
 };

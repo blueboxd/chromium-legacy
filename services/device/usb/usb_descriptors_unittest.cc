@@ -61,7 +61,7 @@ const uint8_t kConfig1Descriptor[] = {
 const uint8_t kConfig2Descriptor[] = {
     // Config 2
     0x09, 0x02, 0x29, 0x00, 0x01, 0x02, 0x04, 0x03, 0x20,
-    // Interface 0
+    // Interface 0 (alternate 0)
     0x09, 0x04, 0x00, 0x00, 0x00, 0xCD, 0xEF, 0x01, 0x04,
     // Interface 0 (alternate 1)
     0x09, 0x04, 0x00, 0x01, 0x02, 0xCD, 0xEF, 0x01, 0x05,
@@ -81,61 +81,56 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   ASSERT_EQ(2u, config.interfaces.size());
   EXPECT_EQ(8u, config.extra_data.size());
   // Interface 0
-  EXPECT_EQ(0, config.interfaces[0].interface_number);
-  EXPECT_EQ(0, config.interfaces[0].alternate_setting);
-  EXPECT_EQ(0x12, config.interfaces[0].interface_class);
-  EXPECT_EQ(0x34, config.interfaces[0].interface_subclass);
-  EXPECT_EQ(0x56, config.interfaces[0].interface_protocol);
-  ASSERT_EQ(3u, config.interfaces[0].endpoints.size());
-  EXPECT_EQ(0u, config.interfaces[0].extra_data.size());
-  EXPECT_EQ(0, config.interfaces[0].first_interface);
+  EXPECT_EQ(0, config.interfaces[0]->interface_number);
+  EXPECT_EQ(0, config.interfaces[0]->first_interface);
+  const auto& alternate = config.interfaces[0]->alternates[0];
+  EXPECT_EQ(0, alternate->alternate_setting);
+  EXPECT_EQ(0x12, alternate->class_code);
+  EXPECT_EQ(0x34, alternate->subclass_code);
+  EXPECT_EQ(0x56, alternate->protocol_code);
+  ASSERT_EQ(3u, alternate->endpoints.size());
+  EXPECT_EQ(0u, alternate->extra_data.size());
+
   // Endpoint 1 IN
-  EXPECT_EQ(0x01, config.interfaces[0].endpoints[0]->endpoint_number);
-  EXPECT_EQ(UsbTransferDirection::INBOUND,
-            config.interfaces[0].endpoints[0]->direction);
-  EXPECT_EQ(512u, config.interfaces[0].endpoints[0]->packet_size);
+  EXPECT_EQ(0x01, alternate->endpoints[0]->endpoint_number);
+  EXPECT_EQ(UsbTransferDirection::INBOUND, alternate->endpoints[0]->direction);
+  EXPECT_EQ(512u, alternate->endpoints[0]->packet_size);
   EXPECT_EQ(UsbSynchronizationType::NONE,
-            config.interfaces[0].endpoints[0]->synchronization_type);
-  EXPECT_EQ(UsbTransferType::BULK, config.interfaces[0].endpoints[0]->type);
-  EXPECT_EQ(UsbUsageType::RESERVED,
-            config.interfaces[0].endpoints[0]->usage_type);
-  EXPECT_EQ(0, config.interfaces[0].endpoints[0]->polling_interval);
-  EXPECT_EQ(0u, config.interfaces[0].endpoints[0]->extra_data.size());
+            alternate->endpoints[0]->synchronization_type);
+  EXPECT_EQ(UsbTransferType::BULK, alternate->endpoints[0]->type);
+  EXPECT_EQ(UsbUsageType::RESERVED, alternate->endpoints[0]->usage_type);
+  EXPECT_EQ(0, alternate->endpoints[0]->polling_interval);
+  EXPECT_EQ(0u, alternate->endpoints[0]->extra_data.size());
   // Endpoint 2 IN
-  EXPECT_EQ(0x02, config.interfaces[0].endpoints[1]->endpoint_number);
-  EXPECT_EQ(UsbTransferDirection::INBOUND,
-            config.interfaces[0].endpoints[1]->direction);
-  EXPECT_EQ(512u, config.interfaces[0].endpoints[1]->packet_size);
+  EXPECT_EQ(0x02, alternate->endpoints[1]->endpoint_number);
+  EXPECT_EQ(UsbTransferDirection::INBOUND, alternate->endpoints[1]->direction);
+  EXPECT_EQ(512u, alternate->endpoints[1]->packet_size);
   EXPECT_EQ(UsbSynchronizationType::NONE,
-            config.interfaces[0].endpoints[1]->synchronization_type);
-  EXPECT_EQ(UsbTransferType::INTERRUPT,
-            config.interfaces[0].endpoints[1]->type);
-  EXPECT_EQ(UsbUsageType::PERIODIC,
-            config.interfaces[0].endpoints[1]->usage_type);
-  EXPECT_EQ(4, config.interfaces[0].endpoints[1]->polling_interval);
-  EXPECT_EQ(0u, config.interfaces[0].endpoints[1]->extra_data.size());
+            alternate->endpoints[1]->synchronization_type);
+  EXPECT_EQ(UsbTransferType::INTERRUPT, alternate->endpoints[1]->type);
+  EXPECT_EQ(UsbUsageType::PERIODIC, alternate->endpoints[1]->usage_type);
+  EXPECT_EQ(4, alternate->endpoints[1]->polling_interval);
+  EXPECT_EQ(0u, alternate->endpoints[1]->extra_data.size());
   // Endpoint 3 OUT
-  EXPECT_EQ(0x03, config.interfaces[0].endpoints[2]->endpoint_number);
-  EXPECT_EQ(UsbTransferDirection::OUTBOUND,
-            config.interfaces[0].endpoints[2]->direction);
-  EXPECT_EQ(512u, config.interfaces[0].endpoints[2]->packet_size);
+  EXPECT_EQ(0x03, alternate->endpoints[2]->endpoint_number);
+  EXPECT_EQ(UsbTransferDirection::OUTBOUND, alternate->endpoints[2]->direction);
+  EXPECT_EQ(512u,
+            config.interfaces[0]->alternates[0]->endpoints[2]->packet_size);
   EXPECT_EQ(UsbSynchronizationType::NONE,
-            config.interfaces[0].endpoints[2]->synchronization_type);
-  EXPECT_EQ(UsbTransferType::INTERRUPT,
-            config.interfaces[0].endpoints[2]->type);
-  EXPECT_EQ(UsbUsageType::NOTIFICATION,
-            config.interfaces[0].endpoints[2]->usage_type);
-  EXPECT_EQ(4, config.interfaces[0].endpoints[2]->polling_interval);
-  EXPECT_EQ(0u, config.interfaces[0].endpoints[2]->extra_data.size());
+            alternate->endpoints[2]->synchronization_type);
+  EXPECT_EQ(UsbTransferType::INTERRUPT, alternate->endpoints[2]->type);
+  EXPECT_EQ(UsbUsageType::NOTIFICATION, alternate->endpoints[2]->usage_type);
+  EXPECT_EQ(4, alternate->endpoints[2]->polling_interval);
+  EXPECT_EQ(0u, alternate->endpoints[2]->extra_data.size());
   // Interface 1
-  EXPECT_EQ(1, config.interfaces[1].interface_number);
-  EXPECT_EQ(0, config.interfaces[1].alternate_setting);
-  EXPECT_EQ(0x78, config.interfaces[1].interface_class);
-  EXPECT_EQ(0x9A, config.interfaces[1].interface_subclass);
-  EXPECT_EQ(0xAB, config.interfaces[1].interface_protocol);
-  ASSERT_EQ(0u, config.interfaces[1].endpoints.size());
-  EXPECT_EQ(0u, config.interfaces[1].extra_data.size());
-  EXPECT_EQ(0, config.interfaces[1].first_interface);
+  EXPECT_EQ(1, config.interfaces[1]->interface_number);
+  EXPECT_EQ(0, config.interfaces[1]->first_interface);
+  EXPECT_EQ(0, config.interfaces[1]->alternates[0]->alternate_setting);
+  EXPECT_EQ(0x78, config.interfaces[1]->alternates[0]->class_code);
+  EXPECT_EQ(0x9A, config.interfaces[1]->alternates[0]->subclass_code);
+  EXPECT_EQ(0xAB, config.interfaces[1]->alternates[0]->protocol_code);
+  ASSERT_EQ(0u, config.interfaces[1]->alternates[0]->endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[1]->alternates[0]->extra_data.size());
 }
 
 void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
@@ -144,51 +139,46 @@ void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_TRUE(config.self_powered);
   EXPECT_FALSE(config.remote_wakeup);
   EXPECT_EQ(32, config.maximum_power);
-  ASSERT_EQ(2u, config.interfaces.size());
+  ASSERT_EQ(1u, config.interfaces.size());
+  ASSERT_EQ(2u, config.interfaces[0]->alternates.size());
   EXPECT_EQ(0u, config.extra_data.size());
   // Interface 0
-  EXPECT_EQ(0, config.interfaces[0].interface_number);
-  EXPECT_EQ(0, config.interfaces[0].alternate_setting);
-  EXPECT_EQ(0xCD, config.interfaces[0].interface_class);
-  EXPECT_EQ(0xEF, config.interfaces[0].interface_subclass);
-  EXPECT_EQ(0x01, config.interfaces[0].interface_protocol);
-  ASSERT_EQ(0u, config.interfaces[0].endpoints.size());
-  EXPECT_EQ(0u, config.interfaces[0].extra_data.size());
-  EXPECT_EQ(0, config.interfaces[0].first_interface);
+  EXPECT_EQ(0, config.interfaces[0]->interface_number);
+  EXPECT_EQ(0, config.interfaces[0]->alternates[0]->alternate_setting);
+  EXPECT_EQ(0xCD, config.interfaces[0]->alternates[0]->class_code);
+  EXPECT_EQ(0xEF, config.interfaces[0]->alternates[0]->subclass_code);
+  EXPECT_EQ(0x01, config.interfaces[0]->alternates[0]->protocol_code);
+  ASSERT_EQ(0u, config.interfaces[0]->alternates[0]->endpoints.size());
+  EXPECT_EQ(0u, config.interfaces[0]->alternates[0]->extra_data.size());
+  EXPECT_EQ(0, config.interfaces[0]->first_interface);
   // Interface 0 (alternate 1)
-  EXPECT_EQ(0, config.interfaces[1].interface_number);
-  EXPECT_EQ(1, config.interfaces[1].alternate_setting);
-  EXPECT_EQ(0xCD, config.interfaces[1].interface_class);
-  EXPECT_EQ(0xEF, config.interfaces[1].interface_subclass);
-  EXPECT_EQ(0x01, config.interfaces[1].interface_protocol);
-  ASSERT_EQ(2u, config.interfaces[1].endpoints.size());
-  EXPECT_EQ(0u, config.interfaces[1].extra_data.size());
-  EXPECT_EQ(0, config.interfaces[1].first_interface);
+  const auto& alternate = config.interfaces[0]->alternates[1];
+  EXPECT_EQ(1, alternate->alternate_setting);
+  EXPECT_EQ(0xCD, alternate->class_code);
+  EXPECT_EQ(0xEF, alternate->subclass_code);
+  EXPECT_EQ(0x01, alternate->protocol_code);
+  ASSERT_EQ(2u, alternate->endpoints.size());
+  EXPECT_EQ(0u, alternate->extra_data.size());
   // Endpoint 1 IN
-  EXPECT_EQ(0x01, config.interfaces[1].endpoints[0]->endpoint_number);
-  EXPECT_EQ(UsbTransferDirection::INBOUND,
-            config.interfaces[1].endpoints[0]->direction);
-  EXPECT_EQ(1024u, config.interfaces[1].endpoints[0]->packet_size);
+  EXPECT_EQ(0x01, alternate->endpoints[0]->endpoint_number);
+  EXPECT_EQ(UsbTransferDirection::INBOUND, alternate->endpoints[0]->direction);
+  EXPECT_EQ(1024u, alternate->endpoints[0]->packet_size);
   EXPECT_EQ(UsbSynchronizationType::NONE,
-            config.interfaces[1].endpoints[0]->synchronization_type);
-  EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
-            config.interfaces[1].endpoints[0]->type);
-  EXPECT_EQ(UsbUsageType::DATA, config.interfaces[1].endpoints[0]->usage_type);
-  EXPECT_EQ(8, config.interfaces[1].endpoints[0]->polling_interval);
-  EXPECT_EQ(0u, config.interfaces[1].endpoints[0]->extra_data.size());
+            alternate->endpoints[0]->synchronization_type);
+  EXPECT_EQ(UsbTransferType::ISOCHRONOUS, alternate->endpoints[0]->type);
+  EXPECT_EQ(UsbUsageType::DATA, alternate->endpoints[0]->usage_type);
+  EXPECT_EQ(8, alternate->endpoints[0]->polling_interval);
+  EXPECT_EQ(0u, alternate->endpoints[0]->extra_data.size());
   // Endpoint 2 OUT
-  EXPECT_EQ(0x02, config.interfaces[1].endpoints[1]->endpoint_number);
-  EXPECT_EQ(UsbTransferDirection::OUTBOUND,
-            config.interfaces[1].endpoints[1]->direction);
-  EXPECT_EQ(1024u, config.interfaces[1].endpoints[1]->packet_size);
+  EXPECT_EQ(0x02, alternate->endpoints[1]->endpoint_number);
+  EXPECT_EQ(UsbTransferDirection::OUTBOUND, alternate->endpoints[1]->direction);
+  EXPECT_EQ(1024u, alternate->endpoints[1]->packet_size);
   EXPECT_EQ(UsbSynchronizationType::NONE,
-            config.interfaces[1].endpoints[1]->synchronization_type);
-  EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
-            config.interfaces[1].endpoints[1]->type);
-  EXPECT_EQ(UsbUsageType::FEEDBACK,
-            config.interfaces[1].endpoints[1]->usage_type);
-  EXPECT_EQ(8, config.interfaces[1].endpoints[1]->polling_interval);
-  EXPECT_EQ(0u, config.interfaces[1].endpoints[1]->extra_data.size());
+            alternate->endpoints[1]->synchronization_type);
+  EXPECT_EQ(UsbTransferType::ISOCHRONOUS, alternate->endpoints[1]->type);
+  EXPECT_EQ(UsbUsageType::FEEDBACK, alternate->endpoints[1]->usage_type);
+  EXPECT_EQ(8, alternate->endpoints[1]->polling_interval);
+  EXPECT_EQ(0u, alternate->endpoints[1]->extra_data.size());
 }
 
 void ExpectDeviceDescriptor(const UsbDeviceDescriptor& descriptor) {
@@ -257,14 +247,14 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
 
 TEST_F(UsbDescriptorsTest, NoInterfaceAssociations) {
   UsbConfigDescriptor config(1, false, false, 0);
-  config.interfaces.emplace_back(0, 0, 255, 255, 255);
-  config.interfaces.emplace_back(0, 1, 255, 255, 255);
-  config.interfaces.emplace_back(1, 0, 255, 255, 255);
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 1, 255, 255, 255));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
   config.AssignFirstInterfaceNumbers();
 
-  EXPECT_EQ(0, config.interfaces[0].first_interface);
-  EXPECT_EQ(0, config.interfaces[1].first_interface);
-  EXPECT_EQ(1, config.interfaces[2].first_interface);
+  EXPECT_EQ(0, config.interfaces[0]->first_interface);
+  EXPECT_EQ(0, config.interfaces[1]->first_interface);
+  EXPECT_EQ(1, config.interfaces[2]->first_interface);
 }
 
 TEST_F(UsbDescriptorsTest, InterfaceAssociations) {
@@ -285,38 +275,40 @@ TEST_F(UsbDescriptorsTest, InterfaceAssociations) {
   config.extra_data.assign(kIAD1, kIAD1 + sizeof(kIAD1));
   config.extra_data.insert(config.extra_data.end(), kIAD2,
                            kIAD2 + sizeof(kIAD2));
-  config.interfaces.emplace_back(0, 0, 255, 255, 255);
-  config.interfaces.emplace_back(1, 0, 255, 255, 255);
-  UsbInterfaceDescriptor iface1a(1, 1, 255, 255, 255);
-  iface1a.extra_data.assign(kIAD3, kIAD3 + sizeof(kIAD3));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
+  mojom::UsbInterfaceInfoPtr iface1a =
+      BuildUsbInterfaceInfoPtr(1, 1, 255, 255, 255);
+  iface1a->alternates[0]->extra_data.assign(kIAD3, kIAD3 + sizeof(kIAD3));
   config.interfaces.push_back(std::move(iface1a));
-  config.interfaces.emplace_back(2, 0, 255, 255, 255);
-  config.interfaces.emplace_back(3, 0, 255, 255, 255);
-  UsbInterfaceDescriptor iface4(4, 0, 255, 255, 255);
-  iface4.extra_data.assign(kIAD4, kIAD4 + sizeof(kIAD4));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(2, 0, 255, 255, 255));
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(3, 0, 255, 255, 255));
+  mojom::UsbInterfaceInfoPtr iface4 =
+      BuildUsbInterfaceInfoPtr(4, 0, 255, 255, 255);
+  iface4->alternates[0]->extra_data.assign(kIAD4, kIAD4 + sizeof(kIAD4));
   config.interfaces.push_back(std::move(iface4));
-  config.interfaces.emplace_back(5, 0, 255, 255, 255);
+  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(5, 0, 255, 255, 255));
   config.AssignFirstInterfaceNumbers();
 
   // Interfaces 0 and 1 (plus 1's alternate) are a single function.
-  EXPECT_EQ(0, config.interfaces[0].interface_number);
-  EXPECT_EQ(0, config.interfaces[0].first_interface);
-  EXPECT_EQ(1, config.interfaces[1].interface_number);
-  EXPECT_EQ(0, config.interfaces[1].first_interface);
-  EXPECT_EQ(1, config.interfaces[2].interface_number);
-  EXPECT_EQ(0, config.interfaces[2].first_interface);
+  EXPECT_EQ(0, config.interfaces[0]->interface_number);
+  EXPECT_EQ(0, config.interfaces[0]->first_interface);
+  EXPECT_EQ(1, config.interfaces[1]->interface_number);
+  EXPECT_EQ(0, config.interfaces[1]->first_interface);
+  EXPECT_EQ(1, config.interfaces[2]->interface_number);
+  EXPECT_EQ(0, config.interfaces[2]->first_interface);
 
   // Interfaces 2 and 3 are their own functions.
-  EXPECT_EQ(2, config.interfaces[3].interface_number);
-  EXPECT_EQ(2, config.interfaces[3].first_interface);
-  EXPECT_EQ(3, config.interfaces[4].interface_number);
-  EXPECT_EQ(3, config.interfaces[4].first_interface);
+  EXPECT_EQ(2, config.interfaces[3]->interface_number);
+  EXPECT_EQ(2, config.interfaces[3]->first_interface);
+  EXPECT_EQ(3, config.interfaces[4]->interface_number);
+  EXPECT_EQ(3, config.interfaces[4]->first_interface);
 
   // Interfaces 4 and 5 are a single function.
-  EXPECT_EQ(4, config.interfaces[5].interface_number);
-  EXPECT_EQ(4, config.interfaces[5].first_interface);
-  EXPECT_EQ(5, config.interfaces[6].interface_number);
-  EXPECT_EQ(4, config.interfaces[6].first_interface);
+  EXPECT_EQ(4, config.interfaces[5]->interface_number);
+  EXPECT_EQ(4, config.interfaces[5]->first_interface);
+  EXPECT_EQ(5, config.interfaces[6]->interface_number);
+  EXPECT_EQ(4, config.interfaces[6]->first_interface);
 }
 
 TEST_F(UsbDescriptorsTest, CorruptInterfaceAssociations) {
@@ -340,12 +332,12 @@ TEST_F(UsbDescriptorsTest, CorruptInterfaceAssociations) {
     static const uint8_t kIAD[] = {0x08, 0x0b, 0x07, 0x00,
                                    0xff, 0xff, 0xff, 0x00};
     UsbConfigDescriptor config(1, false, false, 0);
-    config.interfaces.emplace_back(0, 0, 255, 255, 255);
+    config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
     config.extra_data.assign(kIAD, kIAD + sizeof(kIAD));
     config.AssignFirstInterfaceNumbers();
 
-    EXPECT_EQ(0, config.interfaces[0].interface_number);
-    EXPECT_EQ(0, config.interfaces[0].first_interface);
+    EXPECT_EQ(0, config.interfaces[0]->interface_number);
+    EXPECT_EQ(0, config.interfaces[0]->first_interface);
   }
 }
 

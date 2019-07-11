@@ -353,15 +353,6 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
     str->Park(mode);
     total_size += str->CharactersSizeInBytes();
   }
-
-  // Only collect stats for "full" parking calls in background.
-  if (mode == ParkableStringImpl::ParkingMode::kAlways &&
-      IsRendererBackgrounded()) {
-    size_t total_size_kb = total_size / 1000;
-    UMA_HISTOGRAM_COUNTS_100000("Memory.MovableStringsTotalSizeKb",
-                                total_size_kb);
-    UMA_HISTOGRAM_COUNTS_1000("Memory.MovableStringsCount", Size());
-  }
 }
 
 void ParkableStringManager::ParkAllIfRendererBackgrounded(

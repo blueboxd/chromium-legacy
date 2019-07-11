@@ -63,7 +63,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"
@@ -533,8 +533,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-  { key::kCertificateManagementAllowed,
-    prefs::kCertificateManagementAllowed,
+  { key::kClientCertificateManagementAllowed,
+    prefs::kClientCertificateManagementAllowed,
     base::Value::Type::INTEGER },
   { key::kChromeOsLockOnIdleSuspend,
     ash::prefs::kEnableAutoScreenLock,
@@ -595,6 +595,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kLargeCursorEnabled,
     ash::prefs::kAccessibilityLargeCursorEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kSelectToSpeakEnabled,
+    ash::prefs::kAccessibilitySelectToSpeakEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSpokenFeedbackEnabled,
     ash::prefs::kAccessibilitySpokenFeedbackEnabled,

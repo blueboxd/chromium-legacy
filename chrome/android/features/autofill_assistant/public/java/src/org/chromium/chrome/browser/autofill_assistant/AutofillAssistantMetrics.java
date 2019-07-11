@@ -17,11 +17,11 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 /* package */ class AutofillAssistantMetrics {
     private static final EnumeratedHistogramSample ENUMERATED_DROP_OUT_REASON =
             new EnumeratedHistogramSample(
-                    "Android.AutofillAssistant.DropOutReason", DropOutReason.NUM_ENTRIES);
+                    "Android.AutofillAssistant.DropOutReason", DropOutReason.MAX_VALUE);
 
     private static final EnumeratedHistogramSample ENUMERATED_ON_BOARDING =
             new EnumeratedHistogramSample(
-                    "Android.AutofillAssistant.OnBoarding", OnBoarding.OB_NUM_ENTRIES);
+                    "Android.AutofillAssistant.OnBoarding", OnBoarding.MAX_VALUE);
 
     /**
      * Records the reason for a drop out.

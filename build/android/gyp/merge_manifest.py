@@ -30,14 +30,15 @@ _MANIFEST_MERGER_JARS = [
 
 @contextlib.contextmanager
 def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
-                     manifest_package):
+                     max_sdk_version, manifest_package):
   """Patches an Android manifest to always include the 'tools' namespace
   declaration, as it is not propagated by the manifest merger from the SDK.
 
   See https://issuetracker.google.com/issues/63411481
   """
   doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
-  manifest_utils.AssertUsesSdk(manifest, min_sdk_version, target_sdk_version)
+  manifest_utils.AssertUsesSdk(manifest, min_sdk_version, target_sdk_version,
+                               max_sdk_version)
   assert manifest_utils.GetPackage(manifest) or manifest_package, \
             'Must set manifest package in GN or in AndroidManifest.xml'
   manifest_utils.AssertPackage(manifest, manifest_package)
@@ -80,6 +81,8 @@ def main(argv):
       required=True,
       help='android:targetSdkVersion for merging.')
   parser.add_argument(
+      '--max-sdk-version', help='android:maxSdkVersion for merging.')
+  parser.add_argument(
       '--manifest-package',
       help='Package name of the merged AndroidManifest.xml.')
   args = parser.parse_args(argv)
@@ -95,14 +98,24 @@ def main(argv):
         _MANIFEST_MERGER_MAIN_CLASS,
         '--out',
         output.name,
+        '--property',
+        'MIN_SDK_VERSION=' + args.min_sdk_version,
+        '--property',
+        'TARGET_SDK_VERSION=' + args.target_sdk_version,
     ]
+
+    if args.max_sdk_version:
+      cmd += [
+          '--property',
+          'MAX_SDK_VERSION=' + args.max_sdk_version,
+      ]
 
     extras = build_utils.ParseGnList(args.extras)
     if extras:
       cmd += ['--libs', ':'.join(extras)]
 
     with _ProcessManifest(args.root_manifest, args.min_sdk_version,
-                          args.target_sdk_version,
+                          args.target_sdk_version, args.max_sdk_version,
                           args.manifest_package) as tup:
       root_manifest, package = tup
       cmd += [
@@ -110,10 +123,6 @@ def main(argv):
           root_manifest,
           '--property',
           'PACKAGE=' + package,
-          '--property',
-          'MIN_SDK_VERSION=' + args.min_sdk_version,
-          '--property',
-          'TARGET_SDK_VERSION=' + args.target_sdk_version,
       ]
       build_utils.CheckOutput(cmd,
         # https://issuetracker.google.com/issues/63514300:

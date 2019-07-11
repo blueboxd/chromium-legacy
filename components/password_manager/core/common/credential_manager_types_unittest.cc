@@ -86,18 +86,4 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
   EXPECT_EQ(origin_.spec(), form->signon_realm);
 }
 
-TEST_F(CredentialManagerTypesTest, CreateObservedPasswordForm) {
-  std::unique_ptr<autofill::PasswordForm> form =
-      CreateObservedPasswordFormFromOrigin(origin_);
-
-  ASSERT_TRUE(form);
-  EXPECT_EQ(GURL(), form->icon_url);
-  EXPECT_EQ(base::string16(), form->display_name);
-  EXPECT_EQ(origin_, form->origin);
-  EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, form->scheme);
-  EXPECT_TRUE(form->federation_origin.opaque());
-  EXPECT_EQ(base::string16(), form->password_value);
-  EXPECT_EQ(origin_.spec(), form->signon_realm);
-}
-
 }  // namespace password_manager

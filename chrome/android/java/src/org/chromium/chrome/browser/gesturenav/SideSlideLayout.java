@@ -20,6 +20,7 @@ import android.view.animation.Transformation;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,6 +35,8 @@ import java.lang.annotation.RetentionPolicy;
  * and modified accordingly to support horizontal gesture.
  */
 public class SideSlideLayout extends ViewGroup {
+    private static final String NAVIGATION_SHEET_ENABLED_KEY =
+            "overscroll_history_navigation_bottom_sheet";
     // Used to record the UMA histogram Overscroll.* This definition should be
     // in sync with that in content/browser/web_contents/aura/types.h
     // TODO(jinsukkim): Generate java enum from the native header.
@@ -169,6 +172,12 @@ public class SideSlideLayout extends ViewGroup {
 
         // The absolute offset has to take into account that the circle starts at an offset
         mTotalDragDistance = TARGET_THRESHOLD_DP * density;
+    }
+
+    private static boolean isBottomSheetEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, NAVIGATION_SHEET_ENABLED_KEY,
+                false);
     }
 
     /**

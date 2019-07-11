@@ -25,7 +25,7 @@
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"

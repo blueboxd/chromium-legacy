@@ -253,6 +253,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TODO(yhirano): Describe what Priority and IntraPriorityValue are.
   ResourceLoadPriority Priority() const;
   int IntraPriorityValue() const;
+  bool PriorityHasBeenSet() const;
   void SetPriority(ResourceLoadPriority, int intra_priority_value = 0);
 
   bool IsConditional() const;

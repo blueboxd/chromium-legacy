@@ -1,4 +1,0 @@
-AriaProperties changed on role=heading
-AriaProperties changed on role=heading
-AriaProperties changed on role=heading, name=Item2
-AriaProperties changed on role=heading, name=Item4

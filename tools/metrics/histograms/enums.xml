@@ -3406,6 +3406,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Cancelled"/>
 </enum>
 
+<enum name="AutofillAssistantPaymentRequestPrefilled">
+  <int value="0" label="Initially complete &amp; Success"/>
+  <int value="1" label="Initially incomplete &amp; Success"/>
+  <int value="2" label="Initially complete &amp; Failure"/>
+  <int value="3" label="Initially incomplete &amp; Failure"/>
+</enum>
+
 <enum name="AutofillCardholderNameFixFlowPromptEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>
@@ -17318,7 +17325,7 @@ Called by update_net_error_codes.py.-->
   <int value="515" label="PluginVmLicenseKey"/>
   <int value="516" label="ExtensionAllowInsecureUpdates"/>
   <int value="517" label="BrowserSwitcherEnabled"/>
-  <int value="518" label="CertificateManagementAllowed"/>
+  <int value="518" label="ClientCertificateManagementAllowed"/>
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
   <int value="520" label="DeviceRebootOnUserSignout"/>
   <int value="521" label="ForceNetworkInProcess"/>
@@ -17371,6 +17378,7 @@ Called by update_net_error_codes.py.-->
   <int value="570" label="UserFeedbackAllowed"/>
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
+  <int value="573" label="SelectToSpeakEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

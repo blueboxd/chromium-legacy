@@ -157,7 +157,8 @@ def _ParseArgs(args):
       required=True,
       help="android:targetSdkVersion for APK.")
   input_opts.add_argument(
-      '--max-sdk-version', help="android:maxSdkVersion for APK.")
+      '--max-sdk-version',
+      help="android:maxSdkVersion expected in AndroidManifest.xml.")
   input_opts.add_argument(
       '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
@@ -467,8 +468,13 @@ def _FixManifest(options, temp_dir):
       options.android_manifest)
 
   manifest_utils.AssertUsesSdk(manifest_node, options.min_sdk_version,
-                               options.target_sdk_version,
-                               options.max_sdk_version)
+                               options.target_sdk_version)
+  # We explicitly check that maxSdkVersion is set in the manifest since we don't
+  # add it later like minSdkVersion and targetSdkVersion.
+  manifest_utils.AssertUsesSdk(
+      manifest_node,
+      max_sdk_version=options.max_sdk_version,
+      fail_if_not_exist=True)
   manifest_utils.AssertPackage(manifest_node, options.manifest_package)
 
   manifest_node.set('platformBuildVersionCode', version_code)

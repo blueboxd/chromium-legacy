@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "base/values.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 // Builds an AccountInfo from the JSON data returned by the gaia servers (the
 // data should have been converted to base::Value), if possible.

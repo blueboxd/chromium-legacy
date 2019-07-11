@@ -17,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/url_util.h"
 #include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace chromeos {
@@ -62,6 +63,7 @@ AccountMigrationWelcomeDialog* AccountMigrationWelcomeDialog::Show(
 
 void AccountMigrationWelcomeDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
+  params->keep_on_top = false;
   params->type = views::Widget::InitParams::Type::TYPE_WINDOW_FRAMELESS;
   params->shadow_type = views::Widget::InitParams::ShadowType::SHADOW_TYPE_DROP;
   params->shadow_elevation = wm::kShadowElevationActiveWindow;

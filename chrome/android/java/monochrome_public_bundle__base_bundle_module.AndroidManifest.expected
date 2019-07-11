@@ -264,10 +264,6 @@
       </intent-filter>
     </activity>
     <activity
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:name="org.chromium.chrome.browser.signin.AccountSigninActivity"
-        android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
-    <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
         android:enableVrMode="@string/gvr_vr_mode_component"
         android:excludeFromRecents="true"

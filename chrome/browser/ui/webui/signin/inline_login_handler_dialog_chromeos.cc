@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -44,6 +45,11 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
   dialog = new InlineLoginHandlerDialogChromeOS(url);
   dialog->ShowSystemDialog();
+}
+
+void InlineLoginHandlerDialogChromeOS::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->keep_on_top = false;
 }
 
 gfx::Size InlineLoginHandlerDialogChromeOS::GetMaximumDialogSize() {

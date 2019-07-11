@@ -385,6 +385,10 @@ WebSocket::WebSocket(
     header_client_.set_connection_error_handler(
         base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   }
+  handshake_client_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  client_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,

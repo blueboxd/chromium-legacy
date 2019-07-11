@@ -4,18 +4,40 @@
 
 #include "components/autofill_assistant/browser/metrics.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace autofill_assistant {
 
 namespace {
-const char* const kDropOutEnumName = "Android.AutofillAssistant.DropOutReason";
+const char kDropOutEnumName[] = "Android.AutofillAssistant.DropOutReason";
+const char kPaymentRequestPrefilledName[] =
+    "Android.AutofillAssistant.PaymentRequest.Prefilled";
 }  // namespace
 
 // static
 void Metrics::RecordDropOut(DropOutReason reason) {
-  DCHECK_LE(reason, DropOutReason::NUM_ENTRIES);
-  UMA_HISTOGRAM_ENUMERATION(kDropOutEnumName, reason, NUM_ENTRIES);
+  DCHECK_LE(reason, DropOutReason::kMaxValue);
+  base::UmaHistogramEnumeration(kDropOutEnumName, reason);
+}
+
+// static
+void Metrics::RecordPaymentRequestPrefilledSuccess(bool initially_complete,
+                                                   bool success) {
+  if (initially_complete && success) {
+    base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
+                                  PaymentRequestPrefilled::PREFILLED_SUCCESS);
+  } else if (initially_complete && !success) {
+    base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
+                                  PaymentRequestPrefilled::PREFILLED_FAILURE);
+  } else if (!initially_complete && success) {
+    base::UmaHistogramEnumeration(
+        kPaymentRequestPrefilledName,
+        PaymentRequestPrefilled::NOTPREFILLED_SUCCESS);
+  } else if (!initially_complete && !success) {
+    base::UmaHistogramEnumeration(
+        kPaymentRequestPrefilledName,
+        PaymentRequestPrefilled::NOTPREFILLED_FAILURE);
+  }
 }
 
 }  // namespace autofill_assistant

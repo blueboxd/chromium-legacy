@@ -29,7 +29,7 @@ namespace {
 
 using base::debug::MappedMemoryRegion;
 
-jboolean RunChecks(bool in_browser_process, bool need_relros) {
+jboolean RunChecks(bool in_browser_process) {
   // IMPORTANT NOTE: The Python test control script reads the logcat for
   // lines like:
   //   BROWSER_LINKER_TEST: <status>
@@ -151,18 +151,10 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
     return false;
   }
 
-  if (need_relros) {
-    if (num_shared_relros == 0) {
-      LOG(ERROR) << prefix
-                 << "FAIL Missing shared RELRO sections in this process!";
-      return false;
-    }
-  } else {
-    if (num_shared_relros > 0) {
-      LOG(ERROR) << prefix << "FAIL Unexpected " << num_shared_relros
-                 << " shared RELRO sections in this process!";
-      return false;
-    }
+  if (num_shared_relros == 0) {
+    LOG(ERROR) << prefix
+               << "FAIL Missing shared RELRO sections in this process!";
+    return false;
   }
 
   VLOG(0) << prefix << "SUCCESS";
@@ -173,13 +165,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
 
 jboolean JNI_LinkerTests_CheckForSharedRelros(JNIEnv* env,
                                               jboolean in_browser_process) {
-  return RunChecks(in_browser_process, true);
-}
-
-jboolean JNI_LinkerTests_CheckForNoSharedRelros(
-    JNIEnv* env,
-    jboolean in_browser_process) {
-  return RunChecks(in_browser_process, false);
+  return RunChecks(in_browser_process);
 }
 
 }  // namespace content

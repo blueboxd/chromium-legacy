@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 

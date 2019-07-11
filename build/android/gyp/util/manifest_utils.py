@@ -66,13 +66,15 @@ def GetPackage(manifest_node):
 
 
 def AssertUsesSdk(manifest_node,
-                  min_sdk_version,
+                  min_sdk_version=None,
                   target_sdk_version=None,
-                  max_sdk_version=None):
+                  max_sdk_version=None,
+                  fail_if_not_exist=False):
   """Asserts values of attributes of <uses-sdk> element.
 
-  Will only assert if both the passed value is not None and the value of
-  attribute exist.
+  Unless |fail_if_not_exist| is true, will only assert if both the passed value
+  is not None and the value of attribute exist. If |fail_if_not_exist| is true
+  will fail if passed value is not None but attribute does not exist.
   """
   uses_sdk_node = manifest_node.find('./uses-sdk')
   if uses_sdk_node is None:
@@ -81,6 +83,10 @@ def AssertUsesSdk(manifest_node,
                                                          target_sdk_version),
                               ('max', max_sdk_version)):
     value = uses_sdk_node.get('{%s}%sSdkVersion' % (ANDROID_NAMESPACE, prefix))
+    if fail_if_not_exist and not value and sdk_version:
+      assert False, (
+          '%sSdkVersion in Android manifest does not exist but we expect %s' %
+          (prefix, sdk_version))
     if not value or not sdk_version:
       continue
     assert value == sdk_version, (

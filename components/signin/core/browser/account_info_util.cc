@@ -4,7 +4,7 @@
 
 #include "components/signin/core/browser/account_info_util.h"
 
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 namespace {
 // Keys used to store the different values in the JSON dictionary received

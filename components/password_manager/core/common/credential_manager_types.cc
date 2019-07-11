@@ -87,14 +87,4 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   return form;
 }
 
-std::unique_ptr<autofill::PasswordForm> CreateObservedPasswordFormFromOrigin(
-    const GURL& origin) {
-  std::unique_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
-  form->origin = origin;
-  form->scheme = autofill::PasswordForm::Scheme::kHtml;
-  form->type = autofill::PasswordForm::Type::kApi;
-  form->signon_realm = origin.GetOrigin().spec();
-  return form;
-}
-
 }  // namespace password_manager

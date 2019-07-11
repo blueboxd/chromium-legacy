@@ -18,6 +18,12 @@ void AutofillInternalsLoggingImpl::LogHelper(const base::Value& message) {
   web_ui_->CallJavascriptFunctionUnsafe("addLog", message);
 }
 
+void AutofillInternalsLoggingImpl::LogRawHelper(const base::Value& message) {
+  // TODO(crbug.com/928595) Moving this to CallJavascriptFunction requires
+  // some bigger refactoring that will happen in a separate CL.
+  web_ui_->CallJavascriptFunctionUnsafe("addRawLog", message);
+}
+
 void AutofillInternalsLoggingImpl::set_web_ui(content::WebUI* web_ui) {
   web_ui_ = web_ui;
 }

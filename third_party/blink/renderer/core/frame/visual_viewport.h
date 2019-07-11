@@ -274,7 +274,7 @@ class CORE_EXPORT VisualViewport final
   void SetNeedsPaintPropertyUpdate() { needs_paint_property_update_ = true; }
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
-  void PreFinalize() override;
+  void DisposeImpl() override;
 
  private:
   bool DidSetScaleOrLocation(float scale,

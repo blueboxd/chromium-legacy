@@ -665,6 +665,9 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
 void EmbedderGraphBuilder::BuildEmbedderGraphCallback(v8::Isolate* isolate,
                                                       v8::EmbedderGraph* graph,
                                                       void*) {
+  // Synchronize with concurrent sweepers before taking a snapshot.
+  ThreadState::Current()->CompleteSweep();
+
   NodeBuilder node_builder(graph);
   V8EmbedderGraphBuilder builder(isolate, graph, &node_builder);
   builder.BuildEmbedderGraph();

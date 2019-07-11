@@ -188,7 +188,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS,
              static_cast<int>(form.generation_upload_status));
   base::Pickle usernames_pickle =
-      SerializeValueElementPairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.all_possible_usernames);
   s->BindBlob(COLUMN_POSSIBLE_USERNAME_PAIRS, usernames_pickle.data(),
               usernames_pickle.size());
 }
@@ -1077,7 +1077,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   s.BindInt(next_param++, form.skip_zero_click);
   s.BindInt(next_param++, static_cast<int>(form.generation_upload_status));
   base::Pickle username_pickle =
-      SerializeValueElementPairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.all_possible_usernames);
   s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
   // NOTE: Add new fields here unless the field is a part of the unique key.
   // If so, add new field below.
@@ -1279,7 +1279,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     base::Pickle pickle(
         static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAME_PAIRS)),
         s.ColumnByteLength(COLUMN_POSSIBLE_USERNAME_PAIRS));
-    form->other_possible_usernames = DeserializeValueElementPairs(pickle);
+    form->all_possible_usernames = DeserializeValueElementPairs(pickle);
   }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   if (s.ColumnByteLength(COLUMN_FORM_DATA)) {

@@ -84,21 +84,18 @@ class ContentMetadataProvider extends MetadataProvider {
    * @private
    */
   getImpl_(entry, names, callback) {
+    // Directories do not have a thumbnail.
     if (entry.isDirectory) {
-      setTimeout(
-          callback.bind(
-              null,
-              this.createError_(
-                  entry.toURL(), 'get',
-                  'we don\'t generate thumbnails for directory')),
-          0);
+      const error = this.createError_(entry.toURL(), 'get', 'no thumbnail');
+      setTimeout(callback.bind(null, error), 0);
       return;
     }
-    // TODO(ryoh): mediaGalleries API does not handle
-    // image metadata correctly.
+
+    const type = FileType.getType(entry);
+
+    // TODO(ryoh): mediaGalleries API does not handle image metadata correctly.
     // We parse it in our pure js parser.
     // chrome/browser/media_galleries/fileapi/supported_image_type_validator.cc
-    const type = FileType.getType(entry);
     if (type && type.type === 'image') {
       const url = entry.toURL();
       if (this.callbacks_[url]) {
@@ -109,6 +106,55 @@ class ContentMetadataProvider extends MetadataProvider {
       }
       return;
     }
+
+    if (type && type.type === 'raw' && names.includes('ifd')) {
+      names.splice(names.indexOf('ifd'), 1);  // Remove ifd from names.
+
+      /**
+       * Creates an ifdError metadata item: when reading the fileEntry failed
+       * or extracting its ifd data failed.
+       * @param {!Entry} fileEntry
+       * @param {string} error
+       */
+      function createIfdError(fileEntry, error) {
+        const url = fileEntry.toURL();
+        const step = 'read file entry';
+        const item = new MetadataItem();
+        item.ifdError = new ContentMetadataProvider.Error(url, step, error);
+        return item;
+      }
+
+      new Promise((resolve, reject) => {
+        entry.file(
+            file => {
+              const request = LoadImageRequest.createForUrl(entry.toURL());
+              request.maxWidth = ThumbnailLoader.THUMBNAIL_MAX_WIDTH;
+              request.maxHeight = ThumbnailLoader.THUMBNAIL_MAX_HEIGHT;
+              request.timestamp = file.lastModified;
+              request.cache = true;
+              request.priority = 0;
+              ImageLoaderClient.getInstance().load(request, resolve);
+            },
+            error => {
+              callback(createIfdError(entry, error.toString()));
+            });
+      }).then(result => {
+        if (result.status === LoadImageResponseStatus.SUCCESS) {
+          const item = new MetadataItem();
+          if (result.ifd) {
+            item.ifd = /** @type {!Object} */ (JSON.parse(result.ifd));
+          }
+          callback(item);
+        } else {
+          callback(createIfdError(entry, 'raw file has no ifd data'));
+        }
+      });
+
+      if (!names.length) {
+        return;
+      }
+    }
+
     this.getFromMediaGalleries_(entry, names).then(callback);
   }
 

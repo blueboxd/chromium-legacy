@@ -15,10 +15,12 @@
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
@@ -143,6 +145,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   uint32_t NegotiateOutputFormat();
   // Setup format for V4L2 output buffers.
   bool SetupOutputFormat(uint32_t output_format_fourcc);
+  // Update the format of frames in |frame_pool_|.
+  void UpdateVideoFramePoolFormat();
 
   // Destroy on decoder thread.
   void DestroyTask();
@@ -188,7 +192,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Get the next bitsream ID.
   int32_t GetNextBitstreamId();
   // Convert the frame and call the output callback.
-  void RunOutputCB(scoped_refptr<VideoFrame> frame);
+  void RunOutputCB(scoped_refptr<VideoFrame> frame,
+                   const gfx::Rect& visible_rect,
+                   base::TimeDelta timestamp);
   // Call the decode callback and count the number of pending callbacks.
   void RunDecodeCB(DecodeCB cb, DecodeStatus status);
   // Change the state and check the state transition is valid.
@@ -220,7 +226,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Parameters for generating output VideoFrame.
   base::Optional<VideoFrameLayout> frame_layout_;
   gfx::Rect visible_rect_;
-  gfx::Size natural_size_;
+  // Ratio of natural_size to visible_rect of the output frame.
+  double pixel_aspect_ratio_;
+
   // Callbacks passed from Initialize().
   OutputCB output_cb_;
   // Callbacks of EOS buffer passed from Decode().
@@ -229,6 +237,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
+
+  // The mapping between bitstream id and the timestamp.
+  std::map<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
 
   // Queue of pending decode request.
   base::queue<DecodeRequest> decode_request_queue_;

@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "media/blink/webmediaplayer_delegate.h"
+#include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "base/time/time.h"
@@ -36,7 +36,7 @@ enum class MediaContentType;
 // the MediaPlayerDelegateHost.
 class CONTENT_EXPORT RendererWebMediaPlayerDelegate
     : public content::RenderFrameObserver,
-      public WebMediaPlayerDelegate,
+      public blink::WebMediaPlayerDelegate,
       public base::SupportsWeakPtr<RendererWebMediaPlayerDelegate> {
  public:
   explicit RendererWebMediaPlayerDelegate(content::RenderFrame* render_frame);
@@ -45,7 +45,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Returns true if this RenderFrame has ever seen media playback before.
   bool has_played_media() const { return has_played_media_; }
 
-  // WebMediaPlayerDelegate implementation.
+  // blink::WebMediaPlayerDelegate implementation.
   bool IsFrameHidden() override;
   bool IsFrameClosed() override;
   int AddObserver(Observer* observer) override;

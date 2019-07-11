@@ -6,7 +6,6 @@ import unittest
 
 from .extended_attribute import ExtendedAttribute
 from .extended_attribute import ExtendedAttributes
-from .idl_types import AnnotatedType
 from .idl_types import FrozenArrayType
 from .idl_types import NullableType
 from .idl_types import PromiseType
@@ -44,10 +43,10 @@ class IdlTypesTest(unittest.TestCase):
         self.assertTrue(FrozenArrayType(short_type).is_frozen_array)
         self.assertTrue(UnionType([short_type, string_type]).is_union)
         self.assertTrue(NullableType(short_type).is_nullable)
-        annotated_type = AnnotatedType(short_type, ext_attrs)
+        self.assertFalse(NullableType(short_type).is_numeric)
+        annotated_type = SimpleType('short', extended_attributes=ext_attrs)
         self.assertTrue(annotated_type.is_annotated)
-        # Predictors are not transparent
-        self.assertFalse(annotated_type.is_numeric)
+        self.assertTrue(annotated_type.is_numeric)
 
         self.assertFalse(SimpleType('long').is_string)
         self.assertFalse(SimpleType('DOMString').is_object)
@@ -85,15 +84,17 @@ class IdlTypesTest(unittest.TestCase):
 
         ext_attrs = ExtendedAttributes(
             [ExtendedAttribute('TreatNullAs', 'EmptyString')])
-        self.assertEqual('StringTreatNullAs',
-                         AnnotatedType(string_type, ext_attrs).type_name)
+        self.assertEqual(
+            'StringTreatNullAs',
+            SimpleType('DOMString', extended_attributes=ext_attrs).type_name)
 
     def test_union_types(self):
         # Test target: ((unrestricted double or object)? or
         #               [TreatNullAs=EmptyString] DOMString)
         treat_null_as = ExtendedAttribute('TreatNullAs', 'EmptyString')
-        annotated_string = AnnotatedType(
-            SimpleType('DOMString'), ExtendedAttributes([treat_null_as]))
+        annotated_string = SimpleType(
+            'DOMString',
+            extended_attributes=ExtendedAttributes([treat_null_as]))
         obj = SimpleType('object')
         unrestricted_double = SimpleType('unrestricted double')
         union = UnionType(

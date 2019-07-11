@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/format_utils.h"
@@ -231,7 +232,7 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
   visible_rect_ = config.visible_rect();
-  natural_size_ = config.natural_size();
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   profile_ = profile;
 
   output_cb_ = std::move(output_cb);
@@ -459,11 +460,19 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 
 void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
                                      int32_t /*buffer_id*/,
-                                     const gfx::Rect& /*visible_rect*/,
+                                     const gfx::Rect& visible_rect,
                                      const VideoColorSpace& /*color_space*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DVLOGF(3);
+
+  // In some rare cases it's possible the frame's visible rectangle is different
+  // from what the decoder asked us to create in the last resolution change.
+  if (visible_rect_ != visible_rect) {
+    visible_rect_ = visible_rect;
+    gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+    frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
+  }
 
   // Find the frame associated with the surface. We won't erase it from
   // |output_frames_| yet, as the decoder might still be using it for reference.
@@ -476,6 +485,21 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(video_frame);
   DVLOGF(4);
+
+  // We need to update one or more attributes of the frame. Since we can't
+  // modify the attributes of the frame directly, we wrap the frame into a new
+  // frame with updated attributes. The old frame is bound to a destruction
+  // observer so it's not destroyed before the wrapped frame.
+  if (video_frame->visible_rect() != visible_rect_) {
+    gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+    scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
+        *video_frame, video_frame->format(), visible_rect_, natural_size);
+    wrapped_frame->AddDestructionObserver(
+        base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
+                       std::move(video_frame)));
+
+    video_frame = std::move(wrapped_frame);
+  }
 
   scoped_refptr<VideoFrame> converted_frame =
       frame_converter_->ConvertFrame(video_frame);
@@ -499,14 +523,14 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   VLOGF(2);
 
   // TODO(hiroh): Handle profile changes.
-  // TODO(dstaessens): Update natural size after submitting crrev.com/c/1657871.
   visible_rect_ = decoder_->GetVisibleRect();
-  natural_size_ = visible_rect_.size();
+  gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
   gfx::Size pic_size = decoder_->GetPicSize();
   const VideoPixelFormat format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
-  auto frame_layout = VideoFrameLayout::Create(format, pic_size);
-  frame_pool_->SetFrameFormat(*frame_layout, visible_rect_, natural_size_);
+  frame_layout_ = VideoFrameLayout::Create(format, pic_size);
+  DCHECK(frame_layout_);
+  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a

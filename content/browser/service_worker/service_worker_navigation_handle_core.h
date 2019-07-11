@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_HANDLE_CORE_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,7 +20,6 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 class ServiceWorkerProviderHost;
 
-// PlzNavigate
 // This class is created on the UI thread, but should only be accessed from the
 // IO thread afterwards. It is the IO thread pendant of
 // ServiceWorkerNavigationHandle. See the ServiceWorkerNavigationHandle header
@@ -35,6 +35,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   void OnCreatedProviderHost(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+
+  void set_provider_host(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
+    provider_host_ = std::move(provider_host);
+  }
 
   // Called when the navigation is ready to commit, set the 2 IDs for the
   // pre-created provider host.

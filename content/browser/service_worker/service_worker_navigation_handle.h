@@ -20,7 +20,7 @@ class ServiceWorkerNavigationHandleCore;
 //
 // The lifetime of the ServiceWorkerNavigationHandle, the
 // ServiceWorkerNavigationHandleCore and the ServiceWorkerProviderHost are the
-// following :
+// following:
 //   1) We create a ServiceWorkerNavigationHandle on the UI thread without
 //   populating the member service worker provider info. This also leads to the
 //   creation of a ServiceWorkerNavigationHandleCore.

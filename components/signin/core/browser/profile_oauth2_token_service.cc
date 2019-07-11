@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/device_id_helper.h"
+#include "components/signin/public/base/signin_pref_names.h"
 
 using signin_metrics::SourceForRefreshTokenOperation;
 

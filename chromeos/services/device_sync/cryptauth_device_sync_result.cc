@@ -10,8 +10,11 @@ namespace device_sync {
 
 CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
     ResultCode result_code,
+    bool did_device_registry_change,
     const base::Optional<cryptauthv2::ClientDirective>& client_directive)
-    : result_code_(result_code), client_directive_(client_directive) {}
+    : result_code_(result_code),
+      did_device_registry_change_(did_device_registry_change),
+      client_directive_(client_directive) {}
 
 CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
     const CryptAuthDeviceSyncResult& other) = default;
@@ -45,8 +48,146 @@ std::ostream& operator<<(
     case ResultCode::kSuccess:
       stream << "[Success]";
       break;
-    case ResultCode::kError:
-      stream << "[Error]";
+    case ResultCode::kErrorMissingUserKeyPair:
+      stream << "[Error: No user key pair in registry]";
+      break;
+    case ResultCode::kErrorEncryptingDeviceMetadata:
+      stream << "[Error: Could not encrypt local device metadata]";
+      break;
+    case ResultCode::kErrorEstablishingGroupPublicKey:
+      stream << "[Error: Could not establish group public key]";
+      break;
+    case ResultCode::kErrorNoMetadataInResponse:
+      stream << "[Error: No encrypted metadata in SyncMetadata response]";
+      break;
+    case ResultCode::kErrorInvalidMetadataInResponse:
+      stream << "[Error: Invalid DeviceMetadataPacket in SyncMetadata "
+             << "response]";
+      break;
+    case ResultCode::kErrorDuplicateDeviceIdsInResponse:
+      stream << "[Error: Duplicate device IDs in SyncMetadata response]";
+      break;
+    case ResultCode::kErrorNoLocalDeviceMetadataInResponse:
+      stream << "[Error: No local device metadata in SyncMetadata response]";
+      break;
+    case ResultCode::kErrorMissingFeatureStatuses:
+      stream << "[Error: Feature statuses not received for device(s)]";
+      break;
+    case ResultCode::kErrorMissingLocalDeviceSyncBetterTogetherKey:
+      stream << "[Error: No DeviceSync:BetterTogether key in registry]";
+      break;
+    case ResultCode::kErrorDecryptingGroupPrivateKey:
+      stream << "[Error: Could not decrypt group private key]";
+      break;
+    case ResultCode::kErrorInconsistentGroupPrivateKeys:
+      stream << "[Error: Group private key from SyncMetadata response "
+             << "unexpectedly disagrees with the one in local storage]";
+      break;
+    case ResultCode::kErrorDecryptingMetadata:
+      stream << "[Error: Could not decrypt device metadata]";
+      break;
+    case ResultCode::kErrorParsingMetadata:
+      stream << "[Error: Could not parse device metadata]";
+      break;
+    case ResultCode::kErrorInconsistentLocalDeviceMetadata:
+      stream << "[Error: Local device metadata disagrees with that in "
+             << "SyncMetadata response]";
+      break;
+    case ResultCode::kErrorEncryptingGroupPrivateKey:
+      stream << "[Error: Could not encrypt group private key]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallOffline:
+      stream << "[SyncMetadata API call failed: Offline]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallEndpointNotFound:
+      stream << "[SyncMetadata API call failed: Endpoint not found]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallAuthenticationError:
+      stream << "[SyncMetadata API call failed: Authentication error]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallBadRequest:
+      stream << "[SyncMetadata API call failed: Bad request]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallResponseMalformed:
+      stream << "[SyncMetadata API call failed: Response malformed]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallInternalServerError:
+      stream << "[SyncMetadata API call failed: Internal server error]";
+      break;
+    case ResultCode::kErrorSyncMetadataApiCallUnknownError:
+      stream << "[SyncMetadata API call failed: Unknown error]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallOffline:
+      stream << "[BatchGetFeatureStatuses API call failed: Offline]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallEndpointNotFound:
+      stream << "[BatchGetFeatureStatuses API call failed: Endpoint not found]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallAuthenticationError:
+      stream << "[BatchGetFeatureStatuses API call failed: Authentication "
+             << "error]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallBadRequest:
+      stream << "[BatchGetFeatureStatuses API call failed: Bad request]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallResponseMalformed:
+      stream << "[BatchGetFeatureStatuses API call failed: Response malformed]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallInternalServerError:
+      stream << "[BatchGetFeatureStatuses API call failed: Internal server "
+             << "error]";
+      break;
+    case ResultCode::kErrorBatchGetFeatureStatusesApiCallUnknownError:
+      stream << "[BatchGetFeatureStatuses API call failed: Unknown error]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallOffline:
+      stream << "[ShareGroupPrivateKey API call failed: Offline]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallEndpointNotFound:
+      stream << "[ShareGroupPrivateKey API call failed: Endpoint not found]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallAuthenticationError:
+      stream << "[ShareGroupPrivateKey API call failed: Authentication error]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallBadRequest:
+      stream << "[ShareGroupPrivateKey API call failed: Bad request]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallResponseMalformed:
+      stream << "[ShareGroupPrivateKey API call failed: Response malformed]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallInternalServerError:
+      stream << "[ShareGroupPrivateKey API call failed: Internal server error]";
+      break;
+    case ResultCode::kErrorShareGroupPrivateKeyApiCallUnknownError:
+      stream << "[ShareGroupPrivateKey API call failed: Unknown error]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForGroupKeyCreation:
+      stream << "[Error: Timeout waiting for group key creation]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForLocalDeviceMetadataEncryption:
+      stream << "[Error: Timeout waiting for local device metadata encryption]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForFirstSyncMetadataResponse:
+      stream << "[Error: Timeout waiting for first SyncMetadata response]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForSecondSyncMetadataResponse:
+      stream << "[Error: Timeout waiting for second SyncMetadata response]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForGroupPrivateKeyDecryption:
+      stream << "[Error: Timeout waiting for group private key decryption]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForDeviceMetadataDecryption:
+      stream << "[Error: Timeout waiting for remote device metadata "
+             << "decryption]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForBatchGetFeatureStatusesResponse:
+      stream << "[Error: Timeout waiting for BatchGetFeatureStatuses response]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForGroupPrivateKeyEncryption:
+      stream << "[Error: Timeout waiting for group private key encryption]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForShareGroupPrivateKeyResponse:
+      stream << "[Error: Timeout waiting for ShareGroupPrivateKey response]";
       break;
   }
 

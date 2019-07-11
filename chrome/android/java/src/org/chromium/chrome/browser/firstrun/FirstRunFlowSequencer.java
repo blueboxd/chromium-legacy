@@ -172,7 +172,7 @@ public abstract class FirstRunFlowSequencer  {
         // In the full FRE we always show the Welcome page, except on EDU devices.
         boolean showWelcomePage = !mForceEduSignIn;
         freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
-        freProperties.putInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
+        freProperties.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 
         // Initialize usage and crash reporting according to the default value.
         // The user can explicitly enable or disable the reporting on the Welcome page.
@@ -202,7 +202,7 @@ public abstract class FirstRunFlowSequencer  {
             // If the device is an Android EDU device or has a child account, there should be
             // exactly account on the device. Force sign-in in to that account.
             freProperties.putString(
-                    AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
+                    SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
         }
 
         freProperties.putBoolean(

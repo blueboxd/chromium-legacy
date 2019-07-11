@@ -9365,6 +9365,30 @@
           If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'SelectToSpeakEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 573,
+      'caption': '''Enable select to speak''',
+      'tags': [],
+      'desc': '''Enable the select to speak accessibility feature.
+
+          If this policy is set to true, the select to speak will always be enabled.
+
+          If this policy is set to false, the select to speak will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the select to speak is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -15204,7 +15228,7 @@
       When this policy is unset it is not possible to verify Parent Access Code on child user's device.'''
     },
     {
-      'name': 'CertificateManagementAllowed',
+      'name': 'ClientCertificateManagementAllowed',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -15235,8 +15259,8 @@
       },
       'example_value': 1,
       'id': 518,
-      'caption': '''Allow users to manage installed certificates.''',
-      'desc': '''This policy controls whether user are able to import and remove certificates via Certificate Manager.
+      'caption': '''Allow users to manage installed client certificates.''',
+      'desc': '''This policy controls whether user are able to import and remove client certificates via Certificate Manager.
 
       If this policy is set to ''Allow users to manage all certificates'' or left not set, users will be able to manage certificates.
 
@@ -16982,6 +17006,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 572,
+  'highest_id_currently_used': 573,
   'highest_atomic_group_id_currently_used': 37
 }

@@ -346,9 +346,7 @@ bool InputMethodChromeOS::SetCompositionRange(
 }
 
 void InputMethodChromeOS::ConfirmCompositionText() {
-  TextInputClient* client = GetTextInputClient();
-  if (client && client->HasCompositionText())
-    client->ConfirmCompositionText();
+  InputMethodBase::ConfirmCompositionText();
 
   ResetContext();
 }

@@ -50,7 +50,7 @@
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"

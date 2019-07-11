@@ -178,6 +178,8 @@ Polymer({
         return 'management:report';
       case management.DeviceReportingType.PRINT:
         return 'cr:print';
+      case management.DeviceReportingType.CROSTINI:
+        return 'management:linux';
       default:
         return 'cr:computer';
     }

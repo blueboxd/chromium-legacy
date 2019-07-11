@@ -149,6 +149,13 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   return true;
 }
 
+void InputMethodEngine::ConfirmCompositionText() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context)
+    input_context->ConfirmCompositionText();
+}
+
 bool InputMethodEngine::IsActive() const {
   return true;
 }

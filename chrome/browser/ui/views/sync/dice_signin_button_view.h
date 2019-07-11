@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
 

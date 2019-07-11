@@ -20,7 +20,7 @@
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

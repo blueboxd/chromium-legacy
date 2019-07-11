@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_USB_USB_DEVICE_HANDLE_WIN_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -67,7 +68,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
                        TransferCallback callback) override;
-  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+  const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
  protected:
@@ -99,13 +100,13 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   };
 
   struct Endpoint {
-    const UsbInterfaceDescriptor* interface;
+    const mojom::UsbInterfaceInfo* interface;
     UsbTransferType type;
   };
 
   bool OpenInterfaceHandle(Interface* interface);
-  void RegisterEndpoints(const UsbInterfaceDescriptor& interface);
-  void UnregisterEndpoints(const UsbInterfaceDescriptor& interface);
+  void RegisterEndpoints(const CombinedInterfaceInfo& interface);
+  void UnregisterEndpoints(const CombinedInterfaceInfo& interface);
   WINUSB_INTERFACE_HANDLE GetInterfaceForControlTransfer(
       UsbControlTransferRecipient recipient,
       uint16_t index);

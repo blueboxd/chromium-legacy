@@ -226,9 +226,8 @@ void ImageElementTiming::NotifyWillBeDestroyed(const LayoutObject* image) {
   images_notified_.erase(image);
 }
 
-void ImageElementTiming::NotifyBackgroundImageRemoved(
-    const LayoutObject* layout_object,
-    const ImageResourceContent* image) {
+void ImageElementTiming::NotifyImageRemoved(const LayoutObject* layout_object,
+                                            const ImageResourceContent* image) {
   background_images_notified_.erase(std::make_pair(layout_object, image));
 }
 

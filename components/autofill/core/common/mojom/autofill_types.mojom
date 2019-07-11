@@ -272,7 +272,7 @@ struct PasswordForm {
   mojo_base.mojom.String16 username_element;
   bool username_marked_by_site;
   mojo_base.mojom.String16 username_value;
-  array<ValueElementPair> other_possible_usernames;
+  array<ValueElementPair> all_possible_usernames;
   array<ValueElementPair> all_possible_passwords;
   bool form_has_autofilled_value;
   mojo_base.mojom.String16 password_element;

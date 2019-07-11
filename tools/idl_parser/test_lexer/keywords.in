@@ -6,7 +6,6 @@ BYTE byte
 CALLBACK callback
 CONST const
 CREATOR creator
-DATE Date
 DELETER deleter
 DICTIONARY dictionary
 DOMSTRING DOMString
@@ -33,7 +32,6 @@ PARTIAL partial
 PROMISE Promise
 READONLY readonly
 RECORD record
-REGEXP RegExp
 REQUIRED required
 SEQUENCE sequence
 SETLIKE setlike

@@ -855,9 +855,13 @@
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/x-olympus-orf', mimeType);
 
-    // Check: the image EXIF metadata should be displayed.
-    // TODO(crbug.com/965370) Make the metadata controller extract and display
-    // the RAW image EXIF metadata in the metadata box.
+    // Check: the RAW image EXIF metadata should be displayed.
+    const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
+    chrome.test.assertEq('4608 x 3456', size);
+    const model = await getQuickViewMetadataBoxField(appId, 'Device model');
+    chrome.test.assertEq(model, 'E-M1');
+    const film = await getQuickViewMetadataBoxField(appId, 'Device settings');
+    chrome.test.assertEq('f/8 0.002 12mm ISO200', film);
   };
 
   /**

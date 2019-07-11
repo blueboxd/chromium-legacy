@@ -110,6 +110,7 @@ class ProfileImpl : public Profile {
   content::SmsService* GetSmsService() override;
   content::NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext() override;
+  content::ContentIndexProvider* GetContentIndexProvider() override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;

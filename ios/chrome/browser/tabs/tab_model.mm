@@ -26,6 +26,7 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/ios/ios_live_tab.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_loop_detection_util.h"
@@ -207,15 +208,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   DCHECK(web_state->GetNavigationManager());
   web::NavigationItem* item =
       web_state->GetNavigationManager()->GetLastCommittedItem();
-  // TODO(crbug.com/966747): Add a function in browser_state_metrics.h to return
-  // profile type.
-  profile_metrics::BrowserProfileType profile_type =
-      web_state->GetBrowserState()->IsOffTheRecord()
-          ? profile_metrics::BrowserProfileType::kIncognito
-          : profile_metrics::BrowserProfileType::kRegular;
   navigation_metrics::RecordMainFrameNavigation(
       item ? item->GetVirtualURL() : GURL::EmptyGURL(), true,
-      web_state->GetBrowserState()->IsOffTheRecord(), profile_type);
+      web_state->GetBrowserState()->IsOffTheRecord(),
+      GetBrowserStateType(web_state->GetBrowserState()));
 }
 
 }  // anonymous namespace

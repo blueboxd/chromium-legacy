@@ -24,7 +24,7 @@
 #include "components/favicon/core/features.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/proto_value_conversions.h"

@@ -288,10 +288,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      controllers.push_back(
-          std::make_unique<password_manager::PasswordModelTypeController>(
-              password_store_->CreateSyncControllerDelegate(), sync_service,
-              sync_client_->GetPasswordStateChangedCallback()));
+      if (password_store_) {
+        // |password_store_| can be null in tests.
+        controllers.push_back(
+            std::make_unique<password_manager::PasswordModelTypeController>(
+                password_store_->CreateSyncControllerDelegate(), sync_service,
+                sync_client_->GetPasswordStateChangedCallback()));
+      }
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
           dump_stack, sync_service, sync_client_,

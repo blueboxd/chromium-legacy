@@ -146,9 +146,7 @@ struct PasswordForm {
   // This member is populated in cases where we there are multiple input
   // elements that could possibly be the username. Used when our heuristics for
   // determining the username are incorrect. Optional.
-  //
-  // When parsing an HTML form, this is typically empty.
-  ValueElementVector other_possible_usernames;
+  ValueElementVector all_possible_usernames;
 
   // This member is populated in cases where we there are multiple possible
   // password values. Used in pending password state, to populate a dropdown

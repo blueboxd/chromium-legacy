@@ -117,11 +117,6 @@ class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
         chrome_trace_config.MemoryDumpConfig())
     return options
 
-  @classmethod
-  def ShouldAddValue(cls, name, from_first_story_run):
-    del from_first_story_run  # unused
-    return memory.DefaultShouldAddValueForMemoryMeasurement(name)
-
 
 class _BaseWebVRBenchmark(_BaseWebVRWebXRBenchmark):
 

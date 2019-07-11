@@ -61,7 +61,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
       download_to_cache_only_(false),
-      priority_(ResourceLoadPriority::kLowest),
+      priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       requestor_id_(0),
       plugin_child_id_(-1),
@@ -284,6 +284,10 @@ ResourceLoadPriority ResourceRequest::Priority() const {
 
 int ResourceRequest::IntraPriorityValue() const {
   return intra_priority_value_;
+}
+
+bool ResourceRequest::PriorityHasBeenSet() const {
+  return priority_ != ResourceLoadPriority::kUnresolved;
 }
 
 void ResourceRequest::SetPriority(ResourceLoadPriority priority,

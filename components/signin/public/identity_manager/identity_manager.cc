@@ -17,6 +17,7 @@
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/diagnostics_provider.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -53,7 +54,8 @@ IdentityManager::IdentityManager(
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
     std::unique_ptr<AccountsMutator> accounts_mutator,
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
-    std::unique_ptr<DiagnosticsProvider> diagnostics_provider)
+    std::unique_ptr<DiagnosticsProvider> diagnostics_provider,
+    std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer)
     : account_tracker_service_(std::move(account_tracker_service)),
       token_service_(std::move(token_service)),
       gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
@@ -62,10 +64,14 @@ IdentityManager::IdentityManager(
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
       accounts_cookie_mutator_(std::move(accounts_cookie_mutator)),
-      diagnostics_provider_(std::move(diagnostics_provider)) {
+      diagnostics_provider_(std::move(diagnostics_provider)),
+      device_accounts_synchronizer_(std::move(device_accounts_synchronizer)) {
   DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
   DCHECK(diagnostics_provider_);
+
+  DCHECK(!accounts_mutator_ || !device_accounts_synchronizer_)
+      << "Cannot have both an AccountsMutator and a DeviceAccountsSynchronizer";
 
   // IdentityManager will outlive the PrimaryAccountManager, so base::Unretained
   // is safe.
@@ -354,6 +360,10 @@ AccountsCookieMutator* IdentityManager::GetAccountsCookieMutator() {
   return accounts_cookie_mutator_.get();
 }
 
+DeviceAccountsSynchronizer* IdentityManager::GetDeviceAccountsSynchronizer() {
+  return device_accounts_synchronizer_.get();
+}
+
 void IdentityManager::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.AddObserver(observer);
 }
@@ -415,21 +425,14 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
 void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
-
-void IdentityManager::LegacyAddAccountFromSystem(
-    const CoreAccountId& account_id) {
-  token_service_->GetDelegate()->AddAccountFromSystem(account_id);
-}
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 void IdentityManager::LegacyReloadAccountsFromSystem() {
   token_service_->GetDelegate()->ReloadAccountsFromSystem(
       GetPrimaryAccountId());
 }
-#endif
 
-#if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
   return account_tracker_service_->GetJavaObject();

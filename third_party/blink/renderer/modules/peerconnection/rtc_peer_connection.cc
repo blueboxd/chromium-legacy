@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_error_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
@@ -2667,6 +2668,15 @@ void RTCPeerConnection::DidGenerateICECandidate(
   RTCIceCandidate* ice_candidate =
       RTCIceCandidate::Create(std::move(web_candidate));
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
+}
+void RTCPeerConnection::DidFailICECandidate(const WebString& host_candidate,
+                                            const WebString& url,
+                                            int error_code,
+                                            const WebString& error_text) {
+  DCHECK(!closed_);
+  DCHECK(GetExecutionContext()->IsContextThread());
+  ScheduleDispatchEvent(RTCPeerConnectionIceErrorEvent::Create(
+      host_candidate, url, error_code, error_text));
 }
 
 void RTCPeerConnection::DidChangeSignalingState(

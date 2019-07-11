@@ -245,7 +245,7 @@ bool StructTraits<
   out->username_marked_by_site = data.username_marked_by_site();
 
   if (!data.ReadUsernameValue(&out->username_value) ||
-      !data.ReadOtherPossibleUsernames(&out->other_possible_usernames) ||
+      !data.ReadAllPossibleUsernames(&out->all_possible_usernames) ||
       !data.ReadAllPossiblePasswords(&out->all_possible_passwords) ||
       !data.ReadPasswordElement(&out->password_element) ||
       !data.ReadPasswordValue(&out->password_value))

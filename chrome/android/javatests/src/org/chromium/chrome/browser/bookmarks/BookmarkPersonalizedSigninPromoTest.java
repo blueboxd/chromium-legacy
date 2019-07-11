@@ -35,8 +35,8 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
+import org.chromium.chrome.browser.signin.SigninActivity;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -115,9 +115,9 @@ public class BookmarkPersonalizedSigninPromoTest {
 
         assertEquals("Choosing to sign in with the default account should fire an intent!", 1,
                 startedIntents.size());
-        Intent expectedIntent = AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
-                mActivityTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
-                TEST_ACCOUNT_NAME, true, true);
+        Intent expectedIntent =
+                SigninActivity.createIntentForPromoDefaultFlow(mActivityTestRule.getActivity(),
+                        SigninAccessPoint.BOOKMARK_MANAGER, TEST_ACCOUNT_NAME);
         assertTrue(expectedIntent.filterEquals(startedIntents.get(0)));
     }
 
@@ -137,8 +137,8 @@ public class BookmarkPersonalizedSigninPromoTest {
 
         assertEquals("Choosing to sign in with another account should fire an intent!", 1,
                 startedIntents.size());
-        Intent expectedIntent = AccountSigninActivity.createIntentForDefaultSigninFlow(
-                mActivityTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER, true);
+        Intent expectedIntent = SigninActivity.createIntent(
+                mActivityTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER);
         assertTrue(expectedIntent.filterEquals(startedIntents.get(0)));
     }
 
@@ -157,9 +157,9 @@ public class BookmarkPersonalizedSigninPromoTest {
 
         assertFalse(
                 "Adding a new account should fire at least one intent!", startedIntents.isEmpty());
-        Intent expectedIntent = AccountSigninActivity.createIntentForAddAccountSigninFlow(
-                mActivityTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER, true);
-        // Comparing only the first intent as AccountSigninActivity will fire an intent after
+        Intent expectedIntent = SigninActivity.createIntentForPromoAddAccountFlow(
+                mActivityTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER);
+        // Comparing only the first intent as SigninActivity will fire an intent after
         // starting the flow to add an account.
         assertTrue(expectedIntent.filterEquals(startedIntents.get(0)));
     }

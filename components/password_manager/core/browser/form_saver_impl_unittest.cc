@@ -367,7 +367,7 @@ TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
   observed.username_element = ASCIIToUTF16("user");
   observed.password_value = ASCIIToUTF16("12345");
   observed.password_element = ASCIIToUTF16("password");
-  observed.other_possible_usernames = {
+  observed.all_possible_usernames = {
       {ASCIIToUTF16("user2"), ASCIIToUTF16("field")}};
   observed.origin = GURL("https://www.example.com/foobar");
 

@@ -901,9 +901,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->action = form_data.action;
   result->form_data = form_data;
   result->all_possible_passwords = std::move(all_possible_passwords);
-  // TODO(crbug.com/881346) Rename PasswordForm::other_possible_usernames to
-  // all_possible_usernames once the old parser is gone.
-  result->other_possible_usernames = std::move(all_possible_usernames);
+  result->all_possible_usernames = std::move(all_possible_usernames);
   result->scheme = PasswordForm::Scheme::kHtml;
   result->preferred = false;
   result->blacklisted_by_user = false;

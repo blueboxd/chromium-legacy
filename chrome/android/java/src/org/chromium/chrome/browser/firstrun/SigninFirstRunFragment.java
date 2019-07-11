@@ -18,6 +18,10 @@ import org.chromium.components.signin.ChildAccountStatus;
 
 /** A {@link Fragment} to handle sign-in within the first run experience. */
 public class SigninFirstRunFragment extends SigninFragmentBase implements FirstRunFragment {
+    // Per-page parameters:
+    public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
+    public static final String CHILD_ACCOUNT_STATUS = "ChildAccountStatus";
+
     private Bundle mArguments;
 
     // Every fragment must have a public default constructor.
@@ -28,13 +32,12 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
         super.onAttach(context);
 
         Bundle freProperties = getPageDelegate().getProperties();
-        String forceAccountTo =
-                freProperties.getString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
+        String forceAccountTo = freProperties.getString(FORCE_SIGNIN_ACCOUNT_TO);
         if (forceAccountTo == null) {
             mArguments = createArguments(null);
         } else {
-            @ChildAccountStatus.Status int childAccountStatus =
-                    freProperties.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS);
+            @ChildAccountStatus.Status
+            int childAccountStatus = freProperties.getInt(CHILD_ACCOUNT_STATUS);
             mArguments = createArgumentsForForcedSigninFlow(forceAccountTo, childAccountStatus);
         }
 

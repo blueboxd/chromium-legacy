@@ -38,8 +38,10 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
@@ -1872,6 +1874,11 @@ TEST(HeapTest, LazySweepingPages) {
 }
 
 TEST(HeapTest, LazySweepingLargeObjectPages) {
+  // Disable concurrent sweeping to check lazy sweeping on allocation.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kBlinkHeapConcurrentSweeping);
+
   ClearOutOldGarbage();
 
   // Create free lists that can be reused for IntWrappers created in
@@ -1907,70 +1914,6 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();
   EXPECT_EQ(22, LargeHeapObject::destructor_calls_);
-}
-
-class SimpleFinalizedEagerObjectBase
-    : public GarbageCollectedFinalized<SimpleFinalizedEagerObjectBase> {
- public:
-  virtual ~SimpleFinalizedEagerObjectBase() = default;
-  void Trace(blink::Visitor* visitor) {}
-
-  EAGERLY_FINALIZE();
-
- protected:
-  SimpleFinalizedEagerObjectBase() = default;
-};
-
-class SimpleFinalizedEagerObject : public SimpleFinalizedEagerObjectBase {
- public:
-  SimpleFinalizedEagerObject() = default;
-  ~SimpleFinalizedEagerObject() override { ++destructor_calls_; }
-
-  static int destructor_calls_;
-};
-
-template <typename T>
-class ParameterizedButEmpty {
- public:
-  EAGERLY_FINALIZE();
-};
-
-class SimpleFinalizedObjectInstanceOfTemplate final
-    : public GarbageCollectedFinalized<SimpleFinalizedObjectInstanceOfTemplate>,
-      public ParameterizedButEmpty<SimpleFinalizedObjectInstanceOfTemplate> {
- public:
-  SimpleFinalizedObjectInstanceOfTemplate() = default;
-  ~SimpleFinalizedObjectInstanceOfTemplate() { ++destructor_calls_; }
-
-  void Trace(blink::Visitor* visitor) {}
-
-  static int destructor_calls_;
-};
-
-int SimpleFinalizedEagerObject::destructor_calls_ = 0;
-int SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_ = 0;
-
-TEST(HeapTest, EagerlySweepingPages) {
-  ClearOutOldGarbage();
-
-  SimpleFinalizedObject::destructor_calls_ = 0;
-  SimpleFinalizedEagerObject::destructor_calls_ = 0;
-  SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_ = 0;
-  EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
-  EXPECT_EQ(0, SimpleFinalizedEagerObject::destructor_calls_);
-  for (int i = 0; i < 1000; i++)
-    MakeGarbageCollected<SimpleFinalizedObject>();
-  for (int i = 0; i < 100; i++)
-    MakeGarbageCollected<SimpleFinalizedEagerObject>();
-  for (int i = 0; i < 100; i++)
-    MakeGarbageCollected<SimpleFinalizedObjectInstanceOfTemplate>();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kConcurrentAndLazySweeping,
-      BlinkGC::GCReason::kForcedGCForTesting);
-  EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
-  EXPECT_EQ(100, SimpleFinalizedEagerObject::destructor_calls_);
-  EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_);
 }
 
 TEST(HeapTest, Finalization) {

@@ -22,7 +22,7 @@
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"

@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/unified_consent/feature.h"

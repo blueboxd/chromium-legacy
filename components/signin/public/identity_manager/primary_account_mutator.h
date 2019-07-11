@@ -45,15 +45,33 @@ class PrimaryAccountMutator {
   PrimaryAccountMutator const& operator=(const PrimaryAccountMutator& other) =
       delete;
 
-#if !defined(OS_CHROMEOS)
   // Marks the account with |account_id| as the primary account, and returns
   // whether the operation succeeded or not. To succeed, this requires that:
+  //    - the account is known by the IdentityManager.
+  // On non-ChromeOS platforms, this additionally requires that:
   //    - setting the primary account is allowed,
   //    - the account username is allowed by policy,
-  //    - there is not already a primary account set,
-  //    - the account is known by the IdentityManager.
+  //    - there is not already a primary account set.
+  // TODO(https://crbug.com/983124): Investigate adding all the extra
+  // requirements on ChromeOS as well.
   virtual bool SetPrimaryAccount(const CoreAccountId& account_id) = 0;
 
+#if defined(OS_CHROMEOS)
+  // Updates the info of the account corresponding to (|gaia_id|, |email|),
+  // marks it as the primary account, and returns whether the operation
+  // succeeded or not. Currently, this method is guaranteed to succeed.
+  // NOTE: Unlike SetPrimaryAccount(), this method does not require that the
+  // account is known by IdentityManager. The reason is that there are
+  // contexts on ChromeOS where the primary account is not guaranteed to be
+  // known by IdentityManager when it is set.
+  // TODO(https://crbug.com/967605): Port callers to SetPrimaryAccount() once
+  // https://crbug.com/867602 is fixed.
+  virtual bool SetPrimaryAccountAndUpdateAccountInfo(
+      const std::string& gaia_id,
+      const std::string& email) = 0;
+#endif
+
+#if !defined(OS_CHROMEOS)
   // Clears the primary account, and returns whether the operation
   // succeeded or not. Depending on |action|, the other accounts
   // known to the IdentityManager may be deleted.
@@ -61,18 +79,6 @@ class PrimaryAccountMutator {
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) = 0;
-#else
-  // Updates the info of the account corresponding to (|gaia_id|, |email|),
-  // marks it as the primary account, and returns whether the operation
-  // succeeded or not. Currently, this method is guaranteed to succeed.
-  // NOTE: Unlike SetPrimaryAccount(), this method does not require that the
-  // account is known by IdentityManager. The reason is that on ChromeOS the
-  // primary account is in fact not guaranteed to be known by IdentityManager
-  // when it is set. TODO(https://crbug.com/967605): Port callers to
-  // SetPrimaryAccount() once https://crbug.com/867602 is fixed."
-  virtual bool SetPrimaryAccountAndUpdateAccountInfo(
-      const std::string& gaia_id,
-      const std::string& email) = 0;
 #endif
 };
 

@@ -30,7 +30,7 @@ class SequencedTaskRunner;
 namespace device {
 
 struct EndpointMapValue {
-  const UsbInterfaceDescriptor* interface;
+  const mojom::UsbInterfaceInfo* interface;
   const mojom::UsbEndpointInfo* endpoint;
 };
 
@@ -80,7 +80,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
                        TransferCallback callback) override;
-  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+  const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
  protected:

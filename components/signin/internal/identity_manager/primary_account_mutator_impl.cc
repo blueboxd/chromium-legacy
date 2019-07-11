@@ -10,8 +10,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/core_account_id.h"
 
 namespace identity {
@@ -30,25 +30,38 @@ PrimaryAccountMutatorImpl::PrimaryAccountMutatorImpl(
 
 PrimaryAccountMutatorImpl::~PrimaryAccountMutatorImpl() {}
 
-#if !defined(OS_CHROMEOS)
 bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
     const CoreAccountId& account_id) {
+  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
+
+#if !defined(OS_CHROMEOS)
   if (!pref_service_->GetBoolean(prefs::kSigninAllowed))
     return false;
 
   if (primary_account_manager_->IsAuthenticated())
     return false;
 
-  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
   if (account_info.account_id != account_id || account_info.email.empty())
     return false;
 
   // TODO(crbug.com/889899): should check that the account email is allowed.
+#endif
 
   primary_account_manager_->SignIn(account_info.email);
   return true;
 }
 
+#if defined(OS_CHROMEOS)
+bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
+    const std::string& gaia_id,
+    const std::string& email) {
+  CoreAccountId account_id = account_tracker_->SeedAccountInfo(gaia_id, email);
+  SetPrimaryAccount(account_id);
+  return true;
+}
+#endif
+
+#if !defined(OS_CHROMEOS)
 bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
     ClearAccountsAction action,
     signin_metrics::ProfileSignout source_metric,
@@ -70,14 +83,6 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
       break;
   }
 
-  return true;
-}
-#else
-bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
-    const std::string& gaia_id,
-    const std::string& email) {
-  account_tracker_->SeedAccountInfo(gaia_id, email);
-  primary_account_manager_->SignIn(email);
   return true;
 }
 #endif

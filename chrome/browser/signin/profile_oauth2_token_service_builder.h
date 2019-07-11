@@ -7,13 +7,19 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
+#endif
 
 class AccountTrackerService;
 class IdentityManagerFactory;
 class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
+class TokenWebData;
 
 namespace signin {
 enum class AccountConsistencyMethod;
@@ -45,6 +51,14 @@ class ProfileOAuth2TokenServiceBuilder {
 #if defined(OS_CHROMEOS)
       chromeos::AccountManager* account_manager,
       bool is_regular_profile,
+#endif
+#if !defined(OS_ANDROID)
+      bool delete_signin_cookies_on_exit,
+      scoped_refptr<TokenWebData> token_web_data,
+#endif
+#if defined(OS_WIN)
+      MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback
+          reauth_callback,
 #endif
       SigninClient* signin_client);
 

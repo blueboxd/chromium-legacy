@@ -228,7 +228,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       cached_repeat_dur_(kInvalidCachedTime),
       cached_repeat_count_(kInvalidCachedTime),
       cached_min_(kInvalidCachedTime),
-      cached_max_(kInvalidCachedTime) {
+      cached_max_(kInvalidCachedTime),
+      interval_has_changed_(false) {
   ResolveFirstInterval();
 }
 
@@ -1144,6 +1145,16 @@ void SVGSMILElement::TriggerPendingEvents(double elapsed) {
     ScheduleEvent(event_type_names::kEndEvent);
 }
 
+void SVGSMILElement::UpdateSyncbases() {
+  if (!interval_has_changed_)
+    return;
+  interval_has_changed_ = false;
+  NotifyDependentsIntervalChanged(interval_);
+  next_progress_time_ = next_progress_time_.IsUnresolved()
+                            ? interval_.begin
+                            : std::min(next_progress_time_, interval_.begin);
+}
+
 void SVGSMILElement::UpdateNextProgressTime(double elapsed) {
   next_progress_time_ = CalculateNextProgressTime(elapsed);
 }
@@ -1165,22 +1176,28 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
 
   base::Optional<SMILInterval> new_interval =
       CheckForNewRestartInterval(elapsed);
-  bool interval_did_restart =
-      (new_interval && elapsed >= (*new_interval).begin);
+
+  // This boolean is quite intricate. (Bug 379751)
+  //
+  // The first part is easy, if we get a new interval we start or end.
+  //
+  // The second part, is primarily there for an edge case where
+  // the old interval began and ended on the same animation frame
+  // due to a really short interval.
+  bool interval_did_start_or_end =
+      (new_interval) ||
+      (interval_.begin <= elapsed && interval_.end <= elapsed);
 
   if (new_interval) {
     interval_ = *new_interval;
-    NotifyDependentsIntervalChanged(interval_);
-    next_progress_time_ = next_progress_time_.IsUnresolved()
-                              ? interval_.begin
-                              : std::min(next_progress_time_, interval_.begin);
+    interval_has_changed_ = true;
   }
 
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
 
   if (IsContributing(elapsed)) {
-    if (old_active_state == kInactive || interval_did_restart) {
+    if (old_active_state == kInactive || interval_did_start_or_end) {
       ScheduleEvent(event_type_names::kBeginEvent);
       StartedActiveInterval();
     }
@@ -1193,7 +1210,7 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
   }
 
   if ((old_active_state == kActive && GetActiveState() != kActive) ||
-      interval_did_restart) {
+      interval_did_start_or_end) {
     ScheduleEvent(event_type_names::kEndEvent);
     EndedActiveInterval();
   }

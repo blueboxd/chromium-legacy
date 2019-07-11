@@ -48,6 +48,8 @@ void WebSocketHandleImpl::Connect(mojom::blink::WebSocketConnectorPtr connector,
   DCHECK(channel);
   channel_ = channel;
 
+  // Here we detect mojo connection errors on |client_binding_|. See also
+  // CreateWebSocket in //network/services/public/mojom/network_context.mojom.
   network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
   handshake_client_binding_.Bind(

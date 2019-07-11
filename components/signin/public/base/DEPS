@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/account_id",
+  "+components/user_manager/known_user.h",
+  "+third_party/re2/src/re2/re2.h",
+]

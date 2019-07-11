@@ -225,7 +225,6 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 
   void SendPresentationFeedback(CompositorFrameSinkSupport* support,
                                 uint32_t frame_token) {
-    support->OnSurfaceWasDrawn(frame_token, base::TimeTicks::Now());
     support->DidPresentCompositorFrame(
         frame_token,
         gfx::PresentationFeedback(base::TimeTicks::Now(),

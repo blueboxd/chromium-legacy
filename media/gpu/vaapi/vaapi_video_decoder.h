@@ -17,10 +17,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_frame_layout.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -165,8 +167,10 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   bool needs_bitstream_conversion_ = false;
 
   // Output frame properties.
+  base::Optional<VideoFrameLayout> frame_layout_;
   gfx::Rect visible_rect_;
-  gfx::Size natural_size_;
+  // Ratio of natural size to |visible_rect_| of the output frames.
+  double pixel_aspect_ratio_ = 0.0;
 
   // Video frame pool used to allocate and recycle video frames.
   std::unique_ptr<DmabufVideoFramePool> frame_pool_;

@@ -99,22 +99,22 @@ class ImagePaintTimingDetectorTest
   size_t CountVisibleImageRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->records_manager_.visible_background_image_map_.size();
+        ->records_manager_.visible_images_.size();
   }
 
   size_t CountInvisibleRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->records_manager_.invisible_node_ids_.size();
+        ->records_manager_.invisible_images_.size();
   }
 
   size_t ContainerTotalSize() {
     return GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
-               ->records_manager_.invisible_node_ids_.size() +
+               ->records_manager_.invisible_images_.size() +
            GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
-               ->records_manager_.visible_background_image_map_.size() +
+               ->records_manager_.visible_images_.size() +
            GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
                ->records_manager_.size_ordered_set_.size() +
@@ -126,7 +126,7 @@ class ImagePaintTimingDetectorTest
   size_t CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->records_manager_.visible_background_image_map_.size();
+        ->records_manager_.visible_images_.size();
   }
 
   size_t CountRankingSetRecords() {

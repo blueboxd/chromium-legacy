@@ -351,7 +351,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual ~ScrollableArea();
 
   void Dispose();
-  virtual void PreFinalize();
+  virtual void DisposeImpl();
 
   // Called when any of horizontal scrollbar, vertical scrollbar and scroll
   // corner is setNeedsPaintInvalidation.

@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -29,56 +28,12 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 public class ChromiumLinkerTestActivity extends Activity {
     private static final String TAG = "LinkerTest";
 
-    public static final String COMMAND_LINE_FILE =
-            "/data/local/tmp/chromium-linker-test-command-line";
-
-    public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
-
-    // Use this on the command-line to simulate a low-memory device, otherwise
-    // a regular device is simulated by this test, independently from what the
-    // target device running the test really is.
-    private static final String LOW_MEMORY_DEVICE = "--low-memory-device";
-
     private ShellManager mShellManager;
     private ActivityWindowAndroid mWindowAndroid;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Initializing the command line must occur before loading the library.
-        if (!CommandLine.isInitialized()) {
-            CommandLine.initFromFile(COMMAND_LINE_FILE);
-            String[] commandLineParams = getCommandLineParamsFromIntent(getIntent());
-            if (commandLineParams != null) {
-                CommandLine.getInstance().appendSwitchesAndArguments(commandLineParams);
-            }
-        }
-
-        // CommandLine.getInstance().hasSwitch() doesn't work here for some funky
-        // reason, so parse the command-line differently here:
-        boolean hasLowMemoryDeviceSwitch = false;
-        String[] commandLine = CommandLine.getJavaSwitchesOrNull();
-        if (commandLine == null) {
-            Log.i(TAG, "Command line is null");
-        } else {
-            Log.i(TAG, "Command line is:");
-            for (int n = 0; n < commandLine.length; ++n) {
-                String option = commandLine[n];
-                Log.i(TAG, "  '" + option + "'");
-                if (option.equals(LOW_MEMORY_DEVICE)) {
-                    hasLowMemoryDeviceSwitch = true;
-                }
-            }
-        }
-
-        // Determine which kind of device to simulate from the command-line.
-        int memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_NORMAL;
-        if (hasLowMemoryDeviceSwitch) {
-            memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_LOW;
-        }
-        Linker linker = Linker.getInstance();
-        linker.setMemoryDeviceConfigForTesting(memoryDeviceConfig);
 
         // Setup the TestRunner class name.
         Linker.setupForTesting("org.chromium.chromium_linker_test_apk.LinkerTests");
@@ -162,10 +117,6 @@ public class ChromiumLinkerTestActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mWindowAndroid.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private static String[] getCommandLineParamsFromIntent(Intent intent) {
-        return intent != null ? intent.getStringArrayExtra(COMMAND_LINE_ARGS_KEY) : null;
     }
 
     /**

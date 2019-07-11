@@ -4,7 +4,7 @@
 
 #include "components/signin/core/browser/account_info_util.h"
 
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "testing/platform_test.h"
 
 namespace {

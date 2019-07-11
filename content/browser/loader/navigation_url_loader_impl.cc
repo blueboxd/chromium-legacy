@@ -518,29 +518,34 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(upload_file_system_context),
         base::Unretained(appcache_handle_core));
 
-    StartInternal(request_info_.get(), service_worker_navigation_handle_core,
-                  nullptr /* appcache_handle_core */,
+    StartInternal(request_info_.get(),
+                  /*service_worker_navigation_handle=*/nullptr,
+                  service_worker_navigation_handle_core,
+                  /*appcache_handle_core=*/nullptr,
                   std::move(prefetched_signed_exchange_cache),
                   std::move(signed_exchange_prefetch_metric_recorder),
-                  {} /* factory_for_webui */, url_request_context_getter,
+                  /*factory_for_webui=*/{}, url_request_context_getter,
                   std::move(accept_langs));
   }
 
-  void Start(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          network_loader_factory_info,
-      ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
-      AppCacheNavigationHandleCore* appcache_handle_core,
-      scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder,
-      std::unique_ptr<NavigationRequestInfo> request_info,
-      std::unique_ptr<NavigationUIData> navigation_ui_data,
-      network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
-      bool needs_loader_factory_interceptor,
-      base::Time ui_post_time,
-      std::string accept_langs) {
+  // This can be called on the UI or IO thread.
+  void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                 network_loader_factory_info,
+             ServiceWorkerNavigationHandle*
+                 service_worker_navigation_handle /* for UI thread only */,
+             ServiceWorkerNavigationHandleCore*
+                 service_worker_navigation_handle_core /* for IO thread only */,
+             AppCacheNavigationHandleCore* appcache_handle_core,
+             scoped_refptr<PrefetchedSignedExchangeCache>
+                 prefetched_signed_exchange_cache,
+             scoped_refptr<SignedExchangePrefetchMetricRecorder>
+                 signed_exchange_prefetch_metric_recorder,
+             std::unique_ptr<NavigationRequestInfo> request_info,
+             std::unique_ptr<NavigationUIData> navigation_ui_data,
+             network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
+             bool needs_loader_factory_interceptor,
+             base::Time ui_post_time,
+             std::string accept_langs) {
     DCHECK_CURRENTLY_ON(GetLoaderRequestControllerThreadID());
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
@@ -582,25 +587,32 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       CHECK(result && blob_handles_.empty());
     }
 
-    StartInternal(
-        request_info.get(), service_worker_navigation_handle_core,
-        appcache_handle_core, std::move(prefetched_signed_exchange_cache),
-        std::move(signed_exchange_prefetch_metric_recorder),
-        std::move(factory_for_webui), nullptr /* url_request_context_getter */,
-        std::move(accept_langs));
+    StartInternal(request_info.get(), service_worker_navigation_handle,
+                  service_worker_navigation_handle_core, appcache_handle_core,
+                  std::move(prefetched_signed_exchange_cache),
+                  std::move(signed_exchange_prefetch_metric_recorder),
+                  std::move(factory_for_webui),
+                  nullptr /* url_request_context_getter */,
+                  std::move(accept_langs));
   }
 
   // Common setup routines, called by both StartWithoutNetworkService() and
-  // Start(). Most parameters (except for |request_info| and
+  // Start() and can be called either on the UI or IO thread.
+  //
+  // Most parameters (except for |request_info| and
   // |url_request_context_getter|) are for setting up feature-specific
   // loaders and interceptors, and they can be null depending on the flags.
   // |url_request_context_getter| is non-null only for non-NetworkService
   // code paths.
+  //
   // TODO(kinuko): Merge this back to Start() once NetworkService is fully
   // shipped.
   void StartInternal(
       NavigationRequestInfo* request_info,
-      ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
+      ServiceWorkerNavigationHandle*
+          service_worker_navigation_handle /* ui thread only */,
+      ServiceWorkerNavigationHandleCore*
+          service_worker_navigation_handle_core /* io thread only */,
       AppCacheNavigationHandleCore* appcache_handle_core,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
@@ -609,6 +621,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       net::URLRequestContextGetter* url_request_context_getter,
       std::string accept_langs) {
+    DCHECK_CURRENTLY_ON(GetLoaderRequestControllerThreadID());
+
     std::string accept_value = network::kFrameAcceptHeader;
     // TODO(http://crbug.com/824840): Make this work on UI thread.
     if (!IsNavigationLoaderOnUIEnabled()) {
@@ -649,7 +663,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (IsNavigationLoaderOnUIEnabled()) {
-      CreateInterceptorsForUI(request_info);
+      CreateInterceptorsForUI(request_info, service_worker_navigation_handle);
     } else {
       CreateInterceptorsForIO(
           request_info, service_worker_navigation_handle_core,
@@ -678,7 +692,21 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     Restart();
   }
 
-  void CreateInterceptorsForUI(NavigationRequestInfo* request_info) {
+  void CreateInterceptorsForUI(
+      NavigationRequestInfo* request_info,
+      ServiceWorkerNavigationHandle* service_worker_navigation_handle) {
+    // Set up an interceptor for service workers.
+    if (service_worker_navigation_handle) {
+      std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
+          ServiceWorkerRequestHandler::CreateForNavigationUI(
+              resource_request_->url, service_worker_navigation_handle,
+              *request_info);
+      // The interceptor may not be created in certain cases (e.g., the origin
+      // is not secure).
+      if (service_worker_interceptor)
+        interceptors_.push_back(std::move(service_worker_interceptor));
+    }
+
     // See if embedders want to add interceptors.
     std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
         browser_interceptors =
@@ -721,7 +749,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Set-up an interceptor for service workers.
     if (service_worker_navigation_handle_core) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-          ServiceWorkerRequestHandler::CreateForNavigation(
+          ServiceWorkerRequestHandler::CreateForNavigationIO(
               resource_request_->url, service_worker_navigation_handle_core,
               *request_info, &service_worker_provider_host_);
       // The interceptor for service worker may not be created for some
@@ -1756,7 +1784,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
-          std::move(network_factory_info),
+          std::move(network_factory_info), service_worker_navigation_handle,
           service_worker_navigation_handle_core, appcache_handle_core,
           std::move(prefetched_signed_exchange_cache),
           std::move(signed_exchange_prefetch_metric_recorder),

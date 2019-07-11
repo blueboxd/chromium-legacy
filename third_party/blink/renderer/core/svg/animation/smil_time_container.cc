@@ -499,6 +499,10 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
     }
 
     for (auto& animation : sandwich) {
+      animation->UpdateSyncbases();
+    }
+
+    for (auto& animation : sandwich) {
       animation->UpdateNextProgressTime(elapsed);
     }
 
@@ -513,9 +517,8 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
       it = sandwich.erase(it);
     }
 
-    if (sandwich.IsEmpty()) {
+    if (sandwich.IsEmpty())
       continue;
-    }
 
     for (auto& animation : sandwich) {
       SMILTime next_fire_time = animation->NextProgressTime();

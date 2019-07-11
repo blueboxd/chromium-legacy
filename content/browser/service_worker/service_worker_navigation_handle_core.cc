@@ -4,8 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

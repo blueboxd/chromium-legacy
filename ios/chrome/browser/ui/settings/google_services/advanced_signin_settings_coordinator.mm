@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/unified_consent_metrics.h"

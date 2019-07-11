@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/signin_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"

@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 
 #include <numeric>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -706,7 +707,7 @@ void UsbDeviceHandleUsbfs::GenericTransfer(
   }
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleUsbfs::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleUsbfs::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   auto it = endpoints_.find(endpoint_address);
@@ -867,21 +868,16 @@ void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
     return;
 
   for (const auto& entry : interfaces_) {
-    auto interface_it = std::find_if(
-        config->interfaces.begin(), config->interfaces.end(),
-        [entry](const UsbInterfaceDescriptor& interface) {
-          uint8_t interface_number = entry.first;
-          uint8_t alternate_setting = entry.second.alternate_setting;
-          return interface.interface_number == interface_number &&
-                 interface.alternate_setting == alternate_setting;
-        });
-    DCHECK(interface_it != config->interfaces.end());
+    CombinedInterfaceInfo interface = FindInterfaceInfoFromConfig(
+        config, entry.first, entry.second.alternate_setting);
 
-    for (const auto& endpoint : interface_it->endpoints) {
+    DCHECK(interface.IsValid());
+
+    for (const auto& endpoint : interface.alternate->endpoints) {
       EndpointInfo& info =
           endpoints_[ConvertEndpointNumberToAddress(*endpoint)];
       info.type = endpoint->type;
-      info.interface = &*interface_it;
+      info.interface = interface.interface;
     }
   }
 }

@@ -12,7 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {

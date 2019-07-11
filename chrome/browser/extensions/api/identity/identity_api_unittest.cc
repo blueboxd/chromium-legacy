@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

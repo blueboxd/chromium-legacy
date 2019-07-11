@@ -2344,7 +2344,11 @@ if (enable_java_templates) {
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
     _merge_manifest_target = "${_template_name}__merge_manifests"
     merge_manifests(_merge_manifest_target) {
-      forward_variables_from(invoker, [ "manifest_package" ])
+      forward_variables_from(invoker,
+                             [
+                               "manifest_package",
+                               "max_sdk_version",
+                             ])
       input_manifest = _android_root_manifest
       output_manifest = _android_manifest
       build_config = _build_config

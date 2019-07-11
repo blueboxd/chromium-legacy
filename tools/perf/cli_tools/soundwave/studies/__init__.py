@@ -26,11 +26,6 @@ def PostProcess(df):
   df['reference'] = df['timestamp'].dt.date == df.groupby(
       'quarter')['timestamp'].transform('max').dt.date
 
-  # TODO(crbug.com/900218): This is needed for timeseries still using the
-  # legacy API with no units information. Remove when studies finally use
-  # timeseries.Key to identify all of their timeseries.
-  df['units'] = df['units'].fillna('')
-
   # Change units for values in ms to seconds, and percent values.
   is_ms_unit = df['units'].str.startswith('ms_')
   df.loc[is_ms_unit, 'value'] = df['value'] / 1000

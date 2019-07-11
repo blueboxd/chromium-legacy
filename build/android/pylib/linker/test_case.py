@@ -49,7 +49,6 @@ ResultType = base_test_result.ResultType
 
 _PACKAGE_NAME = 'org.chromium.chromium_linker_test_apk'
 _ACTIVITY_NAME = '.ChromiumLinkerTestActivity'
-_COMMAND_LINE_FILE = '/data/local/tmp/chromium-linker-test-command-line'
 
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
@@ -126,23 +125,15 @@ class AddressList(list):
 class LinkerTestCaseBase(object):
   """Base class for linker test cases."""
 
-  def __init__(self, is_low_memory=False):
-    """Create a test case.
-    Args:
-      is_low_memory: True to simulate a low-memory device, False otherwise.
-    """
+  def __init__(self):
+    """Creates a test case."""
     test_suffix = 'ForLegacyLinker'
-    self.is_low_memory = is_low_memory
-    if is_low_memory:
-      test_suffix += 'LowMemoryDevice'
-    else:
-      test_suffix += 'RegularDevice'
     class_name = self.__class__.__name__
     self.qualified_name = '%s.%s' % (class_name, test_suffix)
     self.tagged_name = self.qualified_name
 
   def _RunTest(self, _device):
-    """Run the test, must be overriden.
+    """Runs the test, must be overridden.
     Args:
       _device: A DeviceUtils interface.
     Returns:
@@ -153,7 +144,7 @@ class LinkerTestCaseBase(object):
     return ResultType.FAIL, 'Unimplemented _RunTest() method!'
 
   def Run(self, device):
-    """Run the test on a given device.
+    """Runs the test on a given device.
     Args:
       device: Name of target device where to run the test.
     Returns:
@@ -162,11 +153,6 @@ class LinkerTestCaseBase(object):
     margin = 8
     print('[ %-*s ] %s' % (margin, 'RUN', self.tagged_name))
     logging.info('Running linker test: %s', self.tagged_name)
-
-    command_line_flags = ''
-    if self.is_low_memory:
-      command_line_flags += ' --low-memory-device'
-    device.WriteFile(_COMMAND_LINE_FILE, command_line_flags)
 
     # Run the test.
     status, logs = self._RunTest(device)

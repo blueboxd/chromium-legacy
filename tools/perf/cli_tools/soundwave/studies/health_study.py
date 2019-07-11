@@ -33,6 +33,12 @@ STARTUP_BY_BROWSER = {
     }
 }
 
+APK_SIZE = {
+    'test_suite': 'resource_sizes:Monochrome.minimal.apks',
+    'measurement': 'Specifics:normalized apk size',
+    'bot': 'ChromiumPerf:android-builder-perf',
+}
+
 
 def IterSystemHealthBots():
   yield 'ChromiumPerf:android-go-perf'
@@ -54,24 +60,21 @@ def IterTestPaths():
   test_cases = GetHealthCheckStories()
   for bot in IterSystemHealthBots():
     browser = GetBrowserFromBot(bot)
-    series = STARTUP_BY_BROWSER[browser].copy()
-    series['bot'] = bot
-    yield timeseries.Key.FromDict(series)
 
+    # Startup.
+    yield timeseries.Key.FromDict(STARTUP_BY_BROWSER[browser], bot=bot)
+
+    # Memory.
     if bot == 'ChromiumPerf:android-pixel2_webview-perf':
       # The pixel2 webview bot incorrectly reports memory as if coming from
       # chrome. TODO(crbug.com/972620): Remove this when bug is fixed.
       browser = 'chrome'
 
     for series in SYSTEM_HEALTH:
-      series = series.copy()
-      series['bot'] = bot
-      series['measurement'] = series['measurement'].format(browser=browser)
+      measurement = series['measurement'].format(browser=browser)
       for test_case in test_cases:
-        series['test_case'] = test_case
-        yield timeseries.Key.FromDict(series)
+        yield timeseries.Key.FromDict(
+            series, bot=bot, measurement=measurement, test_case=test_case)
 
-  # TODO(crbug.com/981283): Switch to timeseries.Key when bug is resolved.
-  yield ('ChromiumPerf/android-builder-perf/'
-         'resource_sizes (MonochromePublic.minimal.apks)/'
-         'Specifics/normalized apk size')
+  # APK size.
+  yield timeseries.Key.FromDict(APK_SIZE)

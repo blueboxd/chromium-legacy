@@ -114,8 +114,8 @@ void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
 }
 
 void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
-  DVLOG(1) << "TrackAudioRenderer::OnSetFormat()";
-
+  DVLOG(1) << "TrackAudioRenderer::OnSetFormat: "
+           << params.AsHumanReadableString();
   // If the parameters changed, the audio in the AudioShifter is invalid and
   // should be dropped.
   {
@@ -299,8 +299,9 @@ void TrackAudioRenderer::MaybeStartSink() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "TrackAudioRenderer::MaybeStartSink()";
 
-  if (!sink_ || !source_params_.IsValid() || !playing_)
+  if (!sink_ || !source_params_.IsValid() || !playing_) {
     return;
+  }
 
   // Re-create the AudioShifter to drop old audio data and reset to a starting
   // state.  MaybeStartSink() is always called in a situation where either the
@@ -353,8 +354,6 @@ void TrackAudioRenderer::MaybeStartSink() {
 
 void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  DVLOG(1) << "TrackAudioRenderer::ReconfigureSink()";
 
   if (source_params_.Equals(params))
     return;

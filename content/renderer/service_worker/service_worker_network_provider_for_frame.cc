@@ -14,7 +14,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {

@@ -12,11 +12,11 @@ namespace chrome {
 namespace android {
 
 // static
-void SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
+void SigninPromoUtilAndroid::StartSigninActivityForPromo(
     ui::WindowAndroid* window,
     signin_metrics::AccessPoint access_point) {
   if (window) {
-    Java_SigninPromoUtil_openAccountSigninActivityForPromo(
+    Java_SigninPromoUtil_openSigninActivityForPromo(
         base::android::AttachCurrentThread(), window->GetJavaObject(),
         jint(access_point));
   }

@@ -10,16 +10,19 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }
 
+class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -32,9 +35,8 @@ namespace chromeos {
 // be used in places where API expects |account_id|.
 //
 // Note that requests must be made from the UI thread.
-class DeviceOAuth2TokenService
-    : public OAuth2AccessTokenManager::Delegate,
-      public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
+class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
+                                 public gaia::GaiaOAuthClient::Delegate {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
       RefreshTokenAvailableCallback;
@@ -52,7 +54,7 @@ class DeviceOAuth2TokenService
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Pull the robot account ID from device policy.
-  virtual std::string GetRobotAccountId() const;
+  CoreAccountId GetRobotAccountId() const;
 
   // Can be used to override the robot account ID for testing purposes. Most
   // common use case is to easily inject a non-empty account ID to make the
@@ -92,13 +94,34 @@ class DeviceOAuth2TokenService
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
+  // gaia::GaiaOAuthClient::Delegate implementation.
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetTokenInfoResponse(
+      std::unique_ptr<base::DictionaryValue> token_info) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
+
  private:
-  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
-  // into DeviceOAuth2TokenService.
-  friend class DeviceOAuth2TokenServiceDelegate;
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;
   struct PendingRequest;
+
+  // Describes the operational state of this object.
+  enum State {
+    // Pending system salt / refresh token load.
+    STATE_LOADING,
+    // No token available.
+    STATE_NO_TOKEN,
+    // System salt loaded, validation not started yet.
+    STATE_VALIDATION_PENDING,
+    // Refresh token validation underway.
+    STATE_VALIDATION_STARTED,
+    // Token validation failed.
+    STATE_TOKEN_INVALID,
+    // Refresh token is valid.
+    STATE_TOKEN_VALID,
+  };
 
   // OAuth2AccessTokenManager::Delegate:
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -119,10 +142,6 @@ class DeviceOAuth2TokenService
   void FireRefreshTokenAvailable(const CoreAccountId& account_id);
   void FireRefreshTokenRevoked(const CoreAccountId& account_id);
 
-  // Implementation of
-  // DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate.
-  void OnValidationCompleted(GoogleServiceAuthError::State error) override;
-
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   explicit DeviceOAuth2TokenService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -137,9 +156,36 @@ class DeviceOAuth2TokenService
   void FailRequest(OAuth2AccessTokenManager::RequestImpl* request,
                    GoogleServiceAuthError::State error);
 
-  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
-  // into DeviceOAuth2TokenService.
-  std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
+  // Returns a list of accounts based on |state_|.
+  std::vector<CoreAccountId> GetAccounts() const;
+
+  // Starts the token validation flow, i.e. token info fetch.
+  void StartValidation();
+
+  void RequestValidation();
+
+  // Invoked by CrosSettings when the robot account ID becomes available.
+  void OnServiceAccountIdentityChanged();
+
+  // Checks whether |gaia_robot_id| matches the expected account ID indicated in
+  // device settings.
+  void CheckRobotAccountId(const CoreAccountId& gaia_robot_id);
+
+  // Returns the refresh token for the robot account id.
+  std::string GetRefreshToken() const;
+
+  // Handles completion of the system salt input.
+  void DidGetSystemSalt(const std::string& system_salt);
+
+  // Encrypts and saves the refresh token. Should only be called when the system
+  // salt is available.
+  void EncryptAndSaveToken();
+
+  // Flushes |token_save_callbacks_|, indicating the specified result.
+  void FlushTokenSaveCallbacks(bool result);
+
+  void ReportServiceError(GoogleServiceAuthError::State error);
+
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Currently open requests that are waiting while loading the system salt or
@@ -149,6 +195,36 @@ class DeviceOAuth2TokenService
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableCallback on_refresh_token_available_callback_;
   RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  PrefService* local_state_;
+
+  // Current operational state.
+  State state_;
+
+  // Token save callbacks waiting to be completed.
+  std::vector<StatusCallback> token_save_callbacks_;
+
+  // The system salt for encrypting and decrypting the refresh token.
+  std::string system_salt_;
+
+  int max_refresh_token_validation_retries_;
+
+  // Flag to indicate whether there are pending requests.
+  bool validation_requested_;
+
+  // Cache the decrypted refresh token, so we only decrypt once.
+  std::string refresh_token_;
+
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      service_account_identity_subscription_;
+
+  CoreAccountId robot_account_id_for_testing_;
+
+  base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };

@@ -69,7 +69,9 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
 PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)
     : ContextLifecycleObserver(&document), prerender_(prerender) {}
 
-PrerenderHandle::~PrerenderHandle() {
+PrerenderHandle::~PrerenderHandle() = default;
+
+void PrerenderHandle::Dispose() {
   if (prerender_) {
     prerender_->Abandon();
     Detach();

@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
 #define SERVICES_DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
 
+#include <vector>
+
 #include "services/device/usb/usb_device_handle.h"
 
 namespace device {
@@ -64,7 +66,7 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
                        TransferCallback callback) override;
-  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+  const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
  private:

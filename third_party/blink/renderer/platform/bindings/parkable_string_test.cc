@@ -228,8 +228,6 @@ TEST_F(ParkableStringTest, Equality) {
 }
 
 TEST_F(ParkableStringTest, Park) {
-  base::HistogramTester histogram_tester;
-
   {
     ParkableString parkable(MakeLargeString('a').ReleaseImpl());
     EXPECT_TRUE(parkable.may_be_parked());
@@ -245,11 +243,6 @@ TEST_F(ParkableStringTest, Park) {
   EXPECT_FALSE(ParkAndWait(parkable));
   large_string = String();
   EXPECT_TRUE(ParkAndWait(parkable));
-
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kParkedInBackground, 2);
-  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 2);
 
   {
     ParkableString parkable(MakeLargeString('c').ReleaseImpl());
@@ -374,8 +367,6 @@ TEST_F(ParkableStringTest, AbortedParkingRetainsCompressedData) {
 }
 
 TEST_F(ParkableStringTest, Unpark) {
-  base::HistogramTester histogram_tester;
-
   ParkableString parkable(MakeLargeString().Impl());
   String unparked_copy = parkable.ToString().IsolatedCopy();
   EXPECT_TRUE(parkable.may_be_parked());
@@ -386,14 +377,6 @@ TEST_F(ParkableStringTest, Unpark) {
   String unparked = parkable.ToString();
   EXPECT_EQ(unparked_copy, unparked);
   EXPECT_FALSE(parkable.Impl()->is_parked());
-
-  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 2);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kParkedInBackground, 1);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kUnparkedInForeground, 1);
 }
 
 TEST_F(ParkableStringTest, LockUnlock) {
@@ -441,8 +424,6 @@ TEST_F(ParkableStringTest, LockParkedString) {
 }
 
 TEST_F(ParkableStringTest, ManagerSimple) {
-  base::HistogramTester histogram_tester;
-
   ParkableString parkable(MakeLargeString().Impl());
   ASSERT_FALSE(parkable.Impl()->is_parked());
 
@@ -459,13 +440,11 @@ TEST_F(ParkableStringTest, ManagerSimple) {
   ASSERT_FALSE(manager.IsRendererBackgrounded());
   WaitForDelayedParking();
   EXPECT_FALSE(parkable.Impl()->is_parked());
-  histogram_tester.ExpectTotalCount("Memory.MovableStringsCount", 0);
 
   manager.SetRendererBackgrounded(true);
   ASSERT_TRUE(manager.IsRendererBackgrounded());
   WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
-  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
 
   // Park and unpark.
   parkable.ToString();
@@ -473,7 +452,6 @@ TEST_F(ParkableStringTest, ManagerSimple) {
   manager.SetRendererBackgrounded(true);
   WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
-  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 2);
 
   // More than one reference, no parking.
   manager.SetRendererBackgrounded(false);
@@ -487,17 +465,6 @@ TEST_F(ParkableStringTest, ManagerSimple) {
   manager.SetRendererBackgrounded(true);
   WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
-
-  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 5);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kParkedInBackground, 3);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kUnparkedInBackground, 1);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kUnparkedInForeground, 1);
 }
 
 TEST_F(ParkableStringTest, ManagerMultipleStrings) {
@@ -597,17 +564,6 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   EXPECT_EQ(1u, manager.Size());
   parkable4 = ParkableString();
   EXPECT_EQ(0u, manager.Size());
-
-  // 1 parked, 1 unparked. Bucket count is 2 as we collected stats twice.
-  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 2,
-                                      parking_count);
-  histogram_tester.ExpectUniqueSample("Memory.MovableStringsTotalSizeKb",
-                                      2 * kSizeKb, parking_count);
-
-  histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 1);
-  histogram_tester.ExpectBucketCount(
-      "Memory.MovableStringParkingAction",
-      ParkableStringImpl::ParkingAction::kParkedInBackground, 1);
 }
 
 TEST_F(ParkableStringTest, ShouldPark) {

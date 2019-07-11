@@ -17,14 +17,13 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 
@@ -79,11 +78,9 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
 ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
-    Delegate* delegate,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : fallback_callback_(std::move(fallback_callback)),
-      delegate_(delegate),
       provider_host_(std::move(provider_host)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this) {
@@ -91,8 +88,6 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader", this,
       TRACE_EVENT_FLAG_FLOW_OUT);
-
-  DCHECK(delegate_);
 
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
@@ -106,7 +101,7 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
 }
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
-  delegate_ = nullptr;
+  is_detached_ = true;
   DeleteIfNeeded();
 }
 
@@ -125,6 +120,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          "url", resource_request.url.spec());
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   resource_request_ = resource_request;
   if (provider_host_ && provider_host_->fetch_request_window_id()) {
@@ -132,7 +128,6 @@ void ServiceWorkerNavigationLoader::StartRequest(
         base::make_optional(provider_host_->fetch_request_window_id());
   }
 
-  DCHECK(delegate_);
   DCHECK(!binding_.is_bound());
   DCHECK(!url_loader_client_.is_bound());
   binding_.Bind(std::move(request));
@@ -143,16 +138,17 @@ void ServiceWorkerNavigationLoader::StartRequest(
 
   TransitionToStatus(Status::kStarted);
 
-  ServiceWorkerVersion* active_worker = delegate_->GetServiceWorkerVersion();
-  if (!active_worker) {
-    CommitCompleted(net::ERR_FAILED, "No active worker");
-    return;
-  }
-
   if (!provider_host_) {
     // We lost |provider_host_| (for the client) somehow before dispatching
     // FetchEvent.
     CommitCompleted(net::ERR_ABORTED, "No provider host");
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> active_worker =
+      provider_host_->controller();
+  if (!active_worker) {
+    CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
   }
 
@@ -170,8 +166,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
       static_cast<ResourceType>(resource_request_.resource_type),
       provider_host_->client_uuid(), active_worker,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
-                     weak_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(active_worker),
+                     weak_factory_.GetWeakPtr(), active_worker,
                      active_worker->running_status()),
       base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()));
@@ -273,9 +268,9 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
-  if (!delegate_ || !delegate_->RequestStillValid()) {
+  if (!provider_host_) {
     // The navigation or shared worker startup is cancelled. Just abort.
-    CommitCompleted(net::ERR_ABORTED, "No delegate");
+    CommitCompleted(net::ERR_ABORTED, "No provider host");
     return;
   }
 
@@ -287,7 +282,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     // It'd be more correct and simpler to remove this path and show an error
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
-    delegate_->MainResourceLoadFailed();
+    provider_host_->NotifyControllerLost();
     std::move(fallback_callback_)
         .Run(true /* reset_subresource_loader_params */);
     return;
@@ -465,7 +460,7 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
 }
 
 void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
-  if (!binding_.is_bound() && !delegate_)
+  if (!binding_.is_bound() && is_detached_)
     delete this;
 }
 

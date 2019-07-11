@@ -1922,8 +1922,6 @@ source_set("chromeos") {
     "settings/device_identity_provider.h",
     "settings/device_oauth2_token_service.cc",
     "settings/device_oauth2_token_service.h",
-    "settings/device_oauth2_token_service_delegate.cc",
-    "settings/device_oauth2_token_service_delegate.h",
     "settings/device_oauth2_token_service_factory.cc",
     "settings/device_oauth2_token_service_factory.h",
     "settings/device_settings_cache.cc",

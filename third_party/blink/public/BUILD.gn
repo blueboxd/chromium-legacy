@@ -131,6 +131,7 @@ source_set("blink_headers") {
     "platform/linux/web_sandbox_support.h",
     "platform/mac/web_sandbox_support.h",
     "platform/mac/web_scrollbar_theme.h",
+    "platform/media/webmediaplayer_delegate.h",
     "platform/modules/indexeddb/web_idb_database_exception.h",
     "platform/modules/media_capabilities/web_audio_configuration.h",
     "platform/modules/media_capabilities/web_media_capabilities_decoding_info.h",

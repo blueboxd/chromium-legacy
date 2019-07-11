@@ -8,22 +8,17 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/device_id_helper.h"
+#include "components/signin/public/base/signin_client.h"
 
 #if defined(OS_ANDROID)
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
 #else
-#include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/web_data_service_factory.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -32,10 +27,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN)
-#include "chrome/browser/signin/signin_util_win.h"
-#endif
 
 namespace {
 
@@ -82,27 +73,30 @@ CreateMutableProfileOAuthDelegate(
     Profile* profile,
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency,
+    bool delete_signin_cookies_on_exit,
+    scoped_refptr<TokenWebData> token_web_data,
     SigninClient* signin_client,
+#if defined(OS_WIN)
+    MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback
+        reauth_callback,
+#endif
     network::NetworkConnectionTracker* network_connection_tracker) {
   // When signin cookies are cleared on exit and Dice is enabled, all tokens
   // should also be cleared.
   bool revoke_all_tokens_on_load =
       (account_consistency == signin::AccountConsistencyMethod::kDice) &&
-      signin::SettingsDeleteSigninCookiesOnExit(
-          CookieSettingsFactory::GetForProfile(profile).get());
+      delete_signin_cookies_on_exit;
 
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       signin_client, account_tracker_service, network_connection_tracker,
-      WebDataServiceFactory::GetTokenWebDataForProfile(
-          profile, ServiceAccessType::EXPLICIT_ACCESS),
-      account_consistency, revoke_all_tokens_on_load,
+      token_web_data, account_consistency, revoke_all_tokens_on_load,
       CanRevokeCredentials(profile),
 #if defined(OS_WIN)
-      base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
-                          base::Unretained(profile)));
+      reauth_callback
 #else
-      MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback());
+      MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback()
 #endif  // defined(OS_WIN)
+  );
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -114,6 +108,14 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
 #if defined(OS_CHROMEOS)
     chromeos::AccountManager* account_manager,
     bool is_regular_profile,
+#endif
+#if !defined(OS_ANDROID)
+    bool delete_signin_cookies_on_exit,
+    scoped_refptr<TokenWebData> token_web_data,
+#endif
+#if defined(OS_WIN)
+    MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback
+        reauth_callback,
 #endif
     network::NetworkConnectionTracker* network_connection_tracker) {
 #if defined(OS_ANDROID)
@@ -131,9 +133,14 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
   // 1. On all platforms other than Android and Chrome OS.
   // 2. On Chrome OS, if Account Manager has not been switched on yet
   // (chromeos::switches::IsAccountManagerEnabled).
-  return CreateMutableProfileOAuthDelegate(profile, account_tracker_service,
-                                           account_consistency, signin_client,
-                                           network_connection_tracker);
+  return CreateMutableProfileOAuthDelegate(
+      profile, account_tracker_service, account_consistency,
+      delete_signin_cookies_on_exit, token_web_data, signin_client,
+#if defined(OS_WIN)
+      reauth_callback,
+#endif
+      network_connection_tracker);
+
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -151,6 +158,14 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
     chromeos::AccountManager* account_manager,
     bool is_regular_profile,
 #endif
+#if !defined(OS_ANDROID)
+    bool delete_signin_cookies_on_exit,
+    scoped_refptr<TokenWebData> token_web_data,
+#endif
+#if defined(OS_WIN)
+    MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback
+        reauth_callback,
+#endif
     SigninClient* signin_client) {
   Profile* profile = static_cast<Profile*>(context);
 
@@ -165,10 +180,16 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
 
   return std::make_unique<ProfileOAuth2TokenService>(
       pref_service,
-      CreateOAuth2TokenServiceDelegate(profile, account_tracker_service,
-                                       account_consistency, signin_client,
+      CreateOAuth2TokenServiceDelegate(
+          profile, account_tracker_service, account_consistency, signin_client,
 #if defined(OS_CHROMEOS)
-                                       account_manager, is_regular_profile,
+          account_manager, is_regular_profile,
 #endif
-                                       network_connection_tracker));
+#if !defined(OS_ANDROID)
+          delete_signin_cookies_on_exit, token_web_data,
+#endif
+#if defined(OS_WIN)
+          reauth_callback,
+#endif
+          network_connection_tracker));
 }

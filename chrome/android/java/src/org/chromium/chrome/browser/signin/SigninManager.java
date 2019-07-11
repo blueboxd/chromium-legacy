@@ -178,7 +178,11 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private static SigninManager sTestingSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
 
-    private final long mNativeSigninManagerAndroid;
+    /**
+     * Address of the native Signin Manager android.
+     * This is not final, as destroy() updates this.
+     */
+    private long mNativeSigninManagerAndroid;
     private final Context mContext;
     private final SigninManagerDelegate mDelegate;
     private final AccountTrackerService mAccountTrackerService;
@@ -215,11 +219,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * @return
      */
     @CalledByNative
-    private static SigninManager create(long nativeSigninManagerAndroid) {
+    private static SigninManager create(long nativeSigninManagerAndroid,
+            SigninManagerDelegate delegate, AccountTrackerService accountTrackerService) {
         assert nativeSigninManagerAndroid != 0;
+        assert delegate != null;
+        assert accountTrackerService != null;
         return new SigninManager(ContextUtils.getApplicationContext(), nativeSigninManagerAndroid,
-                new ChromeSigninManagerDelegate(),
-                IdentityServicesProvider.getAccountTrackerService());
+                delegate, accountTrackerService);
     }
 
     @VisibleForTesting
@@ -227,8 +233,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
         assert context != null;
-        assert delegate != null;
-        assert accountTrackerService != null;
         mContext = context;
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mDelegate = delegate;
@@ -241,11 +245,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
-     * Perform destruction of the object, cascading destruction to delegate.
+     * Triggered during SigninManagerAndroidWrapper's KeyedService::Shutdown.
+     * Drop references with external services and native.
      */
     @CalledByNative
     public void destroy() {
-        mDelegate.destroy();
+        mAccountTrackerService.removeSystemAccountsSeededListener(this);
+        mNativeSigninManagerAndroid = 0;
     }
 
     /**

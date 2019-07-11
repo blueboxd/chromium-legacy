@@ -27,10 +27,9 @@ from .user_defined_type import UserDefinedType
 # + PromiseType
 # + UnionType
 # + NullableType
-# + AnnotatedType
 
 
-class IdlType(WithCodeGeneratorInfo, WithDebugInfo):
+class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     """
     Represents a 'type' in Web IDL
 
@@ -43,36 +42,35 @@ class IdlType(WithCodeGeneratorInfo, WithDebugInfo):
     language bindings (such as ECMAScript bindings), thus it's out of scope for
     IdlType to tell whether IDL dictionary type accepts ES null value or not.
 
-    *CAUTION*: Predicators are defined based on the exact definition of Web
-    IDL, and may behave counterintuitively. See examples below.
-
-      clamp_nullable_long = ...an IdlType of '[Clamp] long?'
-      isisntance(clamp_nullable_long, AnnotatedType)  # True
-      clamp_nullable_long.is_annotated  # True
-      clamp_nullable_long.is_nullable   # False, this is not a NullableType
-
-      nullable_long = clamp_nullable_long.inner_type
-      isinstance(nullable_long, NullableType)  # True
-      nullable_long.is_nullable  # True
-      nullable_long.is_numeric   # False, NullableType is not a numeric type
-
-      long_type = nullable_long.inner_type
-      isinstance(long_type, SimpleType)  # True
-      long_type.is_numeric               # True
+    Nullable type and typedef are implemented as if they're a container type
+    like record type and promise type.
     """
 
-    def __init__(self, code_generator_info=None, debug_info=None):
+    def __init__(self,
+                 extended_attributes=None,
+                 code_generator_info=None,
+                 debug_info=None):
+        WithExtendedAttributes.__init__(self, extended_attributes)
         WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
 
     def __str__(self):
+        return self.syntactic_form
+
+    @property
+    def syntactic_form(self):
+        """
+        Returns a text representation of the type in the form of Web IDL syntax.
+        @return str
+        """
         raise exceptions.NotImplementedError()
 
     @property
     def type_name(self):
         """
-        Returns type name of this type.
+        Returns the type name.
         https://heycam.github.io/webidl/#dfn-type-name
+        Note that a type name is not necessarily unique.
         @return str
         """
         raise exceptions.NotImplementedError()
@@ -213,10 +211,10 @@ class IdlType(WithCodeGeneratorInfo, WithDebugInfo):
     @property
     def is_annotated(self):
         """
-        Returns True if |self| is an annotated type.
+        Returns True if |self| is annotated.
         @return bool
         """
-        return False
+        return bool(self.extended_attributes)
 
     @property
     def is_promise(self):
@@ -258,6 +256,18 @@ class IdlType(WithCodeGeneratorInfo, WithDebugInfo):
         """
         return False
 
+    def _format_syntactic_form(self, syntactic_form_inner):
+        """Helper function to implement |syntactic_form|."""
+        if self.extended_attributes:
+            return '{} {}'.format(self.extended_attributes,
+                                  syntactic_form_inner)
+        return syntactic_form_inner
+
+    def _format_type_name(self, type_name_inner):
+        """Helper function to implement |type_name|."""
+        return '{}{}'.format(type_name_inner, ''.join(
+            sorted(self.extended_attributes.keys())))
+
 
 class SimpleType(IdlType):
     """
@@ -274,24 +284,30 @@ class SimpleType(IdlType):
     _VALID_TYPES = ('any', 'boolean', 'object', 'symbol',
                     'void') + _NUMERIC_TYPES + _STRING_TYPES
 
-    def __init__(self, name, code_generator_info=None, debug_info=None):
+    def __init__(self,
+                 name,
+                 extended_attributes=None,
+                 code_generator_info=None,
+                 debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert name in SimpleType._VALID_TYPES, (
             'Unknown type name: {}'.format(name))
         self._name = name
 
-    def __str__(self):
-        return self._name
-
     # IdlType overrides
     @property
+    def syntactic_form(self):
+        return self._format_syntactic_form(self._name)
+
+    @property
     def type_name(self):
-        if str(self) == 'DOMString':
-            return 'String'
-        return NameStyleConverter(self._name).to_upper_camel_case()
+        name = 'String' if self._name == 'DOMString' else self._name
+        return self._format_type_name(
+            NameStyleConverter(name).to_upper_camel_case())
 
     @property
     def is_numeric(self):
@@ -340,11 +356,13 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
 
     def __init__(self,
                  ref_to_idl_type,
+                 extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         assert RefByIdFactory.is_reference(ref_to_idl_type)
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         WithIdentifier.__init__(self, ref_to_idl_type.identifier)
@@ -377,6 +395,16 @@ class DefinitionType(IdlType, WithIdentifier):
 
     # IdlType overrides
     @property
+    def syntactic_form(self):
+        assert not self.extended_attributes
+        return self.identifier
+
+    @property
+    def type_name(self):
+        assert not self.extended_attributes
+        return self.identifier
+
+    @property
     def is_interface(self):
         return self._definition.is_interface
 
@@ -404,7 +432,7 @@ class TypedefType(IdlType, WithIdentifier):
     'typedef' in Web IDL is not a type, however, there are use cases that have
     interest in typedef names.  Thus, the IDL compiler does not resolve
     typedefs transparently (i.e. does not remove typedefs entirely), and
-    IdlTypes representing typedefs remain and behave like AnnotatedType.  You
+    IdlTypes representing typedefs remain and behave like NullableType.  You
     can track down the typedef'ed type to |original_type|.
     """
 
@@ -426,7 +454,13 @@ class TypedefType(IdlType, WithIdentifier):
 
     # IdlType overrides
     @property
+    def syntactic_form(self):
+        assert not self.extended_attributes
+        return self.identifier
+
+    @property
     def type_name(self):
+        assert not self.extended_attributes
         return self.original_type.type_name
 
     @property
@@ -439,10 +473,14 @@ class TypedefType(IdlType, WithIdentifier):
 
 
 class _ArrayLikeType(IdlType):
-    def __init__(self, element_type, code_generator_info=None,
+    def __init__(self,
+                 element_type,
+                 extended_attributes=None,
+                 code_generator_info=None,
                  debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert isinstance(element_type, IdlType)
@@ -454,17 +492,28 @@ class _ArrayLikeType(IdlType):
 
 
 class SequenceType(_ArrayLikeType):
-    def __init__(self, element_type, code_generator_info=None,
+    def __init__(self,
+                 element_type,
+                 extended_attributes=None,
+                 code_generator_info=None,
                  debug_info=None):
-        _ArrayLikeType.__init__(self, element_type)
+        _ArrayLikeType.__init__(
+            self,
+            element_type,
+            extended_attributes=extended_attributes,
+            code_generator_info=code_generator_info,
+            debug_info=debug_info)
 
     # IdlType overrides
-    def __str__(self):
-        return 'sequence<{}>'.format(self.element_type)
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('sequence<{}>'.format(
+            self.element_type.syntactic_form))
 
     @property
     def type_name(self):
-        return self.element_type.type_name + 'Sequence'
+        return self._format_type_name('{}Sequence'.format(
+            self.element_type.type_name))
 
     @property
     def is_sequence(self):
@@ -472,17 +521,28 @@ class SequenceType(_ArrayLikeType):
 
 
 class FrozenArrayType(_ArrayLikeType):
-    def __init__(self, element_type, code_generator_info=None,
+    def __init__(self,
+                 element_type,
+                 extended_attributes=None,
+                 code_generator_info=None,
                  debug_info=None):
-        _ArrayLikeType.__init__(self, element_type)
+        _ArrayLikeType.__init__(
+            self,
+            element_type,
+            extended_attributes=extended_attributes,
+            code_generator_info=code_generator_info,
+            debug_info=debug_info)
 
     # IdlType overrides
-    def __str__(self):
-        return 'FrozenArray<{}>'.format(self.element_type)
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('FrozenArray<{}>'.format(
+            self.element_type.syntactic_form))
 
     @property
     def type_name(self):
-        return self.element_type.type_name + 'Array'
+        return self._format_type_name('{}Array'.format(
+            self.element_type.type_name))
 
     @property
     def is_frozen_array(self):
@@ -493,10 +553,12 @@ class RecordType(IdlType):
     def __init__(self,
                  key_type,
                  value_type,
+                 extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert isinstance(key_type, IdlType)
@@ -522,12 +584,15 @@ class RecordType(IdlType):
         return self._value_type
 
     # IdlType overrides
-    def __str__(self):
-        return 'record<{}, {}>'.format(self.key_type, self.value_type)
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('record<{}, {}>'.format(
+            self.key_type.syntactic_form, self.value_type.syntactic_form))
 
     @property
     def type_name(self):
-        return self.key_type.type_name + self.value_type.type_name + 'Record'
+        return self._format_type_name('{}{}Record'.format(
+            self.key_type.type_name, self.value_type.type_name))
 
     @property
     def is_record(self):
@@ -535,9 +600,14 @@ class RecordType(IdlType):
 
 
 class PromiseType(IdlType):
-    def __init__(self, result_type, code_generator_info=None, debug_info=None):
+    def __init__(self,
+                 result_type,
+                 extended_attributes=None,
+                 code_generator_info=None,
+                 debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert isinstance(result_type, IdlType)
@@ -552,12 +622,15 @@ class PromiseType(IdlType):
         return self._result_type
 
     # IdlType overrides
-    def __str__(self):
-        return 'Promise<{}>'.format(self.result_type)
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('Promise<{}>'.format(
+            self.result_type.syntactic_form))
 
     @property
     def type_name(self):
-        return self.result_type.type_name + 'Promise'
+        return self._format_type_name('{}Promise'.format(
+            self.result_type.type_name))
 
     @property
     def is_promise(self):
@@ -566,10 +639,14 @@ class PromiseType(IdlType):
 
 # https://heycam.github.io/webidl/#idl-union
 class UnionType(IdlType):
-    def __init__(self, member_types, code_generator_info=None,
+    def __init__(self,
+                 member_types,
+                 extended_attributes=None,
+                 code_generator_info=None,
                  debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert isinstance(member_types, (list, tuple))
@@ -591,8 +668,8 @@ class UnionType(IdlType):
     def flattened_member_types(self):
         """
         Returns a set of flattened member types.
-        NOTE: Returned set does not contain nullable types nor annotated types,
-        even if |self| contains nullable/annotated types in its members.
+        NOTE: Returned set does not contain nullable types even if |self|
+        contains nullable types in its members.
         https://heycam.github.io/webidl/#dfn-flattened-union-member-types
         @return set(IdlType)
         """
@@ -600,12 +677,15 @@ class UnionType(IdlType):
         assert False, 'Not implemented yet'
 
     # IdlType overrides
-    def __str__(self):
-        return '({})'.format(' or '.join([str(t) for t in self.member_types]))
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('({})'.format(' or '.join(
+            [member.syntactic_form for member in self.member_types])))
 
     @property
     def type_name(self):
-        return 'Or'.join([member.type_name for member in self.member_types])
+        return self._format_type_name('Or'.join(
+            [member.type_name for member in self.member_types]))
 
     @property
     def does_include_nullable_type(self):
@@ -618,21 +698,38 @@ class UnionType(IdlType):
 
 
 class NullableType(IdlType):
-    def __init__(self, inner_type, code_generator_info=None, debug_info=None):
+    def __init__(self,
+                 inner_type,
+                 extended_attributes=None,
+                 code_generator_info=None,
+                 debug_info=None):
         IdlType.__init__(
             self,
+            extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         assert isinstance(inner_type, IdlType)
         self._inner_type = inner_type
 
     # IdlType overrides
-    def __str__(self):
-        return '{}?'.format(self.inner_type)
+    @property
+    def syntactic_form(self):
+        assert not self.extended_attributes
+        return '{}?'.format(self.inner_type.syntactic_form)
 
     @property
     def type_name(self):
-        return self.inner_type.type_name + 'OrNull'
+        assert not self.extended_attributes
+        # https://heycam.github.io/webidl/#idl-annotated-types
+        # Web IDL seems not supposing a case of [X] ([Y] Type)?, i.e. something
+        # like [X] nullable<[Y] Type>, which should turn into "TypeYOrNullX".
+        #
+        # In case of '[Clamp] long?', it's interpreted as '([Clamp] long)?' but
+        # the type name must be "LongOrNullClamp" instead of "LongClampOrNull".
+        name = self.inner_type.type_name
+        ext_attrs = ''.join(sorted(self.inner_type.extended_attributes.keys()))
+        sep_index = len(name) - len(ext_attrs)
+        return '{}OrNull{}'.format(name[0:sep_index], name[sep_index:])
 
     @property
     def does_include_nullable_type(self):
@@ -640,42 +737,6 @@ class NullableType(IdlType):
 
     @property
     def is_nullable(self):
-        return True
-
-    @property
-    def inner_type(self):
-        return self._inner_type
-
-
-class AnnotatedType(IdlType, WithExtendedAttributes):
-    def __init__(self,
-                 inner_type,
-                 extended_attributes,
-                 code_generator_info=None,
-                 debug_info=None):
-        IdlType.__init__(
-            self,
-            code_generator_info=code_generator_info,
-            debug_info=debug_info)
-        WithExtendedAttributes.__init__(self, extended_attributes)
-        assert isinstance(inner_type, IdlType)
-        self._inner_type = inner_type
-
-    # IdlType overrides
-    def __str__(self):
-        return '{} {}'.format(self.extended_attributes, self.inner_type)
-
-    @property
-    def type_name(self):
-        return self.inner_type.type_name + ''.join(
-            sorted([ext_attr.key for ext_attr in self.extended_attributes]))
-
-    @property
-    def does_include_nullable_type(self):
-        return self.inner_type.does_include_nullable_type
-
-    @property
-    def is_annotated(self):
         return True
 
     @property

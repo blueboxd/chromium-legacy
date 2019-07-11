@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 
 namespace signin_metrics {
 enum class SourceForRefreshTokenOperation;

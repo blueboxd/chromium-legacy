@@ -56,17 +56,16 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   std::unique_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(credential, origin));
 
-  std::unique_ptr<autofill::PasswordForm> observed_form =
-      CreateObservedPasswordFormFromOrigin(origin);
-  // Create a custom form fetcher without HTTP->HTTPS migration, as well as
-  // without fetching of suppressed HTTPS credentials on HTTP origins as the API
-  // is only available on HTTPS origins.
-  auto form_fetcher = std::make_unique<FormFetcherImpl>(
-      PasswordStore::FormDigest(*observed_form), client_, false);
+  std::string signon_realm = origin.GetOrigin().spec();
+  PasswordStore::FormDigest observed_digest(
+      autofill::PasswordForm::Scheme::kHtml, signon_realm, origin);
+
+  // Create a custom form fetcher without HTTP->HTTPS migration as the API is
+  // only available on HTTPS origins.
+  auto form_fetcher =
+      std::make_unique<FormFetcherImpl>(observed_digest, client_, false);
   form_manager_ = std::make_unique<CredentialManagerPasswordFormManager>(
-      client_, *observed_form, std::move(form), this, nullptr,
-      std::move(form_fetcher));
-  form_manager_->Init(nullptr);
+      client_, std::move(form), this, nullptr, std::move(form_fetcher));
 }
 
 void CredentialManagerImpl::PreventSilentAccess(

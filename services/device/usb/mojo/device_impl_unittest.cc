@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -27,6 +28,7 @@
 #include "services/device/usb/mock_usb_device.h"
 #include "services/device/usb/mock_usb_device_handle.h"
 #include "services/device/usb/mojo/type_converters.h"
+#include "services/device/usb/usb_descriptors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -56,8 +58,9 @@ class ConfigBuilder {
                               uint8_t class_code,
                               uint8_t subclass_code,
                               uint8_t protocol_code) {
-    config_.interfaces.emplace_back(interface_number, alternate_setting,
-                                    class_code, subclass_code, protocol_code);
+    config_.interfaces.push_back(
+        BuildUsbInterfaceInfoPtr(interface_number, alternate_setting,
+                                 class_code, subclass_code, protocol_code));
     return *this;
   }
 
@@ -281,7 +284,7 @@ class USBDeviceImplTest : public testing::Test {
                       UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
       for (const auto& interface : config.second.interfaces) {
-        if (interface.interface_number == interface_number) {
+        if (interface->interface_number == interface_number) {
           claimed_interfaces_.insert(interface_number);
           std::move(callback).Run(true);
           return;
@@ -305,12 +308,11 @@ class USBDeviceImplTest : public testing::Test {
                                     uint8_t alternate_setting,
                                     UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
-      for (const auto& interface : config.second.interfaces) {
-        if (interface.interface_number == interface_number &&
-            interface.alternate_setting == alternate_setting) {
-          std::move(callback).Run(true);
-          return;
-        }
+      CombinedInterfaceInfo interface = FindInterfaceInfoFromConfig(
+          &config.second, interface_number, alternate_setting);
+      if (interface.IsValid()) {
+        std::move(callback).Run(true);
+        return;
       }
     }
     std::move(callback).Run(false);

@@ -21,7 +21,7 @@ const base::Feature kSnapshotDrawView{"SnapshotDrawView",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCopiedContentBehavior{"CopiedContentBehavior",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSettingsRefresh{"SettingsRefresh",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

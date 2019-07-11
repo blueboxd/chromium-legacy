@@ -333,5 +333,32 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
 }
 
+// See https://crbug.com/980437.
+TEST_F(InputMethodEngineTest, TestDisableAfterSetCompositionRange) {
+  CreateEngine(true);
+  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
+  engine_->Enable(kTestImeComponentId);
+
+  const int context = engine_->GetContextIdForTesting();
+
+  std::string error;
+  engine_->CommitText(context, "text", &error);
+  EXPECT_EQ("", error);
+  EXPECT_EQ(1, mock_ime_input_context_handler_->commit_text_call_count());
+  EXPECT_EQ("text", mock_ime_input_context_handler_->last_commit_text());
+
+  // Change composition range to include "text".
+  engine_->::input_method::InputMethodEngineBase::SetCompositionRange(
+      context, 0, 4, {}, &error);
+  EXPECT_EQ("", error);
+
+  // Disable to commit
+  engine_->Disable();
+
+  EXPECT_EQ("", error);
+  EXPECT_EQ(2, mock_ime_input_context_handler_->commit_text_call_count());
+  EXPECT_EQ("text", mock_ime_input_context_handler_->last_commit_text());
+}
+
 }  // namespace input_method
 }  // namespace chromeos

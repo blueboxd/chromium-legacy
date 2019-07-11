@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "components/signin/core/browser/signin_client.h"
+#include "components/signin/public/base/signin_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"

@@ -28,7 +28,7 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,7 +97,7 @@ ClientAndroid::~ClientAndroid() {
     // In the case of an unexpected closing of the activity or tab, controller_
     // will not yet have been cleaned up (since that happens when a web
     // contents object gets destroyed).
-    Metrics::RecordDropOut(Metrics::CONTENT_DESTROYED);
+    Metrics::RecordDropOut(Metrics::DropOutReason::CONTENT_DESTROYED);
   }
   Java_AutofillAssistantClient_clearNativePtr(AttachCurrentThread(),
                                               java_object_);

@@ -277,6 +277,11 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() = default;
 
+void ServiceWorkerRegistration::Dispose() {
+  host_.reset();
+  binding_.Close();
+}
+
 void ServiceWorkerRegistration::Trace(blink::Visitor* visitor) {
   visitor->Trace(installing_);
   visitor->Trace(waiting_);

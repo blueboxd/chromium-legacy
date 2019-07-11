@@ -63,8 +63,8 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
   DCHECK(b);
   if (a->first_size != b->first_size)
     return a->first_size > b->first_size;
-  // This make sure that two different nodes with the same |first_size| wouldn't
-  // be merged in the set.
+  // This make sure that two different |ImageRecord|s with the same |first_size|
+  // wouldn't be merged in the |size_ordered_set_|.
   return a->insertion_index < b->insertion_index;
 }
 
@@ -166,15 +166,15 @@ void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(
   records_manager_.RemoveInvisibleRecordIfNeeded(node_id);
 }
 
-void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
+void ImagePaintTimingDetector::NotifyImageRemoved(
     DOMNodeId node_id,
     const ImageResourceContent* cached_image) {
   if (!is_recording_)
     return;
-  BackgroundImageId background_image_id = std::make_pair(node_id, cached_image);
-  if (!records_manager_.IsRecordedVisibleNode(background_image_id))
+  RecordId record_id = std::make_pair(node_id, cached_image);
+  if (!records_manager_.IsRecordedVisibleImage(record_id))
     return;
-  records_manager_.RemoveVisibleRecord(background_image_id);
+  records_manager_.RemoveVisibleRecord(record_id);
   need_update_timing_at_frame_end_ = true;
 }
 
@@ -207,14 +207,14 @@ void ImagePaintTimingDetector::ReportSwapTime(
     return;
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
-  records_manager_.AssignPaintTimeToRegisteredQueuedNodes(
+  records_manager_.AssignPaintTimeToRegisteredQueuedRecords(
       timestamp, last_queued_frame_index);
   UpdateCandidate();
   num_pending_swap_callbacks_--;
   DCHECK_GE(num_pending_swap_callbacks_, 0);
 }
 
-void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
+void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedRecords(
     const base::TimeTicks& timestamp,
     unsigned last_queued_frame_index) {
   // TODO(crbug.com/971419): should guarantee the queue not empty.
@@ -231,7 +231,7 @@ void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
   }
 }
 
-void ImagePaintTimingDetector::RecordBackgroundImage(
+void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
     const ImageResourceContent& cached_image,
@@ -241,22 +241,21 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
     return;
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
   DCHECK_NE(node_id, kInvalidDOMNodeId);
-  if (records_manager_.IsRecordedInvisibleNode(node_id))
+  if (records_manager_.IsRecordedInvisibleImage(node_id))
     return;
 
-  BackgroundImageId background_image_id =
-      std::make_pair(node_id, &cached_image);
-  bool is_recored_visible_node =
-      records_manager_.IsRecordedVisibleNode(background_image_id);
-  if (is_recored_visible_node &&
-      !records_manager_.WasVisibleNodeLoaded(background_image_id) &&
+  RecordId record_id = std::make_pair(node_id, &cached_image);
+  bool is_recored_visible_image =
+      records_manager_.IsRecordedVisibleImage(record_id);
+  if (is_recored_visible_image &&
+      !records_manager_.IsVisibleImageLoaded(record_id) &&
       cached_image.IsLoaded()) {
-    records_manager_.OnImageLoaded(background_image_id, frame_index_);
+    records_manager_.OnImageLoaded(record_id, frame_index_);
     need_update_timing_at_frame_end_ = true;
     return;
   }
 
-  if (is_recored_visible_node || !is_recording_)
+  if (is_recored_visible_image || !is_recording_)
     return;
   IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
   // Before the image resource starts loading, <img> has no size info. We wait
@@ -272,14 +271,11 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
       rect_size, intrinsic_size.Area(), visual_rect.Size().Area());
 
   if (rect_size == 0) {
-    // Each invisible background image is tracked by its node id. In other
-    // words, when a node is deemed as invisible, all of the background images
-    // are deemed as invisible.
-    records_manager_.RecordInvisibleNode(node_id);
+    records_manager_.RecordInvisible(node_id);
   } else {
-    records_manager_.RecordVisibleNode(background_image_id, rect_size);
+    records_manager_.RecordVisible(record_id, rect_size);
     if (cached_image.IsLoaded()) {
-      records_manager_.OnImageLoaded(background_image_id, frame_index_);
+      records_manager_.OnImageLoaded(record_id, frame_index_);
       need_update_timing_at_frame_end_ = true;
     }
   }
@@ -288,10 +284,9 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
 ImageRecordsManager::ImageRecordsManager()
     : size_ordered_set_(&LargeImageFirst) {}
 
-void ImageRecordsManager::OnImageLoaded(
-    const BackgroundImageId& background_image_id,
-    unsigned current_frame_index) {
-  base::WeakPtr<ImageRecord> record = FindVisibleRecord(background_image_id);
+void ImageRecordsManager::OnImageLoaded(const RecordId& record_id,
+                                        unsigned current_frame_index) {
+  base::WeakPtr<ImageRecord> record = FindVisibleRecord(record_id);
   OnImageLoadedInternal(record, current_frame_index);
 }
 
@@ -302,13 +297,12 @@ void ImageRecordsManager::OnImageLoadedInternal(
   QueueToMeasurePaintTime(record, current_frame_index);
 }
 
-void ImageRecordsManager::RecordVisibleNode(
-    const BackgroundImageId& background_image_id,
-    const uint64_t& visual_size) {
-  std::unique_ptr<ImageRecord> record = CreateImageRecord(
-      background_image_id.first, background_image_id.second, visual_size);
+void ImageRecordsManager::RecordVisible(const RecordId& record_id,
+                                        const uint64_t& visual_size) {
+  std::unique_ptr<ImageRecord> record =
+      CreateImageRecord(record_id.first, record_id.second, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
-  visible_background_image_map_.insert(background_image_id, std::move(record));
+  visible_images_.insert(record_id, std::move(record));
 }
 
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
@@ -322,7 +316,7 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 }
 
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
-  DCHECK_EQ(visible_background_image_map_.size(), size_ordered_set_.size());
+  DCHECK_EQ(visible_images_.size(), size_ordered_set_.size());
   if (size_ordered_set_.size() == 0)
     return nullptr;
   return size_ordered_set_.begin()->get();

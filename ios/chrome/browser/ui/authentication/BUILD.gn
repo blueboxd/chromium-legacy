@@ -162,7 +162,7 @@ source_set("eg_test_support") {
     ":authentication",
     "unified_consent",
     "//components/signin/core/browser",
-    "//components/signin/core/browser:shared",
+    "//components/signin/public/base",
     "//components/signin/public/identity_manager",
     "//components/unified_consent",
     "//ios/chrome/app/strings:ios_strings_grit",

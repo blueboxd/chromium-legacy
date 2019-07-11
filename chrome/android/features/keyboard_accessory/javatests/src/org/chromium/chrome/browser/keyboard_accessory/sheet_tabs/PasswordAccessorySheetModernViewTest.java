@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -15,7 +16,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -137,19 +137,49 @@ public class PasswordAccessorySheetModernViewTest {
         assertThat(clicked.get(), is(true));
     }
 
+    @Test
+    @MediumTest
+    public void testAddingUserInfoTitlesAreRenderedIfNotEmpty() {
+        assertThat(mView.get().getChildCount(), is(0));
+        final UserInfoField kUnusedInfoField =
+                new UserInfoField("Unused Name", "Unused Password", "", false, cb -> {});
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            UserInfo sameOriginInfo = new UserInfo("", null);
+            sameOriginInfo.addField(kUnusedInfoField);
+            sameOriginInfo.addField(kUnusedInfoField);
+            mModel.add(new AccessorySheetDataPiece(
+                    sameOriginInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
+
+            UserInfo pslOriginInfo = new UserInfo("other.origin.eg", null);
+            pslOriginInfo.addField(kUnusedInfoField);
+            pslOriginInfo.addField(kUnusedInfoField);
+            mModel.add(new AccessorySheetDataPiece(
+                    pslOriginInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
+        });
+
+        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+
+        assertThat(getUserInfoAt(0).getTitle().isShown(), is(false));
+        assertThat(getUserInfoAt(1).getTitle().isShown(), is(true));
+        assertThat(getUserInfoAt(1).getTitle().getText(), is("other.origin.eg"));
+    }
+
+    private PasswordAccessoryInfoView getUserInfoAt(int index) {
+        assertThat(mView.get().getChildCount(), is(greaterThan(index)));
+        assertThat(mView.get().getChildAt(index), instanceOf(PasswordAccessoryInfoView.class));
+        return (PasswordAccessoryInfoView) mView.get().getChildAt(index);
+    }
+
     private ChipView getNameSuggestion() {
-        assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
-        LinearLayout layout = (LinearLayout) mView.get().getChildAt(0);
-        View view = layout.findViewById(R.id.suggestion_text);
+        View view = getUserInfoAt(0).findViewById(R.id.suggestion_text);
         assertThat(view, is(not(nullValue())));
         assertThat(view, instanceOf(ChipView.class));
         return (ChipView) view;
     }
 
     private ChipView getPasswordSuggestion() {
-        assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
-        LinearLayout layout = (LinearLayout) mView.get().getChildAt(0);
-        View view = layout.findViewById(R.id.password_text);
+        View view = getUserInfoAt(0).findViewById(R.id.password_text);
         assertThat(view, is(not(nullValue())));
         assertThat(view, instanceOf(ChipView.class));
         return (ChipView) view;

@@ -53,7 +53,8 @@ class MODULES_EXPORT ServiceWorker final
       public mojom::blink::ServiceWorkerObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
-
+  USING_PRE_FINALIZER(ServiceWorker, Dispose);
+  
  public:
   static ServiceWorker* From(ExecutionContext*,
                              mojom::blink::ServiceWorkerObjectInfoPtr);
@@ -73,8 +74,8 @@ class MODULES_EXPORT ServiceWorker final
   ~ServiceWorker() override;
   void Trace(blink::Visitor*) override;
 
-  // Eager finalization needed to promptly release owned WebServiceWorker.
-  EAGERLY_FINALIZE();
+  // Pre-finalization needed to promptly release owned WebServiceWorker.
+  void Dispose();
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,

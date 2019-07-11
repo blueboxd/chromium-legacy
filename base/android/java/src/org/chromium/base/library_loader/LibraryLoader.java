@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.system.Os;
 
@@ -113,15 +112,6 @@ public class LibraryLoader {
     // native.
     private boolean mCommandLineSwitched;
 
-    // One-way switches recording attempts to use Relro sharing in the browser.
-    // The flags are used to report UMA stats later.
-    private boolean mIsUsingBrowserSharedRelros;
-    private boolean mLoadAtFixedAddressFailed;
-
-    // One-way switch becomes true if the Chromium library was loaded from the
-    // APK file directly.
-    private boolean mLibraryWasLoadedFromApk;
-
     // The type of process the shared library is loaded in.
     private @LibraryProcessType int mLibraryProcessType;
 
@@ -140,6 +130,20 @@ public class LibraryLoader {
      * libraries instead.
      */
     public static boolean useCrazyLinker() {
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        // * installing other Chromium-based browsers
+        //
+        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
+        // Framework) provides the necessary functionality to load without crazylinker. The
+        // crazylinker is risky to auto-enable on newer Android releases, as it may interfere with
+        // regular library loading. See http://crbug.com/980304 as example.
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.N) return false;
+
         // The auto-generated NativeLibraries.sUseLinker variable will be true if the
         // build has not explicitly disabled Linker features.
         return NativeLibraries.sUseLinker;
@@ -318,28 +322,14 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Sets UMA flags depending on the results of loading.
-    private void loadLibraryWithCustomLinkerAlreadyLocked(
-            Linker linker, @Nullable String zipFilePath, String libFilePath) {
+    private void loadLibraryWithCustomLinkerAlreadyLocked(Linker linker, String libFilePath) {
         assert Thread.holdsLock(mLock);
-        if (linker.isUsingBrowserSharedRelros()) {
-            // If the browser is set to attempt shared RELROs then we try first with shared
-            // RELROs enabled, and if that fails then retry without.
-            mIsUsingBrowserSharedRelros = true;
-            try {
-                linker.loadLibrary(libFilePath);
-            } catch (UnsatisfiedLinkError e) {
-                Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
-                mLoadAtFixedAddressFailed = true;
-                linker.loadLibraryNoFixedAddress(libFilePath);
-            }
-        } else {
-            // No attempt to use shared RELROs in the browser, so load as normal.
+        // Attempt shared RELROs, and if that fails then retry without.
+        try {
             linker.loadLibrary(libFilePath);
-        }
-
-        // Loaded successfully, so record if we loaded directly from an APK.
-        if (zipFilePath != null) {
-            mLibraryWasLoadedFromApk = true;
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
+            linker.loadLibraryNoFixedAddress(libFilePath);
         }
     }
 
@@ -400,14 +390,13 @@ public class LibraryLoader {
 
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
-                            loadLibraryWithCustomLinkerAlreadyLocked(
-                                    linker, apkFilePath, libFilePath);
+                            loadLibraryWithCustomLinkerAlreadyLocked(linker, libFilePath);
                             incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
                             if (!isInZipFile()
                                     && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                                 loadLibraryWithCustomLinkerAlreadyLocked(
-                                        linker, null, getExtractedLibraryPath(appInfo, library));
+                                        linker, getExtractedLibraryPath(appInfo, library));
                                 incrementRelinkerCountHitHistogram();
                             } else {
                                 Log.e(TAG, "Unable to load library: " + library);

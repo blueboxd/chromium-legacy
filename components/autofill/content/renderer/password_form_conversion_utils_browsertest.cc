@@ -750,7 +750,7 @@ TEST_F(PasswordFormConversionUtilsTest,
     const char* autocomplete[3];
     const char* expected_username_element;
     const char* expected_username_value;
-    const char* expected_other_possible_usernames;
+    const char* expected_all_possible_usernames;
   } cases[] = {
       // When no elements are marked with autocomplete='username', the text-type
       // input field before the first password element should get selected as
@@ -761,7 +761,7 @@ TEST_F(PasswordFormConversionUtilsTest,
        "John+usrname1, Smith+usrname3"},
       // When a sole element is marked with autocomplete='username', it should
       // be treated as the username, but other text fields should be added to
-      // |other_possible_usernames|.
+      // |all_possible_usernames|.
       {{"username", nullptr, nullptr},
        "usrname1",
        "John",
@@ -775,7 +775,7 @@ TEST_F(PasswordFormConversionUtilsTest,
        "Smith",
        "John+usrname1, William+usrname2"},
       // When >=2 elements have the attribute, the first should be selected as
-      // the username, and the rest should go to |other_possible_usernames|.
+      // the username, and the rest should go to |all_possible_usernames|.
       {{"username", "username", nullptr},
        "usrname1",
        "John",
@@ -821,7 +821,7 @@ TEST_F(PasswordFormConversionUtilsTest,
                    << (nonempty_username_fields ? "nonempty" : "empty"));
 
       // Repeat each test once with empty, and once with non-empty usernames.
-      // In the former case, no empty other_possible_usernames should be saved.
+      // In the former case, no empty all_possible_usernames should be saved.
       const char* names[3];
       if (nonempty_username_fields) {
         names[0] = "John";
@@ -851,12 +851,12 @@ TEST_F(PasswordFormConversionUtilsTest,
       if (nonempty_username_fields) {
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
                   password_form->username_value);
-        EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_other_possible_usernames),
-                  ValueElementVectorToString(
-                      password_form->other_possible_usernames));
+        EXPECT_EQ(
+            base::UTF8ToUTF16(cases[i].expected_all_possible_usernames),
+            ValueElementVectorToString(password_form->all_possible_usernames));
       } else {
         EXPECT_TRUE(password_form->username_value.empty());
-        EXPECT_TRUE(password_form->other_possible_usernames.empty());
+        EXPECT_TRUE(password_form->all_possible_usernames.empty());
       }
 
       // Do a basic sanity check that we are still having a password field.
@@ -921,7 +921,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     EXPECT_EQ(base::UTF8ToUTF16("usrname1"), password_form->username_element);
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
     EXPECT_THAT(
-        password_form->other_possible_usernames,
+        password_form->all_possible_usernames,
         testing::ElementsAre(ValueElementPair(base::UTF8ToUTF16("Smith"),
                                               base::UTF8ToUTF16("usrname2"))));
   }
@@ -991,7 +991,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     EXPECT_EQ(base::UTF8ToUTF16("usrname1"), password_form->username_element);
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
     EXPECT_THAT(
-        password_form->other_possible_usernames,
+        password_form->all_possible_usernames,
         testing::ElementsAre(ValueElementPair(base::UTF8ToUTF16("Smith"),
                                               base::UTF8ToUTF16("usrname2"))));
   }
@@ -1350,12 +1350,12 @@ TEST_F(PasswordFormConversionUtilsTest,
               password_form->username_value);
     if (strcmp(cases[i].expected_username_value, "William") == 0) {
       EXPECT_THAT(
-          password_form->other_possible_usernames,
+          password_form->all_possible_usernames,
           testing::ElementsAre(ValueElementPair(
               base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("usrname2"))));
     } else {
       EXPECT_THAT(
-          password_form->other_possible_usernames,
+          password_form->all_possible_usernames,
           testing::ElementsAre(ValueElementPair(
               base::UTF8ToUTF16("William"), base::UTF8ToUTF16("usrname1"))));
     }

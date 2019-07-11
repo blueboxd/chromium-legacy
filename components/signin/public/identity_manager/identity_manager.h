@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -50,6 +50,7 @@ class AccountsCookieMutator;
 struct AccountsInCookieJarInfo;
 class IdentityManagerTest;
 class IdentityTestEnvironment;
+class DeviceAccountsSynchronizer;
 class DiagnosticsProvider;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
@@ -291,6 +292,10 @@ class IdentityManager : public KeyedService,
   // accounts associated with them. Guaranteed to be non-null.
   AccountsCookieMutator* GetAccountsCookieMutator();
 
+  // Returns pointer to the object used to seed accounts information from the
+  // device-level accounts. May be null if the system has no such notion.
+  DeviceAccountsSynchronizer* GetDeviceAccountsSynchronizer();
+
   // Observer interface for classes that want to monitor status of various
   // requests. Mostly useful in tests and debugging contexts (e.g., WebUI).
   class DiagnosticsObserver {
@@ -350,7 +355,8 @@ class IdentityManager : public KeyedService,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
       std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
-      std::unique_ptr<DiagnosticsProvider> diagnostics_provider);
+      std::unique_ptr<DiagnosticsProvider> diagnostics_provider,
+      std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer);
   ~IdentityManager() override;
 
   // Performs initialization that is dependent on the network being
@@ -407,25 +413,16 @@ class IdentityManager : public KeyedService,
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
   void ForceTriggerOnCookieChange();
-
-  // Adds a given account to the token service from a system account. This
-  // API calls OAuth2TokenServiceDelegate::AddAccountFromSystem and it
-  // triggers platform specific implementation for IOS.
-  // NOTE: In normal usage, this method SHOULD NOT be called.
-  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
-  void LegacyAddAccountFromSystem(const CoreAccountId& account_id);
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Reloads the accounts in the token service from the system accounts. This
-  // API calls OAuth2TokenServiceDelegate::ReloadAccountsFromSystem and it
-  // triggers platform specific implementation for Android and IOS.
-  // NOTE: In normal usage, this method SHOULD NOT be called.
-  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
-  void LegacyReloadAccountsFromSystem();
 #endif
 
 #if defined(OS_ANDROID)
+  // Reloads the accounts in the token service from the system accounts. This
+  // API calls OAuth2TokenServiceDelegate::ReloadAccountsFromSystem and it
+  // triggers platform specific implementation for Android.
+  // NOTE: In normal usage, this method SHOULD NOT be called.
+  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
+  void LegacyReloadAccountsFromSystem();
+
   // Returns a pointer to the AccountTrackerService Java instance associated
   // with this object.
   // TODO(https://crbug.com/934688): Eliminate this method once
@@ -637,6 +634,9 @@ class IdentityManager : public KeyedService,
 
   // DiagnosticsProvider instance.
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
+
+  // DeviceAccountsSynchronizer instance.
+  std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

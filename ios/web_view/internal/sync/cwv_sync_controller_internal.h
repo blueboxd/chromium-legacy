@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/web_view/internal/signin/web_view_device_accounts_provider_impl.h"
 #import "ios/web_view/public/cwv_sync_controller.h"

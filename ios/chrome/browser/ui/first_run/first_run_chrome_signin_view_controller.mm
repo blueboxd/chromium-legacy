@@ -6,7 +6,7 @@
 
 #import "base/ios/block_types.h"
 #include "base/metrics/user_metrics.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"

@@ -1176,15 +1176,24 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // pointing to an element after |position| will be invalidated.
   //
   // insert(position, value)
-  //     Insert a single element at |position|.
+  //     Insert a single element at |position|, where |position| is an index.
   // insert(position, buffer, size)
   // InsertVector(position, vector)
+  //     Insert multiple elements represented by either |buffer| and |size|
+  //     or |vector| at |position|. The elements will be copied.
+  // InsertAt(position, value)
+  //     Insert a single element at |position|, where |position| is an iterator.
+  // InsertAt(position, buffer, size)
   //     Insert multiple elements represented by either |buffer| and |size|
   //     or |vector| at |position|. The elements will be copied.
   template <typename U>
   void insert(wtf_size_t position, U&&);
   template <typename U>
   void insert(wtf_size_t position, const U*, wtf_size_t);
+  template <typename U>
+  void InsertAt(iterator position, U&&);
+  template <typename U>
+  void InsertAt(iterator position, const U*, wtf_size_t);
   template <typename U, wtf_size_t otherCapacity, typename OtherAllocator>
   void InsertVector(wtf_size_t position,
                     const Vector<U, otherCapacity, OtherAllocator>&);
@@ -1854,6 +1863,20 @@ void Vector<T, inlineCapacity, Allocator>::insert(wtf_size_t position,
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
                Allocator>::UninitializedCopy(data, &data[data_size], spot);
   size_ = new_size;
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename U>
+void Vector<T, inlineCapacity, Allocator>::InsertAt(T* position, U&& val) {
+  insert(position - begin(), val);
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename U>
+void Vector<T, inlineCapacity, Allocator>::InsertAt(T* position,
+                                                    const U* data,
+                                                    wtf_size_t data_size) {
+  insert(position - begin(), data, data_size);
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>

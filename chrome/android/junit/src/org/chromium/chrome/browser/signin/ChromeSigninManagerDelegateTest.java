@@ -46,7 +46,7 @@ public class ChromeSigninManagerDelegateTest {
         // of this test. Using MockSyncContentResolver reduces burden of test setup.
         AndroidSyncSettings.overrideForTests(new MockSyncContentResolverDelegate(), null);
 
-        mDelegate = new ChromeSigninManagerDelegate(AndroidSyncSettings.get());
+        mDelegate = new ChromeSigninManagerDelegate(0, AndroidSyncSettings.get());
     }
     @Test
     public void signOutWithManagedDomain() {

@@ -282,4 +282,20 @@ TEST_F(InputMethodEngineTest, TestSurroundingTextChanged) {
   EXPECT_EQ(0, observer_->GetSurroundingInfo().offset);
 }
 
+TEST_F(InputMethodEngineTest, TestDisableAfterSetComposition) {
+  // Enables the extension with focus.
+  engine_->Enable(kTestImeComponentId);
+  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::CompositionText composition_text;
+  composition_text.text = base::ASCIIToUTF16("hello");
+  engine_->UpdateComposition(composition_text, 0, /* is_visible */ true);
+
+  // Disable to commit
+  engine_->Disable();
+
+  EXPECT_EQ(1, mock_ime_input_context_handler_->commit_text_call_count());
+  EXPECT_EQ("hello", mock_ime_input_context_handler_->last_commit_text());
+}
+
 }  // namespace input_method

@@ -53,6 +53,7 @@
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -915,6 +916,17 @@ class RTCPeerConnectionHandler::Observer
                        candidate->candidate().address().family()));
   }
 
+  void OnIceCandidateError(const std::string& host_candidate,
+                           const std::string& url,
+                           int error_code,
+                           const std::string& error_text) override {
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCPeerConnectionHandler::Observer::OnIceCandidateErrorImpl, this,
+            host_candidate, url, error_code, error_text));
+  }
+
   void OnDataChannelImpl(scoped_refptr<DataChannelInterface> channel) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (handler_)
@@ -927,6 +939,17 @@ class RTCPeerConnectionHandler::Observer
     if (handler_) {
       handler_->OnIceCandidate(sdp, sdp_mid, sdp_mline_index, component,
           address_family);
+    }
+  }
+
+  void OnIceCandidateErrorImpl(const std::string& host_candidate,
+                               const std::string& url,
+                               int error_code,
+                               const std::string& error_text) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    if (handler_) {
+      handler_->OnIceCandidateError(host_candidate, url, error_code,
+                                    error_text);
     }
   }
 
@@ -2295,6 +2318,21 @@ void RTCPeerConnectionHandler::OnIceCandidate(
   }
   if (!is_closed_)
     client_->DidGenerateICECandidate(std::move(web_candidate));
+}
+
+void RTCPeerConnectionHandler::OnIceCandidateError(
+    const std::string& host_candidate,
+    const std::string& url,
+    int error_code,
+    const std::string& error_text) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateError");
+
+  if (!is_closed_) {
+    client_->DidFailICECandidate(blink::WebString::FromUTF8(host_candidate),
+                                 blink::WebString::FromUTF8(url), error_code,
+                                 blink::WebString::FromUTF8(error_text));
+  }
 }
 
 void RTCPeerConnectionHandler::OnInterestingUsage(int usage_pattern) {

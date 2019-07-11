@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/test_sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"

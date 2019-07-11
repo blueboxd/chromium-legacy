@@ -13,7 +13,9 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
@@ -37,11 +39,31 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 
 // static
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::CreateForNavigation(
+ServiceWorkerRequestHandler::CreateForNavigationUI(
+    const GURL& url,
+    ServiceWorkerNavigationHandle* navigation_handle,
+    const NavigationRequestInfo& request_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Create the handler even for insecure HTTP since it's used in the
+  // case of redirect to HTTPS.
+  if (!url.SchemeIsHTTPOrHTTPS() && !OriginCanAccessServiceWorkers(url) &&
+      !SchemeMaySupportRedirectingToHTTPS(url)) {
+    return nullptr;
+  }
+
+  return std::make_unique<ServiceWorkerNavigationLoaderInterceptor>(
+      request_info, navigation_handle);
+}
+
+// static
+std::unique_ptr<NavigationLoaderInterceptor>
+ServiceWorkerRequestHandler::CreateForNavigationIO(
     const GURL& url,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     const NavigationRequestInfo& request_info,
     base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(navigation_handle_core);
 
   // Create the handler even for insecure HTTP since it's used in the

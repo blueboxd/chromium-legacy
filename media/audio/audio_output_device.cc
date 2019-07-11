@@ -61,6 +61,7 @@ void AudioOutputDevice::InitializeOnIOThread(const AudioParameters& params,
                                              RenderCallback* callback) {
   DCHECK(!callback_) << "Calling Initialize() twice?";
   DCHECK(params.IsValid());
+  DVLOG(1) << __func__ << ": " << params.AsHumanReadableString();
   audio_parameters_ = params;
   callback_ = callback;
 }

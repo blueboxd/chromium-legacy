@@ -140,6 +140,7 @@ test("components_unittests") {
     "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",
     "//components/signin/core/browser/webdata:unit_tests",
+    "//components/signin/public/base:unit_tests",
     "//components/signin/public/identity_manager:unit_tests",
     "//components/ssl_errors:unit_tests",
     "//components/subresource_filter/core/browser:unit_tests",

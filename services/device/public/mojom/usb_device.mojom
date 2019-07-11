@@ -88,6 +88,8 @@ struct UsbAlternateInterfaceInfo {
 
 struct UsbInterfaceInfo {
   uint8 interface_number;
+  // First interface of the function to which this interface belongs.
+  uint8 first_interface;
   array<UsbAlternateInterfaceInfo> alternates;
 };
 

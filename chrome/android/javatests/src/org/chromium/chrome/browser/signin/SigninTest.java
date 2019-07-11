@@ -319,16 +319,16 @@ public class SigninTest {
         final Preferences prefActivity = mActivityTestRule.startPreferences(null);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        // Create a monitor to catch the AccountSigninActivity when it is created.
+        // Create a monitor to catch the SigninActivity when it is created.
         ActivityMonitor monitor = InstrumentationRegistry.getInstrumentation().addMonitor(
-                AccountSigninActivity.class.getName(), null, false);
+                SigninActivity.class.getName(), null, false);
 
         // Click sign in.
         TestThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
 
         // Pick the mock account.
-        AccountSigninActivity signinActivity =
-                (AccountSigninActivity) InstrumentationRegistry.getInstrumentation().waitForMonitor(
+        SigninActivity signinActivity =
+                (SigninActivity) InstrumentationRegistry.getInstrumentation().waitForMonitor(
                         monitor);
         Button positiveButton = (Button) signinActivity.findViewById(R.id.positive_button);
         // Press 'sign in'.

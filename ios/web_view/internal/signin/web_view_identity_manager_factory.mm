@@ -11,19 +11,20 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
+#include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 #include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -168,13 +169,17 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
           WebViewSigninClientFactory::GetForBrowserState(browser_state),
           token_service.get(), account_tracker_service.get());
 
+  auto device_accounts_synchronizer =
+      std::make_unique<identity::DeviceAccountsSynchronizerImpl>(
+          token_service->GetDelegate());
+
   return std::make_unique<identity::IdentityManager>(
       std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service),
       std::move(primary_account_manager), std::move(account_fetcher_service),
       std::move(primary_account_mutator),
       /*accounts_mutator=*/nullptr, std::move(accounts_cookie_mutator),
-      std::move(diagnostics_provider));
+      std::move(diagnostics_provider), std::move(device_accounts_synchronizer));
 }
 
 }  // namespace ios_web_view

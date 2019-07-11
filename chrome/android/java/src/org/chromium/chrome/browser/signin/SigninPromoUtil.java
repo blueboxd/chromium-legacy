@@ -47,7 +47,7 @@ public class SigninPromoUtil {
             return false;
         }
 
-        AccountSigninActivity.startIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
+        SigninActivity.startIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
         preferenceManager.setSigninPromoLastShownVersion(currentMajorVersion);
         preferenceManager.setSigninPromoLastAccountNames(
                 new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames()));
@@ -115,16 +115,16 @@ public class SigninPromoUtil {
     }
 
     /**
-     * A convenience method to create an AccountSigninActivity, passing the access point as an
+     * A convenience method to create an SigninActivity, passing the access point as an
      * intent extra.
      * @param window WindowAndroid from which to get the Activity/Context.
      * @param accessPoint for metrics purposes.
      */
     @CalledByNative
-    private static void openAccountSigninActivityForPromo(WindowAndroid window, int accessPoint) {
+    private static void openSigninActivityForPromo(WindowAndroid window, int accessPoint) {
         Activity activity = window.getActivity().get();
         if (activity != null) {
-            AccountSigninActivity.startIfAllowed(activity, accessPoint);
+            SigninActivity.startIfAllowed(activity, accessPoint);
         }
     }
 }

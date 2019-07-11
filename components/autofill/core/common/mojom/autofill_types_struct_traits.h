@@ -453,9 +453,9 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.username_value;
   }
 
-  static const std::vector<autofill::ValueElementPair>&
-  other_possible_usernames(const autofill::PasswordForm& r) {
-    return r.other_possible_usernames;
+  static const std::vector<autofill::ValueElementPair>& all_possible_usernames(
+      const autofill::PasswordForm& r) {
+    return r.all_possible_usernames;
   }
 
   static const std::vector<autofill::ValueElementPair>& all_possible_passwords(

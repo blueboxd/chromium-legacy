@@ -47,13 +47,13 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
+  void ConfirmCompositionText() override;
 
  private:
   bool HasInputMethodResult();
   bool NeedInsertChar() const;
   ui::EventDispatchDetails SendFakeProcessKeyEvent(ui::KeyEvent* event) const
       WARN_UNUSED_RESULT;
-  void ConfirmCompositionText();
   void UpdateContextFocusState();
   void ResetContext();
   bool IgnoringNonKeyInput() const;

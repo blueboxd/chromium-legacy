@@ -13,7 +13,7 @@
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 

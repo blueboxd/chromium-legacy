@@ -63,4 +63,14 @@ public class DisplayableProfileData {
         }
         return mFullName;
     }
+
+    /**
+     * Returns the given name of the user if it is available or the full name or email otherwise.
+     */
+    public String getGivenNameOrFullNameOrEmail() {
+        if (mGivenName != null) {
+            return mGivenName;
+        }
+        return getFullNameOrEmail();
+    }
 }

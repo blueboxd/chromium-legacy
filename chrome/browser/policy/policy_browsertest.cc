@@ -154,7 +154,7 @@
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -4051,6 +4051,32 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
   SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, SelectToSpeakEnabled) {
+  // Verifies that the select to speak accessibility feature can be
+  // controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the select to speak is initially disabled
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Manually enable the select to speak.
+  accessibility_manager->SetSelectToSpeakEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kSelectToSpeakEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Verify that the select to speak cannot be enabled manually anymore.
+  accessibility_manager->SetSelectToSpeakEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {

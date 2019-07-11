@@ -11,7 +11,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/send_tab_to_self/features.h"
-#include "components/signin/core/browser/device_id_helper.h"
+#include "components/signin/public/base/device_id_helper.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_device_info/device_info_sync_service_impl.h"
 #include "components/sync_device_info/local_device_info_provider_impl.h"

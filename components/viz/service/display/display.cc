@@ -521,22 +521,6 @@ bool Display::DrawAndSwap() {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
                               draw_timer->Elapsed().InMicroseconds());
     }
-
-    std::vector<std::unique_ptr<Surface::PresentationHelper>>
-        presentation_helper_list;
-    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      if (surface) {
-        std::unique_ptr<Surface::PresentationHelper> helper =
-            surface->TakePresentationHelperForPresentNotification();
-        if (helper) {
-          surface->OnWasDrawn(helper->frame_token(), draw_timer->Begin());
-          presentation_helper_list.push_back(std::move(helper));
-        }
-      }
-    }
-    pending_surfaces_with_presentation_helpers_.emplace_back(
-        std::make_pair(now_time, std::move(presentation_helper_list)));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -555,6 +539,18 @@ bool Display::DrawAndSwap() {
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
           scheduler_->current_frame_time());
     }
+
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helper_list;
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      if (surface) {
+        presentation_helper_list.push_back(
+            surface->TakePresentationHelperForPresentNotification());
+      }
+    }
+    pending_surfaces_with_presentation_helpers_.emplace_back(
+        std::make_pair(now_time, std::move(presentation_helper_list)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -676,7 +672,8 @@ void Display::DidReceivePresentationFeedback(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
   for (auto& presentation_helper : presentation_helper_list) {
-    presentation_helper->DidPresent(feedback);
+    if (presentation_helper)
+      presentation_helper->DidPresent(feedback);
   }
   pending_surfaces_with_presentation_helpers_.pop_front();
 }

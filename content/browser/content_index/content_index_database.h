@@ -75,13 +75,24 @@ class CONTENT_EXPORT ContentIndexDatabase
   void DidGetAllEntries(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
+  void GetIconOnIO(int64_t service_worker_registration_id,
+                   const std::string& description_id,
+                   base::OnceCallback<void(SkBitmap)> icon_callback);
   void DidGetSerializedIcon(base::OnceCallback<void(SkBitmap)> icon_callback,
                             const std::vector<std::string>& data,
                             blink::ServiceWorkerStatusCode status);
 
+  // Callbacks on the UI thread to notify |provider_| of updates.
+  void NotifyProviderContentAdded(std::vector<ContentIndexEntry> entries);
+  void NotifyProviderContentDeleted(int64_t service_worker_registration_id,
+                                    const std::string& entry_id);
+
+  // Lives on the UI thread.
   ContentIndexProvider* provider_;
+
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_{this};
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_io_;
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexDatabase);
 };

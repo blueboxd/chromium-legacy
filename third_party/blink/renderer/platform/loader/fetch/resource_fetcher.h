@@ -264,11 +264,9 @@ class PLATFORM_EXPORT ResourceFetcher
       ResourcePriority::VisibilityStatus visibility_statue,
       FetchParameters::DeferOption defer_option,
       FetchParameters::SpeculativePreloadType speculative_preload_type,
-      bool is_link_preload,
-      bool is_stale_revalidation) {
+      bool is_link_preload) {
     return ComputeLoadPriority(type, request, visibility_statue, defer_option,
-                               speculative_preload_type, is_link_preload,
-                               is_stale_revalidation);
+                               speculative_preload_type, is_link_preload);
   }
 
  private:
@@ -294,8 +292,7 @@ class PLATFORM_EXPORT ResourceFetcher
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
       FetchParameters::SpeculativePreloadType =
           FetchParameters::SpeculativePreloadType::kNotSpeculative,
-      bool is_link_preload = false,
-      bool is_stale_revalidation = false);
+      bool is_link_preload = false);
 
   // |virtual_time_pauser| is an output parameter. PrepareRequest may
   // create a new WebScopedVirtualTimePauser and set it to

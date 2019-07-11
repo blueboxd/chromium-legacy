@@ -166,13 +166,13 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
                                              bool is_animated) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
-  // This is called once for each janking animation frame, with the jank
-  // fraction for that frame.  The cumulative jank score can be inferred by
-  // summing the jank fractions. |after_input_or_scroll| indicates whether the
-  // given |jank_fraction| was observed after an input or scroll occurred in the
-  // associated document.
-  virtual void DidObserveLayoutJank(double jank_fraction,
-                                    bool after_input_or_scroll) {}
+  // This is called once for each animation frame containing any layout shift,
+  // and receives the layout shift (LS) score for that frame.  The cumulative
+  // layout shift (CLS) score can be inferred by summing the LS scores.
+  // |after_input_or_scroll| indicates whether the given |score| was observed
+  // after an input or scroll occurred in the associated document.
+  virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
+  }
 
   // Reports lazy loaded behavior when the frame or image is fully deferred or
   // if the frame or image is loaded after being deferred by lazy load.

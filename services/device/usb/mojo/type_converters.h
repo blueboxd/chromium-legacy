@@ -19,28 +19,9 @@
 namespace device {
 struct UsbConfigDescriptor;
 class UsbDevice;
-struct UsbInterfaceDescriptor;
 }  // namespace device
 
 namespace mojo {
-
-template <>
-struct TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
-                     device::UsbInterfaceDescriptor> {
-  static device::mojom::UsbAlternateInterfaceInfoPtr Convert(
-      const device::UsbInterfaceDescriptor& iface);
-};
-
-// Note that this is an explicit vector-to-array conversion, as
-// UsbInterfaceDescriptor collections are flattened to contain all alternate
-// settings, whereas InterfaceInfos contain their own sets of alternates with
-// a different structure type.
-template <>
-struct TypeConverter<std::vector<device::mojom::UsbInterfaceInfoPtr>,
-                     std::vector<device::UsbInterfaceDescriptor>> {
-  static std::vector<device::mojom::UsbInterfaceInfoPtr> Convert(
-      const std::vector<device::UsbInterfaceDescriptor>& interfaces);
-};
 
 template <>
 struct TypeConverter<device::mojom::UsbConfigurationInfoPtr,

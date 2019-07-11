@@ -51,6 +51,7 @@ js_library("content_metadata_provider") {
     ":metadata_provider",
     "../../../common/js:file_type",
     "../../../common/js:util",
+    "../../js:thumbnail_loader",
   ]
 }
 

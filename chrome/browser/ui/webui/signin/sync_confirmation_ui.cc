@@ -16,7 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/avatar_icon_util.h"
+#include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"

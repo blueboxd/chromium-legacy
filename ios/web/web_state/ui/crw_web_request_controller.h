@@ -28,6 +28,20 @@ class UserInteractionState;
 - (void)webRequestControllerStopLoading:
     (CRWWebRequestController*)requestController;
 
+// The delegate will create a web view if it's not yet created.
+- (void)webRequestControllerEnsureWebViewCreated:
+    (CRWWebRequestController*)requestController;
+
+// The delegate is called when a page (native or web) has actually started
+// loading.
+- (void)webRequestControllerDidStartLoading:
+    (CRWWebRequestController*)requestController;
+
+// The delegate is called when a page is loaded.
+- (void)webRequestController:(CRWWebRequestController*)requestController
+    didCompleteLoadWithSuccess:(BOOL)loadSuccess
+                    forContext:(web::NavigationContextImpl*)context;
+
 // Asks proxy to disconnect scroll proxy if needed.
 - (void)webRequestControllerDisconnectScrollViewProxy:
     (CRWWebRequestController*)requestController;
@@ -61,7 +75,7 @@ class UserInteractionState;
 @end
 
 // Controller in charge of preparing and handling web requests for the delegate,
-// which should be |CrwWebController|.
+// which should be |CRWWebController|.
 @interface CRWWebRequestController : NSObject
 
 @property(nonatomic, weak) id<CRWWebRequestControllerDelegate> delegate;
@@ -82,12 +96,14 @@ class UserInteractionState;
 // state to finished and call |didFinishWithURL| with failure.
 - (BOOL)maybeLoadRequestForCurrentNavigationItem;
 
-// Loads request for the URL of the current navigation item. Subclasses may
-// choose to build a new NSURLRequest and call
-// |loadRequestForCurrentNavigationItem| on the underlying web view, or use
-// native web view navigation where possible (for example, going back and
-// forward through the history stack).
-- (void)loadRequestForCurrentNavigationItem;
+// Sets up WebUI for URL.
+- (void)createWebUIForURL:(const GURL&)URL;
+
+// Clears WebUI, if one exists.
+- (void)clearWebUI;
+
+// Loads the URL indicated by current session state.
+- (void)loadCurrentURLWithRendererInitiatedNavigation:(BOOL)rendererInitiated;
 
 // Should be called by owner component after URL is finished loading and
 // self.navigationHandler.navigationState is set to FINISHED. |context| contains
@@ -127,6 +143,10 @@ class UserInteractionState;
 // Loads |HTML| into the page and use |URL| to resolve relative URLs within the
 // document.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL;
+
+// Reloads web view. |rendererInitiated| is YES for renderer-initiated
+// navigation. |rendererInitiated| is NO for browser-initiated navigation.
+- (void)reloadWithRendererInitiatedNavigation:(BOOL)rendererInitiated;
 
 @end
 

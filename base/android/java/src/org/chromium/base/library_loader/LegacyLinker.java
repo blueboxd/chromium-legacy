@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.JniIgnoreNatives;
 
 import java.util.HashMap;
@@ -48,10 +47,6 @@ class LegacyLinker extends Linker {
     // finishLibraryLoad().
     private boolean mWaitForSharedRelros;
 
-    // Becomes true when initialization determines that the browser process can use the
-    // shared RELRO.
-    private boolean mBrowserUsesSharedRelro;
-
     // The map of all RELRO sections either created or used in this process.
     private Bundle mSharedRelros;
 
@@ -79,47 +74,7 @@ class LegacyLinker extends Linker {
         // constructor because instantiation occurs on the UI thread.
         loadLinkerJniLibrary();
 
-        if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
-            if (SysUtils.isLowEndDevice()) {
-                mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_LOW;
-            } else {
-                mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_NORMAL;
-            }
-        }
-
-        // Cannot run in the constructor because SysUtils.isLowEndDevice() relies
-        // on CommandLine, which may not be available at instantiation.
-        switch (BROWSER_SHARED_RELRO_CONFIG) {
-            case BROWSER_SHARED_RELRO_CONFIG_NEVER:
-                break;
-            case BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
-                if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW) {
-                    mBrowserUsesSharedRelro = true;
-                    Log.w(TAG, "Low-memory device: shared RELROs used in all processes");
-                }
-                break;
-            case BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
-                Log.w(TAG, "Beware: shared RELROs used in all processes!");
-                mBrowserUsesSharedRelro = true;
-                break;
-            default:
-                Log.wtf(TAG, "FATAL: illegal shared RELRO config");
-                throw new AssertionError();
-        }
-
         mInitialized = true;
-    }
-
-    /**
-     * Call this method to determine if the linker will try to use shared RELROs
-     * for the browser process.
-     */
-    @Override
-    public boolean isUsingBrowserSharedRelros() {
-        synchronized (sLock) {
-            ensureInitializedLocked();
-            return mInBrowserProcess && mBrowserUsesSharedRelro;
-        }
     }
 
     /**
@@ -154,9 +109,9 @@ class LegacyLinker extends Linker {
         synchronized (sLock) {
             ensureInitializedLocked();
             if (DEBUG) {
-                String message = String.format(Locale.US,
-                        "mInBrowserProcess=%b mBrowserUsesSharedRelro=%b mWaitForSharedRelros=%b",
-                        mInBrowserProcess, mBrowserUsesSharedRelro, mWaitForSharedRelros);
+                String message =
+                        String.format(Locale.US, "mInBrowserProcess=%b mWaitForSharedRelros=%b",
+                                mInBrowserProcess, mWaitForSharedRelros);
                 Log.i(TAG, message);
             }
 
@@ -172,9 +127,7 @@ class LegacyLinker extends Linker {
                         dumpBundle(mSharedRelros);
                     }
 
-                    if (mBrowserUsesSharedRelro) {
-                        useSharedRelrosLocked(mSharedRelros);
-                    }
+                    useSharedRelrosLocked(mSharedRelros);
                 }
 
                 if (mWaitForSharedRelros) {
@@ -198,7 +151,7 @@ class LegacyLinker extends Linker {
 
             // If testing, run tests now that all libraries are loaded and initialized.
             if (NativeLibraries.sEnableLinkerTests) {
-                runTestRunnerClassForTesting(mMemoryDeviceConfig, mInBrowserProcess);
+                runTestRunnerClassForTesting(mInBrowserProcess);
             }
         }
         if (DEBUG) Log.i(TAG, "finishLibraryLoad() exiting");
@@ -271,7 +224,6 @@ class LegacyLinker extends Linker {
             ensureInitializedLocked();
             mInBrowserProcess = false;
             mWaitForSharedRelros = false;
-            mBrowserUsesSharedRelro = false;
         }
     }
 
@@ -291,7 +243,6 @@ class LegacyLinker extends Linker {
         synchronized (sLock) {
             ensureInitializedLocked();
             mInBrowserProcess = false;
-            mBrowserUsesSharedRelro = false;
             mWaitForSharedRelros = true;
             mBaseLoadAddress = baseLoadAddress;
             mCurrentLoadAddress = baseLoadAddress;
@@ -335,7 +286,6 @@ class LegacyLinker extends Linker {
                 // If the random address is 0 there are issues with finding enough
                 // free address space, so disable RELRO shared / fixed load addresses.
                 Log.w(TAG, "Disabling shared RELROs due address space pressure");
-                mBrowserUsesSharedRelro = false;
                 mWaitForSharedRelros = false;
             }
         }
@@ -447,7 +397,7 @@ class LegacyLinker extends Linker {
             LibInfo libInfo = new LibInfo();
             long loadAddress = 0;
             if (isFixedAddressPermitted) {
-                if ((mInBrowserProcess && mBrowserUsesSharedRelro) || mWaitForSharedRelros) {
+                if (mInBrowserProcess || mWaitForSharedRelros) {
                     // Load the library at a fixed address.
                     loadAddress = mCurrentLoadAddress;
 

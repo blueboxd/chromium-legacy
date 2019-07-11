@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ui/views/test/widget_test.h"

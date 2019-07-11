@@ -106,7 +106,7 @@ void WebSocketFactory::CreateWebSocket(
     mojom::TrustedHeaderClientPtr header_client) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
-    handshake_client.ResetWithReason(
+    client.ResetWithReason(
         mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;

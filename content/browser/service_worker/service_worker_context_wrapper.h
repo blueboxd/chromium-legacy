@@ -309,6 +309,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       blink::mojom::ServiceWorkerProviderType provider_type,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
+  // The core context is only for use on the IO thread.
+  // Can be null before/during init, during/after shutdown, and after
+  // DeleteAndStartOver fails.
+  ServiceWorkerContextCore* context();
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
@@ -413,11 +418,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerContext::ResultCallback result_callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-
-  // The core context is only for use on the IO thread.
-  // Can be null before/during init, during/after shutdown, and after
-  // DeleteAndStartOver fails.
-  ServiceWorkerContextCore* context();
 
   void GetAllServiceWorkerRunningInfosOnIO(
       GetAllServiceWorkerRunningInfosCallback callback,

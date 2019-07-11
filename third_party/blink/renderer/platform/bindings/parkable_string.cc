@@ -30,17 +30,15 @@ namespace blink {
 
 namespace {
 
-void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
-  UMA_HISTOGRAM_ENUMERATION("Memory.MovableStringParkingAction", action);
-}
+enum class ParkingAction { kParked, kUnparked };
 
 void RecordStatistics(size_t size,
                       base::TimeDelta duration,
-                      ParkableStringImpl::ParkingAction action) {
+                      ParkingAction action) {
   size_t throughput_mb_s =
       static_cast<size_t>(size / duration.InSecondsF()) / 1000000;
   size_t size_kb = size / 1000;
-  if (action == ParkableStringImpl::ParkingAction::kParkedInBackground) {
+  if (action == ParkingAction::kParked) {
     UMA_HISTOGRAM_COUNTS_10000("Memory.ParkableString.Compression.SizeKb",
                                size_kb);
     // Size is at least 10kB, and at most ~1MB, and compression throughput
@@ -409,7 +407,6 @@ void ParkableStringImpl::ParkInternal(ParkingMode mode) {
 
   // Parking can proceed synchronously.
   if (has_compressed_data()) {
-    RecordParkingAction(ParkingAction::kParkedInBackground);
     state_ = State::kParked;
     ParkableStringManager::Instance().OnParked(this);
 
@@ -509,14 +506,9 @@ String ParkableStringImpl::UnparkInternal() const {
   CHECK(compression::GzipUncompress(compressed_string_piece,
                                     uncompressed_string_piece));
 
-  bool backgrounded =
-      ParkableStringManager::Instance().IsRendererBackgrounded();
-  auto action = backgrounded ? ParkingAction::kUnparkedInBackground
-                             : ParkingAction::kUnparkedInForeground;
-  RecordParkingAction(action);
   base::TimeDelta elapsed = timer.Elapsed();
   ParkableStringManager::Instance().RecordUnparkingTime(elapsed);
-  RecordStatistics(CharactersSizeInBytes(), elapsed, action);
+  RecordStatistics(CharactersSizeInBytes(), elapsed, ParkingAction::kUnparked);
 
   return uncompressed;
 }
@@ -542,7 +534,6 @@ void ParkableStringImpl::OnParkingCompleteOnMainThread(
   // Both of these will make the string young again, and if so we don't
   // discard the compressed representation yet.
   if (CanParkNow() && compressed_) {
-    RecordParkingAction(ParkingAction::kParkedInBackground);
     state_ = State::kParked;
     ParkableStringManager::Instance().OnParked(this);
 
@@ -638,7 +629,7 @@ void ParkableStringImpl::CompressInBackground(
           },
           WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed)),
           thread_elapsed));
-  RecordStatistics(size, timer.Elapsed(), ParkingAction::kParkedInBackground);
+  RecordStatistics(size, timer.Elapsed(), ParkingAction::kParked);
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {

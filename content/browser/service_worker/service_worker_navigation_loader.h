@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
-#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -30,10 +30,10 @@ class ServiceWorkerVersion;
 class ServiceWorkerProviderHost;
 
 // ServiceWorkerNavigationLoader is the URLLoader used for main resource
-// requests (i.e., navigation and shared worker requests) that (potentially) go
-// through a service worker. This loader is only used for the main resource
-// request; once the response is delivered, the resulting client loads
-// subresources via ServiceWorkerSubresourceLoader.
+// requests (i.e., navigation and shared worker requests) that go through a
+// service worker. This loader is only used for the main resource request; once
+// the response is delivered, the resulting client loads subresources via
+// ServiceWorkerSubresourceLoader.
 //
 // This class is owned by ServiceWorkerControlleeRequestHandler until it is
 // bound to a URLLoader request. After it is bound |this| is kept alive until
@@ -41,25 +41,6 @@ class ServiceWorkerProviderHost;
 class CONTENT_EXPORT ServiceWorkerNavigationLoader
     : public network::mojom::URLLoader {
  public:
-  class CONTENT_EXPORT Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Returns the ServiceWorkerVersion fetch events for this request job should
-    // be dispatched to. If no appropriate worker can be determined, returns
-    // nullptr.
-    virtual ServiceWorkerVersion* GetServiceWorkerVersion() = 0;
-
-    // Called after dispatching the fetch event to determine if processing of
-    // the request should still continue, or if processing should be aborted.
-    // TODO(falken): This can probably be deleted.
-    virtual bool RequestStillValid() = 0;
-
-    // Called to signal that loading failed, and that the resource being loaded
-    // was a main resource.
-    virtual void MainResourceLoadFailed() = 0;
-  };
-
   // Created by ServiceWorkerControlleeRequestHandler
   // after it determines the load should go through a service worker.
   //
@@ -83,7 +64,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   // is used instead of NavigationURLLoaderImpl.
   ServiceWorkerNavigationLoader(
       NavigationLoaderInterceptor::FallbackCallback fallback_callback,
-      Delegate* delegate,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
@@ -174,15 +154,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
-  // |delegate_| is non-null and owns |this| until DetachedFromRequest() is
-  // called. Once that is called, |delegate_| is reset to null and |this| owns
-  // itself, self-destructing when a connection error on |binding_| occurs.
-  //
-  // Note: A WeakPtr wouldn't be super safe here because the delegate can
-  // conceivably still be alive and used for another loader, after calling
-  // DetachedFromRequest() for this loader.
-  Delegate* delegate_ = nullptr;
-
   network::ResourceRequest resource_request_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
@@ -205,6 +176,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   mojo::Binding<network::mojom::URLLoader> binding_;
 
   Status status_ = Status::kNotStarted;
+  bool is_detached_ = false;
 
   base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_{this};
 

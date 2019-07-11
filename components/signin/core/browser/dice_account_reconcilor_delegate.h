@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
+#include "components/signin/public/base/account_consistency_method.h"
 
 class SigninClient;
 

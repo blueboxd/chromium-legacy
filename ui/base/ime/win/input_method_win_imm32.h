@@ -27,6 +27,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinImm32
 
   // Overridden from InputMethodBase:
   void OnFocus() override;
+  void ConfirmCompositionText() override;
 
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const MSG event,
@@ -74,9 +75,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinImm32
                       BOOL* handled);
 
   void RefreshInputLanguage();
-
-  // Asks the client to confirm current composition text.
-  void ConfirmCompositionText();
 
   // Enables or disables the IME according to the current text input type.
   void UpdateIMEState();

@@ -30,6 +30,11 @@ class MockWebRTCPeerConnectionHandlerClient
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
                void(scoped_refptr<blink::WebRTCICECandidate> candidate));
+  MOCK_METHOD4(DidFailICECandidate,
+               void(const blink::WebString& host_candidate,
+                    const blink::WebString& url,
+                    int error_code,
+                    const blink::WebString& error_text));
   MOCK_METHOD1(DidChangeSignalingState,
                void(webrtc::PeerConnectionInterface::SignalingState state));
   MOCK_METHOD1(DidChangeIceGatheringState,

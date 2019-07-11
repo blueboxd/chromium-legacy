@@ -323,17 +323,13 @@ void InputMethodWinImm32::RefreshInputLanguage() {
 }
 
 void InputMethodWinImm32::ConfirmCompositionText() {
+  InputMethodBase::ConfirmCompositionText();
+  InputMethodWinBase::ResetEngine();
+
+  // Makes sure the native IME app can be informed about the composition is
+  // cleared, so that it can clean up its internal states.
   if (composing_window_handle_)
     imm32_manager_.CleanupComposition(composing_window_handle_);
-
-  // Though above line should confirm the client's composition text by sending a
-  // result text to us, in case the input method and the client are in
-  // inconsistent states, we check the client's composition state again.
-  if (!IsTextInputTypeNone() && GetTextInputClient()->HasCompositionText()) {
-    GetTextInputClient()->ConfirmCompositionText();
-
-    InputMethodWinBase::ResetEngine();
-  }
 }
 
 void InputMethodWinImm32::UpdateIMEState() {

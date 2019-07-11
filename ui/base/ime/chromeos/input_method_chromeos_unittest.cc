@@ -305,6 +305,13 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void OnInputMethodChanged() override {
     ++on_input_method_changed_call_count_;
   }
+  bool SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override {
+    composition_text_ = CompositionText();
+    GetTextFromRange(range, &composition_text_.text);
+    return true;
+  }
 
   bool HasNativeEvent() const {
     return dispatched_key_event_.HasNativeEvent();
@@ -896,6 +903,48 @@ TEST_F(InputMethodChromeOSTest, SetCompositionRange_InvalidRange) {
 
   EXPECT_FALSE(ime_->SetCompositionRange(0, 4, {}));
   EXPECT_EQ(0U, composition_text_.text.length());
+}
+
+TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_NoComposition) {
+  // Focus on a text field.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  ime_->ConfirmCompositionText();
+
+  EXPECT_TRUE(confirmed_text_.text.empty());
+  EXPECT_TRUE(composition_text_.text.empty());
+}
+
+TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetComposition) {
+  // Focus on a text field.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  CompositionText composition_text;
+  composition_text.text = base::UTF8ToUTF16("hello");
+  SetCompositionText(composition_text);
+  ime_->ConfirmCompositionText();
+
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), confirmed_text_.text);
+  EXPECT_TRUE(composition_text_.text.empty());
+}
+
+TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetCompositionRange) {
+  // Focus on a text field.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  // Place some text.
+  surrounding_text_ = UTF8ToUTF16("abc");
+  text_range_ = gfx::Range(0, 3);
+
+  // "abc" is in composition. Put the two characters in composition.
+  ime_->SetCompositionRange(0, 2, {});
+  ime_->ConfirmCompositionText();
+
+  EXPECT_EQ(base::ASCIIToUTF16("ab"), confirmed_text_.text);
+  EXPECT_TRUE(composition_text_.text.empty());
 }
 
 class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {

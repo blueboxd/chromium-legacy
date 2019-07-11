@@ -211,14 +211,21 @@ void ReprocessManager::ReprocessManagerImpl::SetFpsRange(
     }
   }
 
+  auto resolution = gfx::Size(stream_width, stream_height);
+  auto& fps_map = resolution_fps_range_map_[device_id];
   if (!is_valid) {
+    // If the input range is invalid, we should still clear the cache range so
+    // that it will fallback to use default fps range rather than the cache one.
+    auto it = fps_map.find(resolution);
+    if (it != fps_map.end()) {
+      fps_map.erase(it);
+    }
     std::move(callback).Run(false);
     return;
   }
 
-  auto resolution = gfx::Size(stream_width, stream_height);
   auto fps_range = gfx::Range(min_fps, max_fps);
-  resolution_fps_range_map_[device_id][resolution] = fps_range;
+  fps_map[resolution] = fps_range;
   std::move(callback).Run(true);
 }
 

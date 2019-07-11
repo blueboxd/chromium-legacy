@@ -98,8 +98,7 @@ private:
 Note that finalization is done at an arbitrary time after the object becomes unreachable.
 
 Any destructor executed within the finalization period must not touch any other on-heap object, because destructors
-can be executed in any order. If there is a need of having such destructor, consider using
-[EAGERLY_FINALIZE](#EAGERLY_FINALIZE).
+can be executed in any order.
 
 Because `GarbageCollectedFinalized<T>` is a special case of `GarbageCollected<T>`, all the restrictions that apply
 to `GarbageCollected<T>` classes also apply to `GarbageCollectedFinalized<T>`.
@@ -171,54 +170,62 @@ See [GarbageCollectedMixin](#GarbageCollectedMixin) for the use of `GarbageColle
 
 ### USING_PRE_FINALIZER
 
-`USING_PRE_FINALIZER(ClassName, functionName)` in a class declaration declares the class has a *pre-finalizer* of name
-`functionName`.
+`USING_PRE_FINALIZER(ClassName, FunctionName)` in a class declaration declares the class has a *pre-finalizer* of name
+`FunctionName`.
+A pre-finalizer must have the function signature `void()` but can have any name.
 
-A pre-finalizer is a user-defined member function of a garbage-collected class that is called when the object is going
-to be swept but before the garbage collector actually sweeps any objects. Therefore, it is allowed for a pre-finalizer
-to touch any other on-heap objects, while a destructor is not. It is useful for doing some cleanups that cannot be done
-with a destructor.
-
-A pre-finalizer must have the following function signature: `void preFinalizer()`. You can change the function name.
+A pre-finalizer is a user-defined member function of a garbage-collected class that is called when the object is going to be reclaimed.
+It is invoked before the sweeping phase starts to allow a pre-finalizer to touch any other on-heap objects which is forbidden from destructors.
+It is useful for doing cleanups that cannot be done with a destructor.
 
 ```c++
 class YourClass : public GarbageCollectedFinalized<YourClass> {
-  USING_PRE_FINALIZER(YourClass, dispose);
+  USING_PRE_FINALIZER(YourClass, Dispose);
 public:
-  void dispose()
-  {
-    other_->dispose(); // OK; you can touch other on-heap objects in a pre-finalizer.
+  void Dispose() {
+    // OK: Other on-heap objects can be touched in a pre-finalizer.
+    other_->Dispose();
   }
-  ~YourClass()
-  {
-    // other_->dispose(); // BAD.
+
+  ~YourClass() {
+    // BAD: Not allowed.
+    // other_->Dispose();
   }
 
 private:
   Member<OtherClass> other_;
 };
 ```
+Sometimes it is necessary to further delegate pre-finalizers up the class hierarchy, similar to how destructors destruct in reverse order wrt. to construction.
+It is possible to construct such delegations using virtual methods.
 
-Pre-finalizers have some implications on the garbage collector's performance: the garbage-collector needs to iterate
-all registered pre-finalizers at every GC. Therefore, a pre-finalizer should be avoided unless it is really necessary.
+```c++
+class Parent : public GarbageCollectedFinalized<Parent> {
+  USING_PRE_FINALIZER(Parent, Dispose);
+ public:
+  void Dispose() { DisposeImpl(); }
+
+  virtual void DisposeImpl() {
+    // Pre-finalizer for {Parent}.
+  }
+  // ...
+};
+
+class Child : public Parent {
+ public:
+  void DisposeImpl() {
+    // Pre-finalizer for {Child}.
+    Parent::DisposeImpl();
+  }
+  // ...
+};
+```
+
+*Notes*
+- Pre-finalizers are not allowed to resurrect objects, i.e., they are not allowed to relink dead objects into the object graph.
+- Pre-finalizers have some implications on the garbage collector's performance: the garbage-collector needs to iterate all registered pre-finalizers at every GC.
+Therefore, a pre-finalizer should be avoided unless it is really necessary.
 Especially, avoid defining a pre-finalizer in a class that can be allocated a lot.
-
-### EAGERLY_FINALIZE
-
-A class-level annotation to indicate that class instances that the GC have determined as unreachable, should be eagerly
-swept and finalized by the garbage collector, before the Blink thread (the mutator) resumes after a garbage
-collection. The C++ destructor runs as part of this step. The default sweeping behavior is incremental, sweeping
-pages as demanded by later heap allocations.
-
-Like for the pre-finalizer mechanism, an `EAGERLY_FINALIZE()`d class is allowed to touch other heap objects, which
-is sometimes required, but the main use case for eager finalization is to promptly let go of off-heap resources
-and associations, by unregistering and destructing those eagerly. If not done, these external references would
-otherwise attempt to unsafely access an effectively-dead object (pending lazy sweeping of its heap page.)
-
-`EAGERLY_FINALIZE()` solves the same problem as pre-finalizers, but it arguably fits more naturally with the host
-language's mechanism for finalization (C++ destructors.) One `EAGERLY_FINALIZE()` caveat is that the destructor
-is not allowed to touch another eagerly finalized object (their finalization ordering isn't deterministic) nor
-any pre-finalized objects. Choose the one you think best fits your need for prompt finalization.
 
 ### STACK_ALLOCATED
 
@@ -229,7 +236,7 @@ a conservative GC be required.
 
 Classes with this annotation do not need a `Trace()` method, and should not inherit a garbage collected class.
 
-### DISALLOW_NEW()
+### DISALLOW_NEW
 
 Class-level annotation declaring the class cannot be separately allocated using `operator new`.
 It can be used on stack, as a part of object, or as a value in a heap collection.

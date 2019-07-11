@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

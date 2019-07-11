@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 
 class SigninClient;
 

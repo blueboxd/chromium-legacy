@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/cloud_devices/common/description_items.h"
 
@@ -143,6 +142,7 @@ class TypedValueVendorCapability {
 class VendorCapability {
  public:
   enum class Type {
+    NONE,
     RANGE,
     SELECT,
     TYPED_VALUE,
@@ -171,14 +171,18 @@ class VendorCapability {
   void SaveTo(base::Value* dict) const;
 
  private:
+  void InternalCleanup();
+
   Type type_;
   std::string id_;
   std::string display_name_;
 
-  // If the CDD is valid, exactly one of the capabilities has non-nullopt value.
-  base::Optional<RangeVendorCapability> range_capability_;
-  base::Optional<SelectVendorCapability> select_capability_;
-  base::Optional<TypedValueVendorCapability> typed_value_capability_;
+  // If the CDD is valid, exactly one of the capabilities has a value.
+  union {
+    RangeVendorCapability range_capability_;
+    SelectVendorCapability select_capability_;
+    TypedValueVendorCapability typed_value_capability_;
+  };
 
   DISALLOW_COPY_AND_ASSIGN(VendorCapability);
 };

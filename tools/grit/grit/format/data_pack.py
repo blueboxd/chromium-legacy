@@ -114,7 +114,7 @@ def ReadDataPackFromString(data):
     return struct.unpack('<HI', data[offset:offset + kIndexEntrySize])
 
   prev_resource_id, prev_offset = entry_at_index(0)
-  for i in xrange(1, resource_count + 1):
+  for i in range(1, resource_count + 1):
     resource_id, offset = entry_at_index(i)
     resources[prev_resource_id] = data[prev_offset:offset]
     prev_resource_id, prev_offset = resource_id, offset
@@ -127,7 +127,7 @@ def ReadDataPackFromString(data):
     return struct.unpack('<HH', data[offset:offset + kAliasEntrySize])
 
   aliases = {}
-  for i in xrange(alias_count):
+  for i in range(alias_count):
     resource_id, index = alias_at_index(i)
     aliased_id = entry_at_index(index)[0]
     aliases[resource_id] = aliased_id

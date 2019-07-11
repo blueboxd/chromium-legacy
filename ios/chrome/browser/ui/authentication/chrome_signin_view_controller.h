@@ -11,7 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 

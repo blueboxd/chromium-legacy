@@ -5,7 +5,7 @@
 #include "components/sync/driver/fake_sync_service.h"
 
 #include "base/values.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/syncable/user_share.h"

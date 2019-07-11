@@ -29,7 +29,7 @@
 #include "chrome/test/base/dialog_test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
-#include "components/signin/core/browser/avatar_icon_util.h"
+#include "components/signin/public/base/avatar_icon_util.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"

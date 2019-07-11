@@ -3583,14 +3583,12 @@ void LayoutObject::NotifyImageFullyRemoved(ImageResourceContent* image) {
   if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     LocalDOMWindow* window = GetDocument().domWindow();
     if (window) {
-      ImageElementTiming::From(*window).NotifyBackgroundImageRemoved(this,
-                                                                     image);
+      ImageElementTiming::From(*window).NotifyImageRemoved(this, image);
     }
   }
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().NotifyBackgroundImageRemoved(*this,
-                                                                        image);
+      frame_view->GetPaintTimingDetector().NotifyImageRemoved(*this, image);
     }
   }
 }

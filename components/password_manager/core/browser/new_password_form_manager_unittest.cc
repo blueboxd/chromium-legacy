@@ -374,7 +374,7 @@ class NewPasswordFormManagerTest : public testing::Test {
 
   // Creates NewPasswordFormManager and sets it to |form_manager_| for
   // |base_auth_observed_form|. Along the way a new |fetcher_| is created.
-  void CreateFormManagerForHttpAuthForm(
+  void CreateFormManagerForNonWebForm(
       const PasswordForm& base_auth_observed_form) {
     fetcher_.reset(new FakeFormFetcher());
     fetcher_->Fetch();
@@ -1871,7 +1871,7 @@ TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
     EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
     EXPECT_CALL(client_, AutofillHttpAuth(_, _)).Times(0);
 
-    CreateFormManagerForHttpAuthForm(http_auth_form);
+    CreateFormManagerForNonWebForm(http_auth_form);
     MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
     std::vector<const PasswordForm*> saved_matches;
@@ -1903,7 +1903,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
   PasswordForm http_auth_form = parsed_observed_form_;
   http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
-  CreateFormManagerForHttpAuthForm(http_auth_form);
+  CreateFormManagerForNonWebForm(http_auth_form);
 
   const base::string16 username = ASCIIToUTF16("user1");
   const base::string16 password = ASCIIToUTF16("pass1");
@@ -1924,7 +1924,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   PasswordForm http_auth_form = parsed_observed_form_;
   http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
-  CreateFormManagerForHttpAuthForm(http_auth_form);
+  CreateFormManagerForNonWebForm(http_auth_form);
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
   PasswordForm saved_http_auth_form = http_auth_form;
@@ -1963,7 +1963,7 @@ TEST_F(NewPasswordFormManagerTest, BlacklistHttpAuthCredentials) {
   http_auth_form.signon_realm += "my-auth-realm";
   http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
-  CreateFormManagerForHttpAuthForm(http_auth_form);
+  CreateFormManagerForNonWebForm(http_auth_form);
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
   // Simulate that the user submits http auth credentials.

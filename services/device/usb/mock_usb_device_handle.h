@@ -132,7 +132,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     TransferCallback& callback));
 
   MOCK_METHOD1(FindInterfaceByEndpoint,
-               const UsbInterfaceDescriptor*(uint8_t endpoint_address));
+               const mojom::UsbInterfaceInfo*(uint8_t endpoint_address));
 
  protected:
   ~MockUsbDeviceHandle() override;

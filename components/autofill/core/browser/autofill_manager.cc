@@ -41,6 +41,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_internals_logging.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -234,6 +235,19 @@ bool IsAddressForm(FieldTypeGroup field_type_group) {
   }
   NOTREACHED();
   return false;
+}
+
+void LogAutofillTypePredictionsAvailable(
+    const std::vector<FormStructure*>& forms) {
+  if (!IsLogAutofillInternalsActive())
+    return;
+
+  AutofillInternalsBuffer buffer;
+  for (FormStructure* form : forms)
+    buffer << *form;
+
+  LOG_AF_INTERNALS << LoggingScope::kParsing << LogMessage::kParsedForms
+                   << std::move(buffer);
 }
 
 }  // namespace
@@ -1164,6 +1178,8 @@ void AutofillManager::OnLoadedServerPredictions(
   // Send field type predictions to the renderer so that it can possibly
   // annotate forms with the predicted types or add console warnings.
   driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
+
+  LogAutofillTypePredictionsAvailable(queried_forms);
 }
 
 void AutofillManager::OnCreditCardFetched(bool did_succeed,
@@ -1742,6 +1758,8 @@ void AutofillManager::OnFormsParsed(
   // queryable forms will be updated once the field type query is complete.
   driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
   driver()->SendAutofillTypePredictionsToRenderer(queryable_forms);
+  LogAutofillTypePredictionsAvailable(non_queryable_forms);
+  LogAutofillTypePredictionsAvailable(queryable_forms);
 
   // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager_) {

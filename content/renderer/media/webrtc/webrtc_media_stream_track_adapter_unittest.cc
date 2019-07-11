@@ -141,8 +141,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalAudioTrack) {
       track_adapter_->webrtc_track());
 }
 
-// Flaky, see https://crbug.com/982200.
-TEST_F(WebRtcMediaStreamTrackAdapterTest, DISABLED_LocalVideoTrack) {
+TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalVideoTrack) {
   track_adapter_ = WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
       dependency_factory_.get(), main_thread_, CreateLocalVideoTrack());
   EXPECT_TRUE(track_adapter_->is_initialized());

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 
 namespace signin_metrics {

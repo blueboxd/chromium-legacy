@@ -11,10 +11,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/android/signin/signin_manager_delegate.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-class Profile;
+class SigninClient;
 
 // Android wrapper of Chrome's C++ identity management code which provides
 // access from the Java layer. Note that on Android, there's only a single
@@ -26,8 +28,11 @@ class Profile;
 // is available before sign-in completes.
 class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
-  SigninManagerAndroid(Profile* profile,
-                       identity::IdentityManager* identity_manager);
+  SigninManagerAndroid(
+      SigninClient* signin_client,
+      PrefService* local_state_prefs_service,
+      identity::IdentityManager* identity_manager,
+      std::unique_ptr<SigninManagerDelegate> signin_manager_delegate);
 
   ~SigninManagerAndroid() override;
 
@@ -53,7 +58,7 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   jboolean IsSigninAllowedByPolicy(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj) const;
 
   jboolean IsForceSigninEnabled(
       JNIEnv* env,
@@ -67,16 +72,24 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
-  void OnSigninAllowedPrefChanged();
+  void OnSigninAllowedPrefChanged() const;
+  bool IsSigninAllowed() const;
 
-  Profile* profile_;
+  SigninClient* signin_client_;
+
+  // Handler for prefs::kSigninAllowed set in user's profile.
+  BooleanPrefMember signin_allowed_;
+
+  // Handler for prefs::kForceBrowserSignin. This preference is set in Local
+  // State, not in user prefs.
+  BooleanPrefMember force_browser_signin_;
 
   identity::IdentityManager* identity_manager_;
 
+  std::unique_ptr<SigninManagerDelegate> signin_manager_delegate_;
+
   // Java-side SigninManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   base::ThreadChecker thread_checker_;
 

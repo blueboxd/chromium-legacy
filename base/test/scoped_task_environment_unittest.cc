@@ -1045,5 +1045,30 @@ INSTANTIATE_TEST_SUITE_P(
     ScopedTaskEnvironmentMockedTime,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME));
 
+TEST_F(ScopedTaskEnvironmentTest, TimeSourceMockTime) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+
+  constexpr TimeDelta kDelay = TimeDelta::FromSeconds(10);
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, DoNothing(),
+                                                 kDelay);
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(scoped_task_environment.NowTicks(), start_time + kDelay);
+}
+
+TEST_F(ScopedTaskEnvironmentTest, TimeSourceMockTimeAndNow) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+  EXPECT_EQ(TimeTicks::Now(), start_time);
+
+  constexpr TimeDelta kDelay = TimeDelta::FromSeconds(10);
+  scoped_task_environment.FastForwardBy(kDelay);
+  EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
+}
+
 }  // namespace test
 }  // namespace base

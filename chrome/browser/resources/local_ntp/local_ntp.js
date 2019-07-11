@@ -445,9 +445,7 @@ function renderTheme() {
           !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
-    // Hide the settings menu or individual options if the related features are
-    // disabled.
-    customize.setMenuVisibility();
+    customize.onThemeChange();
   }
 }
 

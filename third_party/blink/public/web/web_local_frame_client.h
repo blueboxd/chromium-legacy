@@ -669,8 +669,8 @@ class BLINK_EXPORT WebLocalFrameClient {
                                              bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
-  virtual void DidObserveLayoutJank(double jank_fraction,
-                                    bool after_input_or_scroll) {}
+  virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
+  }
 
   enum class LazyLoadBehavior {
     kDeferredImage,    // An image is being deferred by the lazy load feature.

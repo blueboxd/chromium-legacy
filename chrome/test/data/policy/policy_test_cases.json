@@ -3139,6 +3139,18 @@
     ]
   },
 
+  "SelectToSpeakEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "SelectToSpeakEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.select_to_speak",
+        "indicator_tests": [
+          { "policy": { "SelectToSpeakEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "ScreenMagnifierType": {
     "os": ["chromeos"],
     "test_policy": { "ScreenMagnifierType": 1 },
@@ -4443,9 +4455,9 @@
     "pref_mappings": [{ "pref": "child_user.parent_access_code.config" }]
   },
 
-  "CertificateManagementAllowed": {
+  "ClientCertificateManagementAllowed": {
     "os": ["chromeos"],
-    "test_policy": { "CertificateManagementAllowed": 2 },
+    "test_policy": { "ClientCertificateManagementAllowed": 2 },
     "pref_mappings": [{ "pref": "certificate_management_allowed" }]
   },
 

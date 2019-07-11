@@ -24,6 +24,10 @@ class Clock;
 class FileDescriptorWatcher;
 class TickClock;
 
+namespace subtle {
+class ScopedTimeClockOverrides;
+}
+
 namespace test {
 
 // ScopedTaskEnvironment allows usage of these APIs within its scope:
@@ -73,24 +77,51 @@ class ScopedTaskEnvironment {
   struct SubclassCreatesDefaultTaskRunner {};
 
  public:
+  enum class TimeSource {
+    // Delayed tasks and Time/TimeTicks::Now() use the real-time system clock.
+    SYSTEM_TIME,
+
+    // Delayed tasks use a mock clock which only advances (in increments to the
+    // soonest delay) when reaching idle during a FastForward*() call to this
+    // ScopedTaskEnvironment. Or when RunLoop::Run() goes idle on the main
+    // thread with no tasks remaining in the thread pool.
+    // Note: this does not affect threads outside this ScopedTaskEnvironment's
+    // purview (notably: independent base::Thread's).
+    MOCK_TIME,
+
+    // Mock Time/TimeTicks::Now() with the same mock clock used for delayed
+    // tasks. This is useful when a delayed task under test needs to check the
+    // amount of time that has passed since a previous sample of Now() (e.g.
+    // cache expiry).
+    //
+    // Warning some platform APIs are still real-time, and don't interact with
+    // MOCK_TIME as expected, e.g.:
+    //   PlatformThread::Sleep
+    //   WaitableEvent::TimedWait
+    //   WaitableEvent::TimedWaitUntil
+    //   ConditionVariable::TimedWait
+    //
+    // TODO(crbug.com/905412): Make MOCK_TIME always mock Time/TimeTicks::Now().
+    MOCK_TIME_AND_NOW,
+
+    // TODO(gab): Consider making MOCK_TIME the default mode.
+    DEFAULT = SYSTEM_TIME
+  };
+
   enum class MainThreadType {
     // The main thread doesn't pump system messages.
     DEFAULT,
-    // The main thread doesn't pump system messages and uses a mock clock for
-    // delayed tasks (controllable via FastForward*() methods).
-    // TODO(gab): Make MOCK_TIME configurable independent of MainThreadType.
-    MOCK_TIME,
     // The main thread pumps UI messages.
     UI,
-    // The main thread pumps UI messages and uses a mock clock for delayed tasks
-    // (controllable via FastForward*() methods).
-    UI_MOCK_TIME,
     // The main thread pumps asynchronous IO messages and supports the
     // FileDescriptorWatcher API on POSIX.
     IO,
-    // The main thread pumps IO messages and uses a mock clock for delayed tasks
-    // (controllable via FastForward*() methods). In addition it supports the
-    // FileDescriptorWatcher API on POSIX.
+
+    // TODO(gab): Migrate users of these APIs.
+    // Deprecated: Use TimeSource::MOCK_TIME instead.
+    MOCK_TIME,
+    // Deprecated:: Use MainThreadType::UI/IO + TimeSource::MOCK_TIME instead.
+    UI_MOCK_TIME,
     IO_MOCK_TIME,
   };
 
@@ -108,6 +139,8 @@ class ScopedTaskEnvironment {
     DEFAULT = ASYNC
   };
 
+  // Deprecated: Use TimeSource::MOCK_TIME_AND_NOW instead.
+  // TODO(gab): Migrate users.
   enum class NowSource {
     // base::Time::Now() and base::TimeTicks::Now() are real time.
     REAL_TIME,
@@ -137,6 +170,7 @@ class ScopedTaskEnvironment {
 
   // List of traits that are valid inputs for the constructor below.
   struct ValidTrait {
+    ValidTrait(TimeSource);
     ValidTrait(MainThreadType);
     ValidTrait(ThreadPoolExecutionMode);
     ValidTrait(NowSource);
@@ -151,11 +185,11 @@ class ScopedTaskEnvironment {
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   NOINLINE ScopedTaskEnvironment(ArgTypes... args)
       : ScopedTaskEnvironment(
+            TimeSourceForTraits(args...),
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
                 args...),
             trait_helpers::GetEnum<ThreadPoolExecutionMode,
                                    ThreadPoolExecutionMode::DEFAULT>(args...),
-            trait_helpers::GetEnum<NowSource, NowSource::REAL_TIME>(args...),
             trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
                 args...),
             trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner>(args...),
@@ -306,12 +340,48 @@ class ScopedTaskEnvironment {
 
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
-  ScopedTaskEnvironment(MainThreadType main_thread_type,
+  ScopedTaskEnvironment(TimeSource time_source,
+                        MainThreadType main_thread_type,
                         ThreadPoolExecutionMode thread_pool_execution_mode,
-                        NowSource now_source,
                         ThreadingMode threading_mode,
                         bool subclass_creates_default_taskrunner,
                         trait_helpers::NotATraitTag tag);
+
+  // Helper to extract TimeSource from a set of traits provided to
+  // ScopedTaskEnvironment's constructor. Helper for the migration (while
+  // TimeSource is optionally defined by MainThreadType or NowSource).
+  template <class... ArgTypes>
+  constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
+    const auto explicit_time_source =
+        trait_helpers::GetOptionalEnum<TimeSource>(args...);
+    const auto explicit_main_thread_type =
+        trait_helpers::GetOptionalEnum<MainThreadType>(args...);
+    const auto explicit_now_source =
+        trait_helpers::GetOptionalEnum<NowSource>(args...);
+    const bool requested_mock_time_via_main_thread_type =
+        explicit_main_thread_type &&
+        (*explicit_main_thread_type == MainThreadType::MOCK_TIME ||
+         *explicit_main_thread_type == MainThreadType::UI_MOCK_TIME ||
+         *explicit_main_thread_type == MainThreadType::IO_MOCK_TIME);
+
+    if (explicit_time_source) {
+      DCHECK(!explicit_now_source) << "NowSource is deprecated, use TimeSource";
+      DCHECK(!requested_mock_time_via_main_thread_type)
+          << "Don't specify MOCK_TIME via MainThreadType, TimeSource is "
+             "sufficient";
+      return *explicit_time_source;
+    } else if (explicit_now_source &&
+               *explicit_now_source == NowSource::MAIN_THREAD_MOCK_TIME) {
+      // NowSource::MAIN_THREAD_MOCK_TIME was previously combined with
+      // MainThread::.*MOCK_TIME.
+      DCHECK(requested_mock_time_via_main_thread_type);
+      return TimeSource::MOCK_TIME_AND_NOW;
+    } else if (requested_mock_time_via_main_thread_type) {
+      return TimeSource::MOCK_TIME;
+    }
+
+    return TimeSource::DEFAULT;
+  }
 
   const MainThreadType main_thread_type_;
   const ThreadPoolExecutionMode thread_pool_execution_mode_;
@@ -319,7 +389,14 @@ class ScopedTaskEnvironment {
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
+
+  // Manages the clock under TimeSource::MOCK_TIME modes. Null in
+  // TimeSource::SYSTEM_TIME mode.
   std::unique_ptr<MockTimeDomain> mock_time_domain_;
+
+  // Overrides Time/TimeTicks::Now() under TimeSource::MOCK_TIME_AND_NOW mode.
+  // Null in other modes.
+  std::unique_ptr<subtle::ScopedTimeClockOverrides> time_overrides_;
 
   scoped_refptr<sequence_manager::TaskQueue> task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

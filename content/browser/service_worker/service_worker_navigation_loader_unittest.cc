@@ -326,14 +326,7 @@ const char kHistogramMainResourceFetchEvent[] =
 // Of course, no actual service worker runs in the unit test, it is simulated
 // via EmbeddedWorkerTestHelper receiving IPC messages from the browser and
 // responding as if a service worker is running in the renderer.
-//
-// ServiceWorkerNavigationLoaderTest is also a
-// ServiceWorkerNavigationLoader::Delegate. In production code,
-// ServiceWorkerControlleeRequestHandler is the Delegate. So this class also
-// basically mocks that part of ServiceWorkerControlleeRequestHandler.
-class ServiceWorkerNavigationLoaderTest
-    : public testing::Test,
-      public ServiceWorkerNavigationLoader::Delegate {
+class ServiceWorkerNavigationLoaderTest : public testing::Test {
  public:
   ServiceWorkerNavigationLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
@@ -391,14 +384,23 @@ class ServiceWorkerNavigationLoaderTest
   // caller can use functions like client_.RunUntilComplete() to wait for
   // completion.
   void StartRequest(std::unique_ptr<network::ResourceRequest> request) {
-    provider_host_ = CreateProviderHostForWindow(
-        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
-        helper_->context()->AsWeakPtr(), &provider_endpoints_);
+    // Create a ServiceWorkerProviderHost and simulate what
+    // ServiceWorkerControlleeRequestHandler does to assign it a controller.
+    if (!provider_host_) {
+      provider_host_ = CreateProviderHostForWindow(
+          helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
+          helper_->context()->AsWeakPtr(), &provider_endpoints_);
+      provider_host_->UpdateUrls(request->url, request->url);
+      provider_host_->AddMatchingRegistration(registration_.get());
+      provider_host_->SetControllerRegistration(
+          registration_, /*notify_controllerchange=*/false);
+    }
+
     // Create a ServiceWorkerNavigationLoader.
     loader_ = std::make_unique<ServiceWorkerNavigationLoader>(
         base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                        base::Unretained(this)),
-        this, provider_host_,
+        provider_host_,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
 
@@ -449,7 +451,7 @@ class ServiceWorkerNavigationLoaderTest
   std::unique_ptr<network::ResourceRequest> CreateRequest() {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
-    request->url = GURL("https://www.example.com/");
+    request->url = GURL("https://example.com/");
     request->method = "GET";
     request->mode = network::mojom::RequestMode::kNavigate;
     request->credentials_mode = network::mojom::CredentialsMode::kInclude;
@@ -457,23 +459,11 @@ class ServiceWorkerNavigationLoaderTest
     return request;
   }
 
- protected:
-  // ServiceWorkerNavigationLoader::Delegate -----------------------------------
-  ServiceWorkerVersion* GetServiceWorkerVersion() override {
-    return version_.get();
-  }
-
-  bool RequestStillValid() override { return true; }
-
-  void MainResourceLoadFailed() override {
-    was_main_resource_load_failed_called_ = true;
-  }
-
   bool HasWorkInBrowser(ServiceWorkerVersion* version) const {
     return version->HasWorkInBrowser();
   }
-  // --------------------------------------------------------------------------
 
+ protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -481,7 +471,6 @@ class ServiceWorkerNavigationLoaderTest
   FetchEventServiceWorker* service_worker_;
   storage::BlobStorageContext blob_context_;
   network::TestURLLoaderClient client_;
-  bool was_main_resource_load_failed_called_ = false;
   std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
   network::mojom::URLLoaderPtr loader_ptr_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
@@ -521,8 +510,12 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   base::HistogramTester histogram_tester;
 
-  // Clear |version_| to make GetServiceWorkerVersion() return null.
-  version_ = nullptr;
+  // Make a provider host without a controller.
+  provider_host_ = CreateProviderHostForWindow(
+      helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
+      helper_->context()->AsWeakPtr(), &provider_endpoints_);
+  provider_host_->UpdateUrls(GURL("https://example.com/"),
+                             GURL("https://example.com/"));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -802,11 +795,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
   // The fallback callback should be called.
   RunUntilFallbackCallback();
   EXPECT_FALSE(reset_subresource_loader_params_);
-  EXPECT_FALSE(was_main_resource_load_failed_called_);
 
   // The request should not be handled by the loader, but it shouldn't be a
   // failure.
-  EXPECT_FALSE(was_main_resource_load_failed_called_);
+  EXPECT_TRUE(provider_host_->controller());
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
 
@@ -848,7 +840,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   // The fallback callback should be called.
   RunUntilFallbackCallback();
   EXPECT_TRUE(reset_subresource_loader_params_);
-  EXPECT_TRUE(was_main_resource_load_failed_called_);
+  EXPECT_FALSE(provider_host_->controller());
 
   histogram_tester.ExpectUniqueSample(
       kHistogramMainResourceFetchEvent,
@@ -946,12 +938,15 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, DetachedDuringFetchEvent) {
+TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   StartRequest(CreateRequest());
 
-  // Detach the loader immediately after it started. This results in
-  // DidDispatchFetchEvent() being invoked later with null |delegate_|.
-  loader_.release()->DetachedFromRequest();
+  // Delete the provider host during the request. The load should abort without
+  // crashing.
+  *provider_endpoints_.host_ptr() = nullptr;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(provider_host_);
+
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
 }

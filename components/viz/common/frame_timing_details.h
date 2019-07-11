@@ -11,8 +11,6 @@ namespace viz {
 
 struct FrameTimingDetails {
   gfx::PresentationFeedback presentation_feedback;
-  base::TimeTicks received_compositor_frame_timestamp;
-  base::TimeTicks draw_start_timestamp;
 };
 
 }  // namespace viz

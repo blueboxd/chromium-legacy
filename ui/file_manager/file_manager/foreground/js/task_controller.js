@@ -443,11 +443,16 @@ class TaskController {
         this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
         this.ui_.fileContextMenu.defaultTaskMenuItem.setAttribute(
             'file-type-icon', defaultTask.iconType);
+        this.ui_.fileContextMenu.defaultTaskMenuItem.style.marginInlineEnd =
+            '28px';
       } else if (defaultTask.iconUrl) {
         this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage =
             'url(' + defaultTask.iconUrl + ')';
+        this.ui_.fileContextMenu.defaultTaskMenuItem.style.marginInlineEnd =
+            '28px';
       } else {
         this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
+        this.ui_.fileContextMenu.defaultTaskMenuItem.style.marginInlineEnd = '';
       }
 
       if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID) {

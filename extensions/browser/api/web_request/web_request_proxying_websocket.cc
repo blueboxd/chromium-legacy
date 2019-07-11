@@ -343,24 +343,20 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
     }
   }
 
+  // Here we detect mojo connection errors on |handshake_client|. See also
+  // CreateWebSocket in //network/services/public/mojom/network_context.mojom.
+  // Here we don't have |connection_client| so using |handshake_client| is the
+  // best.
   network::mojom::WebSocketHandshakeClientPtr handshake_client;
   binding_as_handshake_client_.Bind(mojo::MakeRequest(&handshake_client));
   binding_as_handshake_client_.set_connection_error_handler(
       base::BindOnce(&WebRequestProxyingWebSocket::OnError,
                      base::Unretained(this), net::ERR_FAILED));
-
   network::mojom::AuthenticationHandlerPtr auth_handler;
   binding_as_auth_handler_.Bind(mojo::MakeRequest(&auth_handler));
-  binding_as_auth_handler_.set_connection_error_handler(
-      base::BindOnce(&WebRequestProxyingWebSocket::OnError,
-                     base::Unretained(this), net::ERR_FAILED));
-
   network::mojom::TrustedHeaderClientPtr trusted_header_client;
   if (binding_as_header_client_.impl()) {
     binding_as_header_client_.Bind(mojo::MakeRequest(&trusted_header_client));
-    binding_as_header_client_.set_connection_error_handler(
-        base::BindOnce(&WebRequestProxyingWebSocket::OnError,
-                       base::Unretained(this), net::ERR_FAILED));
   }
 
   std::move(factory_).Run(info_.url, std::move(additional_headers),

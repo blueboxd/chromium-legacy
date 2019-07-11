@@ -116,7 +116,7 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
     const autofill::PasswordForm& form) {
   std::vector<base::string16> usernames = {form.username_value};
   for (const autofill::ValueElementPair& other_possible_username_pair :
-       form.other_possible_usernames) {
+       form.all_possible_usernames) {
     if (other_possible_username_pair.first != form.username_value)
       usernames.push_back(other_possible_username_pair.first);
   }

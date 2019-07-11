@@ -15,7 +15,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"

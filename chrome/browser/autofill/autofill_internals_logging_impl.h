@@ -24,6 +24,7 @@ class AutofillInternalsLoggingImpl : public AutofillInternalsLogging {
   static content::WebUI* web_ui_;
 
   void LogHelper(const base::Value& message) override;
+  void LogRawHelper(const base::Value& message) override;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillInternalsLoggingImpl);
 };

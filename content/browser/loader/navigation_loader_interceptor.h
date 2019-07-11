@@ -83,6 +83,8 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // requests going forward. Subclasses who want to set-up custom loader for
   // subresource requests may want to override this.
   //
+  // This is always called after MaybeCreateLoader().
+  //
   // Note that the handler can return a null callback to MaybeCreateLoader(),
   // and at the same time can return non-null SubresourceLoaderParams here if it
   // does NOT want to handle the specific request given to MaybeCreateLoader()

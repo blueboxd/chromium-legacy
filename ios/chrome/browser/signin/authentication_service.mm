@@ -13,7 +13,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #import "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -160,11 +161,17 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
 
   // Clear signin errors on the accounts that had a specific MDM device status.
   // This will trigger services to fetch data for these accounts again.
-  std::map<std::string, NSDictionary*> cached_mdm_infos(cached_mdm_infos_);
-  cached_mdm_infos_.clear();
-  for (const auto& cached_mdm_info : cached_mdm_infos) {
-    // TODO(crbug.com/930094): Eliminate this.
-    identity_manager_->LegacyAddAccountFromSystem(cached_mdm_info.first);
+  using std::swap;
+  std::map<std::string, NSDictionary*> cached_mdm_infos;
+  swap(cached_mdm_infos_, cached_mdm_infos);
+
+  if (!cached_mdm_infos.empty()) {
+    identity::DeviceAccountsSynchronizer* device_accounts_synchronizer =
+        identity_manager_->GetDeviceAccountsSynchronizer();
+    for (const auto& cached_mdm_info : cached_mdm_infos) {
+      device_accounts_synchronizer->ReloadAccountFromSystem(
+          cached_mdm_info.first);
+    }
   }
 }
 
@@ -301,7 +308,8 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
 
   // Load all credentials from SSO library. This must load the credentials
   // for the primary account too.
-  identity_manager_->LegacyReloadAccountsFromSystem();
+  identity_manager_->GetDeviceAccountsSynchronizer()
+      ->ReloadAllAccountsFromSystem();
 
   // Ensure that the account the user is trying to sign into has been loaded
   // from the SSO library and that hosted_domain is set to the provided value.
@@ -531,8 +539,8 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
 
   HandleForgottenIdentity(nil, should_prompt);
   if (IsAuthenticated()) {
-    // TODO(crbug.com/930094): Eliminate this.
-    identity_manager_->LegacyReloadAccountsFromSystem();
+    identity_manager_->GetDeviceAccountsSynchronizer()
+        ->ReloadAllAccountsFromSystem();
   }
 }
 

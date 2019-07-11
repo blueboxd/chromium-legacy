@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -226,15 +227,23 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->scope(), provider_host_->site_for_cookies(), GURL(),
-          resource_context_, provider_host_->web_contents_getter())) {
-    TRACE_EVENT_ASYNC_END1(
-        "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "ServiceWorker is blocked");
-    CompleteWithoutLoader();
-    return;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    // AllowServiceWorker() expects to be called on the IO thread with a valid
+    // ResourceContext, and we have a null context here, so skip calling it.
+    // TODO(crbug.com/926114, crbug.com/908955): Implement
+    // AllowServiceWorkerUI() with a browser_context instead of
+    // resource_context?
+  } else {
+    if (!GetContentClient()->browser()->AllowServiceWorker(
+            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            resource_context_, provider_host_->web_contents_getter())) {
+      TRACE_EVENT_ASYNC_END1(
+          "ServiceWorker",
+          "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+          "Info", "ServiceWorker is blocked");
+      CompleteWithoutLoader();
+      return;
+    }
   }
 
   if (!provider_host_->IsContextSecureForServiceWorker()) {
@@ -369,7 +378,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   // ServiceWorkerNavigationLoader which does that work.
   loader_wrapper_ = std::make_unique<ServiceWorkerNavigationLoaderWrapper>(
       std::make_unique<ServiceWorkerNavigationLoader>(
-          std::move(fallback_callback_), this, provider_host_,
+          std::move(fallback_callback_), provider_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
   TRACE_EVENT_ASYNC_END1(
@@ -444,25 +453,6 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
   version->RegisterStatusChangeCallback(base::BindOnce(
       &ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged,
       weak_factory_.GetWeakPtr(), std::move(registration), version));
-}
-
-ServiceWorkerVersion*
-ServiceWorkerControlleeRequestHandler::GetServiceWorkerVersion() {
-  if (!provider_host_)
-    return nullptr;
-  return provider_host_->controller();
-}
-
-bool ServiceWorkerControlleeRequestHandler::RequestStillValid() {
-  // A null |provider_host_| probably means the tab was closed. The null value
-  // would cause problems down the line, so bail out.
-  return !!provider_host_;
-}
-
-void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
-  DCHECK(provider_host_);
-  // Detach the controller so subresource requests also skip the worker.
-  provider_host_->NotifyControllerLost();
 }
 
 void ServiceWorkerControlleeRequestHandler::ClearJob() {

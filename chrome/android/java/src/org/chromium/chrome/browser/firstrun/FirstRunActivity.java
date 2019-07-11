@@ -209,7 +209,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 mShowWelcomePage = mFreProperties.getBoolean(SHOW_WELCOME_PAGE);
                 if (TextUtils.isEmpty(mResultSignInAccountName)) {
                     mResultSignInAccountName = mFreProperties.getString(
-                            AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
+                            SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
                 }
 
                 createPageSequence();

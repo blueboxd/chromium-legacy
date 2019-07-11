@@ -20,12 +20,17 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
 #include "content/public/browser/network_service_instance.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
@@ -33,6 +38,11 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/bind.h"
+#include "chrome/browser/signin/signin_util_win.h"
 #endif
 
 namespace {
@@ -114,6 +124,14 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.pref_service = profile->GetPrefs();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
 
+#if !defined(OS_ANDROID)
+  params.delete_signin_cookies_on_exit =
+      signin::SettingsDeleteSigninCookiesOnExit(
+          CookieSettingsFactory::GetForProfile(profile).get());
+  params.token_web_data = WebDataServiceFactory::GetTokenWebDataForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+#endif
+
 #if defined(OS_CHROMEOS)
   chromeos::AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
@@ -125,11 +143,23 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
 #endif
 
+#if defined(OS_WIN)
+  params.reauth_callback =
+      base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
+                          base::Unretained(profile));
+#endif
+
   params.token_service = ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
       context, params.pref_service, params.account_tracker_service.get(),
       params.network_connection_tracker, params.account_consistency,
 #if defined(OS_CHROMEOS)
       params.account_manager, params.is_regular_profile,
+#endif
+#if !defined(OS_ANDROID)
+      params.delete_signin_cookies_on_exit, params.token_web_data,
+#endif
+#if defined(OS_WIN)
+      params.reauth_callback,
 #endif
       params.signin_client);
 

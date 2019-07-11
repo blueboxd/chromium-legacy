@@ -94,7 +94,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   if (!IsBackgroundImageContentful(*object, *image))
     return;
-  detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
+  detector.GetImagePaintTimingDetector()->RecordImage(
       *object, image->Size(), *cached_image, current_paint_chunk_properties);
 }
 
@@ -112,7 +112,7 @@ void PaintTimingDetector::NotifyImagePaint(
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (!detector.GetImagePaintTimingDetector())
     return;
-  detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
+  detector.GetImagePaintTimingDetector()->RecordImage(
       object, intrinsic_size, *cached_image, current_paint_chunk_properties);
 }
 
@@ -125,15 +125,14 @@ void PaintTimingDetector::LayoutObjectWillBeDestroyed(
     image_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
 }
 
-void PaintTimingDetector::NotifyBackgroundImageRemoved(
+void PaintTimingDetector::NotifyImageRemoved(
     const LayoutObject& object,
     const ImageResourceContent* cached_image) {
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
   if (node_id == kInvalidDOMNodeId)
     return;
   if (image_paint_timing_detector_) {
-    image_paint_timing_detector_->NotifyBackgroundImageRemoved(node_id,
-                                                               cached_image);
+    image_paint_timing_detector_->NotifyImageRemoved(node_id, cached_image);
   }
 }
 

@@ -152,36 +152,6 @@ public abstract class Linker {
     // Name of the library that contains our JNI code.
     protected static final String LINKER_JNI_LIBRARY = "chromium_android_linker";
 
-    // Constants used to control the behaviour of the browser process with
-    // regards to the shared RELRO section.
-    //   NEVER        -> The browser never uses it itself.
-    //   LOW_RAM_ONLY -> It is only used on devices with low RAM.
-    //   ALWAYS       -> It is always used.
-    // NOTE: These names are known and expected by the Linker test scripts.
-    public static final int BROWSER_SHARED_RELRO_CONFIG_NEVER = 0;
-    public static final int BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY = 1;
-    public static final int BROWSER_SHARED_RELRO_CONFIG_ALWAYS = 2;
-
-    // Configuration variable used to control how the browser process uses the
-    // shared RELRO. Only change this while debugging linker-related issues.
-    // NOTE: This variable's name is known and expected by the Linker test scripts.
-    public static final int BROWSER_SHARED_RELRO_CONFIG =
-            BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY;
-
-    // Constants used to control the memory device config. Can be set explicitly
-    // by setMemoryDeviceConfigForTesting().
-    //   INIT         -> Value is undetermined (will check at runtime).
-    //   LOW          -> This is a low-memory device.
-    //   NORMAL       -> This is not a low-memory device.
-    public static final int MEMORY_DEVICE_CONFIG_INIT = 0;
-    public static final int MEMORY_DEVICE_CONFIG_LOW = 1;
-    public static final int MEMORY_DEVICE_CONFIG_NORMAL = 2;
-
-    // Indicates if this is a low-memory device or not. The default is to
-    // determine this by probing the system at runtime, but this can be forced
-    // for testing by calling setMemoryDeviceConfigForTesting().
-    protected int mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_INIT;
-
     // Set to true to enable debug logs.
     protected static final boolean DEBUG = false;
 
@@ -261,11 +231,10 @@ public abstract class Linker {
         /**
          * Run runtime checks and return true if they all pass.
          *
-         * @param memoryDeviceConfig The current memory device configuration.
          * @param inBrowserProcess true iff this is the browser process.
          * @return true if all checks pass.
          */
-        public boolean runChecks(int memoryDeviceConfig, boolean inBrowserProcess);
+        public boolean runChecks(boolean inBrowserProcess);
     }
 
     /**
@@ -309,11 +278,9 @@ public abstract class Linker {
      * must be instantiated _after_ all libraries are loaded to ensure that its
      * native methods are properly registered.
      *
-     * @param memoryDeviceConfig LegacyLinker memory config, or 0 if unused
      * @param inBrowserProcess true if in the browser process
      */
-    protected final void runTestRunnerClassForTesting(
-            int memoryDeviceConfig, boolean inBrowserProcess) {
+    protected final void runTestRunnerClassForTesting(boolean inBrowserProcess) {
         if (DEBUG) {
             Log.i(TAG, "runTestRunnerClassForTesting called");
         }
@@ -338,41 +305,12 @@ public abstract class Linker {
                 assert false;
             }
 
-            if (!testRunner.runChecks(memoryDeviceConfig, inBrowserProcess)) {
+            if (!testRunner.runChecks(inBrowserProcess)) {
                 Log.wtf(TAG, "Linker runtime tests failed in this process");
                 assert false;
             }
 
             Log.i(TAG, "All linker tests passed");
-        }
-    }
-
-    /**
-     * Call this method before any other Linker method to force a specific
-     * memory device configuration. Should only be used for testing.
-     *
-     * @param memoryDeviceConfig MEMORY_DEVICE_CONFIG_LOW or MEMORY_DEVICE_CONFIG_NORMAL.
-     */
-    public final void setMemoryDeviceConfigForTesting(int memoryDeviceConfig) {
-        if (DEBUG) {
-            Log.i(TAG, "setMemoryDeviceConfigForTesting(" + memoryDeviceConfig + ") called");
-        }
-        // Sanity check. This method may only be called during tests.
-        assertLinkerTestsAreEnabled();
-        assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW
-                || memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL;
-
-        synchronized (sLock) {
-            assert mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT;
-
-            mMemoryDeviceConfig = memoryDeviceConfig;
-            if (DEBUG) {
-                if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW) {
-                    Log.i(TAG, "Simulating a low-memory device");
-                } else {
-                    Log.i(TAG, "Simulating a regular-memory device");
-                }
-            }
         }
     }
 
@@ -446,15 +384,9 @@ public abstract class Linker {
     }
 
     /**
-     * Call this method to determine if the linker will try to use shared RELROs
-     * for the browser process.
-     */
-    public abstract boolean isUsingBrowserSharedRelros();
-
-    /**
      * Call this method just before loading any native shared libraries in this process.
      *
-     * @param zipFilePath Optional current APK file path. If provided, the linker
+     * @param apkFilePath Optional current APK file path. If provided, the linker
      * will try to load libraries directly from it.
      */
     abstract void prepareLibraryLoad(@Nullable String apkFilePath);

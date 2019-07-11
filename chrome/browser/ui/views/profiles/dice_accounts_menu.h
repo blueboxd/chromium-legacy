@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"

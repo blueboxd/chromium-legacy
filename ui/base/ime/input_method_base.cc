@@ -284,6 +284,12 @@ InputMethod* InputMethodBase::GetInputMethod() {
   return this;
 }
 
+void InputMethodBase::ConfirmCompositionText() {
+  TextInputClient* client = GetTextInputClient();
+  if (client && client->HasCompositionText())
+    client->ConfirmCompositionText();
+}
+
 const std::vector<std::unique_ptr<ui::KeyEvent>>&
 InputMethodBase::GetKeyEventsForTesting() {
   return key_events_for_testing_;

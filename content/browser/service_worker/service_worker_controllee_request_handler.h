@@ -33,10 +33,8 @@ class ServiceWorkerVersion;
 
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
-// TODO(falken): Rename to ServiceWorkerNavigationLoaderInterceptor.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
-    : public NavigationLoaderInterceptor,
-      public ServiceWorkerNavigationLoader::Delegate {
+    : public NavigationLoaderInterceptor {
  public:
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -85,11 +83,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   void OnUpdatedVersionStatusChanged(
       scoped_refptr<ServiceWorkerRegistration> registration,
       scoped_refptr<ServiceWorkerVersion> version);
-
-  // ServiceWorkerNavigationLoader::Delegate implementation:
-  ServiceWorkerVersion* GetServiceWorkerVersion() override;
-  bool RequestStillValid() override;
-  void MainResourceLoadFailed() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job, except for timing information.

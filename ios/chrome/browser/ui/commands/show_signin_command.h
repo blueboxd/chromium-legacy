@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 
 @class ChromeIdentity;
 

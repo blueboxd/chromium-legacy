@@ -6,7 +6,7 @@
 
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,30 +19,30 @@
 #define MAYBE_EmptyProfileIsNotEmitted EmptyProfileIsNotEmitted
 #endif
 
-TEST(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
+class HeapProfilerControllerTest : public testing::Test {
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+};
 
+TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
   HeapProfilerController controller;
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindLambdaForTesting(
           [](base::TimeTicks time, metrics::SampledProfile profile) {
             ADD_FAILURE();
           }));
-  controller.SetTaskRunnerForTest(task_runner);
   controller.Start();
 
-  task_runner->FastForwardBy(base::TimeDelta::FromDays(365));
+  scoped_task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
 }
 
 // Sampling profiler is not capable of unwinding stack on Android under tests.
 #if !defined(OS_ANDROID)
-TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
+TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   constexpr size_t kAllocationSize = 42 * 1024;
   constexpr int kSnapshotsToCollect = 3;
-
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
   auto controller = std::make_unique<HeapProfilerController>();
   int profile_count = 0;
@@ -75,7 +75,6 @@ TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
 
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindLambdaForTesting(check_profile));
-  controller->SetTaskRunnerForTest(task_runner);
   controller->Start();
 
   auto* sampler = base::PoissonAllocationSampler::Get();
@@ -85,7 +84,7 @@ TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   sampler->RecordAlloc(reinterpret_cast<void*>(0x7331), kAllocationSize,
                        base::PoissonAllocationSampler::kMalloc, nullptr);
 
-  task_runner->FastForwardUntilNoTasksRemain();
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_LE(kSnapshotsToCollect, profile_count);
 }
 #endif

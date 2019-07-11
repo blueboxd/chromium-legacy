@@ -94,12 +94,13 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction,
-                                                   bool after_input_or_scroll) {
-  DCHECK(jank_fraction > 0);
-  render_data_.layout_jank_delta += jank_fraction;
+void PageTimingMetricsSender::DidObserveLayoutShift(
+    double score,
+    bool after_input_or_scroll) {
+  DCHECK(score > 0);
+  render_data_.layout_jank_delta += score;
   if (!after_input_or_scroll)
-    render_data_.layout_jank_delta_before_input_or_scroll += jank_fraction;
+    render_data_.layout_jank_delta_before_input_or_scroll += score;
   EnsureSendTimer();
 }
 

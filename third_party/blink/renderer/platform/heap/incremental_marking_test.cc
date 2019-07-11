@@ -5,7 +5,9 @@
 #include <initializer_list>
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -1856,44 +1858,6 @@ TEST(IncrementalMarkingTest,
   driver.FinishGC();
 }
 
-namespace {
-
-class EagerlySweptWithVectorWithInlineStorage
-    : public GarbageCollected<EagerlySweptWithVectorWithInlineStorage> {
-  EAGERLY_FINALIZE();
-
- public:
-  virtual void Trace(Visitor* visitor) { visitor->Trace(nested_); }
-
-  HeapVector<HeapVector<Member<Object>>, 2>& nested() { return nested_; }
-
- private:
-  HeapVector<HeapVector<Member<Object>>, 2> nested_;
-};
-
-}  // namespace
-
-TEST(IncrementalMarkingTest,
-     InPayloadWriteBarrierInEagerlyFinalizedRegistersInvalidSlotForCompaction) {
-  // Regression test: https://crbug.com/918064
-  //
-  // Same as InPayloadWriteBarrierRegistersInvalidSlotForCompaction with the
-  // addition that the object is marked as EAGERLY_FINALIZE(). This requires
-  // that slots filtering happens before any eager sweep phase.
-
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  ThreadState::Current()->EnableCompactionForNextGCForTesting();
-  EagerlySweptWithVectorWithInlineStorage* eagerly =
-      MakeGarbageCollected<EagerlySweptWithVectorWithInlineStorage>();
-  driver.Start();
-  eagerly->nested().emplace_back(1);
-  eagerly->nested().at(0).emplace_back(MakeGarbageCollected<Object>());
-  driver.FinishSteps();
-  CHECK(!HeapObjectHeader::FromPayload(eagerly)->IsMarked());
-  eagerly = nullptr;
-  driver.FinishGC();
-}
-
 TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   // Regression test: https://crbug.com/966456
   //
@@ -1901,6 +1865,11 @@ TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   // marked bytes when the page is actually about to be swept and marking is not
   // in progress.
 
+  // Disable concurrent sweeping to check that sweeping is not in progress after
+  // the FinishGC call.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kBlinkHeapConcurrentSweeping);
   using Container = HeapVector<Member<Object>>;
   Persistent<Container> holder(MakeGarbageCollected<Container>());
   holder->push_back(MakeGarbageCollected<Object>());

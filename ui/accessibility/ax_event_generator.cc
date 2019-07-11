@@ -123,14 +123,6 @@ void AXEventGenerator::OnNodeDataWillChange(AXTree* tree,
   if (new_node_data.child_ids != old_node_data.child_ids &&
       new_node_data.role != ax::mojom::Role::kStaticText) {
     AXNode* node = tree_->GetFromId(new_node_data.id);
-
-    // If this node is ignored, fire the CHILDREN_CHANGED on
-    // the unignored parent if available.
-    if (new_node_data.HasState(ax::mojom::State::kIgnored))
-      node = node->GetUnignoredParent();
-    if (!node)
-      return;
-
     tree_events_[node].emplace(Event::CHILDREN_CHANGED,
                                ax::mojom::EventFrom::kNone);
   }

@@ -30,6 +30,7 @@ UsbConfigDescriptor UsbConfigurationAndroid::Convert(
   for (auto interface : interfaces) {
     config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
   }
+  AggregateInterfacesForConfig(&config);
 
   return config;
 }

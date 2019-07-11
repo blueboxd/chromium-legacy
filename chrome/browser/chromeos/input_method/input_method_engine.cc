@@ -330,6 +330,15 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   return false;
 }
 
+void InputMethodEngine::ConfirmCompositionText() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context) {
+    input_context->ConfirmCompositionText();
+    composition_text_.reset(new ui::CompositionText());
+  }
+}
+
 void InputMethodEngine::EnableInputView() {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()

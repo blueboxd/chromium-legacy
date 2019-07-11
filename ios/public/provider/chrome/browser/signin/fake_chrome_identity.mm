@@ -8,7 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 @implementation FakeChromeIdentity {
   NSString* _userEmail;

@@ -12,7 +12,7 @@ namespace device {
 
 class UsbInterfaceAndroid {
  public:
-  static UsbInterfaceDescriptor Convert(
+  static mojom::UsbInterfaceInfoPtr Convert(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& usb_interface);
 };

@@ -264,6 +264,7 @@ class MODULES_EXPORT RTCPeerConnection final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange,
                                   kIcegatheringstatechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel, kDatachannel)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidateerror, kIcecandidateerror)
 
   // Utility to note result of CreateOffer / CreateAnswer
   void NoteSdpCreated(const RTCSessionDescription&);
@@ -283,6 +284,10 @@ class MODULES_EXPORT RTCPeerConnection final
   // WebRTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
   void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) override;
+  void DidFailICECandidate(const WebString& host_candidate,
+                           const WebString& url,
+                           int error_code,
+                           const WebString& error_text) override;
   void DidChangeSignalingState(
       webrtc::PeerConnectionInterface::SignalingState) override;
   void DidChangeIceGatheringState(

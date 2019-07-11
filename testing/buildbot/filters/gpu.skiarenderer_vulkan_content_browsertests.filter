@@ -1,5 +1,6 @@
 # crbug.com/963266: Android SkiaRenderer Vulkan content_browsertests failures
 -AccessibilityHitTestingBrowserTest.HitTestingWithPinchZoom
+-BrowserSideFlingBrowserTest.InertialGSEGetsBubbledFromOOPIF
 -BrowserSideFlingBrowserTest.InertialGSUBubblingStopsWhenParentCannotScroll
 -DumpAccessibilityTreeTest.AccessibilityDfn/blink
 -DumpAccessibilityTreeTest.AccessibilityOffscreen/blink
@@ -31,6 +32,7 @@
 -NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
 -NavigationControllerBrowserTest.ReloadWithUrlAnchor
 -NavigationControllerBrowserTest.ReloadWithUrlAnchorAndScroll
+-NavigationDownloadBrowserTest.StopLoadingAfterDroppedNavigation/0
 -OOPBrowserTest.Basic
 -P/CompositorImplBrowserTestRefreshRate.VideoPreference/0
 -SitePerProcessBrowserTest.ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown
@@ -40,6 +42,7 @@
 -SitePerProcessBrowserTest.ReloadHiddenTabWithCrashedSubframe
 -SitePerProcessBrowserTest.ScaledIframeRasterSize
 -SitePerProcessBrowserTest.ScrollOopifInPinchZoomedPage
+-SitePerProcessBrowserTest.SubframeReusesExistingProcess
 -SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
 -SitePerProcessBrowserTest.UnloadNestedPendingDeletion
 -SitePerProcessEmulatedTouchBrowserTest.EmulatedGestureScrollBubbles/0
@@ -69,6 +72,7 @@
 -TouchActionBrowserTest.PanXYMainThreadJanky/1
 -TouchActionBrowserTest.PanYMainThreadJanky/1
 -TouchSelectionControllerClientAndroidSiteIsolationTest.BasicSelectionIsolatedIframe
+-TracingControllerTest.ProcessesPresentInTrace
 -WebContentsImplBrowserTest.PopupWindowBrowserNavResumeLoad
 -WebContentsImplBrowserTest.SetPageFrozen
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice

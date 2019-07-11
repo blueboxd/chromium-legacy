@@ -9,10 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 
-namespace base {
-class TaskRunner;
-}  // namespace base
-
 // HeapProfilerController controls collection of sampled heap allocation
 // snapshots for the current process.
 class HeapProfilerController {
@@ -23,20 +19,13 @@ class HeapProfilerController {
   // Starts periodic heap snapshot collection.
   void Start();
 
-  void SetTaskRunnerForTest(scoped_refptr<base::TaskRunner> task_runner) {
-    task_runner_ = std::move(task_runner);
-  }
-
  private:
   using StoppedFlag = base::RefCountedData<base::AtomicFlag>;
 
-  static void ScheduleNextSnapshot(scoped_refptr<base::TaskRunner> task_runner,
-                                   scoped_refptr<StoppedFlag> stopped);
-  static void TakeSnapshot(scoped_refptr<base::TaskRunner> task_runner,
-                           scoped_refptr<StoppedFlag> stopped);
+  static void ScheduleNextSnapshot(scoped_refptr<StoppedFlag> stopped);
+  static void TakeSnapshot(scoped_refptr<StoppedFlag> stopped);
   static void RetrieveAndSendSnapshot();
 
-  scoped_refptr<base::TaskRunner> task_runner_;
   scoped_refptr<StoppedFlag> stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapProfilerController);

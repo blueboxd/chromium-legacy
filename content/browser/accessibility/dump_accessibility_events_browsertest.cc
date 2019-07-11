@@ -283,11 +283,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaHiddenChanged) {
-  RunEventTest(FILE_PATH_LITERAL("aria-hidden-changed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaInvalidChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-invalid-changed.html"));
 }
@@ -732,11 +727,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsTbodyFocus) {
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsVisibilityHiddenChanged) {
-  RunEventTest(FILE_PATH_LITERAL("visibility-hidden-changed.html"));
 }
 
 // Even with the deflaking in WaitForAccessibilityTreeToContainNodeWithName,

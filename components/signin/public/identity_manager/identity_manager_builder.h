@@ -7,12 +7,18 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include "base/callback.h"
+#endif
 
 class AccountTrackerService;
 class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
+class TokenWebData;
 
 namespace image_fetcher {
 class ImageDecoder;
@@ -48,9 +54,18 @@ struct IdentityManagerBuildParams {
   SigninClient* signin_client;
   std::unique_ptr<ProfileOAuth2TokenService> token_service;
 
+#if !defined(OS_ANDROID)
+  bool delete_signin_cookies_on_exit;
+  scoped_refptr<TokenWebData> token_web_data;
+#endif
+
 #if defined(OS_CHROMEOS)
   chromeos::AccountManager* account_manager;
   bool is_regular_profile;
+#endif
+
+#if defined(OS_WIN)
+  base::RepeatingCallback<bool()> reauth_callback;
 #endif
 };
 

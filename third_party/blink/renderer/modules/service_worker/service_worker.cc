@@ -193,6 +193,11 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
 
 ServiceWorker::~ServiceWorker() = default;
 
+void ServiceWorker::Dispose() {
+  host_.reset();
+  binding_.Close();
+}
+
 void ServiceWorker::Trace(blink::Visitor* visitor) {
   AbstractWorker::Trace(visitor);
 }

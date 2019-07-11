@@ -769,16 +769,16 @@ bool GetPasswordForm(
     }
   }
 
-  // Populate |other_possible_usernames| in |password_form|.
-  ValueElementVector other_possible_usernames;
+  // Populate |all_possible_usernames| in |password_form|.
+  ValueElementVector all_possible_usernames;
   for (const FormFieldData* plausible_username : plausible_usernames) {
     if (plausible_username == username_field)
       continue;
     auto pair = MakePossibleUsernamePair(plausible_username);
     if (!pair.first.empty())
-      other_possible_usernames.push_back(std::move(pair));
+      all_possible_usernames.push_back(std::move(pair));
   }
-  password_form->other_possible_usernames = std::move(other_possible_usernames);
+  password_form->all_possible_usernames = std::move(all_possible_usernames);
 
   password_form->origin = std::move(form_origin);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);

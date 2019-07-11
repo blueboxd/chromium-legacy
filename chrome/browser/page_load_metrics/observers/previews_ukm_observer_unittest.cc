@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -976,62 +977,58 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
 }
 
 TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
-    base::HistogramTester tester;
+  std::unique_ptr<base::StatisticsRecorder> recorder(
+      base::StatisticsRecorder::CreateTemporaryForTesting());
+  base::HistogramTester tester;
 
-    // No preview:
-    RunTest(content::PREVIEWS_OFF /* committed_state */,
-            content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-            false /* origin_opt_out */, false /* save_data_enabled */,
-            CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-            base::nullopt /* navigation_restart_penalty */,
-            base::nullopt /* hint_version_string */);
-    NavigateToUntrackedUrl();
-    tester.ExpectUniqueSample(
-        "Previews.PageEndReason.None",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-    // The top level metric is not recorded on a non-preview.
-    tester.ExpectTotalCount("Previews.PageEndReason", 0);
+  // No preview:
+  RunTest(content::PREVIEWS_OFF /* committed_state */,
+          content::PREVIEWS_UNSPECIFIED /* allowed_state */,
+          false /* origin_opt_out */, false /* save_data_enabled */,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */,
+          base::nullopt /* hint_version_string */);
+  NavigateToUntrackedUrl();
+  tester.ExpectUniqueSample(
+      "Previews.PageEndReason.None",
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  // The top level metric is not recorded on a non-preview.
+  tester.ExpectTotalCount("Previews.PageEndReason", 0);
 
-    // Lite Page Redirect:
-    RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
-            content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-            false /* origin_opt_out */, false /* save_data_enabled */,
-            CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-            base::nullopt /* navigation_restart_penalty */,
-            base::nullopt /* hint_version_string */);
-    NavigateToUntrackedUrl();
-    tester.ExpectUniqueSample(
-        "Previews.PageEndReason.LitePageRedirect",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-    tester.ExpectBucketCount(
-        "Previews.PageEndReason",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  // Lite Page Redirect:
+  RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
+          content::PREVIEWS_UNSPECIFIED /* allowed_state */,
+          false /* origin_opt_out */, false /* save_data_enabled */,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */,
+          base::nullopt /* hint_version_string */);
+  NavigateToUntrackedUrl();
+  tester.ExpectUniqueSample(
+      "Previews.PageEndReason.LitePageRedirect",
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  tester.ExpectBucketCount("Previews.PageEndReason",
+                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
+                           1);
 
-    // Defer All Script:
-    RunTest(content::DEFER_ALL_SCRIPT_ON /* committed_state */,
-            content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-            false /* origin_opt_out */, false /* save_data_enabled */,
-            CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-            base::nullopt /* navigation_restart_penalty */,
-            base::nullopt /* hint_version_string */);
-    NavigateToUntrackedUrl();
-    tester.ExpectUniqueSample(
-        "Previews.PageEndReason.DeferAllScript",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-    tester.ExpectBucketCount(
-        "Previews.PageEndReason",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 2);
+  // Defer All Script:
+  RunTest(content::DEFER_ALL_SCRIPT_ON /* committed_state */,
+          content::PREVIEWS_UNSPECIFIED /* allowed_state */,
+          false /* origin_opt_out */, false /* save_data_enabled */,
+          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
+          base::nullopt /* navigation_restart_penalty */,
+          base::nullopt /* hint_version_string */);
+  NavigateToUntrackedUrl();
+  tester.ExpectUniqueSample(
+      "Previews.PageEndReason.DeferAllScript",
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  tester.ExpectBucketCount("Previews.PageEndReason",
+                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
+                           2);
 }
 
-// TODO(crbug.com/981058): Re-enable this test on Linux and Windows.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPageEndReasonUMACoinFlipHoldback \
-  DISABLED_TestPageEndReasonUMACoinFlipHoldback
-#else
-#define MAYBE_TestPageEndReasonUMACoinFlipHoldback \
-  TestPageEndReasonUMACoinFlipHoldback
-#endif
-TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMACoinFlipHoldback) {
+TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMACoinFlipHoldback) {
+  std::unique_ptr<base::StatisticsRecorder> recorder(
+      base::StatisticsRecorder::CreateTemporaryForTesting());
   base::HistogramTester tester;
 
   // No preview:
@@ -1061,9 +1058,7 @@ TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMACoinFlipHoldback) {
   tester.ExpectBucketCount("Previews.PageEndReason.None",
                            page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
                            2);
-  tester.ExpectBucketCount("Previews.PageEndReason",
-                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
-                           0);
+  tester.ExpectTotalCount("Previews.PageEndReason", 0);
 
   // Defer All Script:
   RunTest(content::DEFER_ALL_SCRIPT_ON /* committed_state */,
@@ -1078,9 +1073,7 @@ TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMACoinFlipHoldback) {
   tester.ExpectBucketCount("Previews.PageEndReason.None",
                            page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
                            3);
-  tester.ExpectBucketCount("Previews.PageEndReason",
-                           page_load_metrics::PageEndReason::END_NEW_NAVIGATION,
-                           0);
+  tester.ExpectTotalCount("Previews.PageEndReason", 0);
 }
 
 }  // namespace

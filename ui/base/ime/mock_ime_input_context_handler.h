@@ -48,6 +48,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
   SurroundingTextInfo GetSurroundingTextInfo() override;
   void SendKeyEvent(KeyEvent* event) override;
   InputMethod* GetInputMethod() override;
+  void ConfirmCompositionText() override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
 

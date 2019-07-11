@@ -99,7 +99,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   // Gets the interface containing |endpoint_address|. Returns nullptr if no
   // claimed interface contains that endpoint.
-  virtual const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+  virtual const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) = 0;
 
  protected:

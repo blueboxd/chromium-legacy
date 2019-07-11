@@ -70,9 +70,9 @@ class VotesUploader {
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
-  // Searches for |username| in |other_possible_usernames| of |best_matches|
+  // Searches for |username| in |all_possible_usernames| of |best_matches|
   // and |not_best_matches|. If the username value is found in
-  // |other_possible_usernames| and the password value of the match is equal to
+  // |all_possible_usernames| and the password value of the match is equal to
   // |password|, the match is saved to |username_correction_vote_| and the
   // method returns true.
   bool FindCorrectedUsernameElement(
@@ -152,7 +152,7 @@ class VotesUploader {
           best_matches,
       autofill::FormStructure* form_to_upload);
 
-  // Searches for |username| in |other_possible_usernames| of |match|. If the
+  // Searches for |username| in |all_possible_usernames| of |match|. If the
   // username value is found, the match is saved to |username_correction_vote_|
   // and the function returns true.
   bool FindUsernameInOtherPossibleUsernames(const autofill::PasswordForm& match,
@@ -175,7 +175,7 @@ class VotesUploader {
   bool has_username_edited_vote_ = false;
 
   // If the user typed username that doesn't match any saved credentials, but
-  // matches an entry from |other_possible_usernames| of a saved credential,
+  // matches an entry from |all_possible_usernames| of a saved credential,
   // |username_correction_vote_| stores the credential with matched username.
   // The matched credential is copied to |username_correction_vote_|, but
   // |username_correction_vote_.username_element| is set to the name of the

@@ -469,7 +469,7 @@ void UsbDeviceHandleWin::GenericTransfer(
                      std::move(buffer)));
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleWin::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleWin::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -490,13 +490,16 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
   DCHECK(device_->active_configuration());
 
   for (const auto& interface : device_->active_configuration()->interfaces) {
-    if (interface.alternate_setting != 0)
-      continue;
+    for (const auto& alternate : interface->alternates) {
+      if (alternate->alternate_setting != 0)
+        continue;
 
-    Interface& interface_info = interfaces_[interface.interface_number];
-    interface_info.interface_number = interface.interface_number;
-    interface_info.first_interface = interface.first_interface;
-    RegisterEndpoints(interface);
+      Interface& interface_info = interfaces_[interface->interface_number];
+      interface_info.interface_number = interface->interface_number;
+      interface_info.first_interface = interface->first_interface;
+      RegisterEndpoints(
+          CombinedInterfaceInfo(interface.get(), alternate.get()));
+    }
   }
 }
 
@@ -556,18 +559,19 @@ bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
 }
 
 void UsbDeviceHandleWin::RegisterEndpoints(
-    const UsbInterfaceDescriptor& interface) {
-  for (const auto& endpoint : interface.endpoints) {
+    const CombinedInterfaceInfo& interface) {
+  DCHECK(interface.IsValid());
+  for (const auto& endpoint : interface.alternate->endpoints) {
     Endpoint& endpoint_info =
         endpoints_[ConvertEndpointNumberToAddress(*endpoint)];
-    endpoint_info.interface = &interface;
+    endpoint_info.interface = interface.interface;
     endpoint_info.type = endpoint->type;
   }
 }
 
 void UsbDeviceHandleWin::UnregisterEndpoints(
-    const UsbInterfaceDescriptor& interface) {
-  for (const auto& endpoint : interface.endpoints)
+    const CombinedInterfaceInfo& interface) {
+  for (const auto& endpoint : interface.alternate->endpoints)
     endpoints_.erase(ConvertEndpointNumberToAddress(*endpoint));
 }
 

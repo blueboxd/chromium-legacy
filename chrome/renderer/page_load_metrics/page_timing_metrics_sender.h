@@ -48,7 +48,7 @@ class PageTimingMetricsSender {
   void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature);
   void DidObserveNewCssPropertyUsage(int css_property, bool is_animated);
-  void DidObserveLayoutJank(double jank_fraction, bool after_input_or_scroll);
+  void DidObserveLayoutShift(double score, bool after_input_or_scroll);
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
 

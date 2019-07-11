@@ -101,12 +101,12 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
   }
 }
 
-void MetricsRenderFrameObserver::DidObserveLayoutJank(
-    double jank_fraction,
+void MetricsRenderFrameObserver::DidObserveLayoutShift(
+    double score,
     bool after_input_or_scroll) {
   if (page_timing_metrics_sender_)
-    page_timing_metrics_sender_->DidObserveLayoutJank(jank_fraction,
-                                                      after_input_or_scroll);
+    page_timing_metrics_sender_->DidObserveLayoutShift(score,
+                                                       after_input_or_scroll);
 }
 
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(

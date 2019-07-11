@@ -545,7 +545,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return scrolling_background_display_item_client_;
   }
 
-  void PreFinalize() override;
+  void DisposeImpl() override;
   
  private:
   bool NeedsScrollbarReconstruction() const;

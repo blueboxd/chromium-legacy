@@ -32,6 +32,7 @@ extern const char kManagementReportHardwareStatus[];
 extern const char kManagementReportNetworkInterfaces[];
 extern const char kManagementReportUsers[];
 extern const char kManagementPrinting[];
+extern const char kManagementCrostini[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kCloudReportingExtensionId[];

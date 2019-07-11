@@ -8,7 +8,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/signin/core/browser/account_info.h"
+#include "chrome/browser/android/signin/signin_manager_delegate.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 namespace identity {
 class IdentityManager;
@@ -23,11 +24,13 @@ class Profile;
 
 // This class provide ChromeSigninManagerDelegate.java access to the native
 // dependencies.
-class ChromeSigninManagerDelegate {
+class ChromeSigninManagerDelegate : public SigninManagerDelegate {
  public:
-  explicit ChromeSigninManagerDelegate(JNIEnv* env);
+  ChromeSigninManagerDelegate();
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  ~ChromeSigninManagerDelegate() override;
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
 
   // Registers a CloudPolicyClient for fetching policy for a user and fetches
   // the policy if necessary.
@@ -76,8 +79,6 @@ class ChromeSigninManagerDelegate {
   using RegisterPolicyWithAccountCallback = base::OnceCallback<void(
       const base::Optional<ManagementCredentials>& credentials)>;
 
-  ~ChromeSigninManagerDelegate();
-
   ChromeSigninManagerDelegate(const ChromeSigninManagerDelegate&) = delete;
 
   ChromeSigninManagerDelegate& operator=(const ChromeSigninManagerDelegate&) =
@@ -106,6 +107,9 @@ class ChromeSigninManagerDelegate {
   identity::IdentityManager* const identity_manager_ = nullptr;
   policy::UserCloudPolicyManager* const user_cloud_policy_manager_ = nullptr;
   policy::UserPolicySigninService* const user_policy_signin_service_ = nullptr;
+
+  // Java-side ChromeSigninManagerDelegate object.
+  base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_delegate_;
 
   base::WeakPtrFactory<ChromeSigninManagerDelegate> weak_factory_;
 };

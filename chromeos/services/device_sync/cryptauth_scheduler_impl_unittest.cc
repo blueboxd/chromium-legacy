@@ -497,7 +497,9 @@ TEST_F(DeviceSyncCryptAuthSchedulerImplTest, FailedRequests) {
         CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
         base::nullopt /* client_directive */));
     scheduler()->HandleDeviceSyncResult(
-        CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kError,
+        CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::
+                                      kErrorSyncMetadataApiCallBadRequest,
+                                  false /* device_registry_changed */,
                                   base::nullopt /* client_directive */));
 
     expected_request.set_retry_count(attempt);
@@ -582,7 +584,9 @@ TEST_F(DeviceSyncCryptAuthSchedulerImplTest,
       CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
       cryptauthv2::GetClientDirectiveForTest()));
   scheduler()->HandleDeviceSyncResult(
-      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kError,
+      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::
+                                    kErrorSyncMetadataApiCallBadRequest,
+                                false /* device_registry_changed */,
                                 cryptauthv2::GetClientDirectiveForTest()));
 
   // Pending request scheduled after current attempt finishes, even if it fails.

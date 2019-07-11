@@ -18,12 +18,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
+import org.chromium.chrome.browser.signin.SigninActivity;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
@@ -76,7 +76,7 @@ public class SignInPreference
         mProfileDataCache = new ProfileDataCache(context, imageSize);
 
         setOnPreferenceClickListener(preference
-                -> AccountSigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
+                -> SigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
 
         // State will be updated in registerForUpdates.
         mState = State.SIGNED_IN;

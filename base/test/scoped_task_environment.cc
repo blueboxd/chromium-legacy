@@ -148,15 +148,10 @@ class ScopedTaskEnvironment::MockTimeDomain
     : public sequence_manager::TimeDomain,
       public TickClock {
  public:
-  MockTimeDomain(ScopedTaskEnvironment::NowSource now_source,
-                 sequence_manager::SequenceManager* sequence_manager)
+  explicit MockTimeDomain(sequence_manager::SequenceManager* sequence_manager)
       : sequence_manager_(sequence_manager) {
     DCHECK_EQ(nullptr, current_mock_time_domain_);
     current_mock_time_domain_ = this;
-    if (now_source == ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME) {
-      time_overrides_ = std::make_unique<subtle::ScopedTimeClockOverrides>(
-          &MockTimeDomain::GetTime, &MockTimeDomain::GetTimeTicks, nullptr);
-    }
   }
 
   ~MockTimeDomain() override {
@@ -182,19 +177,12 @@ class ScopedTaskEnvironment::MockTimeDomain
   }
 
   static std::unique_ptr<ScopedTaskEnvironment::MockTimeDomain>
-  CreateAndRegister(ScopedTaskEnvironment::MainThreadType main_thread_type,
-                    ScopedTaskEnvironment::NowSource now_source,
-                    sequence_manager::SequenceManager* sequence_manager) {
-    if (main_thread_type == MainThreadType::MOCK_TIME ||
-        main_thread_type == MainThreadType::UI_MOCK_TIME ||
-        main_thread_type == MainThreadType::IO_MOCK_TIME) {
-      auto mock_time_donain =
-          std::make_unique<ScopedTaskEnvironment::MockTimeDomain>(
-              now_source, sequence_manager);
-      sequence_manager->RegisterTimeDomain(mock_time_donain.get());
-      return mock_time_donain;
-    }
-    return nullptr;
+  CreateAndRegister(sequence_manager::SequenceManager* sequence_manager) {
+    auto mock_time_domain =
+        std::make_unique<ScopedTaskEnvironment::MockTimeDomain>(
+            sequence_manager);
+    sequence_manager->RegisterTimeDomain(mock_time_domain.get());
+    return mock_time_domain;
   }
 
   void SetThreadPool(internal::ThreadPoolImpl* thread_pool,
@@ -361,8 +349,6 @@ class ScopedTaskEnvironment::MockTimeDomain
   internal::ThreadPoolImpl* thread_pool_ = nullptr;
   const TestTaskTracker* thread_pool_task_tracker_ = nullptr;
 
-  std::unique_ptr<subtle::ScopedTimeClockOverrides> time_overrides_;
-
   // Protects |now_ticks_|
   mutable Lock now_ticks_lock_;
 
@@ -376,9 +362,9 @@ ScopedTaskEnvironment::MockTimeDomain*
     ScopedTaskEnvironment::MockTimeDomain::current_mock_time_domain_ = nullptr;
 
 ScopedTaskEnvironment::ScopedTaskEnvironment(
+    TimeSource time_source,
     MainThreadType main_thread_type,
     ThreadPoolExecutionMode thread_pool_execution_mode,
-    NowSource now_source,
     ThreadingMode threading_mode,
     bool subclass_creates_default_taskrunner,
     trait_helpers::NotATraitTag)
@@ -389,9 +375,15 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
       mock_time_domain_(
-          MockTimeDomain::CreateAndRegister(main_thread_type,
-                                            now_source,
-                                            sequence_manager_.get())),
+          time_source != TimeSource::SYSTEM_TIME
+              ? MockTimeDomain::CreateAndRegister(sequence_manager_.get())
+              : nullptr),
+      time_overrides_(time_source == TimeSource::MOCK_TIME_AND_NOW
+                          ? std::make_unique<subtle::ScopedTimeClockOverrides>(
+                                &MockTimeDomain::GetTime,
+                                &MockTimeDomain::GetTimeTicks,
+                                nullptr)
+                          : nullptr),
       mock_clock_(mock_time_domain_ ? std::make_unique<TickClockBasedClock>(
                                           mock_time_domain_.get())
                                     : nullptr),
@@ -407,9 +399,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     TestTimeouts::action_max_timeout(),
                     MakeExpectedNotRunClosure(FROM_HERE,
                                               "RunLoop::Run() timed out."))) {
-  CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
-      << "NowSource must be REAL_TIME unless we're using mock time";
-
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is
   // deferred until DeferredInitFromSubclass().

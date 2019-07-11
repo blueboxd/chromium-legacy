@@ -92,8 +92,8 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_switches.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -876,6 +876,12 @@ const FeatureEntry::FeatureVariation
          base::size(kTranslateForceTriggerOnEnglishGeo), nullptr},
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
          base::size(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
+
+const FeatureEntry::FeatureParam kOverscrollHistoryNavigationBottomSheet[] = {
+    {"overscroll_history_navigation_bottom_sheet", "true"}};
+const FeatureEntry::FeatureVariation kOverscrollHistoryNavigationVariations[] =
+    {{"Navigation sheet", kOverscrollHistoryNavigationBottomSheet,
+      base::size(kOverscrollHistoryNavigationBottomSheet), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -1559,12 +1565,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverscrollHistoryNavigationName,
      flag_descriptions::kOverscrollHistoryNavigationDescription,
      kOsAura | kOsAndroid,
+#if defined(OS_ANDROID)
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kOverscrollHistoryNavigation,
+                                    kOverscrollHistoryNavigationVariations,
+                                    "OverscrollNavigation")},
+#else
      FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
-#if !defined(OS_ANDROID)
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},
-#endif  // !OS_ANDROID
+#endif  // OS_ANDROID
 #endif  // USE_AURA || OS_ANDROID
     {"enable-touch-drag-drop", flag_descriptions::kTouchDragDropName,
      flag_descriptions::kTouchDragDropDescription, kOsWin | kOsCrOS,

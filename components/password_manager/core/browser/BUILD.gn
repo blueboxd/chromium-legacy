@@ -287,9 +287,14 @@ static_library("csv") {
   sources = [
     "import/csv_field_parser.cc",
     "import/csv_field_parser.h",
+    "import/csv_password.cc",
+    "import/csv_password.h",
   ]
   deps = [
+    ":affiliation",
     "//base",
+    "//components/autofill/core/common",
+    "//url",
   ]
 }
 
@@ -297,6 +302,7 @@ source_set("csv_unittests") {
   testonly = true
   sources = [
     "import/csv_field_parser_unittest.cc",
+    "import/csv_password_unittest.cc",
   ]
   deps = [
     ":csv",

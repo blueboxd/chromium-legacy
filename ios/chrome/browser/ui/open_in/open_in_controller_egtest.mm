@@ -48,6 +48,12 @@ id<GREYMatcher> ShareMenuDismissButton() {
 // Tests that open in button appears when opening a PDF, and that tapping on it
 // will open the activity view.
 - (void)testOpenIn {
+  // TODO(crbug.com/983135): The share menu displays in a popover on iPad, which
+  // causes this test to fail.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iPad");
+  }
+
   // TODO(crbug.com/982845): A bug is causing the "Open in" toolbar to disappear
   // after any VC is presented fullscreen over the BVC.  The iOS 13 share menu
   // is presented fullscreen, but only when compiling with the iOS 12 SDK.

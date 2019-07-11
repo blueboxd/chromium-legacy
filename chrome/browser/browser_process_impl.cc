@@ -108,7 +108,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "components/sessions/core/session_id_generator.h"
-#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"

@@ -177,7 +177,7 @@ static_library("test_support") {
   deps = [
     "//components/invalidation/impl:test_support",
     "//components/pref_registry",
-    "//components/signin/core/browser:shared",
+    "//components/signin/public/base",
     "//components/signin/public/identity_manager:test_support",
     "//components/sync",
     "//components/sync:test_support_engine",

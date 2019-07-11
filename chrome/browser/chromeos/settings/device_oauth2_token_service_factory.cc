@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "content/public/browser/browser_thread.h"

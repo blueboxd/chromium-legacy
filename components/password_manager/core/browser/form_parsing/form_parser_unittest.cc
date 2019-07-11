@@ -377,7 +377,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
 
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
-        CheckAllValuesUnique(parsed_form->other_possible_usernames);
+        CheckAllValuesUnique(parsed_form->all_possible_usernames);
         if (test_case.number_of_all_possible_passwords >= 0) {
           EXPECT_EQ(
               static_cast<size_t>(test_case.number_of_all_possible_passwords),
@@ -390,11 +390,11 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         if (test_case.number_of_all_possible_usernames >= 0) {
           EXPECT_EQ(
               static_cast<size_t>(test_case.number_of_all_possible_usernames),
-              parsed_form->other_possible_usernames.size());
+              parsed_form->all_possible_usernames.size());
         }
         if (test_case.all_possible_usernames) {
           EXPECT_EQ(*test_case.all_possible_usernames,
-                    parsed_form->other_possible_usernames);
+                    parsed_form->all_possible_usernames);
         }
         if (mode == FormDataParser::Mode::kSaving) {
           EXPECT_EQ(test_case.fallback_only, parsed_form->only_for_fallback);

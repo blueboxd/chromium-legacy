@@ -5,31 +5,10 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_
 
-#include <stdint.h>
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
-#include "content/public/common/referrer.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom.h"
-#include "url/gurl.h"
 
 // This file is to have common definitions that are to be shared by
 // browser and child process.
-
-namespace storage {
-class BlobHandle;
-}
 
 namespace content {
 
@@ -60,8 +39,6 @@ static const int64_t kInvalidServiceWorkerResourceId = -1;
 // fetch occurred over 24 hours ago.
 static constexpr base::TimeDelta kServiceWorkerScriptMaxCacheAge =
     base::TimeDelta::FromHours(24);
-
-using ServiceWorkerHeaderList = std::vector<std::string>;
 
 }  // namespace content
 

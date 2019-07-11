@@ -25,28 +25,18 @@ using UsbTransferDirection = mojom::UsbTransferDirection;
 using UsbSynchronizationType = mojom::UsbSynchronizationType;
 using UsbUsageType = mojom::UsbUsageType;
 using UsbEndpointInfoPtr = mojom::UsbEndpointInfoPtr;
+using UsbAlternateInterfaceInfoPtr = mojom::UsbAlternateInterfaceInfoPtr;
+using UsbInterfaceInfoPtr = mojom::UsbInterfaceInfoPtr;
 
-struct UsbInterfaceDescriptor {
-  explicit UsbInterfaceDescriptor(const uint8_t* data);
-  UsbInterfaceDescriptor(uint8_t interface_number,
-                         uint8_t alternate_setting,
-                         uint8_t interface_class,
-                         uint8_t interface_subclass,
-                         uint8_t interface_protocol);
-  UsbInterfaceDescriptor() = delete;
-  UsbInterfaceDescriptor(const UsbInterfaceDescriptor& other);
-  UsbInterfaceDescriptor(UsbInterfaceDescriptor&& other);
-  ~UsbInterfaceDescriptor();
+struct CombinedInterfaceInfo {
+  CombinedInterfaceInfo() = default;
+  CombinedInterfaceInfo(const mojom::UsbInterfaceInfo* interface,
+                        const mojom::UsbAlternateInterfaceInfo* alternate);
 
-  uint8_t interface_number;
-  uint8_t alternate_setting;
-  uint8_t interface_class;
-  uint8_t interface_subclass;
-  uint8_t interface_protocol;
-  std::vector<UsbEndpointInfoPtr> endpoints;
-  std::vector<uint8_t> extra_data;
-  // First interface of the function to which this interface belongs.
-  uint8_t first_interface;
+  bool IsValid() const;
+
+  const mojom::UsbInterfaceInfo* interface = nullptr;
+  const mojom::UsbAlternateInterfaceInfo* alternate = nullptr;
 };
 
 struct UsbConfigDescriptor {
@@ -68,7 +58,7 @@ struct UsbConfigDescriptor {
   bool self_powered;
   bool remote_wakeup;
   uint8_t maximum_power;
-  std::vector<UsbInterfaceDescriptor> interfaces;
+  std::vector<UsbInterfaceInfoPtr> interfaces;
   std::vector<uint8_t> extra_data;
 };
 
@@ -120,6 +110,21 @@ UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
                                            uint8_t attributes,
                                            uint16_t maximum_packet_size,
                                            uint8_t polling_interval);
+
+UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(const uint8_t* data);
+
+UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
+                                             uint8_t alternate_setting,
+                                             uint8_t interface_class,
+                                             uint8_t interface_subclass,
+                                             uint8_t interface_protocol);
+
+void AggregateInterfacesForConfig(UsbConfigDescriptor* config);
+
+CombinedInterfaceInfo FindInterfaceInfoFromConfig(
+    const UsbConfigDescriptor* config,
+    uint8_t interface_number,
+    uint8_t alternate_setting);
 
 }  // namespace device
 

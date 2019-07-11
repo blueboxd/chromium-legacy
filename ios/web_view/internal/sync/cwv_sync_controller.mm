@@ -8,8 +8,9 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
@@ -165,7 +166,8 @@ class WebViewSyncControllerObserverBridge
       base::SysNSStringToUTF8(identity.gaiaID),
       base::SysNSStringToUTF8(identity.email));
 
-  _identityManager->LegacyReloadAccountsFromSystem();
+  _identityManager->GetDeviceAccountsSynchronizer()
+      ->ReloadAllAccountsFromSystem();
   CHECK(_identityManager->HasAccountWithRefreshToken(accountId));
 
   _identityManager->GetPrimaryAccountMutator()->SetPrimaryAccount(accountId);
@@ -202,7 +204,8 @@ class WebViewSyncControllerObserverBridge
 
 - (void)reloadCredentials {
   if (_currentIdentity != nil) {
-    _identityManager->LegacyReloadAccountsFromSystem();
+    _identityManager->GetDeviceAccountsSynchronizer()
+        ->ReloadAllAccountsFromSystem();
   }
 }
 

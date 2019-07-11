@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
@@ -27,6 +27,14 @@
 #include "components/policy/policy_constants.h"
 
 namespace policy {
+
+namespace {
+
+bool IsFcmEnabled() {
+  return base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
+}
+
+}  // namespace
 
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
 const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 10000;
@@ -166,14 +174,24 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
 
   if (is_registered_) {
     // Update the kMetricDevicePolicyRefresh/kMetricUserPolicyRefresh histogram.
+    MetricPolicyRefresh metric_policy_refresh =
+        GetPolicyRefreshMetric(policy_changed);
     if (type_ == enterprise_management::DeviceRegisterRequest::DEVICE) {
-      UMA_HISTOGRAM_ENUMERATION(kMetricDevicePolicyRefresh,
-                                GetPolicyRefreshMetric(policy_changed),
-                                METRIC_POLICY_REFRESH_SIZE);
+      base::UmaHistogramEnumeration(kMetricDevicePolicyRefresh,
+                                    metric_policy_refresh,
+                                    METRIC_POLICY_REFRESH_SIZE);
+      base::UmaHistogramEnumeration(
+          IsFcmEnabled() ? kMetricDevicePolicyRefreshFcm
+                         : kMetricDevicePolicyRefreshTicl,
+          metric_policy_refresh, METRIC_POLICY_REFRESH_SIZE);
     } else {
-      UMA_HISTOGRAM_ENUMERATION(kMetricUserPolicyRefresh,
-                                GetPolicyRefreshMetric(policy_changed),
-                                METRIC_POLICY_REFRESH_SIZE);
+      base::UmaHistogramEnumeration(kMetricUserPolicyRefresh,
+                                    metric_policy_refresh,
+                                    METRIC_POLICY_REFRESH_SIZE);
+      base::UmaHistogramEnumeration(
+          IsFcmEnabled() ? kMetricUserPolicyRefreshFcm
+                         : kMetricUserPolicyRefreshTicl,
+          metric_policy_refresh, METRIC_POLICY_REFRESH_SIZE);
     }
 
     const int64_t store_invalidation_version = store->invalidation_version();
@@ -233,16 +251,24 @@ void CloudPolicyInvalidator::HandleInvalidation(
   // Ignore the invalidation if it is expired.
   bool is_expired = IsInvalidationExpired(version);
 
+  PolicyInvalidationType policy_invalidation_type =
+      GetInvalidationMetric(payload.empty(), is_expired);
   if (type_ == enterprise_management::DeviceRegisterRequest::DEVICE) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kMetricDevicePolicyInvalidations,
-        GetInvalidationMetric(payload.empty(), is_expired),
-        POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(kMetricDevicePolicyInvalidations,
+                                  policy_invalidation_type,
+                                  POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(
+        IsFcmEnabled() ? kMetricDevicePolicyInvalidationsFcm
+                       : kMetricDevicePolicyInvalidationsTicl,
+        policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        kMetricUserPolicyInvalidations,
-        GetInvalidationMetric(payload.empty(), is_expired),
-        POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(kMetricUserPolicyInvalidations,
+                                  policy_invalidation_type,
+                                  POLICY_INVALIDATION_TYPE_SIZE);
+    base::UmaHistogramEnumeration(
+        IsFcmEnabled() ? kMetricUserPolicyInvalidationsFcm
+                       : kMetricUserPolicyInvalidationsTicl,
+        policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
   }
   if (is_expired) {
     invalidation.Acknowledge();
@@ -320,8 +346,11 @@ void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
     LOG(ERROR) << "Failed to register " << syncer::ObjectIdToString(object_id)
                << " for policy invalidations";
   }
-  UMA_HISTOGRAM_BOOLEAN("Enterprise.PolicyInvalidationsRegistrationResult",
-                        success);
+  base::UmaHistogramBoolean(kMetricPolicyInvalidationRegistration, success);
+  base::UmaHistogramBoolean(IsFcmEnabled()
+                                ? kMetricPolicyInvalidationRegistrationFcm
+                                : kMetricPolicyInvalidationRegistrationTicl,
+                            success);
 }
 
 void CloudPolicyInvalidator::Unregister() {

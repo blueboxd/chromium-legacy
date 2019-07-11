@@ -10,6 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -24,23 +25,24 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     private final AndroidSyncSettings mAndroidSyncSettings;
     private long mNativeChromeSigninManagerDelegate;
 
-    public ChromeSigninManagerDelegate() {
-        this(AndroidSyncSettings.get());
+    @CalledByNative
+    private static ChromeSigninManagerDelegate create(long nativeChromeSigninManagerDelegate) {
+        assert nativeChromeSigninManagerDelegate != 0;
+        return new ChromeSigninManagerDelegate(
+                nativeChromeSigninManagerDelegate, AndroidSyncSettings.get());
+    }
+
+    @CalledByNative
+    public void destroy() {
+        mNativeChromeSigninManagerDelegate = 0;
     }
 
     @VisibleForTesting
-    ChromeSigninManagerDelegate(AndroidSyncSettings androidSyncSettings) {
+    ChromeSigninManagerDelegate(
+            long nativeChromeSigninManagerDelegate, AndroidSyncSettings androidSyncSettings) {
         assert androidSyncSettings != null;
         mAndroidSyncSettings = androidSyncSettings;
-        mNativeChromeSigninManagerDelegate = ChromeSigninManagerDelegateJni.get().init();
-    }
-
-    @Override
-    public void destroy() {
-        if (mNativeChromeSigninManagerDelegate != 0) {
-            ChromeSigninManagerDelegateJni.get().destroy(this, mNativeChromeSigninManagerDelegate);
-            mNativeChromeSigninManagerDelegate = 0;
-        }
+        mNativeChromeSigninManagerDelegate = nativeChromeSigninManagerDelegate;
     }
 
     @Override
@@ -104,11 +106,6 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     // Native methods.
     @NativeMethods
     interface Natives {
-        long init();
-
-        void destroy(
-                @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
-
         void fetchAndApplyCloudPolicy(@JCaller ChromeSigninManagerDelegate self,
                 long nativeChromeSigninManagerDelegate, String username, Runnable callback);
 

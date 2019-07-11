@@ -57,8 +57,8 @@ void PasswordFormToJSON(const PasswordForm& form,
                     form.confirmation_password_element);
   target->SetInteger("confirmation_password_element_renderer_id",
                      form.confirmation_password_element_renderer_id);
-  target->SetString("other_possible_usernames",
-                    ValueElementVectorToString(form.other_possible_usernames));
+  target->SetString("all_possible_usernames",
+                    ValueElementVectorToString(form.all_possible_usernames));
   target->SetString("all_possible_passwords",
                     ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
@@ -127,7 +127,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          username_element_renderer_id == form.username_element_renderer_id &&
          username_marked_by_site == form.username_marked_by_site &&
          username_value == form.username_value &&
-         other_possible_usernames == form.other_possible_usernames &&
+         all_possible_usernames == form.all_possible_usernames &&
          all_possible_passwords == form.all_possible_passwords &&
          form_has_autofilled_value == form.form_has_autofilled_value &&
          password_element == form.password_element &&

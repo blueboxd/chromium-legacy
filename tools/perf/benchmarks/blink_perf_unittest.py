@@ -152,6 +152,16 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
             'lifecycle-methods.html'),
         options=self._options)
     self.assertFalse(results.had_failures)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 0)
+
+  def testExtraChromeCategories(self):
+    self._options.extra_chrome_categories = 'cc,blink'
+    results = self.RunMeasurement(measurement=self._measurement,
+        ps=self._CreateStorySetForTestFile(
+            'lifecycle-methods.html'),
+        options=self._options)
+    self.assertFalse(results.had_failures)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
 
 # pylint: disable=protected-access

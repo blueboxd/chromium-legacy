@@ -139,8 +139,9 @@ class MockScrollableAreaForAnimatorTest
     ScrollableArea::Trace(visitor);
   }
 
-  virtual void PreFinalize() {
+  void DisposeImpl() override {
       timer_task_runner_.reset();
+      ScrollableArea::DisposeImpl();
   }
 
  private:

@@ -830,18 +830,12 @@ void CanvasResourceSharedImage::Transfer() {
   // Initialize GLFilter first so that the generated sync token includes this
   // update.
   SetGLFilterIfNeeded();
-  GetSyncToken();
 
   // TODO(khushalsagar): This is for consistency with MailboxTextureHolder
   // transfer path. Its unclear why the verification can not be deferred until
   // the resource needs to be transferred cross-process.
-  if (!owning_thread_data().sync_token.verified_flush()) {
-    int8_t* token_data = owning_thread_data().sync_token.GetData();
-    auto* gl = ContextGL();
-    gl->ShallowFlushCHROMIUM();
-    gl->VerifySyncTokensCHROMIUM(&token_data, 1);
-    owning_thread_data().sync_token.SetVerifyFlush();
-  }
+  owning_thread_data().mailbox_sync_mode = kVerifiedSyncToken;
+  GetSyncToken();
 }
 
 scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
@@ -880,6 +874,12 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   SkImageInfo image_info = SkImageInfo::Make(
       Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
       ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+
+  // If its cross thread, then the sync token was already verified. If not, then
+  // it doesn't need to be verified.
+  if (!is_cross_thread())
+    owning_thread_data().mailbox_sync_mode = kUnverifiedSyncToken;
+
   image = AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
       mailbox(), is_cross_thread() ? sync_token() : GetSyncToken(),
       texture_id_for_image, image_info, texture_target_,
@@ -920,20 +920,34 @@ bool CanvasResourceSharedImage::HasGpuMailbox() const {
 }
 
 const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
-  if (mailbox_needs_new_sync_token()) {
-    DCHECK(!is_cross_thread());
+  if (is_cross_thread()) {
+    // Sync token should be generated at Transfer time, which must always be
+    // called before cross-thread usage. And since we don't allow writes on
+    // another thread, the sync token generated at Transfer time shouldn't
+    // have been invalidated.
+    DCHECK(!mailbox_needs_new_sync_token());
+    DCHECK(sync_token().verified_flush());
 
+    return sync_token();
+  }
+
+  if (mailbox_needs_new_sync_token()) {
     auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
-    if (owning_thread_data().mailbox_sync_mode == kVerifiedSyncToken) {
-      gl->GenSyncTokenCHROMIUM(owning_thread_data().sync_token.GetData());
-      DCHECK(owning_thread_data().sync_token.verified_flush());
-    } else {
-      gl->GenUnverifiedSyncTokenCHROMIUM(
-          owning_thread_data().sync_token.GetData());
-    }
+    gl->GenUnverifiedSyncTokenCHROMIUM(
+        owning_thread_data().sync_token.GetData());
     owning_thread_data().mailbox_needs_new_sync_token = false;
   }
+
+  if (owning_thread_data().mailbox_sync_mode == kVerifiedSyncToken &&
+      !owning_thread_data().sync_token.verified_flush()) {
+    int8_t* token_data = owning_thread_data().sync_token.GetData();
+    auto* gl = ContextGL();
+    gl->ShallowFlushCHROMIUM();
+    gl->VerifySyncTokensCHROMIUM(&token_data, 1);
+    owning_thread_data().sync_token.SetVerifyFlush();
+  }
+
   return sync_token();
 }
 

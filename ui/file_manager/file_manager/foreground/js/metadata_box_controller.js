@@ -90,9 +90,25 @@ MetadataBoxController.prototype.init = function(quickView) {
 /**
  * @const {!Array<string>}
  */
-MetadataBoxController.GENERAL_METADATA_NAME = [
+MetadataBoxController.GENERAL_METADATA_NAMES = [
   'size',
   'modificationTime',
+];
+
+/**
+ * @const {!Array<string>}
+ */
+MetadataBoxController.EXTRA_METADATA_NAMES = [
+  'ifd',
+  'imageHeight',
+  'imageWidth',
+  'mediaAlbum',
+  'mediaArtist',
+  'mediaDuration',
+  'mediaGenre',
+  'mediaTitle',
+  'mediaTrack',
+  'mediaYearRecorded',
 ];
 
 /**
@@ -125,7 +141,7 @@ MetadataBoxController.prototype.updateView_ = function(event) {
   // Do not clear isSizeLoading and size fields when the entry is not changed.
   this.metadataBox_.clear(isSameEntry);
 
-  const metadata = MetadataBoxController.GENERAL_METADATA_NAME.concat(
+  const metadata = MetadataBoxController.GENERAL_METADATA_NAMES.concat(
       ['alternateUrl', 'externalFileUrl', 'hosted']);
   this.metadataModel_.get([entry], metadata)
       .then(this.onGeneralMetadataLoaded_.bind(this, entry, isSameEntry));
@@ -170,46 +186,39 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
 
   if (['image', 'video', 'audio'].includes(type)) {
     if (item.externalFileUrl || item.alternateUrl) {
-      this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
-          .then(items => {
-            const item = items[0];
-            this.metadataBox_.imageHeight =
-                /** @type {number} */ (item.imageHeight);
-            this.metadataBox_.imageWidth =
-                /** @type {number} */ (item.imageWidth);
-            this.metadataBox_.metadataRendered('meta');
-          });
+      const data = ['imageHeight', 'imageWidth'];
+      this.metadataModel_.get([entry], data).then(items => {
+        this.metadataBox_.imageWidth = items[0].imageWidth || 0;
+        this.metadataBox_.imageHeight = items[0].imageHeight || 0;
+        this.metadataBox_.metadataRendered('meta');
+      });
     } else {
-      this.metadataModel_
-          .get(
-              [entry],
-              [
-                'ifd',
-                'imageHeight',
-                'imageWidth',
-                'mediaAlbum',
-                'mediaArtist',
-                'mediaDuration',
-                'mediaGenre',
-                'mediaTitle',
-                'mediaTrack',
-                'mediaYearRecorded',
-              ])
-          .then(items => {
-            const item = items[0];
-            this.metadataBox_.ifd = item.ifd || null;
-            this.metadataBox_.imageHeight = item.imageHeight || 0;
-            this.metadataBox_.imageWidth = item.imageWidth || 0;
-            this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
-            this.metadataBox_.mediaArtist = item.mediaArtist || '';
-            this.metadataBox_.mediaDuration = item.mediaDuration || 0;
-            this.metadataBox_.mediaGenre = item.mediaGenre || '';
-            this.metadataBox_.mediaTitle = item.mediaTitle || '';
-            this.metadataBox_.mediaTrack = item.mediaTrack || '';
-            this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
-            this.metadataBox_.metadataRendered('meta');
-          });
+      const data = MetadataBoxController.EXTRA_METADATA_NAMES;
+      this.metadataModel_.get([entry], data).then(items => {
+        const item = items[0];
+        this.metadataBox_.ifd = item.ifd || null;
+        this.metadataBox_.imageHeight = item.imageHeight || 0;
+        this.metadataBox_.imageWidth = item.imageWidth || 0;
+        this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
+        this.metadataBox_.mediaArtist = item.mediaArtist || '';
+        this.metadataBox_.mediaDuration = item.mediaDuration || 0;
+        this.metadataBox_.mediaGenre = item.mediaGenre || '';
+        this.metadataBox_.mediaTitle = item.mediaTitle || '';
+        this.metadataBox_.mediaTrack = item.mediaTrack || '';
+        this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
+        this.metadataBox_.metadataRendered('meta');
+      });
     }
+  } else if (type === 'raw') {
+    const data = ['ifd'];
+    this.metadataModel_.get([entry], data).then(items => {
+      const raw = items[0].ifd ? items[0].ifd : {};
+      this.metadataBox_.type = items[0].ifd ? 'image' : '';
+      this.metadataBox_.ifd = items[0].ifd ? {raw} : null;
+      this.metadataBox_.imageWidth = raw.width || 0;
+      this.metadataBox_.imageHeight = raw.height || 0;
+      this.metadataBox_.metadataRendered('meta');
+    });
   }
 };
 

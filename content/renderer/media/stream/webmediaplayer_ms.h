@@ -15,9 +15,9 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "media/blink/webmediaplayer_delegate.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
@@ -71,7 +71,7 @@ class WebMediaPlayerMSCompositor;
 class CONTENT_EXPORT WebMediaPlayerMS
     : public blink::WebMediaStreamObserver,
       public blink::WebMediaPlayer,
-      public media::WebMediaPlayerDelegate::Observer,
+      public blink::WebMediaPlayerDelegate::Observer,
       public blink::WebSurfaceLayerBridgeObserver {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
@@ -80,7 +80,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   WebMediaPlayerMS(
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
-      media::WebMediaPlayerDelegate* delegate,
+      blink::WebMediaPlayerDelegate* delegate,
       std::unique_ptr<media::MediaLog> media_log,
       std::unique_ptr<blink::WebMediaStreamRendererFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
@@ -169,7 +169,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   bool HasAvailableVideoFrame() const override;
 
-  // WebMediaPlayerDelegate::Observer implementation.
+  // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
   void OnFrameClosed() override;
   void OnFrameShown() override;
@@ -282,14 +282,15 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // WebMediaPlayer notifies the |delegate_| of playback state changes using
   // |delegate_id_|; an id provided after registering with the delegate.  The
   // WebMediaPlayer may also receive directives (play, pause) from the delegate
-  // via the WebMediaPlayerDelegate::Observer interface after registration.
+  // via the blink::WebMediaPlayerDelegate::Observer interface after
+  // registration.
   //
   // NOTE: HTMLMediaElement is a Blink::PausableObject, and will receive a
   // call to contextDestroyed() when Blink::Document::shutdown() is called.
   // Document::shutdown() is called before the frame detaches (and before the
   // frame is destroyed). RenderFrameImpl owns of |delegate_|, and is guaranteed
   // to outlive |this|. It is therefore safe use a raw pointer directly.
-  media::WebMediaPlayerDelegate* delegate_;
+  blink::WebMediaPlayerDelegate* delegate_;
   int delegate_id_;
 
   // Inner class used for transfering frames on compositor thread to
@@ -329,8 +330,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // The last volume received by setVolume() and the last volume multiplier from
   // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
-  // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
-  // for a transient sound.  Playout volume is derived by volume * multiplier.
+  // if the blink::WebMediaPlayerDelegate has requested a volume reduction
+  // (ducking) for a transient sound.  Playout volume is derived by volume *
+  // multiplier.
   double volume_;
   double volume_multiplier_;
 

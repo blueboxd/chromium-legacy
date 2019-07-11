@@ -17,11 +17,6 @@ import org.chromium.base.Callback;
  */
 public interface SigninManagerDelegate {
     /**
-     * Perform destruction of the object, including destructing the associated native object.
-     */
-    void destroy();
-
-    /**
      * If there is no Google Play Services available, ask the user to fix by showing either a
      * notification or a modal dialog
      * @param activity The activity used to open the dialog, or null to use notifications

@@ -305,10 +305,7 @@ class WebURLLoaderImplTest : public testing::Test {
   ~WebURLLoaderImplTest() override {}
 
   void DoStartAsyncRequest() {
-    blink::WebURLRequest request{GURL(kTestURL)};
-    request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-    client()->loader()->LoadAsynchronously(request, client());
-    ASSERT_TRUE(peer());
+    DoStartAsyncRequestWithPriority(blink::WebURLRequest::Priority::kVeryLow);
   }
 
   void DoStartAsyncRequestWithPriority(
@@ -468,6 +465,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   const std::string kMimeType = "application/javascript";
   blink::WebURLRequest request(kRequestURL);
   request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
+  request.SetPriority(blink::WebURLRequest::Priority::kVeryLow);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
   response_override->response_head.mime_type = kMimeType;
@@ -610,6 +608,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetPriority(blink::WebURLRequest::Priority::kHighest);
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;

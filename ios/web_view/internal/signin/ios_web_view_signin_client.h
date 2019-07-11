@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
+#include "components/signin/public/base/signin_client.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

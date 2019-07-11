@@ -18,8 +18,6 @@
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 class ChromeUserManagerImpl;
@@ -29,6 +27,10 @@ class SupervisedUserManagerImpl;
 class UserAddingScreenTest;
 class UserImageManagerImpl;
 class UserSessionManager;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 namespace policy {

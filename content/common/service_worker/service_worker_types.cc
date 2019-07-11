@@ -4,8 +4,6 @@
 
 #include "content/common/service_worker/service_worker_types.h"
 
-#include "net/base/load_flags.h"
-
 namespace content {
 
 const char kServiceWorkerRegisterErrorPrefix[] =

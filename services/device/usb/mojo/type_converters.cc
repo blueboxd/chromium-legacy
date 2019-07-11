@@ -17,60 +17,6 @@
 namespace mojo {
 
 // static
-device::mojom::UsbAlternateInterfaceInfoPtr
-TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
-              device::UsbInterfaceDescriptor>::
-    Convert(const device::UsbInterfaceDescriptor& interface) {
-  auto info = device::mojom::UsbAlternateInterfaceInfo::New();
-  info->alternate_setting = interface.alternate_setting;
-  info->class_code = interface.interface_class;
-  info->subclass_code = interface.interface_subclass;
-  info->protocol_code = interface.interface_protocol;
-  info->extra_data.assign(interface.extra_data.begin(),
-                          interface.extra_data.end());
-
-  // Filter out control endpoints for the public interface.
-  info->endpoints.reserve(interface.endpoints.size());
-  for (const auto& endpoint : interface.endpoints) {
-    if (endpoint->type != device::UsbTransferType::CONTROL)
-      info->endpoints.push_back(endpoint->Clone());
-  }
-
-  return info;
-}
-
-// static
-std::vector<device::mojom::UsbInterfaceInfoPtr>
-TypeConverter<std::vector<device::mojom::UsbInterfaceInfoPtr>,
-              std::vector<device::UsbInterfaceDescriptor>>::
-    Convert(const std::vector<device::UsbInterfaceDescriptor>& interfaces) {
-  std::vector<device::mojom::UsbInterfaceInfoPtr> infos;
-
-  // Aggregate each alternate setting into an InterfaceInfo corresponding to its
-  // interface number.
-  std::map<uint8_t, device::mojom::UsbInterfaceInfo*> interface_map;
-  for (size_t i = 0; i < interfaces.size(); ++i) {
-    auto alternate =
-        device::mojom::UsbAlternateInterfaceInfo::From(interfaces[i]);
-    auto iter = interface_map.find(interfaces[i].interface_number);
-    if (iter == interface_map.end()) {
-      // This is the first time we're seeing an alternate with this interface
-      // number, so add a new InterfaceInfo to the array and map the number.
-      auto info = device::mojom::UsbInterfaceInfo::New();
-      info->interface_number = interfaces[i].interface_number;
-      iter = interface_map
-                 .insert(
-                     std::make_pair(interfaces[i].interface_number, info.get()))
-                 .first;
-      infos.push_back(std::move(info));
-    }
-    iter->second->alternates.push_back(std::move(alternate));
-  }
-
-  return infos;
-}
-
-// static
 device::mojom::UsbConfigurationInfoPtr TypeConverter<
     device::mojom::UsbConfigurationInfoPtr,
     device::UsbConfigDescriptor>::Convert(const device::UsbConfigDescriptor&
@@ -80,10 +26,13 @@ device::mojom::UsbConfigurationInfoPtr TypeConverter<
   info->self_powered = config.self_powered;
   info->remote_wakeup = config.remote_wakeup;
   info->maximum_power = config.maximum_power;
-  info->interfaces =
-      mojo::ConvertTo<std::vector<device::mojom::UsbInterfaceInfoPtr>>(
-          config.interfaces);
   info->extra_data.assign(config.extra_data.begin(), config.extra_data.end());
+
+  info->interfaces.reserve(config.interfaces.size());
+  for (const auto& interface : config.interfaces) {
+    info->interfaces.push_back(interface->Clone());
+  }
+
   return info;
 }
 

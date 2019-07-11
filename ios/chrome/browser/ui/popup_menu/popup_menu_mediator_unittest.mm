@@ -7,6 +7,7 @@
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
@@ -190,35 +191,57 @@ TEST_F(PopupMenuMediatorTest, TestFeatureEngagementDisconnect) {
   mediator_.popupMenu = popup_menu_;
   mediator_.engagementTracker = &tracker;
 
-  EXPECT_CALL(tracker, Dismissed(testing::_));
+  // There may be one or more Tools Menu items that use engagement trackers.
+  EXPECT_CALL(tracker, Dismissed(testing::_)).Times(testing::AtLeast(1));
   [mediator_ disconnect];
 }
 
 // Tests that the mediator is returning the right number of items and sections
 // for the Tools Menu type.
-TEST_F(PopupMenuMediatorTest, TestElementsToolsMenu) {
+TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
   CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
   NSUInteger number_of_action_items = 6;
+  if (base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger)) {
+    number_of_action_items++;
+  }
   if (ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
           ->IsUserFeedbackEnabled()) {
     number_of_action_items++;
   }
-  CheckMediatorSetItems(@[ @(3), @(5), @(number_of_action_items) ]);
+  // Checks that Tools Menu has the right number of items in each section.
+  CheckMediatorSetItems(@[
+    // Stop/Reload, New Tab, New Incognito Tab
+    @(3),
+    // 4 collections + Settings
+    @(5),
+    // Other actions, depending on configuration
+    @(number_of_action_items)
+  ]);
 }
 
 // Tests that the mediator is returning the right number of items and sections
 // for the Tab Grid type, in non-incognito.
-TEST_F(PopupMenuMediatorTest, TestElementsTabGridNonIncognito) {
+TEST_F(PopupMenuMediatorTest, TestTabGridMenuNonIncognito) {
   CreateMediator(PopupMenuTypeTabGrid, NO, NO);
-  CheckMediatorSetItems(@[ @(2), @(1) ]);
+  CheckMediatorSetItems(@[
+    // New Tab, New Incognito Tab
+    @(2),
+    // Close Tab
+    @(1)
+  ]);
 }
 
 // Tests that the mediator is returning the right number of items and sections
 // for the Tab Grid type, in incognito.
-TEST_F(PopupMenuMediatorTest, TestElementsTabGridIncognito) {
+TEST_F(PopupMenuMediatorTest, TestTabGridMenuIncognito) {
   CreateMediator(PopupMenuTypeTabGrid, YES, NO);
-  CheckMediatorSetItems(@[ @(2), @(1) ]);
+  CheckMediatorSetItems(@[
+    // New Tab, New Incognito Tab
+    @(2),
+    // Close Tab
+    @(1)
+  ]);
 }
 
 // Tests that the mediator is asking for an item to be highlighted when asked.

@@ -43,8 +43,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter1) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter2) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -611,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        UntrustedSigninDialogCancel) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -636,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        UntrustedSigninDialogConfirm) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter4) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=3&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -691,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   ASSERT_EQ(0ul, identity_manager()->GetAccountsWithRefreshTokens().size());
 
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=3&reason=3");
   // InlineSigninHelper will delete itself when done using

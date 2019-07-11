@@ -3,6 +3,6 @@ specific_include_rules = {
     "+ui/base/test/ios/ui_image_test_utils.h",
   ],
   "fake_chrome_identity\.mm": [
-    "+components/signin/core/browser/account_info.h"
+    "+components/signin/public/identity_manager/account_info.h"
   ]
 }

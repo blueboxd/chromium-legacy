@@ -303,6 +303,10 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
         }));
     EXPECT_EQ(AddEntry(CreateDescription("id")),
               blink::mojom::ContentIndexError::NONE);
+
+    // Wait for the provider to receive the OnContentAdded event.
+    thread_bundle().RunUntilIdle();
+
     ASSERT_TRUE(out_entry);
     ASSERT_TRUE(out_entry->description);
     EXPECT_EQ(out_entry->service_worker_registration_id,
@@ -316,6 +320,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
     EXPECT_CALL(*provider(),
                 OnContentDeleted(service_worker_registration_id(), "id"));
     EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
+    thread_bundle().RunUntilIdle();
   }
 }
 
@@ -334,6 +339,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
               blink::mojom::ContentIndexError::NONE);
     EXPECT_EQ(AddEntry(CreateDescription("id2")),
               blink::mojom::ContentIndexError::NONE);
+    thread_bundle().RunUntilIdle();
   }
 
   // Simulate initialization.

@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -660,6 +661,28 @@ TEST(VectorTest, UninitializedFill) {
   EXPECT_EQ(42, v[0]);
   EXPECT_EQ(42, v[1]);
   EXPECT_EQ(42, v[2]);
+}
+
+TEST(VectorTest, IteratorSingleInsertion) {
+  Vector<int> v;
+
+  v.InsertAt(v.begin(), 1);
+  EXPECT_EQ(1, v[0]);
+
+  for (int i : {9, 5, 2, 3, 3, 7, 7, 8, 2, 4, 6})
+    v.InsertAt(std::lower_bound(v.begin(), v.end(), i), i);
+
+  EXPECT_TRUE(std::is_sorted(v.begin(), v.end()));
+}
+
+TEST(VectorTest, IteratorMultipleInsertion) {
+  Vector<int> v = {0, 0, 0, 3, 3, 3};
+
+  Vector<int> q = {1, 1, 1, 1};
+  v.InsertAt(std::lower_bound(v.begin(), v.end(), q[0]), &q[0], q.size());
+
+  EXPECT_THAT(v, testing::ElementsAre(0, 0, 0, 1, 1, 1, 1, 3, 3, 3));
+  EXPECT_TRUE(std::is_sorted(v.begin(), v.end()));
 }
 
 static_assert(VectorTraits<int>::kCanCopyWithMemcpy,

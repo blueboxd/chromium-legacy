@@ -1798,6 +1798,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_navigation_handle_core.h",
     "service_worker/service_worker_navigation_loader.cc",
     "service_worker/service_worker_navigation_loader.h",
+    "service_worker/service_worker_navigation_loader_interceptor.cc",
+    "service_worker/service_worker_navigation_loader_interceptor.h",
     "service_worker/service_worker_new_script_loader.cc",
     "service_worker/service_worker_new_script_loader.h",
     "service_worker/service_worker_object_host.cc",

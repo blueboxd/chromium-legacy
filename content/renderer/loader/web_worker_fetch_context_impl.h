@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/synchronization/waitable_event.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"

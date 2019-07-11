@@ -7,18 +7,22 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/libaddressinput/chromium/addressinput_util.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
@@ -30,7 +34,13 @@ GetPaymentInformationAction::GetPaymentInformationAction(
   DCHECK(proto_.has_get_payment_information());
 }
 
-GetPaymentInformationAction::~GetPaymentInformationAction() {}
+GetPaymentInformationAction::~GetPaymentInformationAction() {
+  // Report UMA histograms.
+  if (presented_to_user_) {
+    Metrics::RecordPaymentRequestPrefilledSuccess(initially_prefilled,
+                                                  action_successful_);
+  }
+}
 
 void GetPaymentInformationAction::InternalProcessAction(
     ProcessActionCallback callback) {
@@ -78,6 +88,12 @@ void GetPaymentInformationAction::InternalProcessAction(
     case GetPaymentInformationProto::REVIEW_REQUIRED:
       payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
       break;
+  }
+  // Gather info for UMA histograms.
+  if (!presented_to_user_) {
+    presented_to_user_ = true;
+    initially_prefilled = IsInitialAutofillDataComplete(
+        delegate_->GetPersonalDataManager(), *payment_options);
   }
 
   payment_options->callback =
@@ -164,7 +180,113 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
   }
 
   UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
+  action_successful_ = succeed;
   std::move(callback).Run(std::move(processed_action_proto_));
+}
+
+bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
+    autofill::PersonalDataManager* personal_data_manager,
+    const PaymentRequestOptions& payment_options) const {
+  bool request_contact = payment_options.request_payer_name ||
+                         payment_options.request_payer_email ||
+                         payment_options.request_payer_phone;
+  if (request_contact || payment_options.request_shipping) {
+    auto profiles = personal_data_manager->GetProfiles();
+    if (request_contact) {
+      auto completeContactIter =
+          std::find_if(profiles.begin(), profiles.end(),
+                       [&payment_options](const auto& profile) {
+                         return IsCompleteContact(profile, payment_options);
+                       });
+      if (completeContactIter == profiles.end()) {
+        return false;
+      }
+    }
+
+    if (payment_options.request_shipping) {
+      auto completeAddressIter =
+          std::find_if(profiles.begin(), profiles.end(),
+                       [&payment_options](const auto& profile) {
+                         return IsCompleteAddress(profile, payment_options);
+                       });
+      if (completeAddressIter == profiles.end()) {
+        return false;
+      }
+    }
+  }
+
+  if (payment_options.request_payment_method) {
+    auto credit_cards = personal_data_manager->GetCreditCards();
+    auto completeCardIter = std::find_if(
+        credit_cards.begin(), credit_cards.end(),
+        [&payment_options](const auto& credit_card) {
+          return IsCompleteCreditCard(credit_card, payment_options);
+        });
+    if (completeCardIter == credit_cards.end()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool GetPaymentInformationAction::IsCompleteContact(
+    const autofill::AutofillProfile* profile,
+    const PaymentRequestOptions& payment_options) {
+  if (payment_options.request_payer_name &&
+      profile->GetRawInfo(autofill::NAME_FULL).empty()) {
+    return false;
+  }
+
+  if (payment_options.request_payer_email &&
+      profile->GetRawInfo(autofill::EMAIL_ADDRESS).empty()) {
+    return false;
+  }
+
+  if (payment_options.request_payer_phone &&
+      profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER).empty()) {
+    return false;
+  }
+  return true;
+}
+
+bool GetPaymentInformationAction::IsCompleteAddress(
+    const autofill::AutofillProfile* profile,
+    const PaymentRequestOptions& payment_options) {
+  if (!payment_options.request_shipping) {
+    return true;
+  }
+
+  auto address_data = autofill::i18n::CreateAddressDataFromAutofillProfile(
+      *profile, base::android::GetDefaultLocaleString());
+  return autofill::addressinput::HasAllRequiredFields(*address_data);
+}
+
+bool GetPaymentInformationAction::IsCompleteCreditCard(
+    const autofill::CreditCard* credit_card,
+    const PaymentRequestOptions& payment_options) {
+  if (credit_card->record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
+      !credit_card->HasValidCardNumber()) {
+    // Can't check validity of masked server card numbers because they are
+    // incomplete until decrypted.
+    return false;
+  }
+
+  if (!credit_card->HasValidExpirationDate() ||
+      credit_card->billing_address_id().empty()) {
+    return false;
+  }
+
+  std::string basic_card_network =
+      autofill::data_util::GetPaymentRequestData(credit_card->network())
+          .basic_card_issuer_network;
+  if (!payment_options.supported_basic_card_networks.empty() &&
+      std::find(payment_options.supported_basic_card_networks.begin(),
+                payment_options.supported_basic_card_networks.end(),
+                basic_card_network) ==
+          payment_options.supported_basic_card_networks.end()) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace autofill_assistant

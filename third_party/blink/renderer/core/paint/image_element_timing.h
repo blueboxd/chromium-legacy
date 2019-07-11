@@ -56,8 +56,8 @@ class CORE_EXPORT ImageElementTiming final
   // Called when the LayoutImage will be destroyed.
   void NotifyWillBeDestroyed(const LayoutObject*);
 
-  void NotifyBackgroundImageRemoved(const LayoutObject*,
-                                    const ImageResourceContent* image);
+  void NotifyImageRemoved(const LayoutObject*,
+                          const ImageResourceContent* image);
 
   void Trace(blink::Visitor*) override;
 

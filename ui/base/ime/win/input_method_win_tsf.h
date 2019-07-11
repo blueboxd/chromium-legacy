@@ -41,12 +41,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
+  void ConfirmCompositionText() override;
 
  private:
   class TSFEventObserver;
-
-  // Asks the client to confirm current composition text.
-  void ConfirmCompositionText();
 
   // TSF event router and observer.
   std::unique_ptr<TSFEventObserver> tsf_event_observer_;

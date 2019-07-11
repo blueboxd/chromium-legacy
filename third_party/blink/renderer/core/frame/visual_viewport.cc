@@ -1207,7 +1207,7 @@ std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
   return value;
 }
 
-void VisualViewport::PreFinalize() {
+void VisualViewport::DisposeImpl() {
   root_transform_layer_.reset();
   inner_viewport_container_layer_.reset();
   overscroll_elasticity_layer_.reset();
@@ -1226,6 +1226,7 @@ void VisualViewport::PreFinalize() {
   scroll_node_.reset();
   horizontal_scrollbar_effect_node_.reset();
   vertical_scrollbar_effect_node_.reset();
+  ScrollableArea::DisposeImpl();
 }
 
 }  // namespace blink

@@ -75,7 +75,7 @@ class PepperProxyLookupHelper::UIThreadHelper
   DISALLOW_COPY_AND_ASSIGN(UIThreadHelper);
 };
 
-PepperProxyLookupHelper::PepperProxyLookupHelper() : weak_factory_(this) {}
+PepperProxyLookupHelper::PepperProxyLookupHelper() {}
 
 PepperProxyLookupHelper::~PepperProxyLookupHelper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

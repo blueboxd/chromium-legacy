@@ -116,7 +116,7 @@ class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::WeakPtr<FrameInputHandlerImpl> weak_this_;
-  base::WeakPtrFactory<FrameInputHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<FrameInputHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameInputHandlerImpl);
 };

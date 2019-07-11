@@ -80,7 +80,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   base::OnceClosure stop_callback_;
   MediaStreamUI::SourceCallback source_callback_;
 
-  base::WeakPtrFactory<MediaStreamUIProxy> weak_factory_;
+  base::WeakPtrFactory<MediaStreamUIProxy> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamUIProxy);
 };

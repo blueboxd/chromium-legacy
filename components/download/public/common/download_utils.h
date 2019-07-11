@@ -41,6 +41,7 @@ COMPONENTS_DOWNLOAD_EXPORT DownloadInterruptReason
 HandleRequestCompletionStatus(net::Error error_code,
                               bool ignore_content_length_mismatch,
                               net::CertStatus cert_status,
+                              bool is_partial_request,
                               DownloadInterruptReason abort_reason);
 
 // Parse the HTTP server response code.

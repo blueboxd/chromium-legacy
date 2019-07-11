@@ -124,7 +124,7 @@ class CONTENT_EXPORT LevelDBScopes {
   bool initialize_called_ = false;
 #endif
 
-  base::WeakPtrFactory<LevelDBScopes> weak_factory_;
+  base::WeakPtrFactory<LevelDBScopes> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LevelDBScopes);
 };
 

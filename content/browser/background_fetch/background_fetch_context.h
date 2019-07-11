@@ -209,7 +209,8 @@ class CONTENT_EXPORT BackgroundFetchContext
            blink::mojom::BackgroundFetchService::FetchCallback>
       fetch_callbacks_;
 
-  base::WeakPtrFactory<BackgroundFetchContext> weak_factory_;  // Must be last.
+  base::WeakPtrFactory<BackgroundFetchContext> weak_factory_{
+      this};  // Must be last.
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchContext);
 };

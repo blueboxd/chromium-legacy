@@ -184,7 +184,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // output format.
   std::unique_ptr<SpeechRecognizerImpl::OnDataConverter> audio_converter_;
 
-  base::WeakPtrFactory<SpeechRecognizerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SpeechRecognizerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };
 

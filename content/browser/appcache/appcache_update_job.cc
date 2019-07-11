@@ -239,8 +239,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       manifest_fetcher_(nullptr),
       manifest_has_valid_mime_type_(false),
       stored_state_(UNSTORED),
-      storage_(service->storage()),
-      weak_factory_(this) {
+      storage_(service->storage()) {
   service_->AddObserver(this);
 }
 

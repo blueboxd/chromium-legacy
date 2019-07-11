@@ -353,8 +353,7 @@ ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
-      ipc_task_runner_(options.ipc_task_runner),
-      weak_factory_(this) {
+      ipc_task_runner_(options.ipc_task_runner) {
   Init(options);
 }
 

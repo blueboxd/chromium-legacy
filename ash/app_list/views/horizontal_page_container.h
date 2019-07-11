@@ -77,7 +77,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
   gfx::Vector2d GetOffsetForPageIndex(int index) const;
 
   // Manages the pagination for the horizontal pages.
-  ash::PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_{this};
 
   // Must appear after |pagination_model_|.
   std::unique_ptr<ash::PaginationController> pagination_controller_;

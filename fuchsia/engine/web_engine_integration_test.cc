@@ -6,11 +6,15 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/engine/test_devtools_list_fetcher.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -186,4 +190,61 @@ TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
     create_params.set_user_agent_version(kInvalidUserAgentVersion);
     CreateContextAndExpectError(std::move(create_params), ZX_ERR_INVALID_ARGS);
   }
+}
+
+// Check the remote_debugging_port parameter in CreateContextParams properly
+// opens the DevTools service in the created Context.
+// Check Context.GetRemoteDebuggingPort() API is not blocking.
+TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
+  fuchsia::web::CreateContextParams create_params;
+  auto directory = base::fuchsia::OpenDirectory(
+      base::FilePath(base::fuchsia::kServiceDirectoryPath));
+  ASSERT_TRUE(directory.is_valid());
+  create_params.set_service_directory(std::move(directory));
+  create_params.set_remote_debugging_port(0);
+
+  // Create Context, Frame and NavigationController.
+  fuchsia::web::ContextPtr web_context;
+  web_context_provider_->Create(std::move(create_params),
+                                web_context.NewRequest());
+  web_context.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+
+  // Get the remote debugging port early, to ensure this is not blocking.
+  base::RunLoop run_loop;
+  cr_fuchsia::ResultReceiver<
+      fuchsia::web::Context_GetRemoteDebuggingPort_Result>
+      port_receiver(run_loop.QuitClosure());
+  web_context->GetRemoteDebuggingPort(
+      cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
+  run_loop.Run();
+
+  ASSERT_TRUE(port_receiver->is_response());
+  uint16_t remote_debugging_port = port_receiver->response().port;
+  ASSERT_TRUE(remote_debugging_port != 0);
+
+  fuchsia::web::FramePtr web_frame;
+  web_context->CreateFrame(web_frame.NewRequest());
+  web_frame.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+
+  fuchsia::web::NavigationControllerPtr nav_controller;
+  web_frame->GetNavigationController(nav_controller.NewRequest());
+  nav_controller.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+
+  cr_fuchsia::TestNavigationListener navigation_listener;
+  fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
+      &navigation_listener);
+  web_frame->SetNavigationEventListener(listener_binding.NewBinding());
+
+  GURL url = embedded_test_server_.GetURL("/defaultresponse");
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      nav_controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
+  navigation_listener.RunUntilUrlEquals(url);
+
+  base::Value devtools_list = GetDevToolsListFromPort(remote_debugging_port);
+  ASSERT_TRUE(devtools_list.is_list());
+  EXPECT_EQ(devtools_list.GetList().size(), 1u);
+
+  base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
+  ASSERT_TRUE(devtools_url->is_string());
+  EXPECT_EQ(devtools_url->GetString(), url);
 }

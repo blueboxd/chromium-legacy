@@ -282,7 +282,8 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
 
     // Called on the IPC::Channel thread.
     // Returns the task runner associated with |routing_id|.
-    base::SingleThreadTaskRunner* GetTaskRunner(int32_t routing_id);
+    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+        int32_t routing_id);
 
    protected:
     friend class base::RefCountedThreadSafe<Context>;

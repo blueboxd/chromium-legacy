@@ -252,7 +252,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
-  base::WeakPtrFactory<ChildThreadImpl> weak_factory_;
+  base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
 };

@@ -232,7 +232,8 @@ void DownloadResponseHandler::OnComplete(
   completed_ = true;
   DownloadInterruptReason reason = HandleRequestCompletionStatus(
       static_cast<net::Error>(status.error_code),
-      ignore_content_length_mismatch_, cert_status_, abort_reason_);
+      ignore_content_length_mismatch_, cert_status_, is_partial_request_,
+      abort_reason_);
 
   if (client_ptr_) {
     client_ptr_->OnStreamCompleted(

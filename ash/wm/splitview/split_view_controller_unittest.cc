@@ -2343,7 +2343,7 @@ class TestOverviewItemsOnOverviewModeEndObserver : public OverviewObserver {
     Shell::Get()->overview_controller()->RemoveObserver(this);
   }
   void OnOverviewModeEnding(OverviewSession* overview_session) override {
-    items_on_last_overview_end_ = overview_session->num_items_for_testing();
+    items_on_last_overview_end_ = overview_session->num_items();
   }
   int items_on_last_overview_end() const { return items_on_last_overview_end_; }
 
@@ -2359,16 +2359,12 @@ TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   ToggleOverview();
-  ASSERT_EQ(2u, Shell::Get()
-                    ->overview_controller()
-                    ->overview_session()
-                    ->num_items_for_testing());
+  ASSERT_EQ(
+      2u, Shell::Get()->overview_controller()->overview_session()->num_items());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(1u, Shell::Get()
-                    ->overview_controller()
-                    ->overview_session()
-                    ->num_items_for_testing());
+  EXPECT_EQ(
+      1u, Shell::Get()->overview_controller()->overview_session()->num_items());
 
   // Create |observer| after splitview is entered so that it gets notified after
   // splitview does, and so will notice the changes splitview made to overview

@@ -1136,5 +1136,10 @@
     "prefix": "at-property",
     "base": "external/wpt/css/css-properties-values-api",
     "args": ["--enable-blink-features=CSSVariables2AtProperty"]
+  },
+  {
+    "prefix": "cache-storage-sequence",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=CacheStorageSequence"]
   }
 ]

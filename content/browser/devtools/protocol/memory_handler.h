@@ -38,7 +38,7 @@ class MemoryHandler : public DevToolsDomainHandler,
   int process_host_id_;
   blink::mojom::LeakDetectorPtr leak_detector_;
   std::unique_ptr<PrepareForLeakDetectionCallback> leak_detection_callback_;
-  base::WeakPtrFactory<MemoryHandler> weak_factory_;
+  base::WeakPtrFactory<MemoryHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MemoryHandler);
 };

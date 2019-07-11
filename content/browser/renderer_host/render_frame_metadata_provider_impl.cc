@@ -14,8 +14,7 @@ RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl(
     FrameTokenMessageQueue* frame_token_message_queue)
     : task_runner_(task_runner),
       frame_token_message_queue_(frame_token_message_queue),
-      render_frame_metadata_observer_client_binding_(this),
-      weak_factory_(this) {}
+      render_frame_metadata_observer_client_binding_(this) {}
 
 RenderFrameMetadataProviderImpl::~RenderFrameMetadataProviderImpl() = default;
 

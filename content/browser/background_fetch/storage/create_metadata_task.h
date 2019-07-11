@@ -80,7 +80,8 @@ class CreateMetadataTask : public DatabaseTask {
 
   std::string serialized_icon_;
 
-  base::WeakPtrFactory<CreateMetadataTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<CreateMetadataTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(CreateMetadataTask);
 };

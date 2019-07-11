@@ -71,7 +71,7 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
   // Bound to the main render thread.
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<LocalVideoCapturerSource> weak_factory_;
+  base::WeakPtrFactory<LocalVideoCapturerSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoCapturerSource);
 };

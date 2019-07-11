@@ -78,8 +78,7 @@ UrlDownloader::UrlDownloader(
             request_origin,
             download_source),
       follow_cross_origin_redirects_(follow_cross_origin_redirects),
-      upload_callback_(upload_callback),
-      weak_ptr_factory_(this) {}
+      upload_callback_(upload_callback) {}
 
 UrlDownloader::~UrlDownloader() = default;
 

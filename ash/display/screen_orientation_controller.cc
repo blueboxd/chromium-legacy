@@ -6,8 +6,6 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
-#include "ash/home_screen/home_screen_controller.h"
-#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
@@ -610,26 +608,12 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   MruWindowTracker::WindowList mru_windows(
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 
-  bool has_visible_window = false;
   for (auto* window : mru_windows) {
     if (!window->TargetVisibility())
       continue;
-    has_visible_window = true;
+
     if (ApplyLockForWindowIfPossible(window))
       return;
-  }
-
-  // No visible MRU window means that the home screen might be showing. Check
-  // if it has an orientation lock.
-  if (!has_visible_window) {
-    DCHECK(shell->home_screen_controller()->IsHomeScreenAvailable());
-    const aura::Window* home_screen_window =
-        shell->home_screen_controller()->delegate()->GetHomeScreenWindow();
-    if (home_screen_window &&
-        shell->activation_client()->GetActiveWindow() == home_screen_window &&
-        ApplyLockForWindowIfPossible(home_screen_window)) {
-      return;
-    }
   }
 
   LockRotationToOrientation(user_locked_orientation_);

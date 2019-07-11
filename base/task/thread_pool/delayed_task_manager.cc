@@ -117,6 +117,13 @@ void DelayedTaskManager::ProcessRipeTasks() {
   }
 }
 
+Optional<TimeTicks> DelayedTaskManager::NextScheduledRunTime() const {
+  CheckedAutoLock auto_lock(queue_lock_);
+  if (delayed_task_queue_.empty())
+    return nullopt;
+  return delayed_task_queue_.Min().task.delayed_run_time;
+}
+
 TimeTicks DelayedTaskManager::GetTimeToScheduleProcessRipeTasksLockRequired() {
   queue_lock_.AssertAcquired();
   if (delayed_task_queue_.empty())

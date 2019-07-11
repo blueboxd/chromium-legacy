@@ -204,7 +204,7 @@ class TestRunner : public WebTestRunner {
     bool frozen_;
     TestRunner* controller_;
 
-    base::WeakPtrFactory<WorkQueue> weak_factory_;
+    base::WeakPtrFactory<WorkQueue> weak_factory_{this};
   };
 
   ///////////////////////////////////////////////////////////////////////////
@@ -591,7 +591,7 @@ class TestRunner : public WebTestRunner {
   // Forces v8 compilation cache to be disabled (used for inspector tests).
   bool disable_v8_cache_ = false;
 
-  base::WeakPtrFactory<TestRunner> weak_factory_;
+  base::WeakPtrFactory<TestRunner> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };

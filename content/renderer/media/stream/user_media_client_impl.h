@@ -131,7 +131,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.
-  base::WeakPtrFactory<UserMediaClientImpl> weak_factory_;
+  base::WeakPtrFactory<UserMediaClientImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserMediaClientImpl);
 };

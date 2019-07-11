@@ -67,8 +67,7 @@ VideoCaptureHost::VideoCaptureHost(
     std::unique_ptr<RenderProcessHostDelegate> delegate,
     MediaStreamManager* media_stream_manager)
     : render_process_host_delegate_(std::move(delegate)),
-      media_stream_manager_(media_stream_manager),
-      weak_factory_(this) {
+      media_stream_manager_(media_stream_manager) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }

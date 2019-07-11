@@ -199,15 +199,15 @@ class ThumbnailLoader {
   }
 
   /**
-   * Loads thumbnail as data url. If data url of thumbnail can be fetched from
+   * Loads thumbnail as dataUrl. If the thumbnail dataUrl can be fetched from
    * metadata, this fetches it from it. Otherwise, this tries to load it from
    * thumbnail loader.
    * Compared with ThumbnailLoader.load, this method does not provide a
    * functionality to fit image to a box.
    *
-   * @param {ThumbnailLoader.FillMode} fillMode Only FIT and OVER_FILL is
-   *     supported. This takes effect only when external thumbnail source is
-   *     used.
+   * @param {ThumbnailLoader.FillMode} fillMode Only FIT and OVER_FILL are
+   *     supported. This takes effect only when an external thumbnail source
+   *     is used.
    * @return {!Promise<{data:string, width:number, height:number}>} A promise
    *     which is resolved when data url is fetched.
    *
@@ -219,12 +219,26 @@ class ThumbnailLoader {
         fillMode === ThumbnailLoader.FillMode.OVER_FILL);
 
     return new Promise((resolve, reject) => {
-      // Load by using ImageLoaderClient.
+      let requestUrl = this.thumbnailUrl_;
+
+      if (fillMode === ThumbnailLoader.FillMode.OVER_FILL) {
+        // Use the croppedThumbnailUrl_ if available.
+        requestUrl = this.croppedThumbnailUrl_ || this.thumbnailUrl_;
+      }
+
+      if (!requestUrl) {
+        const error = LoadImageResponseStatus.ERROR;
+        reject(new LoadImageResponse(error, 0));
+        return;
+      }
+
       const modificationTime = this.metadata_ && this.metadata_.filesystem &&
           this.metadata_.filesystem.modificationTime &&
           this.metadata_.filesystem.modificationTime.getTime();
-      let request = LoadImageRequest.createRequest({
-        url: this.thumbnailUrl_,
+
+      // Load using ImageLoaderClient.
+      const request = LoadImageRequest.createRequest({
+        url: requestUrl,
         maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
@@ -234,10 +248,6 @@ class ThumbnailLoader {
       });
 
       if (fillMode === ThumbnailLoader.FillMode.OVER_FILL) {
-        // Use cropped thumbnail url if available.
-        request.url = this.croppedThumbnailUrl_ ? this.croppedThumbnailUrl_ :
-                                                  this.thumbnailUrl_;
-
         // Set crop option to image loader. Since image of croppedThumbnailUrl_
         // is 360x360 with current implementation, it's no problem to crop it.
         request.width = 360;

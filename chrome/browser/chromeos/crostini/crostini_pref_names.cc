@@ -37,7 +37,12 @@ const char kUserCrostiniExportImportUIAllowedByPolicy[] =
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
 // Preferences used to store last launch information for reporting:
-const char kCrostiniLastLaunchVersion[] = "crostini.last_launch.version";
+// Last launch Termina component version.
+const char kCrostiniLastLaunchTerminaComponentVersion[] =
+    "crostini.last_launch.version";
+// Last launch Termina kernel version.
+const char kCrostiniLastLaunchTerminaKernelVersion[] =
+    "crostini.last_launch.vm_kernel_version";
 // The start of a three day window of the last app launch
 // stored as Java time (ms since epoch).
 const char kCrostiniLastLaunchTimeWindowStart[] =
@@ -67,7 +72,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterBooleanPref(crostini::prefs::kReportCrostiniUsageEnabled,
                                 false);
-  registry->RegisterStringPref(kCrostiniLastLaunchVersion, std::string());
+  registry->RegisterStringPref(kCrostiniLastLaunchTerminaComponentVersion,
+                               std::string());
+  registry->RegisterStringPref(kCrostiniLastLaunchTerminaKernelVersion,
+                               std::string());
   registry->RegisterInt64Pref(kCrostiniLastLaunchTimeWindowStart, 0u);
   registry->RegisterInt64Pref(kCrostiniLastDiskSize, 0u);
   registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);

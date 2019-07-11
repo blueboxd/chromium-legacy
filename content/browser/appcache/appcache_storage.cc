@@ -24,8 +24,7 @@ AppCacheStorage::AppCacheStorage(AppCacheServiceImpl* service)
     : last_cache_id_(kUnitializedId),
       last_group_id_(kUnitializedId),
       last_response_id_(kUnitializedId),
-      service_(service),
-      weak_factory_(this) {}
+      service_(service) {}
 
 AppCacheStorage::~AppCacheStorage() {
   DCHECK(delegate_references_.empty());

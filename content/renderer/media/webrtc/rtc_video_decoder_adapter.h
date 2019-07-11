@@ -132,7 +132,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   SEQUENCE_CHECKER(decoding_sequence_checker_);
 
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
-  base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_;
+  base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapter);
 };

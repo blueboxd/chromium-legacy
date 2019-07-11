@@ -240,8 +240,7 @@ TestDownloadHttpResponse::TestDownloadHttpResponse(
       parameters_(std::move(parameters)),
       request_(request),
       transferred_bytes_(0u),
-      on_response_sent_callback_(on_response_sent_callback),
-      weak_ptr_factory_(this) {
+      on_response_sent_callback_(on_response_sent_callback) {
   DCHECK_GT(parameters.size, 0) << "File size need to be greater than 0.";
   ParseRequestHeader();
 }

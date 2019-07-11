@@ -358,13 +358,10 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
       before_unload_observer.Wait();
     }
     {
-      content::WindowedNotificationObserver close_observer(
-          chrome::NOTIFICATION_BROWSER_CLOSED,
-          content::Source<Browser>(browser()));
       close_method.Run();
       AcceptModalDialog();
       if (wait_for_browser_close)
-        close_observer.Wait();
+        ui_test_utils::WaitForBrowserToClose(browser());
     }
     runner->Run();
   }
@@ -808,13 +805,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   }
   // Try to exit application.
   {
-    content::WindowedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(browser()));
     chrome::CloseAllBrowsers();
     AcceptModalDialog();
     AcceptModalDialog();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose(browser());
   }
   for (auto& close_observer : close_observers)
     close_observer->Wait();
@@ -2341,11 +2335,9 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
       "window.addEventListener('beforeunload',"
       "function(event) { event.returnValue = 'Foo'; });"));
   content::PrepContentsForBeforeUnloadTest(tab);
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
   BrowserHandler handler(nullptr, std::string());
   handler.Close();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser());
 }
 
 // Flaky on Mus. See https://crbug.com/819285.

@@ -921,7 +921,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Set in ReadyToCommitNavigation.
   bool is_same_process_ = true;
 
-  base::WeakPtrFactory<NavigationRequest> weak_factory_;
+  base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

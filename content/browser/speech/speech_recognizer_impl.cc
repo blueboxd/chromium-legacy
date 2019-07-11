@@ -187,8 +187,7 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
       is_dispatching_event_(false),
       provisional_results_(provisional_results),
       end_of_utterance_(false),
-      state_(STATE_IDLE),
-      weak_ptr_factory_(this) {
+      state_(STATE_IDLE) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(recognition_engine_ != nullptr);
   DCHECK(audio_system_ != nullptr);

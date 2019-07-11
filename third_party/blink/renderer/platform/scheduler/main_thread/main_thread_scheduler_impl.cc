@@ -472,7 +472,8 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       virtual_time_stopped(false),
       nested_runloop(false),
       compositing_experiment(main_thread_scheduler_impl),
-      should_prioritize_compositing(false) {}
+      should_prioritize_compositing(false),
+      compositor_priority_experiments(main_thread_scheduler_impl) {}
 
 MainThreadSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -560,11 +561,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       base::FeatureList::IsEnabled(kUseResourceFetchPriority);
   use_resource_priorities_only_during_loading =
       base::FeatureList::IsEnabled(kUseResourceFetchPriorityOnlyWhenLoading);
-
-  compositor_very_high_priority_always =
-      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingAlways);
-  compositor_very_high_priority_when_fast =
-      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingWhenFast);
 
   if (use_resource_fetch_priority ||
       use_resource_priorities_only_during_loading) {
@@ -1493,19 +1489,15 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
-  if (scheduling_settings_.compositor_very_high_priority_always &&
-      new_policy.compositor_priority() !=
-          TaskQueue::QueuePriority::kHighestPriority) {
+  // Do not reset compositor priority if set to highest or higher.
+  if (new_policy.compositor_priority() >
+          TaskQueue::QueuePriority::kHighestPriority &&
+      main_thread_only().compositor_priority_experiments.IsExperimentActive()) {
+    main_thread_only().compositor_priority_experiments.SetCompositingIsFast(
+        main_thread_compositing_is_fast);
     new_policy.compositor_priority() =
-        TaskQueue::QueuePriority::kVeryHighPriority;
-  }
-
-  if (scheduling_settings_.compositor_very_high_priority_when_fast &&
-      main_thread_compositing_is_fast &&
-      new_policy.compositor_priority() !=
-          TaskQueue::QueuePriority::kHighestPriority) {
-    new_policy.compositor_priority() =
-        TaskQueue::QueuePriority::kVeryHighPriority;
+        main_thread_only()
+            .compositor_priority_experiments.GetCompositorPriority();
   }
 
   // TODO(skyostil): Add an idle state for foreground tabs too.
@@ -2443,6 +2435,9 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   main_thread_only().task_priority_for_tracing = base::nullopt;
 
   RecordTaskUkm(queue.get(), task, *task_timing);
+
+  main_thread_only().compositor_priority_experiments.OnTaskCompleted(
+      queue.get(), main_thread_only().current_policy.compositor_priority());
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(
@@ -2704,6 +2699,11 @@ void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
   }
   main_thread_only().should_prioritize_compositing =
       should_prioritize_compositing;
+  UpdatePolicy();
+}
+
+void MainThreadSchedulerImpl::
+    OnCompositorPriorityExperimentUpdateCompositorPriority() {
   UpdatePolicy();
 }
 

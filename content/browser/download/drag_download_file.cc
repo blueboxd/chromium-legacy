@@ -54,8 +54,7 @@ class DragDownloadFile::DragDownloadFileUI
         referrer_(referrer),
         referrer_encoding_(referrer_encoding),
         web_contents_(web_contents),
-        download_item_(nullptr),
-        weak_ptr_factory_(this) {
+        download_item_(nullptr) {
     DCHECK(on_completed_task_runner_);
     DCHECK(!on_completed_.is_null());
     DCHECK(web_contents_);
@@ -185,7 +184,7 @@ class DragDownloadFile::DragDownloadFileUI
   download::DownloadItem* download_item_;
 
   // Only used in the callback from DownloadManager::DownloadUrl().
-  base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_;
+  base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFileUI);
 };
@@ -200,8 +199,7 @@ DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
       file_(std::move(file)),
       drag_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(INITIALIZED),
-      drag_ui_(nullptr),
-      weak_ptr_factory_(this) {
+      drag_ui_(nullptr) {
   drag_ui_ = new DragDownloadFileUI(
       url, referrer, referrer_encoding, web_contents, drag_task_runner_,
       base::Bind(&DragDownloadFile::DownloadCompleted,

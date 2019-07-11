@@ -54,8 +54,7 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    file_system_context,
                                                    get_contexts_callback)),
       prefetch_url_loader_service_(prefetch_url_loader_service),
-      io_thread_task_runner_(io_thread_runner),
-      weak_ptr_factory_(this) {}
+      io_thread_task_runner_(io_thread_runner) {}
 
 ResourceMessageFilter::~ResourceMessageFilter() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());

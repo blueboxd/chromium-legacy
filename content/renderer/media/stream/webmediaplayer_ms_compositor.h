@@ -224,7 +224,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // |dropped_frame_count_|, and |render_started_|.
   base::Lock current_frame_lock_;
 
-  base::WeakPtrFactory<WebMediaPlayerMSCompositor> weak_ptr_factory_;
+  base::WeakPtrFactory<WebMediaPlayerMSCompositor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
 };

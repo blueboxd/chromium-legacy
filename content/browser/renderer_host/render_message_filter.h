@@ -118,7 +118,7 @@ class CONTENT_EXPORT RenderMessageFilter
 
   MediaInternals* media_internals_;
 
-  base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

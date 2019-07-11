@@ -221,6 +221,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   views::Widget* item_widget() { return item_widget_.get(); }
 
+  CaptionContainerView* caption_container_view() {
+    return caption_container_view_;
+  }
+
   OverviewGrid* overview_grid() { return overview_grid_; }
 
   void set_should_animate_when_entering(bool should_animate) {

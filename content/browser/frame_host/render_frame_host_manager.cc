@@ -155,9 +155,7 @@ bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
                                                Delegate* delegate)
-    : frame_tree_node_(frame_tree_node),
-      delegate_(delegate),
-      weak_factory_(this) {
+    : frame_tree_node_(frame_tree_node), delegate_(delegate) {
   DCHECK(frame_tree_node_);
 }
 

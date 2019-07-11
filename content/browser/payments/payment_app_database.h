@@ -225,7 +225,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       blink::ServiceWorkerStatusCode status);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppDatabase);
 };

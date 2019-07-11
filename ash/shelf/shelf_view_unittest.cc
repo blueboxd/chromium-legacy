@@ -1654,12 +1654,13 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
 
-  ShelfViewTestAPI test_for_overflow_view(
-      test_api_->overflow_bubble()->bubble_view()->shelf_view());
+  ShelfViewTestAPI test_for_overflow_view(bubble_view->shelf_view());
   const ShelfView* overflow_shelf_view = shelf_view_->overflow_shelf();
   int first_index = overflow_shelf_view->first_visible_index();
   int last_index = overflow_shelf_view->last_visible_index();
 
+  views::View* left_arrow_button = bubble_view->left_arrow();
+  views::View* right_arrow_button = bubble_view->right_arrow();
   ShelfAppButton* first_button = test_for_overflow_view.GetButton(first_index);
   ShelfAppButton* last_button = test_for_overflow_view.GetButton(last_index);
   gfx::Point first_point = first_button->GetBoundsInScreen().CenterPoint();
@@ -1668,6 +1669,20 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
       test_for_overflow_view.GetBoundsForDragInsertInScreen();
   EXPECT_TRUE(drag_reinsert_bounds.Contains(first_point));
   EXPECT_FALSE(drag_reinsert_bounds.Contains(last_point));
+
+  // Verfies that at the beginning, the left button is invisible while the right
+  // button shows.
+  EXPECT_EQ(OverflowBubbleView::SHOW_RIGHT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  EXPECT_FALSE(left_arrow_button->GetVisible());
+  EXPECT_TRUE(right_arrow_button->GetVisible());
+
+  // Scroll the overflow shelf view a little bit. Then verifies that both arrow
+  // buttons show.
+  bubble_view_api.ScrollByXOffset(item_width);
+  EXPECT_EQ(OverflowBubbleView::SHOW_BUTTONS, bubble_view->layout_strategy());
+  EXPECT_TRUE(left_arrow_button->GetVisible());
+  EXPECT_TRUE(right_arrow_button->GetVisible());
 
   // Scroll sufficiently to completely show last item.
   bubble_view_api.ScrollByXOffset(bubble_view_api.GetContentsSize().width() -
@@ -1678,6 +1693,13 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   last_point = last_button->GetBoundsInScreen().CenterPoint();
   EXPECT_FALSE(drag_reinsert_bounds.Contains(first_point));
   EXPECT_TRUE(drag_reinsert_bounds.Contains(last_point));
+
+  // Verifies that when the last item shows, the right arrow button is invisible
+  // while the left one shows.
+  EXPECT_EQ(OverflowBubbleView::SHOW_LEFT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  EXPECT_TRUE(left_arrow_button->GetVisible());
+  EXPECT_FALSE(right_arrow_button->GetVisible());
 }
 
 // Check the drag insertion bounds of shelf view in multi monitor environment.

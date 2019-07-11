@@ -218,7 +218,7 @@ class CONTENT_EXPORT SharedWorkerHost
 
   Phase phase_ = Phase::kInitial;
 
-  base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
+  base::WeakPtrFactory<SharedWorkerHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };

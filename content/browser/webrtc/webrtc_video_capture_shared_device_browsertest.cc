@@ -69,7 +69,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     : public ContentBrowserTest,
       public testing::WithParamInterface<TestParams> {
  public:
-  WebRtcVideoCaptureSharedDeviceBrowserTest() : weak_factory_(this) {
+  WebRtcVideoCaptureSharedDeviceBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
@@ -212,7 +212,8 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
 
   video_capture::mojom::ReceiverPtr receiver_proxy_;
-  base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_;
+  base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureSharedDeviceBrowserTest);
 };

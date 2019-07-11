@@ -3484,7 +3484,7 @@ void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);
 
   // Needed to signal HTMLVideoElement that it should remove the poster image.
-  if (client_ && did_lazy_load_ && has_poster_)
+  if (client_ && has_poster_)
     client_->Repaint();
 }
 

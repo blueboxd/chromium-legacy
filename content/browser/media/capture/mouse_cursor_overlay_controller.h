@@ -145,7 +145,7 @@ class CONTENT_EXPORT MouseCursorOverlayController {
   // called on the UI BrowserThread.
   SEQUENCE_CHECKER(ui_sequence_checker_);
 
-  base::WeakPtrFactory<MouseCursorOverlayController> weak_factory_;
+  base::WeakPtrFactory<MouseCursorOverlayController> weak_factory_{this};
 
   // Minium movement before the cursor has been considered intentionally moved
   // by the user.

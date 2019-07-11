@@ -1103,6 +1103,24 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   return true;
 }
 
+void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
+    int render_process_id,
+    network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto proxied_ptr_info = std::move(*factory_ptr_info);
+  network::mojom::URLLoaderFactoryRequest factory_request =
+      mojo::MakeRequest(factory_ptr_info);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                     render_process_id, std::move(factory_request),
+                     std::move(proxied_ptr_info),
+                     nullptr /* AwInterceptedRequestHandler */));
+}
+
 uint32_t AwContentBrowserClient::GetWebSocketOptions(
     content::RenderFrameHost* frame) {
   uint32_t options = network::mojom::kWebSocketOptionNone;

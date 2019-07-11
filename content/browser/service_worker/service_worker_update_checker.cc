@@ -27,8 +27,7 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
       loader_factory_(std::move(loader_factory)),
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
-      time_since_last_check_(time_since_last_check),
-      weak_factory_(this) {}
+      time_since_last_check_(time_since_last_check) {}
 
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
 

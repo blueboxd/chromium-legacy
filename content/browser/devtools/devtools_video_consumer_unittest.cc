@@ -145,7 +145,7 @@ class MockDevToolsVideoFrameReceiver {
   MOCK_METHOD1(OnFrameFromVideoConsumerMock,
                void(scoped_refptr<media::VideoFrame> frame));
 
-  MockDevToolsVideoFrameReceiver() : weak_factory_(this) {}
+  MockDevToolsVideoFrameReceiver() {}
 
   scoped_refptr<media::VideoFrame> TakeFrameAt(int i) {
     return std::move(frames_[i]);
@@ -164,12 +164,12 @@ class MockDevToolsVideoFrameReceiver {
 
  private:
   std::vector<scoped_refptr<media::VideoFrame>> frames_;
-  base::WeakPtrFactory<MockDevToolsVideoFrameReceiver> weak_factory_;
+  base::WeakPtrFactory<MockDevToolsVideoFrameReceiver> weak_factory_{this};
 };
 
 class DevToolsVideoConsumerTest : public testing::Test {
  public:
-  DevToolsVideoConsumerTest() : weak_factory_(this) {}
+  DevToolsVideoConsumerTest() {}
 
   void SetUp() override {
     consumer_ = receiver_.CreateDevToolsVideoConsumer();
@@ -234,7 +234,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  base::WeakPtrFactory<DevToolsVideoConsumerTest> weak_factory_;
+  base::WeakPtrFactory<DevToolsVideoConsumerTest> weak_factory_{this};
 };
 
 // Tests that the OnFrameFromVideoConsumer callbacks is called when

@@ -192,7 +192,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   std::set<int> pointer_ids_;
   std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
   base::flat_map<int, blink::WebTouchPoint> touch_points_;
-  base::WeakPtrFactory<InputHandler> weak_factory_;
+  base::WeakPtrFactory<InputHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };

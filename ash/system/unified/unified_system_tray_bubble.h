@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"

@@ -329,7 +329,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
     unsigned is_self_collapsing : 1;
     unsigned is_pushed_by_floats : 1;
-    unsigned adjoining_floats : 2;  // NGFloatTypes
+    unsigned adjoining_floats : 3;  // NGFloatTypes
 
     unsigned is_initial_block_size_indefinite : 1;
     unsigned has_descendant_that_depends_on_percentage_block_size : 1;

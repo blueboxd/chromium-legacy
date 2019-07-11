@@ -410,6 +410,14 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
           case input_method_private::UNDERLINE_STYLE_UNDERLINE:
             segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
             break;
+          case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
+            segment_info.style =
+                InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+            break;
+          case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
+            segment_info.style =
+                InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
+            break;
           case input_method_private::UNDERLINE_STYLE_NONE:
             EXTENSION_FUNCTION_VALIDATE(false);
             break;

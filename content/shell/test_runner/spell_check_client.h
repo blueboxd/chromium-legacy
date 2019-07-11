@@ -72,7 +72,7 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   TestRunner* test_runner_;
   WebTestDelegate* delegate_;
 
-  base::WeakPtrFactory<SpellCheckClient> weak_factory_;
+  base::WeakPtrFactory<SpellCheckClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };

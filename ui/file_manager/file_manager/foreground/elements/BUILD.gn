@@ -30,6 +30,11 @@ js_type_check("closure_compile_module") {
     ":files_toast",
     ":files_toggle_ripple",
     ":files_tooltip",
+    ":xf_activity_complete",
+    ":xf_button",
+    ":xf_circular_progress",
+    ":xf_display_panel",
+    ":xf_panel_item",
   ]
 }
 
@@ -127,6 +132,9 @@ js_library("xf_activity_complete") {
 }
 
 js_library("xf_button") {
+  deps = [
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
+  ]
 }
 
 js_library("xf_circular_progress") {

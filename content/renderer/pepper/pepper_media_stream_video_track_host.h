@@ -116,7 +116,7 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   class FrameDeliverer;
   scoped_refptr<FrameDeliverer> frame_deliverer_;
 
-  base::WeakPtrFactory<PepperMediaStreamVideoTrackHost> weak_factory_;
+  base::WeakPtrFactory<PepperMediaStreamVideoTrackHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaStreamVideoTrackHost);
 };

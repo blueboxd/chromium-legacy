@@ -25,8 +25,7 @@ IndexedDBPreCloseTaskQueue::IndexedDBPreCloseTaskQueue(
       on_done_(std::move(on_complete)),
       timeout_time_(max_run_time),
       timeout_timer_(std::move(timer)),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      ptr_factory_(this) {}
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 IndexedDBPreCloseTaskQueue::~IndexedDBPreCloseTaskQueue() {}
 
 void IndexedDBPreCloseTaskQueue::StopForNewConnection() {

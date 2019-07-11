@@ -2442,6 +2442,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kShowAndroidFilesInFilesApp,
          chromeos::switches::kHideAndroidFilesInFilesApp)},
+    {"camera-system-web-app", flag_descriptions::kCameraSystemWebAppName,
+     flag_descriptions::kCameraSystemWebAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCameraSystemWebApp)},
     {"crostini-gpu-support", flag_descriptions::kCrostiniGpuSupportName,
      flag_descriptions::kCrostiniGpuSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniGpuSupport)},
@@ -4074,6 +4077,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniWebUIInstallerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIInstaller)},
 #endif  // OS_CHROMEOS
+
+    {"enable-autofill-save-card-show-no-thanks",
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

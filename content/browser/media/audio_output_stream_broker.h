@@ -75,7 +75,7 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
 
   DisconnectReason disconnect_reason_ = DisconnectReason::kDocumentDestroyed;
 
-  base::WeakPtrFactory<AudioOutputStreamBroker> weak_ptr_factory_;
+  base::WeakPtrFactory<AudioOutputStreamBroker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputStreamBroker);
 };

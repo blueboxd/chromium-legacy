@@ -344,7 +344,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   bool has_committed_data_ = false;
   std::unique_ptr<CommitBatch> commit_batch_;
 
-  base::WeakPtrFactory<StorageAreaImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageAreaImpl> weak_ptr_factory_{this};
 
   static bool s_aggressive_flushing_enabled_;
 

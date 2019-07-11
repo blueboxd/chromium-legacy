@@ -1607,7 +1607,9 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
       api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  ash::TabletMode::Waiter waiter(params->enabled);
   ash::TabletMode::Get()->SetEnabledForTest(params->enabled);
+  waiter.Wait();
   return RespondNow(OneArgument(
       std::make_unique<base::Value>(ash::TabletMode::Get()->InTabletMode())));
 }

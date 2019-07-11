@@ -131,8 +131,7 @@ content::TestBlinkWebUnitTestSupport* g_test_platform = nullptr;
 namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
-    TestBlinkWebUnitTestSupport::SchedulerType scheduler_type)
-    : weak_factory_(this) {
+    TestBlinkWebUnitTestSupport::SchedulerType scheduler_type) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif

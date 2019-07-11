@@ -14,6 +14,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -186,8 +187,11 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
   return Shell::IsSystemModalWindowOpen();
 }
 
-void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
+void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
+                                               bool wait_for_completion) {
+  TabletMode::Waiter waiter(enable);
   shell_->tablet_mode_controller()->SetEnabledForTest(enable);
+  waiter.Wait();
 }
 
 void ShellTestApi::EnableVirtualKeyboard() {

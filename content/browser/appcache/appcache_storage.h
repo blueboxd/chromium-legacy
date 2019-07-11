@@ -349,7 +349,7 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // The WeakPtrFactory below must occur last in the class definition so they
   // get destroyed last.
-  base::WeakPtrFactory<AppCacheStorage> weak_factory_;
+  base::WeakPtrFactory<AppCacheStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };

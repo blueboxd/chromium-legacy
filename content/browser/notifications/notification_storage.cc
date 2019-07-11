@@ -40,8 +40,7 @@ void UpdateNotificationClickTimestamps(NotificationDatabaseData* data) {
 
 NotificationStorage::NotificationStorage(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : service_worker_context_(std::move(service_worker_context)),
-      weak_ptr_factory_(this) {}
+    : service_worker_context_(std::move(service_worker_context)) {}
 
 NotificationStorage::~NotificationStorage() = default;
 

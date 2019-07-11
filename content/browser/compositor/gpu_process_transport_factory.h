@@ -167,7 +167,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   // Manages a mapping of SharedBitmapId to shared memory objects.
   viz::ServerSharedBitmapManager* const server_shared_bitmap_manager_;
 
-  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
+  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
 };

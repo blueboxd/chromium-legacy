@@ -379,8 +379,7 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       quota_client_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(nullptr),
-      force_keep_session_state_(false),
-      weak_factory_(this) {
+      force_keep_session_state_(false) {
   if (quota_manager_proxy_.get()) {
     // The operator new is used here because this AppCacheQuotaClient instance
     // deletes itself after both the QuotaManager and the AppCacheService are

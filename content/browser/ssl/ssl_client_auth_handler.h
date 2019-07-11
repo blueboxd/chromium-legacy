@@ -104,7 +104,7 @@ class SSLClientAuthHandler {
   // The delegate to call back with the result.
   Delegate* delegate_;
 
-  base::WeakPtrFactory<SSLClientAuthHandler> weak_factory_;
+  base::WeakPtrFactory<SSLClientAuthHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };

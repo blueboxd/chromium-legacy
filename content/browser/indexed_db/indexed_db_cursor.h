@@ -90,7 +90,7 @@ class CONTENT_EXPORT IndexedDBCursor {
 
   bool closed_;
 
-  base::WeakPtrFactory<IndexedDBCursor> ptr_factory_;
+  base::WeakPtrFactory<IndexedDBCursor> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCursor);
 };

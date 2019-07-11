@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -64,10 +64,10 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
 const gfx::VectorIcon& GetErrorNotificationVectorIcon(
     const std::string& network_type) {
   if (network_type == shill::kTypeVPN)
-    return ash::kNotificationVpnIcon;
+    return kNotificationVpnIcon;
   if (network_type == shill::kTypeCellular)
-    return ash::kNotificationMobileDataOffIcon;
-  return ash::kNotificationWifiOffIcon;
+    return kNotificationMobileDataOffIcon;
+  return kNotificationWifiOffIcon;
 }
 
 void ShowErrorNotification(const std::string& service_path,
@@ -302,7 +302,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                          weak_ptr_factory_.GetWeakPtr(), cellular_guid)),
-          ash::kNotificationMobileDataIcon,
+          kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   SystemNotificationHelper::GetInstance()->Display(*notification);
@@ -349,7 +349,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                          weak_ptr_factory_.GetWeakPtr(), cellular->guid())),
-          ash::kNotificationMobileDataOffIcon,
+          kNotificationMobileDataOffIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   SystemNotificationHelper::GetInstance()->Display(*notification);

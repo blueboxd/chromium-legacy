@@ -106,7 +106,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor,
 
   size_t next_id_;
 
-  base::WeakPtrFactory<DevToolsURLRequestInterceptor> weak_factory_;
+  base::WeakPtrFactory<DevToolsURLRequestInterceptor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLRequestInterceptor);
 };

@@ -206,6 +206,7 @@ void NormalizedRect::SetRect(int origin_main,
   origin_.SetPoint(origin_main, origin_cross);
   size_.SetSize(size_main, size_cross);
 }
+
 void NormalizedRect::SetByBounds(int origin_main,
                                  int origin_cross,
                                  int max_main,
@@ -214,17 +215,25 @@ void NormalizedRect::SetByBounds(int origin_main,
   size_.SetSize(std::max(0, max_main - origin_main),
                 std::max(0, max_cross - origin_cross));
 }
+
 void NormalizedRect::Inset(const NormalizedInsets& insets) {
   Inset(insets.main_leading(), insets.cross_leading(), insets.main_trailing(),
         insets.cross_trailing());
 }
+
 void NormalizedRect::Inset(int main, int cross) {
   Inset(main, cross, main, cross);
 }
+
 void NormalizedRect::Inset(int main_leading,
                            int cross_leading,
                            int main_trailing,
-                           int cross_trailing) {}
+                           int cross_trailing) {
+  origin_.Offset(main_leading, cross_leading);
+  size_.Enlarge(-(main_leading + main_trailing),
+                -(cross_leading + cross_trailing));
+}
+
 void NormalizedRect::Offset(int main, int cross) {
   origin_.Offset(main, cross);
 }

@@ -60,7 +60,7 @@ class CONTENT_EXPORT PepperProxyLookupHelper {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<PepperProxyLookupHelper> weak_factory_;
+  base::WeakPtrFactory<PepperProxyLookupHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperProxyLookupHelper);
 };

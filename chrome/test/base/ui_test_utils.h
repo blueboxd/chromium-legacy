@@ -184,6 +184,14 @@ int FindInPage(content::WebContents* tab,
 // Blocks until the |history_service|'s history finishes loading.
 void WaitForHistoryToLoad(history::HistoryService* history_service);
 
+// Blocks until a Browser is added to the BrowserList.
+void WaitForBrowserToOpen();
+
+// Blocks until a Browser is removed from the BrowserList. If |browser| is null,
+// the removal of any browser will suffice; otherwise the removed browser must
+// match |browser|.
+void WaitForBrowserToClose(const Browser* browser = nullptr);
+
 // Download the given file and waits for the download to complete.
 void DownloadURL(Browser* browser, const GURL& download_url);
 

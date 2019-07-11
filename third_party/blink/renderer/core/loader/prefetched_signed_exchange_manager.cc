@@ -16,7 +16,9 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
@@ -184,8 +186,9 @@ PrefetchedSignedExchangeManager::MaybeCreateURLLoader(
     const WebURLRequest& request) {
   if (started_)
     return nullptr;
-  const auto* matching_resource =
-      alternative_resources_->FindMatchingEntry(request.Url());
+  const auto* matching_resource = alternative_resources_->FindMatchingEntry(
+      request.Url(), request.GetRequestContext(),
+      frame_->DomWindow()->navigator()->languages());
   if (!matching_resource)
     return nullptr;
 
@@ -227,8 +230,9 @@ void PrefetchedSignedExchangeManager::TriggerLoad() {
       // arbitrary information to the publisher using this resource.
       continue;
     }
-    const auto* matching_resource =
-        alternative_resources_->FindMatchingEntry(loader->request().Url());
+    const auto* matching_resource = alternative_resources_->FindMatchingEntry(
+        loader->request().Url(), loader->request().GetRequestContext(),
+        frame_->DomWindow()->navigator()->languages());
     const auto alternative_url = matching_resource->alternative_url();
     if (!alternative_url.IsValid()) {
       // There is no matching "alternate" link header in outer response header.

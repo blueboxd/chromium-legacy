@@ -672,8 +672,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       connection_filter_id_(
-          ServiceManagerConnection::kInvalidConnectionFilterId),
-      weak_ptr_factory_(this) {
+          ServiceManagerConnection::kInvalidConnectionFilterId) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -96,7 +96,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
 
   base::TimeTicks stream_creation_start_time_;
 
-  base::WeakPtrFactory<MojoAudioInputIPC> weak_factory_;
+  base::WeakPtrFactory<MojoAudioInputIPC> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioInputIPC);
 };

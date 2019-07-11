@@ -35,8 +35,8 @@ using content::WebContents;
 namespace media_router {
 
 // static
-MediaRouterDialogControllerAndroid*
-MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
+MediaRouterDialogController*
+MediaRouterDialogController::GetOrCreateForWebContents(
     WebContents* web_contents) {
   DCHECK(web_contents);
   // This call does nothing if the controller already exists.

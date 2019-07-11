@@ -120,7 +120,7 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   mojo::AssociatedInterfacePtrSet<blink::mojom::ServiceWorkerObject>
       remote_objects_;
 
-  base::WeakPtrFactory<ServiceWorkerObjectHost> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerObjectHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerObjectHost);
 };

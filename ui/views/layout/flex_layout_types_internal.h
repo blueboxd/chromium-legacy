@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Insets;
@@ -23,10 +24,13 @@ class SizeBounds;
 
 namespace internal {
 
+// NOTE: classes in this namespace are marked as VIEWS_EXPORT for unit testing
+// purposes only and should not be used outside the views library.
+
 // Represents a point in layout space - that is, a point on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedPoint {
+class VIEWS_EXPORT NormalizedPoint {
  public:
   constexpr NormalizedPoint() = default;
   constexpr NormalizedPoint(int main, int cross) : main_(main), cross_(cross) {}
@@ -54,7 +58,7 @@ class NormalizedPoint {
 // Represents a size in layout space - that is, a size on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedSize {
+class VIEWS_EXPORT NormalizedSize {
  public:
   constexpr NormalizedSize() = default;
   constexpr NormalizedSize(int main, int cross) : main_(main), cross_(cross) {}
@@ -88,7 +92,7 @@ class NormalizedSize {
 // Represents insets in layout space - that is, insets on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedInsets {
+class VIEWS_EXPORT NormalizedInsets {
  public:
   constexpr NormalizedInsets() = default;
   constexpr explicit NormalizedInsets(int all) : main_(all), cross_(all) {}
@@ -145,7 +149,7 @@ class NormalizedInsets {
 // Represents size bounds in layout space - that is, a set of size bounds using
 // the main and cross axes of the layout (regardless of whether it is vertically
 // or horizontally oriented).
-class NormalizedSizeBounds {
+class VIEWS_EXPORT NormalizedSizeBounds {
  public:
   NormalizedSizeBounds();
   NormalizedSizeBounds(const base::Optional<int>& main,
@@ -176,7 +180,7 @@ class NormalizedSizeBounds {
 // Represents a rectangle in layout space - that is, a rectangle whose
 // dimensions align with the main and cross axis of the layout (regardless of
 // whether the layout is vertically or horizontally oriented).
-class NormalizedRect {
+class VIEWS_EXPORT NormalizedRect {
  public:
   constexpr NormalizedRect() = default;
   constexpr NormalizedRect(const NormalizedPoint& origin,

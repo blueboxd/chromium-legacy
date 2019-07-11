@@ -545,8 +545,7 @@ AuthenticatorCommon::AuthenticatorCommon(
     : render_frame_host_(render_frame_host),
       connector_(connector),
       transports_(GetTransportsEnabledByFlags()),
-      timer_(std::move(timer)),
-      weak_factory_(this) {
+      timer_(std::move(timer)) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
 }

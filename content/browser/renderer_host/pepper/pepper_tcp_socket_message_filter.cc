@@ -88,8 +88,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       pending_write_bytes_written_(0),
       pending_write_pp_error_(PP_OK_COMPLETIONPENDING),
       is_potentially_secure_plugin_context_(
-          host->IsPotentiallySecurePluginContext(instance)),
-      weak_ptr_factory_(this) {
+          host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

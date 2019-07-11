@@ -40,6 +40,7 @@ class Widget;
 namespace ash {
 class OverviewDelegate;
 class OverviewGrid;
+class OverviewHighlightController;
 class OverviewItem;
 class OverviewWindowDragController;
 class RoundedLabelWidget;
@@ -234,9 +235,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
 
-  // Returns the sum of the number of windows in all window grids.
-  size_t NumWindowsTotal() const;
-
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -268,6 +266,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return split_view_drag_indicators_.get();
   }
 
+  const std::vector<std::unique_ptr<OverviewGrid>>& grid_list() const {
+    return grid_list_;
+  }
+
+  size_t num_items() const { return num_items_; }
+
   EnterExitOverviewType enter_exit_overview_type() const {
     return enter_exit_overview_type_;
   }
@@ -279,18 +283,16 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return window_drag_controller_.get();
   }
 
-  const std::vector<std::unique_ptr<OverviewGrid>>& grid_list_for_testing()
-      const {
-    return grid_list_;
+  OverviewHighlightController* highlight_controller() {
+    return highlight_controller_.get();
   }
-
-  size_t num_items_for_testing() const { return num_items_; }
 
   RoundedLabelWidget* no_windows_widget_for_testing() {
     return no_windows_widget_.get();
   }
 
  private:
+  friend class DesksAcceleratorsTest;
   friend class OverviewSessionTest;
 
   // |focus|, restores focus to the stored window.
@@ -351,9 +353,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // overview mode. This will be nullptr if split view is not enabled.
   std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
-  // Tracks the index of the root window the selection widget is in.
-  size_t selected_grid_index_ = 0;
-
   // The following variables are used for metric collection purposes. All of
   // them refer to this particular overview session and are not cumulative:
   // The time when overview was started.
@@ -378,6 +377,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   std::unique_ptr<OverviewWindowDragController> window_drag_controller_;
 
   std::unique_ptr<ScopedOverviewHideWindows> hide_overview_windows_;
+
+  std::unique_ptr<OverviewHighlightController> highlight_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewSession);
 };

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/android_sms/pairing_lost_notifier.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -124,7 +124,7 @@ void PairingLostNotifier::ShowPairingLostNotification() {
               base::BindRepeating(
                   &PairingLostNotifier::OnPairingLostNotificationClick,
                   weak_ptr_factory_.GetWeakPtr())),
-          ash::kNotificationMessagesIcon,
+          kNotificationMessagesIcon,
           message_center::SystemNotificationWarningLevel::NORMAL),
       /*metadata=*/nullptr);
 }

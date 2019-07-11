@@ -64,8 +64,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
         traffic_annotation_(annotation),
         network_loader_factory_(std::move(network_loader_factory)),
         local_client_binding_(this),
-        host_(appcache_host),
-        weak_factory_(this) {
+        host_(appcache_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     remote_binding_.set_connection_error_handler(base::BindOnce(
         &SubresourceLoader::OnConnectionError, base::Unretained(this)));
@@ -316,7 +315,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   base::WeakPtr<AppCacheHost> host_;
 
-  base::WeakPtrFactory<SubresourceLoader> weak_factory_;
+  base::WeakPtrFactory<SubresourceLoader> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SubresourceLoader);
 };
 
@@ -327,8 +326,7 @@ AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::WeakPtr<AppCacheHost> host)
     : network_loader_factory_(std::move(network_loader_factory)),
-      appcache_host_(host),
-      weak_factory_(this) {
+      appcache_host_(host) {
   bindings_.set_connection_error_handler(
       base::BindRepeating(&AppCacheSubresourceURLFactory::OnConnectionError,
                           base::Unretained(this)));

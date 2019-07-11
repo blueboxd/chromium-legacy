@@ -116,8 +116,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       mode_(mode),
       connection_(connection->GetWeakPtr()),
       error_callback_(std::move(error_callback)),
-      transaction_(backing_store_transaction),
-      ptr_factory_(this) {
+      transaction_(backing_store_transaction) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();

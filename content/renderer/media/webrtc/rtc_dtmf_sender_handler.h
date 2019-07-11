@@ -54,7 +54,7 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
   SEQUENCE_CHECKER(sequence_checker_);
 
   // |weak_factory_| must be the last member.
-  base::WeakPtrFactory<RtcDtmfSenderHandler> weak_factory_;
+  base::WeakPtrFactory<RtcDtmfSenderHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RtcDtmfSenderHandler);
 };

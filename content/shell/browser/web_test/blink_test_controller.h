@@ -329,7 +329,7 @@ class BlinkTestController : public WebContentsObserver,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<BlinkTestController> weak_factory_;
+  base::WeakPtrFactory<BlinkTestController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestController);
 };

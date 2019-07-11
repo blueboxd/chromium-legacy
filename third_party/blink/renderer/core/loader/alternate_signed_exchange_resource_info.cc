@@ -4,8 +4,11 @@
 
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 
+#include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
@@ -17,6 +20,12 @@ namespace {
 
 constexpr char kAlternate[] = "alternate";
 constexpr char kAllowedAltSxg[] = "allowed-alt-sxg";
+
+// These accept header values are also defined in web_url_loader_impl.h and
+// loader_util.h. TODO(horo): Move somewhere and use shared constant value.
+const char kDefaultAcceptHeader[] = "*/*";
+const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
+const char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using AlternateSignedExchangeMachingKey =
     std::pair<String /* anchor */,
@@ -113,12 +122,67 @@ AlternateSignedExchangeResourceInfo::AlternateSignedExchangeResourceInfo(
     : alternative_resources_(std::move(alternative_resources)) {}
 
 AlternateSignedExchangeResourceInfo::Entry*
-AlternateSignedExchangeResourceInfo::FindMatchingEntry(const KURL& url) const {
+AlternateSignedExchangeResourceInfo::FindMatchingEntry(
+    const KURL& url,
+    base::Optional<ResourceType> resource_type,
+    const Vector<String>& languages) const {
+  const char* accept_header = kDefaultAcceptHeader;
+  if (resource_type == ResourceType::kCSSStyleSheet) {
+    accept_header = kStylesheetAcceptHeader;
+  } else if (resource_type == ResourceType::kImage) {
+    accept_header = kImageAcceptHeader;
+  }
+  return FindMatchingEntry(url, accept_header, languages);
+}
+
+AlternateSignedExchangeResourceInfo::Entry*
+AlternateSignedExchangeResourceInfo::FindMatchingEntry(
+    const KURL& url,
+    mojom::RequestContextType request_context,
+    const Vector<String>& languages) const {
+  const char* accept_header = kDefaultAcceptHeader;
+  if (request_context == mojom::RequestContextType::STYLE) {
+    accept_header = kStylesheetAcceptHeader;
+  } else if (request_context == mojom::RequestContextType::IMAGE) {
+    accept_header = kImageAcceptHeader;
+  }
+  return FindMatchingEntry(url, accept_header, languages);
+}
+
+AlternateSignedExchangeResourceInfo::Entry*
+AlternateSignedExchangeResourceInfo::FindMatchingEntry(
+    const KURL& url,
+    const char* accept_header,
+    const Vector<String>& languages) const {
   const auto it = alternative_resources_.find(url);
   if (it == alternative_resources_.end())
     return nullptr;
-  // TODO(crbug.com/935267): Support variants and variant_key checking.
-  return it->value.back().get();
+  const Vector<std::unique_ptr<Entry>>& entries = it->value;
+  DCHECK(!entries.IsEmpty());
+  if (entries[0]->variants().IsNull())
+    return entries[0].get();
+
+  const std::string variants = entries[0]->variants().Utf8();
+  std::vector<std::string> variant_keys_list;
+  for (const auto& entry : entries) {
+    variant_keys_list.emplace_back(entry->variant_key().Utf8());
+  }
+  std::string accept_langs;
+  for (const auto& language : languages) {
+    if (!accept_langs.empty())
+      accept_langs += ",";
+    accept_langs += language.Utf8();
+  }
+  net::HttpRequestHeaders request_headers;
+  request_headers.SetHeader("accept", accept_header);
+
+  SignedExchangeRequestMatcher matcher(request_headers, accept_langs);
+  const auto variant_keys_list_it =
+      matcher.FindBestMatchingVariantKey(variants, variant_keys_list);
+  if (variant_keys_list_it == variant_keys_list.end())
+    return nullptr;
+  return (entries.begin() + (variant_keys_list_it - variant_keys_list.begin()))
+      ->get();
 }
 
 }  // namespace blink

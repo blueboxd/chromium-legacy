@@ -109,8 +109,7 @@ SessionStorageContextMojo::SessionStorageContextMojo(
       leveldb_name_(std::move(leveldb_name)),
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
-      is_low_end_device_(base::SysInfo::IsLowEndDevice()),
-      weak_ptr_factory_(this) {
+      is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(

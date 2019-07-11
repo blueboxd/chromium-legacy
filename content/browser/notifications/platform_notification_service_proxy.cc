@@ -25,9 +25,7 @@ PlatformNotificationServiceProxy::PlatformNotificationServiceProxy(
       browser_context_(browser_context),
       notification_service_(
           GetContentClient()->browser()->GetPlatformNotificationService(
-              browser_context)),
-      weak_ptr_factory_ui_(this),
-      weak_ptr_factory_io_(this) {}
+              browser_context)) {}
 
 PlatformNotificationServiceProxy::~PlatformNotificationServiceProxy() = default;
 

@@ -45,8 +45,7 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
     : DatabaseTask(host),
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
 

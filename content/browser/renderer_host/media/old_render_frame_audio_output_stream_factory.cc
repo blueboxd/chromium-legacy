@@ -62,9 +62,7 @@ void RenderFrameAudioOutputStreamFactoryHandle::Init(
 OldRenderFrameAudioOutputStreamFactory::OldRenderFrameAudioOutputStreamFactory(
     int render_frame_id,
     RendererAudioOutputStreamFactoryContext* context)
-    : render_frame_id_(render_frame_id),
-      context_(context),
-      weak_ptr_factory_(this) {
+    : render_frame_id_(render_frame_id), context_(context) {
   DCHECK(context_);
 }
 

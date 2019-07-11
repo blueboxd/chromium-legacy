@@ -31,6 +31,10 @@ constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
     extensions::kWebStoreAppId,
 };
 
+constexpr char const* kAppIdsWithHiddenPinToShelf[] = {
+  extension_misc::kChromeAppId,
+};
+
 app_management::mojom::ExtensionAppPermissionMessagePtr
 CreateExtensionAppPermissionMessage(
     const extensions::PermissionMessage& message) {
@@ -45,6 +49,11 @@ CreateExtensionAppPermissionMessage(
 bool ShouldHideMoreSettings(const std::string app_id) {
   return base::Contains(kAppIdsWithHiddenMoreSettings, app_id);
 }
+
+bool ShouldHidePinToShelf(const std::string app_id) {
+  return base::Contains(kAppIdsWithHiddenPinToShelf, app_id);
+}
+
 
 }  // namespace
 
@@ -214,6 +223,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 #endif
 
   app->hide_more_settings = ShouldHideMoreSettings(app->id);
+  app->hide_pin_to_shelf = ShouldHidePinToShelf(app->id);
 
   return app;
 }

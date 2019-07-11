@@ -7,6 +7,7 @@
 <link rel="import" href="permission_view_header.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
+<link rel="import" href="pin_to_shelf_item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
@@ -19,6 +20,11 @@
     </app-management-permission-view-header>
 
     <div class="permission-list card-container">
+      <app-management-pin-to-shelf-item
+        id="pin-to-shelf-setting"
+        class="permission-card-row separated-row header-text"
+        app_="[[app_]]">
+      </app-management-pin-to-shelf-item>
       <app-management-permission-item id="notifications-card"
         class="permission-card-row separated-row header-text"
         permission-label="$i18n{notifications}" permission-type="NOTIFICATIONS">
@@ -61,7 +67,6 @@
         </div>
       </div>
     </div>
-    <app-management-metadata-view></app-management-metadata-view>
   </template>
   <script src="arc_permission_view.js"></script>
 </dom-module>

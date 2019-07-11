@@ -63,8 +63,7 @@ class MockStreamFactory : public audio::FakeStreamFactory,
 class MockBroker : public AudioStreamBroker {
  public:
   explicit MockBroker(RenderFrameHost* rfh)
-      : AudioStreamBroker(rfh->GetProcess()->GetID(), rfh->GetRoutingID()),
-        weak_factory_(this) {}
+      : AudioStreamBroker(rfh->GetProcess()->GetID(), rfh->GetRoutingID()) {}
 
   ~MockBroker() override {}
 
@@ -76,7 +75,7 @@ class MockBroker : public AudioStreamBroker {
   DeleterCallback deleter;
 
  private:
-  base::WeakPtrFactory<MockBroker> weak_factory_;
+  base::WeakPtrFactory<MockBroker> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MockBroker);
 };
 

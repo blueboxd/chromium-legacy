@@ -450,8 +450,7 @@ TargetHandler::TargetHandler(AccessMode access_mode,
       discover_(false),
       access_mode_(access_mode),
       owner_target_id_(owner_target_id),
-      root_session_(root_session),
-      weak_factory_(this) {}
+      root_session_(root_session) {}
 
 TargetHandler::~TargetHandler() {
 }

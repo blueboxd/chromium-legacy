@@ -263,7 +263,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // AppCacheSubresourceURLFactory instance on creation.
   base::WeakPtr<AppCacheHost> appcache_host_;
 
-  base::WeakPtrFactory<AppCacheRequestHandler> weak_factory_;
+  base::WeakPtrFactory<AppCacheRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };

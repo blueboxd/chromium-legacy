@@ -56,8 +56,7 @@ SharedWorkerServiceImpl::SharedWorkerServiceImpl(
     scoped_refptr<ChromeAppCacheService> appcache_service)
     : storage_partition_(storage_partition),
       service_worker_context_(std::move(service_worker_context)),
-      appcache_service_(std::move(appcache_service)),
-      weak_factory_(this) {
+      appcache_service_(std::move(appcache_service)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

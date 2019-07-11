@@ -67,8 +67,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : indexed_db_context_(std::move(indexed_db_context)),
       blob_storage_context_(std::move(blob_storage_context)),
-      ipc_process_id_(ipc_process_id),
-      weak_factory_(this) {
+      ipc_process_id_(ipc_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);

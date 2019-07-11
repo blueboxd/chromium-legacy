@@ -1,0 +1,55 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+
+<dom-module id="app-management-toggle-row">
+  <template>
+    <style include="app-management-shared-css">
+      :host {
+        align-items: center;
+        display: flex;
+        flex: 1;
+        justify-content: space-between;
+      }
+
+      #icon {
+        padding-inline-end: var(--row-item-icon-padding);
+      }
+
+      #policy-indicator {
+        fill: var(--google-grey-refresh-700);
+        padding-inline-end: 12px;
+      }
+    </style>
+
+    <div id="left-content" class="horizontal-align">
+      <template is="dom-if" if="[[icon_]]">
+        <iron-icon id="icon" icon="[[icon_]]"></iron-icon>
+      </template>
+      <div id="label">[[label_]]</div>
+    </div>
+    <div id="right-content" class="horizontal-align">
+      <iron-icon id="policy-indicator"
+        icon="cr:domain"
+        tabindex="0"
+        aria-describedby="tooltip"
+        hidden$="[[!managed_]]">
+      </iron-icon>
+      <paper-tooltip id="tooltip"
+        for="policy-indicator"
+        position="top"
+        fit-to-visible-bounds>
+        [[policyLabel_]]
+      </paper-tooltip>
+      <cr-toggle id="toggle"
+        checked="[[value_]]"
+        disabled$="[[managed_]]">
+      </cr-toggle>
+    </div>
+  </template>
+  <script src="toggle_row.js"></script>
+</dom-module>

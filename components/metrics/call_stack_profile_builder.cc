@@ -48,7 +48,7 @@ uint64_t HashModuleFilename(const base::FilePath& filename) {
 }
 
 std::map<uint64_t, int64_t> CreateMetadataMap(
-    base::MetadataRecorder::ItemArray items,
+    base::ProfileBuilder::MetadataItemArray items,
     size_t item_count) {
   std::map<uint64_t, int64_t> item_map;
   for (size_t i = 0; i < item_count; ++i) {
@@ -102,10 +102,8 @@ std::map<uint64_t, int64_t> GetDeletedMetadataItems(
 CallStackProfileBuilder::CallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
-    const base::MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
     : work_id_recorder_(work_id_recorder),
-      metadata_recorder_(metadata_recorder),
       profile_start_time_(base::TimeTicks::Now()) {
   completed_callback_ = std::move(completed_callback);
   sampled_profile_.set_process(
@@ -124,7 +122,8 @@ base::ModuleCache* CallStackProfileBuilder::GetModuleCache() {
 // This function is invoked on the profiler thread while the target thread is
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.
-void CallStackProfileBuilder::RecordMetadata() {
+void CallStackProfileBuilder::RecordMetadata(
+    base::ProfileBuilder::MetadataProvider* metadata_provider) {
   if (work_id_recorder_) {
     unsigned int work_id = work_id_recorder_->RecordWorkId();
     // A work id of 0 indicates that the message loop has not yet started.
@@ -134,8 +133,8 @@ void CallStackProfileBuilder::RecordMetadata() {
     }
   }
 
-  if (metadata_recorder_)
-    metadata_item_count_ = metadata_recorder_->GetItems(&metadata_items_);
+  if (metadata_provider)
+    metadata_item_count_ = metadata_provider->GetItems(&metadata_items_);
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(

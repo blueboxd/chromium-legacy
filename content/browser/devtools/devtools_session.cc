@@ -46,8 +46,7 @@ static const char kSessionId[] = "sessionId";
 DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
     : binding_(this),
       client_(client),
-      dispatcher_(new protocol::UberDispatcher(this)),
-      weak_factory_(this) {}
+      dispatcher_(new protocol::UberDispatcher(this)) {}
 
 DevToolsSession::~DevToolsSession() {
   if (proxy_delegate_)

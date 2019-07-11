@@ -111,7 +111,7 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   int event_target_id_ = 0;
   RenderFrameHostImpl* event_render_frame_host_ = nullptr;
 
-  base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
+  base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNotificationWaiter);
 };

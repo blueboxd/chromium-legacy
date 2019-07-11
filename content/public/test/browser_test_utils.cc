@@ -1964,6 +1964,45 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
   return manager->SnapshotAXTreeForTesting();
 }
 
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  BrowserAccessibilityManager* manager =
+      web_contents_impl->GetRootBrowserAccessibilityManager();
+  return manager ? manager->GetRoot() : nullptr;
+}
+
+FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;
+
+FindAccessibilityNodeCriteria::~FindAccessibilityNodeCriteria() = default;
+
+BrowserAccessibility* FindAccessibilityNode(
+    WebContents* web_contents,
+    const FindAccessibilityNodeCriteria& criteria) {
+  BrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
+  CHECK(root);
+  return FindAccessibilityNodeInSubtree(root, criteria);
+}
+
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
+    const FindAccessibilityNodeCriteria& criteria) {
+  if ((!criteria.name ||
+       node->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
+           criteria.name.value()) &&
+      (!criteria.role || node->GetRole() == criteria.role.value())) {
+    return node;
+  }
+
+  for (unsigned int i = 0; i < node->PlatformChildCount(); ++i) {
+    BrowserAccessibility* result =
+        FindAccessibilityNodeInSubtree(node->PlatformGetChild(i), criteria);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
+
 bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
@@ -2675,8 +2714,7 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
       handle_(nullptr),
       navigation_paused_(false),
       current_state_(NavigationState::INITIAL),
-      desired_state_(NavigationState::STARTED),
-      weak_factory_(this) {}
+      desired_state_(NavigationState::STARTED) {}
 
 TestNavigationManager::~TestNavigationManager() {
   if (navigation_paused_)

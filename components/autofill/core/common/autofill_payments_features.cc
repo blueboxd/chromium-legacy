@@ -105,6 +105,13 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 const base::Feature kAutofillSaveCardImprovedUserConsent{
     "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, local and upload credit card save dialogs will add a
+// [No thanks] cancel button option. This is intended to bring the
+// AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
+// iOS without bringing the extended title string change with it.
+const base::Feature kAutofillSaveCardShowNoThanks{
+    "AutofillSaveCardShowNoThanks", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls what title and bubble label for the credit card upload bubble are
 // shown to users.
 const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{

@@ -2216,7 +2216,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::FrameLifecycleState::kRunning;
 
   // NOTE: This must be the last member.
-  base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };

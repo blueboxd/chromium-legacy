@@ -201,7 +201,7 @@ test.customizeMenu.testMenu_SaveUserSelections = function() {
   // Select a background.
   setupFakeAsyncImageLoad('coll_tile_0');
   $('coll_tile_0').click();
-  const background = $('img_tile_0');
+  const background = $('coll_0_img_tile_0');
   background.click();
   assertTrue(background.parentElement.classList.contains(
       test.customizeMenu.CLASSES.SELECTED));
@@ -259,7 +259,7 @@ test.customizeMenu.testMenu_ApplyUserSelections = function() {
   // Select a background.
   setupFakeAsyncImageLoad('coll_tile_0');
   $('coll_tile_0').click();
-  $('img_tile_0').click();
+  $('coll_0_img_tile_0').click();
 
   // Select a shortcut option.
   $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
@@ -292,7 +292,7 @@ test.customizeMenu.testMenu_CancelUserSelections = function() {
   // Select a background.
   setupFakeAsyncImageLoad('coll_tile_0');
   $('coll_tile_0').click();
-  $('img_tile_0').click();
+  $('coll_0_img_tile_0').click();
 
   // Select a shortcut option.
   $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
@@ -571,7 +571,7 @@ test.customizeMenu.testBackgrounds_SetCustomBackground = function() {
           .getElementsByClassName('bg-sel-tile')
           .length === 4);
 
-  $('img_tile_0').click();
+  $('coll_0_img_tile_0').click();
   $(test.customizeMenu.IDS.MENU_DONE).click();
 
   // No menu should be open, and setCustomBackground should have been called.
@@ -615,7 +615,7 @@ test.customizeMenu.testBackgrounds_CancelCustomBackground = function() {
           .getElementsByClassName('bg-sel-tile')
           .length === 4);
 
-  $('img_tile_0').click();
+  $('coll_0_img_tile_0').click();
   $(test.customizeMenu.IDS.MENU_CANCEL).click();
 
   // No menu should be open, and setCustomBackground should NOT have been
@@ -658,7 +658,7 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
           .getElementsByClassName('bg-sel-tile')
           .length === 4);
 
-  $('img_tile_0').click();
+  $('coll_0_img_tile_0').click();
   $(test.customizeMenu.IDS.MENU_BACK).click();
 
   // The main backgrounds menu should be open, and no custom background set.
@@ -666,7 +666,7 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
   assertFalse(elementIsVisible(backgroundImageSubmenu));
   assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
 
-  // Reopen the images menu, the selection should be cleared.
+  // Reopen the images menu, the selection should still be present.
   $('coll_tile_0').click();
 
   assertFalse(elementIsVisible(backgroundSubmenu));
@@ -678,7 +678,11 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
   assertTrue(
       $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
           .getElementsByClassName('selected')
-          .length === 0);
+          .length === 1);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')[0]
+          .firstChild.id === 'coll_0_img_tile_0');
 };
 
 // ******************************* HELPERS *******************************

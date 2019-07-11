@@ -267,8 +267,7 @@ VideoCaptureController::VideoCaptureController(
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       device_launch_observer_(nullptr),
       state_(blink::VIDEO_CAPTURE_STATE_STARTING),
-      has_received_frames_(false),
-      weak_ptr_factory_(this) {
+      has_received_frames_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

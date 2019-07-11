@@ -21,8 +21,7 @@ GetDeveloperIdsTask::GetDeveloperIdsTask(
     : DatabaseTask(host),
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetDeveloperIdsTask::~GetDeveloperIdsTask() = default;
 

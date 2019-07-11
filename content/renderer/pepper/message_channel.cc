@@ -183,9 +183,7 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
       plugin_message_queue_state_(WAITING_TO_START),
       var_converter_(instance->pp_instance(),
                      V8VarConverter::kDisallowObjectVars),
-      template_cache_(instance->GetIsolate()),
-      weak_ptr_factory_(this) {
-}
+      template_cache_(instance->GetIsolate()) {}
 
 gin::ObjectTemplateBuilder MessageChannel::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {

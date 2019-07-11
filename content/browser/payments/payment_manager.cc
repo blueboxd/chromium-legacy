@@ -26,8 +26,7 @@ PaymentManager::PaymentManager(
     PaymentAppContextImpl* payment_app_context,
     mojo::InterfaceRequest<payments::mojom::PaymentManager> request)
     : payment_app_context_(payment_app_context),
-      binding_(this, std::move(request)),
-      weak_ptr_factory_(this) {
+      binding_(this, std::move(request)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(payment_app_context);
 

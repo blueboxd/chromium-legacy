@@ -127,7 +127,7 @@ class MouseCursorOverlayController::Observer : public ui::EventHandler,
 };
 
 MouseCursorOverlayController::MouseCursorOverlayController()
-    : mouse_move_behavior_atomic_(kNotMoving), weak_factory_(this) {
+    : mouse_move_behavior_atomic_(kNotMoving) {
   // MouseCursorOverlayController can be constructed on any thread, but
   // thereafter must be used according to class-level comments.
   DETACH_FROM_SEQUENCE(ui_sequence_checker_);

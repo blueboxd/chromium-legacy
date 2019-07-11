@@ -183,8 +183,7 @@ GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
     : backend_state_(kInitializing),
       path_(path),
       max_size_bytes_(max_size_bytes),
-      cache_type_(cache_type),
-      weak_ptr_factory_(this) {
+      cache_type_(cache_type) {
   CreateBackend();
 }
 

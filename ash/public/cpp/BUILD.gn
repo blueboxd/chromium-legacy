@@ -191,7 +191,7 @@ component("cpp") {
     "system_tray_focus_observer.h",
     "tablet_mode.cc",
     "tablet_mode.h",
-    "tablet_mode_toggle_observer.h",
+    "tablet_mode_observer.h",
     "toast_data.cc",
     "toast_data.h",
     "toast_manager.cc",
@@ -308,6 +308,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/gfx:test_support",
+    "//ui/views:test_support",
   ]
 }
 

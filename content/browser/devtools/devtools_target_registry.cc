@@ -107,7 +107,7 @@ class DevToolsTargetRegistry::Impl : public DevToolsTargetRegistry::Resolver {
       Add(std::move(new_info));
   }
 
-  Impl() : weak_factory_(this) { DETACH_FROM_THREAD(thread_checker_); }
+  Impl() { DETACH_FROM_THREAD(thread_checker_); }
   ~Impl() override = default;
 
  private:
@@ -118,7 +118,7 @@ class DevToolsTargetRegistry::Impl : public DevToolsTargetRegistry::Resolver {
   base::flat_map<int, const TargetInfo*> target_info_by_ftn_id_;
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<DevToolsTargetRegistry::Impl> weak_factory_;
+  base::WeakPtrFactory<DevToolsTargetRegistry::Impl> weak_factory_{this};
 };
 
 class DevToolsTargetRegistry::ContentsObserver : public ObserverBase,

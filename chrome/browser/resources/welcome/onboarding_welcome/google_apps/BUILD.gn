@@ -6,6 +6,8 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":google_app_proxy",
+    ":google_apps_metrics_proxy",
     ":nux_google_apps",
   ]
 }
@@ -13,9 +15,9 @@ js_type_check("closure_compile") {
 js_library("nux_google_apps") {
   deps = [
     ":google_app_proxy",
+    ":google_apps_metrics_proxy",
     "../:navigation_behavior",
     "../shared:bookmark_proxy",
-    "../shared:module_metrics_proxy",
     "../shared:nux_types",
     "../shared:step_indicator",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
@@ -30,4 +32,10 @@ js_library("google_app_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("google_apps_metrics_proxy") {
+  deps = [
+    "../shared:module_metrics_proxy",
+  ]
 }

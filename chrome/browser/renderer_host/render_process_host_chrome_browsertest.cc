@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/search/search.h"
@@ -25,6 +24,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -575,13 +575,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 class WindowDestroyer : public content::WebContentsObserver {
  public:
   WindowDestroyer(content::WebContents* web_contents, TabStripModel* model)
-      : content::WebContentsObserver(web_contents),
-        tab_strip_model_(model),
-        browser_closed_observer_(chrome::NOTIFICATION_BROWSER_CLOSED,
-                                 content::NotificationService::AllSources()) {}
+      : content::WebContentsObserver(web_contents), tab_strip_model_(model) {}
 
   // Wait for the browser window to be destroyed.
-  void Wait() { browser_closed_observer_.Wait(); }
+  void Wait() { ui_test_utils::WaitForBrowserToClose(); }
 
   void RenderProcessGone(base::TerminationStatus status) override {
     tab_strip_model_->CloseAllTabs();
@@ -589,7 +586,6 @@ class WindowDestroyer : public content::WebContentsObserver {
 
  private:
   TabStripModel* tab_strip_model_;
-  content::WindowedNotificationObserver browser_closed_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowDestroyer);
 };

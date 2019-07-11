@@ -20,8 +20,7 @@ namespace protocol {
 
 MemoryHandler::MemoryHandler()
     : DevToolsDomainHandler(Memory::Metainfo::domainName),
-      process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      weak_factory_(this) {}
+      process_host_id_(ChildProcessHost::kInvalidUniqueID) {}
 
 MemoryHandler::~MemoryHandler() {}
 

@@ -88,7 +88,6 @@ public class FeatureUtilities {
     private static Boolean sIsNetworkServiceEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
-    private static Boolean sIsTabPersistentStoreTaskRunnerEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
@@ -192,7 +191,6 @@ public class FeatureUtilities {
         cacheNetworkServiceWarmUpEnabled();
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
-        cacheTabPersistentStoreTaskRunnerVariant();
         cacheReachedCodeProfilerTrialGroup();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
@@ -368,29 +366,6 @@ public class FeatureUtilities {
                     ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
         }
         return sIsHomepageTileEnabled;
-    }
-
-    /**
-     * Cache the whether or not TabPersistentStore is using TaskRunners, so on next startup, the
-     * value can be made available immediately.
-     */
-    private static void cacheTabPersistentStoreTaskRunnerVariant() {
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_PERSISTENT_STORE_TASK_RUNNER));
-    }
-
-    /**
-     * @return Whether or not we are using the TaskRunner API in TabPersistentStore.
-     */
-    public static boolean isTabPersistentStoreTaskRunnerEnabled() {
-        if (sIsTabPersistentStoreTaskRunnerEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsTabPersistentStoreTaskRunnerEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY, false);
-        }
-        return sIsTabPersistentStoreTaskRunnerEnabled;
     }
 
     /**

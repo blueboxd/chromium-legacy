@@ -35,6 +35,8 @@ const char kContainerName[] = "container_name";
 const char kPackageID[] = "package;1;;";
 constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 const uint8_t kUsbPort = 0x01;
+const char kTerminaKernelVersion[] =
+    "4.19.56-05556-gca219a5b1086 #3 SMP PREEMPT Mon Jul 1 14:36:38 CEST 2019";
 
 void ExpectFailure(base::OnceClosure closure, bool success) {
   EXPECT_FALSE(success);
@@ -1006,6 +1008,85 @@ TEST_F(CrostiniManagerRestartTest, UninstallThenRestart) {
 
   EXPECT_EQ(2, restart_crostini_callback_count_);
   EXPECT_EQ(1, remove_crostini_callback_count_);
+}
+
+class CrostiniManagerEnterpriseReportingTest
+    : public CrostiniManagerRestartTest {
+ public:
+  void SetUp() override {
+    CrostiniManagerRestartTest::SetUp();
+
+    // Ensure that Crostini restart is successful:
+    disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager;
+    chromeos::disks::DiskMountManager::InitializeForTesting(
+        disk_mount_manager_mock_);
+    EXPECT_CALL(*disk_mount_manager_mock_, MountPath)
+        .WillOnce(
+            Invoke(this, &CrostiniManagerEnterpriseReportingTest::SshfsMount));
+
+    // Enable Crostini reporting:
+    profile()->GetPrefs()->SetBoolean(prefs::kReportCrostiniUsageEnabled, true);
+  }
+
+  void TearDown() override {
+    chromeos::disks::DiskMountManager::Shutdown();
+    CrostiniManagerRestartTest::TearDown();
+  }
+};
+
+TEST_F(CrostiniManagerEnterpriseReportingTest,
+       LogKernelVersionForEnterpriseReportingSuccess) {
+  // Set success response for retrieving enterprise reporting info:
+  vm_tools::concierge::GetVmEnterpriseReportingInfoResponse response;
+  response.set_success(true);
+  response.set_vm_kernel_version(kTerminaKernelVersion);
+  fake_concierge_client_->set_get_vm_enterprise_reporting_info_response(
+      response);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(
+      fake_concierge_client_->get_vm_enterprise_reporting_info_called());
+  EXPECT_EQ(1, restart_crostini_callback_count_);
+  EXPECT_EQ(kTerminaKernelVersion,
+            profile()->GetPrefs()->GetString(
+                crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion));
+}
+
+TEST_F(CrostiniManagerEnterpriseReportingTest,
+       LogKernelVersionForEnterpriseReportingFailure) {
+  // Set error response for retrieving enterprise reporting info:
+  vm_tools::concierge::GetVmEnterpriseReportingInfoResponse response;
+  response.set_success(false);
+  response.set_failure_reason("Don't feel like it");
+  fake_concierge_client_->set_get_vm_enterprise_reporting_info_response(
+      response);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(
+      fake_concierge_client_->get_vm_enterprise_reporting_info_called());
+  EXPECT_EQ(1, restart_crostini_callback_count_);
+  // In case of an error, the pref should be (re)set to the empty string:
+  EXPECT_TRUE(
+      profile()
+          ->GetPrefs()
+          ->GetString(crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion)
+          .empty());
 }
 
 TEST_F(CrostiniManagerTest, ExportContainerSuccess) {

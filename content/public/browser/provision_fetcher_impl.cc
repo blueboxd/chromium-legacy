@@ -24,7 +24,7 @@ void ProvisionFetcherImpl::Create(
 
 ProvisionFetcherImpl::ProvisionFetcherImpl(
     std::unique_ptr<media::ProvisionFetcher> provision_fetcher)
-    : provision_fetcher_(std::move(provision_fetcher)), weak_factory_(this) {
+    : provision_fetcher_(std::move(provision_fetcher)) {
   DVLOG(1) << __FUNCTION__;
 }
 

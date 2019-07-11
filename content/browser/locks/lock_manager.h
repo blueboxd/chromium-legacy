@@ -79,7 +79,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   std::map<url::Origin, OriginState> origins_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LockManager> weak_ptr_factory_;
+  base::WeakPtrFactory<LockManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockManager);
 };

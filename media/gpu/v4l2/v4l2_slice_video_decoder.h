@@ -110,14 +110,26 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
     // Initial state. Transitions to |kDecoding| if Initialize() is successful,
     // |kError| otherwise.
     kUninitialized,
-    // Transitions to |kPause| when flushing or changing resolution,
+    // Transitions to |kFlushing| when flushing or changing resolution,
     // |kError| if any unexpected error occurs.
     kDecoding,
     // Transitions to |kDecoding| when flushing or changing resolution is
-    // finished.
-    kPause,
+    // finished. Do not process new input buffer in this state.
+    kFlushing,
     // Error state. Cannot transition to other state anymore.
     kError,
+  };
+
+  // The reason the decoding is paused.
+  enum class PauseReason {
+    // Not stopped, decoding normally.
+    kNone,
+    // Cannot create a new V4L2 surface. Waiting for surfaces to be released.
+    kRanOutOfSurfaces,
+    // A VP9 superframe contains multiple subframes. Before decoding the next
+    // subframe, we need to wait for previous subframes decoded and update the
+    // context.
+    kWaitSubFrameDecoded,
   };
 
   // Initialize on decoder thread.
@@ -202,6 +214,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // State of the instance.
   State state_;
+  // Indicates why decoding is currently paused.
+  PauseReason pause_reason_ = PauseReason::kNone;
 
   // Parameters for generating output VideoFrame.
   base::Optional<VideoFrameLayout> frame_layout_;

@@ -57,6 +57,12 @@ const SkColor kCheckboxAndRadioStrokeColor = SkColorSetRGB(0x73, 0x73, 0x73);
 const SkColor kCheckboxAndRadioStrokeDisabledColor =
     SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
+const int kInputBorderRadius = 2;
+const int kInputBorderWidth = 1;
+const SkColor kInputBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kInputBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kInputBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +448,40 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
 
   // Return the rectangle for drawing any additional decorations.
   return skrect;
+}
+
+void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
+                                     State state,
+                                     const gfx::Rect& rect,
+                                     const TextFieldExtraParams& text) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintTextField(canvas, state, rect, text);
+  }
+
+  SkRect bounds = gfx::RectToSkRect(rect);
+  const SkScalar borderWidth = SkIntToScalar(kInputBorderWidth);
+
+  // Paint the background (is not visible behind the rounded corners).
+  bounds.inset(borderWidth / 2, borderWidth / 2);
+  cc::PaintFlags fill_flags;
+  fill_flags.setStyle(cc::PaintFlags::kFill_Style);
+  fill_flags.setColor(text.background_color);
+  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
+                        SkIntToScalar(kInputBorderRadius), fill_flags);
+
+  // Paint the border: 1px solid.
+  cc::PaintFlags stroke_flags;
+  if (state == kHovered) {
+    stroke_flags.setColor(kInputBorderHoveredColor);
+  } else if (state == kDisabled) {
+    stroke_flags.setColor(kInputBorderDisabledColor);
+  } else {
+    stroke_flags.setColor(kInputBorderColor);
+  }
+  stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  stroke_flags.setStrokeWidth(borderWidth);
+  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
+                        SkIntToScalar(kInputBorderRadius), stroke_flags);
 }
 
 gfx::Size NativeThemeAura::GetPartSize(Part part,

@@ -37,9 +37,7 @@
 namespace content {
 
 ShellDownloadManagerDelegate::ShellDownloadManagerDelegate()
-    : download_manager_(nullptr),
-      suppress_prompting_(false),
-      weak_ptr_factory_(this) {}
+    : download_manager_(nullptr), suppress_prompting_(false) {}
 
 ShellDownloadManagerDelegate::~ShellDownloadManagerDelegate() {
   if (download_manager_) {

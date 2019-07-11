@@ -104,8 +104,7 @@ class RespondWithCallbacks
         event_type_(event_type),
         service_worker_version_(service_worker_version),
         invoke_payment_app_callback_(std::move(callback)),
-        binding_(this),
-        weak_ptr_factory_(this) {
+        binding_(this) {
     request_id_ = service_worker_version->StartRequest(
         event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -122,8 +121,7 @@ class RespondWithCallbacks
         event_type_(event_type),
         service_worker_version_(service_worker_version),
         payment_event_result_callback_(std::move(callback)),
-        binding_(this),
-        weak_ptr_factory_(this) {
+        binding_(this) {
     request_id_ = service_worker_version->StartRequest(
         event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -250,7 +248,7 @@ class RespondWithCallbacks
   PaymentAppProvider::PaymentEventResultCallback payment_event_result_callback_;
   mojo::Binding<payments::mojom::PaymentHandlerResponseCallback> binding_;
 
-  base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_;
+  base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RespondWithCallbacks);
 };

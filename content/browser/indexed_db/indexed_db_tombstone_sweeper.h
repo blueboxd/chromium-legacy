@@ -189,7 +189,7 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
   SweepState sweep_state_;
   SweepMetrics metrics_;
 
-  base::WeakPtrFactory<IndexedDBTombstoneSweeper> ptr_factory_;
+  base::WeakPtrFactory<IndexedDBTombstoneSweeper> ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTombstoneSweeper);
 };
 

@@ -33685,6 +33685,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
+  <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
@@ -34623,6 +34624,7 @@ from previous Chrome versions.
   <int value="-633274640" label="WebRTCPipeWireCapturer:enabled"/>
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
+  <int value="-631614101" label="CameraSystemWebApp:enabled"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
@@ -35121,6 +35123,7 @@ from previous Chrome versions.
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
   <int value="93832899" label="NtpCustomizationMenuV2:enabled"/>
+  <int value="97091906" label="AutofillSaveCardShowNoThanks:enabled"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="98218116" label="ContextualSearchLongpressResolve:disabled"/>
   <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
@@ -35485,6 +35488,7 @@ from previous Chrome versions.
   <int value="652561231" label="CustomContextMenu:enabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
+  <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
   <int value="663027937" label="NewTabPageCustomLinks:enabled"/>
   <int value="663069508" label="TabToGTSAnimation:enabled"/>
   <int value="663294302" label="ForceUseAPDownloadProtection:disabled"/>

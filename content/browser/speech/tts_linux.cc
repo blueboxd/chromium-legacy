@@ -97,7 +97,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplLinux>;
 
-  base::WeakPtrFactory<TtsPlatformImplLinux> weak_factory_;
+  base::WeakPtrFactory<TtsPlatformImplLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplLinux);
 };
@@ -105,8 +105,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 // static
 SPDNotificationType TtsPlatformImplLinux::current_notification_ = SPD_EVENT_END;
 
-TtsPlatformImplLinux::TtsPlatformImplLinux()
-    : utterance_id_(0), weak_factory_(this) {
+TtsPlatformImplLinux::TtsPlatformImplLinux() : utterance_id_(0) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))

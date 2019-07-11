@@ -33,7 +33,8 @@ class TestProfileBuilder : public ProfileBuilder {
 
   // ProfileBuilder
   ModuleCache* GetModuleCache() override { return module_cache_; }
-  void RecordMetadata() override {}
+  void RecordMetadata(
+      base::ProfileBuilder::MetadataProvider* metadata_provider) override {}
   void OnSampleCompleted(std::vector<Frame> frames) override {}
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override {}
@@ -60,8 +61,7 @@ class TestThreadDelegate : public ThreadDelegate {
                      // The register context will be initialized to
                      // *|thread_context| if non-null.
                      RegisterContext* thread_context = nullptr)
-      : fake_stack_(fake_stack),
-        thread_context_(thread_context) {}
+      : fake_stack_(fake_stack), thread_context_(thread_context) {}
 
   TestThreadDelegate(const TestThreadDelegate&) = delete;
   TestThreadDelegate& operator=(const TestThreadDelegate&) = delete;

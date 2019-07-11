@@ -71,7 +71,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   uint64_t expected_total_size_ = 0;
   bool data_pipe_closed_ = false;
 
-  base::WeakPtrFactory<CacheStorageBlobToDiskCache> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheStorageBlobToDiskCache> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageBlobToDiskCache);
 };

@@ -96,8 +96,7 @@ PepperFileChooserHost::PepperFileChooserHost(RendererPpapiHost* host,
                                              PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      handler_(nullptr),
-      weak_factory_(this) {}
+      handler_(nullptr) {}
 
 PepperFileChooserHost::~PepperFileChooserHost() {}
 

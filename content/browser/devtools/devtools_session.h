@@ -139,7 +139,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   base::OnceClosure runtime_resume_;
   DevToolsExternalAgentProxyDelegate* proxy_delegate_ = nullptr;
 
-  base::WeakPtrFactory<DevToolsSession> weak_factory_;
+  base::WeakPtrFactory<DevToolsSession> weak_factory_{this};
 };
 
 }  // namespace content

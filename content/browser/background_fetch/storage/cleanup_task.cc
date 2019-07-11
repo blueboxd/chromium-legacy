@@ -22,8 +22,7 @@ namespace {
 void EmptyErrorHandler(blink::mojom::BackgroundFetchError) {}
 }  // namespace
 
-CleanupTask::CleanupTask(DatabaseTaskHost* host)
-    : DatabaseTask(host), weak_factory_(this) {}
+CleanupTask::CleanupTask(DatabaseTaskHost* host) : DatabaseTask(host) {}
 
 CleanupTask::~CleanupTask() = default;
 

@@ -44,8 +44,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
                       const url::Origin& origin)
       : process_id_(process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
-        origin_(origin),
-        weak_factory_(this) {
+        origin_(origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     RegisterMojoInterfaces();
   }
@@ -305,7 +304,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   service_manager::BinderRegistry registry_;
 
-  base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_;
+  base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerHost);
 };

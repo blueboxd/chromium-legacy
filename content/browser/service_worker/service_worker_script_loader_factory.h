@@ -104,7 +104,7 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   // Used to copy script started at CopyScript().
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
 
-  base::WeakPtrFactory<ServiceWorkerScriptLoaderFactory> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerScriptLoaderFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };

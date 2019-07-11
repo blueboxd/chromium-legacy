@@ -324,7 +324,7 @@ class TestDownloadHttpResponse {
   // Callback to run when the response is sent.
   OnResponseSentCallback on_response_sent_callback_;
 
-  base::WeakPtrFactory<TestDownloadHttpResponse> weak_ptr_factory_;
+  base::WeakPtrFactory<TestDownloadHttpResponse> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestDownloadHttpResponse);
 };

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
 
-#include <array>
 #include <cstring>
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
@@ -460,8 +459,8 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
 
   // Function templates
   v8::HandleScope handleScope(isolate);
-  std::array<v8::Local<v8::FunctionTemplate>, kSnapshotInterfaceSize>
-      interface_templates;
+  Vector<v8::Local<v8::FunctionTemplate>> interface_templates(
+      kSnapshotInterfaceSize);
   v8::Local<v8::FunctionTemplate> window_template;
   for (size_t i = 0; i < kSnapshotInterfaceSize; ++i) {
     const WrapperTypeInfo* wrapper_type_info =

@@ -321,8 +321,7 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
                                     : ui::PAGE_TRANSITION_LINK),
       contents_mime_type_("text/html"),
-      load_url_params_(nullptr),
-      weak_factory_(this) {
+      load_url_params_(nullptr) {
   net::IPAddress address;
   CHECK(address.AssignFromIPLiteral("2001:db8::1"));
   remote_endpoint_ = net::IPEndPoint(address, 80);

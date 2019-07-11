@@ -101,8 +101,7 @@ CodeCacheHostImpl::CodeCacheHostImpl(
     scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context)
     : render_process_id_(render_process_id),
       cache_storage_context_(std::move(cache_storage_context)),
-      generated_code_cache_context_(std::move(generated_code_cache_context)),
-      weak_ptr_factory_(this) {}
+      generated_code_cache_context_(std::move(generated_code_cache_context)) {}
 
 CodeCacheHostImpl::~CodeCacheHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

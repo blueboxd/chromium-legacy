@@ -108,6 +108,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
+    @DisabledTest(message = "crbug.com/982081")
     public void testBackgrounded() {
         startActivity(true);
         assertMainIntentBehavior(null);

@@ -160,8 +160,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
       delegate_(delegate),
       channel_(nullptr),
       is_channel_connected_(false),
-      notify_child_disconnected_(false),
-      weak_factory_(this) {
+      notify_child_disconnected_(false) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_ = ChildProcessHost::Create(this);

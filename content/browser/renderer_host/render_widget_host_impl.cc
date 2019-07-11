@@ -364,8 +364,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #endif
           frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
-                     base::checked_cast<uint32_t>(routing_id_)),
-      weak_factory_(this) {
+                     base::checked_cast<uint32_t>(routing_id_)) {
 #if defined(OS_MACOSX)
   fling_scheduler_ = std::make_unique<FlingSchedulerMac>(this);
 #elif defined(OS_ANDROID)

@@ -18,6 +18,8 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -248,6 +250,20 @@ void CaptionContainerView::UpdatePreviewView() {
 
   preview_view_->RecreatePreviews();
   Layout();
+}
+
+views::View* CaptionContainerView::GetView() {
+  return this;
+}
+
+gfx::Rect CaptionContainerView::GetHighlightBounds() {
+  // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
+  // be animating.
+  auto* window = GetWidget()->GetNativeWindow();
+  gfx::Rect target_bounds = window->GetTargetBounds();
+  target_bounds.set_origin(GetBoundsInScreen().origin());
+  ::wm::ConvertRectFromScreen(window->GetRootWindow(), &target_bounds);
+  return target_bounds;
 }
 
 void CaptionContainerView::Layout() {

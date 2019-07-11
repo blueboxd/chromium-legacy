@@ -48,7 +48,7 @@ class CONTENT_EXPORT SourceStreamToDataPipe {
   scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher writable_handle_watcher_;
 
-  base::WeakPtrFactory<SourceStreamToDataPipe> weak_factory_;
+  base::WeakPtrFactory<SourceStreamToDataPipe> weak_factory_{this};
 };
 
 }  // namespace content

@@ -23,8 +23,7 @@ GetMetadataTask::GetMetadataTask(DatabaseTaskHost* host,
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       developer_id_(developer_id),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetMetadataTask::~GetMetadataTask() = default;
 

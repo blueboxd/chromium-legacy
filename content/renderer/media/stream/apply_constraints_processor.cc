@@ -41,8 +41,7 @@ ApplyConstraintsProcessor::ApplyConstraintsProcessor(
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {}
+      task_runner_(std::move(task_runner)) {}
 
 ApplyConstraintsProcessor::~ApplyConstraintsProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

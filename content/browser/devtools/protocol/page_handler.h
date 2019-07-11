@@ -247,7 +247,7 @@ class PageHandler : public DevToolsDomainHandler,
   std::unique_ptr<blink::mojom::FileChooserParams> file_chooser_params_;
   base::Optional<std::pair<int, int>> file_chooser_rfh_id_;
 
-  base::WeakPtrFactory<PageHandler> weak_factory_;
+  base::WeakPtrFactory<PageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
 };

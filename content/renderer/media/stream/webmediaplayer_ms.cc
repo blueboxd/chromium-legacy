@@ -16,7 +16,6 @@
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
-#include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -29,6 +28,7 @@
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
@@ -85,9 +85,7 @@ class WebMediaPlayerMS::FrameDeliverer {
       : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
-        media_task_runner_(media_task_runner),
-        weak_factory_for_pool_(this),
-        weak_factory_(this) {
+        media_task_runner_(media_task_runner) {
     DETACH_FROM_THREAD(io_thread_checker_);
 
     if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
@@ -220,8 +218,8 @@ class WebMediaPlayerMS::FrameDeliverer {
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   THREAD_CHECKER(io_thread_checker_);
 
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_;
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_;
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_{this};
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
@@ -265,8 +263,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
       submitter_(std::move(submitter)),
-      surface_layer_mode_(surface_layer_mode),
-      weak_factory_(this) {
+      surface_layer_mode_(surface_layer_mode) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);
@@ -321,7 +318,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   // TODO(acolwell): Change this to DCHECK_EQ(load_type, LoadTypeMediaStream)
   // once Blink-side changes land.
   DCHECK_NE(load_type, kLoadTypeMediaSource);
-  web_stream_ = GetWebMediaStreamFromWebMediaPlayerSource(source);
+  web_stream_ = blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream_.IsNull())
     web_stream_.AddObserver(this);
 

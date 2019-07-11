@@ -27,8 +27,7 @@ BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
     const base::RepeatingClosure& connection_changed_callback)
     : network_connection_tracker_(nullptr),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-      connection_changed_callback_(connection_changed_callback),
-      weak_ptr_factory_(this) {
+      connection_changed_callback_(connection_changed_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(connection_changed_callback_);
 

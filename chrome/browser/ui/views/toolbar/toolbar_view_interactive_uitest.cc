@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "ui/views/focus/focus_manager.h"

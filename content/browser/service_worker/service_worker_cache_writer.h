@@ -317,7 +317,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   std::unique_ptr<ServiceWorkerResponseReader> compare_reader_;
   std::unique_ptr<ServiceWorkerResponseReader> copy_reader_;
   std::unique_ptr<ServiceWorkerResponseWriter> writer_;
-  base::WeakPtrFactory<ServiceWorkerCacheWriter> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerCacheWriter> weak_factory_{this};
 };
 
 }  // namespace content

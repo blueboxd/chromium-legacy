@@ -277,7 +277,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   Diagnostics diagnostics_;
 
-  base::WeakPtrFactory<IndexedDBTransaction> ptr_factory_;
+  base::WeakPtrFactory<IndexedDBTransaction> ptr_factory_{this};
 };
 
 }  // namespace content

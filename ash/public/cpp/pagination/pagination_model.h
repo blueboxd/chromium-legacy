@@ -12,18 +12,19 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/animation/animation_delegate_views.h"
 
 namespace gfx {
 class SlideAnimation;
 }
+
 namespace ash {
 
 class PaginationModelObserver;
 // A simple pagination model that consists of two numbers: the total pages and
 // the currently selected page. The model is a single selection model that at
 // the most one page can become selected at any time.
-class ASH_PUBLIC_EXPORT PaginationModel : public gfx::AnimationDelegate {
+class ASH_PUBLIC_EXPORT PaginationModel : public views::AnimationDelegateViews {
  public:
   // Holds info for transition animation and touch scroll.
   struct Transition {
@@ -45,7 +46,7 @@ class ASH_PUBLIC_EXPORT PaginationModel : public gfx::AnimationDelegate {
     double progress;
   };
 
-  PaginationModel();
+  explicit PaginationModel(views::View* owner_view);
   ~PaginationModel() override;
 
   void SetTotalPages(int total_pages);

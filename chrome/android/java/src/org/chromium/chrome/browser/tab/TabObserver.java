@@ -371,5 +371,5 @@ public interface TabObserver {
      * @param contentOffsetY The Y offset of the content in physical pixels.
      */
     void onBrowserControlsOffsetChanged(
-            int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY);
+            Tab tab, int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY);
 }

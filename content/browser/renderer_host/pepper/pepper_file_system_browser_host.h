@@ -167,7 +167,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
 
   std::string fsid_;  // used only for isolated filesystems.
 
-  base::WeakPtrFactory<PepperFileSystemBrowserHost> weak_factory_;
+  base::WeakPtrFactory<PepperFileSystemBrowserHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemBrowserHost);
 };

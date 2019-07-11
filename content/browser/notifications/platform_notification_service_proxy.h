@@ -109,8 +109,10 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   BrowserContext* browser_context_;
   PlatformNotificationService* notification_service_;
-  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_ui_;
-  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_io_;
+  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_ui_{
+      this};
+  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_io_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceProxy);
 };

@@ -43,7 +43,7 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
   RenderFrameHost* render_frame_host_;
   device::mojom::SensorProviderPtr sensor_provider_;
 
-  base::WeakPtrFactory<SensorProviderProxyImpl> weak_factory_;
+  base::WeakPtrFactory<SensorProviderProxyImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderProxyImpl);
 };

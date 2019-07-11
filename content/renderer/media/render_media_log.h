@@ -87,7 +87,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
 
   base::WeakPtr<RenderMediaLog> weak_this_;
-  base::WeakPtrFactory<RenderMediaLog> weak_factory_;
+  base::WeakPtrFactory<RenderMediaLog> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };

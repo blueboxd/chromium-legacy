@@ -277,6 +277,8 @@
         <include name="IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_JS" file="resources\app_management\permission_toggle.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML" file="resources\app_management\permission_view_header.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS" file="resources\app_management\permission_view_header.js" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_HTML" file="resources\app_management\pin_to_shelf_item.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_JS" file="resources\app_management\pin_to_shelf_item.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML" file="resources\app_management\pwa_permission_view.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_JS" file="resources\app_management\pwa_permission_view.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_REDUCERS_HTML" file="resources\app_management\reducers.html" type="BINDATA" />
@@ -291,6 +293,8 @@
         <include name="IDR_APP_MANAGEMENT_STORE_CLIENT_JS" file="resources\app_management\store_client.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_STORE_HTML" file="resources\app_management\store.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_STORE_JS" file="resources\app_management\store.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_TOGGLE_ROW_HTML" file="resources\app_management\toggle_row.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_TOGGLE_ROW_JS" file="resources\app_management\toggle_row.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_TYPES_JS" file="resources\app_management\types.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_UTIL_HTML" file="resources\app_management\util.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_UTIL_JS" file="resources\app_management\util.js" type="BINDATA" />

@@ -56,6 +56,15 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
         png_data.size(), bitmap));
   }
 
+  void LoadInitialAccessibilityTreeFromHtml(const std::string& html) {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLoadComplete);
+    GURL html_data_url("data:text/html," + html);
+    NavigateToURL(shell(), html_data_url);
+    waiter.WaitForNotification();
+  }
+
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           ax::mojom::Role role,
@@ -93,18 +102,11 @@ class AccessibilityCanvasActionBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<button>One</button>"
-      "<button>Two</button>"
-      "<button>Three</button>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <button>One</button>
+      <button>Two</button>
+      <button>Three</button>
+      )HTML");
 
   BrowserAccessibility* target = FindNode(ax::mojom::Role::kButton, "One");
   ASSERT_NE(nullptr, target);
@@ -121,16 +123,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        IncrementDecrementActions) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<input type=range min=2 value=8 max=10 step=2>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <input type=range min=2 value=8 max=10 step=2>
+      )HTML");
 
   BrowserAccessibility* target = FindNode(ax::mojom::Role::kSlider, "");
   ASSERT_NE(nullptr, target);
@@ -172,20 +167,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<div style='width:100; height:50; overflow:scroll' "
-      "aria-label='shakespeare'>"
-      "To be or not to be, that is the question."
-      "</div>");
-
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div style="width:100; height:50; overflow:scroll"
+          aria-label="shakespeare">
+        To be or not to be, that is the question.
+      </div>
+      )HTML");
 
   BrowserAccessibility* target =
       FindNode(ax::mojom::Role::kGenericContainer, "shakespeare");
@@ -210,32 +197,25 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<body>"
-      "<canvas aria-label='canvas' id='c' width='4' height='2'></canvas>"
-      "<script>\n"
-      "  var c = document.getElementById('c').getContext('2d');\n"
-      "  c.beginPath();\n"
-      "  c.moveTo(0, 0.5);\n"
-      "  c.lineTo(4, 0.5);\n"
-      "  c.strokeStyle = '%23ff0000';\n"
-      "  c.stroke();\n"
-      "  c.beginPath();\n"
-      "  c.moveTo(0, 1.5);\n"
-      "  c.lineTo(4, 1.5);\n"
-      "  c.strokeStyle = '%230000ff';\n"
-      "  c.stroke();\n"
-      "</script>"
-      "</body>");
-
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <body>
+        <canvas aria-label="canvas" id="c" width="4" height="2">
+        </canvas>
+        <script>
+          var c = document.getElementById('c').getContext('2d');
+          c.beginPath();
+          c.moveTo(0, 0.5);
+          c.lineTo(4, 0.5);
+          c.strokeStyle = '%23ff0000';
+          c.stroke();
+          c.beginPath();
+          c.moveTo(0, 1.5);
+          c.lineTo(4, 1.5);
+          c.strokeStyle = '%230000ff';
+          c.stroke();
+        </script>
+      </body>
+      )HTML");
 
   BrowserAccessibility* target = FindNode(ax::mojom::Role::kCanvas, "canvas");
   ASSERT_NE(nullptr, target);
@@ -262,26 +242,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
                        CanvasGetImageScale) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<body>"
-      "<canvas aria-label='canvas' id='c' width='40' height='20'></canvas>"
-      "<script>\n"
-      "  var c = document.getElementById('c').getContext('2d');\n"
-      "  c.fillStyle = '%2300ff00';\n"
-      "  c.fillRect(0, 0, 40, 10);\n"
-      "  c.fillStyle = '%23ff00ff';\n"
-      "  c.fillRect(0, 10, 40, 10);\n"
-      "</script>"
-      "</body>");
-
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <body>
+      <canvas aria-label="canvas" id="c" width="40" height="20">
+      </canvas>
+      <script>
+        var c = document.getElementById('c').getContext('2d');
+        c.fillStyle = '%2300ff00';
+        c.fillRect(0, 0, 40, 10);
+        c.fillStyle = '%23ff00ff';
+        c.fillRect(0, 10, 40, 10);
+      </script>
+    </body>
+    )HTML");
 
   BrowserAccessibility* target = FindNode(ax::mojom::Role::kCanvas, "canvas");
   ASSERT_NE(nullptr, target);
@@ -345,18 +318,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        DoDefaultActionFocusesContentEditable) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<div><button>Before</button></div>"
-      "<div contenteditable>Editable text</div>"
-      "<div><button>After</button></div>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div><button>Before</button></div>
+      <div contenteditable>Editable text</div>
+      <div><button>After</button></div>
+      )HTML");
 
   BrowserAccessibility* target =
       FindNode(ax::mojom::Role::kGenericContainer, "Editable text");
@@ -372,16 +338,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, InputSetValue) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<input aria-label='Answer' value='Before'>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <input aria-label="Answer" value="Before">
+      )HTML");
 
   BrowserAccessibility* target =
       FindNode(ax::mojom::Role::kTextField, "Answer");
@@ -400,16 +359,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, InputSetValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, TextareaSetValue) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<textarea aria-label='Answer'>Before</textarea>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <textarea aria-label="Answer">Before</textarea>
+      )HTML");
 
   BrowserAccessibility* target =
       FindNode(ax::mojom::Role::kTextField, "Answer");
@@ -441,16 +393,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, TextareaSetValue) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        ContenteditableSetValue) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<div contenteditable aria-label='Answer'>Before</div>");
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div contenteditable aria-label="Answer">Before</div>
+      )HTML");
 
   BrowserAccessibility* target =
       FindNode(ax::mojom::Role::kGenericContainer, "Answer");
@@ -481,18 +426,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL url(
-      "data:text/html,"
-      "<a href='about:blank'>1</a>"
-      "<a href='about:blank'>2</a>");
-
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <a href="about:blank">1</a>
+      <a href="about:blank">2</a>
+      )HTML");
 
   BrowserAccessibility* target_node = FindNode(ax::mojom::Role::kLink, "2");
   EXPECT_NE(target_node, nullptr);

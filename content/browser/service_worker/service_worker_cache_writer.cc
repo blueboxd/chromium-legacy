@@ -128,8 +128,7 @@ ServiceWorkerCacheWriter::ServiceWorkerCacheWriter(
       pause_when_not_identical_(pause_when_not_identical),
       compare_reader_(std::move(compare_reader)),
       copy_reader_(std::move(copy_reader)),
-      writer_(std::move(writer)),
-      weak_factory_(this) {}
+      writer_(std::move(writer)) {}
 
 ServiceWorkerCacheWriter::~ServiceWorkerCacheWriter() {}
 

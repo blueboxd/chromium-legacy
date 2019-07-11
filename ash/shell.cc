@@ -663,6 +663,7 @@ Shell::~Shell() {
 
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
+  tablet_mode_controller_->Shutdown();
   tablet_mode_controller_.reset();
 
   toast_manager_.reset();

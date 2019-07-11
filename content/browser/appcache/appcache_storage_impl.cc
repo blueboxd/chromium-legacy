@@ -1377,8 +1377,7 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
       database_(nullptr),
       is_disabled_(false),
       delete_and_start_over_pending_(false),
-      expecting_cleanup_complete_on_disable_(false),
-      weak_factory_(this) {}
+      expecting_cleanup_complete_on_disable_(false) {}
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {
   for (StoreGroupAndCacheTask* task : pending_quota_queries_)

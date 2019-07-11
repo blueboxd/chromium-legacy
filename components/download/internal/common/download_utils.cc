@@ -55,6 +55,7 @@ DownloadInterruptReason HandleRequestCompletionStatus(
     net::Error error_code,
     bool ignore_content_length_mismatch,
     net::CertStatus cert_status,
+    bool is_partial_request,
     DownloadInterruptReason abort_reason) {
   if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH &&
       ignore_content_length_mismatch) {
@@ -81,6 +82,12 @@ DownloadInterruptReason HandleRequestCompletionStatus(
     // was explicitly cancelled, then use it.
     return abort_reason;
   }
+
+  // For some servers, a range request could cause the server to send
+  // wrongly encoded content and cause decoding failures. Restart the download
+  // in that case.
+  if (is_partial_request && error_code == net::ERR_CONTENT_DECODING_FAILED)
+    return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
 
   return ConvertNetErrorToInterruptReason(error_code,
                                           DOWNLOAD_INTERRUPT_FROM_NETWORK);
@@ -179,12 +186,8 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
         (save_info->length > 0 &&
          last_byte != save_info->offset + save_info->length - 1)) {
       // The server returned a different range than the one we requested. Assume
-      // the response is bad.
-      //
-      // In the future we should consider allowing offsets that are less than
-      // the offset we've requested, since in theory we can truncate the partial
-      // file at the offset and continue.
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      // the server doesn't support range request.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
     }
 
     return DOWNLOAD_INTERRUPT_REASON_NONE;

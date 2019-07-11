@@ -732,9 +732,7 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
  public:
   RenderProcessHostIsReadyObserver(RenderProcessHost* render_process_host,
                                    base::OnceClosure task)
-      : render_process_host_(render_process_host),
-        task_(std::move(task)),
-        weak_factory_(this) {
+      : render_process_host_(render_process_host), task_(std::move(task)) {
     render_process_host_->AddObserver(this);
     if (render_process_host_->IsReady())
       PostTask();
@@ -768,7 +766,7 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
 
   RenderProcessHost* render_process_host_;
   base::OnceClosure task_;
-  base::WeakPtrFactory<RenderProcessHostIsReadyObserver> weak_factory_;
+  base::WeakPtrFactory<RenderProcessHostIsReadyObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostIsReadyObserver);
 };
@@ -1279,8 +1277,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       std::unique_ptr<service_manager::BinderRegistry> registry)
       : child_identity_(child_identity),
         registry_(std::move(registry)),
-        controller_(new ConnectionFilterController(this)),
-        weak_factory_(this) {
+        controller_(new ConnectionFilterController(this)) {
     // Registration of this filter may race with browser shutdown, in which case
     // it's possible for this filter to be destroyed on the main thread. This
     // is fine as long as the filter hasn't been used on the IO thread yet. We
@@ -1328,7 +1325,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   base::Lock enabled_lock_;
   bool enabled_ GUARDED_BY(enabled_lock_) = true;
 
-  base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;
+  base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
@@ -1527,8 +1524,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
-      shutdown_exit_code_(-1),
-      weak_factory_(this) {
+      shutdown_exit_code_(-1) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);

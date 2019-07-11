@@ -285,7 +285,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   // once animations are added.
   EXPECT_FALSE(overview_grid->IsDesksBarViewActive());
 
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
 
   // Since we have a single default desk, there should be no mini_views, and the
   // new desk button is enabled.
@@ -343,7 +343,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
       overview_controller->overview_session()->GetGridWithRootWindow(
           Shell::GetPrimaryRootWindow());
   EXPECT_TRUE(overview_grid->IsDesksBarViewActive());
-  desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  desks_bar_view = overview_grid->desks_bar_view();
 
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
@@ -699,7 +699,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
   EXPECT_EQ(2u, overview_grid->window_list().size());
@@ -769,7 +769,7 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
   ASSERT_EQ(2u, roots.size());
   // Use secondary display grid.
   const auto* overview_grid = GetOverviewGridForRoot(roots[1]);
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
 
@@ -819,7 +819,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   // Remove desk_1 using the close button on its mini view. desk_1 is currently
   // inactive. Its windows should be moved to desk_4 and added to the overview
   // grid in the MRU order (win0, and win1).
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
   Desk* desk_1 = controller->desks()[0].get();
@@ -896,7 +896,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->window_list().size());
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   auto* mini_view = desks_bar_view->mini_views().back().get();
@@ -961,7 +961,7 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   const Desk* desk_1 = controller->desks()[0].get();
   const auto* mini_view = desks_bar_view->mini_views().front().get();
   ClickOnMiniView(mini_view, GetEventGenerator());
@@ -1037,7 +1037,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
   ASSERT_TRUE(overview_item);
   const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
 
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
@@ -1096,7 +1096,7 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(overview_item);
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
 
@@ -1147,7 +1147,7 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   ASSERT_TRUE(overview_item);
   const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
 
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
 
   // Drag it and drop it on the new desk button. Nothing happens, it should be
@@ -1289,7 +1289,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(overview_item);
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
 
   // Now drag it to desk_2's mini_view, so that it moves to desk_2. Expect that
@@ -1346,7 +1346,7 @@ TEST_F(DesksTest, NoDesksBarInTabletModeWithOneDesk) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_FALSE(desks_bar_view);
 
   // It's possible to drag the window without any crashes.
@@ -1364,7 +1364,7 @@ TEST_F(DesksTest, NoDesksBarInTabletModeWithOneDesk) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
 }
@@ -1426,7 +1426,7 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(3u, desks_bar_view->mini_views().size());
   auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
@@ -1505,7 +1505,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(overview_item);
-  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
 
@@ -1650,6 +1650,8 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_FALSE(win3->IsVisible());
 }
 
+}  // namespace
+
 // Simulates the same behavior of event rewriting that key presses go through.
 class DesksAcceleratorsTest : public DesksTest,
                               public ui::EventRewriterChromeOS::Delegate {
@@ -1686,9 +1688,16 @@ class DesksAcceleratorsTest : public DesksTest,
     generator->ReleaseKey(key_code, flags);
   }
 
+  // Moves the overview highlight to the next item.
+  void MoveOverviewHighlighter(OverviewSession* session) {
+    session->Move(/*reverse=*/false);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DesksAcceleratorsTest);
 };
+
+namespace {
 
 TEST_F(DesksAcceleratorsTest, NewDesk) {
   auto* controller = DesksController::Get();
@@ -1847,24 +1856,29 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   ASSERT_EQ(num_windows_before, desk_1->windows().size());
   EXPECT_TRUE(desk_2->windows().empty());
 
-  // It's possible to move the highlighted window.
-  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  overview_grid->Move(/*reverse=*/false, /*animate=*/false);
-  EXPECT_EQ(win0.get(), overview_grid->SelectedWindow()->GetWindow());
+  auto* overview_session = overview_controller->overview_session();
+  ASSERT_TRUE(overview_session);
+  // It's possible to move the highlighted window. |Move()| will cycle through
+  // the desk items first, so call it until we are highlighting an OverviewItem.
+  while (!overview_session->GetHighlightedWindow())
+    MoveOverviewHighlighter(overview_session);
+  EXPECT_EQ(win0.get(), overview_session->GetHighlightedWindow());
   SendAccelerator(ui::VKEY_OEM_6, flags);
   EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
   EXPECT_TRUE(base::Contains(desk_2->windows(), win0.get()));
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  // The highlight widget should move to the next window.
-  EXPECT_EQ(win1.get(), overview_grid->SelectedWindow()->GetWindow());
+  // The highlight widget should move to the next window if we call
+  // |MoveOverviewHighlighter()| again.
+  MoveOverviewHighlighter(overview_session);
+  EXPECT_EQ(win1.get(), overview_session->GetHighlightedWindow());
   SendAccelerator(ui::VKEY_OEM_6, flags);
   EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
   EXPECT_TRUE(base::Contains(desk_2->windows(), win1.get()));
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // No more highlighted windows.
-  EXPECT_FALSE(overview_grid->SelectedWindow());
+  EXPECT_FALSE(overview_session->GetHighlightedWindow());
 }
 
 // TODO(afakhry): Add more tests:

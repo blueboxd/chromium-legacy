@@ -16,8 +16,7 @@ namespace content {
 GeolocationServiceImplContext::GeolocationServiceImplContext(
     PermissionControllerImpl* permission_controller)
     : permission_controller_(permission_controller),
-      request_id_(PermissionController::kNoPendingOperation),
-      weak_factory_(this) {}
+      request_id_(PermissionController::kNoPendingOperation) {}
 
 GeolocationServiceImplContext::~GeolocationServiceImplContext() {
 }

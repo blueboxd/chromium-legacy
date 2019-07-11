@@ -64,11 +64,13 @@ bool HasDisableBestEffortTasksSwitch() {
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
     : ThreadPoolImpl(histogram_label,
-                     std::make_unique<TaskTrackerImpl>(histogram_label)) {}
+                     std::make_unique<TaskTrackerImpl>(histogram_label),
+                     DefaultTickClock::GetInstance()) {}
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
-                               std::unique_ptr<TaskTrackerImpl> task_tracker)
-    : thread_pool_clock_(DefaultTickClock::GetInstance()),
+                               std::unique_ptr<TaskTrackerImpl> task_tracker,
+                               const TickClock* tick_clock)
+    : thread_pool_clock_(tick_clock),
       task_tracker_(std::move(task_tracker)),
       service_thread_(std::make_unique<ServiceThread>(
           task_tracker_.get(),
@@ -263,6 +265,16 @@ scoped_refptr<UpdateableSequencedTaskRunner>
 ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
+}
+
+Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {
+  if (task_tracker_->HasIncompleteTaskSourcesForTesting())
+    return ThreadPoolClock::Now();
+  return delayed_task_manager_.NextScheduledRunTime();
+}
+
+void ThreadPoolImpl::ProcessRipeDelayedTasksForTesting() {
+  delayed_task_manager_.ProcessRipeTasks();
 }
 
 int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(

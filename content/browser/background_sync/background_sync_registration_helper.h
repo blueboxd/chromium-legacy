@@ -53,7 +53,8 @@ class BackgroundSyncRegistrationHelper {
  private:
   // |background_sync_context_| (indirectly) owns |this|.
   BackgroundSyncContextImpl* const background_sync_context_;
-  base::WeakPtrFactory<BackgroundSyncRegistrationHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundSyncRegistrationHelper> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistrationHelper);
 };

@@ -9,9 +9,9 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/wm/lock_state_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"

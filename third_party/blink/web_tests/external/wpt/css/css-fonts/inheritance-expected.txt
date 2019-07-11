@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-PASS Property font-family has initial value "times new roman"
 PASS Property font-family inherits
 PASS Property font-feature-settings has initial value normal
 PASS Property font-feature-settings inherits

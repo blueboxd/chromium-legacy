@@ -69,8 +69,7 @@ WebDatabaseHostImpl::WebDatabaseHostImpl(
     scoped_refptr<storage::DatabaseTracker> db_tracker)
     : process_id_(process_id),
       observer_added_(false),
-      db_tracker_(std::move(db_tracker)),
-      weak_ptr_factory_(this) {
+      db_tracker_(std::move(db_tracker)) {
   DCHECK(db_tracker_);
 }
 

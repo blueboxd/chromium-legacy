@@ -59,7 +59,7 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
 
   base::Closure connection_lost_handler_;
 
-  base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_;
+  base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerConnectionImpl);
 };

@@ -21,7 +21,8 @@ class AutoclickScrollBubbleView : public TrayBubbleView {
   explicit AutoclickScrollBubbleView(TrayBubbleView::InitParams init_params);
   ~AutoclickScrollBubbleView() override;
 
-  void UpdateAnchorRect(const gfx::Rect& rect);
+  void UpdateAnchorRect(const gfx::Rect& rect,
+                        views::BubbleBorder::Arrow arrow);
 
   // TrayBubbleView:
   bool IsAnchoredToStatusArea() const override;

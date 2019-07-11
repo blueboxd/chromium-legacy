@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_package_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -59,7 +59,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
     CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
   }
   message_center::RichNotificationData rich_notification_data;
-  rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
+  rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
   rich_notification_data.never_timeout = true;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
 

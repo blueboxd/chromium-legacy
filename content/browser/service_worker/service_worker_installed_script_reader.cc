@@ -25,8 +25,7 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
         handle_(std::move(handle)),
         watcher_(FROM_HERE,
                  mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
-                 base::SequencedTaskRunnerHandle::Get()),
-        weak_factory_(this) {}
+                 base::SequencedTaskRunnerHandle::Get()) {}
 
   void Start(base::OnceCallback<void(bool /* success */)> callback) {
     callback_ = std::move(callback);
@@ -89,7 +88,7 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
   mojo::ScopedDataPipeProducerHandle handle_;
   mojo::SimpleWatcher watcher_;
 
-  base::WeakPtrFactory<MetaDataSender> weak_factory_;
+  base::WeakPtrFactory<MetaDataSender> weak_factory_{this};
 };
 
 ServiceWorkerInstalledScriptReader::ServiceWorkerInstalledScriptReader(
@@ -99,8 +98,7 @@ ServiceWorkerInstalledScriptReader::ServiceWorkerInstalledScriptReader(
       client_(client),
       body_watcher_(FROM_HERE,
                     mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                    base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+                    base::SequencedTaskRunnerHandle::Get()) {}
 
 ServiceWorkerInstalledScriptReader::~ServiceWorkerInstalledScriptReader() {}
 

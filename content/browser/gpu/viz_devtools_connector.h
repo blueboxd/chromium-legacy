@@ -26,7 +26,7 @@ class CONTENT_EXPORT VizDevToolsConnector {
                                   int result,
                                   int port);
 
-  base::WeakPtrFactory<VizDevToolsConnector> weak_ptr_factory_;
+  base::WeakPtrFactory<VizDevToolsConnector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VizDevToolsConnector);
 };

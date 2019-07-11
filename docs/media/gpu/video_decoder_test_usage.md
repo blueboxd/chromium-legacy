@@ -63,8 +63,7 @@ Multiple command line arguments can be given to the command:
      -v                  enable verbose mode, e.g. -v=2.
     --vmodule            enable verbose mode for the specified module,
                          e.g. --vmodule=*media/gpu*=2.
-    --disable_validator  disable frame validation, useful on old
-                         platforms that don't support import mode.
+    --disable_validator  disable frame validation.
     --output_frames      write all decoded video frames to the
                          "<testname>" folder.
     --output_folder      overwrite the default output folder used when

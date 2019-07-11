@@ -167,7 +167,7 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // Holds the download ids which were dangerous.
   std::set<uint32_t> dangerous_downloads_seen_;
 
-  base::WeakPtrFactory<DownloadTestObserver> weak_factory_;
+  base::WeakPtrFactory<DownloadTestObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserver);
 };

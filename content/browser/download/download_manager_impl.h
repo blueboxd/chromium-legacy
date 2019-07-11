@@ -392,7 +392,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   using IdCallbackVector = std::vector<std::unique_ptr<GetNextIdCallback>>;
   IdCallbackVector id_callbacks_;
 
-  base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
+  base::WeakPtrFactory<DownloadManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };

@@ -37,7 +37,7 @@
         "id": "UnderlineStyle",
         "type": "string",
         "description": "The type of the underline to modify a composition segment.",
-        "enum": ["underline"]
+        "enum": ["underline", "doubleUnderline", "noUnderline"]
       },
       {
         "id": "FocusReason",

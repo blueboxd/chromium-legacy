@@ -113,10 +113,12 @@ void ClipboardPromise::WriteNextRepresentation() {
 
 void ClipboardPromise::RejectFromReadOrDecodeFailure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GE(clipboard_representation_index_, static_cast<wtf_size_t>(1));
   script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kDataError,
       "Failed to read or decode Blob for clipboard item type " +
-          clipboard_item_data_[clipboard_representation_index_].first + "."));
+          clipboard_item_data_[clipboard_representation_index_ - 1].first +
+          "."));
 }
 
 void ClipboardPromise::HandleRead() {

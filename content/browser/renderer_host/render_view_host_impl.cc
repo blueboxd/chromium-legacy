@@ -227,8 +227,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
       updating_web_preferences_(false),
-      has_notified_about_creation_(false),
-      weak_factory_(this) {
+      has_notified_about_creation_(false) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());

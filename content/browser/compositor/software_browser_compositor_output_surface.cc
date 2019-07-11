@@ -22,8 +22,7 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device)
-    : BrowserCompositorOutputSurface(std::move(software_device)),
-      weak_factory_(this) {}
+    : BrowserCompositorOutputSurface(std::move(software_device)) {}
 
 SoftwareBrowserCompositorOutputSurface::
     ~SoftwareBrowserCompositorOutputSurface() {

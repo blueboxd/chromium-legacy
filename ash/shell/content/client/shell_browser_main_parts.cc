@@ -24,6 +24,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/system_connector.h"
@@ -60,6 +61,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
   ash_test_helper_ = std::make_unique<AshTestHelper>();
+  network_config_helper_ =
+      std::make_unique<chromeos::network_config::CrosNetworkConfigTestHelper>(
+          content::GetSystemConnector());
 
   AshTestHelper::InitParams init_params;
   init_params.start_session = true;

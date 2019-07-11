@@ -21,10 +21,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace ui {
-class Shadow;
-}
-
 namespace views {
 class Widget;
 }
@@ -79,18 +75,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                        const base::flat_set<OverviewItem*>& ignored_items = {},
                        OverviewSession::OverviewTransition transition =
                            OverviewSession::OverviewTransition::kInOverview);
-
-  // Updates |selected_index_| according to the specified direction and calls
-  // MoveSelectionWidget(). The default is to move forward (left to right)
-  // unless |reverse| is true. If we call this and we are the last item in the
-  // row (or first if |reverse|), we slide out the current highlight, as a new
-  // one slides into the next row. Returns |true| if the new selection index is
-  // out of this window grid bounds. Note: the default is always left to right
-  // even in RTL languages.
-  bool Move(bool reverse, bool animate);
-
-  // Returns the target selected window, or NULL if there is none selected.
-  OverviewItem* SelectedWindow() const;
 
   // Returns the OverviewItem if a window is contained in any of the
   // OverviewItems this grid owns. Returns nullptr if no such a OverviewItem
@@ -149,10 +133,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void UpdateDropTargetBackgroundVisibility(
       OverviewItem* dragged_item,
       const gfx::PointF& location_in_screen);
-
-  // Shows or hides the selection widget. To be called by an overview item when
-  // it is dragged.
-  void SetSelectionWidgetVisibility(bool visible);
 
   void UpdateCannotSnapWarningVisibility();
 
@@ -289,17 +269,16 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns how many overview items are in the grid.
   size_t size() const { return window_list_.size(); }
 
-  // Returns true if the selection widget is active.
-  bool is_selecting() const { return selection_widget_ != nullptr; }
-
   // Returns the root window in which the grid displays the windows.
   const aura::Window* root_window() const { return root_window_; }
+
+  OverviewSession* overview_session() { return overview_session_; }
 
   const std::vector<std::unique_ptr<OverviewItem>>& window_list() const {
     return window_list_;
   }
 
-  OverviewSession* overview_session() { return overview_session_; }
+  const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
 
   const gfx::Rect bounds() const { return bounds_; }
 
@@ -310,10 +289,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
-
-  const DesksBarView* GetDesksBarViewForTesting() const {
-    return desks_bar_view_;
-  }
 
  private:
   class TargetWindowObserver;
@@ -329,18 +304,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // If the Virtual Desks feature is enabled, it initializes the widget that
   // contains the DeskBarView contents.
   void MaybeInitDesksWidget();
-
-  // Internal function to initialize the selection widget.
-  void InitSelectionWidget(bool reverse);
-
-  // Moves the selection widget to the specified direction.
-  void MoveSelectionWidget(bool reverse,
-                           bool recreate_selection_widget,
-                           bool out_of_bounds,
-                           bool animate);
-
-  // Moves the selection widget to the targeted window.
-  void MoveSelectionWidgetToTarget(bool animate);
 
   // Gets the layout of the overview items. Layout is done in 2 stages
   // maintaining fixed MRU ordering.
@@ -403,12 +366,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // The contents view of the above |desks_widget_| if created.
   DesksBarView* desks_bar_view_ = nullptr;
 
-  // Widget that indicates to the user which is the selected window.
-  std::unique_ptr<views::Widget> selection_widget_;
-
-  // Shadow around the selector.
-  std::unique_ptr<ui::Shadow> selector_shadow_;
-
   // The drop target widget. The drop target is created when a window or
   // overview item is being dragged, and is destroyed when the drag ends or
   // overview mode is ended. The drop target is hidden when a snap preview area
@@ -423,12 +380,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // window in overview and is not destroyed yet, we need to update the overview
   // minimized widget's content view so that it reflects the merge.
   std::unique_ptr<TargetWindowObserver> target_window_observer_;
-
-  // Current selected window position.
-  size_t selected_index_ = 0;
-
-  // Number of columns in the grid.
-  size_t num_columns_ = 0;
 
   // True only after all windows have been prepared for overview.
   bool prepared_for_overview_ = false;

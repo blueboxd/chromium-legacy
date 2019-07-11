@@ -19,9 +19,7 @@ namespace content {
 CacheStorageScheduler::CacheStorageScheduler(
     CacheStorageSchedulerClient client_type,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)),
-      client_type_(client_type),
-      weak_ptr_factory_(this) {}
+    : task_runner_(std::move(task_runner)), client_type_(client_type) {}
 
 CacheStorageScheduler::~CacheStorageScheduler() {}
 

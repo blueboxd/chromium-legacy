@@ -249,8 +249,7 @@ class LegacyCacheStorage::SimpleCacheLoader
                     cache_storage,
                     origin,
                     owner),
-        origin_path_(origin_path),
-        weak_ptr_factory_(this) {}
+        origin_path_(origin_path) {}
 
   std::unique_ptr<LegacyCacheStorageCache> CreateCache(
       const std::string& cache_name,
@@ -547,7 +546,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   std::map<CacheStorageCache*, std::string> doomed_cache_to_path_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<SimpleCacheLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<SimpleCacheLoader> weak_ptr_factory_{this};
 };
 
 LegacyCacheStorage::LegacyCacheStorage(
@@ -571,8 +570,7 @@ LegacyCacheStorage::LegacyCacheStorage(
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       owner_(owner),
-      cache_storage_manager_(cache_storage_manager),
-      weak_factory_(this) {
+      cache_storage_manager_(cache_storage_manager) {
   if (memory_only)
     cache_loader_.reset(new MemoryLoader(
         cache_task_runner_.get(), std::move(scheduler_task_runner),

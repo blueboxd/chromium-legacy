@@ -59,7 +59,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   bool needs_swap_size_notifications_ = false;
 #endif
 
-  base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
+  base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurface);
 };

@@ -63,10 +63,12 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, Simple) {
   EXPECT_TRUE(resource->variants().IsEmpty());
   EXPECT_TRUE(resource->variant_key().IsEmpty());
 
-  EXPECT_EQ(resource.get(), info->FindMatchingEntry(
-                                KURL("https://publisher.example/script.js")));
+  EXPECT_EQ(resource.get(),
+            info->FindMatchingEntry(KURL("https://publisher.example/script.js"),
+                                    base::nullopt, {"en"}));
   EXPECT_EQ(nullptr,
-            info->FindMatchingEntry(KURL("https://publisher.example/image")));
+            info->FindMatchingEntry(KURL("https://publisher.example/image"),
+                                    base::nullopt, {"en"}));
 }
 
 TEST_F(AlternateSignedExchangeResourceInfoTest, MultipleResources) {
@@ -110,7 +112,8 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, MultipleResources) {
     EXPECT_TRUE(resource->variants().IsEmpty());
     EXPECT_TRUE(resource->variant_key().IsEmpty());
     EXPECT_EQ(resource.get(), info->FindMatchingEntry(
-                                  KURL("https://publisher.example/script.js")));
+                                  KURL("https://publisher.example/script.js"),
+                                  base::nullopt, {"en"}));
   }
   {
     const auto& it = entries.find(KURL("https://publisher.example/image"));
@@ -125,7 +128,8 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, MultipleResources) {
     EXPECT_TRUE(resource->variants().IsEmpty());
     EXPECT_TRUE(resource->variant_key().IsEmpty());
     EXPECT_EQ(resource.get(),
-              info->FindMatchingEntry(KURL("https://publisher.example/image")));
+              info->FindMatchingEntry(KURL("https://publisher.example/image"),
+                                      base::nullopt, {"en"}));
   }
 }
 
@@ -155,8 +159,9 @@ TEST_F(AlternateSignedExchangeResourceInfoTest,
   EXPECT_TRUE(resource->variants().IsEmpty());
   EXPECT_TRUE(resource->variant_key().IsEmpty());
 
-  EXPECT_EQ(resource.get(), info->FindMatchingEntry(
-                                KURL("https://publisher.example/script.js")));
+  EXPECT_EQ(resource.get(),
+            info->FindMatchingEntry(KURL("https://publisher.example/script.js"),
+                                    base::nullopt, {"en"}));
 }
 
 TEST_F(AlternateSignedExchangeResourceInfoTest, NoType) {
@@ -188,10 +193,12 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, NoType) {
   EXPECT_TRUE(resource->variants().IsEmpty());
   EXPECT_TRUE(resource->variant_key().IsEmpty());
 
-  EXPECT_EQ(resource.get(), info->FindMatchingEntry(
-                                KURL("https://publisher.example/script.js")));
+  EXPECT_EQ(resource.get(),
+            info->FindMatchingEntry(KURL("https://publisher.example/script.js"),
+                                    base::nullopt, {"en"}));
   EXPECT_EQ(nullptr,
-            info->FindMatchingEntry(KURL("https://publisher.example/image")));
+            info->FindMatchingEntry(KURL("https://publisher.example/image"),
+                                    base::nullopt, {"en"}));
 }
 
 TEST_F(AlternateSignedExchangeResourceInfoTest, InvalidOuterURL) {
@@ -222,8 +229,9 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, InvalidOuterURL) {
   EXPECT_TRUE(resource->variants().IsEmpty());
   EXPECT_TRUE(resource->variant_key().IsEmpty());
 
-  EXPECT_EQ(resource.get(), info->FindMatchingEntry(
-                                KURL("https://publisher.example/script.js")));
+  EXPECT_EQ(resource.get(),
+            info->FindMatchingEntry(KURL("https://publisher.example/script.js"),
+                                    base::nullopt, {"en"}));
 }
 
 TEST_F(AlternateSignedExchangeResourceInfoTest, InvalidInnerURL) {
@@ -249,27 +257,27 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, Variants) {
           "<https://distributor.example/publisher.example/image_jpeg.sxg>;"
           "rel=\"alternate\";"
           "type=\"application/signed-exchange;v=b3\";"
-          "variants-04=\"accept;image/jpeg,image/webp\";"
+          "variants-04=\"accept;image/jpeg;image/webp\";"
           "variant-key-04=\"image/jpeg\";"
           "anchor=\"https://publisher.example/image\";,"
           // The second outer link header
           "<https://distributor.example/publisher.example/image_webp.sxg>;"
           "rel=\"alternate\";"
           "type=\"application/signed-exchange;v=b3\";"
-          "variants-04=\"accept;image/jpeg,image/webp\";"
+          "variants-04=\"accept;image/jpeg;image/webp\";"
           "variant-key-04=\"image/webp\";"
           "anchor=\"https://publisher.example/image\"",
           // The first inner link header
           "<https://publisher.example/image>;"
           "rel=\"allowed-alt-sxg\";"
-          "variants-04=\"accept;image/jpeg,image/webp\";"
+          "variants-04=\"accept;image/jpeg;image/webp\";"
           "variant-key-04=\"image/jpeg\";"
           "header-integrity="
           "\"sha256-q1phjFcR+umcl0zBaEz6E5AGVlnc9yF0zOjDYi5c6aM=\","
           // The second inner link header
           "<https://publisher.example/image>;"
           "rel=\"allowed-alt-sxg\";"
-          "variants-04=\"accept;image/jpeg,image/webp\";"
+          "variants-04=\"accept;image/jpeg;image/webp\";"
           "variant-key-04=\"image/webp\";"
           "header-integrity="
           "\"sha256-KRcYU+BZK8Sb2ccJfDPz+uUKXDdB1PVToPugItdzRXY=\"");
@@ -287,7 +295,7 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, Variants) {
         resource->alternative_url());
     EXPECT_EQ("sha256-q1phjFcR+umcl0zBaEz6E5AGVlnc9yF0zOjDYi5c6aM=",
               resource->header_integrity());
-    EXPECT_EQ("accept;image/jpeg,image/webp", resource->variants());
+    EXPECT_EQ("accept;image/jpeg;image/webp", resource->variants());
     EXPECT_EQ("image/jpeg", resource->variant_key());
   }
   {
@@ -298,13 +306,12 @@ TEST_F(AlternateSignedExchangeResourceInfoTest, Variants) {
         resource->alternative_url());
     EXPECT_EQ("sha256-KRcYU+BZK8Sb2ccJfDPz+uUKXDdB1PVToPugItdzRXY=",
               resource->header_integrity());
-    EXPECT_EQ("accept;image/jpeg,image/webp", resource->variants());
+    EXPECT_EQ("accept;image/jpeg;image/webp", resource->variants());
     EXPECT_EQ("image/webp", resource->variant_key());
 
-    // Currently FindMatchingEntry() just returns the last
-    // matching resource without checking variants and variant-key.
-    EXPECT_EQ(resource.get(),
-              info->FindMatchingEntry(KURL("https://publisher.example/image")));
+    EXPECT_EQ(resource.get(), info->FindMatchingEntry(
+                                  KURL("https://publisher.example/image"),
+                                  mojom::RequestContextType::IMAGE, {"en"}));
   }
 }
 

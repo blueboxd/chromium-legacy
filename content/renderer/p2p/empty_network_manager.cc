@@ -13,7 +13,7 @@
 namespace content {
 
 EmptyNetworkManager::EmptyNetworkManager(rtc::NetworkManager* network_manager)
-    : network_manager_(network_manager), weak_ptr_factory_(this) {
+    : network_manager_(network_manager) {
   DCHECK(network_manager);
   thread_checker_.DetachFromThread();
   set_enumeration_permission(ENUMERATION_BLOCKED);

@@ -111,7 +111,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerUpdateChecker);
 };

@@ -24,8 +24,7 @@ CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
     : handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       base::SequencedTaskRunnerHandle::Get()),
-      client_binding_(this),
-      weak_ptr_factory_(this) {}
+      client_binding_(this) {}
 
 CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() = default;
 

@@ -32,8 +32,7 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
       shared_memory_count_(shared_memory_count),
       deleter_(std::move(deleter)),
       renderer_factory_client_(std::move(renderer_factory_client)),
-      observer_binding_(this),
-      weak_ptr_factory_(this) {
+      observer_binding_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(source_);
   DCHECK(renderer_factory_client_);

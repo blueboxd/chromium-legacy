@@ -412,7 +412,7 @@ void DownloadRequestCore::OnResponseCompleted(
   download::DownloadInterruptReason reason =
       download::HandleRequestCompletionStatus(
           error_code, !has_strong_validators, request()->ssl_info().cert_status,
-          abort_reason_);
+          is_partial_request_, abort_reason_);
 
   std::string accept_ranges;
   if (request()->response_headers()) {

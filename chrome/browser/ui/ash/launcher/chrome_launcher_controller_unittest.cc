@@ -80,6 +80,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -152,6 +155,10 @@ constexpr char kCrxAppPrefix[] = "_crx_";
 // Dummy app id is used to put at least one pin record to prevent initializing
 // pin model with default apps that can affect some tests.
 constexpr char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
+
+// Web App id.
+constexpr char kWebAppId[] = "lpikggcgamknpihimepdkohalcnpofed";
+constexpr char kWebAppUrl[] = "https://foo.example/";
 
 constexpr char kCameraAppName[] = "Camera";
 constexpr char kCameraAppPackage[] = "com.google.android.GoogleCameraArc";
@@ -398,6 +405,18 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extensionYoutubeApp_ = Extension::Create(
         base::FilePath(), Manifest::UNPACKED, manifest, Extension::NO_FLAGS,
         extension_misc::kYoutubeAppId, &error);
+
+    // Fake Web App.
+    base::DictionaryValue manifest_web_app;
+    manifest_web_app.SetString(extensions::manifest_keys::kName,
+                               "Test Web App");
+    manifest_web_app.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest_web_app.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
+    manifest_web_app.SetString(extensions::manifest_keys::kDescription,
+                               "For testing");
+    web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                 manifest_web_app, Extension::NO_FLAGS,
+                                 kWebAppId, &error);
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
@@ -763,6 +782,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Play Store";
           } else if (app == crostini::kCrostiniTerminalId) {
             result += "Terminal";
+          } else if (app == web_app_->id()) {
+            result += "WebApp";
           } else {
             bool arc_app_found = false;
             for (const auto& arc_app : arc_test_.fake_apps()) {
@@ -915,6 +936,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extensionYoutubeApp_;
   scoped_refptr<Extension> extension_platform_app_;
   scoped_refptr<Extension> arc_support_host_;
+  scoped_refptr<Extension> web_app_;
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
@@ -2853,6 +2875,42 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerTest, WebAppPolicy) {
+  // Simulate one Web App being installed.
+  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(profile()->GetPrefs());
+  web_app_prefs.Insert(GURL(kWebAppUrl), kWebAppId,
+                       web_app::InstallSource::kExternalPolicy);
+  extension_service_->AddExtension(web_app_.get());
+
+  // Set the policy value.
+  base::ListValue policy_value;
+  AppendPrefValue(&policy_value, kWebAppUrl);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps,
+      base::Value::ToUniquePtrValue(std::move(policy_value)));
+
+  InitLauncherController();
+
+  EXPECT_EQ("Chrome, WebApp", GetPinnedAppStatus());
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(kWebAppId, profile()));
+}
+
+TEST_F(ChromeLauncherControllerTest, WebAppPolicyNonExistentApp) {
+  // Set the policy value but don't install an app for it.
+  base::ListValue policy_value;
+  AppendPrefValue(&policy_value, kWebAppUrl);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps,
+      base::Value::ToUniquePtrValue(std::move(policy_value)));
+
+  InitLauncherController();
+
+  EXPECT_EQ("Chrome", GetPinnedAppStatus());
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(kWebAppId, profile()));
 }
 
 TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {

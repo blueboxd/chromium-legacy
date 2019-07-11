@@ -78,8 +78,7 @@ class GetUIOptionsTask : public InitializationSubTask {
   GetUIOptionsTask(DatabaseTaskHost* host,
                    const SubTaskInit& sub_task_init,
                    base::OnceClosure done_closure)
-      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
-        weak_factory_(this) {}
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)) {}
 
   ~GetUIOptionsTask() override = default;
 
@@ -132,7 +131,7 @@ class GetUIOptionsTask : public InitializationSubTask {
     FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
-  base::WeakPtrFactory<GetUIOptionsTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetUIOptionsTask> weak_factory_{this};  // Keep as last.
 };
 
 // Gets the number of completed fetches, the number of active fetches,
@@ -146,8 +145,7 @@ class GetRequestsTask : public InitializationSubTask {
   GetRequestsTask(DatabaseTaskHost* host,
                   const SubTaskInit& sub_task_init,
                   base::OnceClosure done_closure)
-      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
-        weak_factory_(this) {}
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)) {}
 
   ~GetRequestsTask() override = default;
 
@@ -276,7 +274,7 @@ class GetRequestsTask : public InitializationSubTask {
     FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
-  base::WeakPtrFactory<GetRequestsTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetRequestsTask> weak_factory_{this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(GetRequestsTask);
 };
@@ -288,8 +286,7 @@ class FillFromMetadataTask : public InitializationSubTask {
   FillFromMetadataTask(DatabaseTaskHost* host,
                        const SubTaskInit& sub_task_init,
                        base::OnceClosure done_closure)
-      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
-        weak_factory_(this) {}
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)) {}
 
   ~FillFromMetadataTask() override = default;
 
@@ -375,7 +372,8 @@ class FillFromMetadataTask : public InitializationSubTask {
     FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
-  base::WeakPtrFactory<FillFromMetadataTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<FillFromMetadataTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(FillFromMetadataTask);
 };
@@ -387,8 +385,7 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
   FillBackgroundFetchInitializationDataTask(DatabaseTaskHost* host,
                                             const SubTaskInit& sub_task_init,
                                             base::OnceClosure done_closure)
-      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
-        weak_factory_(this) {}
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)) {}
 
   ~FillBackgroundFetchInitializationDataTask() override = default;
 
@@ -415,8 +412,8 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
   }
 
  private:
-  base::WeakPtrFactory<FillBackgroundFetchInitializationDataTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<FillBackgroundFetchInitializationDataTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(FillBackgroundFetchInitializationDataTask);
 };
@@ -435,7 +432,7 @@ BackgroundFetchInitializationData::~BackgroundFetchInitializationData() =
 GetInitializationDataTask::GetInitializationDataTask(
     DatabaseTaskHost* host,
     GetInitializationDataCallback callback)
-    : DatabaseTask(host), callback_(std::move(callback)), weak_factory_(this) {}
+    : DatabaseTask(host), callback_(std::move(callback)) {}
 
 GetInitializationDataTask::~GetInitializationDataTask() = default;
 

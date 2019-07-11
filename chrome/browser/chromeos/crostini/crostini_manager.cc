@@ -262,9 +262,32 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(CrostiniResult::VM_START_FAILED);
       return;
     }
+    // Cache kernel version for enterprise reporting, if it is enabled
+    // by policy, and we are in the default Termina/penguin case.
+    if (profile_->GetPrefs()->GetBoolean(
+            crostini::prefs::kReportCrostiniUsageEnabled) &&
+        vm_name_ == kCrostiniDefaultVmName &&
+        container_name_ == kCrostiniDefaultContainerName) {
+      crostini_manager_->GetTerminaVmKernelVersion(base::BindOnce(
+          &CrostiniRestarter::GetTerminaVmKernelVersionFinished, this));
+    }
     crostini_manager_->CreateLxdContainer(
         vm_name_, container_name_,
         base::BindOnce(&CrostiniRestarter::CreateLxdContainerFinished, this));
+  }
+
+  void GetTerminaVmKernelVersionFinished(
+      const base::Optional<std::string>& maybe_kernel_version) {
+    // In the error case, Crostini should still start, so we do not propagate
+    // errors any further here. Also, any error would already have been logged
+    // by CrostiniManager, so here we just (re)set the kernel version pref to
+    // the empty string in case the response is empty.
+    std::string kernel_version;
+    if (maybe_kernel_version.has_value()) {
+      kernel_version = maybe_kernel_version.value();
+    }
+    WriteTerminaVmKernelVersionToPrefsForReporting(profile_->GetPrefs(),
+                                                   kernel_version);
   }
 
   void CreateLxdContainerFinished(CrostiniResult result) {
@@ -886,6 +909,17 @@ void CrostiniManager::StopVm(std::string name,
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStopVm, weak_ptr_factory_.GetWeakPtr(),
                      std::move(name), std::move(callback)));
+}
+
+void CrostiniManager::GetTerminaVmKernelVersion(
+    GetTerminaVmKernelVersionCallback callback) {
+  vm_tools::concierge::GetVmEnterpriseReportingInfoRequest request;
+  request.set_vm_name(kCrostiniDefaultVmName);
+  request.set_owner_id(owner_id_);
+  GetConciergeClient()->GetVmEnterpriseReportingInfo(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnGetTerminaVmKernelVersion,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CrostiniManager::CreateLxdContainer(std::string vm_name,
@@ -1754,6 +1788,26 @@ void CrostiniManager::OnStopVm(
       &import_lxd_container_callbacks_, vm_name,
       CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED);
   std::move(callback).Run(CrostiniResult::SUCCESS);
+}
+
+void CrostiniManager::OnGetTerminaVmKernelVersion(
+    GetTerminaVmKernelVersionCallback callback,
+    base::Optional<vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
+        response) {
+  if (!response) {
+    LOG(ERROR) << "No reply to GetVmEnterpriseReportingInfo";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  if (!response->success()) {
+    LOG(ERROR) << "Error response for GetVmEnterpriseReportingInfo: "
+               << response->failure_reason();
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(response->vm_kernel_version());
 }
 
 void CrostiniManager::OnContainerStarted(

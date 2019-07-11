@@ -9,13 +9,14 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/string16.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -81,8 +82,7 @@ WilcoDtcSupportdNotificationController::ShowBatteryAuthNotification() const {
   DisplayNotification(kWilcoDtcSupportdNotificationIdBatteryAuth,
                       IDS_WILCO_NOTIFICATION_BATTERY_AUTH_TITLE,
                       IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE,
-                      message_center::SYSTEM_PRIORITY,
-                      ash::kNotificationBatteryIcon,
+                      message_center::SYSTEM_PRIORITY, kNotificationBatteryIcon,
                       message_center::SystemNotificationWarningLevel::WARNING,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdBatteryAuth;
@@ -95,7 +95,7 @@ WilcoDtcSupportdNotificationController::ShowNonWilcoChargerNotification()
                       IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE,
                       IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE,
                       message_center::DEFAULT_PRIORITY,
-                      ash::kNotificationBatteryIcon,
+                      kNotificationBatteryIcon,
                       message_center::SystemNotificationWarningLevel::WARNING,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdNonWilcoCharger;
@@ -108,7 +108,7 @@ WilcoDtcSupportdNotificationController::ShowIncompatibleDockNotification()
                       IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE,
                       IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE,
                       message_center::DEFAULT_PRIORITY,
-                      ash::kNotificationSettingsIcon,
+                      vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdIncompatibleDock;
@@ -120,7 +120,7 @@ std::string WilcoDtcSupportdNotificationController::ShowDockErrorNotification()
                       IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE,
                       IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE,
                       message_center::DEFAULT_PRIORITY,
-                      ash::kNotificationSettingsIcon,
+                      vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdDockHardwareError;
@@ -132,7 +132,7 @@ WilcoDtcSupportdNotificationController::ShowDockDisplayNotification() const {
                       IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE,
                       IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE,
                       message_center::DEFAULT_PRIORITY,
-                      ash::kNotificationSettingsIcon,
+                      vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdDockDisplay;
@@ -145,7 +145,7 @@ WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification()
                       IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE,
                       IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE,
                       message_center::DEFAULT_PRIORITY,
-                      ash::kNotificationSettingsIcon,
+                      vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdDockThunderbolt;

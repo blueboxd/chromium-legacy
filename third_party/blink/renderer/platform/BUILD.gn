@@ -471,6 +471,7 @@ jumbo_component("platform") {
     "exported/mediastream/media_stream_audio_processor_options.cc",
     "exported/mediastream/media_stream_audio_source.cc",
     "exported/mediastream/media_stream_audio_track.cc",
+    "exported/mediastream/web_media_element_source_utils.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",
     "exported/mediastream/web_platform_media_stream_track.cc",
     "exported/mediastream/webaudio_media_stream_source.cc",

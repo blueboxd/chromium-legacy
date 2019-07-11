@@ -168,7 +168,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   device::mojom::WakeLockPtr wake_lock_;
 
   // Creates WeakPtrs for use on the device thread.
-  base::WeakPtrFactory<FrameSinkVideoCaptureDevice> weak_factory_;
+  base::WeakPtrFactory<FrameSinkVideoCaptureDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkVideoCaptureDevice);
 };

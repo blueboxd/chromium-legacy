@@ -132,9 +132,7 @@ ChildConnection::ChildConnection(
     mojo::OutgoingInvitation* invitation,
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : context_(new IOThreadContext),
-      child_identity_(child_identity),
-      weak_factory_(this) {
+    : context_(new IOThreadContext), child_identity_(child_identity) {
   service_token_ = base::NumberToString(base::RandUint64());
   context_->Initialize(child_identity_, connector,
                        invitation->AttachMessagePipe(service_token_),

@@ -91,7 +91,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::Receiver<blink::mojom::Authenticator> receiver_{this};
 
-  base::WeakPtrFactory<AuthenticatorImpl> weak_factory_;
+  base::WeakPtrFactory<AuthenticatorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorImpl);
 };

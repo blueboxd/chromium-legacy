@@ -15,7 +15,7 @@ namespace content {
 
 FakeEmbeddedWorkerInstanceClient::FakeEmbeddedWorkerInstanceClient(
     EmbeddedWorkerTestHelper* helper)
-    : helper_(helper), binding_(this), weak_factory_(this) {}
+    : helper_(helper), binding_(this) {}
 
 FakeEmbeddedWorkerInstanceClient::~FakeEmbeddedWorkerInstanceClient() = default;
 

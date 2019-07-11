@@ -89,7 +89,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   net::URLRequestStatus main_script_status_;
   std::string main_script_status_message_;
 
-  base::WeakPtrFactory<ServiceWorkerScriptCacheMap> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerScriptCacheMap> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptCacheMap);
 };

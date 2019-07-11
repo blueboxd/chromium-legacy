@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"

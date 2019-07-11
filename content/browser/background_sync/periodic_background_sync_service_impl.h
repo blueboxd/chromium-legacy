@@ -58,7 +58,8 @@ class CONTENT_EXPORT PeriodicBackgroundSyncServiceImpl
   std::unique_ptr<BackgroundSyncRegistrationHelper> registration_helper_;
   mojo::Binding<blink::mojom::PeriodicBackgroundSyncService> binding_;
 
-  base::WeakPtrFactory<PeriodicBackgroundSyncServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PeriodicBackgroundSyncServiceImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PeriodicBackgroundSyncServiceImpl);
 };

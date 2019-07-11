@@ -46,7 +46,7 @@ class CONTENT_EXPORT ProvisionFetcherImpl
 
   std::unique_ptr<media::ProvisionFetcher> provision_fetcher_;
 
-  base::WeakPtrFactory<ProvisionFetcherImpl> weak_factory_;
+  base::WeakPtrFactory<ProvisionFetcherImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProvisionFetcherImpl);
 };

@@ -74,7 +74,7 @@ class ServiceWorkerNavigationHandle {
   // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
   // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;
-  base::WeakPtrFactory<ServiceWorkerNavigationHandle> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerNavigationHandle> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandle);
 };
 

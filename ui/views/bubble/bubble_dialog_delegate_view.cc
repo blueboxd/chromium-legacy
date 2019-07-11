@@ -265,6 +265,15 @@ void BubbleDialogDelegateView::SetHighlightedButton(
 }
 
 void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
+  SetArrowWithoutResizing(arrow);
+  // If SetArrow() is called before CreateWidget(), there's no need to update
+  // the BubbleFrameView.
+  if (GetBubbleFrameView())
+    SizeToContents();
+}
+
+void BubbleDialogDelegateView::SetArrowWithoutResizing(
+    BubbleBorder::Arrow arrow) {
   if (base::i18n::IsRTL())
     arrow = BubbleBorder::horizontal_mirror(arrow);
   if (arrow_ == arrow)
@@ -273,10 +282,8 @@ void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
 
   // If SetArrow() is called before CreateWidget(), there's no need to update
   // the BubbleFrameView.
-  if (GetBubbleFrameView()) {
+  if (GetBubbleFrameView())
     GetBubbleFrameView()->SetArrow(arrow);
-    SizeToContents();
-  }
 }
 
 gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {

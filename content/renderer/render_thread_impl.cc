@@ -416,7 +416,7 @@ static const int kWaitForWorkersStatsTimeoutMS = 20;
 class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
  public:
   explicit ResourceUsageReporterImpl(base::WeakPtr<RenderThread> thread)
-      : workers_to_go_(0), thread_(thread), weak_factory_(this) {}
+      : workers_to_go_(0), thread_(thread) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
@@ -503,7 +503,7 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
   int workers_to_go_;
   base::WeakPtr<RenderThread> thread_;
 
-  base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
+  base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
 };
@@ -675,8 +675,7 @@ RenderThreadImpl::RenderThreadImpl(
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
       client_id_(1),
-      compositing_mode_watcher_binding_(this),
-      weak_factory_(this) {
+      compositing_mode_watcher_binding_(this) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   Init();
 }
@@ -695,8 +694,7 @@ RenderThreadImpl::RenderThreadImpl(
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
       renderer_binding_(this),
-      compositing_mode_watcher_binding_(this),
-      weak_factory_(this) {
+      compositing_mode_watcher_binding_(this) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRendererClientId));

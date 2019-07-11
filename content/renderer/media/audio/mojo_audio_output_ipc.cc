@@ -28,8 +28,7 @@ MojoAudioOutputIPC::MojoAudioOutputIPC(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : factory_accessor_(std::move(factory_accessor)),
       binding_(this),
-      io_task_runner_(std::move(io_task_runner)),
-      weak_factory_(this) {}
+      io_task_runner_(std::move(io_task_runner)) {}
 
 MojoAudioOutputIPC::~MojoAudioOutputIPC() {
   DCHECK(!AuthorizationRequested() && !StreamCreationRequested())

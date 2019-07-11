@@ -223,6 +223,14 @@
                  file="set_as_default/nux_set_as_default_proxy.js"
                  compress="gzip"
                  type="chrome_html" />
+      <structure name="IDR_GOOGLE_APPS_METRICS_PROXY_HTML"
+                 file="google_apps/google_apps_metrics_proxy.html"
+                 compress="gzip"
+                 type="chrome_html" />
+      <structure name="IDR_GOOGLE_APPS_METRICS_PROXY_JS"
+                 file="google_apps/google_apps_metrics_proxy.js"
+                 compress="gzip"
+                 type="chrome_html" />
 
       <!-- NUX NTP background-->
       <structure name="IDR_NUX_NTP_BACKGROUND_HTML"
@@ -239,6 +247,14 @@
                  type="chrome_html" />
       <structure name="IDR_NUX_NTP_BACKGROUND_PROXY_JS"
                  file="ntp_background/ntp_background_proxy.js"
+                 compress="gzip"
+                 type="chrome_html" />
+      <structure name="IDR_NUX_NTP_BACKGROUND_METRICS_PROXY_HTML"
+                 file="ntp_background/ntp_background_metrics_proxy.html"
+                 compress="gzip"
+                 type="chrome_html" />
+      <structure name="IDR_NUX_NTP_BACKGROUND_METRICS_PROXY_JS"
+                 file="ntp_background/ntp_background_metrics_proxy.js"
                  compress="gzip"
                  type="chrome_html" />
     </structures>

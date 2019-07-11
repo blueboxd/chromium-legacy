@@ -337,7 +337,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   mojo::AssociatedInterfaceRequest<mojom::NavigationClient>
       navigation_client_request_;
 
-  base::WeakPtrFactory<NavigationSimulatorImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationSimulatorImpl> weak_factory_{this};
 };
 
 }  // namespace content

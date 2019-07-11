@@ -265,7 +265,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // TODO(crbug.com/711354): Possibly update key when CORS support is added.
   std::map<std::string, CacheStorageHandle> cache_storage_handle_map_;
 
-  base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDataManager);
 };

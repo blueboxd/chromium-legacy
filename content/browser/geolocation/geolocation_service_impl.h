@@ -40,7 +40,7 @@ class GeolocationServiceImplContext {
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
       blink::mojom::PermissionStatus permission_status);
 
-  base::WeakPtrFactory<GeolocationServiceImplContext> weak_factory_;
+  base::WeakPtrFactory<GeolocationServiceImplContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceImplContext);
 };

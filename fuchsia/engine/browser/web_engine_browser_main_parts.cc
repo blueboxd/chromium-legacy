@@ -8,15 +8,12 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/main_function_params.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
-#include "fuchsia/engine/browser/web_engine_devtools_socket_factory.h"
 #include "fuchsia/engine/browser/web_engine_screen.h"
 #include "fuchsia/engine/common.h"
 #include "ui/aura/screen_ozone.h"
@@ -53,16 +50,6 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
   context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
       context_service_.get(), std::move(request_));
-
-  // Start the remote debugging server.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kRemoteDebuggerHandles)) {
-    content::DevToolsAgentHost::StartRemoteDebuggingServer(
-        std::make_unique<WebEngineDevToolsSocketFactory>(
-            base::BindRepeating(&ContextImpl::OnDevToolsPortOpened,
-                                base::Unretained(context_service_.get()))),
-        browser_context_->GetPath(), base::FilePath());
-  }
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {
@@ -102,11 +89,6 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   // handler.
   DCHECK(!context_service_);
   DCHECK(!context_binding_->is_bound());
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kRemoteDebuggerHandles)) {
-    content::DevToolsAgentHost::StopRemoteDebuggingServer();
-  }
 
   // These resources must be freed while a MessageLoop is still available, so
   // that they may post cleanup tasks during teardown.

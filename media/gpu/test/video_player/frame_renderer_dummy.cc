@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/test/video_frame_helpers.h"
 
 namespace media {
 namespace test {
@@ -130,7 +131,16 @@ scoped_refptr<VideoFrame> FrameRendererDummy::CreateVideoFrame(
     const gfx::Size& size,
     uint32_t texture_target,
     uint32_t* texture_id) {
-  return nullptr;
+  *texture_id = 0;
+
+  // Create a dummy video frame. No actual rendering will be done but the video
+  // frame's properties such as timestamp will be used.
+  // TODO(dstaessens): Remove this function when allocate mode is deprecated.
+  base::Optional<VideoFrameLayout> layout =
+      CreateVideoFrameLayout(pixel_format, size);
+  DCHECK(layout);
+  return VideoFrame::WrapExternalDataWithLayout(*layout, gfx::Rect(size), size,
+                                                nullptr, 0, base::TimeDelta());
 }
 
 uint64_t FrameRendererDummy::FramesDropped() const {

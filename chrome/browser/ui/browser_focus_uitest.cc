@@ -123,11 +123,17 @@ class BrowserFocusTest : public InProcessBrowserTest {
         bool is_editable_node = index == 0;
 
         // Press Tab (or Shift+Tab) and check the focused element id.
-        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
-            browser(), key, false, reverse, false, false,
-            content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-            content::Source<RenderViewHost>(render_view_host),
-            content::Details<bool>(&is_editable_node)));
+        auto source = content::Source<RenderViewHost>(render_view_host);
+        ui_test_utils::WindowedNotificationObserverWithDetails<bool> observer(
+            content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE, source);
+        ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false,
+                                                    reverse, false, false));
+        observer.Wait();
+        bool observed_editable_node;
+        ASSERT_TRUE(
+            observer.GetDetailsFor(source.map_key(), &observed_editable_node));
+        EXPECT_EQ(is_editable_node, observed_editable_node);
+
         std::string focused_id;
         EXPECT_TRUE(content::ExecuteScriptAndExtractString(
             WebContents::FromRenderViewHost(render_view_host),

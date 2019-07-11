@@ -38,8 +38,7 @@ WorkerScriptLoader::WorkerScriptLoader(
       resource_context_getter_(resource_context_getter),
       default_loader_factory_(std::move(default_loader_factory)),
       traffic_annotation_(traffic_annotation),
-      url_loader_client_binding_(this),
-      weak_factory_(this) {
+      url_loader_client_binding_(this) {
   if (service_worker_provider_host_) {
     std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
         ServiceWorkerRequestHandler::CreateForWorker(

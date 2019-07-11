@@ -35,7 +35,7 @@ class TestProfileBuilder : public ProfileBuilder {
 
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override { return module_cache_; }
-  void RecordMetadata() override {}
+  void RecordMetadata(MetadataProvider* metadata_provider) override {}
 
   void OnSampleCompleted(std::vector<Frame> sample) override {
     EXPECT_TRUE(sample_.empty());

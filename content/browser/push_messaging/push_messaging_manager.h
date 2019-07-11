@@ -152,7 +152,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
 
   mojo::ReceiverSet<blink::mojom::PushMessaging> receivers_;
 
-  base::WeakPtrFactory<PushMessagingManager> weak_factory_;
+  base::WeakPtrFactory<PushMessagingManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingManager);
 };

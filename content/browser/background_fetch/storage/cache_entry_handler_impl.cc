@@ -12,8 +12,7 @@ namespace background_fetch {
 
 CacheEntryHandlerImpl::CacheEntryHandlerImpl(
     base::WeakPtr<storage::BlobStorageContext> blob_context)
-    : CacheStorageCacheEntryHandler(std::move(blob_context)),
-      weak_ptr_factory_(this) {}
+    : CacheStorageCacheEntryHandler(std::move(blob_context)) {}
 
 CacheEntryHandlerImpl::~CacheEntryHandlerImpl() = default;
 

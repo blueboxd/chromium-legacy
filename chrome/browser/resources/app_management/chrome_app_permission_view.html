@@ -3,6 +3,7 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="util.html">
+<link rel="import" href="pin_to_shelf_item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="app-management-chrome-app-permission-view">
@@ -22,6 +23,11 @@
       #no-permissions {
         padding-inline-start: 24px;
       }
+
+      #pin-to-shelf-setting {
+        border-top: var(--card-separator);
+      }
+
     </style>
     <app-management-permission-view-header>
     </app-management-permission-view-header>
@@ -29,30 +35,37 @@
       <div id="app-description" class="permission-card-row secondary-text">
         [[app_.description]]
       </div>
-      <div id="permissions-card" class="permission-card-row">
-        <div class="subpermission-list">
-          <div class="subpermission-row separated-row">
-            <div class="header-text">$i18n{thisAppCan}</div>
-          </div>
-          <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
-            <div id="no-permissions">
-              $i18n{appNoPermission}
+      <div class="permission-list">
+        <app-management-pin-to-shelf-item
+          id="pin-to-shelf-setting"
+          class="permission-card-row separated-row header-text"
+          app_="[[app_]]">
+        </app-management-pin-to-shelf-item>
+
+        <div id="permissions-card" class="permission-card-row">
+          <div class="subpermission-list">
+            <div class="subpermission-row separated-row">
+              <div class="header-text">$i18n{thisAppCan}</div>
             </div>
-          </template>
-          <ul>
-            <template is="dom-repeat"
-              items="[[getPermissionMessages_(messages_)]]" as="message">
-              <li>[[message]]</li>
-              <ul>
-                <template is="dom-repeat"
-                  items="[[getPermissionSubmessagesByMessage_(index, messages_)]]"
-                  as="submessage">
-                  <li>[[submessage]]</li>
-                </template>
-              </ul>
+            <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
+              <div id="no-permissions">
+                $i18n{appNoPermission}
+              </div>
             </template>
-          </ul>
-          <!-- TODO(crbug.com/906508): For apps which are hosted apps but not
+            <ul>
+              <template is="dom-repeat"
+                items="[[getPermissionMessages_(messages_)]]" as="message">
+                <li>[[message]]</li>
+                <ul>
+                  <template is="dom-repeat"
+                    items="[[getPermissionSubmessagesByMessage_(index, messages_)]]"
+                    as="submessage">
+                    <li>[[submessage]]</li>
+                  </template>
+                </ul>
+              </template>
+            </ul>
+            <!-- TODO(crbug.com/906508): For apps which are hosted apps but not
             bookmark apps, this button will actually open the site settings page
             corresponding to the app, since hosted apps are not listed in
             chrome://extensions.
@@ -74,7 +87,6 @@
         </div>
       </div>
     </div>
-    <app-management-metadata-view></app-management-metadata-view>
   </template>
   <script src="chrome_app_permission_view.js"></script>
 </dom-module>

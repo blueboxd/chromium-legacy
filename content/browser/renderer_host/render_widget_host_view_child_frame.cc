@@ -68,8 +68,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       enable_viz_(features::IsVizDisplayCompositorEnabled()),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
-      weak_factory_(this) {
+          features::IsSurfaceSynchronizationEnabled()) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this,
       enable_surface_synchronization_

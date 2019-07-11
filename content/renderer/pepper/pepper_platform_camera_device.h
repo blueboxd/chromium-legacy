@@ -60,7 +60,7 @@ class PepperPlatformCameraDevice {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<PepperPlatformCameraDevice> weak_factory_;
+  base::WeakPtrFactory<PepperPlatformCameraDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformCameraDevice);
 };

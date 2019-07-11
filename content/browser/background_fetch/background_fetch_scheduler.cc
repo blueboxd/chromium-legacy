@@ -71,8 +71,7 @@ BackgroundFetchScheduler::BackgroundFetchScheduler(
       devtools_context_(devtools_context),
       event_dispatcher_(background_fetch_context,
                         std::move(service_worker_context),
-                        devtools_context),
-      weak_ptr_factory_(this) {
+                        devtools_context) {
   DCHECK(delegate_proxy_);
   DCHECK(devtools_context_);
   delegate_proxy_->SetClickEventDispatcher(

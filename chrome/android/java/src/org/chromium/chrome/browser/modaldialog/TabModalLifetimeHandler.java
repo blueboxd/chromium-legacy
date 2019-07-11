@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
-import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -43,7 +41,6 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     private final ChromeActivity mActivity;
     private final ModalDialogManager mManager;
-    private final Supplier<BrowserControlsOffsetHelper> mControlsOffsetHelper;
     private TabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private boolean mHasBottomControls;
@@ -52,13 +49,10 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     /**
      * @param activity The {@link ChromeActivity} that this handler is attached to.
      * @param manager The {@link ModalDialogManager} that this handler handles.
-     * @param controlsOffsetHelper Supplies {@link BrowserControlsOffsetHelper}.
      */
-    public TabModalLifetimeHandler(ChromeActivity activity, ModalDialogManager manager,
-            Supplier<BrowserControlsOffsetHelper> controlsOffsetHelper) {
+    public TabModalLifetimeHandler(ChromeActivity activity, ModalDialogManager manager) {
         mActivity = activity;
         mManager = manager;
-        mControlsOffsetHelper = controlsOffsetHelper;
         activity.getLifecycleDispatcher().register(this);
     }
 
@@ -86,7 +80,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     @Override
     public void onFinishNativeInitialization() {
-        mPresenter = new TabModalPresenter(mActivity, mControlsOffsetHelper);
+        mPresenter = new TabModalPresenter(mActivity);
         mManager.registerPresenter(mPresenter, ModalDialogType.TAB);
         mHasBottomControls = mActivity.getBottomSheet() != null;
 

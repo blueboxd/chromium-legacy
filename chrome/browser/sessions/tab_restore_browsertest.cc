@@ -266,11 +266,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, DISABLED_BasicRestoreFromClosedWindow) {
   EXPECT_EQ(2u, active_browser_list_->size());
 
   // Close the final tab in the first browser.
-  content::WindowedNotificationObserver window_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
   CloseTab(0);
-  window_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
 
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 0));
 
@@ -369,11 +366,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
     CloseTab(0);
 
   // Close the last tab, closing the browser.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
   CloseTab(0);
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_EQ(1u, active_browser_list_->size());
 
   // Restore the last-closed tab into a new window.
@@ -656,14 +650,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(window_count - 1, active_browser_list_->size());
 
   // Restore the window.
-  content::WindowedNotificationObserver open_window_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::RestoreTab(active_browser_list_->get(0));
-  open_window_observer.Wait();
   EXPECT_EQ(window_count, active_browser_list_->size());
 
   Browser* browser = GetBrowser(1);
@@ -826,11 +816,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   TabLoaderTester::SetConstructionCallbackForTesting(&callback);
 
   // Restore recently closed window.
-  content::WindowedNotificationObserver open_window_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   chrome::OpenWindowWithRestoredTabs(browser()->profile());
-  open_window_observer.Wait();
+  ASSERT_EQ(2U, active_browser_list_->size());
   browser2 = GetBrowser(1);
 
   EXPECT_EQ(tabs_count, browser2->tab_strip_model()->count());
@@ -931,11 +918,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   CloseBrowserSynchronously(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
 
-  content::WindowedNotificationObserver open_window_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   chrome::RestoreTab(GetBrowser(0));
-  open_window_observer.Wait();
   ASSERT_EQ(2u, active_browser_list_->size());
 
   Browser* restored_window = GetBrowser(1);

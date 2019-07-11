@@ -30,8 +30,7 @@ ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     : context_(context),
       provider_host_(provider_host),
       loader_factory_for_new_scripts_(
-          std::move(loader_factory_for_new_scripts)),
-      weak_factory_(this) {
+          std::move(loader_factory_for_new_scripts)) {
   DCHECK(provider_host_->IsProviderForServiceWorker());
   DCHECK(loader_factory_for_new_scripts_ ||
          ServiceWorkerVersion::IsInstalled(

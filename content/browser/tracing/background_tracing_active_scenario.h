@@ -96,7 +96,7 @@ class BackgroundTracingActiveScenario {
   std::unique_ptr<TracingTimer> tracing_timer_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<BackgroundTracingActiveScenario> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundTracingActiveScenario> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingActiveScenario);
 };
 

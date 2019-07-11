@@ -57,8 +57,7 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     : connector_(connector ? connector->Clone() : nullptr),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       launcher_has_connected_to_source_provider_(false),
-      service_listener_binding_(this),
-      weak_ptr_factory_(this) {
+      service_listener_binding_(this) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(

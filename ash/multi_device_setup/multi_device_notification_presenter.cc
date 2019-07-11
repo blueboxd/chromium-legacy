@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -262,14 +262,14 @@ std::unique_ptr<message_center::Notification>
 MultiDeviceNotificationPresenter::CreateNotification(
     const base::string16& title,
     const base::string16& message) {
-  return ash::CreateSystemNotification(
+  return CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId, title, message, base::string16() /* display_source */,
       GURL() /* origin_url */,
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierMultiDevice),
       message_center::RichNotificationData(), nullptr /* delegate */,
-      ash::kNotificationMultiDeviceSetupIcon,
+      kNotificationMultiDeviceSetupIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 }
 

@@ -113,7 +113,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   LoaderCallback loader_callback_;
   FallbackCallback fallback_callback_;
 
-  base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);
 };

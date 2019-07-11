@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"

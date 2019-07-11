@@ -46,8 +46,7 @@ MediaPermissionDispatcher::MediaPermissionDispatcher(
     RenderFrameImpl* render_frame)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       next_request_id_(0),
-      render_frame_(render_frame),
-      weak_factory_(this) {
+      render_frame_(render_frame) {
   DCHECK(render_frame_);
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }

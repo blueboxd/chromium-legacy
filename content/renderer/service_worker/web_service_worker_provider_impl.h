@@ -97,7 +97,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   // the same context, but could live longer until the context is GC'ed)
   blink::WebServiceWorkerProviderClient* provider_client_;
 
-  base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_;
+  base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };

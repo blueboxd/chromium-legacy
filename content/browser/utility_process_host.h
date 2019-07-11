@@ -160,7 +160,7 @@ class CONTENT_EXPORT UtilityProcessHost
       pending_run_service_callbacks_;
 
   // Used to vend weak pointers, and should always be declared last.
-  base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_;
+  base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHost);
 };

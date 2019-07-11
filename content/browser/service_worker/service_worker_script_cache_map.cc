@@ -21,8 +21,7 @@ namespace content {
 ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
     ServiceWorkerVersion* owner,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : owner_(owner), context_(context), weak_factory_(this) {
-}
+    : owner_(owner), context_(context) {}
 
 ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 }

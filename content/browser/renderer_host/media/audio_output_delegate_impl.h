@@ -102,7 +102,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   // |observer_| is notified about changes in the audible state of the stream.
   media::mojom::AudioOutputStreamObserverPtr observer_;
 
-  base::WeakPtrFactory<AudioOutputDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<AudioOutputDelegateImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDelegateImpl);
 };

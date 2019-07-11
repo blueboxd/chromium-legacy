@@ -8,7 +8,6 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -92,13 +91,7 @@ class LauncherPageSwitchesTest : public UIPerformanceTest,
   DISALLOW_COPY_AND_ASSIGN(LauncherPageSwitchesTest);
 };
 
-// Flaky on CrOS. See https://crbug.com/981281
-#if defined(OS_CHROMEOS)
-#define MAYBE_SwitchToNextPage DISABLED_SwitchToNextPage
-#else
-#define MAYBE_SwitchToNextPage SwitchToNextPage
-#endif
-IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, MAYBE_SwitchToNextPage) {
+IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, SwitchToNextPage) {
   ash::PaginationModel* model = ash::ShellTestApi().GetAppListPaginationModel();
   ASSERT_TRUE(model);
   EXPECT_LT(1, model->total_pages());
@@ -109,13 +102,7 @@ IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, MAYBE_SwitchToNextPage) {
   waiter.Wait();
 }
 
-// Flaky on CrOS. See https://crbug.com/981281
-#if defined(OS_CHROMEOS)
-#define MAYBE_SwitchToFarPage DISABLED_SwitchToFarPage
-#else
-#define MAYBE_SwitchToFarPage SwitchToFarPage
-#endif
-IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, MAYBE_SwitchToFarPage) {
+IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, SwitchToFarPage) {
   ash::PaginationModel* model = ash::ShellTestApi().GetAppListPaginationModel();
   ASSERT_TRUE(model);
   EXPECT_LT(2, model->total_pages());

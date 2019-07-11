@@ -159,7 +159,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // The backend is owned by net::URLRequestContext and always outlives us.
   URLDataManagerBackend* const backend_;
 
-  base::WeakPtrFactory<URLRequestChromeJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestChromeJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
@@ -172,8 +172,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       data_available_status_(net::OK),
       pending_buf_size_(0),
       is_gzipped_(false),
-      backend_(backend),
-      weak_factory_(this) {
+      backend_(backend) {
   DCHECK(backend);
 }
 
@@ -402,8 +401,7 @@ class ChromeProtocolHandler
 
 }  // namespace
 
-URLDataManagerBackend::URLDataManagerBackend()
-    : next_request_id_(0), weak_factory_(this) {
+URLDataManagerBackend::URLDataManagerBackend() : next_request_id_(0) {
   URLDataSource* shared_source = new SharedResourcesDataSource();
   AddDataSource(new URLDataSourceImpl(shared_source->GetSource(),
                                       base::WrapUnique(shared_source)));

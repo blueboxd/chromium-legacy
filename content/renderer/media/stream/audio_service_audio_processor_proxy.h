@@ -79,7 +79,7 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   // Communication with browser for AEC dump.
   std::unique_ptr<AecDumpAgentImpl> aec_dump_agent_impl_;
 
-  base::WeakPtrFactory<AudioServiceAudioProcessorProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<AudioServiceAudioProcessorProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceAudioProcessorProxy);
 };

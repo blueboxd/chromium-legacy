@@ -66,10 +66,11 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsForReportingToPrefsIfEnabled) {
   int64_t timestamp =
       preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
   std::string termina_version =
-      preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_FALSE(
       preferences->HasPrefPath(prefs::kCrostiniLastLaunchTimeWindowStart));
-  EXPECT_FALSE(preferences->HasPrefPath(prefs::kCrostiniLastLaunchVersion));
+  EXPECT_FALSE(preferences->HasPrefPath(
+      prefs::kCrostiniLastLaunchTerminaComponentVersion));
   EXPECT_EQ(0, timestamp);
   EXPECT_TRUE(termina_version.empty());
 
@@ -80,7 +81,8 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsForReportingToPrefsIfEnabled) {
                                            &test_clock_);
 
   timestamp = preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
-  termina_version = preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+  termina_version =
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_EQ(1535760000000, timestamp);  // 1 Sep 2018 00:00:00 GMT
   EXPECT_EQ("1.33.7", termina_version);
 }
@@ -104,7 +106,7 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsIfThereIsNoTerminaVersion) {
   const int64_t timestamp =
       preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
   const std::string termina_version =
-      preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_EQ(1535760000000, timestamp);  // 1 Sep 2018 00:00:00 GMT
   EXPECT_TRUE(termina_version.empty());
 }

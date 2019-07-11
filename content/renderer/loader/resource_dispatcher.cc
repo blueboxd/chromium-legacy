@@ -116,8 +116,7 @@ int ResourceDispatcher::MakeRequestID() {
   return kInitialRequestID + sequence.GetNext();
 }
 
-ResourceDispatcher::ResourceDispatcher()
-    : delegate_(nullptr), weak_factory_(this) {}
+ResourceDispatcher::ResourceDispatcher() : delegate_(nullptr) {}
 
 ResourceDispatcher::~ResourceDispatcher() {
 }

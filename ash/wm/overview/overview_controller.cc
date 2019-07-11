@@ -516,7 +516,7 @@ std::vector<aura::Window*>
 OverviewController::GetWindowsListInOverviewGridsForTest() {
   std::vector<aura::Window*> windows;
   for (const std::unique_ptr<OverviewGrid>& grid :
-       overview_session_->grid_list_for_testing()) {
+       overview_session_->grid_list()) {
     for (const auto& overview_item : grid->window_list())
       windows.push_back(overview_item->GetWindow());
   }
@@ -527,7 +527,7 @@ std::vector<aura::Window*>
 OverviewController::GetItemWindowListInOverviewGridsForTest() {
   std::vector<aura::Window*> windows;
   for (const std::unique_ptr<OverviewGrid>& grid :
-       overview_session_->grid_list_for_testing()) {
+       overview_session_->grid_list()) {
     for (const auto& overview_item : grid->window_list())
       windows.push_back(overview_item->item_widget()->GetNativeWindow());
   }

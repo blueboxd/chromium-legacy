@@ -350,8 +350,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
       frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
-                                         : host()->GetFrameSinkId()),
-      weak_ptr_factory_(this) {
+                                         : host()->GetFrameSinkId()) {
   CreateDelegatedFrameHostClient();
 
   if (!is_guest_view_hack_)

@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -31,7 +30,6 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -96,15 +94,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
   // does incomplete initialization that would lead to
   // SystemUrlRequestContextGetter being leaked.
-  content::WindowedNotificationObserver browser_creation_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-
-  // RunUntilIdle() (racily) isn't sufficient to ensure browser creation, so
-  // listen for the notification.
-  base::RunLoop().RunUntilIdle();
-  browser_creation_observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
   EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 
   // Access the browser that was created for the new Guest Profile.

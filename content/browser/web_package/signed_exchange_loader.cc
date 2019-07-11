@@ -83,8 +83,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
       metric_recorder_(std::move(metric_recorder)),
-      accept_langs_(accept_langs),
-      weak_factory_(this) {
+      accept_langs_(accept_langs) {
   DCHECK(outer_request_.url.is_valid());
 
   // |metric_recorder_| could be null in some tests.

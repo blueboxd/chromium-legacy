@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_export_import_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
@@ -68,7 +68,7 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
   }
 
   message_center::RichNotificationData rich_notification_data;
-  rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
+  rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
 
   notification_ = std::make_unique<message_center::Notification>(

@@ -149,8 +149,7 @@ ShellDevToolsBindings::ShellDevToolsBindings(WebContents* devtools_contents,
       inspected_contents_(inspected_contents),
       delegate_(delegate),
       inspect_element_at_x_(-1),
-      inspect_element_at_y_(-1),
-      weak_factory_(this) {}
+      inspect_element_at_y_(-1) {}
 
 ShellDevToolsBindings::~ShellDevToolsBindings() {
   if (agent_host_)

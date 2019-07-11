@@ -70,7 +70,7 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
   std::unique_ptr<DevToolsTargetRegistry> target_registry_;
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
-  base::WeakPtrFactory<DevToolsInterceptorController> weak_factory_;
+  base::WeakPtrFactory<DevToolsInterceptorController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsInterceptorController);
 };

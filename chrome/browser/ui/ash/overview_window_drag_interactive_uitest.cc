@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -156,10 +156,6 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kEnterAnimationComplete);
 
-  content::WindowedNotificationObserver waiter(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(chrome::FindLastActive()));
-
   gfx::Point start_point = GetStartLocation(GetDisplaySize(browser_window));
   gfx::Point end_point(start_point);
   end_point.set_y(0);
@@ -171,8 +167,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
       /*touch=*/true);
   generator.Wait();
 
-  // Wait for the window to close.
-  waiter.Wait();
+  ui_test_utils::WaitForBrowserToClose(chrome::FindLastActive());
 }
 
 IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {

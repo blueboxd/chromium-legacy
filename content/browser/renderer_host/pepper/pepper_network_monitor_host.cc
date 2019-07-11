@@ -64,8 +64,7 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
                                                    PP_Instance instance,
                                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      network_connection_tracker_(nullptr),
-      weak_factory_(this) {
+      network_connection_tracker_(nullptr) {
   int render_process_id;
   int render_frame_id;
   host->GetRenderFrameIDsForInstance(

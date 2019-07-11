@@ -94,8 +94,8 @@ class GetInitializationDataTask : public DatabaseTask {
   // Map from the unique_id to the initialization data.
   InitializationDataMap initialization_data_map_;
 
-  base::WeakPtrFactory<GetInitializationDataTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetInitializationDataTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(GetInitializationDataTask);
 };

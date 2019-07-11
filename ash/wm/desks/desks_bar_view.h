@@ -38,7 +38,7 @@ class ASH_EXPORT DesksBarView : public views::View,
       aura::Window* root,
       const gfx::Rect& bounds);
 
-  views::View* backgroud_view() const { return backgroud_view_; }
+  views::View* background_view() const { return background_view_; }
 
   NewDeskButton* new_desk_button() const { return new_desk_button_; }
 
@@ -109,7 +109,7 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   // A view that shows a dark gary transparent background that can be animated
   // when the very first mini_views are created.
-  views::View* backgroud_view_;
+  views::View* background_view_;
 
   NewDeskButton* new_desk_button_;
 

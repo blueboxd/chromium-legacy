@@ -269,11 +269,23 @@ The exceptions file supports the following options per test:
   bot. This can be used to add additional command line arguments, Swarming
   parameters, etc.
 
-* `key_removals`: a dictionary mapping a bot's name to a list of keys which
-  should be removed from the test's specification on that bot. Note that by
-  design, this feature *can not* be used to remove Swarming dictionary entries.
-  This feature was mainly used to match the previously handwritten JSON files,
-  should not be used in the future, and should ideally be removed.
+* `replacements`: a dictionary mapping bot names to a dictionaries of field
+  names to dictionaries of key/value pairs to replace. If the given value is
+  `None`, then the key will simply be removed. For example:
+  ```
+  'foo_tests': {
+    'Foo Tester': {
+      'args': {
+        '--some-flag': None,
+        '--another-flag': 'some-value',
+      },
+    },
+  }
+  ```
+  would remove the `--some-flag` and replace whatever value `--another-flag` was
+  set to with `some-value`. Note that passing `None` only works if the flag
+  being removed either has no value or is in the `--key=value` format. It does
+  not work if the key and value are two separate entries in the args list.
 
 ### Order of application of test changes
 

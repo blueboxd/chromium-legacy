@@ -14,16 +14,13 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
 
 #if defined(OS_ANDROID)
 #include "base/timer/timer.h"
 #endif
 
 class PrefService;
-
-namespace content {
-struct MainFunctionParams;
-}
 
 namespace extensions {
 class ExtensionsClient;
@@ -93,7 +90,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 
  private:
   std::unique_ptr<CastBrowserProcess> cast_browser_process_;
-  const content::MainFunctionParams& parameters_;  // For running browser tests.
+  const content::MainFunctionParams parameters_;  // For running browser tests.
   // Caches a pointer of the CastContentBrowserClient.
   CastContentBrowserClient* const cast_content_browser_client_ = nullptr;
   URLRequestContextFactory* const url_request_context_factory_;

@@ -51,6 +51,7 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -71,6 +72,7 @@
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/dump_accessibility_test_helper.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -1351,13 +1353,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
@@ -1517,13 +1516,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
@@ -2241,4 +2237,145 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
   // MAIN VERIFICATION: Wait for the main frame to report that is has stopped
   // loading.
   content::WaitForLoadStop(web_contents);
+}
+
+class PDFExtensionAccessibilityTreeDumpTest
+    : public PDFExtensionTest,
+      public ::testing::WithParamInterface<size_t> {
+ public:
+  PDFExtensionAccessibilityTreeDumpTest()
+      : test_pass_(
+            content::AccessibilityTreeFormatter::GetTestPass(GetParam())) {}
+  ~PDFExtensionAccessibilityTreeDumpTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+
+    // Each test pass might require custom command-line setup
+    if (test_pass_.set_up_command_line)
+      test_pass_.set_up_command_line(command_line);
+  }
+
+ protected:
+  void RunPDFTest(const base::FilePath::CharType* pdf_file) {
+    base::FilePath test_path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("pdf")),
+        base::FilePath(FILE_PATH_LITERAL("accessibility")));
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath pdf_path = test_path.Append(pdf_file);
+
+    RunTest(pdf_path, "pdf/accessibility");
+  }
+
+ private:
+  using PropertyFilter = content::AccessibilityTreeFormatter::PropertyFilter;
+
+  void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
+    // Set up the tree formatter.
+    std::unique_ptr<content::AccessibilityTreeFormatter> formatter =
+        test_pass_.create_formatter();
+    std::vector<PropertyFilter> property_filters;
+    formatter->AddDefaultFilters(&property_filters);
+    AddDefaultFilters(&property_filters);
+    formatter->SetPropertyFilters(property_filters);
+
+    // Exit without running the test if we can't find an expectation file or if
+    // the expectation file contains a skip marker.
+    // This is used to skip certain tests on certain platforms.
+    content::DumpAccessibilityTestHelper test_helper(formatter.get());
+    base::Optional<base::FilePath> expected_file_path =
+        test_helper.GetExpectationFilePath(test_file_path);
+    if (!expected_file_path) {
+      LOG(INFO) << "No expectation file present, ignoring test on this "
+                   "platform.";
+      return;
+    }
+
+    base::Optional<std::vector<std::string>> expected_lines =
+        test_helper.LoadExpectationFile(*expected_file_path);
+    if (!expected_lines) {
+      LOG(INFO) << "Skipping this test on this platform.";
+      return;
+    }
+
+    // Enable accessibility and load the test file.
+    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    GURL test_pdf_url(embedded_test_server()->GetURL(
+        "/" + std::string(file_dir) + "/" +
+        test_file_path.BaseName().MaybeAsASCII()));
+    WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents);
+    WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+
+    // Find the embedded PDF and dump the accessibility tree.
+    content::FindAccessibilityNodeCriteria find_criteria;
+    find_criteria.role = ax::mojom::Role::kEmbeddedObject;
+    content::BrowserAccessibility* pdf_root =
+        content::FindAccessibilityNode(guest_contents, find_criteria);
+    CHECK(pdf_root);
+
+    base::string16 actual_contents_utf16;
+    formatter->FormatAccessibilityTree(pdf_root, &actual_contents_utf16);
+    std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
+
+    std::vector<std::string> actual_lines =
+        base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    // Validate the dump against the expectation file.
+    EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
+        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+  }
+
+  void AddDefaultFilters(std::vector<PropertyFilter>* property_filters) {
+    AddPropertyFilter(property_filters, "value='*'");
+    // The value attribute on the document object contains the URL of the
+    // current page which will not be the same every time the test is run.
+    AddPropertyFilter(property_filters, "value='http*'", PropertyFilter::DENY);
+    // Object attributes.value
+    AddPropertyFilter(property_filters, "layout-guess:*",
+                      PropertyFilter::ALLOW);
+
+    AddPropertyFilter(property_filters, "select*");
+    AddPropertyFilter(property_filters, "descript*");
+    AddPropertyFilter(property_filters, "check*");
+    AddPropertyFilter(property_filters, "horizontal");
+    AddPropertyFilter(property_filters, "multiselectable");
+
+    // Deny most empty values
+    AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);
+    // After denying empty values, because we want to allow name=''
+    AddPropertyFilter(property_filters, "name=*", PropertyFilter::ALLOW_EMPTY);
+  }
+
+  void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
+                         std::string filter,
+                         PropertyFilter::Type type = PropertyFilter::ALLOW) {
+    property_filters->push_back(
+        PropertyFilter(base::ASCIIToUTF16(filter), type));
+  }
+
+  content::AccessibilityTreeFormatter::TestPass test_pass_;
+};
+
+// Parameterize the tests so that each test-pass is run independently.
+struct DumpAccessibilityTreeTestPassToString {
+  std::string operator()(const ::testing::TestParamInfo<size_t>& i) const {
+    return content::AccessibilityTreeFormatter::GetTestPass(i.param).name;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    PDFExtensionAccessibilityTreeDumpTest,
+    ::testing::Range(
+        size_t{0},
+        content::AccessibilityTreeFormatter::GetTestPasses().size()),
+    DumpAccessibilityTreeTestPassToString());
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, HelloWorld) {
+  RunPDFTest(FILE_PATH_LITERAL("hello-world.pdf"));
 }

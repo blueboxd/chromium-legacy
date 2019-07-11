@@ -464,8 +464,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
-      session_storage_namespace_id_(params.session_storage_namespace_id),
-      weak_ptr_factory_(this) {
+      session_storage_namespace_id_(params.session_storage_namespace_id) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
   // Please put all logic in RenderViewImpl::Initialize().

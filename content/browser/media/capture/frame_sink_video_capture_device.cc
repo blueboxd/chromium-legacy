@@ -67,8 +67,7 @@ std::unique_ptr<service_manager::Connector> MaybeGetServiceConnector() {
 
 FrameSinkVideoCaptureDevice::FrameSinkVideoCaptureDevice()
     : cursor_controller_(
-          RescopeToUIThread(std::make_unique<MouseCursorOverlayController>())),
-      weak_factory_(this) {
+          RescopeToUIThread(std::make_unique<MouseCursorOverlayController>())) {
   DCHECK(cursor_controller_);
 }
 

@@ -883,8 +883,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
-      commit_callback_interceptor_(nullptr),
-      weak_ptr_factory_(this) {
+      commit_callback_interceptor_(nullptr) {
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);
@@ -4874,8 +4873,19 @@ void RenderFrameHostImpl::CommitNavigation(
     if (subresource_loader_params &&
         subresource_loader_params->appcache_loader_factory_info.is_valid()) {
       // If the caller has supplied a factory for AppCache, use it.
-      subresource_loader_factories->appcache_factory_info() =
+
+      auto factory_ptr_info =
           std::move(subresource_loader_params->appcache_loader_factory_info);
+
+#if defined(OS_ANDROID)
+      GetContentClient()
+          ->browser()
+          ->WillCreateURLLoaderFactoryForAppCacheSubresource(
+              GetProcess()->GetID(), &factory_ptr_info);
+#endif
+
+      subresource_loader_factories->appcache_factory_info() =
+          std::move(factory_ptr_info);
 
       // Inject test intermediary if needed.
       if (!GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {

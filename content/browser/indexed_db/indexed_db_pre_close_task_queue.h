@@ -104,7 +104,7 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<IndexedDBPreCloseTaskQueue> ptr_factory_;
+  base::WeakPtrFactory<IndexedDBPreCloseTaskQueue> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBPreCloseTaskQueue);
 };

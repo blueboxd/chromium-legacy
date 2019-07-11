@@ -666,7 +666,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // notifications.
   // ---------------------------------------------------------------------------
 
-  base::WeakPtrFactory<RenderViewImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderViewImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewImpl);
 };

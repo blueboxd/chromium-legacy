@@ -51,8 +51,7 @@ AppCacheRequestHandler::AppCacheRequestHandler(
       maybe_load_resource_executed_(false),
       cache_id_(blink::mojom::kAppCacheNoCacheId),
       service_(host_->service()),
-      request_(std::move(request)),
-      weak_factory_(this) {
+      request_(std::move(request)) {
   DCHECK(host_);
   DCHECK(service_);
   host_->AddObserver(this);

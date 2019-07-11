@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -53,6 +52,10 @@ HatsBubbleView::HatsBubbleView(AppMenuButton* anchor_button,
       browser_(browser) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
+  set_close_on_deactivate(false);
+  set_parent_window(parent_view);
+  set_margins(gfx::Insets());
+
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(10, 20, 10, 0),
       10));
@@ -61,19 +64,10 @@ HatsBubbleView::HatsBubbleView(AppMenuButton* anchor_button,
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
-  // Add Logo icon.
-  auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_PRODUCT_LOGO_32));
-  AddChildView(std::move(icon_view));
-
   auto message = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_TEXT));
   message->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   AddChildView(std::move(message));
-
-  set_parent_window(parent_view);
-  set_margins(gfx::Insets());
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 

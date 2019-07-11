@@ -686,7 +686,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   bool is_evicted_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

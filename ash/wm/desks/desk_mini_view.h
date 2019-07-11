@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -23,9 +24,11 @@ class DeskPreviewView;
 // virtual desk in the desk bar view when overview mode is active. This view
 // shows a preview of the contents of the associated desk, its title, and
 // supports desk activation and removal.
-class ASH_EXPORT DeskMiniView : public views::Button,
-                                public views::ButtonListener,
-                                public Desk::Observer {
+class ASH_EXPORT DeskMiniView
+    : public views::Button,
+      public views::ButtonListener,
+      public Desk::Observer,
+      public OverviewHighlightController::OverviewHighlightableView {
  public:
   DeskMiniView(DesksBarView* owner_bar,
                aura::Window* root_window,
@@ -72,6 +75,10 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // Desk::Observer:
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
+
+  // OverviewHighlightController::OverviewHighlightableView:
+  views::View* GetView() override;
+  gfx::Rect GetHighlightBounds() override;
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 

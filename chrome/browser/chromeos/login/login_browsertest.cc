@@ -22,6 +22,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 

@@ -681,7 +681,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // This can be NULL. Only grid views inside folders have a folder delegate.
   AppsGridViewFolderDelegate* folder_delegate_ = nullptr;
 
-  ash::PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_{this};
   // Must appear after |pagination_model_|.
   std::unique_ptr<ash::PaginationController> pagination_controller_;
 

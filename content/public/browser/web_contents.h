@@ -29,6 +29,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
@@ -942,6 +943,9 @@ class WebContents : public PageNavigator,
   // WebContents. This can be used to determine if a AudioOutputStream was
   // created from a renderer that originated from this WebContents.
   virtual base::UnguessableToken GetAudioGroupId() = 0;
+
+  // The source ID of the last committed navigation.
+  virtual ukm::SourceId GetLastCommittedSourceId() = 0;
 
  private:
   // This interface should only be implemented inside content.

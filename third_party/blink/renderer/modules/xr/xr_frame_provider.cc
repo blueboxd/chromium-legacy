@@ -390,14 +390,28 @@ void XRFrameProvider::ProcessScheduledFrame(
     for (unsigned i = 0; i < processing_sessions_.size(); ++i) {
       XRSession* session = processing_sessions_.at(i).Get();
 
+      // If the session was terminated between requesting and now, we shouldn't
+      // process anything further.
+      if (session->ended())
+        continue;
+
       if (frame_pose_ && frame_pose_->input_state.has_value()) {
         session->OnInputStateChange(frame_id_,
                                     frame_pose_->input_state.value());
       }
 
+      // If the input state change caused this session to end, we should stop
+      // processing.
+      if (session->ended())
+        continue;
+
       if (frame_pose_ && frame_pose_->pose_reset) {
         session->OnPoseReset();
       }
+
+      // If the pose reset caused us to end, we should stop processing.
+      if (session->ended())
+        continue;
 
       std::unique_ptr<TransformationMatrix> pose_matrix =
           getPoseMatrix(frame_pose_);

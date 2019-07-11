@@ -62,8 +62,7 @@ blink::mojom::IdleStatePtr IdleTimeToIdleState(bool locked,
 
 }  // namespace
 
-IdleManager::IdleManager()
-    : idle_time_provider_(new DefaultIdleProvider()), weak_factory_(this) {}
+IdleManager::IdleManager() : idle_time_provider_(new DefaultIdleProvider()) {}
 
 IdleManager::~IdleManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

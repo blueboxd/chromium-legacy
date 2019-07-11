@@ -94,8 +94,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       type_(Type::kNetworkOnly),
       client_producer_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                               base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+                               base::SequencedTaskRunnerHandle::Get()) {
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
   CheckVersionStatusBeforeLoad();
@@ -190,8 +189,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       client_producer_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()),
-      request_start_(base::TimeTicks::Now()),
-      weak_factory_(this) {
+      request_start_(base::TimeTicks::Now()) {
 #if DCHECK_IS_ON()
   CheckVersionStatusBeforeLoad();
 #endif  // DCHECK_IS_ON()

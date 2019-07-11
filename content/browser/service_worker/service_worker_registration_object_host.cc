@@ -83,8 +83,7 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
     scoped_refptr<ServiceWorkerRegistration> registration)
     : provider_host_(provider_host),
       context_(context),
-      registration_(registration),
-      weak_ptr_factory_(this) {
+      registration_(registration) {
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);

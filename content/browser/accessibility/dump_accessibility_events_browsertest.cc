@@ -488,8 +488,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
 }
 
+// http://crbug.com/982998
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsExpandedChange \
+  DISABLED_AccessibilityEventsExpandedChange
+#else
+#define MAYBE_AccessibilityEventsExpandedChange \
+  AccessibilityEventsExpandedChange
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsExpandedChange) {
+                       MAYBE_AccessibilityEventsExpandedChange) {
   RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
 }
 

@@ -38,10 +38,9 @@ constexpr base::TimeDelta kFromHomeLauncherDelay =
 constexpr base::TimeDelta kHomeLauncherTransition =
     base::TimeDelta::FromMilliseconds(250);
 
-// Time it takes for the selector widget to move to the next target. The same
-// time is used for fading out shield widget when the overview mode is opened
-// or closed.
-constexpr base::TimeDelta kOverviewSelectorTransition =
+// Time it takes for the overview highlight to move to the next target. The same
+// time is used for fading the no recent items label.
+constexpr base::TimeDelta kOverviewHighlightTransition =
     base::TimeDelta::FromMilliseconds(250);
 
 // Time duration of the show animation of the drop target.
@@ -72,9 +71,8 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
       return kDropTargetFadeIn;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
-      return kOverviewSelectorTransition;
+      return kOverviewHighlightTransition;
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -167,7 +165,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_IN_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

@@ -130,7 +130,7 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   std::unordered_map<int, ImageInfo> image_annotations_;
 
   // This member needs to be last because it should destructed first.
-  base::WeakPtrFactory<AXImageAnnotator> weak_factory_;
+  base::WeakPtrFactory<AXImageAnnotator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AXImageAnnotator);
 };

@@ -18,7 +18,7 @@ constexpr auto kPluginRefreshThreshold = base::TimeDelta::FromSeconds(3);
 }  // namespace
 
 PluginRegistryImpl::PluginRegistryImpl(ResourceContext* resource_context)
-    : resource_context_(resource_context), weak_factory_(this) {}
+    : resource_context_(resource_context) {}
 
 PluginRegistryImpl::~PluginRegistryImpl() {}
 

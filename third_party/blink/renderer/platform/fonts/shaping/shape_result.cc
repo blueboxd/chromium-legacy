@@ -1114,24 +1114,26 @@ void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run_to_insert,
 
 void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run) {
   // The runs are stored in result->m_runs in visual order. For LTR, we place
-  // the run to be inserted before the next run with a bigger character
-  // start index. For RTL, we place the run before the next run with a lower
-  // character index. Otherwise, for both directions, at the end.
-  if (HB_DIRECTION_IS_FORWARD(run->direction_)) {
-    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
-      if (runs_.at(pos)->start_index_ > run->start_index_) {
-        runs_.insert(pos, std::move(run));
-        break;
-      }
-    }
-  } else {
-    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
-      if (runs_.at(pos)->start_index_ < run->start_index_) {
-        runs_.insert(pos, std::move(run));
-        break;
-      }
-    }
-  }
+  // the run to be inserted before the next run with a bigger character start
+  // index.
+  const auto ltr_comparer = [](scoped_refptr<RunInfo>& run,
+                               unsigned start_index) {
+    return run->start_index_ < start_index;
+  };
+
+  // For RTL, we place the run before the next run with a lower character
+  // index. Otherwise, for both directions, at the end.
+  const auto rtl_comparer = [](scoped_refptr<RunInfo>& run,
+                               unsigned start_index) {
+    return run->start_index_ > start_index;
+  };
+
+  Vector<scoped_refptr<RunInfo>>::iterator iterator = std::lower_bound(
+      runs_.begin(), runs_.end(), run->start_index_,
+      HB_DIRECTION_IS_FORWARD(run->direction_) ? ltr_comparer : rtl_comparer);
+  if (iterator != runs_.end())
+    runs_.insert(iterator - runs_.begin(), std::move(run));
+
   // If we didn't find an existing slot to place it, append.
   if (run)
     runs_.push_back(std::move(run));

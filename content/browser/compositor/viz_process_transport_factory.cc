@@ -124,8 +124,7 @@ VizProcessTransportFactory::VizProcessTransportFactory(
       context_factory_private_(
           kBrowserClientId,
           BrowserMainLoop::GetInstance()->host_frame_sink_manager(),
-          resize_task_runner),
-      weak_ptr_factory_(this) {
+          resize_task_runner) {
   DCHECK(gpu_channel_establish_factory_);
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());

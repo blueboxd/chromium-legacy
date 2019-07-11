@@ -83,7 +83,8 @@ class GpuBrowserCompositorOutputSurface
   ui::LatencyTracker latency_tracker_;
 
  private:
-  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };

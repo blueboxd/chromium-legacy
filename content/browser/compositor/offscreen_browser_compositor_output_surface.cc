@@ -32,8 +32,7 @@ static viz::ResourceFormat kFboTextureFormat = viz::RGBA_8888;
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<viz::ContextProviderCommandBuffer> context)
-    : BrowserCompositorOutputSurface(std::move(context)),
-      weak_ptr_factory_(this) {
+    : BrowserCompositorOutputSurface(std::move(context)) {
   capabilities_.uses_default_gl_framebuffer = false;
 }
 

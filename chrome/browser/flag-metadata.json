@@ -341,6 +341,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-autofill-save-card-show-no-thanks",
+    "owners": ["siashah", "jsaul@google.com"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "automatic-password-generation",
     "owners": [ "ioanap", "fhorschig" ],
     "expiry_milestone": 76
@@ -364,6 +369,11 @@
     "name": "calculate-native-win-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "camera-system-web-app",
+    "owners": [ "calamity", "ortuno" ],
+    "expiry_milestone": 82
   },
   {
     "name": "cast-media-route-provider",

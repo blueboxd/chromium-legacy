@@ -35,10 +35,7 @@ class PepperInProcessRouter::Channel : public IPC::Sender {
 };
 
 PepperInProcessRouter::PepperInProcessRouter(RendererPpapiHostImpl* host_impl)
-    : host_impl_(host_impl),
-      pending_message_id_(0),
-      reply_result_(false),
-      weak_factory_(this) {
+    : host_impl_(host_impl), pending_message_id_(0), reply_result_(false) {
   browser_channel_.reset(new Channel(base::BindRepeating(
       &PepperInProcessRouter::SendToBrowser, base::Unretained(this))));
   host_to_plugin_router_.reset(new Channel(base::BindRepeating(

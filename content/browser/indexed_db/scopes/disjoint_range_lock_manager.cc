@@ -28,8 +28,7 @@ DisjointRangeLockManager::Lock& DisjointRangeLockManager::Lock::operator=(
     DisjointRangeLockManager::Lock&&) = default;
 
 DisjointRangeLockManager::DisjointRangeLockManager(int level_count)
-    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   locks_.resize(level_count);
 }
 

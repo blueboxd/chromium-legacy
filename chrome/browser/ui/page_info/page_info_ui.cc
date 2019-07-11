@@ -21,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -641,7 +642,7 @@ const gfx::ImageSkia PageInfoUI::GetCertificateIcon(
 const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kSettingsIcon, kVectorIconSize,
+      vector_icons::kSettingsIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 

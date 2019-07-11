@@ -12,7 +12,9 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
@@ -527,7 +529,8 @@ void PreloadHelper::LoadLinksFromHeader(
                                  params.image_srcset, params.image_sizes);
       }
       const auto* alternative_resource =
-          alternate_resource_info->FindMatchingEntry(url);
+          alternate_resource_info->FindMatchingEntry(
+              url, resource_type, frame.DomWindow()->navigator()->languages());
       if (alternative_resource &&
           alternative_resource->alternative_url().IsValid()) {
         UseCounter::Count(document,

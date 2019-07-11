@@ -184,8 +184,7 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
     : media_task_runner_(gpu_factories->GetTaskRunner()),
       gpu_factories_(gpu_factories),
       format_(format),
-      config_(config),
-      weak_this_factory_(this) {
+      config_(config) {
   DVLOG(1) << __func__;
   DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();

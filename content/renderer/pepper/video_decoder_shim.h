@@ -108,7 +108,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
 
   std::unique_ptr<YUVConverter> yuv_converter_;
 
-  base::WeakPtrFactory<VideoDecoderShim> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoDecoderShim> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderShim);
 };

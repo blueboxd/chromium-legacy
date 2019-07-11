@@ -98,7 +98,9 @@ IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
     base::RunLoop run_loop;
     ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
     TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(
+        true, /*wait_for_completion=*/false);
+    EXPECT_TRUE(animator->is_animating());
     run_loop.Run();
   }
 
@@ -106,7 +108,9 @@ IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
     base::RunLoop run_loop;
     ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
     TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(
+        false, /*wait_for_completion=*/false);
+    EXPECT_TRUE(animator->is_animating());
     run_loop.Run();
   }
 }

@@ -19,6 +19,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -29,6 +30,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -112,6 +114,9 @@ class ScopedTaskEnvironment::TestTaskTracker
   // thread, waiting for it to complete results in a deadlock...).
   bool DisallowRunTasks();
 
+  // Returns true if tasks are currently allowed to run.
+  bool TasksAllowedToRun() const;
+
  private:
   friend class ScopedTaskEnvironment;
 
@@ -122,7 +127,7 @@ class ScopedTaskEnvironment::TestTaskTracker
                      bool can_run_task) override;
 
   // Synchronizes accesses to members below.
-  Lock lock_;
+  mutable Lock lock_;
 
   // True if running tasks is allowed.
   bool can_run_tasks_ GUARDED_BY(lock_) = true;
@@ -192,6 +197,14 @@ class ScopedTaskEnvironment::MockTimeDomain
     return nullptr;
   }
 
+  void SetThreadPool(internal::ThreadPoolImpl* thread_pool,
+                     const TestTaskTracker* thread_pool_task_tracker) {
+    DCHECK(!thread_pool_);
+    DCHECK(!thread_pool_task_tracker_);
+    thread_pool_ = thread_pool;
+    thread_pool_task_tracker_ = thread_pool_task_tracker;
+  }
+
   // sequence_manager::TimeDomain:
 
   sequence_manager::LazyNow CreateLazyNow() const override {
@@ -239,7 +252,8 @@ class ScopedTaskEnvironment::MockTimeDomain
     if (!auto_advance_on_idle_)
       return false;
 
-    return FastForwardToNextTaskOrCap(TimeTicks::Max());
+    return FastForwardToNextTaskOrCap(TimeTicks::Max()) ==
+           NextTaskSource::kMainThread;
   }
 
   const char* GetName() const override { return "MockTimeDomain"; }
@@ -247,20 +261,73 @@ class ScopedTaskEnvironment::MockTimeDomain
   // TickClock implementation:
   TimeTicks NowTicks() const override { return Now(); }
 
-  // Advances time to the next task or to |fast_forward_cap| (if it's not
-  // Max()). Returns true if there's additional immediate work as a result
-  // of this call.
-  bool FastForwardToNextTaskOrCap(TimeTicks fast_forward_cap) {
+  // Used by FastForwardToNextTaskOrCap() to return which task source time was
+  // advanced to.
+  enum class NextTaskSource {
+    // Out of tasks under |fast_forward_cap|.
+    kNone,
+    // There's now >=1 immediate task on the main thread.
+    kMainThread,
+    // There's now >=1 immediate task in the thread pool.
+    kThreadPool,
+  };
+
+  // Advances time to the first of : next main thread task, next thread pool
+  // task, or |fast_forward_cap| (if it's not Max()).
+  NextTaskSource FastForwardToNextTaskOrCap(TimeTicks fast_forward_cap) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // We don't need to call ReclaimMemory here because
     // DelayTillNextTask will have dealt with cancelled delayed tasks for us.
-    Optional<TimeTicks> next_task_time = NextScheduledRunTime();
+    Optional<TimeTicks> next_main_thread_task_time = NextScheduledRunTime();
+
+    // Consider the next thread pool tasks iff they're running.
+    Optional<TimeTicks> next_thread_pool_task_time;
+    if (thread_pool_ && thread_pool_task_tracker_->TasksAllowedToRun()) {
+      next_thread_pool_task_time =
+          thread_pool_->NextScheduledRunTimeForTesting();
+    }
+
+    // Custom comparison logic to consider nullopt the largest rather than
+    // smallest value. Could consider using TimeTicks::Max() instead of nullopt
+    // to represent out-of-tasks?
+    Optional<TimeTicks> next_task_time;
+    if (!next_main_thread_task_time) {
+      next_task_time = next_thread_pool_task_time;
+    } else if (!next_thread_pool_task_time) {
+      next_task_time = next_main_thread_task_time;
+    } else {
+      next_task_time =
+          std::min(*next_main_thread_task_time, *next_thread_pool_task_time);
+    }
 
     if (next_task_time && *next_task_time <= fast_forward_cap) {
-      AutoLock lock(now_ticks_lock_);
-      now_ticks_ = *next_task_time;
-      return true;
+      {
+        AutoLock lock(now_ticks_lock_);
+        // It's possible for |next_task_time| to be in the past in the following
+        // scenario:
+        // Start with Now() == 100ms
+        // Thread A : Post 200ms delayed task T (construct and enqueue)
+        // Thread B : Construct 20ms delayed task U
+        //              => |delayed_run_time| == 120ms.
+        // Thread A : FastForwardToNextTaskOrCap() => fast-forwards to T @
+        //            300ms (task U is not yet in queue).
+        // Thread B : Complete enqueue of task U.
+        // Thread A : FastForwardToNextTaskOrCap() => must stay at 300ms and run
+        //            U, not go back to 120ms.
+        // Hence we need std::max() to protect again this because construction
+        // and enqueuing isn't atomic in time (LazyNow support in
+        // base/task/thread_pool could help).
+        now_ticks_ = std::max(now_ticks_, *next_task_time);
+      }
+
+      if (next_task_time == next_thread_pool_task_time) {
+        // Let the thread pool know that it should post its now ripe delayed
+        // tasks.
+        thread_pool_->ProcessRipeDelayedTasksForTesting();
+        return NextTaskSource::kThreadPool;
+      }
+      return NextTaskSource::kMainThread;
     }
 
     if (!fast_forward_cap.is_max()) {
@@ -270,11 +337,15 @@ class ScopedTaskEnvironment::MockTimeDomain
       now_ticks_ = std::max(now_ticks_, fast_forward_cap);
     }
 
-    return false;
+    return NextTaskSource::kNone;
   }
 
-  void set_auto_advance_on_idle(bool auto_advance_on_idle) {
+  // Sets |auto_advance_on_idle_| to |auto_advance_on_idle| and returns its
+  // previous value.
+  bool SetAutoAdvanceOnIdle(bool auto_advance_on_idle) {
+    const auto previous = auto_advance_on_idle_;
     auto_advance_on_idle_ = auto_advance_on_idle;
+    return previous;
   }
 
  private:
@@ -286,6 +357,9 @@ class ScopedTaskEnvironment::MockTimeDomain
   bool auto_advance_on_idle_ = true;
 
   sequence_manager::SequenceManager* const sequence_manager_;
+
+  internal::ThreadPoolImpl* thread_pool_ = nullptr;
+  const TestTaskTracker* thread_pool_task_tracker_ = nullptr;
 
   std::unique_ptr<subtle::ScopedTimeClockOverrides> time_overrides_;
 
@@ -391,8 +465,14 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
 
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
-  ThreadPoolInstance::Set(std::make_unique<internal::ThreadPoolImpl>(
-      "ScopedTaskEnvironment", std::move(task_tracker)));
+  const TickClock* tick_clock =
+      mock_time_domain_ ? static_cast<TickClock*>(mock_time_domain_.get())
+                        : DefaultTickClock::GetInstance();
+  auto thread_pool = std::make_unique<internal::ThreadPoolImpl>(
+      "ScopedTaskEnvironment", std::move(task_tracker), tick_clock);
+  if (mock_time_domain_)
+    mock_time_domain_->SetThreadPool(thread_pool.get(), task_tracker_);
+  ThreadPoolInstance::Set(std::move(thread_pool));
   ThreadPoolInstance::Get()->Start(init_params);
 }
 
@@ -571,14 +651,21 @@ void ScopedTaskEnvironment::RunUntilIdle() {
 
 void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   DCHECK(mock_time_domain_);
-  mock_time_domain_->set_auto_advance_on_idle(false);
+  DCHECK_GE(delta, TimeDelta());
+
+  const bool was_auto_advancing = mock_time_domain_->SetAutoAdvanceOnIdle(false);
+  const bool could_run_tasks = task_tracker_->AllowRunTasks();
 
   const TimeTicks fast_forward_until = mock_time_domain_->NowTicks() + delta;
   do {
     RunUntilIdle();
-  } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until));
+  } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until) !=
+           MockTimeDomain::NextTaskSource::kNone);
 
-  mock_time_domain_->set_auto_advance_on_idle(true);
+  if (was_auto_advancing)
+    mock_time_domain_->SetAutoAdvanceOnIdle(true);
+  if (!could_run_tasks)
+    task_tracker_->DisallowRunTasks();
 }
 
 void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
@@ -638,6 +725,11 @@ bool ScopedTaskEnvironment::TestTaskTracker::AllowRunTasks() {
   can_run_tasks_ = true;
   can_run_tasks_cv_.Broadcast();
   return could_run_tasks;
+}
+
+bool ScopedTaskEnvironment::TestTaskTracker::TasksAllowedToRun() const {
+  AutoLock auto_lock(lock_);
+  return can_run_tasks_;
 }
 
 bool ScopedTaskEnvironment::TestTaskTracker::DisallowRunTasks() {

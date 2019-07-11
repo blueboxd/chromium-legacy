@@ -203,7 +203,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // Used to short-circuit certain operations without having to schedule
   // any tasks on the background database thread.
   base::circular_deque<base::OnceClosure> pending_simple_tasks_;
-  base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_;
+  base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_{this};
 
   friend class content::AppCacheStorageImplTest;
   friend class content::ChromeAppCacheServiceTest;

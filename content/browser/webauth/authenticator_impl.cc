@@ -28,8 +28,7 @@ AuthenticatorImpl::AuthenticatorImpl(
     std::unique_ptr<AuthenticatorCommon> authenticator_common)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
-      authenticator_common_(std::move(authenticator_common)),
-      weak_factory_(this) {
+      authenticator_common_(std::move(authenticator_common)) {
   DCHECK(render_frame_host_);
   DCHECK(authenticator_common_);
 }

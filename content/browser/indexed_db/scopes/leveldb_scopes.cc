@@ -36,8 +36,7 @@ LevelDBScopes::LevelDBScopes(std::vector<uint8_t> metadata_key_prefix,
       max_write_batch_size_bytes_(max_write_batch_size),
       level_db_(std::move(level_db)),
       lock_manager_(lock_manager),
-      failure_callback_(std::move(failure_callback)),
-      weak_factory_(this) {}
+      failure_callback_(std::move(failure_callback)) {}
 
 LevelDBScopes::~LevelDBScopes() = default;
 

@@ -216,8 +216,7 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
-      type_(kRead),
-      weak_factory_(this) {
+      type_(kRead) {
   DCHECK(!track_.IsNull());
 }
 
@@ -230,8 +229,7 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
       source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
-      type_(kWrite),
-      weak_factory_(this) {
+      type_(kWrite) {
   InitBlinkTrack();
   DCHECK(!track_.IsNull());
 }

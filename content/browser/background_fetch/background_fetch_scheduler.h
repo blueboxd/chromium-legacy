@@ -186,7 +186,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   int num_active_registrations_ = 0;
   int num_running_downloads_ = 0;
 
-  base::WeakPtrFactory<BackgroundFetchScheduler> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundFetchScheduler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchScheduler);
 };

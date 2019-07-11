@@ -134,7 +134,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   std::unique_ptr<viz::VizCompositorThreadRunner> viz_compositor_thread_;
   ui::HostContextFactoryPrivate context_factory_private_;
 
-  base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_;
+  base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VizProcessTransportFactory);
 };

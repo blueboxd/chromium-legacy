@@ -345,23 +345,22 @@ void ChannelProxy::Context::AddListenerTaskRunner(
 void ChannelProxy::Context::RemoveListenerTaskRunner(int32_t routing_id) {
   DCHECK(default_listener_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  if (base::Contains(listener_thread_task_runners_, routing_id))
-    listener_thread_task_runners_.erase(routing_id);
+  listener_thread_task_runners_.erase(routing_id);
 }
 
 // Called on the IPC::Channel thread.
-base::SingleThreadTaskRunner* ChannelProxy::Context::GetTaskRunner(
-    int32_t routing_id) {
+scoped_refptr<base::SingleThreadTaskRunner>
+ChannelProxy::Context::GetTaskRunner(int32_t routing_id) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (routing_id == MSG_ROUTING_NONE)
-    return default_listener_task_runner_.get();
+    return default_listener_task_runner_;
 
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  base::SingleThreadTaskRunner* task_runner =
-      listener_thread_task_runners_[routing_id].get();
-  if (task_runner)
-    return task_runner;
-  return default_listener_task_runner_.get();
+  auto task_runner = listener_thread_task_runners_.find(routing_id);
+  if (task_runner == listener_thread_task_runners_.end())
+    return default_listener_task_runner_;
+  DCHECK(task_runner->second);
+  return task_runner->second;
 }
 
 // Called on the listener's thread

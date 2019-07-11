@@ -100,7 +100,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   };
   MethodProperties method_properties_[NUM_THROTTLE_METHODS];
 
-  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationThrottle);
 };

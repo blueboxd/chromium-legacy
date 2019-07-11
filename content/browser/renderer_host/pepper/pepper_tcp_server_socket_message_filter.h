@@ -166,7 +166,8 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
 
   // Vends weak pointers on the UI thread, for callbacks passed through Mojo
   // pipes not owned by |this|. All weak pointers released in Close().
-  base::WeakPtrFactory<PepperTCPServerSocketMessageFilter> weak_ptr_factory_;
+  base::WeakPtrFactory<PepperTCPServerSocketMessageFilter> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPServerSocketMessageFilter);
 };

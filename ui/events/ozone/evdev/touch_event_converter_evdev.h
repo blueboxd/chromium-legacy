@@ -90,7 +90,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
-  void CancelAllTouches();
+  // Returns true if all touches were marked cancelled. Otherwise false.
+  bool MaybeCancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value) const;

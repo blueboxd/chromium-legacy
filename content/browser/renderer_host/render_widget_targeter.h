@@ -247,7 +247,7 @@ class RenderWidgetTargeter {
   std::vector<viz::FrameSinkId> hit_test_async_queried_debug_queue_;
 
   Delegate* const delegate_;
-  base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetTargeter);
 };

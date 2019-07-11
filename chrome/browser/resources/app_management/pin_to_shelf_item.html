@@ -1,0 +1,19 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="toggle_row.html">
+
+<dom-module id="app-management-pin-to-shelf-item">
+  <template>
+    <style>
+      :host(:not([disabled])) {
+        cursor: pointer;
+      }
+    </style>
+    <app-management-toggle-row
+      label_="$i18n{pinToShelf}"
+      managed_$="[[isManaged_(app_)]]"
+      policy-label_="$i18n{pinControlledByPolicy}"
+      value_$="[[getValue_(app_)]]">
+    </app-management-toggle-row>
+  </template>
+  <script src="pin_to_shelf_item.js"></script>
+</dom-module>

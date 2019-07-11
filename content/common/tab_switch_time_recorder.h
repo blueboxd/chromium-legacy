@@ -80,7 +80,7 @@ class CONTENT_EXPORT TabSwitchTimeRecorder {
   // null if there is no incomplete tab switch.
   base::TimeTicks render_widget_visibility_request_timestamp_;
 
-  base::WeakPtrFactory<TabSwitchTimeRecorder> weak_ptr_factory_;
+  base::WeakPtrFactory<TabSwitchTimeRecorder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabSwitchTimeRecorder);
 };

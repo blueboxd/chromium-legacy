@@ -52,8 +52,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
       skip_script_comparison_(false),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      weak_factory_(this) {}
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -70,8 +69,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      weak_factory_(this) {
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
   internal_.registration = registration;
 }
 

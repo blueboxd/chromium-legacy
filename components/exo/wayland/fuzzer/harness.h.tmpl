@@ -10,7 +10,7 @@
 
 #include <wayland-util.h>
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "components/exo/wayland/fuzzer/actions.pb.h"
 
 // Forwards declarations for the wayland-defined structs.
@@ -60,7 +60,7 @@ class Harness {
   int GetFileDescriptor(int id);
 
  private:
-  std::map<int, std::unique_ptr<base::SharedMemory>> shared_memory_map_;
+  std::map<int, base::UnsafeSharedMemoryRegion> shared_memory_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Harness);
 };

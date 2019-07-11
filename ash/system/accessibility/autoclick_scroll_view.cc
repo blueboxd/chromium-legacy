@@ -327,11 +327,16 @@ AutoclickScrollBubbleView::AutoclickScrollBubbleView(
 
 AutoclickScrollBubbleView::~AutoclickScrollBubbleView() {}
 
-void AutoclickScrollBubbleView::UpdateAnchorRect(const gfx::Rect& rect) {
+void AutoclickScrollBubbleView::UpdateAnchorRect(
+    const gfx::Rect& rect,
+    views::BubbleBorder::Arrow arrow) {
   ui::ScopedLayerAnimationSettings settings(
       GetWidget()->GetLayer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  // SetAnchorRect will resize, so set the arrow without reizing to avoid a
+  // double animation.
+  SetArrowWithoutResizing(arrow);
   SetAnchorRect(rect);
 }
 

@@ -41,7 +41,7 @@ void CreateSocketOnUiThread(
 
 }  // namespace
 
-VizDevToolsConnector::VizDevToolsConnector() : weak_ptr_factory_(this) {}
+VizDevToolsConnector::VizDevToolsConnector() {}
 
 VizDevToolsConnector::~VizDevToolsConnector() {}
 

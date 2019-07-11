@@ -77,7 +77,7 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
   BrowserContext* browser_context_;
   StoragePartitionImpl* storage_partition_;
 
-  base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandler);
 };

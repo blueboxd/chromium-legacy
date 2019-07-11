@@ -23,11 +23,13 @@ struct NGUnpositionedFloat;
 
 typedef Vector<NGPositionedFloat, 8> NGPositionedFloatVector;
 
+// TODO(ikilpatrick): Rename this to NGAdjoiningObjectTypes.
 enum NGFloatTypeValue {
-  kFloatTypeNone = 0b00,
-  kFloatTypeLeft = 0b01,
-  kFloatTypeRight = 0b10,
-  kFloatTypeBoth = 0b11
+  kFloatTypeNone = 0b000,
+  kFloatTypeLeft = 0b001,
+  kFloatTypeRight = 0b010,
+  kFloatTypeBoth = 0b011,
+  kAdjoiningInlineOutOfFlow = 0b100
 };
 typedef int NGFloatTypes;
 

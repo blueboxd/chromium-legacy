@@ -60,7 +60,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   const GURL scope_;
   std::vector<UnregistrationCallback> callbacks_;
   bool is_promise_resolved_;
-  base::WeakPtrFactory<ServiceWorkerUnregisterJob> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerUnregisterJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerUnregisterJob);
 };

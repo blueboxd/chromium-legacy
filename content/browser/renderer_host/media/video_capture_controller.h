@@ -270,7 +270,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   base::Optional<media::VideoCaptureFormat> video_capture_format_;
 
-  base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureController);
 };

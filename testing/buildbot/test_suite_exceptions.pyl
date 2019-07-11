@@ -1231,7 +1231,39 @@
       },
     },
   },
- 'pixel_test':{
+  'pixel_skia_gold_test': {
+    'replacements': {
+      # client.v8.fyi
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Android V8 FYI Release (Nexus 5X)': {
+        'args': {
+          '--build-revision': '${got_cr_revision}',
+        },
+      },
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--build-revision': '${got_cr_revision}',
+        },
+      },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--build-revision': '${got_cr_revision}',
+        },
+      },
+      'Mac V8 FYI Release (Intel)': {
+        'args': {
+          '--build-revision': '${got_cr_revision}',
+        },
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--build-revision': '${got_cr_revision}',
+        },
+      },
+    },
+  },
+  'pixel_test':{
     'modifications': {
       'Android Release (Nexus 5X)': {
         'swarming': {

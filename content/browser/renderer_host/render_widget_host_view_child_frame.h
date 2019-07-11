@@ -320,7 +320,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // True if there is currently a scroll sequence being bubbled to our parent.
   bool is_scroll_sequence_bubbling_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };
 

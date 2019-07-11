@@ -42,8 +42,7 @@ BackgroundFetchContext::BackgroundFetchContext(
       devtools_context_(std::move(devtools_context)),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
-      delegate_proxy_(browser_context_),
-      weak_factory_(this) {
+      delegate_proxy_(browser_context_) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(service_worker_context_);

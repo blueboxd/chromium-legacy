@@ -97,8 +97,7 @@ NavigationBodyLoader::NavigationBodyLoader(
       url_loader_client_binding_(this),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      task_runner_),
-      weak_factory_(this) {}
+                      task_runner_) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {

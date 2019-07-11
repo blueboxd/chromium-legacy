@@ -13,13 +13,12 @@
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_toggle_observer.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
@@ -278,6 +277,11 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 ////////////////////////////////////////////////////////////////////////////////
 // TabletModeContrller, public:
 
+// static
+void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
+  use_screenshot_for_test = use_screenshot;
+}
+
 TabletModeController::TabletModeController()
     : event_blocker_(std::make_unique<InternalInputDevicesEventBlocker>()),
       tablet_mode_usage_interval_start_time_(base::Time::Now()),
@@ -309,8 +313,13 @@ TabletModeController::TabletModeController()
 }
 
 TabletModeController::~TabletModeController() {
+  DCHECK(!tablet_mode_window_manager_);
+}
+
+void TabletModeController::Shutdown() {
   if (tablet_mode_window_manager_)
     tablet_mode_window_manager_->Shutdown();
+  tablet_mode_window_manager_.reset();
 
   UMA_HISTOGRAM_COUNTS_1000("Tablet.AppWindowDrag.CountOfPerUserSession",
                             app_window_drag_count_);
@@ -336,22 +345,9 @@ TabletModeController::~TabletModeController() {
     observer.OnTabletControllerDestroyed();
 }
 
-// static
-void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
-  use_screenshot_for_test = use_screenshot;
-}
-
 void TabletModeController::AddWindow(aura::Window* window) {
   if (InTabletMode())
     tablet_mode_window_manager_->AddWindow(window);
-}
-
-void TabletModeController::AddObserver(TabletModeObserver* observer) {
-  tablet_mode_observers_.AddObserver(observer);
-}
-
-void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
-  tablet_mode_observers_.RemoveObserver(observer);
 }
 
 bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
@@ -415,11 +411,12 @@ void TabletModeController::StopObservingAnimation(bool record_stats,
     DeleteScreenshot();
 }
 
-void TabletModeController::SetTabletModeToggleObserver(
-    TabletModeToggleObserver* observer) {
-  DCHECK(observer);
-  DCHECK(!toggle_observer_);
-  toggle_observer_ = observer;
+void TabletModeController::AddObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.AddObserver(observer);
+}
+
+void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.RemoveObserver(observer);
 }
 
 bool TabletModeController::InTabletMode() const {
@@ -721,12 +718,9 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     tablet_mode_window_manager_.reset();
     base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
+    state_ = State::kInClamshellMode;
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnded();
-
-    state_ = State::kInClamshellMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(false);
     VLOG(1) << "Exit tablet mode.";
 
     UpdateInternalInputDevicesEventBlocker();
@@ -1010,6 +1004,8 @@ void TabletModeController::FinishInitTabletMode() {
 
   base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
   RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
+  state_ = State::kInTabletMode;
+
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletModeStarted();
 
@@ -1023,10 +1019,6 @@ void TabletModeController::FinishInitTabletMode() {
       state == SplitViewState::kRightSnapped) {
     Shell::Get()->overview_controller()->StartOverview();
   }
-
-  state_ = State::kInTabletMode;
-  if (toggle_observer_)  // Null at startup and in tests.
-    toggle_observer_->OnTabletModeToggled(true);
 
   UpdateInternalInputDevicesEventBlocker();
 

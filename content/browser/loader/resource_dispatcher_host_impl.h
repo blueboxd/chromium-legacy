@@ -707,7 +707,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Used on the IO thread to allow PostTaskAndReply replies to the IO thread
   // to be abandoned if they run after OnShutdown().
-  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_on_io_;
+  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_on_io_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

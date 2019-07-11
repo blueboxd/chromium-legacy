@@ -153,8 +153,7 @@ SSLClientAuthHandler::SSLClientAuthHandler(
     Delegate* delegate)
     : web_contents_getter_(web_contents_getter),
       cert_request_info_(cert_request_info),
-      delegate_(delegate),
-      weak_factory_(this) {
+      delegate_(delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   core_ = new Core(weak_factory_.GetWeakPtr(), std::move(client_cert_store),

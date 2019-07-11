@@ -128,7 +128,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // to the backend that originally owned them, even if they've been replaced
   // and detached from the backend. This allows outstanding asynchronous queries
   // to be served and routed to the backend to which they were original issued.
-  base::WeakPtrFactory<URLDataManagerBackend> weak_factory_;
+  base::WeakPtrFactory<URLDataManagerBackend> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLDataManagerBackend);
 };

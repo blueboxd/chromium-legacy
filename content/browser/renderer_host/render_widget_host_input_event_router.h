@@ -398,7 +398,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   std::unique_ptr<TouchEmulator> touch_emulator_;
   std::unique_ptr<TouchEventAckQueue> touch_event_ack_queue_;
 
-  base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   friend class RenderWidgetHostInputEventRouterTest;

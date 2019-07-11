@@ -52,15 +52,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
       public service_manager::Service,
       public mojom::Child {
  public:
-  IOThreadContext(
-      service_manager::mojom::ServiceRequest service_request,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      service_manager::mojom::ConnectorRequest connector_request)
+  IOThreadContext(service_manager::mojom::ServiceRequest service_request,
+                  scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+                  service_manager::mojom::ConnectorRequest connector_request)
       : pending_service_request_(std::move(service_request)),
         io_task_runner_(io_task_runner),
         pending_connector_request_(std::move(connector_request)),
-        child_binding_(this),
-        weak_factory_(this) {
+        child_binding_(this) {
     // This will be reattached by any of the IO thread functions on first call.
     io_thread_checker_.DetachFromThread();
   }
@@ -338,7 +336,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   mojo::Binding<mojom::Child> child_binding_;
 
-  base::WeakPtrFactory<IOThreadContext> weak_factory_;
+  base::WeakPtrFactory<IOThreadContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
@@ -403,8 +401,7 @@ ServiceManagerConnection::~ServiceManagerConnection() {}
 
 ServiceManagerConnectionImpl::ServiceManagerConnectionImpl(
     service_manager::mojom::ServiceRequest request,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : weak_factory_(this) {
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   service_manager::mojom::ConnectorRequest connector_request;
   connector_ = service_manager::Connector::Create(&connector_request);
   context_ = new IOThreadContext(std::move(request), io_task_runner,

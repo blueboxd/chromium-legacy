@@ -829,7 +829,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   AttachToInnerDelegateState attach_to_inner_delegate_state_ =
       AttachToInnerDelegateState::NONE;
 
-  base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
+  base::WeakPtrFactory<RenderFrameHostManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };

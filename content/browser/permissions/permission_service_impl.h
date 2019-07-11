@@ -73,7 +73,7 @@ class CONTENT_EXPORT PermissionServiceImpl
   // context_ owns |this|.
   PermissionServiceContext* context_;
   const url::Origin origin_;
-  base::WeakPtrFactory<PermissionServiceImpl> weak_factory_;
+  base::WeakPtrFactory<PermissionServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceImpl);
 };

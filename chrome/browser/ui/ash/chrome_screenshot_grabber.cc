@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -27,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -683,7 +683,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           optional_field,
           new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                     screenshot_path),
-          ash::kNotificationImageIcon,
+          kNotificationImageIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
 

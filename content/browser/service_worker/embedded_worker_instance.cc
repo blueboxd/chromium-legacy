@@ -429,8 +429,7 @@ class EmbeddedWorkerInstance::StartTask {
         is_installed_(false),
         started_during_browser_startup_(false),
         skip_recording_startup_time_(instance_->devtools_attached()),
-        start_time_(start_time),
-        weak_factory_(this) {
+        start_time_(start_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                       "EmbeddedWorkerInstance::Start", this,
@@ -635,7 +634,7 @@ class EmbeddedWorkerInstance::StartTask {
   base::TimeTicks start_worker_sent_time_;
   base::TimeDelta thread_hop_time_;
 
-  base::WeakPtrFactory<StartTask> weak_factory_;
+  base::WeakPtrFactory<StartTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StartTask);
 };
@@ -741,8 +740,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       network_accessed_for_script_(false),
       foreground_notified_(false),
       ui_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})),
-      weak_factory_(this) {
+          base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
 }

@@ -1936,7 +1936,7 @@ bool DeviceStatusCollector::GetCrostiniUsage(
   const int64_t last_launch_time_window_start = profile->GetPrefs()->GetInt64(
       crostini::prefs::kCrostiniLastLaunchTimeWindowStart);
   const std::string& termina_version = profile->GetPrefs()->GetString(
-      crostini::prefs::kCrostiniLastLaunchVersion);
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion);
   crostini_status->set_last_launch_time_window_start_timestamp(
       last_launch_time_window_start);
   crostini_status->set_last_launch_vm_image_version(termina_version);
@@ -1944,6 +1944,10 @@ bool DeviceStatusCollector::GetCrostiniUsage(
   if (profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled) &&
       base::FeatureList::IsEnabled(
           features::kCrostiniAdditionalEnterpriseReporting)) {
+    const std::string& vm_kernel_version = profile->GetPrefs()->GetString(
+        crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion);
+    crostini_status->set_last_launch_vm_kernel_version(vm_kernel_version);
+
     AddCrostiniAppListForProfile(profile, crostini_status);
   }
 

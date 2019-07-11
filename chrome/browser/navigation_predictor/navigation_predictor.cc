@@ -201,6 +201,7 @@ NavigationPredictor::NavigationPredictor(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   current_visibility_ = web_contents->GetVisibility();
+  ukm_source_id_ = web_contents->GetLastCommittedSourceId();
   Observe(web_contents);
 }
 

@@ -338,12 +338,25 @@ class ProgressCenterPanel {
         if (signal === 'cancel' && item.cancelCallback) {
           item.cancelCallback();
         }
+        if (signal === 'dismiss') {
+          this.feedbackHost_.removePanelItem(panelItem);
+        }
       };
       panelItem.progress = item.progressRateInPercent.toString();
-      // Remove the feedback panel when complete, and create
-      // an activity complete panel.
-      if (item.state == 'completed') {
-        this.feedbackHost_.removePanelItem(panelItem);
+      switch (item.state) {
+        case 'completed':
+        case 'canceled':
+          // Remove the feedback panel when complete, and TODO(create
+          // an activity complete panel).
+          this.feedbackHost_.removePanelItem(panelItem);
+          break;
+        case 'error':
+          panelItem.panelType = panelItem.panelTypeError;
+          panelItem.setAttribute(
+              'primary-text', item.message.replace(/\. .*/, '.'));
+          panelItem.setAttribute(
+              'secondary-text', item.message.replace(/.*\. /, ''));
+          break;
       }
     } else if (panelItem) {
       this.feedbackHost_.removePanelItem(panelItem);

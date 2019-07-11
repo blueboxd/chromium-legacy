@@ -17,6 +17,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
@@ -285,6 +286,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // PrerenderHandle returned after completing a prefetch in PrerenderManager.
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
+
+  // UKM ID for navigation
+  // TODO(sofiyase): implement that function that uses this id to send aggregate
+  // link information to the UKM.
+  ukm::SourceId ukm_source_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

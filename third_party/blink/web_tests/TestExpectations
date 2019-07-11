@@ -3066,6 +3066,7 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/blink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
+crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
 crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
@@ -3474,6 +3475,7 @@ crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ 
 crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -4307,6 +4309,7 @@ crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.ht
 crbug.com/648295 virtual/blink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/648295 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
@@ -4715,12 +4718,14 @@ crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday
 crbug.com/691944 virtual/blink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
+crbug.com/691944 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -5862,6 +5867,7 @@ crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/933880 virtual/blink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+crbug.com/933880 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 # This passes in content_shell but not in chrome with network service disabled,
@@ -6250,5 +6256,16 @@ crbug.com/982289 virtual/gpu-rasterization/images/color-profile-mask-image-svg.h
 crbug.com/982289 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
 crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
 
-# Sheriff 2019-07-09
-crbug.com/966249 [ Mac ] external/wpt/css/css-fonts/inheritance.html [ Pass Failure ]
+# Sheriff 2019-07-11
+crbug.com/982290 [ Win ] http/tests/devtools/elements/styles-4/styles-do-not-detach-sourcemap-on-edits.js [ Pass Timeout ]
+
+crbug.com/970079 external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/001.html [ Pass Failure ]
+crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/002.html [ Pass Failure ]
+crbug.com/970079 fast/dom/Window/window-postmessage-clone.html [ Pass Failure ]
+crbug.com/970079 fast/events/message-port-multi.html [ Pass Failure ]
+crbug.com/970079 storage/indexeddb/structured-clone.html [ Pass Failure ]
+crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.html [ Pass Failure ]
+crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structuredclone_0.html [ Pass Failure ]
+crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structured-cloning-error-stack-optional.sub.window.html [ Pass Failure ]

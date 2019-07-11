@@ -67,8 +67,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     : context_(std::move(context)),
       provider_host_(std::move(provider_host)),
       resource_type_(resource_type),
-      force_update_started_(false),
-      weak_factory_(this) {
+      force_update_started_(false) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
 }
 

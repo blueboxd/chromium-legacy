@@ -74,7 +74,7 @@ class FakeEmbeddedWorkerInstanceClient
   mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
   base::OnceClosure quit_closure_for_bind_;
 
-  base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_;
+  base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeEmbeddedWorkerInstanceClient);
 };

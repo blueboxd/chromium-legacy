@@ -139,7 +139,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<IndexedDBDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<IndexedDBDispatcherHost> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };

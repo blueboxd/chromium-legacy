@@ -5,10 +5,12 @@
 #include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <utility>
 
 #include "base/containers/span.h"
+#include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -278,6 +280,33 @@ base::Optional<http_structured_header::ListOfLists> ParseVariantKey(
   return parsed;
 }
 
+// Returns the index of matching entry in Possible Keys [1] which is the cross
+// product of |sorted_variants|. If there is no matching entry returns nullopt.
+// Example:
+//   sorted_variants: [["image/webp","image/jpg"], ["en", "fr", "ja"]]
+//   variant_key: ["image/jpg", "fr"]
+//   Possible Keys list for this sorted_variants:
+//     [["image/webp", "en"], ["image/webp", "fr"], ["image/webp", "ja"],
+//      ["image/jpg", "en"], ["image/jpg", "fr"], ["image/jpg", "ja"]]
+//   Result: 4
+// [1] https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#find
+base::Optional<size_t> GetPossibleKeysIndex(
+    const std::vector<std::vector<std::string>>& sorted_variants,
+    const std::vector<std::string>& variant_key) {
+  DCHECK_EQ(variant_key.size(), sorted_variants.size());
+  size_t index = 0;
+  for (size_t i = 0; i < sorted_variants.size(); ++i) {
+    auto found = std::find(sorted_variants[i].begin(), sorted_variants[i].end(),
+                           variant_key[i]);
+    if (found == sorted_variants[i].end())
+      return base::nullopt;
+
+    index = index * sorted_variants[i].size() +
+            (found - sorted_variants[i].begin());
+  }
+  return index;
+}
+
 }  // namespace
 
 SignedExchangeRequestMatcher::SignedExchangeRequestMatcher(
@@ -298,6 +327,14 @@ SignedExchangeRequestMatcher::SignedExchangeRequestMatcher(
 bool SignedExchangeRequestMatcher::MatchRequest(
     const HeaderMap& response_headers) const {
   return MatchRequest(request_headers_, response_headers);
+}
+
+std::vector<std::string>::const_iterator
+SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
+    const std::string& variants,
+    const std::vector<std::string>& variant_key_list) const {
+  return FindBestMatchingVariantKey(request_headers_, variants,
+                                    variant_key_list);
 }
 
 // Implements "Cache Behaviour" [1] when "stored-responses" is a singleton list
@@ -450,6 +487,54 @@ bool SignedExchangeRequestMatcher::MatchRequest(
   }
   // Otherwise return "mismatch".
   return false;
+}
+
+// static
+std::vector<std::string>::const_iterator
+SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
+    const net::HttpRequestHeaders& request_headers,
+    const std::string& variants,
+    const std::vector<std::string>& variant_keys_list) {
+  auto parsed_variants = http_structured_header::ParseListOfLists(variants);
+  if (!parsed_variants)
+    return variant_keys_list.end();
+
+  std::vector<std::vector<std::string>> sorted_variants =
+      CacheBehavior(*parsed_variants, request_headers);
+  // This happens when `Variant` has unknown field names. In such cases,
+  // this algorithm never returns "match", so we do an early return.
+  if (sorted_variants.size() != parsed_variants->size())
+    return variant_keys_list.end();
+
+  // Check that the combination count of Possible Keys doesn't overflow.
+  // Currently we have only three ContentNegotiationAlgorithms, so it is
+  // impossible to overflow. But we check to protect for future extension.
+  size_t possible_keys_count = 1;
+  for (const auto& key : sorted_variants) {
+    if (!base::CheckMul(possible_keys_count, key.size())
+             .AssignIfValid(&possible_keys_count)) {
+      return variant_keys_list.end();
+    }
+  }
+
+  size_t minimum_index = std::numeric_limits<size_t>::max();
+  auto found_variant_key = variant_keys_list.end();
+
+  for (auto variant_keys_list_it = variant_keys_list.begin();
+       variant_keys_list_it < variant_keys_list.end(); ++variant_keys_list_it) {
+    auto parsed_variant_keys =
+        ParseVariantKey(*variant_keys_list_it, parsed_variants->size());
+    if (!parsed_variant_keys)
+      continue;
+    for (const std::vector<std::string>& variant_key : *parsed_variant_keys) {
+      auto maching_index = GetPossibleKeysIndex(sorted_variants, variant_key);
+      if (maching_index.has_value() && *maching_index < minimum_index) {
+        minimum_index = *maching_index;
+        found_variant_key = variant_keys_list_it;
+      }
+    }
+  }
+  return found_variant_key;
 }
 
 }  // namespace blink

@@ -168,7 +168,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     StreamBrokerSet outputs_;
     base::flat_set<AudioStreamBroker::LoopbackSink*> loopback_sinks_;
 
-    base::WeakPtrFactory<ForwardingAudioStreamFactory::Core> weak_ptr_factory_;
+    base::WeakPtrFactory<ForwardingAudioStreamFactory::Core> weak_ptr_factory_{
+        this};
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -220,7 +221,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   std::unique_ptr<Core> core_;
   bool is_muted_ = false;
 
-  base::WeakPtrFactory<ForwardingAudioStreamFactory> weak_ptr_factory_;
+  base::WeakPtrFactory<ForwardingAudioStreamFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingAudioStreamFactory);
 };

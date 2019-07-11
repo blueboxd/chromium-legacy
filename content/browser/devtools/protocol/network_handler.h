@@ -234,7 +234,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool cache_disabled_;
   std::unique_ptr<BackgroundSyncRestorer> background_sync_restorer_;
   base::RepeatingClosure update_loader_factories_callback_;
-  base::WeakPtrFactory<NetworkHandler> weak_factory_;
+  base::WeakPtrFactory<NetworkHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

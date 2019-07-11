@@ -1170,8 +1170,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     ServiceWorkerVersion::Status status;
   };
 
-  UpdateJobTestHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {
+  UpdateJobTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {
     context_wrapper()->AddObserver(this);
     if (base::FeatureList::IsEnabled(
             blink::features::kServiceWorkerImportedScriptUpdateCheck)) {
@@ -1344,7 +1343,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   std::unique_ptr<FakeNetworkURLLoaderFactory>
       loader_factory_for_update_checker_;
 
-  base::WeakPtrFactory<UpdateJobTestHelper> weak_factory_;
+  base::WeakPtrFactory<UpdateJobTestHelper> weak_factory_{this};
 };
 
 }  // namespace

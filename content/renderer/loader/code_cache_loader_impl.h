@@ -57,7 +57,7 @@ class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
   bool terminated_ = false;
   base::WaitableEventWatcher terminate_watcher_;
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
-  base::WeakPtrFactory<CodeCacheLoaderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CodeCacheLoaderImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace content

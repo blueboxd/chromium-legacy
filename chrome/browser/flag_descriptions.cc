@@ -516,6 +516,11 @@ const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
     "If enabled, adds a [No thanks] button to credit card save bubbles and "
     "updates their title headers.";
 
+const char kEnableAutofillSaveCardShowNoThanksName[] =
+    "Show explicit decline option in credit card save prompts";
+const char kEnableAutofillSaveCardShowNoThanksDescription[] =
+    "If enabled, adds a [No thanks] button to credit card save prompts.";
+
 const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[] =
     "Enable new title and button label for credit card upload bubble";
 const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
@@ -2970,6 +2975,10 @@ const char kBluetoothAggressiveAppearanceFilterDescription[] =
 
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
+
+const char kCameraSystemWebAppName[] = "Camera System Web App";
+const char kCameraSystemWebAppDescription[] =
+    "Run the Chrome Camera App as a System Web App.";
 
 const char kCrOSContainerName[] = "Chrome OS Container";
 const char kCrOSContainerDescription[] =

@@ -36,6 +36,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/memory.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
@@ -44,6 +45,8 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_switches.h"
+#include "services/service_manager/embedder/switches.h"
 #include "third_party/breakpad/breakpad/src/client/linux/crash_generation/crash_generation_client.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/directory_reader.h"
@@ -87,7 +90,16 @@ namespace breakpad {
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+// An optional UNIX timestamp passed to us from session_manager. If set,
+// session_manager thinks we are in a possible crash-loop and will log the user
+// out if we crash again before the indicated time. We don't actually do much
+// with this value, just pass it along to crash_reporter. This should really
+// be a time_t, but it's basically an opaque value (we don't anything with it
+// except pass it along) and we don't have functions to deal with time_t's well,
+// while we do have functions to deal with uint64_t's.
+uint64_t g_crash_loop_before_time = 0;
+#else
 const char kUploadURL[] = "https://clients2.google.com/cr/report";
 #endif
 
@@ -1131,11 +1143,35 @@ void InitCrashKeys() {
   g_crash_key_white_list = GetCrashReporterClient()->GetCrashKeyWhiteList();
 }
 
+void SetCrashLoopBeforeTime(const std::string& process_type,
+                            const base::CommandLine& parsed_command_line) {
+#if defined(OS_CHROMEOS)
+  if (!ShouldPassCrashLoopBefore(process_type)) {
+    return;
+  }
+
+  std::string crash_loop_before =
+      parsed_command_line.GetSwitchValueASCII(switches::kCrashLoopBefore);
+  if (crash_loop_before.empty()) {
+    return;
+  }
+
+  if (!base::StringToUint64(crash_loop_before, &g_crash_loop_before_time)) {
+    LOG(WARNING) << "Could not convert --crash-loop-before="
+                 << crash_loop_before << " to integer";
+    g_crash_loop_before_time = 0;
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
 // Miscellaneous initialization functions to call after Breakpad has been
 // enabled.
-void PostEnableBreakpadInitialization() {
+void PostEnableBreakpadInitialization(
+    const std::string& process_type,
+    const base::CommandLine& parsed_command_line) {
   SetProcessStartTime();
   g_pid = getpid();
+  SetCrashLoopBeforeTime(process_type, parsed_command_line);
 
   base::debug::SetDumpWithoutCrashingFunction(&DumpProcess);
 #if defined(ADDRESS_SANITIZER)
@@ -1265,13 +1301,20 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   my_strlcat(exe_flag, kExeBuf, buf_len);
   my_strlcat(exe_flag, exe_buf, buf_len);
 
+  char* crash_loop_before_flag = nullptr;
+  if (g_crash_loop_before_time != 0) {
+    crash_loop_before_flag = StringFromPrefixAndUint(
+        "--crash_loop_before=", g_crash_loop_before_time, allocator);
+  }
+
   const char* args[] = {
-    kCrashReporterBinary,
-    chrome_flag,
-    pid_flag,
-    uid_flag,
-    exe_flag,
-    nullptr,
+      kCrashReporterBinary,
+      chrome_flag,
+      pid_flag,
+      uid_flag,
+      exe_flag,
+      crash_loop_before_flag,  // Leave last, might be nullptr.
+      nullptr,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/sbin/crash_reporter\n";
@@ -1509,7 +1552,7 @@ const char* GetCrashingProcessName(const BreakpadInfo& info,
   // Either way too long, or a read error.
   return "chrome-crash-unknown-process";
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 // Attempts to close all open file descriptors other than stdin, stdout and
 // stderr (0, 1, and 2).
@@ -2024,7 +2067,7 @@ void InitCrashReporter(const std::string& process_type) {
 #endif  // #if defined(OS_ANDROID)
   }
 
-  PostEnableBreakpadInitialization();
+  PostEnableBreakpadInitialization(process_type, parsed_command_line);
 }
 
 void SetChannelCrashKey(const std::string& channel) {
@@ -2117,6 +2160,21 @@ void SuppressDumpGeneration() {
   g_dumps_suppressed = G_DUMPS_SUPPRESSED_MAGIC;
 }
 #endif  // OS_ANDROID
+
+#if defined(OS_CHROMEOS)
+bool ShouldPassCrashLoopBefore(const std::string& process_type) {
+  if (process_type == ::switches::kRendererProcess ||
+      process_type == ::switches::kUtilityProcess ||
+      process_type == ::switches::kPpapiPluginProcess ||
+      process_type == service_manager::switches::kZygoteProcess) {
+    // These process types never cause a log-out, even if they crash. So the
+    // normal crash handling process should work fine; we shouldn't need to
+    // invoke the special crash-loop mode.
+    return false;
+  }
+  return true;
+}
+#endif  // defined(OS_CHROMEOS)
 
 bool IsCrashReporterEnabled() {
   return g_is_crash_reporter_enabled;

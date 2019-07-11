@@ -212,7 +212,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Custom callback that runs after the controller is finished.
   FinishedCallback finished_callback_;
 
-  base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchJobController);
 };

@@ -331,7 +331,7 @@ class TEST_RUNNER_EXPORT EventSender {
   // Timestamp of the last event that was dispatched
   base::TimeTicks last_event_timestamp_;
 
-  base::WeakPtrFactory<EventSender> weak_factory_;
+  base::WeakPtrFactory<EventSender> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventSender);
 };

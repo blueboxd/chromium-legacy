@@ -54,7 +54,7 @@ class CONTENT_EXPORT CacheStorageOperation {
   const CacheStorageSchedulerClient client_type_;
   const CacheStorageSchedulerOp op_type_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<CacheStorageOperation> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheStorageOperation> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageOperation);
 };

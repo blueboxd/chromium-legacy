@@ -13,6 +13,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -85,6 +86,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
   SetInkDropMode(InkDropMode::OFF);
 
   UpdateBorderColor();
+  SetAccessibleName(title);
 }
 
 DeskMiniView::~DeskMiniView() {
@@ -96,6 +98,7 @@ DeskMiniView::~DeskMiniView() {
 
 void DeskMiniView::SetTitle(const base::string16& title) {
   label_->SetText(title);
+  SetAccessibleName(title);
 }
 
 aura::Window* DeskMiniView::GetDeskContainer() const {
@@ -213,6 +216,18 @@ void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
   desk_ = nullptr;
 
   // No need to remove `this` as an observer; it's done automatically.
+}
+
+views::View* DeskMiniView::GetView() {
+  return this;
+}
+
+gfx::Rect DeskMiniView::GetHighlightBounds() {
+  // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
+  // be animating.
+  gfx::Rect target_bounds = layer()->GetTargetBounds();
+  ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
+  return target_bounds;
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {

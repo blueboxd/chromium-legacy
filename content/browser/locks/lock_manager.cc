@@ -142,7 +142,7 @@ class LockManager::Lock {
   mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> handle_;
 };
 
-LockManager::LockManager() : weak_ptr_factory_(this) {}
+LockManager::LockManager() {}
 
 LockManager::~LockManager() = default;
 

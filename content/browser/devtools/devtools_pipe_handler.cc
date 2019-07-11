@@ -245,7 +245,7 @@ class PipeReaderCBOR : public PipeReaderBase {
 // DevToolsPipeHandler ---------------------------------------------------
 
 DevToolsPipeHandler::DevToolsPipeHandler()
-    : read_fd_(kReadFD), write_fd_(kWriteFD), weak_factory_(this) {
+    : read_fd_(kReadFD), write_fd_(kWriteFD) {
   read_thread_.reset(new base::Thread(kDevToolsPipeHandlerReadThreadName));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;

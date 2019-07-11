@@ -60,7 +60,7 @@ class P2PSocketDispatcherHost
 
   network::mojom::P2PNetworkNotificationClientPtr network_notification_client_;
 
-  base::WeakPtrFactory<P2PSocketDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<P2PSocketDispatcherHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };

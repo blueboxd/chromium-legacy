@@ -211,12 +211,14 @@ void Harness::Run(const actions::action& current_step) {
 
 int Harness::GetFileDescriptor(int id) {
   if (shared_memory_map_.count(id) == 0) {
-    auto shared_mem = std::make_unique<base::SharedMemory>();
-    shared_mem->CreateAndMapAnonymous(1);
-    shared_memory_map_.emplace(id, std::move(shared_mem));
+    base::UnsafeSharedMemoryRegion region = 
+        base::UnsafeSharedMemoryRegion::Create(1);
+    shared_memory_map_.emplace(id, std::move(region));
   }
-  return base::SharedMemory::GetFdFromSharedMemoryHandle(
-    base::SharedMemory::DuplicateHandle(shared_memory_map_[id]->handle()));
+  base::subtle::ScopedFDPair fd_pair = 
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          shared_memory_map_[id].Duplicate()).PassPlatformHandle();
+  return fd_pair.fd.release();
 }
 
 }  // namespace wayland_fuzzer

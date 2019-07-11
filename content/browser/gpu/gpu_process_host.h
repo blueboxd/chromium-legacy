@@ -242,7 +242,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GpuProcessHost> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

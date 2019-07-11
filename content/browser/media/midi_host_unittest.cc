@@ -48,8 +48,7 @@ struct MidiEvent {
 
 class FakeMidiManager : public midi::MidiManager {
  public:
-  explicit FakeMidiManager(midi::MidiService* service)
-      : MidiManager(service), weak_factory_(this) {}
+  explicit FakeMidiManager(midi::MidiService* service) : MidiManager(service) {}
   ~FakeMidiManager() override = default;
 
   base::WeakPtr<FakeMidiManager> GetWeakPtr() {
@@ -65,14 +64,14 @@ class FakeMidiManager : public midi::MidiManager {
   }
   std::vector<MidiEvent> events_;
 
-  base::WeakPtrFactory<FakeMidiManager> weak_factory_;
+  base::WeakPtrFactory<FakeMidiManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManager);
 };
 
 class FakeMidiManagerFactory : public midi::MidiService::ManagerFactory {
  public:
-  FakeMidiManagerFactory() : weak_factory_(this) {}
+  FakeMidiManagerFactory() {}
   ~FakeMidiManagerFactory() override = default;
   std::unique_ptr<midi::MidiManager> Create(
       midi::MidiService* service) override {
@@ -91,7 +90,7 @@ class FakeMidiManagerFactory : public midi::MidiService::ManagerFactory {
  private:
   base::WeakPtr<FakeMidiManager> manager_;
 
-  base::WeakPtrFactory<FakeMidiManagerFactory> weak_factory_;
+  base::WeakPtrFactory<FakeMidiManagerFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManagerFactory);
 };

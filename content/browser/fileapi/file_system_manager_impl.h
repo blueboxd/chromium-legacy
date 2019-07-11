@@ -223,7 +223,7 @@ class CONTENT_EXPORT FileSystemManagerImpl
   base::IDMap<scoped_refptr<storage::ShareableFileReference>>
       in_transit_snapshot_files_;
 
-  base::WeakPtrFactory<FileSystemManagerImpl> weak_factory_;
+  base::WeakPtrFactory<FileSystemManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemManagerImpl);
 };

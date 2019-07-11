@@ -277,8 +277,7 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
  public:
   CacheStorageCacheEntryHandlerImpl(
       base::WeakPtr<storage::BlobStorageContext> blob_context)
-      : CacheStorageCacheEntryHandler(std::move(blob_context)),
-        weak_ptr_factory_(this) {}
+      : CacheStorageCacheEntryHandler(std::move(blob_context)) {}
   ~CacheStorageCacheEntryHandlerImpl() override = default;
 
   std::unique_ptr<PutContext> CreatePutContext(
@@ -321,7 +320,8 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  base::WeakPtrFactory<CacheStorageCacheEntryHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheStorageCacheEntryHandlerImpl> weak_ptr_factory_{
+      this};
 };
 
 CacheStorageCacheEntryHandler::CacheStorageCacheEntryHandler(

@@ -36,7 +36,20 @@
 
         /* Display the done button at the end of the survey. */
         document.getElementById('id-done-button').hidden = false;
+
+        /* Auto dismiss after two seconds. */
+        setTimeout(function(){ window.close(); }, 2000);
       };
+
+      /**
+       * Called after the survey HTML is injected into the page.
+       */
+      function onSurveyShown() {
+        /* Don't show logo on the survey */
+        const elements = document.getElementsByClassName('t402-prompt-logo');
+        for (const element of elements)
+          element.style.display = 'none';
+      }
 
       document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('id-link-done-button').onclick = function() {

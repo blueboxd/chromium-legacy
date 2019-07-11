@@ -540,9 +540,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
-      audio_controller_(std::make_unique<PepperAudioController>(this)),
-      view_change_weak_ptr_factory_(this),
-      weak_factory_(this) {
+      audio_controller_(std::make_unique<PepperAudioController>(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));

@@ -14,7 +14,7 @@
 namespace content {
 
 TestNavigationThrottle::TestNavigationThrottle(NavigationHandle* handle)
-    : NavigationThrottle(handle), weak_ptr_factory_(this) {}
+    : NavigationThrottle(handle) {}
 
 TestNavigationThrottle::~TestNavigationThrottle() {}
 

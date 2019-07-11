@@ -85,6 +85,7 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
     network::ResourceResponseHead response_head =
         signed_exchange_utils::CreateRedirectResponseHead(
             outer_response, false /* is_fallback_redirect */);
+    response_head.was_fetched_via_cache = true;
     response_head.was_in_prefetch_cache = true;
     UpdateRequestResponseStartTime(&response_head);
     client_->OnReceiveRedirect(signed_exchange_utils::CreateRedirectInfo(
@@ -134,8 +135,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       : response_(inner_response),
         blob_data_handle_(std::move(blob_data_handle)),
         completion_status_(completion_status),
-        client_(std::move(client)),
-        weak_factory_(this) {
+        client_(std::move(client)) {
     DCHECK(response_.headers);
     DCHECK(request.request_initiator);
 
@@ -307,7 +307,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   network::mojom::URLLoaderClientPtr client_;
   std::unique_ptr<CrossOriginReadBlockingChecker> corb_checker_;
 
-  base::WeakPtrFactory<InnerResponseURLLoader> weak_factory_;
+  base::WeakPtrFactory<InnerResponseURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InnerResponseURLLoader);
 };
@@ -376,9 +376,7 @@ class PrefetchedNavigationLoaderInterceptor
   PrefetchedNavigationLoaderInterceptor(
       std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange,
       std::vector<PrefetchedSignedExchangeInfo> info_list)
-      : exchange_(std::move(exchange)),
-        info_list_(std::move(info_list)),
-        weak_factory_(this) {}
+      : exchange_(std::move(exchange)), info_list_(std::move(info_list)) {}
 
   ~PrefetchedNavigationLoaderInterceptor() override {}
 
@@ -452,7 +450,8 @@ class PrefetchedNavigationLoaderInterceptor
   std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange_;
   std::vector<PrefetchedSignedExchangeInfo> info_list_;
 
-  base::WeakPtrFactory<PrefetchedNavigationLoaderInterceptor> weak_factory_;
+  base::WeakPtrFactory<PrefetchedNavigationLoaderInterceptor> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedNavigationLoaderInterceptor);
 };

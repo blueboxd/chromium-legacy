@@ -19,9 +19,7 @@ namespace content {
 SyntheticGestureController::SyntheticGestureController(
     Delegate* delegate,
     std::unique_ptr<SyntheticGestureTarget> gesture_target)
-    : delegate_(delegate),
-      gesture_target_(std::move(gesture_target)),
-      weak_ptr_factory_(this) {
+    : delegate_(delegate), gesture_target_(std::move(gesture_target)) {
   DCHECK(delegate_);
 }
 

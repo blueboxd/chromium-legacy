@@ -351,7 +351,7 @@ void AppCacheInternalsUI::Proxy::OnResponseDataReadComplete(
 }
 
 AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
-    : WebUIController(web_ui), weak_ptr_factory_(this) {
+    : WebUIController(web_ui) {
   web_ui->RegisterMessageCallback(
       kRequestGetAllAppCacheInfo,
       base::BindRepeating(&AppCacheInternalsUI::GetAllAppCache, AsWeakPtr()));

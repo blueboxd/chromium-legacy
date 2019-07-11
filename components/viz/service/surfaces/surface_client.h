@@ -41,7 +41,11 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   virtual void OnSurfaceDestroyed(Surface* surface) = 0;
 
   // Called when a |surface| is about to be drawn.
-  virtual void OnSurfaceDrawn(Surface* surface) = 0;
+  virtual void OnSurfaceWillDraw(Surface* surface) = 0;
+
+  // Called when a |surface| has been successfully drawn.
+  virtual void OnSurfaceWasDrawn(uint32_t frame_token,
+                                 base::TimeTicks draw_start_timestamp) = 0;
 
   // Increments the reference count on resources specified by |resources|.
   virtual void RefResources(

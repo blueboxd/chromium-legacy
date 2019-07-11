@@ -141,8 +141,7 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
       observer_binding_(this),
-      state_(blink::VIDEO_CAPTURE_STATE_STOPPED),
-      weak_factory_(this) {
+      state_(blink::VIDEO_CAPTURE_STATE_STOPPED) {
   io_thread_checker_.DetachFromThread();
 
   if (ChildThread::Get()) {  // This will be null in unit tests.

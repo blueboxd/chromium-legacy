@@ -263,10 +263,12 @@ STDMETHODIMP TSFTextStore::GetText(LONG acp_start,
     text_buffer[i] = result[i];
   }
 
-  if (run_info_buffer_size) {
+  if (*text_buffer_copied > 0 && run_info_buffer_size) {
     run_info_buffer[0].uCount = *text_buffer_copied;
     run_info_buffer[0].type = TS_RT_PLAIN;
     *run_info_buffer_copied = 1;
+  } else {
+    *run_info_buffer_copied = 0;
   }
 
   *next_acp = acp_end;

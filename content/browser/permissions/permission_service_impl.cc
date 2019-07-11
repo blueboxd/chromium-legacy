@@ -155,7 +155,7 @@ class PermissionServiceImpl::PendingRequest {
 
 PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context,
                                              const url::Origin& origin)
-    : context_(context), origin_(origin), weak_factory_(this) {}
+    : context_(context), origin_(origin) {}
 
 PermissionServiceImpl::~PermissionServiceImpl() {}
 

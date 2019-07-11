@@ -163,7 +163,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // response should fail with net::ERR_BLOCKED_BY_RESPONSE error code).
   bool blocked_by_cross_origin_resource_policy_ = false;
 
-  base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
+  base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentResourceHandler);
 };

@@ -300,7 +300,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
     : public audio::mojom::DeviceListener {
  public:
   explicit AudioServiceDeviceListener(service_manager::Connector* connector)
-      : binding_(this), weak_factory_(this) {
+      : binding_(this) {
     TryConnectToService(connector);
   }
   ~AudioServiceDeviceListener() override = default;
@@ -367,7 +367,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AudioServiceDeviceListener> weak_factory_;
+  base::WeakPtrFactory<AudioServiceDeviceListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceDeviceListener);
 };
@@ -387,8 +387,7 @@ MediaDevicesManager::MediaDevicesManager(
       cache_infos_(blink::NUM_MEDIA_DEVICE_TYPES),
       monitoring_started_(false),
       salt_and_origin_callback_(
-          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
-      weak_factory_(this) {
+          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_system_);
   DCHECK(video_capture_manager_.get());

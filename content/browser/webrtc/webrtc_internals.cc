@@ -102,8 +102,7 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
       event_log_recordings_(false),
       num_connected_connections_(0),
       should_block_power_saving_(should_block_power_saving),
-      aggregate_updates_ms_(aggregate_updates_ms),
-      weak_factory_(this) {
+      aggregate_updates_ms_(aggregate_updates_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_webrtc_internals);
 

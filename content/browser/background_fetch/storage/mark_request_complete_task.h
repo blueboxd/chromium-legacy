@@ -81,7 +81,8 @@ class MarkRequestCompleteTask : public DatabaseTask {
   proto::BackgroundFetchRegistration::BackgroundFetchFailureReason
       failure_reason_ = proto::BackgroundFetchRegistration::NONE;
 
-  base::WeakPtrFactory<MarkRequestCompleteTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<MarkRequestCompleteTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(MarkRequestCompleteTask);
 };

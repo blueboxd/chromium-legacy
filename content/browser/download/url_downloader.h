@@ -97,7 +97,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   download::DownloadUrlParameters::UploadProgressCallback upload_callback_;
   std::unique_ptr<network::UploadProgressTracker> upload_progress_tracker_;
 
-  base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_{this};
 };
 
 }  // namespace content

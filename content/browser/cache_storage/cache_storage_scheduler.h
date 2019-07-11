@@ -78,7 +78,7 @@ class CONTENT_EXPORT CacheStorageScheduler {
   std::unique_ptr<CacheStorageOperation> running_operation_;
   const CacheStorageSchedulerClient client_type_;
 
-  base::WeakPtrFactory<CacheStorageScheduler> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheStorageScheduler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageScheduler);
 };

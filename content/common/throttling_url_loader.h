@@ -264,7 +264,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;
 
-  base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_;
+  base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };

@@ -236,7 +236,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   network::mojom::URLLoaderFactory* url_loader_factory_;
   blink::mojom::CacheStorageRequest cache_storage_request_;
   blink::mojom::IDBFactoryRequest idb_factory_request_;
-  base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
+  base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

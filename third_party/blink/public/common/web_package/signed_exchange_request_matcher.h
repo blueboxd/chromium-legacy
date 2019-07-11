@@ -31,6 +31,16 @@ class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
                                const std::string& accept_langs);
   bool MatchRequest(const HeaderMap& response_headers) const;
 
+  // Returns the iterator of |variant_keys_list| which contains the best
+  // matching variant key. This method use the preference order of the result of
+  // "Cache Behaviour" [2]. If there is no matching variant key, returns
+  // |variant_keys_list.end()|.
+  // [2]:
+  // https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#cache
+  std::vector<std::string>::const_iterator FindBestMatchingVariantKey(
+      const std::string& variants,
+      const std::vector<std::string>& variant_keys_list) const;
+
  private:
   net::HttpRequestHeaders request_headers_;
 
@@ -39,8 +49,16 @@ class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
   static std::vector<std::vector<std::string>> CacheBehavior(
       const http_structured_header::ListOfLists& variants,
       const net::HttpRequestHeaders& request_headers);
+
+  static std::vector<std::string>::const_iterator FindBestMatchingVariantKey(
+      const net::HttpRequestHeaders& request_headers,
+      const std::string& variants,
+      const std::vector<std::string>& variant_key_list);
+
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest, MatchRequest);
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest, CacheBehavior);
+  FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest,
+                           FindBestMatchingVariantKey);
 };
 
 }  // namespace blink

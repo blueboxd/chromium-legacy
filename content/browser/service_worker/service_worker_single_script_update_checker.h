@@ -202,7 +202,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   ServiceWorkerNewScriptLoader::WriterState body_writer_state_ =
       ServiceWorkerNewScriptLoader::WriterState::kNotStarted;
 
-  base::WeakPtrFactory<ServiceWorkerSingleScriptUpdateChecker> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerSingleScriptUpdateChecker> weak_factory_{
+      this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerSingleScriptUpdateChecker);
 };

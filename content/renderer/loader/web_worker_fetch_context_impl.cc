@@ -78,8 +78,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   Factory(base::WeakPtr<ResourceDispatcher> resource_dispatcher,
           scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
       : resource_dispatcher_(std::move(resource_dispatcher)),
-        loader_factory_(std::move(loader_factory)),
-        weak_ptr_factory_(this) {}
+        loader_factory_(std::move(loader_factory)) {}
   ~Factory() override = default;
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
@@ -146,7 +145,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> service_worker_loader_factory_;
-  base::WeakPtrFactory<Factory> weak_ptr_factory_;
+  base::WeakPtrFactory<Factory> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 

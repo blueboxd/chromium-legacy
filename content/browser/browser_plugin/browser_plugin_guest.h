@@ -471,7 +471,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.
-  base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

@@ -24,6 +24,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -182,8 +183,6 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
           },
           Unretained(&counter)),
       kShortTaskDelay);
-  // TODO(gab): This currently doesn't run because the ThreadPool's clock
-  // isn't mocked but it should be.
   PostDelayedTask(FROM_HERE,
                   BindOnce(
                       [](subtle::Atomic32* counter) {
@@ -211,6 +210,28 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
           },
           Unretained(&counter)),
       kLongTaskDelay);
+  PostDelayedTask(FROM_HERE,
+                  BindOnce(
+                      [](subtle::Atomic32* counter) {
+                        subtle::NoBarrier_AtomicIncrement(counter, 256);
+                      },
+                      Unretained(&counter)),
+                  kLongTaskDelay * 2);
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(
+          [](subtle::Atomic32* counter) {
+            subtle::NoBarrier_AtomicIncrement(counter, 512);
+          },
+          Unretained(&counter)),
+      kLongTaskDelay * 3);
+  PostDelayedTask(FROM_HERE,
+                  BindOnce(
+                      [](subtle::Atomic32* counter) {
+                        subtle::NoBarrier_AtomicIncrement(counter, 1024);
+                      },
+                      Unretained(&counter)),
+                  kLongTaskDelay * 4);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(
@@ -236,6 +257,8 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
   EXPECT_EQ(expected_value, counter);
 
   if (GetParam() == ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+    const TimeTicks start_time = scoped_task_environment.NowTicks();
+
     // Delay inferior to the delay of the first posted task.
     constexpr base::TimeDelta kInferiorTaskDelay = TimeDelta::FromSeconds(1);
     static_assert(kInferiorTaskDelay < kShortTaskDelay,
@@ -246,12 +269,19 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
 
     scoped_task_environment.FastForwardBy(kShortTaskDelay - kInferiorTaskDelay);
     expected_value += 4;
+    expected_value += 128;
     EXPECT_EQ(expected_value, counter);
 
     scoped_task_environment.FastForwardUntilNoTasksRemain();
     expected_value += 8;
     expected_value += 16;
+    expected_value += 256;
+    expected_value += 512;
+    expected_value += 1024;
     EXPECT_EQ(expected_value, counter);
+
+    EXPECT_EQ(scoped_task_environment.NowTicks() - start_time,
+              kLongTaskDelay * 4);
   }
 }
 
@@ -456,7 +486,8 @@ TEST_F(ScopedTaskEnvironmentTest, NestedFastForwardBy) {
   EXPECT_EQ(scoped_task_environment.NowTicks(), start_time + kDelayPerTask * 5);
 }
 
-TEST_F(ScopedTaskEnvironmentTest, CrossThreadTaskPostingDoesntAffectMockTime) {
+TEST_F(ScopedTaskEnvironmentTest,
+       CrossThreadImmediateTaskPostingDoesntAffectMockTime) {
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
@@ -497,6 +528,158 @@ TEST_F(ScopedTaskEnvironmentTest, CrossThreadTaskPostingDoesntAffectMockTime) {
 
   // Flush any remaining asynchronous tasks with Unretained() state.
   scoped_task_environment.RunUntilIdle();
+}
+
+TEST_F(ScopedTaskEnvironmentTest, MultiThreadedMockTime) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  constexpr TimeDelta kOneMs = TimeDelta::FromMilliseconds(1);
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+  const TimeTicks end_time = start_time + TimeDelta::FromMilliseconds(1'000);
+
+  // Last TimeTicks::Now() seen from either contexts.
+  TimeTicks last_main_thread_ticks = start_time;
+  TimeTicks last_thread_pool_ticks = start_time;
+
+  RepeatingClosure post_main_thread_delayed_task;
+  post_main_thread_delayed_task = BindLambdaForTesting([&]() {
+    // Expect that time only moves forward.
+    EXPECT_GE(scoped_task_environment.NowTicks(), last_main_thread_ticks);
+
+    // Post four tasks to exercise the system some more but only if this is the
+    // first task at its runtime (otherwise we end up with 4^10'000 tasks by
+    // the end!).
+    if (last_main_thread_ticks < scoped_task_environment.NowTicks() &&
+        scoped_task_environment.NowTicks() < end_time) {
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_main_thread_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_main_thread_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_main_thread_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_main_thread_delayed_task, kOneMs);
+    }
+
+    last_main_thread_ticks = scoped_task_environment.NowTicks();
+  });
+
+  RepeatingClosure post_thread_pool_delayed_task;
+  post_thread_pool_delayed_task = BindLambdaForTesting([&]() {
+    // Expect that time only moves forward.
+    EXPECT_GE(scoped_task_environment.NowTicks(), last_thread_pool_ticks);
+
+    // Post four tasks to exercise the system some more but only if this is the
+    // first task at its runtime (otherwise we end up with 4^10'000 tasks by
+    // the end!).
+    if (last_thread_pool_ticks < scoped_task_environment.NowTicks() &&
+        scoped_task_environment.NowTicks() < end_time) {
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+      SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+
+      EXPECT_LT(scoped_task_environment.NowTicks(), end_time);
+    }
+
+    last_thread_pool_ticks = scoped_task_environment.NowTicks();
+  });
+
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, post_main_thread_delayed_task, kOneMs);
+  CreateSequencedTaskRunnerWithTraits({ThreadPool()})
+      ->PostDelayedTask(FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
+
+  EXPECT_EQ(last_main_thread_ticks, end_time);
+  EXPECT_EQ(last_thread_pool_ticks, end_time);
+  EXPECT_EQ(scoped_task_environment.NowTicks(), end_time);
+}
+
+// Verify that ThreadPoolExecutionMode::QUEUED doesn't prevent running tasks and
+// advancing time on the main thread.
+TEST_F(ScopedTaskEnvironmentTest,
+       MultiThreadedMockTimeAndThreadPoolQueuedMode) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
+
+  int count = 0;
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+
+  RunLoop run_loop;
+
+  // Neither of these should run automatically per
+  // ThreadPoolExecutionMode::QUEUED.
+  PostTask(FROM_HERE, {ThreadPool()},
+           BindLambdaForTesting([&]() { count += 128; }));
+  PostDelayedTask(FROM_HERE, {ThreadPool()},
+                  BindLambdaForTesting([&]() { count += 256; }),
+                  TimeDelta::FromSeconds(5));
+
+  // Time should auto-advance to +500s in RunLoop::Run() without having to run
+  // the above forcefully QUEUED tasks.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { count += 1; }));
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
+                                                 BindLambdaForTesting([&]() {
+                                                   count += 2;
+                                                   run_loop.Quit();
+                                                 }),
+                                                 TimeDelta::FromSeconds(500));
+
+  int expected_value = 0;
+  EXPECT_EQ(expected_value, count);
+  run_loop.Run();
+  expected_value += 1;
+  expected_value += 2;
+  EXPECT_EQ(expected_value, count);
+  EXPECT_EQ(scoped_task_environment.NowTicks() - start_time,
+            TimeDelta::FromSeconds(500));
+
+  // Fast-forward through all remaining tasks, this should unblock QUEUED tasks
+  // in the thread pool but shouldn't need to advance time to process them.
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  expected_value += 128;
+  expected_value += 256;
+  EXPECT_EQ(expected_value, count);
+  EXPECT_EQ(scoped_task_environment.NowTicks() - start_time,
+            TimeDelta::FromSeconds(500));
+
+  // Test advancing time to a QUEUED task in the future.
+  PostDelayedTask(FROM_HERE, {ThreadPool()},
+                  BindLambdaForTesting([&]() { count += 512; }),
+                  TimeDelta::FromSeconds(5));
+  scoped_task_environment.FastForwardBy(TimeDelta::FromSeconds(7));
+  expected_value += 512;
+  EXPECT_EQ(expected_value, count);
+  EXPECT_EQ(scoped_task_environment.NowTicks() - start_time,
+            TimeDelta::FromSeconds(507));
+
+  // Confirm that QUEUED mode is still active after the above fast forwarding
+  // (only the main thread task should run from RunLoop).
+  PostTask(FROM_HERE, {ThreadPool()},
+           BindLambdaForTesting([&]() { count += 1024; }));
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { count += 2048; }));
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
+  RunLoop().RunUntilIdle();
+  expected_value += 2048;
+  EXPECT_EQ(expected_value, count);
+  EXPECT_EQ(scoped_task_environment.NowTicks() - start_time,
+            TimeDelta::FromSeconds(507));
+
+  // Run the remaining task to avoid use-after-free on |count| from
+  // ~ScopedTaskEnvironment().
+  scoped_task_environment.RunUntilIdle();
+  expected_value += 1024;
+  EXPECT_EQ(expected_value, count);
 }
 
 #if defined(OS_WIN)

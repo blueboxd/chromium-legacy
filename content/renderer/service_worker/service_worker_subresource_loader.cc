@@ -178,8 +178,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       resource_request_(resource_request),
       fallback_factory_(std::move(fallback_factory)),
       task_runner_(std::move(task_runner)),
-      response_source_(network::mojom::FetchResponseSource::kUnspecified),
-      weak_factory_(this) {
+      response_source_(network::mojom::FetchResponseSource::kUnspecified) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start = base::TimeTicks::Now();

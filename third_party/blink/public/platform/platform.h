@@ -100,6 +100,10 @@ template <class T>
 class Local;
 }
 
+namespace viz {
+class ContextProvider;
+}
+
 namespace webrtc {
 struct RtpCapabilities;
 class AsyncResolverFactory;
@@ -551,6 +555,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params) {
+    return nullptr;
+  }
+
+  virtual viz::ContextProvider* SharedMainThreadContextProvider() {
     return nullptr;
   }
 

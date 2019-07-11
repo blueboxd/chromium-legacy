@@ -250,7 +250,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     events_[0].cancelled = false;
   }
   if (cancelled_state)
-    CancelAllTouches();
+    MaybeCancelAllTouches();
 
   false_touch_finder_ = FalseTouchFinder::Create(GetTouchscreenSize());
 }
@@ -514,12 +514,12 @@ void TouchEventConverterEvdev::ReportTouchEvent(
       details, timestamp, flags));
 }
 
-void TouchEventConverterEvdev::CancelAllTouches() {
+bool TouchEventConverterEvdev::MaybeCancelAllTouches() {
   // TODO(denniskempin): Remove once upper layers properly handle single
   // cancelled touches.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCancelAllTouches)) {
-    return;
+    return false;
   }
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
@@ -528,6 +528,7 @@ void TouchEventConverterEvdev::CancelAllTouches() {
       event->altered = true;
     }
   }
+  return true;
 }
 
 bool TouchEventConverterEvdev::IsPalm(const InProgressTouchEvdev& touch) {
@@ -552,8 +553,9 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
     if (event->altered && (event->cancelled ||
                            (false_touch_finder_ &&
                             false_touch_finder_->SlotHasNoise(event->slot)))) {
-      CancelAllTouches();
-      break;
+      if (MaybeCancelAllTouches()) {
+        break;
+      }
     }
   }
 

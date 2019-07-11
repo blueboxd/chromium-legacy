@@ -308,7 +308,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   int page_before_assistant_ = 0;
 
   // Manages the pagination for the launcher pages.
-  ash::PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_{this};
 
   // If true, SetActiveState immediately.
   bool set_active_state_without_animation_ = false;

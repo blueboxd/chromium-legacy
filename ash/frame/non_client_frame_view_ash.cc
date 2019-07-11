@@ -15,12 +15,12 @@
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
@@ -125,8 +125,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
       ImmersiveFullscreenController::EnableForWidget(widget_, false);
 
     if (window_state->IsFullscreen() &&
-        window_state->window()->GetProperty(
-            ash::kImmersiveImpliedByFullscreen)) {
+        window_state->window()->GetProperty(kImmersiveImpliedByFullscreen)) {
       ImmersiveFullscreenController::EnableForWidget(widget_, true);
     }
   }
@@ -282,8 +281,8 @@ void NonClientFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void NonClientFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                            SkColor inactive_frame_color) {
   aura::Window* frame_window = frame_->GetNativeWindow();
-  frame_window->SetProperty(ash::kFrameActiveColorKey, active_frame_color);
-  frame_window->SetProperty(ash::kFrameInactiveColorKey, inactive_frame_color);
+  frame_window->SetProperty(kFrameActiveColorKey, active_frame_color);
+  frame_window->SetProperty(kFrameInactiveColorKey, inactive_frame_color);
 }
 
 void NonClientFrameViewAsh::SetCaptionButtonModel(
@@ -431,11 +430,11 @@ const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
 }
 
 SkColor NonClientFrameViewAsh::GetActiveFrameColorForTest() const {
-  return frame_->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  return frame_->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
 }
 
 SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
-  return frame_->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+  return frame_->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
 }
 
 void NonClientFrameViewAsh::UpdateHeaderView() {

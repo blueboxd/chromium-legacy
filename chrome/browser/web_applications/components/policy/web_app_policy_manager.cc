@@ -55,15 +55,11 @@ void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
     install_options->launch_container = LaunchContainer::kWindow;
   }
 
-  bool create_shortcut = false;
-  if (create_desktop_shortcut)
-    create_shortcut = create_desktop_shortcut->GetBool();
-
   install_options->add_to_applications_menu = true;
-  install_options->add_to_desktop = create_shortcut;
-
-  // It's not yet clear how pinning to shelf will work for policy installed
-  // Web Apps, but for now never pin them. See crbug.com/880125.
+  install_options->add_to_desktop =
+      create_desktop_shortcut ? create_desktop_shortcut->GetBool() : false;
+  // Pinning apps to the ChromeOS shelf is done through the PinnedLauncherApps
+  // policy.
   install_options->add_to_quick_launch_bar = false;
 }
 

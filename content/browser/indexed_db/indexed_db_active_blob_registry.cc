@@ -15,7 +15,7 @@ namespace content {
 
 IndexedDBActiveBlobRegistry::IndexedDBActiveBlobRegistry(
     IndexedDBBackingStore* backing_store)
-    : backing_store_(backing_store), weak_factory_(this) {}
+    : backing_store_(backing_store) {}
 
 IndexedDBActiveBlobRegistry::~IndexedDBActiveBlobRegistry() {
 }

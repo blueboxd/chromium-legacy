@@ -326,8 +326,7 @@ BlinkTestController::BlinkTestController()
       test_phase_(BETWEEN_TESTS),
       crash_when_leak_found_(false),
       pending_layout_dumps_(0),
-      render_process_host_observer_(this),
-      weak_factory_(this) {
+      render_process_host_observer_(this) {
   CHECK(!instance_);
   instance_ = this;
 

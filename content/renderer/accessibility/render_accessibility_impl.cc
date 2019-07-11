@@ -139,8 +139,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
       plugin_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
-      reset_token_(0),
-      weak_factory_(this) {
+      reset_token_(0) {
   ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();

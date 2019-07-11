@@ -132,8 +132,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       intercepting_handler_(intercepting_handler),
       request_context_type_(request_context_type),
       in_state_loop_(false),
-      advance_state_(false),
-      weak_ptr_factory_(this) {
+      advance_state_(false) {
 }
 
 MimeSniffingResourceHandler::~MimeSniffingResourceHandler() {}

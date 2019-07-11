@@ -49,8 +49,7 @@ MediaStreamDispatcherHost::MediaStreamDispatcherHost(
       requester_id_(next_requester_id_++),
       media_stream_manager_(media_stream_manager),
       salt_and_origin_callback_(
-          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
-      weak_factory_(this) {
+          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

@@ -750,6 +750,12 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
   return false;
 }
 
+#if defined(OS_ANDROID)
+void ContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
+    int render_process_id,
+    network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) {}
+#endif
+
 bool ContentBrowserClient::WillInterceptWebSocket(RenderFrameHost*) {
   return false;
 }

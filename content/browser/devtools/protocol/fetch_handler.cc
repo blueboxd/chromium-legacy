@@ -35,8 +35,7 @@ FetchHandler::FetchHandler(
     : DevToolsDomainHandler(Fetch::Metainfo::domainName),
       io_context_(io_context),
       update_loader_factories_callback_(
-          std::move(update_loader_factories_callback)),
-      weak_factory_(this) {}
+          std::move(update_loader_factories_callback)) {}
 
 FetchHandler::~FetchHandler() = default;
 

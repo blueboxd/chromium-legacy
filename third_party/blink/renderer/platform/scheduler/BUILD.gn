@@ -61,6 +61,8 @@ blink_platform_sources("scheduler") {
     "common/worker_pool.cc",
     "main_thread/auto_advancing_virtual_time_domain.cc",
     "main_thread/auto_advancing_virtual_time_domain.h",
+    "main_thread/compositor_priority_experiments.cc",
+    "main_thread/compositor_priority_experiments.h",
     "main_thread/deadline_task_runner.cc",
     "main_thread/deadline_task_runner.h",
     "main_thread/frame_origin_type.cc",

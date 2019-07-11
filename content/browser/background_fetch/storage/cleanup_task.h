@@ -38,7 +38,7 @@ class CleanupTask : public background_fetch::DatabaseTask {
 
   std::string HistogramName() const override;
 
-  base::WeakPtrFactory<CleanupTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<CleanupTask> weak_factory_{this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(CleanupTask);
 };

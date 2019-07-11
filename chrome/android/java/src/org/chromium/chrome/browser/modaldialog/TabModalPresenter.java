@@ -16,13 +16,11 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
@@ -49,8 +47,6 @@ public class TabModalPresenter
 
     /** The activity displaying the dialogs. */
     private final ChromeActivity mChromeActivity;
-
-    private final Supplier<BrowserControlsOffsetHelper> mControlsOffsetHelper;
 
     /** The active tab of which the dialog will be shown on top. */
     private Tab mActiveTab;
@@ -114,12 +110,9 @@ public class TabModalPresenter
     /**
      * Constructor for initializing dialog container.
      * @param chromeActivity The activity displaying the dialogs.
-     * @param controlsOffsetHelper Supplies {@link BrowserControlsOffsetHelper}.
      */
-    public TabModalPresenter(ChromeActivity chromeActivity,
-            Supplier<BrowserControlsOffsetHelper> controlsOffsetHelper) {
+    public TabModalPresenter(ChromeActivity chromeActivity) {
         mChromeActivity = chromeActivity;
-        mControlsOffsetHelper = controlsOffsetHelper;
         mEnterExitAnimationDurationMs = ENTER_EXIT_ANIMATION_DURATION_MS;
         mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
         mChromeFullscreenManager.addListener(this);
@@ -351,10 +344,10 @@ public class TabModalPresenter
 
         // Also need to update browser control state after dismissal to refresh the constraints.
         if (isShowing && mActiveTab.areRendererInputEventsIgnored()) {
-            mControlsOffsetHelper.get().showAndroidControls(true);
+            mChromeFullscreenManager.showAndroidControls(true);
         } else {
             TabBrowserControlsState.update(mActiveTab, BrowserControlsState.SHOWN,
-                    !mControlsOffsetHelper.get().offsetOverridden());
+                    !mChromeFullscreenManager.offsetOverridden());
         }
     }
 

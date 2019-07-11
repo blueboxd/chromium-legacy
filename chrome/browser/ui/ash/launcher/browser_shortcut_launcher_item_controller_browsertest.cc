@@ -6,7 +6,6 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -79,8 +78,6 @@ IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   // Create and close a window, but don't allow asynchronous teardown to occur.
   browser1 = CreateBrowser(browser()->profile());
   EXPECT_EQ(2U, browser_list->size());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser1));
   CloseBrowserAsynchronously(browser1);
   EXPECT_EQ(2U, browser_list->size());
   // The app menu should not list the browser window while it is closing.
@@ -88,6 +85,6 @@ IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   EXPECT_EQ(1U, items.size());
   // Now, allow the asynchronous teardown to occur.
   EXPECT_EQ(2U, browser_list->size());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser1);
   EXPECT_EQ(1U, browser_list->size());
 }

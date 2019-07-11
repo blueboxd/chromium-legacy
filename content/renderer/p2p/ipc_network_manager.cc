@@ -49,8 +49,7 @@ IpcNetworkManager::IpcNetworkManager(
     NetworkListManager* network_list_manager,
     std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder)
     : network_list_manager_(network_list_manager),
-      mdns_responder_(std::move(mdns_responder)),
-      weak_factory_(this) {
+      mdns_responder_(std::move(mdns_responder)) {
   network_list_manager_->AddNetworkListObserver(this);
 }
 

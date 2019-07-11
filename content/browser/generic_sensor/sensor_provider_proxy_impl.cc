@@ -30,8 +30,7 @@ SensorProviderProxyImpl::SensorProviderProxyImpl(
     PermissionControllerImpl* permission_controller,
     RenderFrameHost* render_frame_host)
     : permission_controller_(permission_controller),
-      render_frame_host_(render_frame_host),
-      weak_factory_(this) {
+      render_frame_host_(render_frame_host) {
   DCHECK(permission_controller);
   DCHECK(render_frame_host);
 }

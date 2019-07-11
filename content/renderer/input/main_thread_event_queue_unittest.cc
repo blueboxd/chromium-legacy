@@ -111,8 +111,7 @@ class ReceivedCallback {
 
 class HandledEventCallbackTracker {
  public:
-  HandledEventCallbackTracker()
-      : handling_event_(false), weak_ptr_factory_(this) {
+  HandledEventCallbackTracker() : handling_event_(false) {
     weak_this_ = weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -144,7 +143,7 @@ class HandledEventCallbackTracker {
  private:
   std::vector<ReceivedCallback> callbacks_received_;
   base::WeakPtr<HandledEventCallbackTracker> weak_this_;
-  base::WeakPtrFactory<HandledEventCallbackTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<HandledEventCallbackTracker> weak_ptr_factory_{this};
 };
 
 class MainThreadEventQueueTest : public testing::Test,

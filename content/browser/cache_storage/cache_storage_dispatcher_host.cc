@@ -356,7 +356,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     : public blink::mojom::CacheStorage {
  public:
   CacheStorageImpl(CacheStorageDispatcherHost* owner, const url::Origin& origin)
-      : owner_(owner), origin_(origin), weak_factory_(this) {
+      : owner_(owner), origin_(origin) {
     // The CacheStorageHandle is empty to start and lazy initialized on first
     // use via GetOrCreateCacheStorage().  In the future we could eagerly create
     // the backend when the mojo connection is created.
@@ -629,7 +629,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   CacheStorageHandle cache_storage_handle_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CacheStorageImpl> weak_factory_;
+  base::WeakPtrFactory<CacheStorageImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CacheStorageImpl);
 };
 

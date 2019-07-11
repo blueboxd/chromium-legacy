@@ -1807,6 +1807,7 @@ if (!is_android) {
         "../browser/ui/views/media_router/media_router_dialog_controller_views_browsertest.cc",
         "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
         "../browser/ui/views/media_router/presentation_receiver_window_view_browsertest.cc",
+        "../browser/ui/views/native_file_system/native_file_system_directory_access_confirmation_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_permission_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view_browsertest.cc",
         "../browser/ui/views/omnibox/omnibox_popup_contents_view_browsertest.cc",

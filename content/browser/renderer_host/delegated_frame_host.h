@@ -245,7 +245,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   TabSwitchTimeRecorder tab_switch_time_recorder_;
 
-  base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
+  base::WeakPtrFactory<DelegatedFrameHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHost);
 };

@@ -38,8 +38,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         delete_status_(blink::mojom::QuotaStatusCode::kUnknown),
         num_get_origin_usage_completions_(0),
         num_get_origins_completions_(0),
-        num_delete_origins_completions_(0),
-        weak_factory_(this) {}
+        num_delete_origins_completions_(0) {}
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const url::Origin& origin,
@@ -155,7 +154,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   int num_get_origins_completions_;
   int num_delete_origins_completions_;
   MockAppCacheService mock_service_;
-  base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_;
+  base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_{this};
 };
 
 

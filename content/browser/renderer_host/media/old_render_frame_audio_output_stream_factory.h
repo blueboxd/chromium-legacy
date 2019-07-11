@@ -71,7 +71,7 @@ class CONTENT_EXPORT OldRenderFrameAudioOutputStreamFactory
   int next_stream_id_ = 0;
 
   base::WeakPtrFactory<OldRenderFrameAudioOutputStreamFactory>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OldRenderFrameAudioOutputStreamFactory);
 };

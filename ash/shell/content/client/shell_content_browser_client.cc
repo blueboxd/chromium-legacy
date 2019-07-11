@@ -17,6 +17,9 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/network_config/public/cpp/manifest.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
@@ -37,6 +40,9 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
+          .RequireCapability(
+              chromeos::network_config::mojom::kServiceName,
+              chromeos::network_config::mojom::kNetworkConfigCapability)
           .Build()};
   return *manifest;
 }
@@ -69,6 +75,13 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetAshShellBrowserOverlayManifest();
 
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ShellContentBrowserClient::GetExtraServiceManifests() {
+  return std::vector<service_manager::Manifest>({
+      chromeos::network_config::GetManifest(),
+  });
 }
 
 }  // namespace shell

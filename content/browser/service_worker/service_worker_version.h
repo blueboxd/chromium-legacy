@@ -960,7 +960,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This is set when this service worker becomes redundant.
   base::debug::StackTrace redundant_state_callstack_;
 
-  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

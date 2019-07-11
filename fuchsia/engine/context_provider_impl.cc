@@ -30,6 +30,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
@@ -153,10 +154,14 @@ void ContextProviderImpl::Create(
   launch_options.job_handle = job.get();
 
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
-
-  // Connect DevTools listeners to the new Context process.
   std::vector<zx::channel> devtools_listener_channels;
-  if (devtools_listeners_.size() != 0) {
+
+  if (params.has_remote_debugging_port()) {
+    launch_command.AppendSwitchNative(
+        switches::kRemoteDebuggingPort,
+        base::NumberToString(params.remote_debugging_port()));
+  } else if (devtools_listeners_.size() != 0) {
+    // Connect DevTools listeners to the new Context process.
     std::vector<std::string> handles_ids;
     for (auto& devtools_listener : devtools_listeners_.ptrs()) {
       fidl::InterfaceHandle<fuchsia::web::DevToolsPerContextListener>

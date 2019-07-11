@@ -15,7 +15,7 @@ namespace content {
 ScopesLocksHolder::ScopesLocksHolder() = default;
 ScopesLocksHolder::~ScopesLocksHolder() = default;
 
-ScopesLockManager::ScopesLockManager() : weak_factory_(this) {}
+ScopesLockManager::ScopesLockManager() {}
 ScopesLockManager::~ScopesLockManager() = default;
 
 ScopesLockManager::ScopeLockRequest::ScopeLockRequest(int level,

@@ -152,8 +152,10 @@ CrossSequenceCacheStorage::CrossSequenceCacheStorage(
     scoped_refptr<CacheStorageContextWithManager> context)
     : CacheStorage(origin),
       target_task_runner_(std::move(target_task_runner)),
-      inner_(target_task_runner_, origin, std::move(owner), std::move(context)),
-      weak_factory_(this) {}
+      inner_(target_task_runner_,
+             origin,
+             std::move(owner),
+             std::move(context)) {}
 
 CacheStorageHandle CrossSequenceCacheStorage::CreateHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

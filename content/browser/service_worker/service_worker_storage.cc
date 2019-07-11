@@ -1155,8 +1155,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
       is_purge_pending_(false),
-      has_checked_for_stale_resources_(false),
-      weak_factory_(this) {
+      has_checked_for_stale_resources_(false) {
   DCHECK(context_);
   database_.reset(new ServiceWorkerDatabase(GetDatabasePath()));
 }

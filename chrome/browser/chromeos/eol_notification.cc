@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/eol_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -156,7 +156,7 @@ void EolNotification::Update() {
               message_center::NotifierType::SYSTEM_COMPONENT,
               kEolNotificationId),
           data, new EolNotificationDelegate(profile_),
-          ash::kNotificationEndOfSupportIcon,
+          kNotificationEndOfSupportIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(

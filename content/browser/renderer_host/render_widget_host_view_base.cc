@@ -42,7 +42,7 @@
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
-    : host_(RenderWidgetHostImpl::From(host)), weak_factory_(this) {
+    : host_(RenderWidgetHostImpl::From(host)) {
   host_->render_frame_metadata_provider()->AddObserver(this);
 }
 

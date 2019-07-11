@@ -133,7 +133,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public AppCacheJob,
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCacheGroup> group_;
   OnPrepareToRestartCallback on_prepare_to_restart_callback_;
-  base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
+  base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLRequestJob);
 };
 

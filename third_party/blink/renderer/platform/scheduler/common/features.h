@@ -62,6 +62,13 @@ const base::Feature kVeryHighPriorityForCompositingWhenFast{
     "BlinkSchedulerVeryHighPriorityForCompositingWhenFast",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, compositor priority will be set to kVeryHighPriority if the last
+// task completed was not a compositor task, and kNormalPriority if the last
+// task completed was a compositor task.
+const base::Feature kVeryHighPriorityForCompositingAlternating{
+    "BlinkSchedulerVeryHighPriorityForCompositingAlternating",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // LOAD PRIORITY EXPERIMENT CONTROLS
 
 // Enables setting the priority of background (with no audio) pages'

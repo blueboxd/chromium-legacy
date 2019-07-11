@@ -261,7 +261,7 @@ class MHTMLGenerationManager::Job {
   // Not used when the renderer is writing directly to file.
   bool waiting_on_data_streaming_;
 
-  base::WeakPtrFactory<Job> weak_factory_;
+  base::WeakPtrFactory<Job> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -276,8 +276,7 @@ MHTMLGenerationManager::Job::Job(WebContents* web_contents,
       salt_(base::GenerateGUID()),
       callback_(std::move(callback)),
       is_finished_(false),
-      waiting_on_data_streaming_(false),
-      weak_factory_(this) {
+      waiting_on_data_streaming_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(

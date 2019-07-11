@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -160,6 +161,44 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
+};
+
+class BrowserChangeObserver : public BrowserListObserver {
+ public:
+  enum class ChangeType {
+    kAdded,
+    kRemoved,
+  };
+
+  BrowserChangeObserver(const Browser* browser, ChangeType type)
+      : browser_(browser), type_(type) {
+    BrowserList::AddObserver(this);
+  }
+
+  ~BrowserChangeObserver() override { BrowserList::RemoveObserver(this); }
+
+  void Wait() { run_loop_.Run(); }
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override {
+    if (type_ == ChangeType::kAdded)
+      run_loop_.Quit();
+  }
+
+  void OnBrowserRemoved(Browser* browser) override {
+    if (browser_ && browser_ != browser)
+      return;
+
+    if (type_ == ChangeType::kRemoved)
+      run_loop_.Quit();
+  }
+
+ private:
+  const Browser* browser_;
+  ChangeType type_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserChangeObserver);
 };
 
 class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
@@ -595,6 +634,16 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
     scoped_observer.Add(history_service);
     runner->Run();
   }
+}
+
+void WaitForBrowserToOpen() {
+  BrowserChangeObserver(nullptr, BrowserChangeObserver::ChangeType::kAdded)
+      .Wait();
+}
+
+void WaitForBrowserToClose(const Browser* browser) {
+  BrowserChangeObserver(browser, BrowserChangeObserver::ChangeType::kRemoved)
+      .Wait();
 }
 
 }  // namespace ui_test_utils

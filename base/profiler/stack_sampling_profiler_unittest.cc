@@ -172,7 +172,8 @@ class TestProfileBuilder : public ProfileBuilder {
 
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
-  void RecordMetadata() override;
+  void RecordMetadata(
+      base::ProfileBuilder::MetadataProvider* metadata_provider) override;
   void OnSampleCompleted(std::vector<Frame> sample) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
@@ -202,7 +203,8 @@ ModuleCache* TestProfileBuilder::GetModuleCache() {
   return module_cache_;
 }
 
-void TestProfileBuilder::RecordMetadata() {
+void TestProfileBuilder::RecordMetadata(
+    base::ProfileBuilder::MetadataProvider* metadata_provider) {
   ++metadata_count_;
 }
 

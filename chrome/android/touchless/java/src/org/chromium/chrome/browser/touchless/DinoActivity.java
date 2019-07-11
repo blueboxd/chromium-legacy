@@ -94,8 +94,7 @@ public class DinoActivity extends SingleTabActivity {
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this,
-                () -> mBrowserControlsOffsetHelper, ChromeFullscreenManager.ControlsPosition.NONE);
+        return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.NONE);
     }
 
     @Override

@@ -197,7 +197,7 @@ void TextInputControllerBindings::ForceTextInputStateUpdate() {
 // TextInputController ---------------------------------------------------------
 
 TextInputController::TextInputController(WebViewTestProxy* web_view_test_proxy)
-    : web_view_test_proxy_(web_view_test_proxy), weak_factory_(this) {}
+    : web_view_test_proxy_(web_view_test_proxy) {}
 
 TextInputController::~TextInputController() {}
 

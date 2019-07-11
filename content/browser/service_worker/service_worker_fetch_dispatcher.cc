@@ -467,8 +467,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
-      did_complete_(false),
-      weak_factory_(this) {
+      did_complete_(false) {
   DCHECK(!request_->blob);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,

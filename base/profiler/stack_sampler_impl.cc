@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/profiler/profile_builder.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/profiler/unwinder.h"
 
@@ -79,6 +80,12 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
   uintptr_t bottom = 0;
   const uint8_t* stack_copy_bottom = nullptr;
   {
+    // The MetadataProvider must be created before the ScopedSuspendThread
+    // because it acquires a lock in its constructor that might otherwise be
+    // held by the target thread, resulting in deadlock.
+    std::unique_ptr<base::ProfileBuilder::MetadataProvider> get_metadata_items =
+        base::GetSampleMetadataRecorder()->CreateMetadataProvider();
+
     // Allocation of the ScopedSuspendThread object itself is OK since it
     // necessarily occurs before the thread is suspended by the object.
     std::unique_ptr<ThreadDelegate::ScopedSuspendThread> suspend_thread =
@@ -102,7 +109,7 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
     if (!thread_delegate_->CanCopyStack(bottom))
       return false;
 
-    profile_builder->RecordMetadata();
+    profile_builder->RecordMetadata(get_metadata_items.get());
 
     stack_copy_bottom = CopyStackContentsAndRewritePointers(
         reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),

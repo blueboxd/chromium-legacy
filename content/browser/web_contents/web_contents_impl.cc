@@ -610,9 +610,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
       native_theme_observer_(this),
-      had_inner_webcontents_(false),
-      loading_weak_factory_(this),
-      weak_factory_(this) {
+      had_inner_webcontents_(false) {
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
@@ -6723,6 +6721,10 @@ base::UnguessableToken WebContentsImpl::GetAudioGroupId() {
     return base::UnguessableToken::Null();
 
   return GetAudioStreamFactory()->group_id();
+}
+
+ukm::SourceId WebContentsImpl::GetLastCommittedSourceId() {
+  return last_committed_source_id_;
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {

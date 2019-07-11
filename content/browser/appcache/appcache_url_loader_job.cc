@@ -162,8 +162,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
       loader_callback_(std::move(loader_callback)),
       appcache_request_(appcache_request->GetWeakPtr()),
       is_main_resource_load_(IsResourceTypeFrame(static_cast<ResourceType>(
-          appcache_request->GetResourceRequest()->resource_type))),
-      weak_factory_(this) {}
+          appcache_request->GetResourceRequest()->resource_type))) {}
 
 void AppCacheURLLoaderJob::CallLoaderCallback() {
   DCHECK(loader_callback_);

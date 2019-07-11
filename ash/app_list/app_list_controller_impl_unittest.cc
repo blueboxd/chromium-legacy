@@ -16,6 +16,7 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -104,6 +105,23 @@ class AppListControllerImplTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
+
+// Tests that the AppList hides when shelf alignment changes. This necessary
+// because the AppList is shown with certain assumptions based on shelf
+// orientation.
+TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
+  Shelf* const shelf = AshTestBase::GetPrimaryShelf();
+  shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+
+  const std::vector<ash::ShelfAlignment> alignments(
+      {SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM});
+  for (ash::ShelfAlignment alignment : alignments) {
+    ShowAppListNow();
+    EXPECT_TRUE(Shell::Get()->app_list_controller()->presenter()->IsVisible());
+    shelf->SetAlignment(alignment);
+    EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  }
+}
 
 // Hide the expand arrow view in tablet mode when there is no activatable window
 // (see https://crbug.com/923089).

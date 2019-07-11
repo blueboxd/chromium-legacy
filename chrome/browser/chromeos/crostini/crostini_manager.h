@@ -344,6 +344,12 @@ class CrostiniManager : public KeyedService,
   // or after the method call finishes.
   void StopVm(std::string name, CrostiniResultCallback callback);
 
+  // Asynchronously retrieve the Termina VM kernel version using
+  // concierge's GetVmEnterpriseReportingInfo method.
+  using GetTerminaVmKernelVersionCallback = base::OnceCallback<void(
+      const base::Optional<std::string>& maybe_kernel_version)>;
+  void GetTerminaVmKernelVersion(GetTerminaVmKernelVersionCallback callback);
+
   // Checks the arguments for creating an Lxd container via
   // CiceroneClient::CreateLxdContainer. |callback| is called immediately if the
   // arguments are bad, or once the container has been created.
@@ -648,6 +654,14 @@ class CrostiniManager : public KeyedService,
   void OnStopVm(std::string vm_name,
                 CrostiniResultCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> response);
+
+  // Callback for ConciergeClient::GetVmEnterpriseReportingInfo.
+  // Currently used to report the Termina kernel version for enterprise
+  // reporting.
+  void OnGetTerminaVmKernelVersion(
+      GetTerminaVmKernelVersionCallback callback,
+      base::Optional<vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
+          response);
 
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
   // the UI thread.

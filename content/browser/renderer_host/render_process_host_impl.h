@@ -895,7 +895,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   IpcSendWatcher ipc_send_watcher_for_testing_;
 
-  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
+  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

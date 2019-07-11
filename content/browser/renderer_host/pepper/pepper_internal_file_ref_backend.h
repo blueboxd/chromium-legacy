@@ -81,7 +81,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
 
   mutable storage::FileSystemURL fs_url_;
 
-  base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_;
+  base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperInternalFileRefBackend);
 };

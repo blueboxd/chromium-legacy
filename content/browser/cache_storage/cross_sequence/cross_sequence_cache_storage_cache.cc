@@ -129,7 +129,7 @@ class CrossSequenceCacheStorageCache::Inner {
 
 CrossSequenceCacheStorageCache::CrossSequenceCacheStorageCache(
     scoped_refptr<base::SequencedTaskRunner> target_task_runner)
-    : inner_(std::move(target_task_runner)), weak_factory_(this) {}
+    : inner_(std::move(target_task_runner)) {}
 
 void CrossSequenceCacheStorageCache::SetHandleOnTaskRunner(
     CacheStorageCacheHandle handle) {

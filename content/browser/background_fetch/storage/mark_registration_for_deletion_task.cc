@@ -23,8 +23,7 @@ MarkRegistrationForDeletionTask::MarkRegistrationForDeletionTask(
     : DatabaseTask(host),
       registration_id_(registration_id),
       check_for_failure_(check_for_failure),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 MarkRegistrationForDeletionTask::~MarkRegistrationForDeletionTask() = default;
 

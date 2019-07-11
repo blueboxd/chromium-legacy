@@ -215,8 +215,7 @@ CdmFileImpl::CdmFileImpl(
       origin_(origin),
       file_system_id_(file_system_id),
       file_system_root_uri_(file_system_root_uri),
-      file_system_context_(file_system_context),
-      weak_factory_(this) {
+      file_system_context_(file_system_context) {
   DVLOG(3) << __func__ << " " << file_name_;
   DCHECK(IsValidName(file_name_));
 }

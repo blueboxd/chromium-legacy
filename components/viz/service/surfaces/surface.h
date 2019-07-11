@@ -82,6 +82,7 @@ class VIZ_SERVICE_EXPORT Surface final {
     ~PresentationHelper();
 
     void DidPresent(const gfx::PresentationFeedback& feedback);
+    uint32_t frame_token() const { return frame_token_; }
 
    private:
     base::WeakPtr<Surface> surface_;
@@ -220,6 +221,10 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   // Called when this surface will be included in the next display frame.
   void OnWillBeDrawn();
+
+  // Called after the display compositor finishes drawing the frame
+  // associated with frame_token.
+  void OnWasDrawn(uint32_t frame_token, base::TimeTicks draw_start_timestamp);
 
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.

@@ -126,7 +126,7 @@ class AppCacheInternalsUI : public WebUIController {
 
   Proxy* GetProxyForPartitionPath(const base::FilePath& path);
   std::list<scoped_refptr<Proxy>> appcache_proxies_;
-  base::WeakPtrFactory<AppCacheInternalsUI> weak_ptr_factory_;
+  base::WeakPtrFactory<AppCacheInternalsUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheInternalsUI);
 };

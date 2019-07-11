@@ -30,8 +30,7 @@ constexpr base::TimeDelta kMinStatsInterval =
 AudioServiceAudioProcessorProxy::AudioServiceAudioProcessorProxy(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : main_thread_runner_(std::move(main_thread_task_runner)),
-      target_stats_interval_(kMaxStatsInterval),
-      weak_ptr_factory_(this) {
+      target_stats_interval_(kMaxStatsInterval) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 }
 

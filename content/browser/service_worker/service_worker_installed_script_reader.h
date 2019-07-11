@@ -96,7 +96,7 @@ class ServiceWorkerInstalledScriptReader {
   uint64_t body_size_ = std::numeric_limits<uint64_t>::max();
   uint64_t body_bytes_sent_ = 0;
 
-  base::WeakPtrFactory<ServiceWorkerInstalledScriptReader> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerInstalledScriptReader> weak_factory_{this};
 };
 
 }  // namespace content

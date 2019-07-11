@@ -160,6 +160,11 @@ class BASE_EXPORT TaskTracker {
     return tracked_ref_factory_.GetTrackedRef();
   }
 
+  // Returns true if there are task sources that haven't completed their
+  // execution (still queued or in progress). If it returns false: the side-
+  // effects of all completed tasks are guaranteed to be visible to the caller.
+  bool HasIncompleteTaskSourcesForTesting() const;
+
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
   // |task|. |task| is always deleted in the environment where it runs or would
@@ -171,11 +176,6 @@ class BASE_EXPORT TaskTracker {
                              TaskSource* task_source,
                              const TaskTraits& traits,
                              bool can_run_task);
-
-  // Returns true if there are task sources that haven't completed their
-  // execution (still queued or in progress). If it returns false: the side-
-  // effects of all completed tasks are guaranteed to be visible to the caller.
-  bool HasIncompleteTaskSourcesForTesting() const;
 
  private:
   friend class RegisteredTaskSource;

@@ -21,10 +21,7 @@ typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 ServiceWorkerUnregisterJob::ServiceWorkerUnregisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
     const GURL& scope)
-    : context_(context),
-      scope_(scope),
-      is_promise_resolved_(false),
-      weak_factory_(this) {}
+    : context_(context), scope_(scope), is_promise_resolved_(false) {}
 
 ServiceWorkerUnregisterJob::~ServiceWorkerUnregisterJob() {}
 

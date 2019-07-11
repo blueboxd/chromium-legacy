@@ -35,8 +35,7 @@ ForwardingAudioStreamFactory::Core::Core(
       owner_(std::move(owner)),
       broker_factory_(std::move(broker_factory)),
       group_id_(base::UnguessableToken::Create()),
-      connector_(std::move(connector)),
-      weak_ptr_factory_(this) {
+      connector_(std::move(connector)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(owner_);
   DCHECK(broker_factory_);
@@ -207,7 +206,7 @@ ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
     media::UserInputMonitorBase* user_input_monitor,
     std::unique_ptr<service_manager::Connector> connector,
     std::unique_ptr<AudioStreamBrokerFactory> broker_factory)
-    : WebContentsObserver(web_contents), core_(), weak_ptr_factory_(this) {
+    : WebContentsObserver(web_contents), core_() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   core_ =
       std::make_unique<Core>(weak_ptr_factory_.GetWeakPtr(), user_input_monitor,

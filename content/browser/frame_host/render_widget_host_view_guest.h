@@ -193,7 +193,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // session.
   bool should_forward_text_selection_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostViewGuest> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewGuest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };

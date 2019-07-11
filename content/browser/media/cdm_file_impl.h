@@ -110,7 +110,7 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   std::vector<uint8_t> data_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<CdmFileImpl> weak_factory_;
+  base::WeakPtrFactory<CdmFileImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmFileImpl);
 };

@@ -580,7 +580,7 @@ class CORE_EXPORT NGConstraintSpace final {
     }
 
     unsigned has_rare_data : 1;
-    unsigned adjoining_floats : 2;               // NGFloatTypes
+    unsigned adjoining_floats : 3;  // NGFloatTypes
     unsigned writing_mode : 3;
     unsigned direction : 1;
 

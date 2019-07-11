@@ -138,7 +138,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
 
-  base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_;
+  base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
 };

@@ -73,7 +73,7 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
   // Used to safely post MediaPermission calls for execution on |task_runner_|.
   base::WeakPtr<MediaPermissionDispatcher> weak_ptr_;
 
-  base::WeakPtrFactory<MediaPermissionDispatcher> weak_factory_;
+  base::WeakPtrFactory<MediaPermissionDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaPermissionDispatcher);
 };

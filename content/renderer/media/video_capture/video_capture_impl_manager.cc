@@ -60,8 +60,7 @@ struct VideoCaptureImplManager::DeviceEntry {
 VideoCaptureImplManager::VideoCaptureImplManager()
     : next_client_id_(0),
       render_main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      is_suspending_all_(false),
-      weak_factory_(this) {}
+      is_suspending_all_(false) {}
 
 VideoCaptureImplManager::~VideoCaptureImplManager() {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());

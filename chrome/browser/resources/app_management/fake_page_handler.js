@@ -96,6 +96,7 @@ cr.define('app_management', function() {
         installSource: apps.mojom.InstallSource.kUser,
         permissions: {},
         hideMoreSettings: false,
+        hidePinToShelf: false,
       };
 
       if (optConfig) {

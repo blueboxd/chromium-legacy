@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -80,7 +80,7 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
                     }
                   },
                   profile)),
-          ash::kNotificationStorageFullIcon,
+          kNotificationStorageFullIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,

@@ -322,4 +322,13 @@ void ShowNativeFileSystemRestrictedDirectoryDialog(
     base::OnceClosure callback,
     content::WebContents* web_contents);
 
+// Displays a dialog to confirm that the user intended to give read access to a
+// specific directory. Similar to ShowFolderUploadConfirmationDialog above,
+// except for use by the Native File System API.
+void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceCallback<void(PermissionAction result)> callback,
+    content::WebContents* web_contents);
+
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

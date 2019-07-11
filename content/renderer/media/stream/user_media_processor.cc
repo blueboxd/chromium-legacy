@@ -454,8 +454,7 @@ UserMediaProcessor::UserMediaProcessor(
       media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       render_frame_(render_frame),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_device_observer_.get());
 }

@@ -152,9 +152,7 @@ class PpapiPluginProcessHost::PluginNetworkObserver
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   explicit PluginNetworkObserver(PpapiPluginProcessHost* process_host)
-      : process_host_(process_host),
-        network_connection_tracker_(nullptr),
-        weak_factory_(this) {
+      : process_host_(process_host), network_connection_tracker_(nullptr) {
     GetNetworkConnectionTrackerFromUIThread(
         base::BindOnce(&PluginNetworkObserver::SetNetworkConnectionTracker,
                        weak_factory_.GetWeakPtr()));
@@ -180,7 +178,7 @@ class PpapiPluginProcessHost::PluginNetworkObserver
  private:
   PpapiPluginProcessHost* const process_host_;
   network::NetworkConnectionTracker* network_connection_tracker_;
-  base::WeakPtrFactory<PluginNetworkObserver> weak_factory_;
+  base::WeakPtrFactory<PluginNetworkObserver> weak_factory_{this};
 };
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {

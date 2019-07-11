@@ -131,7 +131,7 @@ class GpuChildThread : public ChildThreadImpl,
   };
   std::vector<PendingServiceRequest> pending_service_requests_;
 
-  base::WeakPtrFactory<GpuChildThread> weak_factory_;
+  base::WeakPtrFactory<GpuChildThread> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

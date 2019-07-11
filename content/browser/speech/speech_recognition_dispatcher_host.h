@@ -65,7 +65,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   // Used for posting asynchronous tasks (on the IO thread) without worrying
   // about this class being destroyed in the meanwhile (due to browser shutdown)
   // since tasks pending on a destroyed WeakPtr are automatically discarded.
-  base::WeakPtrFactory<SpeechRecognitionDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<SpeechRecognitionDispatcherHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionDispatcherHost);
 };
@@ -115,7 +115,7 @@ class SpeechRecognitionSession : public blink::mojom::SpeechRecognitionSession,
   blink::mojom::SpeechRecognitionSessionClientPtr client_;
   bool stopped_;
 
-  base::WeakPtrFactory<SpeechRecognitionSession> weak_factory_;
+  base::WeakPtrFactory<SpeechRecognitionSession> weak_factory_{this};
 };
 
 }  // namespace content

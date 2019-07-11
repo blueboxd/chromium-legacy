@@ -140,7 +140,7 @@ class FakeTestBrowserContext : public TestBrowserContext {
 
 class FakeController : public BackgroundFetchDelegateProxy::Controller {
  public:
-  FakeController() : weak_ptr_factory_(this) {}
+  FakeController() {}
 
   void DidStartRequest(
       const std::string& guid,
@@ -167,7 +167,7 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
 
   bool request_started_ = false;
   bool request_completed_ = false;
-  base::WeakPtrFactory<FakeController> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeController> weak_ptr_factory_{this};
 };
 
 class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {

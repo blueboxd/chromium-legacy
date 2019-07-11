@@ -226,7 +226,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   scoped_refptr<AppCacheInfoCollection> simulated_appcache_info_;
   std::unique_ptr<AppCacheResponseReader> simulated_reader_;
 
-  base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
+  base::WeakPtrFactory<MockAppCacheStorage> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            BasicFindMainResponse);

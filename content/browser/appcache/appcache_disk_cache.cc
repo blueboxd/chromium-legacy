@@ -320,8 +320,7 @@ AppCacheDiskCache::AppCacheDiskCache(const char* uma_name,
     : use_simple_cache_(use_simple_cache),
       is_disabled_(false),
       is_waiting_to_initialize_(false),
-      uma_name_(uma_name),
-      weak_factory_(this) {}
+      uma_name_(uma_name) {}
 
 AppCacheDiskCache::PendingCall::PendingCall()
     : call_type(CREATE), key(0), entry(nullptr) {}

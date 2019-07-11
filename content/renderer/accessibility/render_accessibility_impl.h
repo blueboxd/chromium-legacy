@@ -240,7 +240,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   bool is_initial_load_processed_ = false;
 
   // So we can queue up tasks to be executed later.
-  base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;
+  base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_{this};
 
   friend class AXImageAnnotatorTest;
   DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImpl);

@@ -151,7 +151,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
 
   bool completed_ = false;
 
-  base::WeakPtrFactory<WorkerScriptLoader> weak_factory_;
+  base::WeakPtrFactory<WorkerScriptLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WorkerScriptLoader);
 };

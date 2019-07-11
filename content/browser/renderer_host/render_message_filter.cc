@@ -95,8 +95,7 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       render_process_id_(render_process_id),
-      media_internals_(media_internals),
-      weak_ptr_factory_(this) {
+      media_internals_(media_internals) {
   if (render_widget_helper)
     render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }

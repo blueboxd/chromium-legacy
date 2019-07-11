@@ -228,7 +228,7 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
 class LoginDelegateProxy : public LoginDelegate {
  public:
   explicit LoginDelegateProxy(LoginAuthRequiredCallback callback)
-      : callback_(std::move(callback)), weak_factory_(this) {
+      : callback_(std::move(callback)) {
     delegate_ui_.reset(new DelegateOwnerUI(weak_factory_.GetWeakPtr()));
   }
 
@@ -309,7 +309,7 @@ class LoginDelegateProxy : public LoginDelegate {
   std::unique_ptr<DelegateOwnerUI, BrowserThread::DeleteOnUIThread>
       delegate_ui_;
   LoginAuthRequiredCallback callback_;
-  base::WeakPtrFactory<LoginDelegateProxy> weak_factory_;
+  base::WeakPtrFactory<LoginDelegateProxy> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoginDelegateProxy);
 };
 
@@ -371,8 +371,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       loader_delegate_(nullptr),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(io_thread_runner),
-      weak_factory_on_io_(this) {
+      io_thread_task_runner_(io_thread_runner) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;

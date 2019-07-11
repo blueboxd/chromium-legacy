@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/test/ui_controls.h"
 
 // Test overview enter/exit animations with following conditions

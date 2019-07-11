@@ -67,7 +67,7 @@ class VideoEncoderShim : public media::VideoEncodeAccelerator {
   // Task doing the encoding.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
-  base::WeakPtrFactory<VideoEncoderShim> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoEncoderShim> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderShim);
 };

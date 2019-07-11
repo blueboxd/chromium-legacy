@@ -32,7 +32,7 @@ class CacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
  private:
   base::WeakPtr<CacheStorageCacheEntryHandler> GetWeakPtr() override;
 
-  base::WeakPtrFactory<CacheEntryHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CacheEntryHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CacheEntryHandlerImpl);
 };

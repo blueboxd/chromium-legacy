@@ -218,4 +218,87 @@ TEST(SignedExchangeRequestMatcherTest, MatchRequest) {
   }
 }
 
+TEST(SignedExchangeRequestMatcherTest, FindBestMatchingVariantKey) {
+  const struct TestCase {
+    const char* name;
+    std::map<std::string, std::string> req_headers;
+    std::string variants;
+    std::vector<std::string> variant_key_list;
+    base::Optional<std::string> expected_result;
+  } cases[] = {
+      {
+          "Content type negotiation: default value",
+          {{"accept", "image/webp,image/jpg"}},
+          "Accept;image/xx;image/yy",
+          {"image/yy", "image/xx"},
+          "image/xx"  // There is no preferred available, image/xx is the
+                      // default.
+      },
+      {
+          "Language negotiation: default value",
+          {{"accept-language", "en,fr"}},
+          "accept-language;ja;ch",
+          {"ja", "ch"},
+          "ja"  // There is no preferred available, ja is the default.
+      },
+      {
+          "Language negotiation: no matching language",
+          {{"accept-language", "en,fr"}},
+          "accept-language;ja;ch",
+          {"ch"},
+          base::nullopt  // There is no matching language.
+      },
+      {
+          "Content type negotiation: Q value",
+          {{"accept", "image/jpg;q=0.8,image/webp,image/apng"}},
+          "Accept;image/jpg;image/apng;image/webp",
+          {"image/jpg", "image/webp", "image/apng"},
+          "image/webp"  // image/webp is the most preferred content type.
+      },
+      {
+          "Content type and Language negotiation",
+          {{"accept", "image/webp,image/jpg,*/*;q=0.3"},
+           {"accept-language", "en,fr,ja"}},
+          "Accept;image/webp;image/apng,accept-language;ja;en",
+          {"image/apng;ja", "image/webp;ja", "image/apng;en,image/webp;en"},
+          "image/apng;en,image/webp;en"  // image/webp;en is the most preferred
+                                         // content type.
+      },
+      {
+          "Variants is invalid",
+          {{"accept", "image/webp,image/jpg"}},
+          " ",
+          {},
+          base::nullopt  // Variants is invalid.
+      },
+      {
+          "Variants size and Variant Key size don't match",
+          {{"accept", "image/webp,image/jpg"}},
+          "Accept;image/webp;image/apng,accept-language;ja;en",
+          {"image/webp", "image/apng"},
+          base::nullopt  // There is no matching Variant Key.
+      },
+      {
+          "Unknown Variant",
+          {{"accept", "image/webp,image/jpg"}},
+          "Accept;image/webp;image/jpg, FooBar;foo;bar",
+          {"image/webp;foo", "image/webp;bar", "image/webp;jpg",
+           "image/jpg;bar"},
+          base::nullopt  // FooBar is unknown.
+      },
+  };
+  for (const auto& c : cases) {
+    net::HttpRequestHeaders request_headers;
+    for (auto it = c.req_headers.begin(); it != c.req_headers.end(); ++it)
+      request_headers.SetHeader(it->first, it->second);
+    auto variant_key_list_it =
+        SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
+            request_headers, c.variants, c.variant_key_list);
+    if (variant_key_list_it == c.variant_key_list.end()) {
+      EXPECT_EQ(c.expected_result, base::nullopt) << c.name;
+    } else {
+      EXPECT_EQ(c.expected_result, *variant_key_list_it) << c.name;
+    }
+  }
+}
 }  // namespace blink

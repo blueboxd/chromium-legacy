@@ -142,7 +142,7 @@ const char* OriginPolicyThrottle::GetNameForLogging() {
 }
 
 OriginPolicyThrottle::OriginPolicyThrottle(NavigationHandle* handle)
-    : NavigationThrottle(handle), weak_factory_(this) {}
+    : NavigationThrottle(handle) {}
 
 // TODO(andypaicu): Remove when we have moved reporting logic to the network
 // service.

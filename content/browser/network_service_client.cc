@@ -53,7 +53,7 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   explicit SSLErrorDelegate(
       network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback
           response)
-      : response_(std::move(response)), weak_factory_(this) {}
+      : response_(std::move(response)) {}
   ~SSLErrorDelegate() override {}
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
     std::move(response_).Run(error);
@@ -69,7 +69,7 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
 
  private:
   network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback response_;
-  base::WeakPtrFactory<SSLErrorDelegate> weak_factory_;
+  base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
 
 // This class lives on the IO thread. It is self-owned and will delete itself
@@ -160,8 +160,7 @@ class LoginHandlerDelegate {
         url_(url),
         response_headers_(std::move(response_headers)),
         first_auth_attempt_(first_auth_attempt),
-        web_contents_getter_(web_contents_getter),
-        weak_factory_(this) {
+        web_contents_getter_(web_contents_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     auth_challenge_responder_.set_connection_error_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
@@ -247,7 +246,7 @@ class LoginHandlerDelegate {
   bool first_auth_attempt_;
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
   std::unique_ptr<LoginDelegate> login_delegate_;
-  base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_;
+  base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_{this};
 };
 
 void HandleFileUploadRequest(

@@ -92,4 +92,12 @@ std::unique_ptr<views::LabelButtonBorder> NewDeskButton::CreateDefaultBorder()
   return border;
 }
 
+views::View* NewDeskButton::GetView() {
+  return this;
+}
+
+gfx::Rect NewDeskButton::GetHighlightBounds() {
+  return GetBoundsInScreen();
+}
+
 }  // namespace ash

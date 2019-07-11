@@ -1,0 +1,23 @@
+/* Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* These styles adjust the default styling for HTML elements as defined in
+ * core/html/resources/html.css in order to provide an updated style when
+ * using the refreshed controls UI.
+ */
+
+input, textarea {
+  background-color: #ffffff;
+  border-color: #cecece;
+}
+
+input:hover, textarea:hover {
+  border-color: #9d9d9d;
+}
+
+input:disabled, textarea:disabled {
+  background-color: #ffffff;
+  border-color: #c5c5c5;
+}

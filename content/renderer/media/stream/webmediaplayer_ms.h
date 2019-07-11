@@ -360,7 +360,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   bool has_first_frame_ = false;
 
   base::WeakPtr<WebMediaPlayerMS> weak_this_;
-  base::WeakPtrFactory<WebMediaPlayerMS> weak_factory_;
+  base::WeakPtrFactory<WebMediaPlayerMS> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

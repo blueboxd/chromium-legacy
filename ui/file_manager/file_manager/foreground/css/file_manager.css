@@ -2148,11 +2148,18 @@ list.autocomplete-suggestions > [lead] {
 
 /* Feedback panels */
 
-.feedback-panels {
+.files-feedback-panels {
+  align-items: flex-end;
   bottom: 24px;
+  display: flex;
+  flex-direction: column;
   position: absolute;
   right: 24px;
   z-index: 502; /* Above splitter, but below quickview. */
+}
+
+.files-vertical-padder-8 {
+  height: 8px;
 }
 
 #completed-panel {

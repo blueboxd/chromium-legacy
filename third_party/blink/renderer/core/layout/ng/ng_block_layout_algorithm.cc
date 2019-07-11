@@ -803,10 +803,26 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     static_offset.block_offset += previous_inflow_position.margin_strut.Sum();
 
   if (child.Style().IsOriginalDisplayInlineType()) {
+    // The static-position of inline-level OOF-positioned nodes depends on
+    // previous floats (if any).
+    //
+    // Due to this we need to mark this node as having adjoining objects, and
+    // perform a re-layout if our position shifts.
+    if (!container_builder_.BfcBlockOffset()) {
+      container_builder_.AddAdjoiningFloatTypes(kAdjoiningInlineOutOfFlow);
+      abort_when_bfc_block_offset_updated_ = true;
+    }
+
+    LayoutUnit origin_bfc_block_offset =
+        container_builder_.BfcBlockOffset().value_or(
+            ConstraintSpace().ForcedBfcBlockOffset().value_or(
+                ConstraintSpace().BfcOffset().block_offset)) +
+        static_offset.block_offset;
+
     NGBfcOffset origin_bfc_offset = {
         ConstraintSpace().BfcOffset().line_offset +
             border_scrollbar_padding_.LineLeft(Style().Direction()),
-        BfcBlockOffset() + static_offset.block_offset};
+        origin_bfc_block_offset};
 
     static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
         Style(), origin_bfc_offset, exclusion_space_,

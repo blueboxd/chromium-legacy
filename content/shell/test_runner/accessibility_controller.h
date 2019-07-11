@@ -67,7 +67,7 @@ class TEST_RUNNER_EXPORT AccessibilityController {
 
   std::unique_ptr<blink::WebAXContext> ax_context_;
 
-  base::WeakPtrFactory<AccessibilityController> weak_factory_;
+  base::WeakPtrFactory<AccessibilityController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityController);
 };

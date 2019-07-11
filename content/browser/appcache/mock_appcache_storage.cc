@@ -40,8 +40,7 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheServiceImpl* service)
       simulate_find_sub_resource_(false),
       simulated_found_cache_id_(blink::mojom::kAppCacheNoCacheId),
       simulated_found_group_id_(0),
-      simulated_found_network_namespace_(false),
-      weak_factory_(this) {
+      simulated_found_network_namespace_(false) {
   last_cache_id_ = 0;
   last_group_id_ = 0;
   last_response_id_ = 0;

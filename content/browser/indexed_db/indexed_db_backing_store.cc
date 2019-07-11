@@ -2823,8 +2823,7 @@ IndexedDBBackingStore::Transaction::Transaction(
       leveldb_factory_(backing_store ? backing_store->leveldb_factory_
                                      : nullptr),
       database_id_(-1),
-      committing_(false),
-      ptr_factory_(this) {}
+      committing_(false) {}
 
 IndexedDBBackingStore::Transaction::~Transaction() {
   DCHECK(!committing_);

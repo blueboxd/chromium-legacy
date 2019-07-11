@@ -74,7 +74,7 @@ class CONTENT_EXPORT ScopesLockManager {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopesLockManager);
 
-  base::WeakPtrFactory<ScopesLockManager> weak_factory_;
+  base::WeakPtrFactory<ScopesLockManager> weak_factory_{this};
 };
 
 CONTENT_EXPORT bool operator<(const ScopesLockManager::ScopeLockRequest& x,

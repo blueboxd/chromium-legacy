@@ -122,7 +122,7 @@ std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
 
 PaymentAppDatabase::PaymentAppDatabase(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : service_worker_context_(service_worker_context), weak_ptr_factory_(this) {
+    : service_worker_context_(service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

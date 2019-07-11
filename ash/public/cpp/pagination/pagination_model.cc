@@ -16,8 +16,9 @@ namespace {
 constexpr int kPageTransitionDurationDampening = 3;
 }  // namespace
 
-PaginationModel::PaginationModel()
-    : total_pages_(-1),
+PaginationModel::PaginationModel(views::View* view)
+    : views::AnimationDelegateViews(view),
+      total_pages_(-1),
       selected_page_(-1),
       transition_(-1, 0),
       pending_selected_page_(-1),

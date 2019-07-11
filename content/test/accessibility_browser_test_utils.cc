@@ -29,8 +29,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(ax::mojom::Event::kNone),
       generated_event_to_wait_for_(base::nullopt),
-      loop_runner_(std::make_unique<base::RunLoop>()),
-      weak_factory_(this) {
+      loop_runner_(std::make_unique<base::RunLoop>()) {
   ListenToAllFrames(web_contents);
 }
 
@@ -41,8 +40,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(event_type),
       generated_event_to_wait_for_(base::nullopt),
-      loop_runner_(std::make_unique<base::RunLoop>()),
-      weak_factory_(this) {
+      loop_runner_(std::make_unique<base::RunLoop>()) {
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
@@ -55,8 +53,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(base::nullopt),
       generated_event_to_wait_for_(event_type),
-      loop_runner_(std::make_unique<base::RunLoop>()),
-      weak_factory_(this) {
+      loop_runner_(std::make_unique<base::RunLoop>()) {
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);

@@ -91,7 +91,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
 
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
 
-  base::WeakPtrFactory<CodeCacheHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CodeCacheHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CodeCacheHostImpl);
 };

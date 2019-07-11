@@ -304,7 +304,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   StoredState stored_state_;
 
   AppCacheStorage* storage_;
-  base::WeakPtrFactory<AppCacheUpdateJob> weak_factory_;
+  base::WeakPtrFactory<AppCacheUpdateJob> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);
 

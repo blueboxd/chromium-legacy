@@ -399,9 +399,6 @@ int HttpNetworkTransaction::Read(IOBuffer* buf,
     DCHECK(proxy_info_.is_http() || proxy_info_.is_https() ||
            proxy_info_.is_quic());
     DCHECK_EQ(headers->response_code(), HTTP_PROXY_AUTHENTICATION_REQUIRED);
-    LOG(WARNING) << "Blocked proxy response with status "
-                 << headers->response_code() << " to CONNECT request for "
-                 << GetHostAndPort(url_) << ".";
     return ERR_TUNNEL_CONNECTION_FAILED;
   }
 

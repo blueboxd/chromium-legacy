@@ -192,7 +192,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
   network::mojom::FetchResponseSource response_source_;
 
-  base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoader);
 };

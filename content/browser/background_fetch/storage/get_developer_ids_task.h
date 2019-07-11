@@ -48,7 +48,8 @@ class GetDeveloperIdsTask : public DatabaseTask {
 
   std::vector<std::string> developer_ids_;
 
-  base::WeakPtrFactory<GetDeveloperIdsTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetDeveloperIdsTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(GetDeveloperIdsTask);
 };

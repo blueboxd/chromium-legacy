@@ -129,7 +129,7 @@ class CONTENT_EXPORT VideoCaptureHost
   std::map<int32_t, media::mojom::VideoCaptureObserverPtr>
       device_id_to_observer_map_;
 
-  base::WeakPtrFactory<VideoCaptureHost> weak_factory_;
+  base::WeakPtrFactory<VideoCaptureHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

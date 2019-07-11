@@ -76,7 +76,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
   const std::string accept_langs_;
 
-  base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandler);
 };

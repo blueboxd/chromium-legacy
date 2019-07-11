@@ -237,8 +237,7 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
           base::Bind(&BluetoothDeviceChooserController::StopDeviceDiscovery,
                      // base::Timer guarantees it won't call back after its
                      // destructor starts.
-                     base::Unretained(this))),
-      weak_ptr_factory_(this) {
+                     base::Unretained(this))) {
   CHECK(adapter_);
 }
 

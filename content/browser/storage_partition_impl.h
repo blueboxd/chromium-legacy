@@ -426,7 +426,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Called when all deletions are done. For test use only.
   base::OnceClosure on_deletion_helpers_done_callback_;
 
-  base::WeakPtrFactory<StoragePartitionImpl> weak_factory_;
+  base::WeakPtrFactory<StoragePartitionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

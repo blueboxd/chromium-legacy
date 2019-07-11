@@ -545,7 +545,7 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
 void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kPause);
+  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
 
   decode_request_queue_.push(std::move(request));
   // If we are already decoding, then we don't need to pump again.
@@ -555,18 +555,19 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
 
 void V4L2SliceVideoDecoder::PumpDecodeTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kPause);
+  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
   DVLOGF(3) << "state_:" << static_cast<int>(state_)
             << " Number of Decode requests: " << decode_request_queue_.size();
 
-  if (state_ == State::kPause)
+  if (state_ == State::kFlushing)
     return;
 
+  pause_reason_ = PauseReason::kNone;
   while (true) {
     switch (avd_->Decode()) {
       case AcceleratedVideoDecoder::kAllocateNewSurfaces:
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
-        SetState(State::kPause);
+        SetState(State::kFlushing);
 
         output_request_queue_.push(OutputRequest::ChangeResolutionFence());
         PumpOutputSurfaces();
@@ -596,7 +597,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           // Put the decoder in an idle state, ready to resume.
           avd_->Reset();
 
-          SetState(State::kPause);
+          SetState(State::kFlushing);
           DCHECK(!flush_cb_);
           flush_cb_ = std::move(current_decode_request_->decode_cb);
 
@@ -612,10 +613,12 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
 
       case AcceleratedVideoDecoder::kRanOutOfSurfaces:
         DVLOGF(3) << "Ran out of surfaces. Resume when buffer is returned.";
+        pause_reason_ = PauseReason::kRanOutOfSurfaces;
         return;
 
       case AcceleratedVideoDecoder::kNeedContextUpdate:
         DVLOGF(3) << "Awaiting context update";
+        pause_reason_ = PauseReason::kWaitSubFrameDecoded;
         return;
 
       case AcceleratedVideoDecoder::kDecodeError:
@@ -683,7 +686,7 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
 
 bool V4L2SliceVideoDecoder::ChangeResolution() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_EQ(state_, State::kPause);
+  DCHECK_EQ(state_, State::kFlushing);
   // We change resolution after outputting all pending surfaces, there should
   // be no V4L2DecodeSurface left.
   DCHECK(surfaces_at_device_.empty());
@@ -784,7 +787,7 @@ void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
   DVLOGF(3) << "Reuse output surface #" << buffer->BufferId();
 
   // Resume decoding in case of ran out of surface.
-  if (state_ == State::kDecoding) {
+  if (pause_reason_ == PauseReason::kRanOutOfSurfaces) {
     decoder_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
@@ -966,6 +969,7 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
             << ", Number of queued output buffers: "
             << output_queue_->QueuedBuffersCount();
 
+  bool resume_decode = false;
   // Dequeue V4L2 output buffer first to reduce output latency.
   bool success;
   V4L2ReadableBufferRef dequeued_buffer;
@@ -986,6 +990,9 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
     surfaces_at_device_.pop();
 
     surface->SetDecoded();
+    // VP9Decoder update context after surface is decoded. Resume decoding for
+    // previous pause of AVD::kWaitSubFrameDecoded.
+    resume_decode = true;
 
     // Keep a reference to the V4L2 buffer until the buffer is reused. The
     // reason for this is that the config store uses V4L2 buffer IDs to
@@ -1012,6 +1019,12 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
   }
 
   SchedulePollTaskIfNeeded();
+
+  if (resume_decode && pause_reason_ == PauseReason::kWaitSubFrameDecoded) {
+    decoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
+  }
 }
 
 int32_t V4L2SliceVideoDecoder::GetNextBitstreamId() {
@@ -1071,9 +1084,9 @@ void V4L2SliceVideoDecoder::SetState(State new_state) {
     case State::kDecoding:
       break;
 
-    case State::kPause:
+    case State::kFlushing:
       if (state_ != State::kDecoding) {
-        VLOGF(1) << "kPause should only be set when kDecoding.";
+        VLOGF(1) << "kFlushing should only be set when kDecoding.";
         new_state = State::kError;
       }
       break;

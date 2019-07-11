@@ -228,7 +228,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // We do not own this.
   StoragePartition* storage_partition_for_testing_;
 
-  base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImpl);
 };

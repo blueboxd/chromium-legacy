@@ -44,9 +44,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       metric_recorder_(std::move(metric_recorder)),
-      accept_langs_(std::move(accept_langs)),
-      weak_factory_(this) {
-}
+      accept_langs_(std::move(accept_langs)) {}
 
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
 

@@ -144,7 +144,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   int number_of_screenshots_from_video_consumer_ = 0;
   base::trace_event::TraceConfig trace_config_;
   std::unique_ptr<TracingSession> session_;
-  base::WeakPtrFactory<TracingHandler> weak_factory_;
+  base::WeakPtrFactory<TracingHandler> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(TracingHandlerTest,
                            GetTraceConfigFromDevToolsConfig);

@@ -33,7 +33,9 @@ class MediaRouterDialogController {
 
   // Gets a reference to the MediaRouterDialogController associated with
   // |web_contents|, creating one if it does not exist. The returned pointer is
-  // guaranteed to be non-null.
+  // guaranteed to be non-null. This method has platform-specific
+  // implementations in directories such as chrome/browser/ui/views/ and
+  // chrome/browser/media/android/.
   static MediaRouterDialogController* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 

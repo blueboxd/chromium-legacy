@@ -2,7 +2,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LAB_COLOR_SPACE_H_
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <initializer_list>
 #include <iterator>

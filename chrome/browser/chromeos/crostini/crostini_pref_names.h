@@ -22,7 +22,8 @@ extern const char kUserCrostiniAllowedByPolicy[];
 extern const char kUserCrostiniExportImportUIAllowedByPolicy[];
 
 extern const char kReportCrostiniUsageEnabled[];
-extern const char kCrostiniLastLaunchVersion[];
+extern const char kCrostiniLastLaunchTerminaComponentVersion[];
+extern const char kCrostiniLastLaunchTerminaKernelVersion[];
 extern const char kCrostiniLastLaunchTimeWindowStart[];
 extern const char kCrostiniLastDiskSize[];
 

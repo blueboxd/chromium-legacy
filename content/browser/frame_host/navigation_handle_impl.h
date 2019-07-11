@@ -310,7 +310,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
-  base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationHandleImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

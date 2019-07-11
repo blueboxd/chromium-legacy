@@ -565,8 +565,7 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
       did_initiate_recording_(false),
       return_as_stream_(false),
       gzip_compression_(false),
-      buffer_usage_reporting_interval_(0),
-      weak_factory_(this) {
+      buffer_usage_reporting_interval_(0) {
   bool use_video_capture_api = true;
 #ifdef OS_ANDROID
   // Video capture API cannot be used on Android WebView.

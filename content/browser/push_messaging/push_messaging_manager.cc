@@ -241,7 +241,7 @@ class PushMessagingManager::Core {
 
   bool is_incognito_;
 
-  base::WeakPtrFactory<Core> weak_factory_ui_to_ui_;
+  base::WeakPtrFactory<Core> weak_factory_ui_to_ui_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -255,8 +255,7 @@ PushMessagingManager::Core::Core(
     int render_frame_id)
     : io_parent_(io_parent),
       render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
-      weak_factory_ui_to_ui_(this) {
+      render_frame_id_(render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* process_host =
       RenderProcessHost::FromID(render_process_id_);  // Can't be null yet.
@@ -270,8 +269,7 @@ PushMessagingManager::PushMessagingManager(
     int render_frame_id,
     ServiceWorkerContextWrapper* service_worker_context)
     : service_worker_context_(service_worker_context),
-      render_frame_id_(render_frame_id),
-      weak_factory_(this) {
+      render_frame_id_(render_frame_id) {
   // Although this class is used only on the IO thread, it is constructed on UI.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Normally, it would be unsafe to obtain a weak pointer from the UI thread,

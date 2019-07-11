@@ -541,6 +541,11 @@ RendererBlinkPlatformImpl::NewAudioCapturerSource(
       RenderFrame::GetRoutingIdForWebFrame(web_frame), params);
 }
 
+viz::ContextProvider*
+RendererBlinkPlatformImpl::SharedMainThreadContextProvider() {
+  return RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+}
+
 //------------------------------------------------------------------------------
 
 std::unique_ptr<WebRTCPeerConnectionHandler>

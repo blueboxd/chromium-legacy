@@ -258,8 +258,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
  public:
   explicit SystemInfoHandlerGpuObserver(
       std::unique_ptr<GetInfoCallback> callback)
-      : callback_(std::move(callback)),
-        weak_factory_(this) {
+      : callback_(std::move(callback)) {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SystemInfoHandlerGpuObserver::ObserverWatchdogCallback,
@@ -301,7 +300,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
 
  private:
   std::unique_ptr<GetInfoCallback> callback_;
-  base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_;
+  base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_{this};
 };
 
 SystemInfoHandler::SystemInfoHandler()

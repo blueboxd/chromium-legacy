@@ -29,8 +29,7 @@ MatchRequestsTask::MatchRequestsTask(
     : DatabaseTask(host),
       registration_id_(registration_id),
       match_params_(std::move(match_params)),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 MatchRequestsTask::~MatchRequestsTask() = default;
 

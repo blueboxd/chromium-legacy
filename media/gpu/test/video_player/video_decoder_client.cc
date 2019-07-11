@@ -43,13 +43,6 @@ VideoDecoderClient::VideoDecoderClient(
       video_(video) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
 
-  // Video frame processors are currently only supported in import mode, as
-  // wrapping texture-backed video frames is not supported (See
-  // http://crbug/362521).
-  LOG_ASSERT(config.allocation_mode == AllocationMode::kImport ||
-             frame_processors.size() == 0)
-      << "Video frame processors are only supported when using import mode";
-
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
@@ -337,16 +330,10 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
 void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
-  // When using allocate mode the frame will be reused after this function, so
-  // the frame should be rendered synchronously in this case.
   frame_renderer_->RenderFrame(video_frame);
 
-  // When using allocate mode, direct texture memory access is not supported.
-  // Since this is required by the video frame processors we can't use these.
-  if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
-    for (auto& frame_processor : frame_processors_)
-      frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
-  }
+  for (auto& frame_processor : frame_processors_)
+    frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
 
   // Notify the test a frame has been decoded. We should only do this after
   // scheduling the frame to be processed, so calling WaitForFrameProcessors()

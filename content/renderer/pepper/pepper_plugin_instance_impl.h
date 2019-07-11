@@ -917,8 +917,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // already a weak ptr pending (HasWeakPtrs is true), code should update the
   // view_data_ but not send updates. This also allows us to cancel scheduled
   // view change events.
-  base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
-  base::WeakPtrFactory<PepperPluginInstanceImpl> weak_factory_;
+  base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_{
+      this};
+  base::WeakPtrFactory<PepperPluginInstanceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);
 };

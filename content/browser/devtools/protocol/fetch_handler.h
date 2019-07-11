@@ -91,7 +91,7 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   std::unique_ptr<Fetch::Frontend> frontend_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> interceptor_;
   UpdateLoaderFactoriesCallback update_loader_factories_callback_;
-  base::WeakPtrFactory<FetchHandler> weak_factory_;
+  base::WeakPtrFactory<FetchHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FetchHandler);
 };

@@ -123,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // service worker along with the fetch event.
   blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
 
-  base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFetchDispatcher);
 };

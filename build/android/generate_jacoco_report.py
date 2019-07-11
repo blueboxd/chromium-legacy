@@ -191,7 +191,8 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
       print('Processing file %s' % path)
 
       file_coverage = {}
-      file_coverage['path'] = path
+      # Source path needs to start with '//', https://bit.ly/2XC80ZL
+      file_coverage['path'] = '//' + path
       file_coverage['lines'] = []
       file_coverage['branches'] = []
 

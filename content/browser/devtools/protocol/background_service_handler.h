@@ -63,7 +63,7 @@ class BackgroundServiceHandler
 
   base::flat_set<devtools::proto::BackgroundService> enabled_services_;
 
-  base::WeakPtrFactory<BackgroundServiceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundServiceHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundServiceHandler);
 };

@@ -670,14 +670,12 @@ class VideoDecoderShim::DecoderImpl {
   // store id of the current buffer while Decode() call is pending.
   uint32_t decode_id_ = 0;
 
-  base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_{this};
 };
 
 VideoDecoderShim::DecoderImpl::DecoderImpl(
     const base::WeakPtr<VideoDecoderShim>& proxy)
-    : shim_(proxy),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+    : shim_(proxy), main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 VideoDecoderShim::DecoderImpl::~DecoderImpl() {
   DCHECK(pending_decodes_.empty());
@@ -828,8 +826,8 @@ void VideoDecoderShim::DecoderImpl::OnResetComplete() {
       FROM_HERE, base::BindOnce(&VideoDecoderShim::OnResetComplete, shim_));
 }
 
-VideoDecoderShim::VideoDecoderShim(
-    PepperVideoDecoderHost* host, uint32_t texture_pool_size)
+VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host,
+                                   uint32_t texture_pool_size)
     : state_(UNINITIALIZED),
       host_(host),
       media_task_runner_(
@@ -838,8 +836,7 @@ VideoDecoderShim::VideoDecoderShim(
           RenderThreadImpl::current()->SharedMainThreadContextProvider()),
       texture_pool_size_(texture_pool_size),
       num_pending_decodes_(0),
-      yuv_converter_(new YUVConverter(context_provider_)),
-      weak_ptr_factory_(this) {
+      yuv_converter_(new YUVConverter(context_provider_)) {
   DCHECK(host_);
   DCHECK(media_task_runner_.get());
   DCHECK(context_provider_.get());

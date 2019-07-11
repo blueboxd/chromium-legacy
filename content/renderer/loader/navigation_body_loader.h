@@ -171,7 +171,7 @@ class CONTENT_EXPORT NavigationBodyLoader
   // from iniside BodyDataReceived client notification.
   bool is_in_on_readable_ = false;
 
-  base::WeakPtrFactory<NavigationBodyLoader> weak_factory_;
+  base::WeakPtrFactory<NavigationBodyLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationBodyLoader);
 };

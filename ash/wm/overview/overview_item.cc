@@ -21,6 +21,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
@@ -736,7 +737,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
 }
 
 void OverviewItem::OnStartingAnimationComplete() {
-  DCHECK(item_widget_.get());
+  DCHECK(item_widget_);
   if (transform_window_.IsMinimized()) {
     // Fade the title in if minimized. The rest of |item_widget_| should already
     // be shown.
@@ -809,7 +810,6 @@ void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
   if (!IsDragItem())
     return;
 
-  overview_grid_->SetSelectionWidgetVisibility(true);
   overview_session_->CompleteDrag(this, location_in_screen);
 }
 
@@ -1046,8 +1046,6 @@ void OverviewItem::AnimateOpacity(float opacity,
 }
 
 void OverviewItem::StartDrag() {
-  overview_grid_->SetSelectionWidgetVisibility(false);
-
   // |transform_window_| handles hiding shadow and rounded edges mask while
   // animating, and applies them after animation is complete. Prevent the
   // shadow and rounded edges mask from showing up after dragging in the case

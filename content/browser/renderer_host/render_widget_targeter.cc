@@ -159,8 +159,7 @@ RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
     : trace_id_(base::RandUint64()),
       is_viz_hit_testing_debug_enabled_(
           features::IsVizHitTestingDebugEnabled()),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {
+      delegate_(delegate) {
   DCHECK(delegate_);
 }
 

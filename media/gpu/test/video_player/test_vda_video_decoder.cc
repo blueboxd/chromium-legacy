@@ -192,11 +192,15 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
     const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  ASSERT_NE(format, PIXEL_FORMAT_UNKNOWN);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
             << " picture buffers with size " << dimensions.height() << "x"
             << dimensions.height();
+
+  // If using allocate mode the format requested here might be
+  // PIXEL_FORMAT_UNKNOWN.
+  if (format == PIXEL_FORMAT_UNKNOWN)
+    format = PIXEL_FORMAT_ARGB;
 
   std::vector<PictureBuffer> picture_buffers;
 
@@ -276,33 +280,33 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   ASSERT_NE(timestamp_it, decode_start_timestamps_.end());
   video_frame->set_timestamp(timestamp_it->second);
 
-  // When using import mode, we wrap the video frame in another video frame that
-  // calls ReusePictureBufferTask() upon destruction. When the renderer and
-  // video frame processors are done using the video frame, the associated
-  // picture buffer will automatically be flagged for reuse.
-  if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT) {
-    base::OnceClosure reuse_cb = BindToCurrentLoop(
-        base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                       picture.picture_buffer_id()));
+  scoped_refptr<VideoFrame> wrapped_video_frame = nullptr;
 
-    scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
+  // Wrap the video frame in another frame that calls ReusePictureBufferTask()
+  // upon destruction. When the renderer and video frame processors are done
+  // using the video frame, the associated picture buffer will automatically be
+  // flagged for reuse. WrapVideoFrame() is not supported for texture-based
+  // video frames (see http://crbug/362521) so we work around this by creating a
+  // new video frame using the same mailbox.
+  if (!video_frame->HasTextures()) {
+    wrapped_video_frame = VideoFrame::WrapVideoFrame(
         *video_frame, video_frame->format(), picture.visible_rect(),
         picture.visible_rect().size());
-    wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
-
-    output_cb_.Run(wrapped_video_frame);
+  } else {
+    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+    mailbox_holders[0] = video_frame->mailbox_holder(0);
+    wrapped_video_frame = VideoFrame::WrapNativeTextures(
+        video_frame->format(), mailbox_holders, VideoFrame::ReleaseMailboxCB(),
+        video_frame->coded_size(), video_frame->visible_rect(),
+        video_frame->natural_size(), video_frame->timestamp());
   }
 
-  // Wrapping a video frame inside another video frame is not supported in
-  // allocate mode, so we have to render the frame and return the picture buffer
-  // synchronously here. See http://crbug/362521.
-  if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::ALLOCATE) {
-    PostTaskAndReply(
-        FROM_HERE, base::BindOnce(output_cb_, video_frame),
-        base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                       picture.picture_buffer_id()));
-    return;
-  }
+  DCHECK(wrapped_video_frame);
+  base::OnceClosure reuse_cb = BindToCurrentLoop(
+      base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
+                     picture.picture_buffer_id()));
+  wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
+  output_cb_.Run(std::move(wrapped_video_frame));
 }
 
 // Called when a picture buffer is ready to be re-used.

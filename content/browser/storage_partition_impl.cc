@@ -752,8 +752,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       special_storage_policy_(special_storage_policy),
       network_context_client_binding_(this),
       browser_context_(browser_context),
-      deletion_helpers_running_(0),
-      weak_factory_(this) {}
+      deletion_helpers_running_(0) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   browser_context_ = nullptr;

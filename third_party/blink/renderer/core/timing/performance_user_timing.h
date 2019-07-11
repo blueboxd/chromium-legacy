@@ -71,7 +71,8 @@ class UserTiming final : public GarbageCollected<UserTiming> {
  private:
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
-  double GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+  double GetTimeOrFindMarkTime(const AtomicString& measure_name,
+                               const StringOrDouble& mark_or_time,
                                ExceptionState&);
 
   Member<Performance> performance_;

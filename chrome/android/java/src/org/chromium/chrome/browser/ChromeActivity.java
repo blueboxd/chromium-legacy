@@ -90,7 +90,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
@@ -321,9 +320,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /** A means of providing the foreground tab of the activity to different features. */
     private ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
-
-    /** Helper class managing top/bottom browser control offsets. */
-    protected BrowserControlsOffsetHelper mBrowserControlsOffsetHelper;
 
     /** A means of providing the theme color to different features. */
     private TabThemeColorProvider mTabThemeColorProvider;
@@ -566,7 +562,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // On certain android devices this setup sequence results in disk writes outside
             // of our control, so we have to disable StrictMode to work. See
             // https://crbug.com/639352.
-            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 TraceEvent.begin("setContentView(R.layout.main)");
                 setContentView(R.layout.main);
                 TraceEvent.end("setContentView(R.layout.main)");
@@ -835,8 +831,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mReaderModeManager = new ReaderModeManager(getTabModelSelector(), this);
         }
 
-        mBrowserControlsOffsetHelper = new BrowserControlsOffsetHelper(
-                getLifecycleDispatcher(), mActivityTabProvider, () -> getFullscreenManager());
         TraceEvent.end("ChromeActivity:CompositorInitialization");
     }
 
@@ -1847,8 +1841,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @NonNull
     protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this,
-                () -> mBrowserControlsOffsetHelper, ChromeFullscreenManager.ControlsPosition.TOP);
+        return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.TOP);
     }
 
     /**

@@ -14,8 +14,7 @@ namespace content {
 
 BackgroundSyncRegistrationHelper::BackgroundSyncRegistrationHelper(
     BackgroundSyncContextImpl* background_sync_context)
-    : background_sync_context_(background_sync_context),
-      weak_ptr_factory_(this) {
+    : background_sync_context_(background_sync_context) {
   DCHECK(background_sync_context_);
 }
 

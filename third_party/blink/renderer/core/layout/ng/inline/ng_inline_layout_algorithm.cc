@@ -503,6 +503,8 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
   DCHECK(line_info.IsEmptyLine() || !line_box_metrics.IsEmpty())
       << "Non-empty lines must have a valid set of linebox metrics.";
 
+  bool is_empty_inline = Node().IsEmptyInline();
+
   // All children within the linebox are positioned relative to the baseline,
   // then shifted later using NGLineBoxFragmentBuilder::MoveInBlockDirection.
   LayoutUnit baseline_adjustment =
@@ -533,10 +535,10 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
   // To correctly determine which "line" block-level out-of-flow positioned
   // object is placed on, we need to keep track of if there is any inline-level
   // content preceeding it.
-  bool has_preceeding_inline_level_content = false;
+  bool has_preceding_inline_level_content = false;
 
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
-    has_preceeding_inline_level_content |= child.HasInFlowFragment();
+    has_preceding_inline_level_content |= child.HasInFlowFragment();
 
     LayoutObject* box = child.out_of_flow_positioned_box;
     if (!box)
@@ -547,11 +549,20 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       // An inline-level OOF element positions itself within the line, at the
       // position it would have been if it was in-flow.
       static_offset.inline_offset = child.offset.inline_offset;
+
+      // The static-position of inline-level OOF-positioned nodes depends on
+      // previous floats (if any).
+      //
+      // If we are an empty-inline we may not have the correct BFC block-offset
+      // yet. Due to this we need to mark this node as having adjoining
+      // objects, and perform a re-layout if our position shifts.
+      if (is_empty_inline)
+        container_builder_.AddAdjoiningFloatTypes(kAdjoiningInlineOutOfFlow);
     } else {
       // A block-level OOF element positions itself on the "next" line. However
       // only shifts down if there is inline-level content.
       static_offset.inline_offset = block_level_inline_offset;
-      if (has_preceeding_inline_level_content)
+      if (has_preceding_inline_level_content)
         static_offset.block_offset += line_height;
     }
 
@@ -798,11 +809,16 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   unsigned handled_leading_floats_index =
       PositionLeadingFloats(&initial_exclusion_space, &leading_floats);
 
+  // Only empty-inlines should have the "forced" BFC block-offset set.
+  DCHECK(is_empty_inline || !ConstraintSpace().ForcedBfcBlockOffset());
+
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
   const LayoutOpportunityVector opportunities =
       initial_exclusion_space.AllLayoutOpportunities(
-          ConstraintSpace().BfcOffset(),
+          {ConstraintSpace().BfcOffset().line_offset,
+           ConstraintSpace().ForcedBfcBlockOffset().value_or(
+               ConstraintSpace().BfcOffset().block_offset)},
           ConstraintSpace().AvailableSize().inline_size);
 
   NGExclusionSpace exclusion_space;
@@ -919,10 +935,6 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       continue;
     }
 
-    if (opportunity.rect.BlockStartOffset() >
-        ConstraintSpace().BfcOffset().block_offset)
-      container_builder_.SetIsPushedByFloats();
-
     // Success!
     container_builder_.SetBreakToken(line_breaker.CreateBreakToken(line_info));
 
@@ -939,6 +951,10 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       // our adjoining floats, and shouldn't propagate this information
       // to siblings.
       container_builder_.ResetAdjoiningFloatTypes();
+
+      if (opportunity.rect.BlockStartOffset() >
+          ConstraintSpace().BfcOffset().block_offset)
+        container_builder_.SetIsPushedByFloats();
     }
     break;
   }

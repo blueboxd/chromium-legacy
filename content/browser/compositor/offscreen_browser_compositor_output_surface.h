@@ -64,7 +64,7 @@ class OffscreenBrowserCompositorOutputSurface
   std::unique_ptr<ReflectorTexture> reflector_texture_;
   ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<OffscreenBrowserCompositorOutputSurface>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenBrowserCompositorOutputSurface);
 };

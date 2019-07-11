@@ -74,6 +74,10 @@ class ASH_EXPORT TabletModeController
       public KioskNextShellObserver,
       public ui::LayerAnimationObserver {
  public:
+  // Enable or disable using a screenshot for testing as it makes the
+  // initialization flow async, which makes most tests harder to write.
+  static void SetUseScreenshotForTest(bool use_screenshot);
+
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
@@ -89,18 +93,13 @@ class ASH_EXPORT TabletModeController
   TabletModeController();
   ~TabletModeController() override;
 
-  // Enable or disable using a screenshot for testing as it makes the
-  // initialization flow async, which makes most tests harder to write.
-  static void SetUseScreenshotForTest(bool use_screenshot);
+  void Shutdown();
 
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
   // managers like the |MultiUserWindowManagerImpl|.
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
-
-  void AddObserver(TabletModeObserver* observer);
-  void RemoveObserver(TabletModeObserver* observer);
 
   // Checks if we should auto hide title bars for the |widget| in tablet mode.
   bool ShouldAutoHideTitlebars(views::Widget* widget);
@@ -120,7 +119,8 @@ class ASH_EXPORT TabletModeController
   void StopObservingAnimation(bool record_stats, bool delete_screenshot);
 
   // TabletMode:
-  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
+  void AddObserver(TabletModeObserver* observer) override;
+  void RemoveObserver(TabletModeObserver* observer) override;
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
@@ -368,10 +368,6 @@ class ASH_EXPORT TabletModeController
   // incorrect calculations of hinge angles.
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
-
-  // A simplified observer that only gets notified of entering or exiting tablet
-  // mode.
-  TabletModeToggleObserver* toggle_observer_ = nullptr;
 
   State state_ = State::kInClamshellMode;
 

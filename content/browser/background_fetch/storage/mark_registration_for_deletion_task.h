@@ -53,8 +53,8 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
   blink::mojom::BackgroundFetchFailureReason failure_reason_ =
       blink::mojom::BackgroundFetchFailureReason::NONE;
 
-  base::WeakPtrFactory<MarkRegistrationForDeletionTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<MarkRegistrationForDeletionTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(MarkRegistrationForDeletionTask);
 };

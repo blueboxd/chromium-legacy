@@ -390,7 +390,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
 
   mojo::Binding<blink::mojom::AppCacheHost> binding_;
 
-  base::WeakPtrFactory<AppCacheHost> weak_factory_;
+  base::WeakPtrFactory<AppCacheHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);
 };

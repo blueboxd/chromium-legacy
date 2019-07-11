@@ -468,6 +468,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetShowingContextMenu(bool showing) override;
   base::UnguessableToken GetAudioGroupId() override;
   bool CompletedFirstVisuallyNonEmptyPaint() override;
+  ukm::SourceId GetLastCommittedSourceId() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -1923,8 +1924,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
 
-  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
-  base::WeakPtrFactory<WebContentsImpl> weak_factory_;
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
+  base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

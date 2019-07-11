@@ -64,7 +64,7 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   // backing_store_->factory() will keep backing_store_ alive for us.  And
   // backing_store_ owns us, so we'll stay alive as long as we're needed.
   IndexedDBBackingStore* backing_store_;
-  base::WeakPtrFactory<IndexedDBActiveBlobRegistry> weak_factory_;
+  base::WeakPtrFactory<IndexedDBActiveBlobRegistry> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBActiveBlobRegistry);
 };

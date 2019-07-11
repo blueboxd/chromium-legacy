@@ -233,8 +233,7 @@ class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
 
 StorageHandler::StorageHandler()
     : DevToolsDomainHandler(Storage::Metainfo::domainName),
-      storage_partition_(nullptr),
-      weak_ptr_factory_(this) {}
+      storage_partition_(nullptr) {}
 
 StorageHandler::~StorageHandler() {
   DCHECK(!cache_storage_observer_);

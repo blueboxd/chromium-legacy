@@ -954,7 +954,6 @@ TEST_F(PpdProviderTest, ResolveUsbManufacturer) {
   auto provider = CreateProvider("en", false);
 
   PrinterSearchData search_data;
-  search_data.discovery_type = PrinterSearchData::PrinterDiscoveryType::kUsb;
 
   // Vendor id that exists, nonexistent device id, should get a NOT_FOUND.
   // Although this is an unsupported printer model, we can still expect to get

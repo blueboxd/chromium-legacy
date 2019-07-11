@@ -155,7 +155,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached
   // in |client_buffers_|.
-  base::WeakPtrFactory<VideoCaptureImpl> weak_factory_;
+  base::WeakPtrFactory<VideoCaptureImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };

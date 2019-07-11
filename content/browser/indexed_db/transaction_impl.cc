@@ -77,8 +77,7 @@ TransactionImpl::TransactionImpl(
       indexed_db_context_(dispatcher_host->context()),
       transaction_(std::move(transaction)),
       origin_(origin),
-      idb_runner_(std::move(idb_runner)),
-      weak_factory_(this) {
+      idb_runner_(std::move(idb_runner)) {
   DCHECK(idb_runner_->RunsTasksInCurrentSequence());
   DCHECK(dispatcher_host_);
   DCHECK(transaction_);

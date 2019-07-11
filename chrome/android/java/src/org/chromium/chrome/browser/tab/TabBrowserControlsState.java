@@ -155,7 +155,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
             observers.next().onBrowserControlsOffsetChanged(
-                    mTopControlsOffset, mBottomControlsOffset, mContentOffset);
+                    mTab, mTopControlsOffset, mBottomControlsOffset, mContentOffset);
         }
     }
 

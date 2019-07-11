@@ -1317,8 +1317,7 @@ EventSender::SavedEvent::SavedEvent()
 
 EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
     : web_widget_test_proxy_(web_widget_test_proxy),
-      replaying_saved_events_(false),
-      weak_factory_(this) {
+      replaying_saved_events_(false) {
   Reset();
 }
 

@@ -3,6 +3,49 @@
 // found in the LICENSE file.
 
 cr.define('welcome', function() {
+  /**
+   * NuxNtpBackgroundInteractions enum.
+   * These values are persisted to logs and should not be renumbered or
+   * re-used.
+   * See tools/metrics/histograms/enums.xml.
+   * @enum {number}
+   */
+  const NuxNtpBackgroundInteractions = {
+    PageShown: 0,
+    DidNothingAndNavigatedAway: 1,
+    DidNothingAndChoseSkip: 2,
+    DidNothingAndChoseNext: 3,
+    ChoseAnOptionAndNavigatedAway: 4,
+    ChoseAnOptionAndChoseSkip: 5,
+    ChoseAnOptionAndChoseNext: 6,
+    NavigatedAwayThroughBrowserHistory: 7,
+    BackgroundImageFailedToLoad: 8,
+    BackgroundImageNeverLoaded: 9,
+  };
+
+  /**
+   * NuxGoogleAppsInteractions enum.
+   * These values are persisted to logs and should not be renumbered or
+   * re-used.
+   * See tools/metrics/histograms/enums.xml.
+   * @enum {number}
+   */
+  const NuxGoogleAppsInteractions = {
+    PageShown: 0,
+    NotUsed_DEPRECATED: 1,
+    GetStarted_DEPRECATED: 2,
+    DidNothingAndNavigatedAway: 3,
+    DidNothingAndChoseSkip: 4,
+    ChoseAnOptionAndNavigatedAway: 5,
+    ChoseAnOptionAndChoseSkip: 6,
+    ChoseAnOptionAndChoseNext: 7,
+    ClickedDisabledNextButtonAndNavigatedAway: 8,
+    ClickedDisabledNextButtonAndChoseSkip: 9,
+    ClickedDisabledNextButtonAndChoseNext: 10,
+    DidNothingAndChoseNext: 11,
+    NavigatedAwayThroughBrowserHistory: 12,
+  };
+
   /** @interface */
   class ModuleMetricsProxy {
     recordPageShown() {}
@@ -190,76 +233,10 @@ cr.define('welcome', function() {
   }
 
   return {
-    ModuleMetricsProxy: ModuleMetricsProxy,
-    ModuleMetricsProxyImpl: ModuleMetricsProxyImpl,
     ModuleMetricsManager: ModuleMetricsManager,
+    ModuleMetricsProxyImpl: ModuleMetricsProxyImpl,
+    ModuleMetricsProxy: ModuleMetricsProxy,
+    NuxGoogleAppsInteractions: NuxGoogleAppsInteractions,
+    NuxNtpBackgroundInteractions: NuxNtpBackgroundInteractions,
   };
 });
-
-welcome.GoogleAppsMetricsProxyImpl =
-    class extends welcome.ModuleMetricsProxyImpl {
-  constructor() {
-    /**
-     * NuxGoogleAppsInteractions enum.
-     * These values are persisted to logs and should not be renumbered or
-     * re-used.
-     * See tools/metrics/histograms/enums.xml.
-     * @enum {number}
-     */
-    const NuxGoogleAppsInteractions = {
-      PageShown: 0,
-      NotUsed_DEPRECATED: 1,
-      GetStarted_DEPRECATED: 2,
-      DidNothingAndNavigatedAway: 3,
-      DidNothingAndChoseSkip: 4,
-      ChoseAnOptionAndNavigatedAway: 5,
-      ChoseAnOptionAndChoseSkip: 6,
-      ChoseAnOptionAndChoseNext: 7,
-      ClickedDisabledNextButtonAndNavigatedAway: 8,
-      ClickedDisabledNextButtonAndChoseSkip: 9,
-      ClickedDisabledNextButtonAndChoseNext: 10,
-      DidNothingAndChoseNext: 11,
-      NavigatedAwayThroughBrowserHistory: 12,
-    };
-
-    super(
-        'FirstRun.NewUserExperience.GoogleAppsInteraction',
-        NuxGoogleAppsInteractions);
-  }
-};
-
-welcome.NtpBackgroundMetricsProxyImpl =
-    class extends welcome.ModuleMetricsProxyImpl {
-  constructor() {
-    /**
-     * NuxNtpBackgroundInteractions enum.
-     * These values are persisted to logs and should not be renumbered or
-     * re-used.
-     * See tools/metrics/histograms/enums.xml.
-     * @enum {number}
-     */
-    const NuxNtpBackgroundInteractions = {
-      PageShown: 0,
-      DidNothingAndNavigatedAway: 1,
-      DidNothingAndChoseSkip: 2,
-      DidNothingAndChoseNext: 3,
-      ChoseAnOptionAndNavigatedAway: 4,
-      ChoseAnOptionAndChoseSkip: 5,
-      ChoseAnOptionAndChoseNext: 6,
-      NavigatedAwayThroughBrowserHistory: 7,
-      BackgroundImageFailedToLoad: 8,
-      BackgroundImageNeverLoaded: 9,
-    };
-
-    super(
-        'FirstRun.NewUserExperience.NtpBackgroundInteraction',
-        NuxNtpBackgroundInteractions);
-  }
-
-  getInteractions() {
-    return this.interactions_;
-  }
-};
-
-cr.addSingletonGetter(welcome.GoogleAppsMetricsProxyImpl);
-cr.addSingletonGetter(welcome.NtpBackgroundMetricsProxyImpl);

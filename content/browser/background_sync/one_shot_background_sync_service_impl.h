@@ -54,7 +54,7 @@ class CONTENT_EXPORT OneShotBackgroundSyncServiceImpl
   mojo::Binding<blink::mojom::OneShotBackgroundSyncService> binding_;
 
   base::WeakPtrFactory<blink::mojom::OneShotBackgroundSyncService>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OneShotBackgroundSyncServiceImpl);
 };

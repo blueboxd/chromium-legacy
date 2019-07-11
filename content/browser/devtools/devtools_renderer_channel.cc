@@ -21,8 +21,7 @@ DevToolsRendererChannel::DevToolsRendererChannel(DevToolsAgentHostImpl* owner)
     : owner_(owner),
       binding_(this),
       associated_binding_(this),
-      process_id_(ChildProcessHost::kInvalidUniqueID),
-      weak_factory_(this) {}
+      process_id_(ChildProcessHost::kInvalidUniqueID) {}
 
 DevToolsRendererChannel::~DevToolsRendererChannel() = default;
 

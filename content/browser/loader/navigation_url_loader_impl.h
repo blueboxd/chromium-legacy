@@ -133,7 +133,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // Counts the time overhead of all the hops from the IO to the UI threads.
   base::TimeDelta io_to_ui_time_;
 
-  base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderImpl);
 };

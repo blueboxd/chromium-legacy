@@ -26,8 +26,7 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
       session_id_(0),
       handler_(handler),
       pending_open_device_(false),
-      pending_open_device_id_(-1),
-      weak_factory_(this) {
+      pending_open_device_id_(-1) {
   // We need to open the device and obtain the label and session ID before
   // initializing.
   PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();

@@ -139,8 +139,7 @@ CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
     network::mojom::RequestMode request_mode)
     : LayeredResourceHandler(request, std::move(next_handler)),
       weak_next_handler_(next_handler_.get()),
-      request_mode_(request_mode),
-      weak_this_(this) {}
+      request_mode_(request_mode) {}
 
 CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
 

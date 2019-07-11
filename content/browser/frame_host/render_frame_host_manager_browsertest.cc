@@ -5526,7 +5526,7 @@ namespace {
 // out of scope.
 class AssertForegroundHelper {
  public:
-  AssertForegroundHelper() : weak_ptr_factory_(this) {}
+  AssertForegroundHelper() {}
 
 #if defined(OS_MACOSX)
   // Asserts that |renderer_process| isn't backgrounded and reposts self to
@@ -5556,7 +5556,7 @@ class AssertForegroundHelper {
 #endif  // defined(OS_MACOSX)
 
  private:
-  base::WeakPtrFactory<AssertForegroundHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<AssertForegroundHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssertForegroundHelper);
 };

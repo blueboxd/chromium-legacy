@@ -220,6 +220,23 @@ cr.define('app_management.util', function() {
     return a.localeCompare(b);
   }
 
+  /**
+   * Toggles an OptionalBool
+   *
+   * @param {OptionalBool} bool
+   * @return {OptionalBool}
+   */
+  function toggleOptionalBool(bool) {
+    switch (bool) {
+      case OptionalBool.kFalse:
+        return OptionalBool.kTrue;
+      case OptionalBool.kTrue:
+        return OptionalBool.kFalse;
+      default:
+        assertNotReached();
+    }
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
@@ -234,5 +251,6 @@ cr.define('app_management.util', function() {
     notificationsPermissionType: notificationsPermissionType,
     permissionTypeHandle: permissionTypeHandle,
     removeIfNeeded: removeIfNeeded,
+    toggleOptionalBool: toggleOptionalBool,
   };
 });

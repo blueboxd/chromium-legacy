@@ -324,7 +324,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> widget_observer_;
 
-  base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImpl);
 };

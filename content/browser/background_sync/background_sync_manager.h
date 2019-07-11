@@ -387,7 +387,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   std::map<int64_t, int> emulated_offline_sw_;
 
-  base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncManager);
 };

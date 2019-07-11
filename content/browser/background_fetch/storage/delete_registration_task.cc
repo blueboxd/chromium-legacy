@@ -51,8 +51,7 @@ DeleteRegistrationTask::DeleteRegistrationTask(
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       unique_id_(unique_id),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 DeleteRegistrationTask::~DeleteRegistrationTask() = default;
 

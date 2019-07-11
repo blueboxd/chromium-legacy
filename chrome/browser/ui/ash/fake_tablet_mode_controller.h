@@ -17,15 +17,15 @@ class FakeTabletModeController : public ash::TabletMode {
 
   bool has_observer() const { return !!observer_; }
 
-  // ash::mojom::TabletModeController:
-  void SetTabletModeToggleObserver(
-      ash::TabletModeToggleObserver* observer) override;
+  // ash::TabletMode:
+  void AddObserver(ash::TabletModeObserver* observer) override;
+  void RemoveObserver(ash::TabletModeObserver* observer) override;
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
  private:
   bool enabled_ = false;
-  ash::TabletModeToggleObserver* observer_ = nullptr;
+  ash::TabletModeObserver* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTabletModeController);
 };

@@ -26,6 +26,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -155,7 +156,9 @@ void EndOverview() {
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(wm::GetFocusedWindow()),
-      overview_start_time_(base::Time::Now()) {
+      overview_start_time_(base::Time::Now()),
+      highlight_controller_(
+          std::make_unique<OverviewHighlightController>(this)) {
   DCHECK(delegate_);
   Shell::Get()->AddPreTargetHandler(this);
 }
@@ -368,16 +371,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
       }
     }
   }
-  if (index > 0 && selected_grid_index_ >= index) {
-    // If the grid closed is not the one with the selected item, we do not need
-    // to move the selected item.
-    if (selected_grid_index_ == index)
-      --selected_grid_index_;
-    // If the grid which became empty was the one with the selected window, we
-    // need to select a window on the newly selected grid.
-    if (selected_grid_index_ == index - 1)
-      Move(/*reverse=*/false);
-  }
+
   if (grid_list_.empty())
     EndOverview();
   else
@@ -389,9 +383,9 @@ void OverviewSession::IncrementSelection(int increment) {
 }
 
 bool OverviewSession::AcceptSelection() {
-  if (!grid_list_[selected_grid_index_]->is_selecting())
+  if (!highlight_controller_->GetHighlightedItem())
     return false;
-  SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
+  SelectWindow(highlight_controller_->GetHighlightedItem());
   return true;
 }
 
@@ -496,6 +490,7 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen,
                                    bool allow_drag_to_close) {
+  highlight_controller_->SetFocusHighlightVisibility(false);
   window_drag_controller_ = std::make_unique<OverviewWindowDragController>(
       this, item, allow_drag_to_close);
   window_drag_controller_->InitiateDrag(location_in_screen);
@@ -520,6 +515,8 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
       OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragEnded(snap);
+
+  highlight_controller_->SetFocusHighlightVisibility(true);
 }
 
 void OverviewSession::StartNormalDragMode(
@@ -738,12 +735,10 @@ aura::Window* OverviewSession::GetOverviewFocusWindow() {
 }
 
 aura::Window* OverviewSession::GetHighlightedWindow() {
-  DCHECK_LT(selected_grid_index_, grid_list_.size());
-  auto* grid = grid_list_[selected_grid_index_].get();
-  if (!grid->is_selecting())
+  OverviewItem* item = highlight_controller_->GetHighlightedItem();
+  if (!item)
     return nullptr;
-
-  return grid->SelectedWindow()->GetWindow();
+  return item->GetWindow();
 }
 
 void OverviewSession::SuspendReposition() {
@@ -762,13 +757,6 @@ bool OverviewSession::IsEmpty() const {
       return false;
   }
   return true;
-}
-
-size_t OverviewSession::NumWindowsTotal() const {
-  size_t sum = 0;
-  for (const std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
-    sum += overview_grid->size();
-  return sum;
 }
 
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
@@ -879,19 +867,33 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       ++num_key_presses_;
       Move(/*reverse=*/true);
       break;
-    case ui::VKEY_W:
+    case ui::VKEY_W: {
+      // TODO(afakhry|sammiequon): Make ctrl W and enter shortcut work for desk
+      // items. ctrl W should activate the mini desk close button and do nothing
+      // for the new desk button. Enter should activate the desk mini view or
+      // new desk button.
       if (!(event->flags() & ui::EF_CONTROL_DOWN) ||
-          !grid_list_[selected_grid_index_]->is_selecting()) {
+          !highlight_controller_->IsFocusHighlightVisible()) {
         return;
       }
+
+      OverviewItem* item = highlight_controller_->GetHighlightedItem();
+      if (!item)
+        return;
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
-      grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
+      item->CloseWindow();
       break;
-    case ui::VKEY_RETURN:
+    }
+    case ui::VKEY_RETURN: {
       // Ignore if no item is selected.
-      if (!grid_list_[selected_grid_index_]->is_selecting())
+      if (!highlight_controller_->IsFocusHighlightVisible())
         return;
+
+      OverviewItem* item = highlight_controller_->GetHighlightedItem();
+      if (!item)
+        return;
+
       UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
                                num_key_presses_);
       UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
@@ -899,8 +901,9 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
                                   30);
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
-      SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
+      SelectWindow(item);
       break;
+    }
     default:
       return;
   }
@@ -989,24 +992,11 @@ void OverviewSession::ResetFocusRestoreWindow(bool focus) {
 }
 
 void OverviewSession::Move(bool reverse) {
-  // If this is the first move and it's going backwards, start on the last
-  // display.
-  if (reverse && !grid_list_.empty() &&
-      !grid_list_[selected_grid_index_]->is_selecting()) {
-    selected_grid_index_ = grid_list_.size() - 1;
-  }
+  // Do not allow moving the highlight while in the middle of a drag.
+  if (window_drag_controller_ && window_drag_controller_->item())
+    return;
 
-  // Keep calling |Move()| on the grids until one of them reports no overflow or
-  // we made a full cycle on all the grids.
-  const int grid_index_change = reverse ? -1 : 1;
-  for (size_t i = 0;
-       i <= grid_list_.size() &&
-       grid_list_[selected_grid_index_]->Move(reverse, /*animate=*/true);
-       ++i) {
-    selected_grid_index_ =
-        (selected_grid_index_ + grid_index_change + grid_list_.size()) %
-        grid_list_.size();
-  }
+  highlight_controller_->MoveHighlight(reverse);
 }
 
 void OverviewSession::RemoveAllObservers() {

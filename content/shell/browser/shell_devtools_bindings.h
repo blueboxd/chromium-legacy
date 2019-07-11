@@ -87,7 +87,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
 
   using ExtensionsAPIs = std::map<std::string, std::string>;
   ExtensionsAPIs extensions_api_;
-  base::WeakPtrFactory<ShellDevToolsBindings> weak_factory_;
+  base::WeakPtrFactory<ShellDevToolsBindings> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsBindings);
 };

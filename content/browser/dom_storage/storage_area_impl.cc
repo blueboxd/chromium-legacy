@@ -82,8 +82,7 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
       data_rate_limiter_(options.max_bytes_per_hour,
                          base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(options.max_commits_per_hour,
-                           base::TimeDelta::FromHours(1)),
-      weak_ptr_factory_(this) {
+                           base::TimeDelta::FromHours(1)) {
   bindings_.set_connection_error_handler(base::BindRepeating(
       &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }

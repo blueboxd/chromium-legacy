@@ -108,7 +108,6 @@ component("app_list") {
     "//ash/assistant/util",
     "//ash/keyboard/ui",
     "//ash/public/cpp/app_list/vector_icons",
-    "//ash/public/cpp/vector_icons",
     "//ash/resources/vector_icons",
     "//ash/strings",
     "//base",

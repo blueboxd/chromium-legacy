@@ -81,7 +81,7 @@ class CONTENT_EXPORT ContentIndexDatabase
 
   ContentIndexProvider* provider_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexDatabase);
 };

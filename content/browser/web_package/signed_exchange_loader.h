@@ -192,7 +192,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 
-  base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoader);
 };

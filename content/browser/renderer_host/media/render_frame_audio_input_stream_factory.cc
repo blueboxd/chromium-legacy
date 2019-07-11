@@ -148,7 +148,7 @@ class RenderFrameAudioInputStreamFactory::Core final
   // Always null-check this weak pointer before dereferencing it.
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -182,8 +182,7 @@ RenderFrameAudioInputStreamFactory::Core::Core(
       process_id_(render_frame_host->GetProcess()->GetID()),
       frame_id_(render_frame_host->GetRoutingID()),
       origin_(render_frame_host->GetLastCommittedOrigin()),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ForwardingAudioStreamFactory::Core* tmp_factory =

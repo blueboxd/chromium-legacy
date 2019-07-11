@@ -63,8 +63,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory)
     : provider_type_(provider_type),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {
+      binding_(this, std::move(request)) {
   container_host_.Bind(std::move(host_ptr_info));
   state_for_client_ = std::make_unique<ServiceWorkerProviderStateForClient>(
       std::move(fallback_loader_factory));

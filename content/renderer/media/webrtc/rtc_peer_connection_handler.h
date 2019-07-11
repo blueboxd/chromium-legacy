@@ -407,7 +407,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_;
+  base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };

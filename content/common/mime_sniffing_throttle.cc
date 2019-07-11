@@ -11,7 +11,7 @@ namespace content {
 
 MimeSniffingThrottle::MimeSniffingThrottle(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)), weak_factory_(this) {}
+    : task_runner_(std::move(task_runner)) {}
 
 MimeSniffingThrottle::~MimeSniffingThrottle() = default;
 

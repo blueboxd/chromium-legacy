@@ -158,8 +158,7 @@ class IndexedDBDatabase::OpenRequest
               IndexedDBDatabase* db,
               std::unique_ptr<IndexedDBPendingConnection> pending_connection)
       : ConnectionRequest(std::move(origin_state_handle), db),
-        pending_(std::move(pending_connection)),
-        weak_factory_(this) {
+        pending_(std::move(pending_connection)) {
     db_->metadata_.was_cold_open = pending_->was_cold_open;
   }
 
@@ -370,7 +369,7 @@ class IndexedDBDatabase::OpenRequest
   // transferred to the IndexedDBDispatcherHost via OnUpgradeNeeded.
   std::unique_ptr<IndexedDBConnection> connection_;
 
-  base::WeakPtrFactory<OpenRequest> weak_factory_;
+  base::WeakPtrFactory<OpenRequest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(OpenRequest);
 };
 
@@ -383,8 +382,7 @@ class IndexedDBDatabase::DeleteRequest
                 base::OnceClosure on_database_deleted)
       : ConnectionRequest(std::move(origin_state_handle), db),
         callbacks_(callbacks),
-        on_database_deleted_(std::move(on_database_deleted)),
-        weak_factory_(this) {}
+        on_database_deleted_(std::move(on_database_deleted)) {}
 
   void Perform() override {
     if (db_->HasNoConnections()) {
@@ -452,7 +450,7 @@ class IndexedDBDatabase::DeleteRequest
   scoped_refptr<IndexedDBCallbacks> callbacks_;
   base::OnceClosure on_database_deleted_;
 
-  base::WeakPtrFactory<DeleteRequest> weak_factory_;
+  base::WeakPtrFactory<DeleteRequest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DeleteRequest);
 };
 

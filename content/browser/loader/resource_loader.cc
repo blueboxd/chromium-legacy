@@ -246,8 +246,7 @@ ResourceLoader::ResourceLoader(
       started_request_(false),
       times_cancelled_after_request_start_(0),
       resource_context_(resource_context),
-      throttling_token_(std::move(throttling_token)),
-      weak_ptr_factory_(this) {
+      throttling_token_(std::move(throttling_token)) {
   request_->set_delegate(this);
   handler_->SetDelegate(this);
 }

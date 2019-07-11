@@ -210,7 +210,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoader);
 };

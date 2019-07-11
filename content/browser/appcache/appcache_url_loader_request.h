@@ -48,7 +48,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
  private:
   network::ResourceRequest request_;
   network::ResourceResponseHead response_;
-  base::WeakPtrFactory<AppCacheURLLoaderRequest> weak_factory_;
+  base::WeakPtrFactory<AppCacheURLLoaderRequest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);
 };
 

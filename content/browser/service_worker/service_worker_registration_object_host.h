@@ -146,7 +146,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
       remote_registration_;
 
-  base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationObjectHost);
 };

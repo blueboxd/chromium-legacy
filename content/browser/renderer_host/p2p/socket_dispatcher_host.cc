@@ -21,9 +21,7 @@ using content::BrowserThread;
 namespace content {
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(int render_process_id)
-    : render_process_id_(render_process_id),
-      binding_(this),
-      weak_factory_(this) {}
+    : render_process_id_(render_process_id), binding_(this) {}
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {}
 

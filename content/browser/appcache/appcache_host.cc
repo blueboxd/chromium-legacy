@@ -92,8 +92,7 @@ AppCacheHost::AppCacheHost(const base::UnguessableToken& host_id,
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
       associated_cache_info_pending_(false),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   service_->AddObserver(this);
 }
 

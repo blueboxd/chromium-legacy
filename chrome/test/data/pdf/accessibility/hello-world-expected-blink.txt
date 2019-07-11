@@ -1,0 +1,6 @@
+embeddedObject
+++group restriction=readOnly
+++++region name='Page 1' restriction=readOnly
+++++++paragraph restriction=readOnly
+++++++++staticText name='Hello, world!' restriction=readOnly
+++++++++++inlineTextBox name='Hello, world!' restriction=readOnly

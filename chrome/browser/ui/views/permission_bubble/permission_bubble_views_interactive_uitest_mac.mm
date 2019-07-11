@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/base/ui_base_features.h"

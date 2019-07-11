@@ -55,8 +55,7 @@ PepperInternalFileRefBackend::PepperInternalFileRefBackend(
       render_process_id_(render_process_id),
       fs_host_(fs_host),
       fs_type_(fs_host->GetType()),
-      path_(path),
-      weak_factory_(this) {
+      path_(path) {
   ppapi::NormalizeInternalPath(&path_);
 }
 

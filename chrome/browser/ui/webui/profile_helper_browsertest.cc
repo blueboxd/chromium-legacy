@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,8 +13,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_web_ui.h"
@@ -124,15 +123,9 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 
   // Original browser will be closed, and browser with the new profile created.
-  content::WindowedNotificationObserver open_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
   webui::DeleteProfileAtPath(original_browser->profile()->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
-  open_observer.Wait();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(original_browser);
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_FALSE(base::Contains(*browser_list, original_browser));
@@ -154,15 +147,9 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
 
   // Original browser will be closed, and browser with the new profile created.
-  content::WindowedNotificationObserver open_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
   webui::DeleteProfileAtPath(original_browser->profile()->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
-  open_observer.Wait();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(original_browser);
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(additional_profile, browser_list->get(0)->profile());

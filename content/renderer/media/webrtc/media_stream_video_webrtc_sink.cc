@@ -211,8 +211,7 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     const blink::WebMediaStreamTrack& track,
     PeerConnectionDependencyFactory* factory,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : weak_factory_(this) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::MediaStreamVideoTrack* video_track =
       blink::MediaStreamVideoTrack::GetVideoTrack(track);
   DCHECK(video_track);

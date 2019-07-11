@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/segment_stream.h"
 
-#include <array>
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
@@ -671,7 +670,7 @@ SegmentStream CreatePopulatedSegmentStream() {
 }
 
 scoped_refptr<SegmentReader> CreateSegmentReader() {
-  std::array<char, kBufferAllocationSize> raw_buffer;
+  Vector<char> raw_buffer(kBufferAllocationSize);
 
   scoped_refptr<SharedBuffer> shared_buffer =
       SharedBuffer::Create(raw_buffer.data(), kBufferAllocationSize);
@@ -684,13 +683,13 @@ scoped_refptr<SegmentReader> CreateSegmentReader() {
 
 size_t ReadFromSegmentStream(SegmentStream& segment_stream,
                              size_t amount_to_read) {
-  std::array<char, kBufferAllocationSize> read_buffer;
+  Vector<char> read_buffer(kBufferAllocationSize);
   return segment_stream.read(read_buffer.data(), amount_to_read);
 }
 
 size_t PeekIntoSegmentStream(SegmentStream& segment_stream,
                              size_t amount_to_peek) {
-  std::array<char, kBufferAllocationSize> peek_buffer;
+  Vector<char> peek_buffer(kBufferAllocationSize);
   return segment_stream.peek(peek_buffer.data(), amount_to_peek);
 }
 

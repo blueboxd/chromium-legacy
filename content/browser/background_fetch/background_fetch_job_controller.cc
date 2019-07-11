@@ -87,8 +87,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
       complete_requests_uploaded_bytes_cache_(bytes_uploaded),
       upload_total_(upload_total),
       progress_callback_(std::move(progress_callback)),
-      finished_callback_(std::move(finished_callback)),
-      weak_ptr_factory_(this) {
+      finished_callback_(std::move(finished_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

@@ -350,8 +350,7 @@ void VideoEncoderShim::EncoderImpl::NotifyError(
 VideoEncoderShim::VideoEncoderShim(PepperVideoEncoderHost* host)
     : host_(host),
       media_task_runner_(
-          RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
-      weak_ptr_factory_(this) {
+          RenderThreadImpl::current()->GetMediaThreadTaskRunner()) {
   encoder_impl_.reset(new EncoderImpl(weak_ptr_factory_.GetWeakPtr()));
 }
 

@@ -270,8 +270,7 @@ BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
     : config_(std::move(config)),
       requires_anonymized_data_(requires_anonymized_data),
       receive_callback_(std::move(receive_callback)),
-      on_aborted_callback_(std::move(on_aborted_callback)),
-      weak_ptr_factory_(this) {
+      on_aborted_callback_(std::move(on_aborted_callback)) {
   DCHECK(config_ && !config_->rules().empty());
   for (const auto& rule : config_->rules()) {
     rule->Install();

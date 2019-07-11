@@ -485,6 +485,13 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.cc'],
+        'allowed': [
+            # Used by SignedExchangeRequestMatcher in //third_party/blink/common.
+            'net::HttpRequestHeaders',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/paint'],
         'allowed': [
             # cc painting types.
@@ -772,6 +779,10 @@ _CONFIG = [
             'base::NullableString16',
             'net::ParseMimeTypeWithoutParameter',
         ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/fetch/fetch_request_data.cc'],
+        'allowed': ['net::RequestPriority'],
     }
 ]
 

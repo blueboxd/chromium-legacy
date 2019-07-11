@@ -281,7 +281,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   bool is_main_frame_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<PresentationServiceImpl> weak_factory_;
+  base::WeakPtrFactory<PresentationServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PresentationServiceImpl);
 };

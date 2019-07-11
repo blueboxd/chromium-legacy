@@ -84,7 +84,6 @@ let ResetPageVisibility;
 
 /**
  * @typedef {{
- *   uiDisplayedInThisLanguage: boolean,
  *   manageInputMethods: boolean,
  *   inputMethodsList: boolean,
  * }}
@@ -152,7 +151,6 @@ cr.define('settings', function() {
       extensions: false,
       printing: true,
       languages: {
-        uiDisplayedInThisLanguage: showOSSettings,
         manageInputMethods: showOSSettings,
         inputMethodsList: showOSSettings,
       },
@@ -203,7 +201,6 @@ cr.define('settings', function() {
       extensions: true,
       printing: true,
       languages: {
-        uiDisplayedInThisLanguage: showOSSettings,
         manageInputMethods: showOSSettings,
         inputMethodsList: showOSSettings,
       },

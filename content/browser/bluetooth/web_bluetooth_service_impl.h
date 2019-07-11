@@ -412,7 +412,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // the service on pipe connection errors.
   mojo::Binding<blink::mojom::WebBluetoothService> binding_;
 
-  base::WeakPtrFactory<WebBluetoothServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebBluetoothServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothServiceImpl);
 };

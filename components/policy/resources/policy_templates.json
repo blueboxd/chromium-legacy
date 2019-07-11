@@ -7883,11 +7883,13 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia', 'com.google.android.gm'],
+      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia', 'com.google.android.gm', 'https://google.com/maps'],
       'id': 144,
       'caption': '''List of pinned apps to show in the launcher''',
       'tags': [],
       'desc': '''Lists the application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar.
+
+      Chrome Apps are specified by their Id, e.g. "pjkljhegncpnkpknbcohdijeoejaedia", Android Apps by their package name, e.g. "com.google.android.gm", and Web Apps are specified by the URL used in WebAppInstallForceList e.g. "https://google.com/maps".
 
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
 
@@ -14412,7 +14414,7 @@
       'tags': [],
       'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
-      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created.''',
+      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created. See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> policy for pinning apps to the ChromeOS shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
     {

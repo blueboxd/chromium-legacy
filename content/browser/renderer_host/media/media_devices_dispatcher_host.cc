@@ -79,8 +79,7 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       media_stream_manager_(media_stream_manager),
-      num_pending_audio_input_parameters_(0),
-      weak_factory_(this) {
+      num_pending_audio_input_parameters_(0) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

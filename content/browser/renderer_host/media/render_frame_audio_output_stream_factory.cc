@@ -141,7 +141,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
 
   // Weak pointers are used to cancel device authorizations that are in flight
   // while |this| is destructed.
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -183,8 +183,7 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
     : process_id_(frame->GetProcess()->GetID()),
       frame_id_(frame->GetRoutingID()),
       authorization_handler_(audio_system, media_stream_manager, process_id_),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ForwardingAudioStreamFactory::Core* tmp_factory =

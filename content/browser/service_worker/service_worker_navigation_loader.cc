@@ -86,8 +86,7 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       delegate_(delegate),
       provider_host_(std::move(provider_host)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader", this,

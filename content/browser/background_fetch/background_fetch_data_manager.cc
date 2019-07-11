@@ -43,8 +43,7 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
     : service_worker_context_(std::move(service_worker_context)),
       cache_storage_context_(std::move(cache_storage_context)),
-      quota_manager_proxy_(std::move(quota_manager_proxy)),
-      weak_ptr_factory_(this) {
+      quota_manager_proxy_(std::move(quota_manager_proxy)) {
   // Constructed on the UI thread, then used on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);

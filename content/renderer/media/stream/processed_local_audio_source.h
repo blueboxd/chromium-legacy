@@ -157,7 +157,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   bool allow_invalid_render_frame_id_for_testing_;
 
   // Provides weak pointers for tasks posted by this instance.
-  base::WeakPtrFactory<ProcessedLocalAudioSource> weak_factory_;
+  base::WeakPtrFactory<ProcessedLocalAudioSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProcessedLocalAudioSource);
 };

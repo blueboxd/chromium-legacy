@@ -65,7 +65,7 @@ class MatchRequestsTask : public DatabaseTask {
   CacheStorageCacheHandle handle_;
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches_;
 
-  base::WeakPtrFactory<MatchRequestsTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<MatchRequestsTask> weak_factory_{this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(MatchRequestsTask);
 };

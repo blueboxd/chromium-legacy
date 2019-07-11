@@ -11,8 +11,8 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/scoped_observer.h"
 #include "ui/message_center/message_center_observer.h"
 

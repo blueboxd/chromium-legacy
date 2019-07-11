@@ -373,7 +373,7 @@ TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
 
   auto* delegate = new TestWidgetConstraintsDelegate;
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-  auto* frame_view = static_cast<ash::NonClientFrameViewAsh*>(
+  auto* frame_view = static_cast<NonClientFrameViewAsh*>(
       widget->non_client_view()->frame_view());
   auto* header_view = frame_view->GetHeaderView();
   ASSERT_TRUE(widget->IsMaximized());
@@ -485,7 +485,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
   // Turn immersive off, and make sure that header view is invisible
   // in fullscreen.
   widget->SetFullscreen(true);
-  ash::ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
+  ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->GetVisible());
   widget->SetFullscreen(false);
@@ -536,8 +536,8 @@ class TestButtonModel : public CaptionButtonModel {
 }  // namespace
 
 TEST_F(NonClientFrameViewAshTest, BackButton) {
-  ash::AcceleratorControllerImpl* controller =
-      ash::Shell::Get()->accelerator_controller();
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
   std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
   TestButtonModel* model_ptr = model.get();
 
@@ -847,8 +847,8 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     if (custom_) {
-      ash::wm::WindowState* window_state =
-          ash::wm::GetWindowState(widget->GetNativeWindow());
+      wm::WindowState* window_state =
+          wm::GetWindowState(widget->GetNativeWindow());
       window_state->SetDelegate(std::make_unique<wm::WindowStateDelegate>());
     }
     return TestWidgetConstraintsDelegate::CreateNonClientFrameView(widget);
@@ -863,19 +863,18 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
 }  // namespace
 
 // Verify that NonClientFrameViewAsh updates the active color based on the
-// ash::kFrameActiveColorKey window property.
+// kFrameActiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, kFrameActiveColorKey) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+      widget->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
   constexpr SkColor new_color = SK_ColorWHITE;
   EXPECT_NE(active_color, new_color);
 
-  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey, new_color);
-  active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_color);
+  active_color = widget->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->non_client_frame_view()->GetActiveFrameColorForTest());
@@ -887,47 +886,44 @@ TEST_P(NonClientFrameViewAshFrameColorTest, kFrameActiveColorKey) {
           ->caption_button_container());
   ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
   gfx::ImageSkia original_icon_image = test_api.size_button()->icon_image();
-  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey,
-                                         SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, SK_ColorBLACK);
   ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
   EXPECT_FALSE(original_icon_image.BackedBySameObjectAs(
       test_api.size_button()->icon_image()));
 }
 
 // Verify that NonClientFrameViewAsh updates the inactive color based on the
-// ash::kFrameInactiveColorKey window property.
+// kFrameInactiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, KFrameInactiveColor) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+      widget->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
   constexpr SkColor new_color = SK_ColorWHITE;
   EXPECT_NE(active_color, new_color);
 
-  widget->GetNativeWindow()->SetProperty(ash::kFrameInactiveColorKey,
-                                         new_color);
-  active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+  widget->GetNativeWindow()->SetProperty(kFrameInactiveColorKey, new_color);
+  active_color = widget->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->non_client_frame_view()->GetInactiveFrameColorForTest());
 }
 
 // Verify that NonClientFrameViewAsh updates the active color based on the
-// ash::kFrameActiveColorKey window property.
+// kFrameActiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   aura::Window* window = widget->GetNativeWindow();
-  SkColor active_color = window->GetProperty(ash::kFrameActiveColorKey);
-  SkColor inactive_color = window->GetProperty(ash::kFrameInactiveColorKey);
+  SkColor active_color = window->GetProperty(kFrameActiveColorKey);
+  SkColor inactive_color = window->GetProperty(kFrameInactiveColorKey);
   constexpr SkColor new_active_color = SK_ColorWHITE;
   constexpr SkColor new_inactive_color = SK_ColorBLACK;
   EXPECT_NE(active_color, new_active_color);
   EXPECT_NE(inactive_color, new_inactive_color);
-  window->SetProperty(ash::kFrameActiveColorKey, new_active_color);
-  window->SetProperty(ash::kFrameInactiveColorKey, new_inactive_color);
+  window->SetProperty(kFrameActiveColorKey, new_active_color);
+  window->SetProperty(kFrameInactiveColorKey, new_inactive_color);
 
   std::unique_ptr<WideFrameView> wide_frame_view =
       std::make_unique<WideFrameView>(widget.get());

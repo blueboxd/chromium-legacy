@@ -222,7 +222,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // NOTE: Add new members to |state_for_client_| if they are relevant only for
   // service worker clients. Not here!
 
-  base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
 };

@@ -64,8 +64,7 @@ LayerTreeView::LayerTreeView(
       compositor_thread_(std::move(compositor_thread)),
       task_graph_runner_(task_graph_runner),
       web_main_thread_scheduler_(scheduler),
-      animation_host_(cc::AnimationHost::CreateMainInstance()),
-      weak_factory_(this) {}
+      animation_host_(cc::AnimationHost::CreateMainInstance()) {}
 
 LayerTreeView::~LayerTreeView() = default;
 

@@ -25,8 +25,7 @@ namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     scoped_refptr<viz::ContextProviderCommandBuffer> context)
-    : BrowserCompositorOutputSurface(std::move(context)),
-      weak_ptr_factory_(this) {
+    : BrowserCompositorOutputSurface(std::move(context)) {
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;

@@ -131,7 +131,7 @@ class CONTENT_EXPORT SyntheticGestureController {
   } pending_gesture_queue_;
 
   base::RepeatingTimer dispatch_timer_;
-  base::WeakPtrFactory<SyntheticGestureController> weak_ptr_factory_;
+  base::WeakPtrFactory<SyntheticGestureController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
 };

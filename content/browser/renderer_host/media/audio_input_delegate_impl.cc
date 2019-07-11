@@ -181,8 +181,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
       controller_(),
       keyboard_mic_registration_(std::move(keyboard_mic_registration)),
       stream_id_(stream_id),
-      render_process_id_(render_process_id),
-      weak_factory_(this) {
+      render_process_id_(render_process_id) {
   // Prevent process backgrounding while audio input is active:
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},

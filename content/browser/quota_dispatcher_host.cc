@@ -83,8 +83,7 @@ QuotaDispatcherHost::QuotaDispatcherHost(
     : process_id_(process_id),
       render_frame_id_(render_frame_id),
       quota_manager_(quota_manager),
-      permission_context_(std::move(permission_context)),
-      weak_factory_(this) {
+      permission_context_(std::move(permission_context)) {
   DCHECK(quota_manager);
   // TODO(sashab): Work out the conditions for permission_context to be set and
   // add a DCHECK for it here.

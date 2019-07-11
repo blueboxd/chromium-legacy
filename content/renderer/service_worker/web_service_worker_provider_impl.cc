@@ -33,7 +33,7 @@ const char kLostConnectionErrorMessage[] =
 
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ServiceWorkerProviderContext* context)
-    : context_(context), provider_client_(nullptr), weak_factory_(this) {
+    : context_(context), provider_client_(nullptr) {
   DCHECK(context_);
   DCHECK_EQ(context_->provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForWindow);

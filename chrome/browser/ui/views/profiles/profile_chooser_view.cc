@@ -778,7 +778,7 @@ void ProfileChooserView::AddOptionsView(bool display_lock,
   base::string16 text = l10n_util::GetStringUTF16(
       is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
   const gfx::VectorIcon& settings_icon =
-      is_guest ? kCloseAllIcon : kSettingsIcon;
+      is_guest ? kCloseAllIcon : vector_icons::kSettingsIcon;
   users_button_ = CreateAndAddButton(CreateVectorIcon(settings_icon), text);
 
   if (display_lock) {

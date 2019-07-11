@@ -163,8 +163,7 @@ void OnTracingRequest(const std::string& path,
 
 TracingUI::TracingUI(WebUI* web_ui)
     : WebUIController(web_ui),
-      delegate_(GetContentClient()->browser()->GetTracingDelegate()),
-      weak_factory_(this) {
+      delegate_(GetContentClient()->browser()->GetTracingDelegate()) {
   web_ui->RegisterMessageCallback(
       "doUpload",
       base::BindRepeating(&TracingUI::DoUpload, base::Unretained(this)));

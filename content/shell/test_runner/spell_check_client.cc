@@ -22,8 +22,7 @@ namespace test_runner {
 
 SpellCheckClient::SpellCheckClient(TestRunner* test_runner)
     : last_requested_text_checking_completion_(nullptr),
-      test_runner_(test_runner),
-      weak_factory_(this) {
+      test_runner_(test_runner) {
   DCHECK(test_runner);
 }
 

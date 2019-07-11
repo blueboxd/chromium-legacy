@@ -136,7 +136,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   bool is_deleting_soon_ = false;
   bool is_main_resource_load_;
 
-  base::WeakPtrFactory<AppCacheURLLoaderJob> weak_factory_;
+  base::WeakPtrFactory<AppCacheURLLoaderJob> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderJob);
 };
 

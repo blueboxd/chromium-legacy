@@ -96,7 +96,7 @@ SingleCachedMetadataHandler* SourceKeyedCachedMetadataHandler::HandlerForSource(
                      source.CharactersSizeInBytes(), digest_value))
     return nullptr;
 
-  Key key;
+  Key key(kKeySize);
   DCHECK_EQ(digest_value.size(), kKeySize);
   memcpy(key.data(), digest_value.data(), kKeySize);
 
@@ -192,7 +192,7 @@ void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
       return;
     }
 
-    Key key;
+    Key key(kKeySize);
     std::copy(data, data + kKeySize, std::begin(key));
     data += kKeySize;
     size_t entry_size = ReadVal<size_t>(data);

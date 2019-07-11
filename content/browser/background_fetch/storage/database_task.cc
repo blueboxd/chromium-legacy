@@ -40,8 +40,7 @@ DatabaseTaskHost::DatabaseTaskHost() = default;
 
 DatabaseTaskHost::~DatabaseTaskHost() = default;
 
-DatabaseTask::DatabaseTask(DatabaseTaskHost* host)
-    : host_(host), weak_ptr_factory_(this) {
+DatabaseTask::DatabaseTask(DatabaseTaskHost* host) : host_(host) {
   DCHECK(host_);
   // Hold a reference to the CacheStorageManager.
   cache_manager_ = data_manager()->cache_manager();

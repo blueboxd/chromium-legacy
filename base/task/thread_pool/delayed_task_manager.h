@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
@@ -48,6 +49,12 @@ class BASE_EXPORT DelayedTaskManager {
   void AddDelayedTask(Task task,
                       PostTaskNowCallback post_task_now_callback,
                       scoped_refptr<TaskRunner> task_runner);
+
+  // Pop and post all the ripe tasks in the delayed task queue.
+  void ProcessRipeTasks();
+
+  // Returns the |delayed_run_time| of the next scheduled task, if any.
+  Optional<TimeTicks> NextScheduledRunTime() const;
 
  private:
   struct DelayedTask {
@@ -86,9 +93,6 @@ class BASE_EXPORT DelayedTaskManager {
     DISALLOW_COPY_AND_ASSIGN(DelayedTask);
   };
 
-  // Pop and post all the ripe tasks in the delayed task queue.
-  void ProcessRipeTasks();
-
   // Get the time at which to schedule the next |ProcessRipeTasks()| execution,
   // or TimeTicks::Max() if none needs to be scheduled (i.e. no task, or next
   // task already scheduled).
@@ -108,7 +112,7 @@ class BASE_EXPORT DelayedTaskManager {
   // it is never modified. It is therefore safe to access
   // |service_thread_task_runner_| without synchronization once it is observed
   // that it is non-null.
-  CheckedLock queue_lock_;
+  mutable CheckedLock queue_lock_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
 

@@ -1273,4 +1273,3 @@ void ChromeLauncherController::ShelfItemChanged(
   else if (ItemTypeIsPinned(old_item) && !ItemTypeIsPinned(item))
     RemovePinPosition(profile(), old_item.id);
 }
-

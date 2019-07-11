@@ -137,7 +137,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::string owner_target_id_;
   DevToolsSession* root_session_;
   base::flat_set<Throttle*> throttles_;
-  base::WeakPtrFactory<TargetHandler> weak_factory_;
+  base::WeakPtrFactory<TargetHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };

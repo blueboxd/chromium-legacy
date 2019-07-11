@@ -206,7 +206,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   Status status_ = Status::kNotStarted;
 
-  base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoader);
 };

@@ -92,7 +92,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   bool threaded_animation_ = true;
 
-  base::WeakPtrFactory<TestBlinkWebUnitTestSupport> weak_factory_;
+  base::WeakPtrFactory<TestBlinkWebUnitTestSupport> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestBlinkWebUnitTestSupport);
 };

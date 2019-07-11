@@ -11,7 +11,7 @@ namespace content {
 
 AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
     const network::ResourceRequest& request)
-    : request_(request), weak_factory_(this) {}
+    : request_(request) {}
 
 AppCacheURLLoaderRequest::~AppCacheURLLoaderRequest() = default;
 

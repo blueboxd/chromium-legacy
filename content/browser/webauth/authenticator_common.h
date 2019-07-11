@@ -222,7 +222,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   blink::mojom::AuthenticatorStatus error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 
-  base::WeakPtrFactory<AuthenticatorCommon> weak_factory_;
+  base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorCommon);
 };

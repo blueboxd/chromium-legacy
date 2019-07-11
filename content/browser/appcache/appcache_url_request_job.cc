@@ -118,8 +118,7 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       cache_id_(blink::mojom::kAppCacheNoCacheId),
       is_fallback_(false),
       is_main_resource_(is_main_resource),
-      on_prepare_to_restart_callback_(std::move(restart_callback)),
-      weak_factory_(this) {
+      on_prepare_to_restart_callback_(std::move(restart_callback)) {
   DCHECK(storage_);
 }
 

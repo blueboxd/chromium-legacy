@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_CAPTION_CONTAINER_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
@@ -31,7 +32,9 @@ class WindowPreviewView;
 // also draws a header for overview mode which contains a icon, title and close
 // button.
 // TODO(sammiequon): Rename this to something which describes it better.
-class ASH_EXPORT CaptionContainerView : public views::Button {
+class ASH_EXPORT CaptionContainerView
+    : public views::Button,
+      public OverviewHighlightController::OverviewHighlightableView {
  public:
   // The visibility of the header. It may be fully visible or invisible, or
   // everything but the close button is visible.
@@ -97,6 +100,10 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // Update |preview_view_| so that its content is up-to-date. Used by tab
   // dragging.
   void UpdatePreviewView();
+
+  // OverviewHighlightController::OverviewHighlightableView:
+  views::View* GetView() override;
+  gfx::Rect GetHighlightBounds() override;
 
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }

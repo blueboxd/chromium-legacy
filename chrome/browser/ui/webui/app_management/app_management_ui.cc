@@ -21,6 +21,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/common/constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -60,6 +61,19 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
+  source->AddString("chromeAppId", extension_misc::kChromeAppId);
+
+  source->AddResourcePath("app_management.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_MOJO_LITE_JS);
+  source->AddResourcePath("types.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
+  source->AddResourcePath("bitmap.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
+  source->AddResourcePath("image.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
+  source->AddResourcePath("image_info.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
+
   source->AddResourcePath("actions.html", IDR_APP_MANAGEMENT_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_APP_MANAGEMENT_ACTIONS_JS);
   source->AddResourcePath("api_listener.html",
@@ -68,16 +82,12 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_API_LISTENER_JS);
   source->AddResourcePath("app_item.html", IDR_APP_MANAGEMENT_APP_ITEM_HTML);
   source->AddResourcePath("app_item.js", IDR_APP_MANAGEMENT_APP_ITEM_JS);
-  source->AddResourcePath("app_management.mojom-lite.js",
-                          IDR_APP_MANAGEMENT_MOJO_LITE_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
   source->AddResourcePath("arc_permission_view.html",
                           IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_HTML);
   source->AddResourcePath("arc_permission_view.js",
                           IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_JS);
-  source->AddResourcePath("bitmap.mojom-lite.js",
-                          IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
   source->AddResourcePath("browser_proxy.html",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
@@ -98,10 +108,6 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("fake_page_handler.js",
                           IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
   source->AddResourcePath("icons.html", IDR_APP_MANAGEMENT_ICONS_HTML);
-  source->AddResourcePath("image_info.mojom-lite.js",
-                          IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
-  source->AddResourcePath("image.mojom-lite.js",
-                          IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
   source->AddResourcePath("metadata_view.html",
@@ -124,6 +130,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML);
   source->AddResourcePath("permission_view_header.js",
                           IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS);
+  source->AddResourcePath("pin_to_shelf_item.html",
+                          IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_HTML);
+  source->AddResourcePath("pin_to_shelf_item.js",
+                          IDR_APP_MANAGEMENT_PIN_TO_SHELF_ITEM_JS);
   source->AddResourcePath("pwa_permission_view.html",
                           IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
   source->AddResourcePath("pwa_permission_view.js",
@@ -145,9 +155,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_STORE_CLIENT_JS);
   source->AddResourcePath("store.html", IDR_APP_MANAGEMENT_STORE_HTML);
   source->AddResourcePath("store.js", IDR_APP_MANAGEMENT_STORE_JS);
+  source->AddResourcePath("toggle_row.html",
+                          IDR_APP_MANAGEMENT_TOGGLE_ROW_HTML);
+  source->AddResourcePath("toggle_row.js", IDR_APP_MANAGEMENT_TOGGLE_ROW_JS);
   source->AddResourcePath("types.js", IDR_APP_MANAGEMENT_TYPES_JS);
-  source->AddResourcePath("types.mojom-lite.js",
-                          IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
   source->AddResourcePath("util.html", IDR_APP_MANAGEMENT_UTIL_HTML);
   source->AddResourcePath("util.js", IDR_APP_MANAGEMENT_UTIL_JS);
 

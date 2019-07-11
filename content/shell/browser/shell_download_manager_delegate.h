@@ -57,7 +57,7 @@ class ShellDownloadManagerDelegate : public DownloadManagerDelegate {
   DownloadManager* download_manager_;
   base::FilePath default_download_path_;
   bool suppress_prompting_;
-  base::WeakPtrFactory<ShellDownloadManagerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<ShellDownloadManagerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShellDownloadManagerDelegate);
 };

@@ -193,7 +193,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   // Used for posting asynchronous tasks (on the IO thread) without worrying
   // about this class being destroyed in the meanwhile (due to browser shutdown)
   // since tasks pending on a destroyed WeakPtr are automatically discarded.
-  base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_;
+  base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_{this};
 };
 
 }  // namespace content

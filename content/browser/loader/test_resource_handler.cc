@@ -38,8 +38,7 @@ TestResourceHandler::TestResourceHandler(net::URLRequestStatus* request_status,
     : ResourceHandler(nullptr),
       request_status_ptr_(request_status),
       body_ptr_(body),
-      deferred_run_loop_(new base::RunLoop()),
-      weak_ptr_factory_(this) {
+      deferred_run_loop_(new base::RunLoop()) {
   SetBufferSize(2048);
 }
 

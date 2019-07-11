@@ -96,7 +96,7 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
   base::LinkedList<IdleMonitor> monitors_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<IdleManager> weak_factory_;
+  base::WeakPtrFactory<IdleManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IdleManager);
 };

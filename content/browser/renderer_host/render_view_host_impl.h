@@ -349,7 +349,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // duplicate RenderViewCreated events.
   bool has_notified_about_creation_;
 
-  base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
+  base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

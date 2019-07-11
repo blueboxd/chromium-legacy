@@ -214,8 +214,7 @@ UtilityProcessHost::UtilityProcessHost()
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false),
-      name_(base::ASCIIToUTF16("utility process")),
-      weak_ptr_factory_(this) {
+      name_(base::ASCIIToUTF16("utility process")) {
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this,
                                                  mojom::kUtilityServiceName));
 }

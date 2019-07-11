@@ -222,9 +222,7 @@ bool ClearSiteDataThrottle::ParseHeaderForTesting(
 ClearSiteDataThrottle::ClearSiteDataThrottle(
     net::URLRequest* request,
     std::unique_ptr<ConsoleMessagesDelegate> delegate)
-    : request_(request),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {
+    : request_(request), delegate_(std::move(delegate)) {
   DCHECK(request_);
   DCHECK(delegate_);
 }

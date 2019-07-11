@@ -363,8 +363,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         proxied_factory_info_(std::move(proxied_factory_info)),
         known_schemes_(std::move(known_schemes)),
         bypass_redirect_checks_(bypass_redirect_checks),
-        browser_context_(browser_context),
-        weak_factory_(this) {}
+        browser_context_(browser_context) {}
 
   ~URLLoaderRequestController() override {
     DCHECK_CURRENTLY_ON(GetLoaderRequestControllerThreadID());
@@ -1560,7 +1559,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   network::ResourceResponseHead head_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
 
-  mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
+  mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
 };
@@ -1581,8 +1580,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors)
     : delegate_(delegate),
-      download_policy_(request_info->common_params.download_policy),
-      weak_factory_(this) {
+      download_policy_(request_info->common_params.download_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int frame_tree_node_id = request_info->frame_tree_node_id;
 

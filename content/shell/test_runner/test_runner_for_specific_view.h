@@ -233,7 +233,7 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
 
   WebViewTestProxy* web_view_test_proxy_;
 
-  base::WeakPtrFactory<TestRunnerForSpecificView> weak_factory_;
+  base::WeakPtrFactory<TestRunnerForSpecificView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerForSpecificView);
 };

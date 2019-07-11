@@ -624,7 +624,7 @@
       Confirm Restore
     </message>
     <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_MESSAGE" desc="Message of the confirmation dialog displayed before container import begins.">
-      Restoring will override your existing linux installation. Are you sure you wish to continue?
+      Restoring from a backup will delete existing Linux applications and data in your Linux files folder.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB preferences
@@ -3035,15 +3035,6 @@
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT" desc="Name of the settings page for Google Assistant.">
     Google Assistant
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT" desc="Title for a toggle that lets the assistant use whats on the screen.">
-    Related info
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT_DESCRIPTION" desc="Sub label for context-enable toggle.">
-    Let the Assistant show you info related to what's on your screen
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD" desc="Title for a toggle that lets the assistant detect hotword.">
-    "Ok Google"
-  </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION" desc="Sub label for hotword-enable toggle.">
     Access your Assistant any time you say "Ok Google"
   </message>
@@ -3061,9 +3052,6 @@
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS" desc="Title for the Assistant voice settings.">
     Voice match
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_DESCRIPTION" desc="Sub label for the Assistant voice settings.">
-    Teach your Assistant to recognize your voice
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_RETRAIN" desc="Button label for retrain voice model.">
     Retrain

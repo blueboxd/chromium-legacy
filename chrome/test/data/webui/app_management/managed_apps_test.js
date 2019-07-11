@@ -63,9 +63,9 @@ suite('<app-management-managed-apps>', () => {
   });
 
   test('Pin to shelf toggle effected by policy', () => {
-    const shelfSwitch =
-        appDetailView.$$('app-management-metadata-view').$$('#shelf-switch');
-    expectTrue(!!shelfSwitch.querySelector('#policy-indicator'));
-    expectTrue(shelfSwitch.querySelector('#pin-to-shelf-toggle').disabled);
+    const pinToShelfSetting = appDetailView.$$('#pin-to-shelf-setting')
+                                  .$$('app-management-toggle-row');
+    expectTrue(!!pinToShelfSetting.$$('#policy-indicator'));
+    expectTrue(pinToShelfSetting.$$('cr-toggle').disabled);
   });
 });

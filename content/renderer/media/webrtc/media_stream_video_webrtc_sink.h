@@ -77,7 +77,7 @@ class CONTENT_EXPORT MediaStreamVideoWebRtcSink
   // Provides WebRtcVideoSourceAdapter a weak reference to
   // MediaStreamVideoWebRtcSink in order to allow it to request refresh frames.
   // See comments in media_stream_video_webrtc_sink.cc.
-  base::WeakPtrFactory<MediaStreamVideoWebRtcSink> weak_factory_;
+  base::WeakPtrFactory<MediaStreamVideoWebRtcSink> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoWebRtcSink);
 };

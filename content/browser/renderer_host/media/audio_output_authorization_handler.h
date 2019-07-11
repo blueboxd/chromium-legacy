@@ -107,7 +107,7 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // All access is on the IO thread, and taking a weak pointer to const looks
   // const, so this can be mutable.
   mutable base::WeakPtrFactory<const AudioOutputAuthorizationHandler>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputAuthorizationHandler);
 };

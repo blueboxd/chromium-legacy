@@ -246,7 +246,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
-  base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };

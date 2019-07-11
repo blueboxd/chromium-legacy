@@ -170,9 +170,8 @@ PepperAudioEncoderHost::PepperAudioEncoderHost(RendererPpapiHost* host,
       renderer_ppapi_host_(host),
       initialized_(false),
       encoder_last_error_(PP_ERROR_FAILED),
-      media_task_runner_(RenderThreadImpl::current()
-                             ->GetMediaThreadTaskRunner()),
-      weak_ptr_factory_(this) {}
+      media_task_runner_(
+          RenderThreadImpl::current()->GetMediaThreadTaskRunner()) {}
 
 PepperAudioEncoderHost::~PepperAudioEncoderHost() {
   Close();

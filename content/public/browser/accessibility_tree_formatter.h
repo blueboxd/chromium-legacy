@@ -76,6 +76,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   };
   static std::vector<TestPass> GetTestPasses();
 
+  // Gets the test pass at the given index.
+  static TestPass GetTestPass(size_t index);
+
   virtual void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) = 0;
 

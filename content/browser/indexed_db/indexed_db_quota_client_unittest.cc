@@ -46,8 +46,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
       : kOriginA(url::Origin::Create(GURL("http://host"))),
         kOriginB(url::Origin::Create(GURL("http://host:8000"))),
         kOriginOther(url::Origin::Create(GURL("http://other"))),
-        usage_(0),
-        weak_factory_(this) {
+        usage_(0) {
     browser_context_.reset(new TestBrowserContext());
 
     scoped_refptr<storage::QuotaManager> quota_manager =
@@ -164,7 +163,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   blink::mojom::QuotaStatusCode delete_status_;
-  base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
+  base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClientTest);
 };

@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_ALTERNATE_SIGNED_EXCHANGE_RESOURCE_INFO_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -15,6 +17,8 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+enum class ResourceType : uint8_t;
 
 // AlternateSignedExchangeResourceInfo keeps the alternate signed exchange
 // resource information which is extracted from "alternate" link headers in the
@@ -91,13 +95,26 @@ class CORE_EXPORT AlternateSignedExchangeResourceInfo {
   AlternateSignedExchangeResourceInfo(EntryMap alternative_resources);
   ~AlternateSignedExchangeResourceInfo() = default;
 
-  // Returns the best matching alternate resource. Currently this method just
-  // returns the last one. TODO(crbug.com/935267): Support variants and
-  // variant_key checking.
-  Entry* FindMatchingEntry(const KURL& url) const;
+  // Returns the best matching alternate resource. If the first entry which
+  // |anchor_url| is |url| has non-null |variants| value, this method use the
+  // preference order of the result of "Cache Behaviour" [1] to find the best
+  // matching entry. Otherwise returns the first entry which |anchor_url| is
+  // |url|.
+  // [1]
+  // https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#cache
+  Entry* FindMatchingEntry(const KURL& url,
+                           base::Optional<ResourceType> resource_type,
+                           const Vector<String>& languages) const;
+  Entry* FindMatchingEntry(const KURL& url,
+                           mojom::RequestContextType request_context,
+                           const Vector<String>& languages) const;
 
  private:
   friend class AlternateSignedExchangeResourceInfoTest;
+
+  Entry* FindMatchingEntry(const KURL& url,
+                           const char* accept_header,
+                           const Vector<String>& languages) const;
 
   const EntryMap alternative_resources_;
 

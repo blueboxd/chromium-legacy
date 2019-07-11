@@ -34,9 +34,7 @@ namespace content {
 SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
     int render_process_id,
     int render_frame_id)
-    : render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
-      weak_factory_(this) {
+    : render_process_id_(render_process_id), render_frame_id_(render_frame_id) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
   // add an Init() method.
@@ -204,8 +202,7 @@ SpeechRecognitionSession::SpeechRecognitionSession(
     blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
       client_(std::move(client_ptr_info)),
-      stopped_(false),
-      weak_factory_(this) {
+      stopped_(false) {
   client_.set_connection_error_handler(
       base::BindOnce(&SpeechRecognitionSession::ConnectionErrorHandler,
                      base::Unretained(this)));

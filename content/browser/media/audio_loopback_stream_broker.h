@@ -76,7 +76,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   mojo::Binding<AudioInputStreamObserver> observer_binding_;
   media::mojom::AudioInputStreamClientRequest client_request_;
 
-  base::WeakPtrFactory<AudioLoopbackStreamBroker> weak_ptr_factory_;
+  base::WeakPtrFactory<AudioLoopbackStreamBroker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioLoopbackStreamBroker);
 };

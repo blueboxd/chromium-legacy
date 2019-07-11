@@ -88,7 +88,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
 
   // The event currently being processed.
   Event current_event_ = Event::NoEvent;
-  base::WeakPtrFactory<NavigationThrottleRunner> weak_factory_;
+  base::WeakPtrFactory<NavigationThrottleRunner> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationThrottleRunner);
 };

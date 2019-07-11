@@ -89,7 +89,7 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   void OnOriginPolicyManagerRetrieveDone(
       const network::OriginPolicy& origin_policy);
 
-  base::WeakPtrFactory<OriginPolicyThrottle> weak_factory_;
+  base::WeakPtrFactory<OriginPolicyThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };

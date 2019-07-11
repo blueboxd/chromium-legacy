@@ -180,8 +180,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
           viz::command_buffer_metrics::ContextType::BROWSER_WORKER),
       gpu_channel_factory_(gpu_channel_factory),
       compositing_mode_reporter_(compositing_mode_reporter),
-      server_shared_bitmap_manager_(server_shared_bitmap_manager),
-      callback_factory_(this) {
+      server_shared_bitmap_manager_(server_shared_bitmap_manager) {
   DCHECK(gpu_channel_factory_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

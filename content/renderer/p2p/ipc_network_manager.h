@@ -52,7 +52,7 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   int start_count_ = 0;
   bool network_list_received_ = false;
 
-  base::WeakPtrFactory<IpcNetworkManager> weak_factory_;
+  base::WeakPtrFactory<IpcNetworkManager> weak_factory_{this};
 };
 
 }  // namespace content

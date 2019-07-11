@@ -147,8 +147,7 @@ void AccessibilityControllerBindings::Reset() {
 AccessibilityController::AccessibilityController(
     WebViewTestProxy* web_view_test_proxy)
     : log_accessibility_events_(false),
-      web_view_test_proxy_(web_view_test_proxy),
-      weak_factory_(this) {}
+      web_view_test_proxy_(web_view_test_proxy) {}
 
 AccessibilityController::~AccessibilityController() {}
 

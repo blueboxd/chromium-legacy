@@ -14,15 +14,30 @@ namespace chromeos {
 namespace network_config {
 
 CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
+  SetupCrosNetworkConfig();
+  // Create a local service manager connector to handle requests.
+  service_manager::mojom::ConnectorRequest request;
+  owned_connector_ = service_manager::Connector::Create(&request);
+  connector_ = owned_connector_.get();
+  SetupService();
+}
+
+CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper(
+    service_manager::Connector* connector)
+    : connector_(connector) {
+  SetupCrosNetworkConfig();
+  SetupService();
+}
+
+CrosNetworkConfigTestHelper::~CrosNetworkConfigTestHelper() = default;
+
+void CrosNetworkConfigTestHelper::SetupCrosNetworkConfig() {
   network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
       network_state_helper_.network_state_handler());
   cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
       network_state_helper_.network_state_handler(),
       network_device_handler_.get());
-  SetupService();
 }
-
-CrosNetworkConfigTestHelper::~CrosNetworkConfigTestHelper() = default;
 
 void CrosNetworkConfigTestHelper::SetupServiceInterface() {
   DCHECK(connector_);
@@ -37,9 +52,6 @@ void CrosNetworkConfigTestHelper::SetupObserver() {
 }
 
 void CrosNetworkConfigTestHelper::SetupService() {
-  // Create a local service manager connector to handle requests.
-  service_manager::mojom::ConnectorRequest request;
-  connector_ = service_manager::Connector::Create(&request);
   connector_->OverrideBinderForTesting(
       service_manager::ServiceFilter::ByName(
           chromeos::network_config::mojom::kServiceName),

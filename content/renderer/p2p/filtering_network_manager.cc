@@ -20,8 +20,7 @@ FilteringNetworkManager::FilteringNetworkManager(
     media::MediaPermission* media_permission)
     : network_manager_(network_manager),
       media_permission_(media_permission),
-      requesting_origin_(requesting_origin),
-      weak_ptr_factory_(this) {
+      requesting_origin_(requesting_origin) {
   thread_checker_.DetachFromThread();
   set_enumeration_permission(ENUMERATION_BLOCKED);
 

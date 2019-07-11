@@ -291,7 +291,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   const int aggregate_updates_ms_;
 
   // Weak factory for this object that we use for bulking up updates.
-  base::WeakPtrFactory<WebRTCInternals> weak_factory_;
+  base::WeakPtrFactory<WebRTCInternals> weak_factory_{this};
 };
 
 }  // namespace content

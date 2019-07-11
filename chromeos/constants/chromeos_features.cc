@@ -23,6 +23,10 @@ const base::Feature kBlueZLongTermKeyBlocklist{
     "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
 
+// Enable or disables running the Camera App as a System Web App.
+const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_ENABLED_BY_DEFAULT};

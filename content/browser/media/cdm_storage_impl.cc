@@ -77,8 +77,7 @@ CdmStorageImpl::CdmStorageImpl(
     : FrameServiceBase(render_frame_host, std::move(request)),
       cdm_file_system_id_(cdm_file_system_id),
       file_system_context_(std::move(file_system_context)),
-      child_process_id_(render_frame_host->GetProcess()->GetID()),
-      weak_factory_(this) {}
+      child_process_id_(render_frame_host->GetProcess()->GetID()) {}
 
 CdmStorageImpl::~CdmStorageImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

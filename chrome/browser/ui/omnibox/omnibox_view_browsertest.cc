@@ -7,12 +7,14 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -207,15 +209,23 @@ class OmniboxViewTest : public InProcessBrowserTest,
       ASSERT_NO_FATAL_FAILURE(SendKey(*keys, 0));
   }
 
-  bool ExpectBrowserClosed(const Browser* browser,
+  void ExpectBrowserClosed(const Browser* browser,
                            ui::KeyboardCode key,
-                           int modifiers) WARN_UNUSED_RESULT {
-    return ui_test_utils::SendKeyPressAndWait(
-        browser, key, (modifiers & ui::EF_CONTROL_DOWN) != 0,
-        (modifiers & ui::EF_SHIFT_DOWN) != 0,
-        (modifiers & ui::EF_ALT_DOWN) != 0,
-        (modifiers & ui::EF_COMMAND_DOWN) != 0,
-        chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
+                           int modifiers) {
+    // Press the accelerator after starting to wait for a browser to close as
+    // the close may be synchronous.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](const Browser* browser, ui::KeyboardCode key, int modifiers) {
+              EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
+                  browser, key, (modifiers & ui::EF_CONTROL_DOWN) != 0,
+                  (modifiers & ui::EF_SHIFT_DOWN) != 0,
+                  (modifiers & ui::EF_ALT_DOWN) != 0,
+                  (modifiers & ui::EF_COMMAND_DOWN) != 0));
+            },
+            browser, key, modifiers));
+    ui_test_utils::WaitForBrowserToClose(browser);
   }
 
   void NavigateExpectUrl(const GURL& url, int modifiers = 0) {
@@ -448,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
 
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   // Try alt-f4 to close the browser.
-  ASSERT_TRUE(ExpectBrowserClosed(browser(), ui::VKEY_F4, ui::EF_ALT_DOWN));
+  ExpectBrowserClosed(browser(), ui::VKEY_F4, ui::EF_ALT_DOWN);
 #endif
 }
 
@@ -462,19 +472,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PopupAccelerators) {
   chrome::FocusLocationBar(popup);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-#if !defined(OS_MACOSX)
-  // Try ctrl-w to close the popup.
-  // This piece of code doesn't work on Mac, because the Browser object won't
-  // be destroyed before finishing the current message loop iteration, thus
-  // No BROWSER_CLOSED notification will be sent.
-  ASSERT_TRUE(ExpectBrowserClosed(popup, ui::VKEY_W, ui::EF_CONTROL_DOWN));
+  // Try ctrl/cmd-w to close the popup.
+  ExpectBrowserClosed(popup, ui::VKEY_W, kCtrlOrCmdMask);
 
   // Create another popup.
   popup = CreateBrowserForPopup(browser()->profile());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup));
   ASSERT_NO_FATAL_FAILURE(
       GetOmniboxViewForBrowser(popup, &omnibox_view));
-#endif
 
   // Set the edit text to "Hello world".
   omnibox_view->SetUserText(ASCIIToUTF16("Hello world"));
@@ -493,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PopupAccelerators) {
 
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   // Try alt-f4 to close the popup.
-  ASSERT_TRUE(ExpectBrowserClosed(popup, ui::VKEY_F4, ui::EF_ALT_DOWN));
+  ExpectBrowserClosed(popup, ui::VKEY_F4, ui::EF_ALT_DOWN);
 #endif
 }
 

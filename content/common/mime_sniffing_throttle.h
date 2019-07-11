@@ -33,7 +33,7 @@ class CONTENT_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<MimeSniffingThrottle> weak_factory_;
+  base::WeakPtrFactory<MimeSniffingThrottle> weak_factory_{this};
 };
 
 }  // namespace content

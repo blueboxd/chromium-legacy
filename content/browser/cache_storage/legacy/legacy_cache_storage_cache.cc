@@ -937,8 +937,7 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
           CacheStorageCacheEntryHandler::CreateCacheEntryHandler(
               owner,
               std::move(blob_context))),
-      memory_only_(path.empty()),
-      weak_ptr_factory_(this) {
+      memory_only_(path.empty()) {
   DCHECK(!origin_.opaque());
   DCHECK(quota_manager_proxy_.get());
   DCHECK(cache_padding_key_.get());

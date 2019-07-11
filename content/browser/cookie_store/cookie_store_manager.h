@@ -218,7 +218,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Supports having the manager destroyed while waiting for disk I/O.
-  base::WeakPtrFactory<CookieStoreManager> weak_factory_;
+  base::WeakPtrFactory<CookieStoreManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieStoreManager);
 };

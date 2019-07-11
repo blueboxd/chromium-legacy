@@ -177,7 +177,7 @@ class CONTENT_EXPORT InterceptingResourceHandler
   // True if the request was resumed while |in_do_loop_| was true;
   bool advance_to_next_state_ = false;
 
-  base::WeakPtrFactory<InterceptingResourceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<InterceptingResourceHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterceptingResourceHandler);
 };

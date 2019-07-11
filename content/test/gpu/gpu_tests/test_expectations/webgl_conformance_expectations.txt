@@ -456,7 +456,7 @@ crbug.com/907512 [ android android-chromium ] conformance/textures/video/tex-2d-
 crbug.com/733599 [ android ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/834933 [ android no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 # This crashes in Android WebView on the Nexus 6, preventing the
@@ -577,6 +577,7 @@ crbug.com/845411 [ android ] conformance/glsl/constructors/glsl-construct-mat3.h
 crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ RetryOnFailure ]
 
 # Android ANGLE GLES
+crbug.com/981579 [ android opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 

@@ -10,6 +10,8 @@ aggregate_vector_icons("ash_vector_icons") {
 
   icons = [
     "always_show_shelf.icon",
+    "assistant.icon",
+    "assistant_mic.icon",
     "auto_hide.icon",
     "autoclick.icon",
     "autoclick_close.icon",
@@ -95,6 +97,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_keyboard.icon",
     "notification_low_power_charger.icon",
     "notification_monitor_warning.icon",
+    "notification_multi_device_setup.icon",
     "notification_screen.icon",
     "notification_screenshare.icon",
     "notification_sms_sync.icon",
@@ -102,6 +105,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_timer.icon",
     "overview_window_close.icon",
     "overview_drop_target_plus.icon",
+    "overflow_shelf_left.icon",
+    "overflow_shelf_right.icon",
     "palette_action_capture_region.icon",
     "palette_action_capture_screen.icon",
     "palette_action_create_note.icon",

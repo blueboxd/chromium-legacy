@@ -18,8 +18,7 @@ OneShotBackgroundSyncServiceImpl::OneShotBackgroundSyncServiceImpl(
     BackgroundSyncContextImpl* background_sync_context,
     mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService> request)
     : background_sync_context_(background_sync_context),
-      binding_(this, std::move(request)),
-      weak_ptr_factory_(this) {
+      binding_(this, std::move(request)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_context_);
 

@@ -245,7 +245,7 @@ ThreadProfiler::ThreadProfiler(
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get(), base::GetSampleMetadataRecorder()));
+          work_id_recorder_.get()));
 
   startup_profiler_->Start();
 
@@ -305,7 +305,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
-          work_id_recorder_.get(), base::GetSampleMetadataRecorder(),
+          work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));

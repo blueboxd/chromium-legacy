@@ -58,7 +58,7 @@ const char* GetEventName(NavigationThrottleRunner::Event event) {
 
 NavigationThrottleRunner::NavigationThrottleRunner(Delegate* delegate,
                                                    NavigationHandle* handle)
-    : delegate_(delegate), handle_(handle), weak_factory_(this) {}
+    : delegate_(delegate), handle_(handle) {}
 
 NavigationThrottleRunner::~NavigationThrottleRunner() = default;
 

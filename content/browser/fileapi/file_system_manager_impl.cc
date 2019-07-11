@@ -126,8 +126,7 @@ FileSystemManagerImpl::FileSystemManagerImpl(
     : process_id_(process_id),
       context_(std::move(file_system_context)),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
-      blob_storage_context_(std::move(blob_storage_context)),
-      weak_factory_(this) {
+      blob_storage_context_(std::move(blob_storage_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
   DCHECK(blob_storage_context_);

@@ -316,21 +316,6 @@ Polymer({
     this.languageHelper.openInputMethodOptions(e.model.item.id);
   },
 
-  // TODO(hsuregan): Remove when SplitSettings is complete.
-  /**
-   * Incorporates pageVisibility check along with isProspectiveUILanguage_().
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The prospective UI language.
-   * @return {boolean} True if the given language matches the prospective UI
-   *     pref (which may be different from the actual UI language).
-   * @private
-   */
-  shouldShowExplanation_: function(languageCode, prospectiveUILanguage) {
-    return this.pageVisibility &&
-        this.pageVisibility.uiDisplayedInThisLanguage &&
-        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage);
-  },
-
   /**
    * @param {string} id The input method ID.
    * @param {string} currentId The ID of the currently enabled input method.

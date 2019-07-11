@@ -141,10 +141,8 @@ Browser* OpenNewBrowser(Profile* profile) {
 }
 
 Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   browser->window()->Close();
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser);
   return OpenNewBrowser(profile);
 }
 

@@ -273,7 +273,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
 
-  base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_{this};
 };
 
 }  // namespace content

@@ -71,8 +71,7 @@ IndexedDBTombstoneSweeper::IndexedDBTombstoneSweeper(int round_iterations,
                                                      leveldb::DB* database)
     : max_round_iterations_(round_iterations),
       max_iterations_(max_iterations),
-      database_(database),
-      ptr_factory_(this) {
+      database_(database) {
   sweep_state_.start_database_seed = static_cast<size_t>(base::RandUint64());
   sweep_state_.start_object_store_seed =
       static_cast<size_t>(base::RandUint64());

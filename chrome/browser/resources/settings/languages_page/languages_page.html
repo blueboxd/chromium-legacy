@@ -221,17 +221,9 @@
                   </div>
 <if expr="chromeos or is_win">
                   <div class="explain-selected"
-<if expr="is_win">
                       hidden="[[!isProspectiveUILanguage_(
                           item.language.code,
                           languages.prospectiveUILanguage)]]">
-</if>
-<if expr="chromeos">
-                      hidden="[[!shouldShowExplanation_(
-                          item.language.code,
-                          languages.prospectiveUILanguage,
-                          pageVisibility.uiDisplayedInThisLanguage)]]">
-</if>
                     $i18n{isDisplayedInThisLanguage}
                   </div>
 </if> <!-- chromeos or is_win -->
@@ -240,11 +232,7 @@
                 <template is="dom-if" if="[[isRestartRequired_(
                     item.language.code, languages.prospectiveUILanguage)]]"
                     restamp>
-                  <cr-button id="restartButton"
-<if expr="chromeos">
-                      hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
-</if>
-                      on-click="onRestartTap_">
+                  <cr-button id="restartButton" on-click="onRestartTap_">
                     $i18n{restart}
                   </cr-button>
                 </template>
@@ -421,9 +409,6 @@
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
               <cr-checkbox id="uiLanguageItem"
-<if expr="chromeos">
-                  hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
-</if>
                   class="dropdown-item"
                   checked="[[isProspectiveUILanguage_(
                       detailLanguage_.language.code,

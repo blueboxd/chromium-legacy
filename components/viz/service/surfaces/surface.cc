@@ -614,7 +614,7 @@ void Surface::MarkAsDrawn() {
     return;
   active_frame_data_->frame_drawn = true;
   if (surface_client_)
-    surface_client_->OnSurfaceDrawn(this);
+    surface_client_->OnSurfaceWillDraw(this);
 }
 
 void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -714,6 +714,14 @@ void Surface::OnWillBeDrawn() {
   }
   surface_manager_->SurfaceWillBeDrawn(this);
   MarkAsDrawn();
+}
+
+void Surface::OnWasDrawn(uint32_t frame_token,
+                         base::TimeTicks draw_start_timestamp) {
+  if (!surface_client_)
+    return;
+
+  surface_client_->OnSurfaceWasDrawn(frame_token, draw_start_timestamp);
 }
 
 void Surface::ActivatePendingFrameForInheritedDeadline() {

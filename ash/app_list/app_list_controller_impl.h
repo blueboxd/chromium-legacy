@@ -25,13 +25,13 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
 
@@ -216,6 +216,7 @@ class ASH_EXPORT AppListControllerImpl
   void NotifyAppListTargetVisibilityChanged(bool visible);
 
   // ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
   void OnShellDestroying() override;
 
   // OverviewObserver:

@@ -79,8 +79,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
 
   OverviewItem* GetOverviewItemForWindow(aura::Window* window,
                                          int grid_index = 0) {
-    auto& windows =
-        overview_session_->grid_list_for_testing()[grid_index]->window_list();
+    auto& windows = overview_session_->grid_list()[grid_index]->window_list();
     auto iter =
         std::find_if(windows.cbegin(), windows.cend(),
                      [window](const std::unique_ptr<OverviewItem>& item) {

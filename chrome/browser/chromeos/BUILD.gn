@@ -56,6 +56,7 @@ source_set("chromeos") {
     "//ash/public/cpp",
     "//ash/system/message_center/arc",
     "//chrome/app:command_ids",
+    "//chrome/app/vector_icons",
     "//chrome/browser/apps/platform_apps",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/chromeos/power/ml/smart_dim",

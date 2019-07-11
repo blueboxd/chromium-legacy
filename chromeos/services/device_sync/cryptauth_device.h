@@ -27,14 +27,14 @@ class CryptAuthDevice {
       const base::Value& dict);
 
   // |instance_id|: The Instance ID, used as a unique device identifier. Cannot
-  //     be empty.
+  //                be empty.
   explicit CryptAuthDevice(const std::string& instance_id);
   CryptAuthDevice(
       const std::string& instance_id,
       const std::string& device_name,
       const std::string& device_better_together_public_key,
       const base::Time& last_update_time,
-      const cryptauthv2::BetterTogetherDeviceMetadata&
+      const base::Optional<cryptauthv2::BetterTogetherDeviceMetadata>&
           better_together_device_metadata,
       const std::map<multidevice::SoftwareFeature,
                      multidevice::SoftwareFeatureState>& feature_states);
@@ -75,8 +75,9 @@ class CryptAuthDevice {
   base::Time last_update_time;
 
   // Device metadata relevant to the suite of multi-device ("Better Together")
-  // features.
-  cryptauthv2::BetterTogetherDeviceMetadata better_together_device_metadata;
+  // features. Null if metadata could not be decrypted.
+  base::Optional<cryptauthv2::BetterTogetherDeviceMetadata>
+      better_together_device_metadata;
 
   // A map from the multi-device feature type (example: kBetterTogetherHost) to
   // feature state (example: kEnabled).

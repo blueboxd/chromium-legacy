@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
@@ -16,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -193,7 +193,7 @@ DownloadItemNotification::DownloadItemNotification(
   // overridden by UpdateNotificationData() below.
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.should_make_spoken_feedback_for_popup_updates = false;
-  rich_notification_data.vector_small_image = &ash::kNotificationDownloadIcon;
+  rich_notification_data.vector_small_image = &kNotificationDownloadIcon;
 
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, GetNotificationId(),

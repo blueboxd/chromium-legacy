@@ -156,8 +156,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
  public:
   MockClientCertURLRequestJob(net::URLRequest* request,
                               net::NetworkDelegate* network_delegate)
-      : net::URLRequestTestJob(request, network_delegate),
-        weak_factory_(this) {}
+      : net::URLRequestTestJob(request, network_delegate) {}
 
   static std::vector<std::string> test_authorities() {
     return std::vector<std::string>(1, "dummy");
@@ -183,7 +182,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
  private:
   ~MockClientCertURLRequestJob() override {}
 
-  base::WeakPtrFactory<MockClientCertURLRequestJob> weak_factory_;
+  base::WeakPtrFactory<MockClientCertURLRequestJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockClientCertURLRequestJob);
 };

@@ -78,8 +78,7 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
       deleter_(std::move(deleter)),
       client_(std::move(client)),
       observer_(render_process_id, render_frame_id, stream_id),
-      observer_receiver_(&observer_),
-      weak_ptr_factory_(this) {
+      observer_receiver_(&observer_) {
   DCHECK(client_);
   DCHECK(deleter_);
   DCHECK(group_id_);

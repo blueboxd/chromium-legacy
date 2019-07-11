@@ -197,7 +197,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // screen from sleeping for the drive-by web.
   device::mojom::WakeLockPtr wake_lock_;
 
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -213,8 +213,7 @@ DesktopCaptureDevice::Core::Core(
       capture_in_progress_(false),
       first_capture_returned_(false),
       first_permanent_error_logged(false),
-      capturer_type_(type),
-      weak_factory_(this) {}
+      capturer_type_(type) {}
 
 DesktopCaptureDevice::Core::~Core() {
   DCHECK(task_runner_->BelongsToCurrentThread());

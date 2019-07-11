@@ -247,6 +247,7 @@ customize.richerPicker_selectedSubmenu = {
  */
 customize.selectedOptions = {
   background: null,  // Contains the background image tile.
+  backgroundId: '',  // The id of the selected background image tile.
   // Contains the selected shortcut type's DOM element, i.e. either custom links
   // or most visited.
   shortcutType: null,
@@ -443,9 +444,6 @@ customize.richerPicker_resetImageMenu = function() {
       customize.IDS.BACKGROUNDS_MENU;
   customize.richerPicker_openBackgroundSubmenu.title = '';
   backgroundMenu.scrollTop = 0;
-
-  customize.richerPicker_deselectBackgroundTile(
-      customize.selectedOptions.background);
 };
 
 /**
@@ -606,7 +604,7 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
   if (configData.richerPicker) {
     return customize.richerPicker_getNextTile(deltaX, deltaY, currentElem);
   }
-  const current = currentElem.dataset.tileNum;
+  const current = currentElem.dataset.tileIndex;
   let idPrefix = 'coll_tile_';
   if ($(customize.IDS.MENU)
           .classList.contains(customize.CLASSES.IMAGE_DIALOG)) {
@@ -699,7 +697,8 @@ customize.showCollectionSelectionDialog = function() {
         } else {
           customize.resetSelectionDialog();
         }
-        customize.showImageSelectionDialog(tile.dataset.name);
+        customize.showImageSelectionDialog(
+            tile.dataset.name, tile.dataset.tileIndex);
       } else {
         customize.handleError(collImgErrors);
       }
@@ -747,7 +746,7 @@ customize.showCollectionSelectionDialog = function() {
     const id = coll[i].collectionId;
     const name = coll[i].collectionName;
     const imageUrl = coll[i].previewImageUrl;
-    const dataset = {'id': id, 'name': name, 'tileNum': i};
+    const dataset = {'id': id, 'name': name, 'tileIndex': i};
 
     const tile = customize.createTileWithTitle(
         'coll_tile_' + i, imageUrl, name, dataset, tileOnClickInteraction,
@@ -878,6 +877,7 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
   customize.selectedOptions.background = tile;
+  customize.selectedOptions.backgroundId = tile.id;
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
   customize.richerPicker_previewImage(tile);
@@ -972,8 +972,10 @@ customize.removeSelectedState = function(tile) {
  * chrome-search://local-ntp/ntp-background-images.js?collection_id=<collection_id>
  * @param {string} dialogTitle The title to be displayed at the top of the
  *     dialog.
+ * @param {number} collIndex The index of the collection this image menu belongs
+ * to.
  */
-customize.showImageSelectionDialog = function(dialogTitle) {
+customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   const firstNTile = customize.ROWS_TO_PRELOAD * customize.getTilesWide();
   const tileContainer = configData.richerPicker ?
       $(customize.IDS.BACKGROUNDS_IMAGE_MENU) :
@@ -1091,10 +1093,15 @@ customize.showImageSelectionDialog = function(dialogTitle) {
                                                     '');
     dataset.attributionActionUrl = collImg[i].attributionActionUrl;
     dataset.url = collImg[i].imageUrl;
-    dataset.tileNum = i;
+    dataset.tileIndex = i;
 
+
+    let tileId = 'img_tile_' + i;
+    if (configData.richerPicker) {
+      tileId = 'coll_' + collIndex + '_' + tileId;
+    }
     const tile = customize.createTile(
-        'img_tile_' + i, collImg[i].imageUrl, dataset, tileOnClickInteraction,
+        tileId, collImg[i].imageUrl, dataset, tileOnClickInteraction,
         tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
@@ -1123,6 +1130,13 @@ customize.showImageSelectionDialog = function(dialogTitle) {
     });
   }
 
+  // If an image tile was previously selected re-select it now.
+  const selected = $(customize.selectedOptions.backgroundId);
+  if (selected) {
+    customize.richerPicker_selectBackgroundTile(selected);
+  }
+
+
   $(customize.IDS.TILES).focus();
 };
 
@@ -1136,9 +1150,9 @@ customize.showImageSelectionDialog = function(dialogTitle) {
  */
 customize.loadTile = function(tile, imageData, countLoad) {
   tile.style.backgroundImage =
-      'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')';
+      'url(' + imageData[tile.dataset.tileIndex].thumbnailImageUrl + ')';
   customize.fadeInImageTile(
-      tile, imageData[tile.dataset.tileNum].thumbnailImageUrl, countLoad);
+      tile, imageData[tile.dataset.tileIndex].thumbnailImageUrl, countLoad);
 };
 
 /**
@@ -1256,6 +1270,7 @@ customize.richerPicker_resetSelectedOptions = function() {
   customize.richerPicker_deselectBackgroundTile(
       customize.selectedOptions.background);
   customize.selectedOptions.background = null;
+  customize.selectedOptions.backgroundId = null;
 
   // Reset color selection.
   customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
@@ -1740,7 +1755,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
               .classList.contains(customize.CLASSES.COLLECTION_DIALOG)) {
         $('coll_tile_0').focus();
       } else {
-        $('img_tile_0').focus();
+        document.querySelector('[id$="img_tile_0"]').focus();
       }
     }
   };
@@ -1753,7 +1768,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
-      $('img_tile_0').focus();
+      document.querySelector('[id$="img_tile_0"]').focus();
     }
   };
 

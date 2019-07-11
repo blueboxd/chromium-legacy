@@ -61,8 +61,7 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
       opened_(false),
       file_system_context_(nullptr),
       reserved_quota_(0),
-      reserving_quota_(false),
-      weak_factory_(this) {}
+      reserving_quota_(false) {}
 
 PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
   // If |files_| is not empty, the plugin failed to close some files. It must

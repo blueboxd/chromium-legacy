@@ -9,32 +9,13 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/strings/string_tokenizer.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/common.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kRemoteDebuggerHandles)) {
-    std::string handle_ids_str =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            kRemoteDebuggerHandles);
-
-    // Extract individual handle IDs from the comma-separated list.
-    base::StringTokenizer tokenizer(handle_ids_str, ",");
-    while (tokenizer.GetNext()) {
-      uint32_t handle_id = 0;
-      if (!base::StringToUint(tokenizer.token(), &handle_id))
-        continue;
-      fidl::InterfacePtr<fuchsia::web::DevToolsPerContextListener> listener;
-      listener.Bind(zx::channel(zx_take_startup_handle(handle_id)));
-      devtools_listeners_.AddInterfacePtr(std::move(listener));
-    }
-  }
-}
+    : browser_context_(browser_context) {}
 
 ContextImpl::~ContextImpl() = default;
 
@@ -47,17 +28,8 @@ bool ContextImpl::IsJavaScriptInjectionAllowed() {
   return allow_javascript_injection_;
 }
 
-void ContextImpl::OnDevToolsPortReady() {
-  if (devtools_port_ == 0 || devtools_listeners_notified_)
-    return;
-  for (auto& listener : devtools_listeners_.ptrs()) {
-    listener->get()->OnHttpPortOpen(devtools_port_);
-  }
-  devtools_listeners_notified_ = true;
-}
-
-void ContextImpl::OnDevToolsPortOpened(uint16_t port) {
-  devtools_port_ = port;
+void ContextImpl::OnDebugDevToolsPortReady() {
+  web_engine_remote_debugging_.OnDebugDevToolsPortReady();
 }
 
 void ContextImpl::CreateFrame(
@@ -68,6 +40,11 @@ void ContextImpl::CreateFrame(
 
   frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
                                              std::move(frame)));
+}
+
+void ContextImpl::GetRemoteDebuggingPort(
+    GetRemoteDebuggingPortCallback callback) {
+  web_engine_remote_debugging_.GetRemoteDebuggingPort(std::move(callback));
 }
 
 FrameImpl* ContextImpl::GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr) {

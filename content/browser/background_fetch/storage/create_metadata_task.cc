@@ -45,10 +45,7 @@ class CanCreateRegistrationTask : public DatabaseTask {
   CanCreateRegistrationTask(DatabaseTaskHost* host,
                             const url::Origin& origin,
                             CanCreateRegistrationCallback callback)
-      : DatabaseTask(host),
-        origin_(origin),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+      : DatabaseTask(host), origin_(origin), callback_(std::move(callback)) {}
 
   ~CanCreateRegistrationTask() override = default;
 
@@ -122,8 +119,8 @@ class CanCreateRegistrationTask : public DatabaseTask {
   // The number of existing registrations found for |origin_|.
   size_t num_active_registrations_ = 0u;
 
-  base::WeakPtrFactory<CanCreateRegistrationTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<CanCreateRegistrationTask> weak_factory_{
+      this};  // Keep as last.
 };
 
 }  // namespace
@@ -142,8 +139,7 @@ CreateMetadataTask::CreateMetadataTask(
       options_(std::move(options)),
       icon_(icon),
       start_paused_(start_paused),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 CreateMetadataTask::~CreateMetadataTask() = default;
 

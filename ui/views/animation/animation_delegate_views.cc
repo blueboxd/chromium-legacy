@@ -12,7 +12,8 @@
 namespace views {
 
 AnimationDelegateViews::AnimationDelegateViews(View* view) : view_(view) {
-  scoped_observer_.Add(view);
+  if (view)
+    scoped_observer_.Add(view);
 }
 
 AnimationDelegateViews::~AnimationDelegateViews() {

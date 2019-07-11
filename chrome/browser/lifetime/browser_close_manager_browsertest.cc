@@ -303,6 +303,11 @@ class BrowserCloseManagerBrowserTest : public InProcessBrowserTest {
       PrepareForDialog(browser->tab_strip_model()->GetWebContentsAt(i));
   }
 
+  void WaitForAllBrowsersToClose() {
+    for (size_t i = 0U; i < browsers_.size(); ++i)
+      ui_test_utils::WaitForBrowserToClose();
+  }
+
   std::vector<Browser*> browsers_;
 };
 
@@ -319,11 +324,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestSingleTabShutdown) {
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -343,12 +346,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   chrome::CloseAllBrowsersAndQuit();
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -378,10 +379,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, PRE_TestSessionRestore) {
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   navigation_observer.Wait();
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   chrome::CloseAllBrowsersAndQuit();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -441,12 +440,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestMultipleWindows) {
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
 
   // Allow shutdown for both beforeunload events.
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -477,11 +474,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   // All tabs should still be open.
   EXPECT_EQ(3, browsers_[0]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -514,13 +509,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
   EXPECT_EQ(1, browsers_[2]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 3);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
-  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
-  EXPECT_TRUE(BrowserList::GetInstance()->empty());
+
+  WaitForAllBrowsersToClose();
 }
 
 // Test that tabs that are slow to respond are not closed prematurely.
@@ -563,13 +555,11 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 
   // All tabs should still be open.
   EXPECT_EQ(kTabCount, browsers_[0]->tab_strip_model()->count());
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
 
   // Quit, this time accepting close confirmation dialog.
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -621,11 +611,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
     EXPECT_EQ(1, browsers_[i]->tab_strip_model()->count());
 
   // Quit, this time accepting close confirmation dialog.
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, kBrowserCount);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -644,12 +632,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       browsers_[0], embedded_test_server()->GetURL("/beforeunload.html")));
   PrepareForDialog(browsers_[0]);
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   browsers_.push_back(CreateBrowser(browser()->profile()));
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -677,12 +663,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
 
   // Allow shutdown for both beforeunload dialogs.
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -698,14 +682,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   PrepareForDialog(browsers_[0]);
   PrepareForDialog(browsers_[1]);
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   AddBlankTabAndShow(browsers_[0]);
   AddBlankTabAndShow(browsers_[1]);
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -742,15 +724,13 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(2, browsers_[0]->tab_strip_model()->count());
   EXPECT_EQ(2, browsers_[1]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
 
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -800,9 +780,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   // The test.
 
   TabRestoreServiceChangesObserver restore_observer(browser2->profile());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
   chrome::CloseWindow(browser2);
   // Just to be sure CloseWindow doesn't have asynchronous tasks
   // that could have an impact.
@@ -829,18 +806,14 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(2, browser2->tab_strip_model()->count());
   // Accept closing the second tab.
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   // Now the second window/browser should be closed.
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   EXPECT_EQ(browser(), BrowserList::GetInstance()->get(0));
   EXPECT_EQ(1u, restore_observer.changes_count());
 
   // Restore the closed browser.
-  content::WindowedNotificationObserver open_window_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   chrome::OpenWindowWithRestoredTabs(browser()->profile());
-  open_window_observer.Wait();
   EXPECT_EQ(2u, BrowserList::GetInstance()->size());
   browser2 = BrowserList::GetInstance()->get(0) != browser()
                  ? BrowserList::GetInstance()->get(0)
@@ -876,14 +849,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(1, browsers_[0]->tab_strip_model()->count());
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   browsers_[1]->tab_strip_model()->CloseAllTabs();
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
 
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -910,14 +881,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(1, browsers_[0]->tab_strip_model()->count());
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_FALSE(browsers_[1]->ShouldCloseWindow());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
 
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -943,14 +912,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(1, browsers_[0]->tab_strip_model()->count());
   EXPECT_EQ(1, browsers_[1]->tab_strip_model()->count());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   chrome::CloseAllBrowsersAndQuit();
   ASSERT_FALSE(browsers_[0]->ShouldCloseWindow());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
 
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -962,12 +929,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
-
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::NO_USER_CHOICE);
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_EQ(1, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
@@ -1008,11 +972,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       browser()->profile())->NonMaliciousInProgressCount());
 
   // Close the browser with no user action.
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::NO_USER_CHOICE);
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -1029,12 +991,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   EXPECT_EQ(GURL(chrome::kChromeUIDownloadsURL),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
-
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
-  close_observer.Wait();
+  WaitForAllBrowsersToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   if (browser_defaults::kBrowserAliveWithNoWindows)
@@ -1049,10 +1008,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* otr_browser = CreateBrowser(otr_profile);
   {
-    RepeatedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
     browser()->window()->Close();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(otr_browser));
   content::TestNavigationObserver navigation_observer(
@@ -1064,12 +1021,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_EQ(GURL(chrome::kChromeUIDownloadsURL),
             otr_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
-
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_EQ(0, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
@@ -1099,10 +1053,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   ASSERT_EQ(0, num_downloads_blocking);
 
   {
-    RepeatedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
     otr_browser->window()->Close();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
 
   ASSERT_EQ(
@@ -1111,11 +1063,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   ASSERT_EQ(1, num_downloads_blocking);
 
   {
-    RepeatedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED, 2);
     TestBrowserCloseManager::AttemptClose(
         TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
 
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
@@ -1148,10 +1098,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   {
-    RepeatedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
     browser()->window()->Close();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
 
   // When the shutdown is cancelled, the downloads page should be opened in a
@@ -1169,11 +1117,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
             other_profile_browser->tab_strip_model()->GetActiveWebContents()
                 ->GetURL());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   if (browser_defaults::kBrowserAliveWithNoWindows)
@@ -1200,12 +1147,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   cancel_observer.Wait();
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
 
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
@@ -1244,12 +1189,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
   std::unique_ptr<ScopedKeepAlive> tmp_keep_alive;
   Profile* profile = browser()->profile();
   {
-    RepeatedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
     tmp_keep_alive.reset(new ScopedKeepAlive(KeepAliveOrigin::PANEL_VIEW,
                                              KeepAliveRestartOption::DISABLED));
     chrome::CloseAllBrowsers();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
@@ -1261,12 +1204,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
   new_browser_observer.WaitForSingleNewBrowser();
   tmp_keep_alive.reset();
   EXPECT_FALSE(IsBackgroundModeSuspended());
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
 
   // Background mode should not be suspended when quitting.
   chrome::CloseAllBrowsersAndQuit();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_FALSE(IsBackgroundModeSuspended());
@@ -1276,11 +1217,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
 // background mode.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
                        DISABLED_CloseSingleBrowserWithBackgroundMode) {
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   EXPECT_FALSE(IsBackgroundModeSuspended());
   browser()->window()->Close();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_FALSE(IsBackgroundModeSuspended());
@@ -1291,13 +1230,11 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     BrowserCloseManagerWithBackgroundModeBrowserTest,
     DISABLED_CloseAllBrowsersWithNoOpenBrowsersWithBackgroundMode) {
-  RepeatedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   EXPECT_FALSE(IsBackgroundModeSuspended());
   ScopedKeepAlive tmp_keep_alive(KeepAliveOrigin::PANEL_VIEW,
                                  KeepAliveRestartOption::DISABLED);
   browser()->window()->Close();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_FALSE(IsBackgroundModeSuspended());

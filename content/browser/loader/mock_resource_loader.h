@@ -112,7 +112,7 @@ class MockResourceLoader : public ResourceHandler::Delegate {
 
   std::unique_ptr<base::RunLoop> canceled_or_idle_run_loop_;
 
-  base::WeakPtrFactory<MockResourceLoader> weak_factory_;
+  base::WeakPtrFactory<MockResourceLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoader);
 };

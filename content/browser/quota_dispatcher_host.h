@@ -87,7 +87,7 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
 
-  base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(QuotaDispatcherHost);
 };

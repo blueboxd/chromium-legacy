@@ -312,6 +312,9 @@ extern const char
 extern const char kEnableAutofillSaveCardImprovedUserConsentName[];
 extern const char kEnableAutofillSaveCardImprovedUserConsentDescription[];
 
+extern const char kEnableAutofillSaveCardShowNoThanksName[];
+extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
+
 extern const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[];
 extern const char
     kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[];
@@ -1769,6 +1772,9 @@ extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
+
+extern const char kCameraSystemWebAppName[];
+extern const char kCameraSystemWebAppDescription[];
 
 extern const char kCrOSContainerName[];
 extern const char kCrOSContainerDescription[];

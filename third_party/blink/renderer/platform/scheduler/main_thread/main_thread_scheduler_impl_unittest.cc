@@ -3650,6 +3650,49 @@ TEST_P(VeryHighPriorityForCompositingWhenFastExperimentTest,
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
 
+class VeryHighPriorityForCompositingAlternatingExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAlternatingExperimentTest()
+      : MainThreadSchedulerImplTest(
+            {kVeryHighPriorityForCompositingAlternating},
+            {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    VeryHighPriorityForCompositingAlternatingExperimentTest,
+    testing::Values(AntiStarvationLogic::kEnabled,
+                    AntiStarvationLogic::kDisabled),
+    GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAlternatingExperimentTest,
+       TestCompositorPolicy_AlternatingCompositorTasks) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 C1 C2 C3");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("C1", "D1", "C2", "D2", "C3", "D3"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAlternatingExperimentTest,
+       TestCompositorPolicy_AlternatingCompositorStaysAtHighest) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 C1 C2 C3");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
+                                 blink::WebInputEvent::kGestureScrollBegin);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("C1", "C2", "C3", "D1", "D2", "D3"));
+  EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
+}
+
 }  // namespace main_thread_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

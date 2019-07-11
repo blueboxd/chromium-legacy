@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
+#include "ui/events/event_constants.h"
 
 namespace {
 

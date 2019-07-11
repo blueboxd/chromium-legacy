@@ -51,8 +51,7 @@ FlingController::FlingController(
           config.touchpad_tap_suppression_config),
       touchscreen_tap_suppression_controller_(
           config.touchscreen_tap_suppression_config),
-      clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(event_sender_client);
   DCHECK(scheduler_client);
 }

@@ -115,7 +115,7 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
   std::vector<LockLevelMap> locks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<DisjointRangeLockManager> weak_factory_;
+  base::WeakPtrFactory<DisjointRangeLockManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DisjointRangeLockManager);
 };
 

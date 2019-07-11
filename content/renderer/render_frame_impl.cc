@@ -1850,8 +1850,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
           base::BindRepeating(&RenderFrameImpl::RequestOverlayRoutingToken,
                               base::Unretained(this))),
       input_target_client_impl_(this),
-      devtools_frame_token_(params.devtools_frame_token),
-      weak_factory_(this) {
+      devtools_frame_token_(params.devtools_frame_token) {
   DCHECK(RenderThread::IsMainThread());
   // The InterfaceProvider to access Mojo services exposed by the RFHI must be
   // provided at construction time. See: https://crbug.com/729021/.

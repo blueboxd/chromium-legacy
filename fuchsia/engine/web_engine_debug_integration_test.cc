@@ -9,19 +9,14 @@
 #include "base/files/file_enumerator.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/service_directory_client.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/test_debug_listener.h"
-#include "net/http/http_status_code.h"
+#include "fuchsia/engine/test_devtools_list_fetcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,8 +25,7 @@ const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
 
 }  // namespace
 
-class WebEngineDebugIntegrationTest : public testing::Test,
-                                      public net::URLFetcherDelegate {
+class WebEngineDebugIntegrationTest : public testing::Test {
  public:
   WebEngineDebugIntegrationTest()
       : dev_tools_listener_binding_(&dev_tools_listener_) {}
@@ -64,10 +58,6 @@ class WebEngineDebugIntegrationTest : public testing::Test,
     // callback so the listener will have been added after this call returns.
     debug_->EnableDevTools(dev_tools_listener_binding_.NewBinding());
 
-    request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            message_loop_.task_runner());
-
     test_server_.ServeFilesFromSourceDirectory(kTestServerRoot);
     ASSERT_TRUE(test_server_.Start());
   }
@@ -89,53 +79,18 @@ class WebEngineDebugIntegrationTest : public testing::Test,
                                   web_context.NewRequest());
     web_context.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
 
-    fuchsia::web::FramePtr web_frame;
-    web_context->CreateFrame(web_frame.NewRequest());
-    web_frame.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
-
-    fuchsia::web::NavigationControllerPtr nav_controller;
-    web_frame->GetNavigationController(nav_controller.NewRequest());
-    nav_controller.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
-
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> result(
-        run_loop.QuitClosure());
-    nav_controller->GetVisibleEntry(
-        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+    cr_fuchsia::ResultReceiver<
+        fuchsia::web::Context_GetRemoteDebuggingPort_Result>
+        port_receiver(run_loop.QuitClosure());
+    web_context->GetRemoteDebuggingPort(
+        cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
     run_loop.Run();
 
-    // Sanity check, the NavigationState should be empty at this point.
-    ASSERT_TRUE(result->IsEmpty());
-  }
-
-  base::Value GetDevToolsListFromPort(uint16_t port) {
-    std::string url = base::StringPrintf("http://127.0.0.1:%d/json/list", port);
-    std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-        GURL(url), net::URLFetcher::GET, this, TRAFFIC_ANNOTATION_FOR_TESTS);
-    fetcher->SetRequestContext(request_context_getter_.get());
-    fetcher->Start();
-
-    base::RunLoop run_loop;
-    on_url_fetch_complete_ack_ = run_loop.QuitClosure();
-    run_loop.Run();
-
-    if (fetcher->GetStatus().status() != net::URLRequestStatus::SUCCESS)
-      return base::Value();
-
-    if (fetcher->GetResponseCode() != net::HTTP_OK)
-      return base::Value();
-
-    std::string result;
-    if (!fetcher->GetResponseAsString(&result))
-      return base::Value();
-
-    return base::JSONReader::Read(result).value_or(base::Value());
-  }
-
-  // fuchsia::web::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    if (on_url_fetch_complete_ack_)
-      std::move(on_url_fetch_complete_ack_).Run();
+    // Sanity check.
+    ASSERT_TRUE(port_receiver->is_err());
+    ASSERT_EQ(port_receiver->err(),
+              fuchsia::web::ContextError::REMOTE_DEBUGGING_PORT_NOT_OPENED);
   }
 
   base::MessageLoopForIO message_loop_;
@@ -146,7 +101,6 @@ class WebEngineDebugIntegrationTest : public testing::Test,
   fuchsia::web::ContextProviderPtr web_context_provider_;
   fuchsia::web::DebugSyncPtr debug_;
 
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::OnceClosure on_url_fetch_complete_ack_;
 
   net::EmbeddedTestServer test_server_;

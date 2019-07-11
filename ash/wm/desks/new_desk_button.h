@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -15,7 +16,9 @@ namespace ash {
 
 // A button view that shows up in the top-right corner of the screen when
 // overview mode is on, which is used to create a new virtual desk.
-class ASH_EXPORT NewDeskButton : public views::LabelButton {
+class ASH_EXPORT NewDeskButton
+    : public views::LabelButton,
+      public OverviewHighlightController::OverviewHighlightableView {
  public:
   NewDeskButton(views::ButtonListener* listener);
   ~NewDeskButton() override = default;
@@ -29,6 +32,10 @@ class ASH_EXPORT NewDeskButton : public views::LabelButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
       const override;
+
+  // OverviewHighlightController::OverviewHighlightableView:
+  views::View* GetView() override;
+  gfx::Rect GetHighlightBounds() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NewDeskButton);

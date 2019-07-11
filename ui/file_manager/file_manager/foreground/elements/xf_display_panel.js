@@ -62,6 +62,9 @@ class DisplayPanel extends HTMLElement {
    */
   static html_() {
     return `<style>
+              :host {
+                max-width: 400px;
+              }
               #container {
                   align-items: stretch;
                   background-color: #FFF;

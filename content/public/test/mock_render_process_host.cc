@@ -63,8 +63,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
           BrowserContext::GetServiceInstanceGroupFor(browser_context),
           base::Token::CreateRandom(),
           base::Token::CreateRandom()),
-      url_loader_factory_(nullptr),
-      weak_ptr_factory_(this) {
+      url_loader_factory_(nullptr) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);

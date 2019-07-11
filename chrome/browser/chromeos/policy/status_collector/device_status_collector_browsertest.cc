@@ -126,7 +126,9 @@ const char kShillFakeUserhash[] = "user1";
 
 // Constants for Crostini reporting test cases:
 const char kCrostiniUserEmail[] = "user0@managed.com";
-const char kTerminaVmVersion[] = "1.33.7";
+const char kTerminaVmComponentVersion[] = "1.33.7";
+const char kTerminaVmKernelVersion[] =
+    "4.19.56-05556-gca219a5b1086 #3 SMP PREEMPT Mon Jul 1 14:36:38 CEST 2019";
 const char kActualLastLaunchTimeFormatted[] = "Sat, 1 Sep 2018 11:50:50 GMT";
 const char kLastLaunchTimeWindowStartFormatted[] =
     "Sat, 1 Sep 2018 00:00:00 GMT";
@@ -1551,7 +1553,8 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
   testing_profile_->GetPrefs()->SetBoolean(
       crostini::prefs::kReportCrostiniUsageEnabled, true);
   testing_profile_->GetPrefs()->SetString(
-      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion,
+      kTerminaVmComponentVersion);
   testing_profile_->GetPrefs()->SetInt64(
       crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
       kLastLaunchTimeWindowStartInJavaTime);
@@ -1561,7 +1564,7 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
   EXPECT_EQ(kLastLaunchTimeWindowStartInJavaTime,
             session_status_.crostini_status()
                 .last_launch_time_window_start_timestamp());
-  EXPECT_EQ(kTerminaVmVersion,
+  EXPECT_EQ(kTerminaVmComponentVersion,
             session_status_.crostini_status().last_launch_vm_image_version());
   // In tests, GetUserDMToken returns the e-mail for easy verification.
   EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
@@ -1589,6 +1592,49 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
   EXPECT_FALSE(got_session_status_);
 }
 
+TEST_F(DeviceStatusCollectorTest, CrostiniTerminaVmKernelVersionReporting) {
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+
+  // Prerequisites for any Crostini reporting to take place:
+  const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled, true);
+  testing_profile_->GetPrefs()->SetInt64(
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
+      kLastLaunchTimeWindowStartInJavaTime);
+  testing_profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                           true);
+
+  // Set the kernel version to be reported in our cache:
+  testing_profile_->GetPrefs()->SetString(
+      crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion,
+      kTerminaVmKernelVersion);
+
+  // Check that nothing is reported when the feature flag is not enabled:
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+  EXPECT_TRUE(session_status_.crostini_status()
+                  .last_launch_vm_kernel_version()
+                  .empty());
+
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAdditionalEnterpriseReporting);
+
+  // Check that the kernel version is reported now that the feature flag is
+  // enabled:
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+  EXPECT_EQ(kTerminaVmKernelVersion,
+            session_status_.crostini_status().last_launch_vm_kernel_version());
+}
+
 TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {
   RestartStatusCollector(
       base::BindRepeating(&GetEmptyVolumeInfo),
@@ -1603,7 +1649,8 @@ TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {
   testing_profile_->GetPrefs()->SetBoolean(
       crostini::prefs::kReportCrostiniUsageEnabled, true);
   testing_profile_->GetPrefs()->SetString(
-      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion,
+      kTerminaVmComponentVersion);
   testing_profile_->GetPrefs()->SetInt64(
       crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
       kLastLaunchTimeWindowStartInJavaTime);
@@ -1690,7 +1737,8 @@ TEST_F(DeviceStatusCollectorTest,
   testing_profile_->GetPrefs()->SetBoolean(
       crostini::prefs::kReportCrostiniUsageEnabled, true);
   testing_profile_->GetPrefs()->SetString(
-      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion,
+      kTerminaVmComponentVersion);
   testing_profile_->GetPrefs()->SetInt64(
       crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
       kLastLaunchTimeWindowStartInJavaTime);

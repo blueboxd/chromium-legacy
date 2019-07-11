@@ -27,7 +27,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -59,8 +58,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -119,22 +116,17 @@ Browser* FindBrowserForApp(const std::string& app_name) {
 
 // Close |app_browser| and wait until it's closed.
 void CloseAppBrowserWindow(Browser* app_browser) {
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(app_browser));
   app_browser->window()->Close();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(app_browser);
 }
 
 // Close browsers from context menu
 void CloseBrowserWindow(Browser* browser,
                         LauncherContextMenu* menu,
                         int close_command) {
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   // Note that event_flag is never used inside function ExecuteCommand.
   menu->ExecuteCommand(close_command, ui::EventFlags::EF_NONE);
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser);
 }
 
 int64_t GetDisplayIdForBrowserWindow(BrowserWindow* window) {

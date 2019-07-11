@@ -186,8 +186,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       create_view_(true),
       pause_throbber_(false),
       delegate_(delegate),
-      widget_observer_(this),
-      weak_ptr_factory_(this) {
+      widget_observer_(this) {
   InitInterstitialPageMap();
 }
 

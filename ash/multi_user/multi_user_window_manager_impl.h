@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

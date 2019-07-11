@@ -46,7 +46,7 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
 
   std::unique_ptr<TracingDelegate> delegate_;
   std::unique_ptr<TraceUploader> trace_uploader_;
-  base::WeakPtrFactory<TracingUI> weak_factory_;
+  base::WeakPtrFactory<TracingUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TracingUI);
 };

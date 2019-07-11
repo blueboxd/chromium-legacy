@@ -212,7 +212,7 @@ class PanelItem extends HTMLElement {
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
         secondaryButton.onclick = this.onclick;
-        secondaryButton.dataset.category = 'retry';
+        secondaryButton.dataset.category = 'dismiss';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeInfo:

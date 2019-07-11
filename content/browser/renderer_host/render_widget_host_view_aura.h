@@ -707,7 +707,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // See OnDisplayMetricsChanged() for details.
   bool needs_to_update_display_metrics_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

@@ -71,6 +71,7 @@ Polymer({
   },
 
   /**
+   * @param {MouseEvent} e
    * @private
    */
   onClick_: function(e) {

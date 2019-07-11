@@ -311,7 +311,7 @@ class CONTENT_EXPORT UserMediaProcessor
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.
-  base::WeakPtrFactory<UserMediaProcessor> weak_factory_;
+  base::WeakPtrFactory<UserMediaProcessor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserMediaProcessor);
 };

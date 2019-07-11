@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -21,6 +20,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -67,7 +67,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
           message, base::string16(), GURL(), notifier_id,
           message_center::RichNotificationData(), std::move(delegate),
-          ash::kNotificationSettingsIcon,
+          vector_icons::kSettingsIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_renotify(true);
 

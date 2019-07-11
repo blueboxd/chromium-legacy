@@ -122,7 +122,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   // This must come last to make sure weak pointers are invalidated first.
-  base::WeakPtrFactory<ResourceMessageFilter> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceMessageFilter> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };

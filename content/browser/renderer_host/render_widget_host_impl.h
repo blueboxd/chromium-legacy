@@ -1210,7 +1210,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Event IDs for touch event acks that should be ignored.
   std::unordered_set<uint32_t> touch_event_acks_to_ignore_;
 
-  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
+  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

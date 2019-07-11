@@ -110,6 +110,11 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
   DOMHighResTimeStamp start = 0.0;
   if (mark_options && mark_options->hasStartTime()) {
     start = mark_options->startTime();
+    if (start < 0.0) {
+      exception_state.ThrowTypeError("'" + mark_name +
+                                     "' cannot have a negative start time.");
+      return nullptr;
+    }
   } else {
     start = performance_->now();
   }
@@ -192,14 +197,20 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   return value - timing->navigationStart();
 }
 
-double UserTiming::GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+double UserTiming::GetTimeOrFindMarkTime(const AtomicString& measure_name,
+                                         const StringOrDouble& mark_or_time,
                                          ExceptionState& exception_state) {
   if (mark_or_time.IsString()) {
     return FindExistingMarkStartTime(AtomicString(mark_or_time.GetAsString()),
                                      exception_state);
   }
   DCHECK(mark_or_time.IsDouble());
-  return mark_or_time.GetAsDouble();
+  const double time = mark_or_time.GetAsDouble();
+  if (time < 0.0) {
+    exception_state.ThrowTypeError("'" + measure_name +
+                                   "' cannot have a negative time stamp.");
+  }
+  return time;
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
@@ -209,12 +220,15 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state) {
   double start_time =
-      start.IsNull() ? 0.0 : GetTimeOrFindMarkTime(start, exception_state);
+      start.IsNull()
+          ? 0.0
+          : GetTimeOrFindMarkTime(measure_name, start, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
-  double end_time = end.IsNull() ? performance_->now()
-                                 : GetTimeOrFindMarkTime(end, exception_state);
+  double end_time =
+      end.IsNull() ? performance_->now()
+                   : GetTimeOrFindMarkTime(measure_name, end, exception_state);
   if (exception_state.HadException())
     return nullptr;
 

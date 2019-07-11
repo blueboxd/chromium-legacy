@@ -695,7 +695,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/firstrun/TabbedModeFirstRunActivity.java",
   "java/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiver.java",
   "java/src/org/chromium/chrome/browser/firstrun/ToSAndUMAFirstRunFragment.java",
-  "java/src/org/chromium/chrome/browser/fullscreen/BrowserControlsOffsetHelper.java",
   "java/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegate.java",
   "java/src/org/chromium/chrome/browser/fullscreen/ChromeFullscreenManager.java",
   "java/src/org/chromium/chrome/browser/fullscreen/ComposedBrowserControlsVisibilityDelegate.java",

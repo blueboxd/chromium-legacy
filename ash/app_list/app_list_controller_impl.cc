@@ -588,6 +588,10 @@ ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
 }
 
+void AppListControllerImpl::OnShelfAlignmentChanged(aura::Window* root_window) {
+  DismissAppList();
+}
+
 void AppListControllerImpl::OnShellDestroying() {
   // Stop observing at the beginning of ~Shell to avoid unnecessary work during
   // Shell shutdown.

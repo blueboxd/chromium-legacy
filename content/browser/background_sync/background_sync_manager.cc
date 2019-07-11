@@ -501,8 +501,7 @@ BackgroundSyncManager::BackgroundSyncManager(
       parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
       num_firing_registrations_(0),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(devtools_context_);
 

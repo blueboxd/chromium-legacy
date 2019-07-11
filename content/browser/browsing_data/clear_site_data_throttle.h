@@ -155,7 +155,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
   base::TimeTicks clearing_started_;
 
   // Needed for asynchronous parsing and deletion tasks.
-  base::WeakPtrFactory<ClearSiteDataThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<ClearSiteDataThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClearSiteDataThrottle);
 };

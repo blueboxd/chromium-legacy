@@ -341,7 +341,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
 
 class ThrottlingURLLoaderTest : public testing::Test {
  public:
-  ThrottlingURLLoaderTest() : weak_factory_(this) {}
+  ThrottlingURLLoaderTest() {}
 
   std::unique_ptr<ThrottlingURLLoader>& loader() { return loader_; }
   TestURLLoaderThrottle* throttle() const { return throttle_; }
@@ -385,7 +385,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
   // Owned by |throttles_| or |loader_|.
   TestURLLoaderThrottle* throttle_ = nullptr;
 
-  base::WeakPtrFactory<ThrottlingURLLoaderTest> weak_factory_;
+  base::WeakPtrFactory<ThrottlingURLLoaderTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoaderTest);
 };

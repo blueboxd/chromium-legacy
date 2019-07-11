@@ -132,7 +132,7 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   // Bound to the render thread.
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_;
+  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };

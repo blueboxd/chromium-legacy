@@ -229,7 +229,7 @@ struct FlexLayout::FlexLayoutData {
   // The total size of the layout (minus parent insets).
   NormalizedSize total_size;
   NormalizedInsets interior_margin;
-  gfx::Insets host_insets;
+  NormalizedInsets host_insets;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlexLayoutData);
@@ -305,10 +305,10 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
 
-  data.host_insets = host_view()->GetInsets();
+  data.host_insets = Normalize(orientation(), host_view()->GetInsets());
   data.interior_margin = Normalize(orientation(), interior_margin());
   NormalizedSizeBounds bounds = Normalize(orientation(), size_bounds);
-  bounds.Inset(Normalize(orientation(), data.host_insets));
+  bounds.Inset(data.host_insets);
   if (bounds.cross() && *bounds.cross() < minimum_cross_axis_size())
     bounds.set_cross(minimum_cross_axis_size());
 
@@ -334,9 +334,10 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
   }
 
   // Calculate the size of the host view.
-  data.layout.host_size = Denormalize(orientation(), data.total_size);
-  data.layout.host_size.Enlarge(data.host_insets.width(),
-                                data.host_insets.height());
+  NormalizedSize host_size = data.total_size;
+  host_size.Enlarge(data.host_insets.main_size(),
+                    data.host_insets.cross_size());
+  data.layout.host_size = Denormalize(orientation(), host_size);
 
   // Size and position the children in screen space.
   CalculateChildBounds(size_bounds, &data);
@@ -408,11 +409,10 @@ void FlexLayout::CalculateChildBounds(const SizeBounds& size_bounds,
   // Apply main axis alignment (we've already done cross-axis alignment above).
   int available_main = (size_bounds.width() ? *size_bounds.width()
                                             : data->layout.host_size.width());
-  available_main = std::max(0, available_main - data->host_insets.width());
+  available_main = std::max(0, available_main - data->host_insets.main_size());
   const int excess_main = available_main - data->total_size.main();
-  NormalizedPoint start =
-      Normalize(orientation(),
-                gfx::Point(data->host_insets.left(), data->host_insets.top()));
+  NormalizedPoint start(data->host_insets.main_leading(),
+                        data->host_insets.cross_leading());
   switch (main_axis_alignment()) {
     case LayoutAlignment::kStart:
       break;

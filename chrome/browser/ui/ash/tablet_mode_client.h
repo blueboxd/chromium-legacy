@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/tablet_mode_toggle_observer.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
@@ -19,7 +19,7 @@ class TabletModeClientObserver;
 // Holds tablet mode state in chrome. Observes ash for changes, then
 // synchronously fires all its observers. This allows all tablet mode code in
 // chrome to see a state change at the same time.
-class TabletModeClient : public ash::TabletModeToggleObserver,
+class TabletModeClient : public ash::TabletModeObserver,
                          public BrowserTabStripTrackerDelegate,
                          public TabStripModelObserver {
  public:
@@ -38,8 +38,13 @@ class TabletModeClient : public ash::TabletModeToggleObserver,
 
   void RemoveObserver(TabletModeClientObserver* observer);
 
-  // ash::TabletModeToggleObserver:
-  void OnTabletModeToggled(bool enabled) override;
+  // Notify the tablet mode change.
+  void OnTabletModeToggled(bool enabled);
+
+  // ash::TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+  void OnTabletControllerDestroyed() override;
 
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;

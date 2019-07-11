@@ -39,8 +39,7 @@ constexpr const char* help_msg =
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n"
-    "  --disable_validator  disable frame validation, useful on old\n"
-    "                       platforms that don't support import mode.\n"
+    "  --disable_validator  disable frame validation.\n"
     "  --output_frames      write all decoded video frames to the\n"
     "                       \"<testname>\" folder.\n"
     "  --output_folder      overwrite the default output folder used when\n"
@@ -63,8 +62,9 @@ class VideoDecoderTest : public ::testing::Test {
     LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
-    // Validate decoded video frames.
-    if (g_env->IsValidatorEnabled()) {
+    // Use the video frame validator to validate decoded video frames if import
+    // mode is supported.
+    if (g_env->IsValidatorEnabled() && g_env->ImportSupported()) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
@@ -257,12 +257,11 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 
 // Play a video from start to finish. Thumbnails of the decoded frames will be
 // rendered into a image, whose checksum is compared to a golden value. This
-// test is only needed on older platforms that don't support the video frame
-// validator, which requires direct access to the video frame's memory. This
-// test is only ran when --disable_validator is specified, and will be
-// deprecated in the future.
+// test is only run on older platforms that don't support the video frame
+// validator, which requires import mode. This test will be deprecated once all
+// devices support import mode.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
-  if (g_env->IsValidatorEnabled())
+  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported())
     GTEST_SKIP();
 
   base::FilePath output_folder =
@@ -284,6 +283,27 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
   EXPECT_TRUE(static_cast<FrameRendererThumbnail*>(tvp->GetFrameRenderer())
                   ->ValidateThumbnail());
+}
+
+// Play a video from start to finish, using allocate mode. This test is only run
+// on platforms that support import mode, as on allocate-mode only platforms all
+// tests are run in allocate mode. The test will be skipped when --use_vd is
+// specified as the new video decoders only support import mode.
+// TODO(dstaessens): Deprecate after switching to new VD-based video decoders.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
+  if (!g_env->ImportSupported() || g_env->UseVD())
+    GTEST_SKIP();
+
+  VideoDecoderClientConfig config;
+  config.allocation_mode = AllocationMode::kAllocate;
+  auto tvp = CreateVideoPlayer(g_env->Video(), config);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 }  // namespace test

@@ -961,8 +961,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       track_adapter_map_(
           new WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
                                                task_runner)),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   CHECK(client_);
 
   GetPeerConnectionHandlers()->insert(this);

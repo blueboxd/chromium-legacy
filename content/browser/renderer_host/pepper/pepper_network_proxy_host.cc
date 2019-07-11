@@ -57,8 +57,7 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
       render_process_id_(0),
       render_frame_id_(0),
       is_allowed_(false),
-      waiting_for_ui_thread_data_(true),
-      weak_factory_(this) {
+      waiting_for_ui_thread_data_(true) {
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_,
                                      &render_frame_id_);
   base::PostTaskWithTraitsAndReplyWithResult(

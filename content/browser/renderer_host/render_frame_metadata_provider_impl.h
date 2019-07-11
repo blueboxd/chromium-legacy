@@ -93,7 +93,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 #endif
   base::Optional<bool> pending_report_all_frame_submission_for_testing_;
 
-  base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_;
+  base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataProviderImpl);
 };

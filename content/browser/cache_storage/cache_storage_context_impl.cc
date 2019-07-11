@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -24,10 +25,23 @@
 
 namespace content {
 
+namespace {
+
+const base::Feature kCacheStorageSequenceFeature{
+    "CacheStorageSequence", base::FEATURE_DISABLED_BY_DEFAULT};
+
+scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
+  if (!base::FeatureList::IsEnabled(kCacheStorageSequenceFeature))
+    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::TaskPriority::USER_VISIBLE});
+}
+
+}  // namespace
+
 CacheStorageContextImpl::CacheStorageContextImpl(
     BrowserContext* browser_context)
-    : task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+    : task_runner_(CreateSchedulerTaskRunner()),
       observers_(base::MakeRefCounted<ObserverList>()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

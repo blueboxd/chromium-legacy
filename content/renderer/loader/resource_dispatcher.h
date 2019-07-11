@@ -247,7 +247,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
-  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
+  base::WeakPtrFactory<ResourceDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

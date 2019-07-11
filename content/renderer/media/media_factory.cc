@@ -23,7 +23,6 @@
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/stream/media_stream_renderer_factory_impl.h"
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
-#include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -45,6 +44,7 @@
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
@@ -270,7 +270,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   blink::WebSecurityOrigin security_origin =
       render_frame_->GetWebFrame()->GetSecurityOrigin();
   blink::WebMediaStream web_stream =
-      GetWebMediaStreamFromWebMediaPlayerSource(source);
+      blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.IsNull())
     return CreateWebMediaPlayerForMediaStream(
         client, sink_id, security_origin, web_frame, layer_tree_view, settings);

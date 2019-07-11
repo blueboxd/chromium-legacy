@@ -66,7 +66,7 @@ class PepperPlatformVideoCapture {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<PepperPlatformVideoCapture> weak_factory_;
+  base::WeakPtrFactory<PepperPlatformVideoCapture> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCapture);
 };

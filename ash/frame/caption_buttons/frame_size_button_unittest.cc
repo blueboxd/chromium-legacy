@@ -37,7 +37,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   bool CanMaximize() const override { return true; }
   bool CanMinimize() const override { return true; }
 
-  ash::FrameCaptionButtonContainerView* caption_button_container() {
+  FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
   }
 
@@ -75,7 +75,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   // Not owned.
-  ash::FrameCaptionButtonContainerView* caption_button_container_;
+  FrameCaptionButtonContainerView* caption_button_container_;
   bool resizable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
@@ -125,7 +125,7 @@ class FrameSizeButtonTest : public AshTestBase {
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate(resizable_);
     window_state_ =
-        ash::wm::GetWindowState(CreateWidget(delegate)->GetNativeWindow());
+        wm::GetWindowState(CreateWidget(delegate)->GetNativeWindow());
 
     FrameCaptionButtonContainerView::TestApi test(
         delegate->caption_button_container());
@@ -137,8 +137,8 @@ class FrameSizeButtonTest : public AshTestBase {
     close_button_ = test.close_button();
   }
 
-  ash::wm::WindowState* window_state() { return window_state_; }
-  const ash::wm::WindowState* window_state() const { return window_state_; }
+  wm::WindowState* window_state() { return window_state_; }
+  const wm::WindowState* window_state() const { return window_state_; }
 
   views::FrameCaptionButton* minimize_button() { return minimize_button_; }
   views::FrameCaptionButton* size_button() { return size_button_; }
@@ -146,7 +146,7 @@ class FrameSizeButtonTest : public AshTestBase {
 
  private:
   // Not owned.
-  ash::wm::WindowState* window_state_;
+  wm::WindowState* window_state_;
   views::FrameCaptionButton* minimize_button_;
   views::FrameCaptionButton* size_button_;
   views::FrameCaptionButton* close_button_;

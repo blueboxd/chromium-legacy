@@ -116,8 +116,7 @@ SharedWorkerHost::SharedWorkerHost(
       instance_(std::move(instance)),
       process_id_(process_id),
       next_connection_request_id_(1),
-      interface_provider_binding_(this),
-      weak_factory_(this) {
+      interface_provider_binding_(this) {
   DCHECK(instance_);
   // Set up the worker interface request. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()

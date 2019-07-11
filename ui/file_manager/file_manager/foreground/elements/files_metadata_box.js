@@ -215,7 +215,9 @@ var FilesMetadataBox = Polymer({
       return '';
     }
 
-    // TODO(noel): add ifd.raw cameraModel support.
+    if (ifd['raw']) {
+      return ifd['raw']['cameraModel'] || '';
+    }
 
     const id = 272;
     const model = (ifd.image && ifd.image[id] && ifd.image[id].value) || '';
@@ -274,9 +276,9 @@ var FilesMetadataBox = Polymer({
   deviceSettings_: function(ifd) {
     let result = '';
 
-    // TODO(noel): add ifd.raw device settings support.
-
-    if (ifd) {
+    if (ifd && ifd['raw']) {
+      result = this.rawDeviceSettings_(ifd['raw']);
+    } else if (ifd) {
       result = this.ifdDeviceSettings_(ifd);
     }
 
@@ -284,7 +286,39 @@ var FilesMetadataBox = Polymer({
   },
 
   /**
-   * @param {Object} ifd
+   * @param {!Object} raw
+   * @return {string}
+   *
+   * @private
+   */
+  rawDeviceSettings_: function(raw) {
+    let result = '';
+
+    const aperture = raw['aperture'] || 0;
+    if (aperture) {
+      result += 'f/' + aperture + ' ';
+    }
+
+    const exposureTime = raw['exposureTime'] || 0;
+    if (exposureTime) {
+      result += exposureTime + ' ';
+    }
+
+    const focalLength = raw['focalLength'] || 0;
+    if (focalLength) {
+      result += focalLength + 'mm ';
+    }
+
+    const isoSpeed = raw['isoSpeed'] || 0;
+    if (isoSpeed) {
+      result += 'ISO' + isoSpeed + ' ';
+    }
+
+    return result.trimEnd();
+  },
+
+  /**
+   * @param {!Object} ifd
    * @return {string}
    *
    * @private

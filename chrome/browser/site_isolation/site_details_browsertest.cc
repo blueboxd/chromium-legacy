@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
@@ -96,16 +97,6 @@ class TestMemoryDetails : public MetricsMemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(TestMemoryDetails);
 };
 
-IsolationScenarioType GetCurrentPolicy() {
-  if (content::AreAllSitesIsolatedForTesting())
-    return ISOLATE_ALL_SITES;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return ISOLATE_EXTENSIONS;
-#else
-  return ISOLATE_NOTHING;
-#endif
-}
-
 // This matcher takes three other matchers as arguments, and applies one of them
 // depending on the current site isolation mode. The first applies if no site
 // isolation mode is active; the second applies under --isolate-extensions mode;
@@ -114,24 +105,24 @@ MATCHER_P3(DependingOnPolicy,
            isolate_nothing,
            isolate_extensions,
            isolate_all_sites,
-           GetCurrentPolicy() == ISOLATE_NOTHING
-               ? std::string("(with oopifs disabled) ") +
-                     PrintToString(isolate_nothing)
-               : GetCurrentPolicy() == ISOLATE_EXTENSIONS
-                     ? std::string("(under --isolate-extensions) ") +
-                           PrintToString(isolate_extensions)
-                     : std::string("(under --site-per-process) ") +
-                           PrintToString(isolate_all_sites)) {
-  switch (GetCurrentPolicy()) {
-    case ISOLATE_NOTHING:
-      return ExplainMatchResult(isolate_nothing, arg, result_listener);
-    case ISOLATE_EXTENSIONS:
-      return ExplainMatchResult(isolate_extensions, arg, result_listener);
-    case ISOLATE_ALL_SITES:
-      return ExplainMatchResult(isolate_all_sites, arg, result_listener);
-    default:
-      return false;
-  }
+#if defined(OS_ANDROID)
+           std::string("(with oopifs disabled) ") +
+               PrintToString(isolate_nothing)
+#else
+           content::AreAllSitesIsolatedForTesting()
+               ? std::string("(under --site-per-process) ") +
+                     PrintToString(isolate_all_sites)
+               : std::string("(under --isolate-extensions) ") +
+                     PrintToString(isolate_extensions)
+#endif
+) {
+#if defined(OS_ANDROID)
+  return ExplainMatchResult(isolate_nothing, arg, result_listener);
+#else
+  return content::AreAllSitesIsolatedForTesting()
+             ? ExplainMatchResult(isolate_all_sites, arg, result_listener)
+             : ExplainMatchResult(isolate_extensions, arg, result_listener);
+#endif
 }
 
 // Matcher for base::Bucket objects that allows bucket_min to be a matcher.
@@ -299,36 +290,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(9));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(9));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(9));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 9));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
@@ -354,36 +315,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(7));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(7));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(7));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 7));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 11));
@@ -408,36 +339,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(11));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(11));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(11));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountLowerBound"),
-              HasOneSample(1));  // TODO(nick): This should be 2.
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountNoLimit"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(2));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 2, 11));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
@@ -461,37 +362,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  // Could be 11 if subframe processes were reused across BrowsingInstances.
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(15));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(11));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(15));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountLowerBound"),
-              HasOneSample(1));  // TODO(nick): This should be 3.
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountNoLimit"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
 
   // For --site-per-process, the total process count will be 12 instead of 15,
   // because the third tab's subframes (b, c, d) will reuse matching subframe
@@ -536,37 +406,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  // Could be 11 if subframe processes were reused across BrowsingInstances.
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(16));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(12));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(16));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountLowerBound"),
-              HasOneSample(1));  // TODO(nick): This should be 3.
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateHttpsSitesProcessCountNoLimit"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 13));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 21));
@@ -588,18 +427,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
   EXPECT_THAT(GetRenderProcessCount(), 1);
   EXPECT_EQ(0, details->GetOutOfProcessIframeCount());
 
@@ -625,18 +452,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 7));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 4));
@@ -654,18 +469,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 6));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 1, 4));
@@ -680,18 +483,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 4));
@@ -705,18 +496,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(4));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 3, 4));
@@ -730,18 +509,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(4));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 4));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 4, 4));
@@ -760,18 +527,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(4));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 4));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
@@ -786,18 +541,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(5));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(5));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 5, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 3, 3));
@@ -814,18 +557,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(3));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 3, 3));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 1, 1));
@@ -840,18 +571,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(4));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(4));
 
   // There should be four total renderer processes: one for each of the two web
   // iframes, one for extension3, and one for extension 1's background page.
@@ -882,18 +601,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(2));
   // TODO(nick): https://crbug.com/512560 Make the number below agree with the
   // estimates above, which assume consolidation of subframe processes.
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 3, 3));
@@ -918,28 +625,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(2));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -950,28 +635,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(2));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -987,28 +650,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(2));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -1019,28 +660,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
               HasOneSample(GetRenderProcessCount()));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
-              HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
-              HasOneSample(1));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountLowerBound"),
-              HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.IsolateAllSitesProcessCountNoLimit"),
-              HasOneSample(2));
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));

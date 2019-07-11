@@ -386,8 +386,7 @@ LocalStorageContextMojo::LocalStorageContextMojo(
                                          reinterpret_cast<uintptr_t>(this))),
       task_runner_(std::move(legacy_task_runner)),
       old_localstorage_path_(old_localstorage_path),
-      is_low_end_device_(base::SysInfo::IsLowEndDevice()),
-      weak_ptr_factory_(this) {
+      is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
           this, "LocalStorage", task_runner, MemoryDumpProvider::Options());

@@ -331,7 +331,7 @@ class CONTENT_EXPORT MediaDevicesManager
   std::map<uint32_t, EnumerationState> enumeration_states_;
   uint32_t next_enumeration_state_id_ = 0;
 
-  base::WeakPtrFactory<MediaDevicesManager> weak_factory_;
+  base::WeakPtrFactory<MediaDevicesManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaDevicesManager);
 };

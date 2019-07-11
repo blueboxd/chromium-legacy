@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind_helpers.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
@@ -85,7 +85,7 @@ void ShowInvalidLicenseNotification(Profile* profile) {
               message_center::NotifierType::SYSTEM_COMPONENT,
               kInvalidLicenseNotifierId),
           {}, new message_center::NotificationDelegate(),
-          ash::kNotificationPluginVmIcon,
+          kNotificationPluginVmIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->SetSystemPriority();
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(

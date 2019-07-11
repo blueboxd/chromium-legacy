@@ -161,7 +161,7 @@ class CONTENT_EXPORT AppCacheDiskCache {
   std::unique_ptr<disk_cache::Backend> disk_cache_;
   const char* const uma_name_;
 
-  base::WeakPtrFactory<AppCacheDiskCache> weak_factory_;
+  base::WeakPtrFactory<AppCacheDiskCache> weak_factory_{this};
 };
 
 }  // namespace content

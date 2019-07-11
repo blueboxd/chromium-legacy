@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -16,8 +17,16 @@ const char kScript[] =
     "   });"
     "});";
 
+// http://crbug.com/982234
+#if defined(OS_WIN)
+#define MAYBE_AutoCloseTabOnNonWebProtocolNavigation \
+  DISABLED_AutoCloseTabOnNonWebProtocolNavigation
+#else
+#define MAYBE_AutoCloseTabOnNonWebProtocolNavigation \
+  AutoCloseTabOnNonWebProtocolNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
-                       AutoCloseTabOnNonWebProtocolNavigation) {
+                       MAYBE_AutoCloseTabOnNonWebProtocolNavigation) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(true, EvalJs(web_contents, kScript));

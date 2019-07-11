@@ -79,7 +79,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // This is used for UMA recording.
   std::map<std::string, std::pair<int, int>> num_requests_and_updates_;
 
-  base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_;
+  base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRegistrationNotifier);
 };

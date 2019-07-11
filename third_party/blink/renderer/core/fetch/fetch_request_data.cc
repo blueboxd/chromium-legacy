@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 
+#include "net/base/request_priority.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -19,34 +20,30 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 
-namespace mojo {
+namespace {
 
-template <>
-struct TypeConverter<::blink::ResourceLoadPriority,
-                     network::mojom::blink::RequestPriority> {
-  static ::blink::ResourceLoadPriority Convert(
-      network::mojom::blink::RequestPriority priority) {
-    switch (priority) {
-      case network::mojom::blink::RequestPriority::kThrottled:
-        break;
-      case network::mojom::blink::RequestPriority::kIdle:
-        return ::blink::ResourceLoadPriority::kVeryLow;
-      case network::mojom::blink::RequestPriority::kLowest:
-        return ::blink::ResourceLoadPriority::kLow;
-      case network::mojom::blink::RequestPriority::kLow:
-        return ::blink::ResourceLoadPriority::kMedium;
-      case network::mojom::blink::RequestPriority::kMedium:
-        return ::blink::ResourceLoadPriority::kHigh;
-      case network::mojom::blink::RequestPriority::kHighest:
-        return ::blink::ResourceLoadPriority::kVeryHigh;
-    }
-
-    NOTREACHED() << priority;
-    return blink::ResourceLoadPriority::kUnresolved;
+::blink::ResourceLoadPriority ConvertRequestPriorityToResourceLoadPriority(
+    net::RequestPriority priority) {
+  switch (priority) {
+    case net::RequestPriority::THROTTLED:
+      break;
+    case net::RequestPriority::IDLE:
+      return ::blink::ResourceLoadPriority::kVeryLow;
+    case net::RequestPriority::LOWEST:
+      return ::blink::ResourceLoadPriority::kLow;
+    case net::RequestPriority::LOW:
+      return ::blink::ResourceLoadPriority::kMedium;
+    case net::RequestPriority::MEDIUM:
+      return ::blink::ResourceLoadPriority::kHigh;
+    case net::RequestPriority::HIGHEST:
+      return ::blink::ResourceLoadPriority::kVeryHigh;
   }
-};
 
-}  // namespace mojo
+  NOTREACHED() << priority;
+  return blink::ResourceLoadPriority::kUnresolved;
+}
+
+}  // namespace
 
 namespace blink {
 
@@ -123,7 +120,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetKeepalive(fetch_api_request.keepalive);
   request->SetIsHistoryNavigation(fetch_api_request.is_history_navigation);
   request->SetPriority(
-      mojo::ConvertTo<ResourceLoadPriority>(fetch_api_request.priority));
+      ConvertRequestPriorityToResourceLoadPriority(fetch_api_request.priority));
   if (fetch_api_request.fetch_window_id)
     request->SetWindowId(fetch_api_request.fetch_window_id.value());
   return request;

@@ -13,7 +13,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
@@ -30,10 +29,10 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -46,17 +45,12 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/views/background.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -64,13 +58,6 @@
 
 namespace ash {
 namespace {
-
-// The color and opacity of the overview selector.
-constexpr SkColor kWindowSelectionColor = SkColorSetARGB(36, 255, 255, 255);
-
-// Corner radius and shadow applied to the overview selector border.
-constexpr int kWindowSelectionRadius = 9;
-constexpr int kWindowSelectionShadowElevation = 24;
 
 // Windows are not allowed to get taller than this.
 constexpr int kMaxHeight = 512;
@@ -100,11 +87,6 @@ constexpr char kOverviewExitTabletHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.TabletMode";
 constexpr char kOverviewExitSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SplitView";
-
-// Returns the vector for the fade in animation.
-gfx::Vector2d GetSlideVectorForFadeIn(bool reverse, const gfx::Rect& bounds) {
-  return gfx::Vector2d(bounds.width() * (reverse ? -1 : 1), 0);
-}
 
 template <const char* clamshell_single_name,
           const char* clamshell_multi_name,
@@ -488,66 +470,8 @@ void OverviewGrid::PositionWindows(
     window_item->SetBounds(rects[i], animation_types[i]);
   }
 
-  // If the selection widget is active, reposition it without any animation.
-  if (selection_widget_)
-    MoveSelectionWidgetToTarget(animate);
-}
-
-bool OverviewGrid::Move(bool reverse, bool animate) {
-  if (empty())
-    return true;
-
-  bool recreate_selection_widget = false;
-  bool out_of_bounds = false;
-  bool changed_selection_index = false;
-  gfx::RectF old_bounds;
-  if (SelectedWindow())
-    old_bounds = SelectedWindow()->target_bounds();
-
-  // TODO(dantonvu|sammiequon): Refactor this so OverviewSession controls and
-  // owns |selection_widget_|. Also rename selection related names to
-  // highlighted as selection can also mean something else in overview.
-  if (!selection_widget_) {
-    selected_index_ = reverse ? window_list_.size() - 1 : 0;
-    changed_selection_index = true;
-  }
-
-  // Checks number of windows present during a session. If there's only one
-  // window being used across all displays, allow the user to highlight the
-  // window but unable to move it.
-  // TODO(sammiequon): Investigate if we can remove this call.
-  if (overview_session()->NumWindowsTotal() == 1u) {
-    MoveSelectionWidget(reverse, recreate_selection_widget, out_of_bounds,
-                        animate);
-    return true;
-  }
-
-  while (!changed_selection_index) {
-    if (reverse) {
-      if (selected_index_ == 0)
-        out_of_bounds = true;
-      --selected_index_;
-    } else {
-      if (selected_index_ >= window_list_.size() - 1)
-        out_of_bounds = true;
-      ++selected_index_;
-    }
-    if (!out_of_bounds && SelectedWindow()) {
-      if (SelectedWindow()->target_bounds().y() != old_bounds.y())
-        recreate_selection_widget = true;
-    }
-    changed_selection_index = true;
-  }
-  MoveSelectionWidget(reverse, recreate_selection_widget, out_of_bounds,
-                      animate);
-  return out_of_bounds;
-}
-
-OverviewItem* OverviewGrid::SelectedWindow() const {
-  if (!selection_widget_)
-    return nullptr;
-  CHECK_LT(selected_index_, window_list_.size());
-  return window_list_[selected_index_].get();
+  overview_session_->highlight_controller()->OnWindowsRepositioned(
+      root_window_);
 }
 
 OverviewItem* OverviewGrid::GetOverviewItemContaining(
@@ -596,24 +520,18 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
                              return item->GetWindow() == window;
                            });
   DCHECK(iter != window_list_.rend());
-  const size_t removed_index = GetOverviewItemIndex(overview_item);
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
+
+  if (overview_session_) {
+    overview_session_->highlight_controller()->OnViewDestroying(
+        (*iter)->caption_container_view());
+  }
+
   // Erase from the list first because deleting OverviewItem can lead to
   // iterating through the |window_list_|.
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
   window_list_.erase(std::next(iter).base());
-
-  if (empty()) {
-    selected_index_ = 0;
-    selection_widget_.reset();
-  } else if (selection_widget_ && !overview_session_->is_shutting_down()) {
-    const bool send_focus_alert = selected_index_ == removed_index;
-    if (selected_index_ >= removed_index && selected_index_ != 0)
-      --selected_index_;
-    if (send_focus_alert)
-      SelectedWindow()->SendAccessibleSelectionEvent();
-  }
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromOverview(
@@ -626,8 +544,7 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
-  if (selection_widget_ && selected_index_ >= position)
-    ++selected_index_;
+
   // This part is necessary because |OverviewItem::OnSelectorItemDragStarted| is
   // called on all overview items before the drop target exists among them. That
   // is because |AddDropTargetForDraggingFromOverview| is only called for drag
@@ -695,16 +612,6 @@ void OverviewGrid::UpdateDropTargetBackgroundVisibility(
       target_window && IsDropTargetWindow(target_window));
 }
 
-void OverviewGrid::SetSelectionWidgetVisibility(bool visible) {
-  if (!selection_widget_)
-    return;
-
-  if (visible)
-    selection_widget_->Show();
-  else
-    selection_widget_->Hide();
-}
-
 void OverviewGrid::UpdateCannotSnapWarningVisibility() {
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->UpdateCannotSnapWarningVisibility();
@@ -727,8 +634,6 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
   drop_target_widget_ = CreateDropTargetWidget(dragged_window, animate);
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, animate);
-  if (selection_widget_)
-    ++selected_index_;
 
   // Stack the |dragged_window| at top during drag.
   dragged_window->parent()->StackChildAtTop(dragged_window);
@@ -751,9 +656,8 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
   if (indicator_state == IndicatorState::kPreviewAreaLeft ||
       indicator_state == IndicatorState::kPreviewAreaRight) {
     // If the dragged window is currently dragged into preview window area,
-    // clear the selection widget.
-    if (SelectedWindow())
-      selection_widget_.reset();
+    // hide the highlight.
+    overview_session_->highlight_controller()->ClearTabDragHighlight();
 
     // Also clear ash::kIsDeferredTabDraggingTargetWindowKey key on the target
     // overview item so that it can't merge into this overview item if the
@@ -764,29 +668,21 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
     return;
   }
 
-  // Show the selection widget if |location_in_screen| is contained by the
+  // Show the tab drag highlight if |location_in_screen| is contained by the
   // browser windows' overview item in overview.
   if (target_window &&
       target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
-    size_t previous_selected_index = selected_index_;
-    selected_index_ = GetOverviewItemIterContainingWindow(target_window) -
-                      window_list_.begin();
-    if (previous_selected_index == selected_index_ && selection_widget_)
+    auto* item = GetOverviewItemContaining(target_window);
+    if (!item)
       return;
 
-    if (previous_selected_index != selected_index_)
-      selection_widget_.reset();
-
-    MoveSelectionWidget(
-        /*reverse=*/(selected_index_ - previous_selected_index) <= 0,
-        /*recreate_selection_widget=*/true,
-        /*out_of_bounds=*/false,
-        /*animate=*/false);
+    overview_session_->highlight_controller()->UpdateTabDragHighlight(
+        target_window->GetRootWindow(),
+        item->caption_container_view()->bounds());
     return;
   }
 
-  if (SelectedWindow())
-    selection_widget_.reset();
+  overview_session_->highlight_controller()->ClearTabDragHighlight();
 }
 
 void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
@@ -801,11 +697,10 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // window into drop target if SelectedWindow is false since drop target will
   // not be selected and tab dragging might drag a tab window to merge it into a
   // browser window in overview.
-  if (SelectedWindow()) {
-    selection_widget_.reset();
-  } else if (should_drop_window_into_overview) {
+  if (overview_session_->highlight_controller()->IsTabDragHighlightVisible())
+    overview_session_->highlight_controller()->ClearTabDragHighlight();
+  else if (should_drop_window_into_overview)
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
-  }
 
   RemoveDropTarget();
 
@@ -851,12 +746,15 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
   window_state_observer_.Remove(wm::GetWindowState(window));
   auto iter = GetOverviewItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
+  if (overview_session_) {
+    overview_session_->highlight_controller()->OnViewDestroying(
+        (*iter)->caption_container_view());
+  }
 
   // Windows that are animating to a close state already call PositionWindows,
   // no need to call it twice.
   const bool needs_repositioning = !((*iter)->animating_to_close());
 
-  size_t removed_index = iter - window_list_.begin();
   // Erase from the list first because deleting OverviewItem can lead to
   // iterating through the |window_list_|.
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
@@ -864,21 +762,11 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
   tmp.reset();
 
   if (empty()) {
-    selection_widget_.reset();
     // If the grid is now empty, notify |overview_session_| so that it erases us
     // from its grid list.
     if (overview_session_)
       overview_session_->OnGridEmpty(this);
     return;
-  }
-
-  // If selecting, update the selection index.
-  if (selection_widget_) {
-    bool send_focus_alert = selected_index_ == removed_index;
-    if (selected_index_ >= removed_index && selected_index_ != 0)
-      selected_index_--;
-    if (send_focus_alert)
-      SelectedWindow()->SendAccessibleSelectionEvent();
   }
 
   if (needs_repositioning)
@@ -1363,124 +1251,6 @@ void OverviewGrid::MaybeInitDesksWidget() {
   desks_bar_view_->Init();
 
   desks_widget_->Show();
-}
-
-void OverviewGrid::InitSelectionWidget(bool reverse) {
-  selection_widget_ = std::make_unique<views::Widget>();
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.keep_on_top = false;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.layer_type = ui::LAYER_SOLID_COLOR;
-  params.accept_events = false;
-  selection_widget_->set_focus_on_creation(false);
-  params.parent = root_window_->GetChildById(kShellWindowId_WallpaperContainer);
-  selection_widget_->Init(params);
-  aura::Window* widget_window = selection_widget_->GetNativeWindow();
-  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
-  // Disable the "bounce in" animation when showing the window.
-  ::wm::SetWindowVisibilityAnimationTransition(widget_window,
-                                               ::wm::ANIMATE_NONE);
-  widget_window->layer()->SetColor(kWindowSelectionColor);
-  widget_window->layer()->SetRoundedCornerRadius(
-      {kWindowSelectionRadius, kWindowSelectionRadius, kWindowSelectionRadius,
-       kWindowSelectionRadius});
-  // Set the opacity to 0 initial so we can fade it in.
-  widget_window->layer()->SetOpacity(0.f);
-  selection_widget_->Show();
-
-  gfx::Rect target_bounds =
-      gfx::ToEnclosedRect(SelectedWindow()->target_bounds());
-  ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
-  gfx::Vector2d fade_out_direction =
-      GetSlideVectorForFadeIn(reverse, target_bounds);
-  widget_window->SetBounds(target_bounds - fade_out_direction);
-  widget_window->SetName("OverviewModeSelector");
-
-  selector_shadow_ = std::make_unique<ui::Shadow>();
-  selector_shadow_->Init(kWindowSelectionShadowElevation);
-  selector_shadow_->layer()->SetVisible(true);
-  selection_widget_->GetLayer()->SetMasksToBounds(false);
-  selection_widget_->GetLayer()->Add(selector_shadow_->layer());
-  selector_shadow_->SetContentBounds(gfx::Rect(target_bounds.size()));
-}
-
-void OverviewGrid::MoveSelectionWidget(bool reverse,
-                                       bool recreate_selection_widget,
-                                       bool out_of_bounds,
-                                       bool animate) {
-  // If the selection widget is already active, fade it out in the selection
-  // direction.
-  if (selection_widget_ && (recreate_selection_widget || out_of_bounds)) {
-    if (overview_session_->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kImmediateExit) {
-      ImmediatelyCloseWidgetOnExit(std::move(selection_widget_));
-    } else {
-      // Animate the old selection widget and then destroy it.
-      views::Widget* old_selection = selection_widget_.get();
-      aura::Window* old_selection_window = old_selection->GetNativeWindow();
-      gfx::Vector2d fade_out_direction =
-          GetSlideVectorForFadeIn(reverse, old_selection_window->bounds());
-
-      ScopedOverviewAnimationSettings settings(
-          OVERVIEW_ANIMATION_SELECTION_WINDOW, old_selection_window);
-      // CleanupAnimationObserver will delete itself (and the widget) when the
-      // motion animation is complete. Ownership over the observer is passed to
-      // the overview_session_->delegate() which has longer lifetime so that
-      // animations can continue even after the overview session is shut down.
-      std::unique_ptr<CleanupAnimationObserver> observer(
-          new CleanupAnimationObserver(std::move(selection_widget_)));
-      settings.AddObserver(observer.get());
-      overview_session_->delegate()->AddExitAnimationObserver(
-          std::move(observer));
-      old_selection->SetOpacity(0.f);
-      old_selection_window->SetBounds(old_selection_window->bounds() +
-                                      fade_out_direction);
-      old_selection->Hide();
-    }
-  }
-  if (out_of_bounds)
-    return;
-
-  if (!selection_widget_)
-    InitSelectionWidget(reverse);
-
-  // Send an a11y alert so that if ChromeVox is enabled, the item label is
-  // read.
-  SelectedWindow()->SendAccessibleSelectionEvent();
-  // The selection widget is moved to the newly selected item in the same
-  // grid.
-  MoveSelectionWidgetToTarget(animate);
-}
-
-void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
-  gfx::Rect bounds = gfx::ToEnclosingRect(SelectedWindow()->target_bounds());
-  ::wm::ConvertRectFromScreen(root_window_, &bounds);
-  if (animate) {
-    ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_SELECTION_WINDOW,
-        selection_widget_->GetNativeWindow());
-    selection_widget_->SetBounds(bounds);
-    selection_widget_->SetOpacity(1.f);
-
-    if (selector_shadow_) {
-      ScopedOverviewAnimationSettings settings(
-          OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW,
-          selector_shadow_->shadow_layer()->GetAnimator());
-      bounds.Inset(1, 1);
-      selector_shadow_->SetContentBounds(
-          gfx::Rect(gfx::Point(1, 1), bounds.size()));
-    }
-    return;
-  }
-  selection_widget_->SetBounds(bounds);
-  selection_widget_->SetOpacity(1.f);
-  if (selector_shadow_) {
-    bounds.Inset(1, 1);
-    selector_shadow_->SetContentBounds(
-        gfx::Rect(gfx::Point(1, 1), bounds.size()));
-  }
 }
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(

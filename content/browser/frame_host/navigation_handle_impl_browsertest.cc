@@ -176,8 +176,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
         will_redirect_result_(will_redirect_result),
         will_fail_result_(will_fail_result),
         will_process_result_(will_process_result),
-        expected_start_url_(expected_start_url),
-        weak_factory_(this) {}
+        expected_start_url_(expected_start_url) {}
   ~TestNavigationThrottleInstaller() override {}
 
   // Installs a TestNavigationThrottle whose |method| method will return
@@ -334,7 +333,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
 
   // The throttle installer can be deleted before all tasks posted by its
   // throttles are run, so it must be referenced via weak pointers.
-  base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_;
+  base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_{this};
 };
 
 // Same as above, but installs NavigationThrottles that do not directly return

@@ -6,12 +6,12 @@
 #define FUCHSIA_ENGINE_BROWSER_CONTEXT_IMPL_H_
 
 #include <fuchsia/web/cpp/fidl.h>
-#include <lib/fidl/cpp/interface_ptr_set.h>
 #include <memory>
 #include <set>
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "fuchsia/engine/browser/web_engine_remote_debugging.h"
 #include "fuchsia/engine/web_engine_export.h"
 
 namespace content {
@@ -42,15 +42,13 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   bool IsJavaScriptInjectionAllowed();
 
   // Called by Frames to signal a document has been loaded and signal to the
-  // |devtools_listeners_| that they can now successfully connect ChromeDriver
-  // on |devtools_port_|.
-  void OnDevToolsPortReady();
-
-  // Signals the DevTools debugging port has been opened.
-  void OnDevToolsPortOpened(uint16_t port);
+  // debug listeners in |web_engine_remote_debugging_| that they can now
+  // successfully connect ChromeDriver.
+  void OnDebugDevToolsPortReady();
 
   // fuchsia::web::Context implementation.
   void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) override;
+  void GetRemoteDebuggingPort(GetRemoteDebuggingPortCallback callback) override;
 
   // Gets the underlying FrameImpl service object associated with a connected
   // |frame_ptr| client.
@@ -67,10 +65,7 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // destruction when this ContextImpl is destroyed.
   std::set<std::unique_ptr<FrameImpl>, base::UniquePtrComparator> frames_;
 
-  fidl::InterfacePtrSet<fuchsia::web::DevToolsPerContextListener>
-      devtools_listeners_;
-  bool devtools_listeners_notified_ = false;
-  uint16_t devtools_port_ = 0;
+  WebEngineRemoteDebugging web_engine_remote_debugging_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextImpl);
 };

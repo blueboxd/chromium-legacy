@@ -63,8 +63,12 @@ class ASH_EXPORT ShellTestApi {
   // password dialog).
   bool IsSystemModalWindowOpen();
 
-  // Enables or disables the tablet mode.
-  void SetTabletModeEnabledForTest(bool enable);
+  // Enables or disables the tablet mode. TabletMode switch can be
+  // asynchronous, and this will wait until the transition is complete
+  // by default. Set |wait_for_completion| to false if you do not want
+  // to wait.
+  void SetTabletModeEnabledForTest(bool enable,
+                                   bool wait_for_completion = true);
 
   // Enables the keyboard and associates it with the primary root window
   // controller. In tablet mode, enables the virtual keyboard.

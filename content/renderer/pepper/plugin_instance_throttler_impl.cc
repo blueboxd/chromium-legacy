@@ -68,8 +68,7 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
           base::TimeDelta::FromMilliseconds(
               kAudioThrottledFrameTimeoutMilliseconds),
           this,
-          &PluginInstanceThrottlerImpl::EngageThrottle),
-      weak_factory_(this) {}
+          &PluginInstanceThrottlerImpl::EngageThrottle) {}
 
 PluginInstanceThrottlerImpl::~PluginInstanceThrottlerImpl() {
   for (auto& observer : observer_list_)

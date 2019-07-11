@@ -111,8 +111,7 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       remove_mask_(-1),
       origin_type_mask_(-1),
       is_removing_(false),
-      storage_partition_for_testing_(nullptr),
-      weak_ptr_factory_(this) {
+      storage_partition_for_testing_(nullptr) {
   DCHECK(browser_context_);
 }
 

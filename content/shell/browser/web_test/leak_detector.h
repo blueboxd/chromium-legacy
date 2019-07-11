@@ -41,7 +41,7 @@ class LeakDetector {
   blink::mojom::LeakDetectorPtr leak_detector_;
   blink::mojom::LeakDetectionResultPtr previous_result_;
   ReportCallback callback_;
-  base::WeakPtrFactory<LeakDetector> weak_factory_;
+  base::WeakPtrFactory<LeakDetector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LeakDetector);
 };

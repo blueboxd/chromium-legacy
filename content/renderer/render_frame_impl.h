@@ -1767,7 +1767,7 @@ class CONTENT_EXPORT RenderFrameImpl
   class MHTMLBodyLoaderClient;
   std::unique_ptr<MHTMLBodyLoaderClient> mhtml_body_loader_client_;
 
-  base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
+  base::WeakPtrFactory<RenderFrameImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

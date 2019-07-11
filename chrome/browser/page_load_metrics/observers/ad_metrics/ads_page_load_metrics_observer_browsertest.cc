@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
@@ -873,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 }
 
 // Flaky on Mac. http://crbug.com/972822
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_AdFrameSizeInterventionMediaStatusPlayed DISABLED_AdFrameSizeInterventionMediaStatusPlayed
 #else
 #define MAYBE_AdFrameSizeInterventionMediaStatusPlayed AdFrameSizeInterventionMediaStatusPlayed

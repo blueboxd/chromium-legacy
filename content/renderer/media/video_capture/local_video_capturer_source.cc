@@ -19,8 +19,7 @@ LocalVideoCapturerSource::LocalVideoCapturerSource(
     : session_id_(session_id),
       manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
       release_device_cb_(manager_->UseDevice(session_id_)),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   DCHECK(RenderThreadImpl::current());
 }
 

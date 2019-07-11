@@ -431,6 +431,7 @@
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
@@ -2300,6 +2301,16 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         !command_line->HasSwitch(switches::kDisableBreakpad))
       command_line->AppendSwitch(switches::kDisableBreakpad);
   }
+
+#if defined(OS_CHROMEOS)
+  if (breakpad::ShouldPassCrashLoopBefore(process_type)) {
+    static const char* const kSwitchNames[] = {
+        switches::kCrashLoopBefore,
+    };
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   base::size(kSwitchNames));
+  }
+#endif
 
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type,

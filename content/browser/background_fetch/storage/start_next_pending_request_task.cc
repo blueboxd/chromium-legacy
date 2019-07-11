@@ -19,8 +19,7 @@ StartNextPendingRequestTask::StartNextPendingRequestTask(
     NextRequestCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(!registration_id_.is_null());
 }
 

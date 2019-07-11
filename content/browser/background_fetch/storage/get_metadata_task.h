@@ -55,7 +55,7 @@ class GetMetadataTask : public DatabaseTask {
 
   std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto_;
 
-  base::WeakPtrFactory<GetMetadataTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetMetadataTask> weak_factory_{this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(GetMetadataTask);
 };

@@ -90,8 +90,7 @@ InputRouterImpl::InputRouterImpl(
                            config.gesture_config),
       device_scale_factor_(1.f),
       compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)),
-      weak_ptr_factory_(this) {
+          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
   DCHECK(client);

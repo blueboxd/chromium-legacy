@@ -459,8 +459,7 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       last_device_scale_factor_(1.f),
       active_touches_(0),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
-      touch_event_ack_queue_(new TouchEventAckQueue(this)),
-      weak_ptr_factory_(this) {
+      touch_event_ack_queue_(new TouchEventAckQueue(this)) {
   viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
   DCHECK(manager);
   manager->AddHitTestRegionObserver(this);

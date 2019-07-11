@@ -234,8 +234,7 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
       delegate_(GetContentClient()
                     ->browser()
                     ->CreateSpeechRecognitionManagerDelegate()),
-      requester_id_(next_requester_id_++),
-      weak_factory_(this) {
+      requester_id_(next_requester_id_++) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;
 

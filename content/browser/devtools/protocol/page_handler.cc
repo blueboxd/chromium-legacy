@@ -206,8 +206,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       active_file_chooser_interceptor_(active_file_chooser_interceptor),
       allow_set_download_behavior_(allow_set_download_behavior),
       allow_file_access_(allow_file_access),
-      observer_(this),
-      weak_factory_(this) {
+      observer_(this) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.

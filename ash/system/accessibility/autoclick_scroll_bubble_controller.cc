@@ -52,8 +52,7 @@ void AutoclickScrollBubbleController::UpdateAnchorRect(
   menu_bubble_alignment_ = alignment;
   if (set_scroll_rect_)
     return;
-  bubble_view_->SetArrow(alignment);
-  bubble_view_->UpdateAnchorRect(rect);
+  bubble_view_->UpdateAnchorRect(rect, alignment);
 }
 
 void AutoclickScrollBubbleController::SetScrollPosition(
@@ -78,8 +77,8 @@ void AutoclickScrollBubbleController::SetScrollPosition(
     // Buffer around the point so that the scroll bubble does not overlap it.
     // ScrollBubbleController will automatically layout to avoid edges.
     anchor.Inset(-kScrollPointBufferDips, -kScrollPointBufferDips);
-    bubble_view_->SetArrow(views::BubbleBorder::Arrow::LEFT_CENTER);
-    bubble_view_->UpdateAnchorRect(anchor);
+    bubble_view_->UpdateAnchorRect(anchor,
+                                   views::BubbleBorder::Arrow::LEFT_CENTER);
     return;
   }
 
@@ -152,17 +151,18 @@ void AutoclickScrollBubbleController::SetScrollPosition(
   std::stable_sort(positions.begin(), positions.end(), comparePositions);
 
   // Position on the optimal side depending on the shortest distance.
-  bubble_view_->SetArrow(positions.front().arrow);
   if (positions.front().is_horizontal) {
     // Center it vertically on the scroll point.
-    bubble_view_->UpdateAnchorRect(gfx::Rect(scroll_bounds_in_dips.x(),
-                                             scroll_point_in_dips.y(),
-                                             scroll_bounds_in_dips.width(), 0));
+    bubble_view_->UpdateAnchorRect(
+        gfx::Rect(scroll_bounds_in_dips.x(), scroll_point_in_dips.y(),
+                  scroll_bounds_in_dips.width(), 0),
+        positions.at(0).arrow);
   } else {
     // Center horizontally on scroll point.
-    bubble_view_->UpdateAnchorRect(gfx::Rect(scroll_point_in_dips.x(),
-                                             scroll_bounds_in_dips.y(), 0,
-                                             scroll_bounds_in_dips.height()));
+    bubble_view_->UpdateAnchorRect(
+        gfx::Rect(scroll_point_in_dips.x(), scroll_bounds_in_dips.y(), 0,
+                  scroll_bounds_in_dips.height()),
+        positions.at(0).arrow);
   }
 }
 

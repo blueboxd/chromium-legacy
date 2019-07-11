@@ -6,12 +6,12 @@
 
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/url_constants.h"
@@ -221,7 +221,7 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &TetherNotificationPresenter::OnNotificationClicked,
           weak_ptr_factory_.GetWeakPtr(), id)),
-      ash::kNotificationCellularAlertIcon,
+      kNotificationCellularAlertIcon,
       message_center::SystemNotificationWarningLevel::WARNING));
 }
 

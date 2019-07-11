@@ -26,6 +26,7 @@
 
 namespace crash_keys {
 
+// Return true if we DON'T want to upload this flag to the crash server.
 static bool IsBoringSwitch(const std::string& flag) {
   static const char* const kIgnoreSwitches[] = {
     switches::kEnableLogging,
@@ -38,6 +39,10 @@ static bool IsBoringSwitch(const std::string& flag) {
 #if defined(OS_MACOSX)
     switches::kMetricsClientID,
 #elif defined(OS_CHROMEOS)
+    // --crash-loop-before is a "boring" switch because it is redundant;
+    // crash_reporter separately informs the crash server if it is doing
+    // crash-loop handling.
+    switches::kCrashLoopBefore,
     switches::kPpapiFlashArgs,
     switches::kPpapiFlashPath,
     switches::kRegisterPepperPlugins,

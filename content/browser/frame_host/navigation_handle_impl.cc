@@ -62,8 +62,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       pending_nav_entry_id_(pending_nav_entry_id),
       navigation_id_(CreateUniqueHandleID()),
       reload_type_(ReloadType::NONE),
-      restore_type_(RestoreType::NONE),
-      weak_factory_(this) {
+      restore_type_(RestoreType::NONE) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",

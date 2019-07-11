@@ -1425,7 +1425,7 @@ void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
 
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
-    : frozen_(false), controller_(controller), weak_factory_(this) {}
+    : frozen_(false), controller_(controller) {}
 
 TestRunner::WorkQueue::~WorkQueue() {
   Reset();
@@ -1496,8 +1496,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       is_web_platform_tests_mode_(false),
       animation_requires_raster_(false),
       effective_connection_type_(
-          blink::WebEffectiveConnectionType::kTypeUnknown),
-      weak_factory_(this) {}
+          blink::WebEffectiveConnectionType::kTypeUnknown) {}
 
 TestRunner::~TestRunner() {}
 

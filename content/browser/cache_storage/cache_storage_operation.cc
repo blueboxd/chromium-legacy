@@ -21,8 +21,7 @@ CacheStorageOperation::CacheStorageOperation(
       creation_ticks_(base::TimeTicks::Now()),
       client_type_(client_type),
       op_type_(op_type),
-      task_runner_(std::move(task_runner)),
-      weak_ptr_factory_(this) {}
+      task_runner_(std::move(task_runner)) {}
 
 CacheStorageOperation::~CacheStorageOperation() {
   RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kOperationDuration,

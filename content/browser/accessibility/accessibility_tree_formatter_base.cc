@@ -32,6 +32,14 @@ const char kSkipChildren[] = "@NO_CHILDREN_DUMP";
 
 }  // namespace
 
+AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
+    size_t index) {
+  std::vector<content::AccessibilityTreeFormatter::TestPass> passes =
+      content::AccessibilityTreeFormatter::GetTestPasses();
+  CHECK_LT(index, passes.size());
+  return passes[index];
+}
+
 base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
     BrowserAccessibilityManager* ax_mgr,
     bool internal) {

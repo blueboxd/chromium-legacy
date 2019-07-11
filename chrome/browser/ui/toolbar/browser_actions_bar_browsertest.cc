@@ -968,10 +968,7 @@ class BrowserActionsBarUiBrowserTest
   void WaitForUserDismissal() override {
     // Since this UI is shown in the browser's toolbar, just consider closing
     // the browser to be dismissal.
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    observer.Wait();
+    ui_test_utils::WaitForBrowserToClose();
   }
 
  private:

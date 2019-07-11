@@ -108,8 +108,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     : RenderWidgetHostViewChildFrame(widget_host),
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
-      platform_view_(platform_view),
-      weak_ptr_factory_(this) {
+      platform_view_(platform_view) {
   // In tests |guest_| and therefore |owner| can be null.
   auto* owner = GetOwnerRenderWidgetHostView();
   if (owner)

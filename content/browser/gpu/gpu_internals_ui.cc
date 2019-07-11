@@ -395,6 +395,9 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
     display_info->Append(NewDescriptionValuePair(
         "Color space information", display.color_space().ToString()));
     display_info->Append(NewDescriptionValuePair(
+        "SDR white level in nits",
+        base::NumberToString(display.sdr_white_level())));
+    display_info->Append(NewDescriptionValuePair(
         "Bits per color component",
         base::NumberToString(display.depth_per_component())));
     display_info->Append(NewDescriptionValuePair(

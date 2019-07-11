@@ -39,11 +39,6 @@ MediaToolbarButtonController::~MediaToolbarButtonController() = default;
 
 void MediaToolbarButtonController::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
-  if (session_info) {
-    // We only want to show if there's a controllable media session. However, as
-    // a MediaControllerObserver we should only receive a
-    // |MediaSessionInfoChanged()| call for a controllable session.
-    DCHECK(session_info->is_controllable);
+  if (session_info && session_info->is_controllable)
     delegate_->Show();
-  }
 }

@@ -1042,6 +1042,7 @@ test("views_unittests") {
     "focus/focus_traversal_unittest.cc",
     "layout/box_layout_unittest.cc",
     "layout/fill_layout_unittest.cc",
+    "layout/flex_layout_types_internal_unittest.cc",
     "layout/flex_layout_unittest.cc",
     "layout/grid_layout_unittest.cc",
     "layout/interpolating_layout_manager_unittest.cc",

@@ -257,7 +257,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
       std::map<base::UnguessableToken, std::unique_ptr<AppCacheHost>>;
   AppCacheHostProcessMap hosts_;
 
-  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;
+  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);
 };

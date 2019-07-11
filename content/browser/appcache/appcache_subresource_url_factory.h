@@ -64,7 +64,7 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
   base::WeakPtr<AppCacheHost> appcache_host_;
-  base::WeakPtrFactory<AppCacheSubresourceURLFactory> weak_factory_;
+  base::WeakPtrFactory<AppCacheSubresourceURLFactory> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AppCacheSubresourceURLFactory);
 };
 

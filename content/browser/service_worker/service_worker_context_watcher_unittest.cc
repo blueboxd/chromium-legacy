@@ -35,7 +35,7 @@ void DidUnregisterServiceWorker(blink::ServiceWorkerStatusCode* status_out,
 
 class WatcherCallback {
  public:
-  WatcherCallback() : weak_factory_(this) {}
+  WatcherCallback() {}
 
   ~WatcherCallback() {}
 
@@ -114,7 +114,7 @@ class WatcherCallback {
 
   int callback_count_ = 0;
 
-  base::WeakPtrFactory<WatcherCallback> weak_factory_;
+  base::WeakPtrFactory<WatcherCallback> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WatcherCallback);
 };

@@ -204,7 +204,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   bool can_use_warm_up_connection_ = false;
 #endif
 
-  base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_;
+  base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_{this};
 };
 
 }  // namespace content

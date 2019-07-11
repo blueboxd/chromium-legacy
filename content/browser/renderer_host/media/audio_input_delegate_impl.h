@@ -101,7 +101,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       keyboard_mic_registration_;
   const int stream_id_;
   const int render_process_id_;
-  base::WeakPtrFactory<AudioInputDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<AudioInputDelegateImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDelegateImpl);
 };

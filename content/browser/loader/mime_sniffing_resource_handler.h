@@ -209,7 +209,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   // the next state when control returns to the AdvanceState loop.
   bool advance_state_;
 
-  base::WeakPtrFactory<MimeSniffingResourceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MimeSniffingResourceHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeSniffingResourceHandler);
 };

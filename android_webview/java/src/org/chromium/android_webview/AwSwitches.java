@@ -17,11 +17,6 @@ public final class AwSwitches {
     // Native switch kWebViewSandboxedRenderer.
     public static final String WEBVIEW_SANDBOXED_RENDERER = "webview-sandboxed-renderer";
 
-    // Enables safebrowsing functionality in webview.
-    // Native switch kWebViewEnableSafeBrowsingSupport.
-    public static final String WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT =
-            "webview-enable-safebrowsing-support";
-
     // Disables safebrowsing functionality in webview.
     // Native switch kWebViewDisableSafeBrowsingSupport.
     public static final String WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT =

@@ -78,16 +78,12 @@ class ScopedTaskEnvironment {
     DEFAULT,
     // The main thread doesn't pump system messages and uses a mock clock for
     // delayed tasks (controllable via FastForward*() methods).
-    // TODO(gab): Make this the default |main_thread_type|.
-    // TODO(gab): Also mock the ThreadPoolInstance's clock simultaneously (this
-    // currently only mocks the main thread's clock).
+    // TODO(gab): Make MOCK_TIME configurable independent of MainThreadType.
     MOCK_TIME,
     // The main thread pumps UI messages.
     UI,
     // The main thread pumps UI messages and uses a mock clock for delayed tasks
     // (controllable via FastForward*() methods).
-    // TODO(gab@): Enable mock time on all threads and make MOCK_TIME
-    // configurable independent of MainThreadType.
     UI_MOCK_TIME,
     // The main thread pumps asynchronous IO messages and supports the
     // FileDescriptorWatcher API on POSIX.
@@ -195,9 +191,9 @@ class ScopedTaskEnvironment {
   void RunUntilIdle();
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
-  // virtual time by |delta|, causing all tasks on the main thread with a
-  // remaining delay less than or equal to |delta| to be executed in their
-  // natural order before this returns. |delta| must be non-negative. Upon
+  // virtual time by |delta|, causing all tasks on the main thread and thread
+  // pool with a remaining delay less than or equal to |delta| to be executed in
+  // their natural order before this returns. |delta| must be non-negative. Upon
   // returning from this method, NowTicks() will be >= the initial |NowTicks() +
   // delta|. It is guaranteed to be == iff tasks executed in this
   // FastForwardBy() didn't result in nested calls to time-advancing-methods.
@@ -229,13 +225,13 @@ class ScopedTaskEnvironment {
   //                  FastForwardBy(2ms)
   //                  ================================
   //   Result: NowTicks() is 5ms further in the future.
-  //
-  // TODO(gab): Make this apply to ThreadPool delayed tasks as well
-  // (currently only main thread time is mocked).
   void FastForwardBy(TimeDelta delta);
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
   // Short for FastForwardBy(TimeDelta::Max()).
+  //
+  // WARNING: This has the same caveat as RunUntilIdle() and is even more likely
+  // to spin forever (any RepeatingTimer will cause this).
   void FastForwardUntilNoTasksRemain();
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Returns a

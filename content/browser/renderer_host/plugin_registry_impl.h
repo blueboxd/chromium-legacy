@@ -35,7 +35,7 @@ class PluginRegistryImpl : public blink::mojom::PluginRegistry {
   ResourceContext* const resource_context_;
   mojo::BindingSet<PluginRegistry> bindings_;
   base::TimeTicks last_plugin_refresh_time_;
-  base::WeakPtrFactory<PluginRegistryImpl> weak_factory_;
+  base::WeakPtrFactory<PluginRegistryImpl> weak_factory_{this};
 };
 
 }  // namespace content

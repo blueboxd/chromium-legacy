@@ -23,6 +23,7 @@ struct App {
   map<uint32, apps.mojom.Permission> permissions;
   apps.mojom.InstallSource install_source;
   bool hide_more_settings;
+  bool hide_pin_to_shelf;
 };
 
 // Extension-based apps primarily use install-time permissions that cannot be

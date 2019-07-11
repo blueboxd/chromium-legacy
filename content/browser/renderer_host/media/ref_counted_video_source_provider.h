@@ -42,7 +42,7 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
   video_capture::mojom::VideoSourceProviderPtr source_provider_;
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   base::OnceClosure destruction_cb_;
-  base::WeakPtrFactory<RefCountedVideoSourceProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<RefCountedVideoSourceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedVideoSourceProvider);
 };

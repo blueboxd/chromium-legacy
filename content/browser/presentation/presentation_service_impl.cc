@@ -69,8 +69,7 @@ PresentationServiceImpl::PresentationServiceImpl(
       // TODO(imcheng): Consider using RenderFrameHost* directly instead of IDs.
       render_process_id_(render_frame_host->GetProcess()->GetID()),
       render_frame_id_(render_frame_host->GetRoutingID()),
-      is_main_frame_(!render_frame_host->GetParent()),
-      weak_factory_(this) {
+      is_main_frame_(!render_frame_host->GetParent()) {
   DCHECK(render_frame_host_);
   DCHECK(web_contents);
   CHECK(render_frame_host_->IsRenderFrameLive());

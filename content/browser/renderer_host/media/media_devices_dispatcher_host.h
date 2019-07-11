@@ -126,7 +126,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   std::vector<uint32_t> subscription_ids_;
 
-  base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaDevicesDispatcherHost);
 };

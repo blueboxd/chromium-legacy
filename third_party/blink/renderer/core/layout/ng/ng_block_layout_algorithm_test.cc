@@ -1365,15 +1365,17 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
 
   offset =
       To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[0].offset;
-  // inline 10 = left float's margin(10)
+  // The floats are positioned outside the line-box as the line-box is
+  // "avoiding" these floats.
+  // inline -35 = inline-size of left-float (including margins).
   // block 10 = left float's margin
-  EXPECT_THAT(offset, PhysicalOffset(10, 10));
+  EXPECT_THAT(offset, PhysicalOffset(-35, 10));
 
   offset =
       To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[1].offset;
-  // inline offset 135 = right float's margin(10) + right float offset(125)
+  // inline offset 90 = right float's margin(10) + right float offset(80)
   // block offset 15 = right float's margin
-  LayoutUnit right_float_offset = LayoutUnit(125);
+  LayoutUnit right_float_offset = LayoutUnit(80);
   EXPECT_THAT(offset, PhysicalOffset(LayoutUnit(10) + right_float_offset,
                                      LayoutUnit(15)));
 

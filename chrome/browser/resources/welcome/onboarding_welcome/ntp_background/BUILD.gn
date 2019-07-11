@@ -6,15 +6,17 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":ntp_background_metrics_proxy",
+    ":ntp_background_proxy",
     ":nux_ntp_background",
   ]
 }
 
 js_library("nux_ntp_background") {
   deps = [
+    ":ntp_background_metrics_proxy",
     ":ntp_background_proxy",
     "../:navigation_behavior",
-    "../shared:module_metrics_proxy",
     "../shared:nux_types",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -27,4 +29,10 @@ js_library("ntp_background_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("ntp_background_metrics_proxy") {
+  deps = [
+    "../shared:module_metrics_proxy",
+  ]
 }

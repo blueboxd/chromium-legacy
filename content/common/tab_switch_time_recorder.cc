@@ -48,7 +48,7 @@ RecordTabSwitchTimeRequest::RecordTabSwitchTimeRequest(
       destination_is_loaded(destination_is_loaded),
       destination_is_frozen(destination_is_frozen) {}
 
-TabSwitchTimeRecorder::TabSwitchTimeRecorder() : weak_ptr_factory_(this) {}
+TabSwitchTimeRecorder::TabSwitchTimeRecorder() {}
 
 TabSwitchTimeRecorder::~TabSwitchTimeRecorder() {}
 

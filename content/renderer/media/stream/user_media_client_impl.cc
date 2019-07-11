@@ -109,8 +109,7 @@ UserMediaClientImpl::UserMediaClientImpl(
       apply_constraints_processor_(new ApplyConstraintsProcessor(
           base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
                               base::Unretained(this)),
-          std::move(task_runner))),
-      weak_factory_(this) {}
+          std::move(task_runner))) {}
 
 // base::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.

@@ -52,8 +52,7 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       use_image_chromium_(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisablePepper3DImageChromium) &&
-          base::FeatureList::IsEnabled(features::kPepper3DImageChromium)),
-      weak_ptr_factory_(this) {}
+          base::FeatureList::IsEnabled(features::kPepper3DImageChromium)) {}
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
   // Unset the client before the command_buffer_ is destroyed, similar to how

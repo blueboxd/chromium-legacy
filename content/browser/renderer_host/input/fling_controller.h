@@ -173,7 +173,7 @@ class CONTENT_EXPORT FlingController {
   // starting time for a possible fling gesture curve.
   base::TimeTicks last_seen_scroll_update_;
 
-  base::WeakPtrFactory<FlingController> weak_ptr_factory_;
+  base::WeakPtrFactory<FlingController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FlingController);
 };

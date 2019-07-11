@@ -415,6 +415,7 @@ jumbo_source_set("browser_sources") {
     "//net",
     "//ppapi/c",
     "//services/device/public/cpp/geolocation",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/service_manager/embedder:embedder_result_codes",
     "//ui/accessibility",
     "//ui/base",

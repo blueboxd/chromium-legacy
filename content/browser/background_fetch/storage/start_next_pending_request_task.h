@@ -60,8 +60,8 @@ class StartNextPendingRequestTask : public DatabaseTask {
 
   scoped_refptr<BackgroundFetchRequestInfo> next_request_;
 
-  base::WeakPtrFactory<StartNextPendingRequestTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<StartNextPendingRequestTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(StartNextPendingRequestTask);
 };

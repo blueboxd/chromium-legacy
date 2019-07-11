@@ -134,60 +134,6 @@ uint64_t GetCurrentQPC() {
 uint64_t g_last_process_output_time;
 HRESULT g_last_device_removed_reason;
 
-// Returns a tuple of (LandscapeMax, PortraitMax). If landscape maximum can not
-// be computed, the value of |default_max| is returned for the landscape maximum
-// and a zero size value is returned for portrait max (erring conservatively).
-using ResolutionPair = std::pair<gfx::Size, gfx::Size>;
-ResolutionPair GetMaxResolutionsForGUIDs(
-    const gfx::Size& default_max,
-    ID3D11VideoDevice* video_device,
-    const std::vector<GUID>& valid_guids,
-    const std::vector<gfx::Size>& resolutions_to_test,
-    DXGI_FORMAT format = DXGI_FORMAT_NV12) {
-  TRACE_EVENT0("gpu,startup", "GetMaxResolutionsForGUIDs");
-  ResolutionPair result(default_max, gfx::Size());
-
-  // Enumerate supported video profiles and look for the profile.
-  GUID decoder_guid = GUID_NULL;
-  UINT profile_count = video_device->GetVideoDecoderProfileCount();
-  for (UINT profile_idx = 0; profile_idx < profile_count; profile_idx++) {
-    GUID profile_id = {};
-    if (SUCCEEDED(
-            video_device->GetVideoDecoderProfile(profile_idx, &profile_id)) &&
-        std::find(valid_guids.begin(), valid_guids.end(), profile_id) !=
-            valid_guids.end()) {
-      decoder_guid = profile_id;
-      break;
-    }
-  }
-  if (decoder_guid == GUID_NULL)
-    return result;
-
-  // Verify input is in ascending order by height.
-  DCHECK(std::is_sorted(resolutions_to_test.begin(), resolutions_to_test.end(),
-                        [](const gfx::Size& a, const gfx::Size& b) {
-                          return a.height() < b.height();
-                        }));
-
-  for (const auto& res : resolutions_to_test) {
-    if (!media::IsResolutionSupportedForDevice(res, decoder_guid, video_device,
-                                               format)) {
-      break;
-    }
-    result.first = res;
-  }
-
-  // The max supported portrait resolution should be just be a w/h flip of the
-  // max supported landscape resolution.
-  gfx::Size flipped(result.first.height(), result.first.width());
-  if (media::IsResolutionSupportedForDevice(flipped, decoder_guid, video_device,
-                                            format)) {
-    result.second = flipped;
-  }
-
-  return result;
-}
-
 }  // namespace
 
 namespace media {
@@ -1290,45 +1236,10 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   ResolutionPair max_vp9_profile0_resolutions;
   ResolutionPair max_vp9_profile2_resolutions;
 
-  if (base::win::GetVersion() > base::win::Version::WIN7) {
-    // To detect if a driver supports the desired resolutions, we try and create
-    // a DXVA decoder instance for that resolution and profile. If that succeeds
-    // we assume that the driver supports decoding for that resolution.
-    ComD3D11Device device = gl::QueryD3D11DeviceObjectFromANGLE();
-
-    // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
-    // creating surfaces larger than 1920 x 1088.
-    if (device && !IsLegacyGPU(device.Get())) {
-      ComD3D11VideoDevice video_device;
-      if (SUCCEEDED(device.As(&video_device))) {
-        max_h264_resolutions = GetMaxResolutionsForGUIDs(
-            max_h264_resolutions.first, video_device.Get(),
-            {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
-            {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
-             gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
-
-        if (!workarounds.disable_accelerated_vpx_decode) {
-          max_vp9_profile0_resolutions = GetMaxResolutionsForGUIDs(
-              max_vp9_profile0_resolutions.first, video_device.Get(),
-              {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
-              {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-               gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-               gfx::Size(8192, 8192)});
-
-          // RS3 has issues with VP9.2 decoding. See https://crbug.com/937108.
-          if (base::win::GetVersion() != base::win::Version::WIN10_RS3) {
-            max_vp9_profile2_resolutions = GetMaxResolutionsForGUIDs(
-                max_vp9_profile2_resolutions.first, video_device.Get(),
-                {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
-                {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-                 gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-                 gfx::Size(8192, 8192)},
-                DXGI_FORMAT_P010);
-          }
-        }
-      }
-    }
-  }
+  GetResolutionsForDecoders(
+      {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
+      gl::QueryD3D11DeviceObjectFromANGLE(), workarounds, &max_h264_resolutions,
+      &max_vp9_profile0_resolutions, &max_vp9_profile2_resolutions);
 
   for (const auto& supported_profile : kSupportedProfiles) {
     const bool is_h264 = supported_profile >= H264PROFILE_MIN &&

@@ -68,8 +68,7 @@ PepperTCPServerSocketMessageFilter::PepperTCPServerSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_frame_id_(0),
-      weak_ptr_factory_(this) {
+      render_frame_id_(0) {
   ++g_num_instances;
   DCHECK(factory_);
   DCHECK(ppapi_host_);

@@ -303,7 +303,7 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   size_t handle_ref_count_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LegacyCacheStorage> weak_factory_;
+  base::WeakPtrFactory<LegacyCacheStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorage);
 };

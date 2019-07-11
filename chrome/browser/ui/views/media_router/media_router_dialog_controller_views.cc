@@ -13,50 +13,45 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 namespace media_router {
 
-// static
-MediaRouterDialogControllerImplBase*
-MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
-    content::WebContents* web_contents) {
-  return MediaRouterDialogControllerViews::GetOrCreateForWebContents(
-      web_contents);
+namespace {
+
+MediaRouterUIService* GetMediaRouterUIService(WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return MediaRouterUIService::Get(profile);
 }
 
+}  // namespace
+
 // static
-MediaRouterDialogControllerImplBase*
-MediaRouterDialogControllerImplBase::FromWebContents(
+MediaRouterDialogController*
+MediaRouterDialogController::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  // This call does nothing if the controller already exists.
+  MediaRouterDialogControllerViews::CreateForWebContents(web_contents);
   return MediaRouterDialogControllerViews::FromWebContents(web_contents);
 }
 
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   Reset();
-  if (dialog_widget_) {
-    dialog_widget_->RemoveObserver(this);
-    dialog_widget_ = nullptr;
-  }
-}
-
-// static
-MediaRouterDialogControllerViews*
-MediaRouterDialogControllerViews::GetOrCreateForWebContents(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  // This call does nothing if the controller already exists.
-  CreateForWebContents(web_contents);
-  return FromWebContents(web_contents);
+  media_router_ui_service_->RemoveObserver(this);
 }
 
 void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
   base::Time dialog_creation_time = base::Time::Now();
-  MediaRouterDialogControllerImplBase::CreateMediaRouterDialog();
+  if (GetActionController())
+    GetActionController()->OnDialogShown();
 
   Profile* profile =
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
-  ui_ = std::make_unique<MediaRouterViewsUI>();
-  InitializeMediaRouterUI(ui_.get());
+  InitializeMediaRouterUI();
 
   Browser* browser = chrome::FindBrowserWithWebContents(initiator());
   if (browser) {
@@ -76,8 +71,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
     CastDialogView::ShowDialogCentered(anchor_bounds, ui_.get(), profile,
                                        dialog_creation_time);
   }
-  dialog_widget_ = CastDialogView::GetCurrentDialogWidget();
-  dialog_widget_->AddObserver(this);
+  scoped_widget_observer_.Add(CastDialogView::GetCurrentDialogWidget());
   if (dialog_creation_callback_)
     dialog_creation_callback_.Run();
 }
@@ -93,16 +87,17 @@ bool MediaRouterDialogControllerViews::IsShowingMediaRouterDialog() const {
 void MediaRouterDialogControllerViews::Reset() {
   // If |ui_| is null, Reset() has already been called.
   if (ui_) {
-    MediaRouterDialogControllerImplBase::Reset();
+    if (IsShowingMediaRouterDialog() && GetActionController())
+      GetActionController()->OnDialogHidden();
     ui_.reset();
+    MediaRouterDialogController::Reset();
   }
 }
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(dialog_widget_, widget);
+  DCHECK(scoped_widget_observer_.IsObserving(widget));
   Reset();
-  dialog_widget_->RemoveObserver(this);
-  dialog_widget_ = nullptr;
+  scoped_widget_observer_.Remove(widget);
 }
 
 void MediaRouterDialogControllerViews::SetDialogCreationCallbackForTesting(
@@ -111,8 +106,35 @@ void MediaRouterDialogControllerViews::SetDialogCreationCallbackForTesting(
 }
 
 MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(
-    content::WebContents* web_contents)
-    : MediaRouterDialogControllerImplBase(web_contents) {}
+    WebContents* web_contents)
+    : MediaRouterDialogController(web_contents),
+      scoped_widget_observer_(this),
+      media_router_ui_service_(GetMediaRouterUIService(web_contents)) {
+  DCHECK(media_router_ui_service_);
+  media_router_ui_service_->AddObserver(this);
+}
+
+void MediaRouterDialogControllerViews::OnServiceDisabled() {
+  CloseMediaRouterDialog();
+  Reset();
+}
+
+void MediaRouterDialogControllerViews::InitializeMediaRouterUI() {
+  ui_ = std::make_unique<MediaRouterViewsUI>();
+  PresentationServiceDelegateImpl* delegate =
+      PresentationServiceDelegateImpl::FromWebContents(initiator());
+  if (!start_presentation_context_) {
+    ui_->InitWithDefaultMediaSource(initiator(), delegate);
+  } else {
+    ui_->InitWithStartPresentationContext(
+        initiator(), delegate, std::move(start_presentation_context_));
+  }
+}
+
+MediaRouterActionController*
+MediaRouterDialogControllerViews::GetActionController() {
+  return media_router_ui_service_->action_controller();
+}
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerViews)
 

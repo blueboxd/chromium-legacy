@@ -59,7 +59,7 @@ class EmptyNetworkManager : public rtc::NetworkManagerBase,
   // PeerConnectionDependencyFactory.
   rtc::NetworkManager* network_manager_;
 
-  base::WeakPtrFactory<EmptyNetworkManager> weak_ptr_factory_;
+  base::WeakPtrFactory<EmptyNetworkManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EmptyNetworkManager);
 };

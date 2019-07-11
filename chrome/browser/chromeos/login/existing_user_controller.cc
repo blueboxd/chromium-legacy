@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"

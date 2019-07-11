@@ -168,7 +168,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
 
   net::RequestHeadersCallback request_headers_callback_;
   net::ResponseHeadersCallback response_headers_callback_;
-  base::WeakPtrFactory<DevToolsURLInterceptorRequestJob> weak_ptr_factory_;
+  base::WeakPtrFactory<DevToolsURLInterceptorRequestJob> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLInterceptorRequestJob);
 };

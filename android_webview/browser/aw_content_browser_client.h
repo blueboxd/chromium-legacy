@@ -241,6 +241,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
+  void WillCreateURLLoaderFactoryForAppCacheSubresource(
+      int render_process_id,
+      network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) override;
   uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
   bool WillCreateRestrictedCookieManager(
       content::BrowserContext* browser_context,

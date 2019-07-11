@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -223,40 +222,7 @@ public class TabPersistentStore extends TabPersister {
         mObservers.addObserver(observer);
         mPreferences = ContextUtils.getAppSharedPreferences();
         TaskTraits taskTraits = TaskTraits.USER_BLOCKING_MAY_BLOCK;
-        if (FeatureUtilities.isTabPersistentStoreTaskRunnerEnabled()) {
-            mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
-        } else {
-            mSequencedTaskRunner = new SequencedTaskRunner() {
-                @Override
-                public void postTask(Runnable task) {
-                    AsyncTask.SERIAL_EXECUTOR.execute(task);
-                }
-
-                @Override
-                public void destroy() {
-                    assert false : "Should not call destroy() on SERIAL_EXECUTOR TaskRunner";
-                }
-
-                @Override
-                public void disableLifetimeCheck() {
-                    assert false
-                        : "Should not call disableLifetimeCheck() on SERIAL_EXECUTOR TaskRunner";
-                }
-
-                @Override
-                public void postDelayedTask(Runnable task, long delay) {
-                    assert false
-                        : "Should not call postDelayedTask(...) on SERIAL_EXECUTOR TaskRunner";
-                }
-
-                @Override
-                public void initNativeTaskRunner() {
-                    assert false
-                        : "Should not call initNativeTaskRunner() on SERIAL_EXECUTOR TaskRunner";
-                }
-            };
-        }
-
+        mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
         mPrefetchTabListToMergeTasks = new ArrayList<>();
         mMergedFileNames = new HashSet<>();
 

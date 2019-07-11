@@ -95,7 +95,7 @@ class CONTENT_EXPORT CdmStorageImpl final
   // all remaining CdmFile bindings will be closed.
   mojo::StrongAssociatedBindingSet<media::mojom::CdmFile> cdm_file_bindings_;
 
-  base::WeakPtrFactory<CdmStorageImpl> weak_factory_;
+  base::WeakPtrFactory<CdmStorageImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmStorageImpl);
 };

@@ -16,8 +16,7 @@
 namespace content {
 
 ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
-    ServiceWorkerContextWrapper* context_wrapper)
-    : weak_factory_(this) {
+    ServiceWorkerContextWrapper* context_wrapper) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   core_ = new ServiceWorkerNavigationHandleCore(weak_factory_.GetWeakPtr(),
                                                 context_wrapper);

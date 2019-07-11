@@ -13,8 +13,7 @@ CodeCacheLoaderImpl::CodeCacheLoaderImpl() : CodeCacheLoaderImpl(nullptr) {}
 
 CodeCacheLoaderImpl::CodeCacheLoaderImpl(
     base::WaitableEvent* terminate_sync_load_event)
-    : terminate_sync_load_event_(terminate_sync_load_event),
-      weak_ptr_factory_(this) {}
+    : terminate_sync_load_event_(terminate_sync_load_event) {}
 
 CodeCacheLoaderImpl::~CodeCacheLoaderImpl() = default;
 

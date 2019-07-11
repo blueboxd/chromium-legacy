@@ -245,8 +245,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       tick_clock_(base::DefaultTickClock::GetInstance()),
       clock_(base::DefaultClock::GetInstance()),
       ping_controller_(this),
-      validator_(std::make_unique<blink::TrialTokenValidator>()),
-      weak_factory_(this) {
+      validator_(std::make_unique<blink::TrialTokenValidator>()) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);

@@ -12,8 +12,7 @@
 
 namespace content {
 
-BackgroundFetchRegistrationNotifier::BackgroundFetchRegistrationNotifier()
-    : weak_factory_(this) {}
+BackgroundFetchRegistrationNotifier::BackgroundFetchRegistrationNotifier() {}
 
 BackgroundFetchRegistrationNotifier::~BackgroundFetchRegistrationNotifier() {}
 

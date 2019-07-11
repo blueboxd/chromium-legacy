@@ -31,8 +31,9 @@ void WriteMetricsForReportingToPrefs(
 
   profile_prefs->SetInt64(crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
                           last_launch_time_window_start.ToJavaTime());
-  profile_prefs->SetString(crostini::prefs::kCrostiniLastLaunchVersion,
-                           crostini_version);
+  profile_prefs->SetString(
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion,
+      crostini_version);
 }
 }  // namespace
 
@@ -43,6 +44,13 @@ void WriteMetricsForReportingToPrefsIfEnabled(
   if (profile_prefs->GetBoolean(crostini::prefs::kReportCrostiniUsageEnabled)) {
     WriteMetricsForReportingToPrefs(profile_prefs, update_service, clock);
   }
+}
+
+void WriteTerminaVmKernelVersionToPrefsForReporting(
+    PrefService* profile_prefs,
+    const std::string& kernel_version) {
+  profile_prefs->SetString(
+      crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion, kernel_version);
 }
 
 base::Time GetThreeDayWindowStart(const base::Time& actual_time) {

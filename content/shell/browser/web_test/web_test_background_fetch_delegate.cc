@@ -63,7 +63,7 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
  public:
   explicit WebTestBackgroundFetchDownloadClient(
       base::WeakPtr<content::BackgroundFetchDelegate::Client> client)
-      : client_(std::move(client)), weak_ptr_factory_(this) {}
+      : client_(std::move(client)) {}
 
   ~WebTestBackgroundFetchDownloadClient() override = default;
 
@@ -221,7 +221,8 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
   base::flat_map<std::string, std::unique_ptr<content::BackgroundFetchResponse>>
       guid_to_response_;
 
-  base::WeakPtrFactory<WebTestBackgroundFetchDownloadClient> weak_ptr_factory_;
+  base::WeakPtrFactory<WebTestBackgroundFetchDownloadClient> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WebTestBackgroundFetchDownloadClient);
 };

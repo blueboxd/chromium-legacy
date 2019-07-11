@@ -43,11 +43,11 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER) || BUILDFLAG(CLANG_COVERAGE)
-      terminate_child_on_shutdown_(false),
+      terminate_child_on_shutdown_(false)
 #else
-      terminate_child_on_shutdown_(terminate_on_shutdown),
+      terminate_child_on_shutdown_(terminate_on_shutdown)
 #endif
-      weak_factory_(this) {
+{
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 

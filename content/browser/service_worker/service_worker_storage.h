@@ -614,7 +614,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
 
-  base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStorage);
 };

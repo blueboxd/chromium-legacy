@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
-#include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
@@ -57,8 +57,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   // Returns the dialog controller for the active WebContents.
-  MediaRouterDialogControllerImplBase* GetDialogController() {
-    return MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
+  MediaRouterDialogController* GetDialogController() {
+    return MediaRouterDialogController::GetOrCreateForWebContents(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 

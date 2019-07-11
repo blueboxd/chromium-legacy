@@ -46,8 +46,7 @@ CookieStoreManager::CookieStoreManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(std::move(service_worker_context)),
       cookie_change_listener_binding_(this),
-      registration_user_data_key_(kSubscriptionsUserKey),
-      weak_factory_(this) {
+      registration_user_data_key_(kSubscriptionsUserKey) {
   service_worker_context_->AddObserver(this);
 }
 

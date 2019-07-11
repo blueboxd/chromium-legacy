@@ -15,6 +15,8 @@
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -108,16 +110,16 @@ class DeskBarHoverObserver : public ui::EventObserver {
 // DesksBarView:
 
 DesksBarView::DesksBarView()
-    : backgroud_view_(new views::View),
+    : background_view_(new views::View),
       new_desk_button_(new NewDeskButton(this)) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  backgroud_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  backgroud_view_->layer()->SetFillsBoundsOpaquely(false);
-  backgroud_view_->layer()->SetColor(SkColorSetARGB(60, 0, 0, 0));
+  background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  background_view_->layer()->SetFillsBoundsOpaquely(false);
+  background_view_->layer()->SetColor(SkColorSetARGB(60, 0, 0, 0));
 
-  AddChildView(backgroud_view_);
+  AddChildView(background_view_);
   AddChildView(new_desk_button_);
   UpdateNewDeskButtonState();
   DesksController::Get()->AddObserver(this);
@@ -193,7 +195,7 @@ const char* DesksBarView::GetClassName() const {
 }
 
 void DesksBarView::Layout() {
-  backgroud_view_->SetBoundsRect(bounds());
+  background_view_->SetBoundsRect(bounds());
 
   constexpr int kButtonRightMargin = 36;
   constexpr int kIconAndTextHorizontalPadding = 16;
@@ -268,6 +270,12 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   Layout();
   UpdateMiniViewsLabels();
   UpdateNewDeskButtonState();
+  DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
+  auto* highlight_controller = Shell::Get()
+                                   ->overview_controller()
+                                   ->overview_session()
+                                   ->highlight_controller();
+  highlight_controller->OnViewDestroying(removed_mini_view.get());
 
   std::vector<DeskMiniView*> mini_views_before;
   std::vector<DeskMiniView*> mini_views_after;
@@ -281,9 +289,15 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   std::transform(partition_iter, mini_views_.end(),
                  std::back_inserter(mini_views_after), transform_lambda);
 
+  aura::Window* root_window = removed_mini_view->root_window();
   PerformRemoveDeskMiniViewAnimation(std::move(removed_mini_view),
                                      mini_views_before, mini_views_after,
                                      begin_x - GetFirstMiniViewXOffset());
+
+  // Once the remaining mini views have their bounds updated, notify the
+  // overview highlight controller so that it can update the focus highlight, if
+  // needed.
+  highlight_controller->OnWindowsRepositioned(root_window);
 }
 
 void DesksBarView::OnDeskActivationChanged(const Desk* activated,
@@ -310,8 +324,8 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
     // The bar background is initially translated off the screen.
     gfx::Transform translate;
     translate.Translate(0, -kBarHeight);
-    backgroud_view_->layer()->SetTransform(translate);
-    backgroud_view_->layer()->SetOpacity(0);
+    background_view_->layer()->SetTransform(translate);
+    background_view_->layer()->SetOpacity(0);
 
     return;
   }

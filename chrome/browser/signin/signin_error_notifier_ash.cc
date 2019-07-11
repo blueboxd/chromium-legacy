@@ -39,6 +39,7 @@
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -220,7 +221,7 @@ void SigninErrorNotifier::OnGetAccounts(
                   &SigninErrorNotifier::
                       HandleSecondaryAccountReauthNotificationClick,
                   weak_factory_.GetWeakPtr())),
-          ash::kNotificationSettingsIcon,
+          vector_icons::kSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
 

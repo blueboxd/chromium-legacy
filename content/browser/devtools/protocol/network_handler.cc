@@ -917,8 +917,7 @@ NetworkHandler::NetworkHandler(
       bypass_service_worker_(false),
       cache_disabled_(false),
       update_loader_factories_callback_(
-          std::move(update_loader_factories_callback)),
-      weak_factory_(this) {
+          std::move(update_loader_factories_callback)) {
   DCHECK(io_context_);
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)

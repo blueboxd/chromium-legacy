@@ -18,7 +18,7 @@ namespace views {
 class View;
 
 // Provides default implementaton to adapt CompositorAnimationRunner for
-// Animation.
+// Animation. Falls back to the default animation runner when |view| is nullptr.
 class VIEWS_EXPORT AnimationDelegateViews
     : public gfx::AnimationDelegate,
       public ViewObserver,

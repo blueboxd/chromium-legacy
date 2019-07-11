@@ -351,8 +351,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       is_history_download_id_retrieved_(false),
       should_persist_new_download_(false),
       cancelled_download_cleared_from_history_(0),
-      interrupted_download_cleared_from_history_(0),
-      weak_factory_(this) {
+      interrupted_download_cleared_from_history_(0) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));

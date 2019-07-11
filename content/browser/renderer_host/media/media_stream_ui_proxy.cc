@@ -91,7 +91,7 @@ class MediaStreamUIProxy::Core {
 
   // WeakPtr<> is used to RequestMediaAccessPermission() because there is no way
   // cancel media requests.
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -100,8 +100,7 @@ MediaStreamUIProxy::Core::Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
                                RenderFrameHostDelegate* test_render_delegate)
     : proxy_(proxy),
       tests_use_fake_render_frame_hosts_(test_render_delegate != nullptr),
-      test_render_delegate_(test_render_delegate),
-      weak_factory_(this) {}
+      test_render_delegate_(test_render_delegate) {}
 
 MediaStreamUIProxy::Core::~Core() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -229,8 +228,7 @@ std::unique_ptr<MediaStreamUIProxy> MediaStreamUIProxy::CreateForTests(
 }
 
 MediaStreamUIProxy::MediaStreamUIProxy(
-    RenderFrameHostDelegate* test_render_delegate)
-    : weak_factory_(this) {
+    RenderFrameHostDelegate* test_render_delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   core_.reset(new Core(weak_factory_.GetWeakPtr(), test_render_delegate));
 }

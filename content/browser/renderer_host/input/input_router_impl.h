@@ -263,7 +263,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   mojo::Receiver<mojom::WidgetInputHandlerHost> frame_host_receiver_{this};
 
   base::WeakPtr<InputRouterImpl> weak_this_;
-  base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };

@@ -103,7 +103,7 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
     explicit SSLErrorHandlerDelegate(
         std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
             callbacks)
-        : callbacks_(std::move(callbacks)), weak_ptr_factory_(this) {}
+        : callbacks_(std::move(callbacks)) {}
     ~SSLErrorHandlerDelegate() override {}
 
     base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr() {
@@ -127,7 +127,7 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
    private:
     std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
 
-    base::WeakPtrFactory<SSLErrorHandlerDelegate> weak_ptr_factory_;
+    base::WeakPtrFactory<SSLErrorHandlerDelegate> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerDelegate);
   };

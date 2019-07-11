@@ -53,7 +53,7 @@ class RtcDtmfSenderHandler::Observer :
 RtcDtmfSenderHandler::RtcDtmfSenderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     DtmfSenderInterface* dtmf_sender)
-    : dtmf_sender_(dtmf_sender), webkit_client_(nullptr), weak_factory_(this) {
+    : dtmf_sender_(dtmf_sender), webkit_client_(nullptr) {
   DVLOG(1) << "::ctor";
   observer_ = new Observer(std::move(main_thread), weak_factory_.GetWeakPtr());
   dtmf_sender_->RegisterObserver(observer_.get());

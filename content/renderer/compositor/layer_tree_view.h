@@ -219,7 +219,7 @@ class CONTENT_EXPORT LayerTreeView
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>
       presentation_callbacks_;
 
-  base::WeakPtrFactory<LayerTreeView> weak_factory_;
+  base::WeakPtrFactory<LayerTreeView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeView);
 };

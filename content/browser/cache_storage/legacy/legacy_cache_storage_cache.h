@@ -540,7 +540,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   base::OnceClosure post_backend_closed_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_;
+  base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageCache);
 };

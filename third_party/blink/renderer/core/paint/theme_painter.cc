@@ -96,6 +96,27 @@ ThemePainter::ThemePainter() = default;
 #define COUNT_APPEARANCE(doc, feature) \
   doc.CountUse(WebFeature::kCSSValueAppearance##feature##Rendered)
 
+void CountAppearanceTextFieldPart(const Node* node) {
+  if (!node) {
+    return;
+  }
+  UseCounter::Count(node->GetDocument(),
+                    WebFeature::kCSSValueAppearanceTextFieldRendered);
+  WebFeature feature =
+      WebFeature::kCSSValueAppearanceTextFieldForOthersRendered;
+  if (auto* input = ToHTMLInputElementOrNull(node)) {
+    const AtomicString& type = input->type();
+    if (type == input_type_names::kSearch) {
+      feature = WebFeature::kCSSValueAppearanceTextFieldForSearch;
+    } else if (input->IsTextField()) {
+      feature = WebFeature::kCSSValueAppearanceTextFieldForTextField;
+    } else if (IsMultipleFieldsTemporalInput(type)) {
+      feature = WebFeature::kCSSValueAppearanceTextFieldForTemporalRendered;
+    }
+  }
+  UseCounter::Count(node->GetDocument(), feature);
+}
+
 // Returns true; Needs CSS painting and/or PaintBorderOnly().
 bool ThemePainter::Paint(const LayoutObject& o,
                          const PaintInfo& paint_info,
@@ -214,9 +235,24 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kMediaVolumeSliderThumbPart:
       return true;
     case kMenulistButtonPart:
-    case kTextFieldPart:
-    case kTextAreaPart:
       return true;
+    case kTextFieldPart:
+      if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+        return true;
+      }
+      CountAppearanceTextFieldPart(node);
+      return PaintTextField(node, style, paint_info, r);
+    case kTextAreaPart:
+      if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+        return true;
+      }
+      if (node) {
+        const auto& doc = node->GetDocument();
+        COUNT_APPEARANCE(doc, TextArea);
+        if (!IsHTMLTextAreaElement(node))
+          COUNT_APPEARANCE(doc, TextAreaForOthers);
+      }
+      return PaintTextArea(node, style, paint_info, r);
     case kSearchFieldPart: {
       COUNT_APPEARANCE(doc, SearchField);
       auto* input = ToHTMLInputElementOrNull(node);
@@ -260,26 +296,15 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
   // Call the appropriate paint method based off the appearance value.
   switch (style.Appearance()) {
     case kTextFieldPart:
-      if (node) {
-        UseCounter::Count(node->GetDocument(),
-                          WebFeature::kCSSValueAppearanceTextFieldRendered);
-        WebFeature feature =
-            WebFeature::kCSSValueAppearanceTextFieldForOthersRendered;
-        if (auto* input = ToHTMLInputElementOrNull(node)) {
-          const AtomicString& type = input->type();
-          if (type == input_type_names::kSearch) {
-            feature = WebFeature::kCSSValueAppearanceTextFieldForSearch;
-          } else if (input->IsTextField()) {
-            feature = WebFeature::kCSSValueAppearanceTextFieldForTextField;
-          } else if (IsMultipleFieldsTemporalInput(type)) {
-            feature =
-                WebFeature::kCSSValueAppearanceTextFieldForTemporalRendered;
-          }
-        }
-        UseCounter::Count(node->GetDocument(), feature);
+      if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+        return false;
       }
+      CountAppearanceTextFieldPart(node);
       return PaintTextField(node, style, paint_info, r);
     case kTextAreaPart:
+      if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+        return false;
+      }
       if (node) {
         const auto& doc = node->GetDocument();
         COUNT_APPEARANCE(doc, TextArea);

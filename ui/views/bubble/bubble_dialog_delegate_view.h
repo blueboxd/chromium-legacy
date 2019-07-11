@@ -79,8 +79,18 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect is used in the absence of an assigned anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  // Set the desired arrow for the bubble. The arrow will be mirrored for RTL.
+  // Set the desired arrow for the bubble and updates the bubble's bounds
+  // accordingly. The arrow will be mirrored for RTL.
   void SetArrow(BubbleBorder::Arrow arrow);
+
+  // Sets the arrow without recaluclating or updating bounds. This could be used
+  // proceeding another function call which also sets bounds, so that bounds are
+  // not set multiple times in a row. When animating bounds changes, setting
+  // bounds twice in a row can make the widget position jump.
+  // TODO(crbug.com/982880) It would be good to be able to re-target the
+  // animation rather than expet callers to use SetArrowWithoutResizing if they
+  // are also changing the anchor rect, or similar.
+  void SetArrowWithoutResizing(BubbleBorder::Arrow arrow);
 
   BubbleBorder::Shadow GetShadow() const;
   void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }

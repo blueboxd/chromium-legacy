@@ -7350,7 +7350,7 @@ namespace {
 
 class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
  public:
-  RequestMonitoringNavigationBrowserTest() : weak_factory_(this) {}
+  RequestMonitoringNavigationBrowserTest() {}
 
   const net::test_server::HttpRequest* FindAccumulatedRequest(
       const GURL& url_to_find) {
@@ -7399,7 +7399,8 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
   }
 
   std::vector<net::test_server::HttpRequest> accumulated_requests_;
-  base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_;
+  base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_{
+      this};
 };
 
 // Helper for waiting until the main frame of |web_contents| has loaded

@@ -91,8 +91,7 @@ ToBackgroundServiceEvent(const devtools::proto::BackgroundServiceEvent& event) {
 
 BackgroundServiceHandler::BackgroundServiceHandler()
     : DevToolsDomainHandler(BackgroundService::Metainfo::domainName),
-      devtools_context_(nullptr),
-      weak_ptr_factory_(this) {}
+      devtools_context_(nullptr) {}
 
 BackgroundServiceHandler::~BackgroundServiceHandler() {
   DCHECK(enabled_services_.empty());

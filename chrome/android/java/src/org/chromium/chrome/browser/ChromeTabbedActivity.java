@@ -2240,8 +2240,7 @@ public class ChromeTabbedActivity
     @Override
     protected ModalDialogManager createModalDialogManager() {
         ModalDialogManager manager = super.createModalDialogManager();
-        mTabModalHandler =
-                new TabModalLifetimeHandler(this, manager, () -> mBrowserControlsOffsetHelper);
+        mTabModalHandler = new TabModalLifetimeHandler(this, manager);
         return manager;
     }
 

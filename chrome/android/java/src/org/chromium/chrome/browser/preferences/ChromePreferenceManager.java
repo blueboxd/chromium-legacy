@@ -180,9 +180,9 @@ public class ChromePreferenceManager {
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
-     * Whether or not TabPersistentStore is using a TaskRunner instead of SERIAL_EXECUTOR.
-     * Default value is false.
+     * Deprecated in M77. This value may still exist in shared preferences file. Do not reuse.
      */
+    @Deprecated
     public static final String TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY =
             "tab_persistent_store_task_runner_enabled";
 

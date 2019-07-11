@@ -95,9 +95,7 @@ class VirtualDeviceExerciser {
 // RGB dummy frames, one dark one and one light one.
 class TextureDeviceExerciser : public VirtualDeviceExerciser {
  public:
-  TextureDeviceExerciser() : weak_factory_(this) {
-    DETACH_FROM_SEQUENCE(sequence_checker_);
-  }
+  TextureDeviceExerciser() { DETACH_FROM_SEQUENCE(sequence_checker_); }
 
   void Initialize() override {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -230,7 +228,7 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
   std::vector<gpu::MailboxHolder> dummy_frame_0_mailbox_holder_;
   std::vector<gpu::MailboxHolder> dummy_frame_1_mailbox_holder_;
   std::array<bool, 2> frame_being_consumed_;
-  base::WeakPtrFactory<TextureDeviceExerciser> weak_factory_;
+  base::WeakPtrFactory<TextureDeviceExerciser> weak_factory_{this};
 };
 
 // A VirtualDeviceExerciser for exercising
@@ -242,9 +240,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
  public:
   explicit SharedMemoryDeviceExerciser(
       media::mojom::PlaneStridesPtr strides = nullptr)
-      : strides_(std::move(strides)),
-        producer_binding_(this),
-        weak_factory_(this) {}
+      : strides_(std::move(strides)), producer_binding_(this) {}
 
   // VirtualDeviceExerciser implementation.
   void Initialize() override {}
@@ -396,7 +392,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   std::map<int32_t /*buffer_id*/,
            std::unique_ptr<media::SharedMemoryHandleProvider>>
       outgoing_buffer_id_to_buffer_map_;
-  base::WeakPtrFactory<SharedMemoryDeviceExerciser> weak_factory_;
+  base::WeakPtrFactory<SharedMemoryDeviceExerciser> weak_factory_{this};
 };
 
 // Integration test that obtains a connection to the video capture service via
@@ -407,7 +403,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
 class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
  public:
   WebRtcVideoCaptureServiceBrowserTest()
-      : virtual_device_thread_("Virtual Device Thread"), weak_factory_(this) {
+      : virtual_device_thread_("Virtual Device Thread") {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
     virtual_device_thread_.Start();
   }
@@ -524,7 +520,8 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
   video_capture::mojom::DeviceFactoryPtr factory_;
   gfx::Size video_size_;
   base::TimeTicks first_frame_time_;
-  base::WeakPtrFactory<WebRtcVideoCaptureServiceBrowserTest> weak_factory_;
+  base::WeakPtrFactory<WebRtcVideoCaptureServiceBrowserTest> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureServiceBrowserTest);
 };

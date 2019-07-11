@@ -198,7 +198,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
 
-  base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);
 };

@@ -69,7 +69,7 @@ class CONTENT_EXPORT MediaInterfaceFactory
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<MediaInterfaceFactory> weak_this_;
-  base::WeakPtrFactory<MediaInterfaceFactory> weak_factory_;
+  base::WeakPtrFactory<MediaInterfaceFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceFactory);
 };

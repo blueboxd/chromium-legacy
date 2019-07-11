@@ -63,7 +63,7 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
   GURL context_url_;
   GURL scope_;
   mojo::Binding<payments::mojom::PaymentManager> binding_;
-  base::WeakPtrFactory<PaymentManager> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentManager> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };
 

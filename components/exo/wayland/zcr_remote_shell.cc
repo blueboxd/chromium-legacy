@@ -9,13 +9,13 @@
 #include <wayland-server-protocol-core.h>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/work_area_insets.h"

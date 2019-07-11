@@ -176,7 +176,7 @@ class CONTENT_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
   int read_position_;
   int reading_metadata_size_;
 
-  base::WeakPtrFactory<AppCacheResponseReader> weak_factory_;
+  base::WeakPtrFactory<AppCacheResponseReader> weak_factory_{this};
 };
 
 // Writes new response data to storage. If the object is deleted
@@ -246,7 +246,7 @@ class CONTENT_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
   int write_position_;
   int write_amount_;
   CreationPhase creation_phase_;
-  base::WeakPtrFactory<AppCacheResponseWriter> weak_factory_;
+  base::WeakPtrFactory<AppCacheResponseWriter> weak_factory_{this};
 };
 
 // Writes metadata of the existing response to storage. If the object is deleted
@@ -287,7 +287,7 @@ class CONTENT_EXPORT AppCacheResponseMetadataWriter
   base::WeakPtr<AppCacheResponseIO> GetWeakPtr() override;
 
   int write_amount_;
-  base::WeakPtrFactory<AppCacheResponseMetadataWriter> weak_factory_;
+  base::WeakPtrFactory<AppCacheResponseMetadataWriter> weak_factory_{this};
 };
 
 }  // namespace content

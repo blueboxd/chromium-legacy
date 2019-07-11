@@ -292,7 +292,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // has been bumped, and journal cleaning should be deferred.
     bool committing_;
 
-    base::WeakPtrFactory<Transaction> ptr_factory_;
+    base::WeakPtrFactory<Transaction> ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Transaction);
   };

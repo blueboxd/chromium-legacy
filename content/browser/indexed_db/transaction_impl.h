@@ -64,7 +64,7 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<TransactionImpl> weak_factory_;
+  base::WeakPtrFactory<TransactionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TransactionImpl);
 };

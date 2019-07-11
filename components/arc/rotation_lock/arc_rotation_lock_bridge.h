@@ -6,7 +6,7 @@
 #define COMPONENTS_ARC_ROTATION_LOCK_ARC_ROTATION_LOCK_BRIDGE_H_
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/rotation_lock.mojom.h"

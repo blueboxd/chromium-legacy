@@ -175,7 +175,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   bool lost_context_ = false;
 #endif
 
-  base::WeakPtrFactory<PepperVideoEncoderHost> weak_ptr_factory_;
+  base::WeakPtrFactory<PepperVideoEncoderHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoEncoderHost);
 };

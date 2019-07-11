@@ -117,6 +117,7 @@ class FlexLayoutTest : public testing::Test {
 
  protected:
   // Constants re-used in many tests.
+  static const Insets kSmallInsets;
   static const Insets kLayoutInsets;
   static const Insets kLargeInsets;
   static const Size kChild1Size;
@@ -148,6 +149,7 @@ class FlexLayoutTest : public testing::Test {
   FlexLayout* layout_;
 };
 
+const Insets FlexLayoutTest::kSmallInsets{1, 2, 3, 4};
 const Insets FlexLayoutTest::kLayoutInsets{5, 6, 7, 9};
 const Insets FlexLayoutTest::kLargeInsets{10, 11, 12, 13};
 const Size FlexLayoutTest::kChild1Size{12, 10};
@@ -210,8 +212,15 @@ TEST_F(FlexLayoutTest, GetMinimumSize_Empty) {
   EXPECT_EQ(Size(0, 0), host_->GetMinimumSize());
 }
 
-TEST_F(FlexLayoutTest, GetMinimumSize_Empty_ViewInsets) {
+TEST_F(FlexLayoutTest, GetMinimumSize_Empty_ViewInsets_Horizontal) {
   layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(false);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  EXPECT_EQ(Size(15, 12), host_->GetMinimumSize());
+}
+
+TEST_F(FlexLayoutTest, GetMinimumSize_Empty_ViewInsets_Vertical) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
   layout_->SetCollapseMargins(false);
   host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
   EXPECT_EQ(Size(15, 12), host_->GetMinimumSize());
@@ -248,8 +257,8 @@ TEST_F(FlexLayoutTest, GetMinimumSize_MinimumCross_Horizontal) {
   EXPECT_EQ(Size(9, 7), host_->GetMinimumSize());
   layout_->SetMinimumCrossAxisSize(10);
   EXPECT_EQ(Size(9, 10), host_->GetMinimumSize());
-  host_->SetBorder(CreateEmptyBorder(2, 2, 2, 2));
-  EXPECT_EQ(Size(13, 14), host_->GetMinimumSize());
+  host_->SetBorder(CreateEmptyBorder(kSmallInsets));
+  EXPECT_EQ(Size(15, 14), host_->GetMinimumSize());
 }
 
 TEST_F(FlexLayoutTest, GetMinimumSize_MinimumCross_Vertical) {
@@ -260,8 +269,8 @@ TEST_F(FlexLayoutTest, GetMinimumSize_MinimumCross_Vertical) {
   EXPECT_EQ(Size(9, 7), host_->GetMinimumSize());
   layout_->SetMinimumCrossAxisSize(10);
   EXPECT_EQ(Size(10, 7), host_->GetMinimumSize());
-  host_->SetBorder(CreateEmptyBorder(2, 2, 2, 2));
-  EXPECT_EQ(Size(14, 11), host_->GetMinimumSize());
+  host_->SetBorder(CreateEmptyBorder(kSmallInsets));
+  EXPECT_EQ(Size(16, 11), host_->GetMinimumSize());
 }
 
 // Visibility and Inclusion Tests ----------------------------------------------
@@ -719,6 +728,97 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_InteriorPadding_Additive) {
   };
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(70, 50), host_->GetPreferredSize());
+}
+
+// Host insets tests -----------------------------------------------------------
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Horizontal) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->Layout();
+  EXPECT_EQ(Rect(6, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Vertical) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->Layout();
+  EXPECT_EQ(Rect(6, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Horizontal_Leading) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  EXPECT_EQ(Rect(6, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Vertical_Leading) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  EXPECT_EQ(Rect(6, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Horizontal_Center) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kCenter);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  const int expected_x =
+      kLayoutInsets.left() +
+      (host_->size().width() - kChild1Size.width() - kLayoutInsets.width()) / 2;
+  EXPECT_EQ(Rect(expected_x, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Vertical_Center) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kCenter);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  const int expected_y =
+      kLayoutInsets.top() +
+      (host_->size().height() - kChild1Size.height() - kLayoutInsets.height()) /
+          2;
+  EXPECT_EQ(Rect(6, expected_y, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Horizontal_End) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kEnd);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  const int expected_x =
+      kLayoutInsets.left() +
+      (host_->size().width() - kChild1Size.width() - kLayoutInsets.width());
+  EXPECT_EQ(Rect(expected_x, 5, 12, 10), child->bounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_HostInsets_Vertical_End) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kEnd);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  host_->SetBorder(CreateEmptyBorder(kLayoutInsets));
+  View* child = AddChild(kChild1Size);
+  host_->SetSize({100, 100});
+  const int expected_y =
+      kLayoutInsets.top() +
+      (host_->size().height() - kChild1Size.height() - kLayoutInsets.height());
+  EXPECT_EQ(Rect(6, expected_y, 12, 10), child->bounds());
 }
 
 // Alignment Tests -------------------------------------------------------------

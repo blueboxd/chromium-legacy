@@ -183,7 +183,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   base::TimeTicks cert_fetch_start_time_;
 
-  base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeHandler);
 };

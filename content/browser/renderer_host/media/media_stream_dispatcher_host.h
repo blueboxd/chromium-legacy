@@ -96,7 +96,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   blink::mojom::MediaStreamDeviceObserverPtr media_stream_device_observer_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
-  base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
 };

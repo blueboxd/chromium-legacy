@@ -81,7 +81,7 @@ class CrossSequenceCacheStorage
   int handle_ref_count_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CrossSequenceCacheStorage> weak_factory_;
+  base::WeakPtrFactory<CrossSequenceCacheStorage> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CrossSequenceCacheStorage);
 };
 

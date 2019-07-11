@@ -3713,49 +3713,6 @@
       },
     },
 
-    # This is identical to 'gpu_telemetry_tests_for_skia_gold_testing', except
-    # that the --build-revision arg uses ${got_cr_revision} instead of
-    # ${got_revision}. This is because got_revision on V8 builders contains
-    # the V8 revision, not the Chromium revision, which confuses the GPU team's
-    # Skia Gold instance since it's tracking the Chromium src repo.
-    'gpu_telemetry_tests_for_skia_gold_testing_v8': {
-      'pixel_skia': {
-        'name': 'pixel_skia_gold_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_cr_revision}',
-          '--test-machine-name',
-          '${buildername}',
-          '--use-skia-gold',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
-        'precommit_args': [
-          '--download-refimg-from-cloud-storage',
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
-        ],
-        'experiment_percentage': 100,
-        'swarming': {
-          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
-        },
-        'telemetry_test_name': 'pixel',
-      },
-    },
-
     'gpu_webgl2_conformance_d3d11_validating_telemetry_tests': {
       'webgl2_conformance_d3d11_validating_tests': {
         'args': [
@@ -5422,7 +5379,7 @@
     'gpu_nexus5x_telemetry_tests_v8': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing_v8',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -5453,7 +5410,7 @@
     'gpu_v8_desktop_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing_v8',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],

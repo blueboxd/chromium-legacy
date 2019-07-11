@@ -40,7 +40,7 @@ TabletModeClient::~TabletModeClient() {
 }
 
 void TabletModeClient::Init() {
-  ash::TabletMode::Get()->SetTabletModeToggleObserver(this);
+  ash::TabletMode::Get()->AddObserver(this);
   OnTabletModeToggled(ash::TabletMode::Get()->InTabletMode());
 }
 
@@ -68,6 +68,18 @@ void TabletModeClient::OnTabletModeToggled(bool enabled) {
   ui::MaterialDesignController::OnTabletModeToggled(enabled);
   for (auto& observer : observers_)
     observer.OnTabletModeToggled(enabled);
+}
+
+void TabletModeClient::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void TabletModeClient::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
+}
+
+void TabletModeClient::OnTabletControllerDestroyed() {
+  ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 bool TabletModeClient::ShouldTrackBrowser(Browser* browser) {

@@ -152,8 +152,7 @@ URLLoaderClientImpl::URLLoaderClientImpl(
       task_runner_(std::move(task_runner)),
       bypass_redirect_checks_(bypass_redirect_checks),
       last_loaded_url_(request_url),
-      url_loader_client_binding_(this),
-      weak_factory_(this) {}
+      url_loader_client_binding_(this) {}
 
 URLLoaderClientImpl::~URLLoaderClientImpl() = default;
 

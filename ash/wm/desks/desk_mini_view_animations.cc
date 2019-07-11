@@ -90,7 +90,7 @@ void PerformNewDeskMiniViewAnimation(
     int shift_x,
     bool first_time_mini_views) {
   if (first_time_mini_views) {
-    ui::Layer* layer = bar_view->backgroud_view()->layer();
+    ui::Layer* layer = bar_view->background_view()->layer();
     ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
     InitScopedAnimationSettings(&settings, kBarBackgroundDuration);
     layer->SetOpacity(1);

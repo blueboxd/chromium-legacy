@@ -1270,6 +1270,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WEB_CONTENTS_ONLY" desc="Title for the window picker dialog shown when desktop capture of a tab is requested by an app.">
         Share a Chromium tab
       </message>
+      <!-- User happiness tracking survey UI -->
+      <if expr="not is_android">
+        <message name="IDS_HATS_BUBBLE_TITLE" translateable="false" desc="The title of Happiness Tracking Survey's invitation banner, it invites users to take a survey">
+          Help us improve Chromium
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

@@ -201,8 +201,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
-      frame_tree_node_id_getter_(frame_tree_node_id_getter),
-      weak_factory_(this) {
+      frame_tree_node_id_getter_(frame_tree_node_id_getter) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
 
@@ -253,8 +252,7 @@ SignedExchangeHandler::~SignedExchangeHandler() = default;
 SignedExchangeHandler::SignedExchangeHandler()
     : is_secure_transport_(true),
       has_nosniff_(true),
-      load_flags_(net::LOAD_NORMAL),
-      weak_factory_(this) {}
+      load_flags_(net::LOAD_NORMAL) {}
 
 const GURL& SignedExchangeHandler::GetFallbackUrl() const {
   return prologue_fallback_url_and_after_.fallback_url().url;

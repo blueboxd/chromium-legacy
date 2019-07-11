@@ -219,7 +219,7 @@ class TestResourceHandler : public ResourceHandler {
 
   base::RunLoop response_complete_run_loop_;
 
-  base::WeakPtrFactory<TestResourceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<TestResourceHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceHandler);
 };

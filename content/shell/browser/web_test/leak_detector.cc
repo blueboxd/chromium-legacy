@@ -40,7 +40,7 @@ const int kInitialNumberOfLiveContextLifecycleStateObservers = 0;
 // objects.
 const int kInitialNumberOfV8PerContextData = 2;
 
-LeakDetector::LeakDetector() : weak_factory_(this) {
+LeakDetector::LeakDetector() {
   previous_result_ = blink::mojom::LeakDetectionResult::New();
   previous_result_->number_of_live_audio_nodes = kInitialNumberOfLiveAudioNodes;
   previous_result_->number_of_live_documents = kInitialNumberOfLiveDocuments;

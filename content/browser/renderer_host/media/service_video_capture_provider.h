@@ -111,7 +111,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
   int stashed_retry_count_;
 #endif
 
-  base::WeakPtrFactory<ServiceVideoCaptureProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceVideoCaptureProvider> weak_ptr_factory_{this};
 };
 
 }  // namespace content

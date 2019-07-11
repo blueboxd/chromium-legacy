@@ -273,10 +273,14 @@ class TSFTextStoreTestCallback {
     ASSERT_EQ(expected_string.size(), text_buffer_copied);
     EXPECT_EQ(expected_string,
               base::string16(buffer, buffer + text_buffer_copied));
-    EXPECT_EQ(1u, run_info_buffer_copied);
-    EXPECT_EQ(expected_string.size(), run_info.uCount);
-    EXPECT_EQ(TS_RT_PLAIN, run_info.type);
-    EXPECT_EQ(expected_next_acp, next_acp);
+    if (text_buffer_copied > 0) {
+      EXPECT_EQ(1u, run_info_buffer_copied);
+      EXPECT_EQ(expected_string.size(), run_info.uCount);
+      EXPECT_EQ(TS_RT_PLAIN, run_info.type);
+      EXPECT_EQ(expected_next_acp, next_acp);
+    } else {
+      EXPECT_EQ(0u, run_info_buffer_copied);
+    }
   }
 
   void GetTextErrorTest(LONG acp_start, LONG acp_end, HRESULT error_code) {

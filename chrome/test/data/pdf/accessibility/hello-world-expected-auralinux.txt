@@ -1,0 +1,5 @@
+[embedded component]
+++[panel]
+++++[landmark] name='Page 1'
+++++++[paragraph]
+++++++++[text] name='Hello, world!'

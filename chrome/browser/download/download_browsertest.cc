@@ -1593,22 +1593,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // We should still have 2 windows.
   ExpectWindowCountAfterDownload(2);
 
-#if !defined(OS_MACOSX)
-  // On Mac OS X, the UI window close is delayed until the outermost
-  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
-  // notification inside of a test.
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(incognito));
-#endif
-
   // Close the Incognito window and don't crash.
   chrome::CloseWindow(incognito);
 
-#if !defined(OS_MACOSX)
-  signal.Wait();
+  ui_test_utils::WaitForBrowserToClose(incognito);
   ExpectWindowCountAfterDownload(1);
-#endif
 
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   CheckDownload(browser(), file, file);
@@ -4237,10 +4226,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   GURL url =
       embedded_test_server()->GetURL("/" + std::string(kDownloadTest1Path));
 
-#if !defined(OS_MACOSX)
-  // See below.
-  Browser* first_browser = browser();
-#endif
+  const Browser* first_browser = browser();
 
   // Download a file in a new window and wait.
   DownloadAndWaitWithDisposition(browser(), url,
@@ -4264,23 +4250,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   EXPECT_EQ(1, download_browser->tab_strip_model()->count());
   EXPECT_TRUE(download_browser->window()->IsDownloadShelfVisible());
 
-#if !defined(OS_MACOSX)
-  // On Mac OS X, the UI window close is delayed until the outermost
-  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
-  // notification inside of a test.
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(download_browser));
-#endif
-
   // Close the new window.
   chrome::CloseWindow(download_browser);
 
-#if !defined(OS_MACOSX)
-  signal.Wait();
+  ui_test_utils::WaitForBrowserToClose(download_browser);
   EXPECT_EQ(first_browser, browser());
   ExpectWindowCountAfterDownload(1);
-#endif
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   // Download shelf should close.

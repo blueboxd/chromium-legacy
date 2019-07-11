@@ -359,7 +359,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   int next_embedded_worker_id_ = 0;
 
-  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

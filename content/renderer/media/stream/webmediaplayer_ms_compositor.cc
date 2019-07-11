@@ -148,8 +148,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       total_frame_count_(0),
       dropped_frame_count_(0),
       stopped_(true),
-      render_started_(!stopped_),
-      weak_ptr_factory_(this) {
+      render_started_(!stopped_) {
   if (surface_layer_mode != blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
     submitter_ = std::move(submitter);
 

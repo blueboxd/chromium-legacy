@@ -32,8 +32,7 @@ AXImageAnnotator::AXImageAnnotator(
     image_annotation::mojom::AnnotatorPtr annotator_ptr)
     : render_accessibility_(render_accessibility),
       preferred_language_(preferred_language),
-      annotator_ptr_(std::move(annotator_ptr)),
-      weak_factory_(this) {
+      annotator_ptr_(std::move(annotator_ptr)) {
   DCHECK(render_accessibility_);
 }
 

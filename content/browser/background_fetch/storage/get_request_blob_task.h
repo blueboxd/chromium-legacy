@@ -53,7 +53,8 @@ class GetRequestBlobTask : public DatabaseTask {
 
   blink::mojom::SerializedBlobPtr blob_;
 
-  base::WeakPtrFactory<GetRequestBlobTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetRequestBlobTask> weak_factory_{
+      this};  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(GetRequestBlobTask);
 };

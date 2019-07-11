@@ -174,7 +174,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
       update_ui_callback_map_;
 
   DispatchClickEventCallback click_event_dispatcher_callback_;
-  base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDelegateProxy);
 };

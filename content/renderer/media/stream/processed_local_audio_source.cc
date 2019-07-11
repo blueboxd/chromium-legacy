@@ -104,8 +104,7 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
       audio_processing_properties_(audio_processing_properties),
       started_callback_(std::move(started_callback)),
       volume_(0),
-      allow_invalid_render_frame_id_for_testing_(false),
-      weak_factory_(this) {
+      allow_invalid_render_frame_id_for_testing_(false) {
   DCHECK(pc_factory_);
   DVLOG(1) << "ProcessedLocalAudioSource::ProcessedLocalAudioSource()";
   SetDevice(device);

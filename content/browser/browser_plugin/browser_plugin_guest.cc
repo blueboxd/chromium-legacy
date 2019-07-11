@@ -132,8 +132,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       seen_embedder_drag_source_ended_at_(false),
       ignore_dragged_url_(true),
       delegate_(delegate),
-      can_use_cross_process_frames_(delegate->CanUseCrossProcessFrames()),
-      weak_ptr_factory_(this) {
+      can_use_cross_process_frames_(delegate->CanUseCrossProcessFrames()) {
   DCHECK(web_contents);
   DCHECK(delegate);
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));

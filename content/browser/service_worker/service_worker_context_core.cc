@@ -258,8 +258,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
       was_service_worker_registered_(false),
-      observer_list_(observer_list),
-      weak_factory_(this) {
+      observer_list_(observer_list) {
   DCHECK(observer_list_);
   // These get a WeakPtr from |weak_factory_|, so must be set after
   // |weak_factory_| is initialized.
@@ -279,8 +278,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       was_service_worker_registered_(
           old_context->was_service_worker_registered_),
       observer_list_(old_context->observer_list_),
-      next_embedded_worker_id_(old_context->next_embedded_worker_id_),
-      weak_factory_(this) {
+      next_embedded_worker_id_(old_context->next_embedded_worker_id_) {
   DCHECK(observer_list_);
 
   // These get a WeakPtr from |weak_factory_|, so must be set after

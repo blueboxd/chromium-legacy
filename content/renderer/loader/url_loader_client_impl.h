@@ -102,7 +102,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   network::mojom::URLLoaderPtr url_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
 
-  base::WeakPtrFactory<URLLoaderClientImpl> weak_factory_;
+  base::WeakPtrFactory<URLLoaderClientImpl> weak_factory_{this};
 };
 
 }  // namespace content

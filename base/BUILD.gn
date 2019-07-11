@@ -622,6 +622,7 @@ jumbo_component("base") {
     "profiler/native_unwinder_mac.h",
     "profiler/native_unwinder_win.cc",
     "profiler/native_unwinder_win.h",
+    "profiler/profile_builder.cc",
     "profiler/profile_builder.h",
     "profiler/register_context.h",
     "profiler/sample_metadata.cc",

@@ -12,6 +12,7 @@
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/authenticator_environment.h"
 #include "content/public/test/browser_test_utils.h"

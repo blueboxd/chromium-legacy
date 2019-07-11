@@ -103,8 +103,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
+      callback_(std::move(callback)) {
   network::ResourceRequest resource_request;
   resource_request.url = url;
   resource_request.resource_type = static_cast<int>(

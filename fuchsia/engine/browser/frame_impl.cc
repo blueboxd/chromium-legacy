@@ -580,5 +580,5 @@ void FrameImpl::ReadyToCommitNavigation(
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
-  context_->OnDevToolsPortReady();
+  context_->OnDebugDevToolsPortReady();
 }

@@ -303,8 +303,7 @@ ThrottlingURLLoader::ThrottlingURLLoader(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
       client_binding_(this),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {
+      traffic_annotation_(traffic_annotation) {
   throttles_.reserve(throttles.size());
   for (auto& throttle : throttles)
     throttles_.emplace_back(this, std::move(throttle));

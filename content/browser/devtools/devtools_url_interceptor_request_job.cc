@@ -565,8 +565,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
       devtools_token_(devtools_token),
       callback_(callback),
       resource_type_(resource_type),
-      stage_to_intercept_(stage_to_intercept),
-      weak_ptr_factory_(this) {
+      stage_to_intercept_(stage_to_intercept) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

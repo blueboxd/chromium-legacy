@@ -22,6 +22,11 @@ namespace {
 
 bool IsSameSite(const url::Origin& initiator,
                 const url::Origin& target_origin) {
+  // Cross-scheme initiator should be considered cross-site (even if it's host
+  // is same-site with the target).  See also https://crbug.com/979257.
+  if (initiator.scheme() != target_origin.scheme())
+    return false;
+
   return net::registry_controlled_domains::SameDomainOrHost(
       initiator, target_origin,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);

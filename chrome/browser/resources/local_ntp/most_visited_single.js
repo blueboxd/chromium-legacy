@@ -501,6 +501,13 @@ class Grid {
 
       this.startReorder_(tile, event, /*mouseMode=*/ true);
     });
+    // Show a 'move' cursor while dragging the tile within the grid bounds. This
+    // is mostly intended for Windows, which will otherwise show a 'prohibited'
+    // cursor.
+    tile.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    });
 
     // Set up touch support.
     tile.firstChild.addEventListener('touchstart', (startEvent) => {

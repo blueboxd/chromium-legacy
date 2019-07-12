@@ -259,7 +259,7 @@ CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
     return CalcToNumericValue(
         *To<CSSMathFunctionValue>(value).ExpressionNode());
   }
-  return CSSUnitValue::FromCSSValue(value);
+  return CSSUnitValue::FromCSSValue(To<CSSNumericLiteralValue>(value));
 }
 
 /* static */

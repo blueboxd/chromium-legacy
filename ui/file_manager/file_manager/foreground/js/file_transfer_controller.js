@@ -630,6 +630,7 @@ class FileTransferController {
                 this.pendingTaskIds.push(taskId);
                 const item = new ProgressCenterItem();
                 item.id = taskId;
+                item.itemCount = entries.length;
                 if (toMove) {
                   item.type = ProgressItemType.MOVE;
                   if (entries.length === 1) {
@@ -645,6 +646,12 @@ class FileTransferController {
                     item.message = strf('COPY_ITEMS_REMAINING', entries.length);
                   }
                 }
+                // Store the source name or count for display in messages.
+                if (entries.length === 1) {
+                  item.sourceMessage = entries[0].name;
+                } else {
+                  item.sourceMessage = entries.length.toString();
+                }
                 // TODO(crbug.com/947388) Use VolumeManager/getLocationInfo
                 // for i18n translations of the path name.
                 let destinationName = null;
@@ -654,8 +661,9 @@ class FileTransferController {
                   destinationName = destinationEntry.fullPath;
                 }
                 if (destinationName) {
-                  item.subMessage = strf(
-                      'TO_FOLDER_NAME', destinationName.replace(/^\//, ''));
+                  item.destinationMessage = destinationName.replace(/^\//, '');
+                  item.subMessage =
+                      strf('TO_FOLDER_NAME', item.destinationMessage);
                 }
                 this.progressCenter_.updateItem(item);
                 // Check if cross share is needed or not.

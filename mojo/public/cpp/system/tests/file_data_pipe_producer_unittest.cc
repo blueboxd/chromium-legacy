@@ -247,7 +247,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
   loop.Run();
 
   EXPECT_EQ(0UL, reader.data().size());
-  EXPECT_EQ(0, observer_data.num_read_errors);
+  EXPECT_EQ(1, observer_data.num_read_errors);
   EXPECT_EQ(0UL, observer_data.bytes_read);
   EXPECT_EQ(1, observer_data.done_called);
 }

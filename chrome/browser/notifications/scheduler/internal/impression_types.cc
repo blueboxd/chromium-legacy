@@ -13,11 +13,15 @@ Impression::Impression(SchedulerClientType type,
                        const base::Time& create_time)
     : create_time(create_time), guid(guid), type(type) {}
 
+Impression::Impression(const Impression& other) = default;
+
+Impression::~Impression() = default;
+
 bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
          impression == other.impression && integrated == other.integrated &&
          task_start_time == other.task_start_time && guid == other.guid &&
-         type == other.type;
+         type == other.type && impression_mapping == other.impression_mapping;
 }
 
 SuppressionInfo::SuppressionInfo(const base::Time& last_trigger,

@@ -1080,6 +1080,15 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
 
   /** @override */
   canExecute(event, fileManager) {
+    const fileTransferController = fileManager.fileTransferController;
+
+    if (!fileTransferController) {
+      // File Open and SaveAs dialogs do not have a fileTransferController.
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
+    }
+
     const command = event.command;
     const target = event.target;
     const isMove = command.id === 'cut';
@@ -1131,6 +1140,7 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
       if (CommandUtil.shouldIgnoreEvents(assert(fileManager.document))) {
         return false;
       }
+
       if (!fileManager.getSelection().entries.every(
               CommandUtil.shouldShowMenuItemsForEntry.bind(
                   null, volumeManager))) {
@@ -1145,7 +1155,6 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
         return false;
       }
 
-      const fileTransferController = fileManager.fileTransferController;
       return isMove ? fileTransferController.canCutOrDrag() :
                       fileTransferController.canCopyOrDrag();
     }

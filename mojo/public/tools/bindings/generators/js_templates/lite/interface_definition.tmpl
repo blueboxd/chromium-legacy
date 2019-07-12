@@ -18,6 +18,9 @@
 {% endmacro %}
 
 {%  if generate_closure_exports -%}
+{% if not use_old_names -%}
+goog.provide('{{module.namespace}}.{{interface.name}}');
+{% endif %}
 goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.receiver}}');
 goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
 goog.provide('{{module.namespace}}.{{interface.name}}Interface');

@@ -76,6 +76,11 @@ const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P{
     "PauseBrowserInitiatedHeavyTrafficForP2P",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When kCORBProtectionSniffing is enabled CORB sniffs additional same-origin
+// resources if they look sensitive.
+const base::Feature kCORBProtectionSniffing{"CORBProtectionSniffing",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

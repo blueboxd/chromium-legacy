@@ -53,6 +53,8 @@ class TestAppRegistrar : public AppRegistrar {
       InstallSource install_source) const override;
   AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
+  std::string GetAppShortName(const AppId& app_id) const override;
+  const GURL& GetAppLaunchURL(const AppId& app_id) const override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

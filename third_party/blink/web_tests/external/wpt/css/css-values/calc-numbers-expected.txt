@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS testing tab-size: calc(2 * 3)
 FAIL testing tab-size: calc(2 * -4) assert_equals: calc(2 * -4) should compute to 0 expected "0" but got "12345"
 PASS testing opacity: calc(2 / 4)
-FAIL testing tab-size: calc(2 / 4) assert_equals: calc(2 / 4) should compute to 0.5 expected "0.5" but got "1"
+PASS testing tab-size: calc(2 / 4)
 PASS testing opacity: calc(2 / 4) * 1px
 PASS testing tab-size: calc(1 + 1px)
 PASS testing tab-size: calc(1 + 100%)

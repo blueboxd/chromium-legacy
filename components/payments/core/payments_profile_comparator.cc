@@ -181,7 +181,7 @@ bool PaymentsProfileComparator::IsShippingComplete(
 void PaymentsProfileComparator::RecordMissingFieldsOfShippingProfile(
     const autofill::AutofillProfile* profile) const {
   // We should not record anything when no shipping fields is required.
-  if (!GetRequiredProfileFieldsForShipping())
+  if (GetRequiredProfileFieldsForShipping() == kNone)
     return;
 
   // Record any required fields that are missing.
@@ -205,7 +205,6 @@ void PaymentsProfileComparator::RecordMissingFieldsOfContactProfile(
   if (missing_fields != kNone) {
     base::UmaHistogramSparse("PaymentRequest.MissingContactFields",
                              missing_fields);
-    return;
   }
 }
 

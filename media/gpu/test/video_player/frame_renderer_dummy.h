@@ -37,8 +37,7 @@ class FrameRendererDummy : public FrameRenderer {
       base::TimeDelta vsync_interval_duration = base::TimeDelta());
 
   // FrameRenderer implementation
-  void AcquireGLContext() override;
-  void ReleaseGLContext() override;
+  bool AcquireGLContext() override;
   gl::GLContext* GetGLContext() override;
   void RenderFrame(scoped_refptr<VideoFrame> video_frame) override;
   void WaitUntilRenderingDone() override;

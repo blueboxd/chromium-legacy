@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 
+#include <limits>
+
 #include "base/strings/utf_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -56,6 +58,18 @@ bool IOSPaymentInstrument::IsCompleteForPayment() const {
   // As long as the native app is installed on the user's device it is
   // always complete for payment.
   return true;
+}
+
+uint32_t IOSPaymentInstrument::GetCompletenessScore() const {
+  // Return max value since the instrument is always complete for payment.
+  return std::numeric_limits<uint32_t>::max();
+}
+
+bool IOSPaymentInstrument::CanPreselect() const {
+  // Do not preselect the payment instrument when the name and/or icon is
+  // missing.
+  return !GetLabel().empty() && !!icon_image_ && icon_image_.size.height != 0 &&
+         icon_image_.size.width != 0;
 }
 
 bool IOSPaymentInstrument::IsExactlyMatchingMerchantRequest() const {

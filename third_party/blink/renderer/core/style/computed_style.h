@@ -1042,9 +1042,9 @@ class ComputedStyle : public ComputedStyleBase,
   void SetTabSize(const TabSize& t) {
     if (t.GetPixelSize(1) < 0) {
       if (t.IsSpaces())
-        SetTabSizeInternal(0);
+        SetTabSizeInternal(TabSize(0, TabSizeValueType::kSpace));
       else
-        SetTabSizeInternal(0.0f);
+        SetTabSizeInternal(TabSize(0, TabSizeValueType::kLength));
     } else {
       SetTabSizeInternal(t);
     }

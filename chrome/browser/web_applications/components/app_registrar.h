@@ -80,6 +80,10 @@ class AppRegistrar {
   // Requires app registry to be in a ready state.
   virtual int CountUserInstalledApps() const = 0;
 
+  // TODO(ericwilligers): GetAppShortName should return base::string16.
+  virtual std::string GetAppShortName(const AppId& app_id) const = 0;
+  virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 

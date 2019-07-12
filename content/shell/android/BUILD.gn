@@ -227,6 +227,12 @@ instrumentation_test_apk("content_shell_test_apk") {
   enable_multidex = false
   shared_libraries = [ ":libcontent_native_test" ]
   android_manifest = "javatests/AndroidManifest.xml"
+
+  if (enable_chrome_android_internal) {
+    data_deps = [
+      "//clank/build/bot/filters:content_shell_test_apk_filters",
+    ]
+  }
 }
 
 if (current_cpu != "x64") {

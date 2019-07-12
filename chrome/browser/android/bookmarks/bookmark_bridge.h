@@ -109,6 +109,12 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       jint type,
       jint index);
 
+  void ReorderChildren(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_bookmark_id_obj,
+      jlongArray arr);
+
   // Get the number of bookmarks in the sub tree of the specified bookmark node.
   // The specified node must be of folder type.
   jint GetTotalBookmarkCount(JNIEnv* env,

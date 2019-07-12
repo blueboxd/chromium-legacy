@@ -54,7 +54,6 @@
 #include "ui/base/layout.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -256,7 +255,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
     // the above Hosted App branch will render the theme color.
     active_color =
         base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-            ? gfx::kGoogleGrey050
+            ? SK_ColorWHITE
             : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
   }
 

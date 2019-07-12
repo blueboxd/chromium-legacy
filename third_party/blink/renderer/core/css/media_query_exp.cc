@@ -265,63 +265,71 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   }
   if (!value)
     value = css_property_parser_helpers::ConsumeResolution(range);
-  // Create value for media query expression that must have 1 or more values.
-  if (value) {
-    if (FeatureWithAspectRatio(lower_media_feature)) {
-      if (!value->IsInteger() || value->GetDoubleValue() == 0)
-        return Invalid();
-      if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
-        return Invalid();
-      CSSPrimitiveValue* denominator =
-          css_property_parser_helpers::ConsumePositiveInteger(range);
-      if (!denominator)
-        return Invalid();
 
-      exp_value.numerator = clampTo<unsigned>(value->GetDoubleValue());
-      exp_value.denominator = clampTo<unsigned>(denominator->GetDoubleValue());
-      exp_value.is_ratio = true;
-    } else if (FeatureWithValidDensity(lower_media_feature, value) ||
-               FeatureWithValidPositiveLength(lower_media_feature, value) ||
-               FeatureWithPositiveInteger(lower_media_feature, value) ||
-               FeatureWithPositiveNumber(lower_media_feature, value) ||
-               FeatureWithZeroOrOne(lower_media_feature, value)) {
-      if (!value->IsLength() || !value->IsMathFunctionValue()) {
-        exp_value.value = value->GetDoubleValue();
-        if (value->IsNumber())
-          exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-        else
-          exp_value.unit = value->TypeWithCalcResolved();
-      } else {
-        const auto* math_value = To<CSSMathFunctionValue>(value);
-        CSSPrimitiveValue::UnitType expression_unit =
-            math_value->ExpressionNode()->ResolvedUnitType();
-        if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
-          // TODO(crbug.com/982542): Support math expressions involving type
-          // conversions properly. For example, calc(10px + 1em).
-          return Invalid();
-        } else {
-          exp_value.value = math_value->DoubleValue();
-          exp_value.unit = expression_unit;
-        }
-      }
-      exp_value.is_value = true;
-    } else {
-      return Invalid();
+  if (!value) {
+    if (CSSIdentifierValue* ident =
+            css_property_parser_helpers::ConsumeIdent(range)) {
+      CSSValueID ident_id = ident->GetValueID();
+      if (!FeatureWithValidIdent(lower_media_feature, ident_id))
+        return Invalid();
+      exp_value.id = ident_id;
+      exp_value.is_id = true;
+      return MediaQueryExp(lower_media_feature, exp_value);
     }
-  } else if (CSSIdentifierValue* ident =
-                 css_property_parser_helpers::ConsumeIdent(range)) {
-    CSSValueID ident_id = ident->GetValueID();
-    if (!FeatureWithValidIdent(lower_media_feature, ident_id))
-      return Invalid();
-    exp_value.id = ident_id;
-    exp_value.is_id = true;
-  } else if (FeatureWithoutValue(lower_media_feature)) {
-    // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
-  } else {
+    if (FeatureWithoutValue(lower_media_feature)) {
+      // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
     return Invalid();
   }
 
-  return MediaQueryExp(lower_media_feature, exp_value);
+  // Now we have |value| as a number, length or resolution
+  // Create value for media query expression that must have 1 or more values.
+  if (FeatureWithAspectRatio(lower_media_feature)) {
+    if (!value->IsInteger() || value->GetDoubleValue() == 0)
+      return Invalid();
+    if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
+      return Invalid();
+    CSSPrimitiveValue* denominator =
+        css_property_parser_helpers::ConsumePositiveInteger(range);
+    if (!denominator)
+      return Invalid();
+
+    exp_value.numerator = clampTo<unsigned>(value->GetDoubleValue());
+    exp_value.denominator = clampTo<unsigned>(denominator->GetDoubleValue());
+    exp_value.is_ratio = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithValidDensity(lower_media_feature, value) ||
+      FeatureWithValidPositiveLength(lower_media_feature, value) ||
+      FeatureWithPositiveInteger(lower_media_feature, value) ||
+      FeatureWithPositiveNumber(lower_media_feature, value) ||
+      FeatureWithZeroOrOne(lower_media_feature, value)) {
+    exp_value.is_value = true;
+    if (!value->IsLength() || !value->IsMathFunctionValue()) {
+      exp_value.value = value->GetDoubleValue();
+      if (value->IsNumber())
+        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+      else
+        exp_value.unit = value->TypeWithCalcResolved();
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
+
+    const auto* math_value = To<CSSMathFunctionValue>(value);
+    CSSPrimitiveValue::UnitType expression_unit =
+        math_value->ExpressionNode()->ResolvedUnitType();
+    if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
+      // TODO(crbug.com/982542): Support math expressions involving type
+      // conversions properly. For example, calc(10px + 1em).
+      return Invalid();
+    }
+    exp_value.value = math_value->DoubleValue();
+    exp_value.unit = expression_unit;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  return Invalid();
 }
 
 MediaQueryExp::~MediaQueryExp() = default;

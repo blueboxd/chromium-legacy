@@ -320,7 +320,7 @@
     },
     {
       name: "CSSAltText",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSBackdropFilter",

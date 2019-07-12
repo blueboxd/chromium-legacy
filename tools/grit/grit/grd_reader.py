@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import os.path
+import sys
 import types
 import xml.sax
 import xml.sax.handler

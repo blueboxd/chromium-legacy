@@ -99,10 +99,9 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
 CastDeviceCache::CastDeviceCache(
     const base::RepeatingClosure& update_devices_callback)
     : MediaRoutesObserver(GetMediaRouter()),
-      MediaSinksObserver(
-          GetMediaRouter(),
-          media_router::MediaSource::ForDesktop(),
-          url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL))),
+      MediaSinksObserver(GetMediaRouter(),
+                         media_router::MediaSource::ForDesktop(),
+                         url::Origin()),
       update_devices_callback_(update_devices_callback) {}
 
 CastDeviceCache::~CastDeviceCache() = default;

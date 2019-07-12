@@ -152,6 +152,9 @@ class QuicProxyClientSocketTest
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
+    if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+      SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+    }
   }
 
   void SetUp() override {}
@@ -532,6 +535,7 @@ class QuicProxyClientSocketTest
     return std::string(buffer.get(), header_length);
   }
 
+  QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const quic::QuicStreamId client_data_stream_id1_;
   const bool client_headers_include_h2_stream_dependency_;
@@ -878,7 +882,8 @@ TEST_P(QuicProxyClientSocketTest, WriteSplitsLargeDataIntoMultiplePackets) {
   std::string data(numDataPackets * quic::kDefaultMaxPacketSize, 'x');
   quic::QuicStreamOffset offset = kLen1 + header.length();
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99 ||
+      version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
     numDataPackets++;
   }
   size_t total_data_length = 0;
@@ -896,12 +901,32 @@ TEST_P(QuicProxyClientSocketTest, WriteSplitsLargeDataIntoMultiplePackets) {
                            {header2, std::string(data.c_str(),
                                                  max_packet_data_length - 7)}));
       offset += max_packet_data_length - header2.length() - 1;
+    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 && i == 0) {
+      mock_quic_data_.AddWrite(
+          SYNCHRONOUS,
+          ConstructDataPacket(
+              write_packet_index++,
+              std::string(data.c_str(), max_packet_data_length - 4)));
+      offset += max_packet_data_length - 4;
     } else if (version_.transport_version == quic::QUIC_VERSION_99 &&
                i == numDataPackets - 1) {
       mock_quic_data_.AddWrite(
           SYNCHRONOUS, ConstructDataPacket(write_packet_index++,
                                            std::string(data.c_str(), 7)));
       offset += 7;
+    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
+               i == numDataPackets - 1) {
+      mock_quic_data_.AddWrite(
+          SYNCHRONOUS, ConstructDataPacket(write_packet_index++,
+                                           std::string(data.c_str(), 12)));
+      offset += 12;
+    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+      mock_quic_data_.AddWrite(
+          SYNCHRONOUS,
+          ConstructDataPacket(
+              write_packet_index++,
+              std::string(data.c_str(), max_packet_data_length - 4)));
+      offset += max_packet_data_length - 4;
     } else {
       mock_quic_data_.AddWrite(
           SYNCHRONOUS, ConstructDataPacket(

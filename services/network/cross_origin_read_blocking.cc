@@ -594,11 +594,15 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const base::Optional<url::Origin>& request_initiator,
     const ResourceResponseInfo& response,
     base::Optional<url::Origin> request_initiator_site_lock,
-    mojom::RequestMode request_mode) {
-  content_length_ = response.content_length;
-  http_response_code_ =
-      response.headers ? response.headers->response_code() : 0;
-
+    mojom::RequestMode request_mode)
+    : seems_sensitive_from_cors_heuristic_(
+          SeemsSensitiveFromCORSHeuristic(response)),
+      seems_sensitive_from_cache_heuristic_(
+          SeemsSensitiveFromCacheHeuristic(response)),
+      supports_range_requests_(SupportsRangeRequests(response)),
+      content_length_(response.content_length),
+      http_response_code_(response.headers ? response.headers->response_code()
+                                           : 0) {
   // CORB should look directly at the Content-Type header if one has been
   // received from the network. Ignoring |response.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
@@ -622,30 +626,40 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
       request_mode, request_url, request_initiator, response,
       request_initiator_site_lock, canonical_mime_type_);
-  if (should_block_based_on_headers_ == kNeedToSniffMore)
-    CreateSniffers();
 
   // Check if the response seems sensitive and if so include in our CORB
-  // protection logging. We do not sniff, so the answer might be
+  // protection logging. We have not sniffed yet, so the answer might be
   // kNeedToSniffMore.
-  //
-  // TODO(krstnmnlsn): Add sniffing if we see a lot of results in the
-  // kNeedToSniffMore category.
-  if (SeemsSensitiveFromCORSHeuristic(response) ||
-      SeemsSensitiveFromCacheHeuristic(response)) {
+  if (seems_sensitive_from_cors_heuristic_ ||
+      seems_sensitive_from_cache_heuristic_) {
     // Create a new Origin with a unique internal identifier so we can pretend
     // the request is cross-origin.
     url::Origin cross_origin_request_initiator = url::Origin();
     BlockingDecision would_protect_based_on_headers = ShouldBlockBasedOnHeaders(
         request_mode, request_url, cross_origin_request_initiator, response,
         cross_origin_request_initiator, canonical_mime_type_);
+    corb_protection_logging_needs_sniffing_ =
+        (would_protect_based_on_headers ==
+         BlockingDecision::kNeedToSniffMore) &&
+        base::FeatureList::IsEnabled(
+            network::features::kCORBProtectionSniffing);
+    hypothetical_sniffing_mode_ =
+        corb_protection_logging_needs_sniffing_ &&
+        should_block_based_on_headers_ != BlockingDecision::kNeedToSniffMore;
+    mime_type_bucket_ = GetMimeTypeBucket(response);
     UMA_HISTOGRAM_BOOLEAN("SiteIsolation.CORBProtection.SensitiveResource",
                           true);
-    LogSensitiveResponseProtection(response, would_protect_based_on_headers);
+    if (!corb_protection_logging_needs_sniffing_) {
+      // If we are not going to sniff, then we can and must log everything now.
+      LogSensitiveResponseProtection(
+          BlockingDecisionToProtectionDecision(would_protect_based_on_headers));
+    }
   } else {
     UMA_HISTOGRAM_BOOLEAN("SiteIsolation.CORBProtection.SensitiveResource",
                           false);
   }
+  if (needs_sniffing())
+    CreateSniffers();
 }
 
 CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
@@ -937,7 +951,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
 void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
   // Create one or more |sniffers_| to confirm that the body is actually the
   // MIME type advertised in the Content-Type header.
-  DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
+  DCHECK(needs_sniffing());
   DCHECK(sniffers_.empty());
 
   // When the MIME type is "text/plain", create sniffers for HTML, XML and
@@ -976,7 +990,7 @@ void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
 void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
     base::StringPiece data,
     size_t new_data_offset) {
-  DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
+  DCHECK(needs_sniffing());
   DCHECK(!sniffers_.empty());
   DCHECK(!found_blockable_content_);
 
@@ -1006,6 +1020,13 @@ void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
 }
 
 bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldAllow() const {
+  // If we're in hypothetical mode then CORB must have decided to kAllow (see
+  // comment in ShouldBlock). Thus we just need to wait until the sniffers are
+  // all done (i.e. empty).
+  if (hypothetical_sniffing_mode_) {
+    DCHECK_EQ(should_block_based_on_headers_, kAllow);
+    return sniffers_.empty();
+  }
   switch (should_block_based_on_headers_) {
     case kAllow:
       return true;
@@ -1017,6 +1038,15 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldAllow() const {
 }
 
 bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlock() const {
+  // If we're in *hypothetical* sniffing mode then the following must be true:
+  // (1) We are only sniffing to find out if CORB would have blocked the request
+  // were it made cross origin (CORB itself did *not* need to sniff the file).
+  // (2) CORB must have decided to kAllow (if it was kBlock then the protection
+  // decision would have been kBlock as well, no hypothetical mode needed).
+  if (hypothetical_sniffing_mode_) {
+    DCHECK_EQ(should_block_based_on_headers_, kAllow);
+    return false;
+  }
   switch (should_block_based_on_headers_) {
     case kAllow:
       return false;
@@ -1049,6 +1079,10 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
+  if (corb_protection_logging_needs_sniffing_) {
+    LogSensitiveResponseProtection(
+        SniffingDecisionToProtectionDecision(found_blockable_content_));
+  }
   // Note that if a response is allowed because of hitting EOF or
   // kMaxBytesToSniff, then |sniffers_| are not emptied and consequently
   // ShouldAllow doesn't start returning true.  This means that we can't
@@ -1072,6 +1106,11 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   DCHECK(ShouldBlock());
   DCHECK(sniffers_.empty());
 
+  if (corb_protection_logging_needs_sniffing_) {
+    LogSensitiveResponseProtection(
+        SniffingDecisionToProtectionDecision(found_blockable_content_));
+  }
+
   CrossOriginReadBlocking::LogAction(
       needs_sniffing()
           ? network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing
@@ -1083,40 +1122,53 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
 }
 
 // static
-void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
-    const ResourceResponseInfo& response,
-    BlockingDecision would_protect_based_on_headers) {
-  CrossOriginProtectionDecision protection_decision =
-      CrossOriginProtectionDecision::kNeedToSniffMore;
-  switch (would_protect_based_on_headers) {
+CrossOriginReadBlocking::ResponseAnalyzer::CrossOriginProtectionDecision
+CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecisionToProtectionDecision(
+    BlockingDecision blocking_decision) {
+  switch (blocking_decision) {
     case kAllow:
-      protection_decision = CrossOriginProtectionDecision::kAllow;
-      break;
+      return CrossOriginProtectionDecision::kAllow;
     case kBlock:
-      protection_decision = CrossOriginProtectionDecision::kBlock;
-      break;
+      return CrossOriginProtectionDecision::kBlock;
     case kNeedToSniffMore:
-      protection_decision = CrossOriginProtectionDecision::kNeedToSniffMore;
-      // TODO(krstnmnlsn): Add sniffing when we see a potentially sensitive
-      // resource and report either kAllowedAfterSniffing or
-      // kBlockedAfterSniffing.
-      break;
+      return CrossOriginProtectionDecision::kNeedToSniffMore;
   }
-  MimeTypeBucket mime_type_bucket = GetMimeTypeBucket(response);
-  if (SeemsSensitiveFromCORSHeuristic(response)) {
-    switch (mime_type_bucket) {
+}
+
+// static
+CrossOriginReadBlocking::ResponseAnalyzer::CrossOriginProtectionDecision
+CrossOriginReadBlocking::ResponseAnalyzer::SniffingDecisionToProtectionDecision(
+    bool found_blockable_content) {
+  if (found_blockable_content)
+    return CrossOriginProtectionDecision::kBlockedAfterSniffing;
+  return CrossOriginProtectionDecision::kAllowedAfterSniffing;
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
+    CrossOriginProtectionDecision protection_decision) const {
+  DCHECK(seems_sensitive_from_cors_heuristic_ ||
+         seems_sensitive_from_cache_heuristic_);
+  if (seems_sensitive_from_cors_heuristic_) {
+    switch (mime_type_bucket_) {
       case kProtected:
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType",
             protection_decision);
+        // We report if a response with a protected MIME type supports range
+        // requests since we want to measure how often making a multipart range
+        // requests would have allowed bypassing CORB.
         if (protection_decision == CrossOriginProtectionDecision::kBlock) {
           UMA_HISTOGRAM_BOOLEAN(
               "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
               "BlockedWithRangeSupport",
-              SupportsRangeRequests(response));
+              supports_range_requests_);
+        } else if (protection_decision ==
+                   CrossOriginProtectionDecision::kBlockedAfterSniffing) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
+              "BlockedAfterSniffingWithRangeSupport",
+              supports_range_requests_);
         }
-        // TODO(krstnmnlsn): Once the CORB protection logging includes sniffing,
-        // add a histogram here and below for the |kBlockedAfterSniffing| case.
         break;
       case kPublic:
         UMA_HISTOGRAM_ENUMERATION(
@@ -1129,8 +1181,8 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
             protection_decision);
     }
   }
-  if (SeemsSensitiveFromCacheHeuristic(response)) {
-    switch (mime_type_bucket) {
+  if (seems_sensitive_from_cache_heuristic_) {
+    switch (mime_type_bucket_) {
       case kProtected:
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType",
@@ -1139,7 +1191,13 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
           UMA_HISTOGRAM_BOOLEAN(
               "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
               "BlockedWithRangeSupport",
-              SupportsRangeRequests(response));
+              supports_range_requests_);
+        } else if (protection_decision ==
+                   CrossOriginProtectionDecision::kBlockedAfterSniffing) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
+              "BlockedAfterSniffingWithRangeSupport",
+              supports_range_requests_);
         }
         break;
       case kPublic:
@@ -1157,7 +1215,7 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
   // bypassing CORB.
   UMA_HISTOGRAM_BOOLEAN(
       "SiteIsolation.CORBProtection.SensitiveWithRangeSupport",
-      SupportsRangeRequests(response));
+      supports_range_requests_);
 }
 
 // static

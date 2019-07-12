@@ -4187,24 +4187,6 @@
             ]
         }
     ],
-    "RemoveNTPFakebox": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "RemoveNTPFakebox",
-                    "enable_features": [
-                        "RemoveNtpFakebox"
-                    ]
-                }
-            ]
-        }
-    ],
     "RendererSchedulerWakeUpThrottling": [
         {
             "platforms": [
@@ -4385,6 +4367,50 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingAdPopupTrigger": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ad_popup_trigger_quota": "5"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingAdPopupTrigger"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingAdRedirectTrigger": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ad_redirect_trigger_quota": "5"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingAdRedirectTrigger"
+                    ]
                 }
             ]
         }
@@ -4895,6 +4921,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",

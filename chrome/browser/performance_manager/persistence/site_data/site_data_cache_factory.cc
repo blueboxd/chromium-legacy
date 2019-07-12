@@ -9,8 +9,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/persistence/site_data/non_recording_site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
 #include "content/public/browser/browser_context.h"
@@ -30,7 +30,6 @@ SiteDataCacheFactory::SiteDataCacheFactory(
     const scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 SiteDataCacheFactory::~SiteDataCacheFactory() {
@@ -68,19 +67,24 @@ SiteDataCacheFactory::CreateForTesting(
 // static
 void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
     SiteDataCacheFactory* factory,
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context,
+    content::BrowserContext* parent_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
 
   // As |factory| will be deleted on its task runner it's safe to pass the raw
   // pointer to BindOnce, it's guaranteed that this task will run before the
   // factory.
+  base::Optional<std::string> parent_context_id;
+  if (parent_context) {
+    DCHECK(browser_context->IsOffTheRecord());
+    parent_context_id = parent_context->UniqueId();
+  }
   factory->task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SiteDataCacheFactory::OnBrowserContextCreated,
                      base::Unretained(factory), browser_context->UniqueId(),
-                     browser_context->GetPath(),
-                     browser_context->IsOffTheRecord()));
+                     browser_context->GetPath(), parent_context_id));
 }
 
 // static
@@ -97,28 +101,28 @@ void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
                      base::Unretained(factory), browser_context->UniqueId()));
 }
 
-// static
 SiteDataCache* SiteDataCacheFactory::GetDataCacheForBrowserContext(
     const std::string& browser_context_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = data_cache_map_.find(browser_context_id);
   if (it != data_cache_map_.end())
     return it->second.get();
   return nullptr;
 }
 
-// static
 SiteDataCacheInspector* SiteDataCacheFactory::GetInspectorForBrowserContext(
     const std::string& browser_context_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = data_cache_inspector_map_.find(browser_context_id);
   if (it != data_cache_inspector_map_.end())
     return it->second;
   return nullptr;
 }
 
-// static
 void SiteDataCacheFactory::SetDataCacheInspectorForBrowserContext(
     SiteDataCacheInspector* inspector,
     const std::string& browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (inspector) {
     DCHECK_EQ(nullptr, GetInspectorForBrowserContext(browser_context_id));
     data_cache_inspector_map_.emplace(
@@ -132,14 +136,23 @@ void SiteDataCacheFactory::SetDataCacheInspectorForBrowserContext(
 void SiteDataCacheFactory::OnBrowserContextCreated(
     const std::string& browser_context_id,
     const base::FilePath& context_path,
-    bool context_is_off_the_record) {
+    base::Optional<std::string> parent_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!base::Contains(data_cache_map_, browser_context_id));
 
-  if (context_is_off_the_record) {
-    // TODO(sebmarchand): Add support for off-the-record contexts.
-    NOTREACHED();
+  if (parent_context_id) {
+    SiteDataCacheInspector* parent_debug =
+        GetInspectorForBrowserContext(parent_context_id.value());
+    DCHECK(parent_debug);
+    DCHECK(base::Contains(data_cache_map_, parent_context_id.value()));
+    SiteDataCache* data_cache_for_readers =
+        data_cache_map_[parent_context_id.value()].get();
+    DCHECK(data_cache_for_readers);
+    data_cache_map_.emplace(std::make_pair(
+        std::move(browser_context_id),
+        std::make_unique<NonRecordingSiteDataCache>(
+            browser_context_id, parent_debug, data_cache_for_readers)));
   } else {
     data_cache_map_.emplace(std::make_pair(
         std::move(browser_context_id),

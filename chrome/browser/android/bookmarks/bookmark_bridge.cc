@@ -1001,3 +1001,28 @@ void BookmarkBridge::PartnerShimLoaded(PartnerBookmarksShim* shim) {
 void BookmarkBridge::ShimBeingDeleted(PartnerBookmarksShim* shim) {
   partner_bookmarks_shim_ = NULL;
 }
+
+void BookmarkBridge::ReorderChildren(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_bookmark_id_obj,
+    jlongArray arr) {
+  DCHECK(IsLoaded());
+  // get the BookmarkNode* for the "parent" bookmark parameter
+  const long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
+  const int bookmark_type = JavaBookmarkIdGetType(env, j_bookmark_id_obj);
+
+  const BookmarkNode* bookmark_node = GetNodeByID(bookmark_id, bookmark_type);
+
+  // populate a vector
+  std::vector<const BookmarkNode*> ordered_nodes;
+  jsize arraySize = env->GetArrayLength(arr);
+  jlong* elements = env->GetLongArrayElements(arr, 0);
+
+  // iterate through array, adding the BookmarkNode*s of the objects
+  for (int i = 0; i < arraySize; ++i) {
+    ordered_nodes.push_back(GetNodeByID(elements[i], 0));
+  }
+
+  bookmark_model_->ReorderChildren(bookmark_node, ordered_nodes);
+}

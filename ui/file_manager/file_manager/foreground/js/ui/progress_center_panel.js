@@ -217,6 +217,12 @@ class ProgressCenterPanel {
     this.feedbackHost_ = document.querySelector('#progress-panel');
 
     /**
+     * Reference to the feedback panel host for completed operations.
+     * TODO(crbug.com/947388) Add closure annotation here.
+     */
+    this.completedHost_ = document.querySelector('#completed-panel');
+
+    /**
      * Close view that is a summarized progress item.
      * @type {ProgressCenterItemElement}
      * @private
@@ -316,6 +322,69 @@ class ProgressCenterPanel {
   }
 
   /**
+   * Generate source string for display on the feedback panel.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generateSourceString_(item, info) {
+    switch (item.state) {
+      case 'progressing':
+        if (item.itemCount === 1) {
+          if (item.type === ProgressItemType.COPY) {
+            return strf('COPY_FILE_NAME', info['source']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf('MOVE_FILE_NAME', info['source']);
+          }
+        } else {
+          if (item.type === ProgressItemType.COPY) {
+            return strf('COPY_ITEMS_REMAINING', info['source']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf('MOVE_ITEMS_REMAINING', info['source']);
+          }
+        }
+        break;
+      case 'completed':
+        if (info['count'] > 1) {
+          return strf('FILE_ITEMS', info['source']);
+        }
+        return info['source'];
+      case 'error':
+        break;
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
+   * Generate destination string for display on the feedback panel.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generateDestinationString_(item, info) {
+    switch (item.state) {
+      case 'progressing':
+        return strf('TO_FOLDER_NAME', info['destination']);
+      case 'completed':
+        if (item.type === ProgressItemType.COPY) {
+          return strf('COPIED_TO', info['destination']);
+        } else if (item.type === ProgressItemType.MOVE) {
+          return strf('MOVED_TO', info['destination']);
+        }
+        break;
+      case 'error':
+        break;
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
    * Process item updates for feedback panels.
    * @param {!ProgressCenterItem} item Item being updated.
    * @param {?ProgressCenterItem} newItem Item updating with new content.
@@ -328,7 +397,14 @@ class ProgressCenterPanel {
       if (!panelItem) {
         panelItem = this.feedbackHost_.addPanelItem(item.id);
         panelItem.panelType = panelItem.panelTypeProgress;
-        panelItem.setAttribute('primary-text', item.message);
+        panelItem.userData = {
+          'source': item.sourceMessage,
+          'destination': item.destinationMessage,
+          'count': item.itemCount,
+        };
+        panelItem.setAttribute(
+            'primary-text',
+            this.generateSourceString_(item, panelItem.userData));
         panelItem.setAttribute('data-progress-id', item.id);
         if (item.subMessage) {
           panelItem.setAttribute('secondary-text', item.subMessage);
@@ -345,9 +421,28 @@ class ProgressCenterPanel {
       panelItem.progress = item.progressRateInPercent.toString();
       switch (item.state) {
         case 'completed':
+          // Create a completed panel.
+          const donePanelItem = this.completedHost_.addPanelItem(item.id);
+          donePanelItem.panelType = donePanelItem.panelTypeDone;
+          donePanelItem.setAttribute(
+              'primary-text',
+              this.generateSourceString_(item, panelItem.userData));
+          donePanelItem.setAttribute(
+              'secondary-text',
+              this.generateDestinationString_(item, panelItem.userData));
+          donePanelItem.signalCallback = (signal) => {
+            if (signal === 'dismiss') {
+              this.completedHost_.removePanelItem(donePanelItem);
+            }
+          };
+          // Delete after 7 seconds, doesn't matter if it's manually deleted
+          // before the timer fires, as removePanelItem handles that case.
+          setTimeout(() => {
+            this.completedHost_.removePanelItem(donePanelItem);
+          }, 7000);
+          // Drop through to remove the progress panel.
         case 'canceled':
-          // Remove the feedback panel when complete, and TODO(create
-          // an activity complete panel).
+          // Remove the feedback panel when complete.
           this.feedbackHost_.removePanelItem(panelItem);
           break;
         case 'error':

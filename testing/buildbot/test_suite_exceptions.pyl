@@ -20,11 +20,8 @@
     'remove_from': [
       # TODO(crbug.com/961849): Remove these exceptions as the suite proves stable.
       # chromium.android.json
-      'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
       # chromium.fyi.json
       'android-code-coverage',

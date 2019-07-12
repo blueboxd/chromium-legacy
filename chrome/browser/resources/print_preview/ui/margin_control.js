@@ -236,7 +236,7 @@ Polymer({
   onBlur_: function() {
     this.focused_ = false;
     this.resetAndUpdate();
-    this.fire('text-blur', this.invalid);
+    this.fire('text-blur', this.invalid || !this.$.input.value);
   },
 
   /** @private */

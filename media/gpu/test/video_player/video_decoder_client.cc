@@ -50,13 +50,16 @@ VideoDecoderClient::~VideoDecoderClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
   DestroyDecoder();
-  decoder_client_thread_.Stop();
 
   // Wait until the renderer and frame processors are done before destroying
-  // them. This needs to be done after |decoder_client_thread_| is stopped so no
-  // new frames will be queued while waiting.
+  // them. This needs to be done after destroying the decoder so no new frames
+  // will be queued while waiting.
   WaitForRenderer();
   WaitForFrameProcessors();
+  frame_renderer_ = nullptr;
+  frame_processors_.clear();
+
+  decoder_client_thread_.Stop();
 }
 
 // static
@@ -204,8 +207,7 @@ void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   // Invalidate all scheduled tasks.
   weak_this_factory_.InvalidateWeakPtrs();
 
-  // Destroy the decoder. This will destroy all video frames, which requires an
-  // active GLcontext.
+  // Destroy the decoder. This will destroy all video frames.
   if (decoder_) {
     decoder_.reset();
   }

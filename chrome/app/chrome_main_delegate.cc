@@ -634,8 +634,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   content::Profiling::ProcessStarted();
 
   // Setup tracing sampler profiler as early as possible at startup if needed.
-  tracing_sampler_profiler_ =
-      tracing::TracingSamplerProfiler::CreateOnMainThread();
+  tracing::TracingSamplerProfiler::CreateForCurrentThread();
 
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
   v8_crashpad_support::SetUp();

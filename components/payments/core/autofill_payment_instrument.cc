@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -81,18 +82,34 @@ void AutofillPaymentInstrument::InvokePaymentApp(
 bool AutofillPaymentInstrument::IsCompleteForPayment() const {
   // COMPLETE or EXPIRED cards are considered valid for payment. The user will
   // be prompted to enter the new expiration at the CVC step.
-  return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                              billing_profiles_) <=
-         autofill::CREDIT_CARD_EXPIRED;
+  return GetCompletionStatusForCard(credit_card_, app_locale_,
+                                    billing_profiles_) <= CREDIT_CARD_EXPIRED;
+}
+
+uint32_t AutofillPaymentInstrument::GetCompletenessScore() const {
+  return ::payments::GetCompletenessScore(credit_card_, app_locale_,
+                                          billing_profiles_);
+}
+
+bool AutofillPaymentInstrument::CanPreselect() const {
+  return IsCompleteForPayment() && matches_merchant_card_type_exactly_;
 }
 
 void AutofillPaymentInstrument::RecordMissingFieldsForInstrument() const {
-  if (IsCompleteForPayment())
+  CreditCardCompletionStatus completion_status =
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
+  if (completion_status == CREDIT_CARD_COMPLETE &&
+      matches_merchant_card_type_exactly_) {
     return;
+  }
 
-  base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
-                           autofill::GetCompletionStatusForCard(
-                               credit_card_, app_locale_, billing_profiles_));
+  // Record cases that the card type does not match the requested type(s) in
+  // addititon to missing fields from card completion status.
+  base::UmaHistogramSparse(
+      "PaymentRequest.MissingPaymentFields",
+      completion_status |
+          (matches_merchant_card_type_exactly_ ? 0
+                                               : CREDIT_CARD_TYPE_MISMATCH));
 }
 
 bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
@@ -100,19 +117,17 @@ bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
 }
 
 base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() const {
-  return autofill::GetCompletionMessageForCard(
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                           billing_profiles_));
+  return GetCompletionMessageForCard(
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_));
 }
 
 bool AutofillPaymentInstrument::IsValidForCanMakePayment() const {
-  autofill::CreditCardCompletionStatus status =
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                           billing_profiles_);
+  CreditCardCompletionStatus status =
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
   // Card has to have a cardholder name and number for the purposes of
   // CanMakePayment. An expired card is still valid at this stage.
-  return !(status & autofill::CREDIT_CARD_NO_CARDHOLDER ||
-           status & autofill::CREDIT_CARD_NO_NUMBER);
+  return !(status & CREDIT_CARD_NO_CARDHOLDER ||
+           status & CREDIT_CARD_NO_NUMBER);
 }
 
 void AutofillPaymentInstrument::RecordUse() {

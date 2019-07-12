@@ -144,6 +144,10 @@ enum JobCompletionState {
   PROCESSING  // only jobs that are being processed
 };
 
+// Returns the uri for printer with |id| as served by CUPS. Assumes that |id| is
+// a valid CUPS printer name and performs no error checking or escaping.
+std::string PRINTING_EXPORT PrinterUriFromName(const std::string& id);
+
 // Extracts structured job information from the |response| for |printer_id|.
 // Extracted jobs are added to |jobs|.
 void ParseJobsResponse(ipp_t* response,

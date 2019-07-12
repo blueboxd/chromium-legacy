@@ -1502,7 +1502,6 @@ static_library("ash_shell_lib_with_content") {
   ]
 
   deps = [
-    ":ash_shell_lib",
     ":test_support",
     "//ash/components/shortcut_viewer",
     "//ash/public/cpp",
@@ -1540,6 +1539,9 @@ static_library("ash_shell_lib_with_content") {
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_with_content_lib",
     "//ui/wm",
+  ]
+  public_deps = [
+    ":ash_shell_lib",
   ]
 }
 
@@ -2007,6 +2009,7 @@ test("ash_unittests") {
   ]
 }
 
+# TODO(oshima): Remove or migrate to new ash_ui_perftests
 test("ash_perftests") {
   sources = [
     "perftests/ash_background_filter_blur_perftest.cc",
@@ -2024,6 +2027,38 @@ test("ash_perftests") {
     "//ui/aura",
     "//ui/base",
     "//ui/compositor:test_support",
+    "//ui/gl:test_support",
+  ]
+}
+
+test("ash_ui_perftests") {
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  sources = [
+    "perftests/overview_animations_preftest.cc",
+    "shell/content/test/ash_content_perf_test_launcher.cc",
+    "shell/content/test/ash_content_test.cc",
+    "shell/content/test/ash_content_test.h",
+  ]
+
+  deps = [
+    ":ash_shell_lib_with_content",
+    ":test_support",
+    "//ash/public/cpp",
+    "//base/test:test_support",
+    "//cc/base",
+    "//chromeos/constants:constants",
+    "//content/shell:content_shell_lib",
+    "//content/test:browsertest_support",
+    "//content/test:test_support",
+    "//mojo/core/embedder",
+    "//testing/gtest",
+    "//testing/perf",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/events:test_support",
     "//ui/gl:test_support",
   ]
 }

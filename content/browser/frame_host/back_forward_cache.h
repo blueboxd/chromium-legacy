@@ -37,10 +37,10 @@ class CONTENT_EXPORT BackForwardCache {
   // Precondition: CanStoreDocument(render_frame_host).
   void StoreDocument(std::unique_ptr<RenderFrameHostImpl>);
 
-  // Iterates all the RenderViewHost inside |main_rfh| and freeze or unfreeze
-  // them.
+  // Iterates over all the RenderViewHost inside |main_rfh| and freeze or
+  // resume them.
   static void Freeze(RenderFrameHostImpl* main_rfh);
-  static void UnFreeze(RenderFrameHostImpl* main_rfh);
+  static void Resume(RenderFrameHostImpl* main_rfh);
 
   // During a history navigation, move a document out of the BackForwardCache
   // knowing its navigation entry ID. Returns nullptr when none is found.

@@ -29,6 +29,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -2395,7 +2396,7 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
         EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
         // Swaps the main frame.
-        frame()->OnMessageReceived(FrameMsg_SwapOut(
+        frame()->OnMessageReceived(UnfreezableFrameMsg_SwapOut(
             frame()->GetRoutingID(), 1, false, FrameReplicationState()));
 
         was_callback_run = true;

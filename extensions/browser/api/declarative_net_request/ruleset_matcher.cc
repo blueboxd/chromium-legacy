@@ -37,9 +37,9 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
   switch (type) {
     case content::ResourceType::kPrefetch:
     case content::ResourceType::kSubResource:
-    case content::ResourceType::kNavigationPreload:
       return flat_rule::ElementType_OTHER;
     case content::ResourceType::kMainFrame:
+    case content::ResourceType::kNavigationPreloadMainFrame:
       return flat_rule::ElementType_MAIN_FRAME;
     case content::ResourceType::kCspReport:
       return flat_rule::ElementType_CSP_REPORT;
@@ -59,6 +59,7 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
     case content::ResourceType::kXhr:
       return flat_rule::ElementType_XMLHTTPREQUEST;
     case content::ResourceType::kSubFrame:
+    case content::ResourceType::kNavigationPreloadSubFrame:
       return flat_rule::ElementType_SUBDOCUMENT;
     case content::ResourceType::kPing:
       return flat_rule::ElementType_PING;

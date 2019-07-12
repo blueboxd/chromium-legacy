@@ -47,8 +47,10 @@ EnumTraits<content::mojom::ResourceType, content::ResourceType>::ToMojom(
       return content::mojom::ResourceType::kCspReport;
     case content::ResourceType::kPluginResource:
       return content::mojom::ResourceType::kPluginResource;
-    case content::ResourceType::kNavigationPreload:
-      return content::mojom::ResourceType::kNavigationPreload;
+    case content::ResourceType::kNavigationPreloadMainFrame:
+      return content::mojom::ResourceType::kNavigationPreloadMainFrame;
+    case content::ResourceType::kNavigationPreloadSubFrame:
+      return content::mojom::ResourceType::kNavigationPreloadSubFrame;
   }
 
   NOTREACHED();
@@ -114,8 +116,11 @@ bool EnumTraits<content::mojom::ResourceType, content::ResourceType>::FromMojom(
     case content::mojom::ResourceType::kPluginResource:
       *output = content::ResourceType::kPluginResource;
       return true;
-    case content::mojom::ResourceType::kNavigationPreload:
-      *output = content::ResourceType::kNavigationPreload;
+    case content::mojom::ResourceType::kNavigationPreloadMainFrame:
+      *output = content::ResourceType::kNavigationPreloadMainFrame;
+      return true;
+    case content::mojom::ResourceType::kNavigationPreloadSubFrame:
+      *output = content::ResourceType::kNavigationPreloadSubFrame;
       return true;
   }
   return false;

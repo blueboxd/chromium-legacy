@@ -167,7 +167,6 @@ public class BookmarkBridge {
      * Contains data about a bookmark or bookmark folder.
      */
     public static class BookmarkItem {
-
         private final String mTitle;
         private final String mUrl;
         private final BookmarkId mId;
@@ -202,11 +201,6 @@ public class BookmarkBridge {
             return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(getUrl());
         }
 
-        /** @return Id of the bookmark item. */
-        public BookmarkId getId() {
-            return mId;
-        }
-
         /** @return Whether item is a folder or a bookmark. */
         public boolean isFolder() {
             return mIsFolder;
@@ -235,6 +229,10 @@ public class BookmarkBridge {
         /** @return Whether this is a managed bookmark. */
         public boolean isManaged() {
             return mIsManaged;
+        }
+
+        public BookmarkId getId() {
+            return mId;
         }
     }
 
@@ -487,7 +485,7 @@ public class BookmarkBridge {
     /**
      * Gets the child of a folder at the specific position.
      * @param folderId Id of the parent folder
-     * @param index Posision of child among all children in folder
+     * @param index Position of child among all children in folder
      * @return BookmarkId of the child, which will be null if folderId does not point to a folder or
      *         index is invalid.
      */
@@ -548,7 +546,7 @@ public class BookmarkBridge {
 
     /**
      * Fetches the bookmarks of the given folder. This is an always-synchronous version of another
-     * getBookmarksForForder function.
+     * getBookmarksForFolder function.
      *
      * @param folderId The parent folder id.
      * @return Bookmarks of the given folder.
@@ -715,6 +713,16 @@ public class BookmarkBridge {
                 observer.bookmarkModelLoaded();
             }
         }
+    }
+
+    /**
+     * Reorders the bookmarks of the folder "parent" to be as specified by newOrder.
+     *
+     * @param parent The parent folder for the reordered bookmarks.
+     * @param newOrder A list of bookmark IDs that represents the new order for these bookmarks.
+     */
+    public void reorderBookmarks(BookmarkId parent, long[] newOrder) {
+        nativeReorderChildren(mNativeBookmarkBridge, parent, newOrder);
     }
 
     @CalledByNative
@@ -937,4 +945,6 @@ public class BookmarkBridge {
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarkBridge);
     private native void nativeDestroy(long nativeBookmarkBridge);
     private static native boolean nativeIsEditBookmarksEnabled(long nativeBookmarkBridge);
+    private native void nativeReorderChildren(
+            long nativeBookmarkBridge, BookmarkId parent, long[] orderedNodes);
 }

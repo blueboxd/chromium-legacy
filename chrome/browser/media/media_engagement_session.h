@@ -79,10 +79,6 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // database.
   bool HasPendingDataToCommit() const;
 
-  // Records the session information (restored, playback, etc.) into histograms.
-  // NOTE: must be called just before commiting.
-  void RecordStatusHistograms() const;
-
   // Commits any pending data to website settings.
   void CommitPendingData();
 

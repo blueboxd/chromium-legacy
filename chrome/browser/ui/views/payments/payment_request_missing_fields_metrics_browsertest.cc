@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payments_profile_comparator.h"
 
@@ -44,9 +45,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   // Since no card is added to the profile, all payment fields should be
   // missing.
   int32_t expected_missing_payment_bits =
-      autofill::CREDIT_CARD_EXPIRED | autofill::CREDIT_CARD_NO_CARDHOLDER |
-      autofill::CREDIT_CARD_NO_NUMBER |
-      autofill::CREDIT_CARD_NO_BILLING_ADDRESS;
+      CREDIT_CARD_EXPIRED | CREDIT_CARD_NO_CARDHOLDER | CREDIT_CARD_NO_NUMBER |
+      CREDIT_CARD_NO_BILLING_ADDRESS;
   histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
                                      expected_missing_payment_bits, 1);
 
@@ -88,9 +88,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
 
-  int32_t expected_missing_payment_bits = autofill::CREDIT_CARD_NO_CARDHOLDER;
   histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
-                                     expected_missing_payment_bits, 1);
+                                     CREDIT_CARD_NO_CARDHOLDER, 1);
 
   // There should be no log for missing shipping address fields since the
   // section had one complete suggestion.
@@ -129,9 +128,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
 
-  // Expired cards are considered as complete according to
-  // AutofillPaymentInstrument::IsCompleteForPayment().
-  histogram_tester.ExpectTotalCount("PaymentRequest.MissingPaymentFields", 0);
+  // Even though expired cards are treated as complete, we still record the
+  // MissingPaymentFields with expired bit set.
+  histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
+                                     CREDIT_CARD_EXPIRED, 1);
 
   // There should be no log for missing shipping address fields since the
   // section had one complete suggestion.
@@ -159,12 +159,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");
 
-  // Make sure the correct events were logged.
+  // Make sure the correct events were logged. EVENT_NEEDS_COMPLETION_PAYMENT is
+  // set since billing address of the card is incomplete.
   int32_t expected_event_bits =
       JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_USER_ABORTED |
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
       JourneyLogger::EVENT_REQUEST_SHIPPING |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT |
       JourneyLogger::EVENT_NEEDS_COMPLETION_SHIPPING;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
@@ -177,9 +179,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   histogram_tester.ExpectBucketCount("PaymentRequest.MissingShippingFields",
                                      expected_missing_shipping_bits, 1);
 
-  // There should be no log for missing payment fields since the section had one
-  // complete suggestion.
-  histogram_tester.ExpectTotalCount("PaymentRequest.MissingPaymentFields", 0);
+  // Ensure that the billing address of the card is incomplete.
+  histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
+                                     CREDIT_CARD_NO_BILLING_ADDRESS, 1);
 }
 
 // Tests that proper UMA metrics are logged when contacts section is incomplete.
@@ -203,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");
 
-  // Make sure the correct events were logged.
+  // Make sure the correct events were logged. EVENT_NEEDS_COMPLETION_PAYMENT is
+  // set since billing address of the card is incomplete.
   int32_t expected_event_bits =
       JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_USER_ABORTED |
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
@@ -212,7 +215,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_REQUEST_PAYER_PHONE |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
       JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
-      JourneyLogger::EVENT_NEEDS_COMPLETION_CONTACT_INFO;
+      JourneyLogger::EVENT_NEEDS_COMPLETION_CONTACT_INFO |
+      JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
 
@@ -223,13 +227,49 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
   histogram_tester.ExpectBucketCount("PaymentRequest.MissingContactFields",
                                      expected_missing_contact_bits, 1);
 
-  // There should be no log for missing payment fields since the section had one
-  // complete suggestion.
-  histogram_tester.ExpectTotalCount("PaymentRequest.MissingPaymentFields", 0);
+  // Ensure that the billing address of the card is incomplete.
+  histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
+                                     CREDIT_CARD_NO_BILLING_ADDRESS, 1);
 
   // Even though the profile is incomplete, there should be no log for missing
   // shipping fields since shipping was not required.
   histogram_tester.ExpectTotalCount("PaymentRequest.MissingShippingFields", 0);
+}
+
+// Tests that proper UMA metrics are logged when the available card type does
+// not exactly match the specified type in payment request.
+IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
+                       TestCardWithMismatchedType) {
+  NavigateTo("/payment_request_debit_test.html");
+  base::HistogramTester histogram_tester;
+  // Add a profile for billing address with a visa card type.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard visa_card = autofill::test::GetCreditCard2();
+  visa_card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(visa_card);
+
+  // Show a Payment Request with debit card specified.
+  InvokePaymentRequestUI();
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  NavigateTo("/payment_request_email_test.html");
+
+  // Make sure the correct events were logged. EVENT_NEEDS_COMPLETION_PAYMENT is
+  // set since the type of the saved card does not match the specified type in
+  // payment request.
+  int32_t expected_event_bits =
+      JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_USER_ABORTED |
+      JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
+      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
+  histogram_tester.ExpectBucketCount("PaymentRequest.Events",
+                                     expected_event_bits, 1);
+
+  // Ensure that the card type does not exactly match the payment request
+  // network type.
+  histogram_tester.ExpectBucketCount("PaymentRequest.MissingPaymentFields",
+                                     CREDIT_CARD_TYPE_MISMATCH, 1);
 }
 
 }  // namespace payments

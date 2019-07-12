@@ -194,6 +194,11 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     return prepared_data_retriever_.get();
   }
 
+  web_app::AppRegistrar* app_registrar() {
+    DCHECK(registrar_);
+    return registrar_;
+  }
+
   void CreateEmptyDataRetriever() {
     DCHECK(!prepared_data_retriever_);
     prepared_data_retriever_ = std::make_unique<web_app::TestDataRetriever>();
@@ -219,7 +224,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     data_retriever()->SetManifest(std::move(manifest), is_installable);
 
     web_app::IconsMap icons_map;
-    icons_map[GURL(kAppUrl)].push_back(
+    icons_map[kAppUrl].push_back(
         CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
     data_retriever()->SetIcons(std::move(icons_map));
   }
@@ -305,8 +310,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
 TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkApp) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  const GURL app_url(kAppUrl);
-  web_app_info->app_url = app_url;
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
@@ -321,21 +325,20 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkApp) {
 
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_FALSE(IconsInfo::GetIconResource(extension, kIconSizeSmall,
                                           ExtensionIconSet::MATCH_EXACTLY)
                    .empty());
   EXPECT_FALSE(
       AppBannerSettingsHelper::GetSingleBannerEvent(
-          web_contents(), app_url, app_url.spec(),
+          web_contents(), kAppUrl, kAppUrl.spec(),
           AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
           .is_null());
 }
 
 TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  const GURL app_url(kAppUrl);
-  web_app_info->app_url = app_url;
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
@@ -354,8 +357,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
 
 TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  const GURL app_url(kAppUrl);
-  web_app_info->app_url = app_url;
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
@@ -384,10 +386,8 @@ class InstallManagerBookmarkAppInstallableSiteTest
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
        CreateBookmarkAppWithManifest) {
-  const GURL app_url(kAppUrl);
-
   auto manifest = std::make_unique<blink::Manifest>();
-  manifest->start_url = app_url;
+  manifest->start_url = kAppUrl;
   manifest->name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest->scope = GURL(kAppScope);
   manifest->theme_color = SK_ColorBLUE;
@@ -400,11 +400,11 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_EQ(SK_ColorBLUE, AppThemeColorInfo::GetThemeColor(extension).value());
   EXPECT_FALSE(
       AppBannerSettingsHelper::GetSingleBannerEvent(
-          web_contents(), app_url, app_url.spec(),
+          web_contents(), kAppUrl, kAppUrl.spec(),
           AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
           .is_null());
 
@@ -417,10 +417,8 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
        CreateBookmarkAppWithManifestIcons) {
-  const GURL app_url(kAppUrl);
-
   auto manifest = std::make_unique<blink::Manifest>();
-  manifest->start_url = app_url;
+  manifest->start_url = kAppUrl;
   manifest->name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest->scope = GURL(kAppScope);
 
@@ -463,7 +461,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
 
   if (GetParam() == web_app::ForInstallableSite::kYes) {
     EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
@@ -474,10 +472,8 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
        CreateBookmarkAppWithManifestNoScope) {
-  const GURL app_url(kAppUrl);
-
   auto manifest = std::make_unique<blink::Manifest>();
-  manifest->start_url = app_url;
+  manifest->start_url = kAppUrl;
   manifest->scope = GURL(kAppDefaultScope);
   manifest->name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
 
@@ -501,8 +497,8 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 TEST_F(InstallManagerBookmarkAppTest,
        CreateBookmarkAppDefaultLauncherContainers) {
   {
-    CreateDataRetrieverWithLaunchContainer(
-        GURL(kAppUrl), /*open_as_window=*/true, /*is_installable=*/true);
+    CreateDataRetrieverWithLaunchContainer(kAppUrl, /*open_as_window=*/true,
+                                           /*is_installable=*/true);
 
     const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -550,8 +546,8 @@ TEST_F(InstallManagerBookmarkAppTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
-    CreateDataRetrieverWithLaunchContainer(
-        GURL(kAppUrl), /*open_as_window=*/false, /*is_installable=*/false);
+    CreateDataRetrieverWithLaunchContainer(kAppUrl, /*open_as_window=*/false,
+                                           /*is_installable=*/false);
 
     web_app::InstallOptions install_options;
     install_options.launch_container = web_app::LaunchContainer::kWindow;
@@ -566,8 +562,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 
 TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  const GURL app_url(kAppUrl);
-  web_app_info->app_url = app_url;
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
 
@@ -581,7 +576,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
 
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(extension));
   EXPECT_FALSE(AppThemeColorInfo::GetThemeColor(extension));
 }
@@ -646,7 +641,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = GURL(kAppUrl);
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->scope = GURL(kAppScope);
@@ -694,7 +689,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
-    EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+    EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
     EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
@@ -733,7 +728,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAlternativeAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
-    EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+    EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
     EXPECT_EQ(GURL(kAppAlternativeScope),
               GetScopeURLFromBookmarkApp(extension));
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
@@ -744,6 +739,22 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
                      .empty());
     EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
   }
+}
+
+TEST_F(InstallManagerBookmarkAppTest, GetAppDetails) {
+  EXPECT_EQ(std::string(), app_registrar()->GetAppShortName("unknown"));
+  EXPECT_EQ(GURL(), app_registrar()->GetAppLaunchURL("unknown"));
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = kAppUrl;
+  web_app_info->title = base::UTF8ToUTF16(kAppTitle);
+  web_app_info->description = base::UTF8ToUTF16(kAppDescription);
+  CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
+                                            /*is_installable=*/false);
+
+  const Extension* extension = InstallWebAppFromManifestWithFallback();
+  EXPECT_EQ(kAppTitle, app_registrar()->GetAppShortName(extension->id()));
+  EXPECT_EQ(kAppUrl, app_registrar()->GetAppLaunchURL(extension->id()));
 }
 
 }  // namespace extensions

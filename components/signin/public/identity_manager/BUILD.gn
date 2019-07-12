@@ -71,11 +71,13 @@ source_set("unit_tests") {
 
   sources = [
     "access_token_fetcher_unittest.cc",
+    "account_info_unittest.cc",
     "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",
     "diagnostics_provider_unittest.cc",
     "identity_manager_unittest.cc",
     "identity_test_environment_unittest.cc",
+    "identity_utils_unittest.cc",
     "primary_account_access_token_fetcher_unittest.cc",
   ]
 
@@ -85,6 +87,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/image_fetcher/core:test_support",
+    "//components/prefs",
     "//components/prefs:test_support",
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:internals_test_support",

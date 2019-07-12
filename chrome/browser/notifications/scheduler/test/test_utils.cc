@@ -100,6 +100,11 @@ std::string DebugString(const NotificationEntry* entry) {
          << " \n schedule params: priority:"
          << static_cast<int>(entry->schedule_params.priority);
 
+  for (const auto& mapping : entry->schedule_params.impression_mapping) {
+    stream << " \n impression mapping: " << static_cast<int>(mapping.first)
+           << " : " << static_cast<int>(mapping.second);
+  }
+
   stream << " \n icons_id:";
   for (const auto& icon_id : entry->icons_uuid)
     stream << icon_id << "  ";
@@ -130,6 +135,12 @@ std::string DebugString(const ClientState* client_state) {
            << static_cast<int>(impression.task_start_time) << "\n"
            << "guid: " << impression.guid << "\n"
            << "type: " << static_cast<int>(impression.type);
+
+    for (const auto& mapping : impression.impression_mapping) {
+      stream << " \n impression mapping: " << static_cast<int>(mapping.first)
+             << " : " << static_cast<int>(mapping.second);
+    }
+
     log += stream.str();
   }
 

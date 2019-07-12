@@ -489,7 +489,16 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeEdgeCase) {
   EXPECT_EQ(kTestFileSize * 1, last_cache_size());
 }
 
-TEST_F(OfflinePageUtilsTest, TestExtractOfflineHeaderValueFromNavigationEntry) {
+// Timeout on Android.  http://crbug.com/981972
+#if defined(OS_ANDROID)
+#define MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry \
+  DISABLED_TestExtractOfflineHeaderValueFromNavigationEntry
+#else
+#define MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry \
+  TestExtractOfflineHeaderValueFromNavigationEntry
+#endif
+TEST_F(OfflinePageUtilsTest,
+       MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   std::string header_value;

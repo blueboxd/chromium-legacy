@@ -15,6 +15,7 @@
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 
@@ -50,9 +51,11 @@ void JNI_DisplayAgent_OnDismiss(
 void JNI_DisplayAgent_OnActionButton(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_profile,
-    const base::android::JavaParamRef<jstring>& guid) {
-  // TODO(xingliu): Support buttons.
-  NOTIMPLEMENTED();
+    const base::android::JavaParamRef<jstring>& j_guid,
+    jint type) {
+  GetUserActionHandler(j_profile)->OnActionClick(
+      ConvertJavaStringToUTF8(env, j_guid),
+      static_cast<notifications::ActionButtonType>(type));
 }
 
 DisplayAgentAndroid::DisplayAgentAndroid() = default;
@@ -68,14 +71,31 @@ void DisplayAgentAndroid::ShowNotification(
   DCHECK(!notification_data->title.empty());
   DCHECK(!notification_data->message.empty());
 
+  // Wrap button info. Retrieving class name in run time must be guarded with
+  // test.
   auto java_notification_data = Java_DisplayAgent_buildNotificationData(
       env, ConvertUTF8ToJavaString(env, notification_data->id),
       ConvertUTF16ToJavaString(env, notification_data->title),
       ConvertUTF16ToJavaString(env, notification_data->message),
       nullptr /*icon*/);
+
+  for (size_t i = 0; i < notification_data->buttons.size(); ++i) {
+    const auto& button = notification_data->buttons[i];
+    Java_DisplayAgent_addButton(
+        env, java_notification_data, ConvertUTF16ToJavaString(env, button.text),
+        static_cast<int>(button.type), ConvertUTF8ToJavaString(env, button.id));
+  }
+
   auto java_system_data = Java_DisplayAgent_buildSystemData(
       env, ConvertUTF8ToJavaString(env, system_data->guid));
 
+  ShowNotificationInternal(env, java_notification_data, java_system_data);
+}
+
+void DisplayAgentAndroid::ShowNotificationInternal(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& java_notification_data,
+    const base::android::JavaRef<jobject>& java_system_data) {
   Java_DisplayAgent_showNotification(env, java_notification_data,
                                      java_system_data);
 }

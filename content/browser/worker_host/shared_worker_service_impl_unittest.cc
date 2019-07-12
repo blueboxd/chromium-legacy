@@ -154,20 +154,14 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         render_process_host_factory_.get());
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      fake_url_loader_factory_ =
-          std::make_unique<FakeNetworkURLLoaderFactory>();
-      url_loader_factory_wrapper_ =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              fake_url_loader_factory_.get());
-      static_cast<SharedWorkerServiceImpl*>(
-          BrowserContext::GetDefaultStoragePartition(browser_context_.get())
-              ->GetSharedWorkerService())
-          ->SetURLLoaderFactoryForTesting(url_loader_factory_wrapper_);
-    } else {
-      url_loader_factory_ =
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>();
-    }
+    fake_url_loader_factory_ = std::make_unique<FakeNetworkURLLoaderFactory>();
+    url_loader_factory_wrapper_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            fake_url_loader_factory_.get());
+    static_cast<SharedWorkerServiceImpl*>(
+        BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+            ->GetSharedWorkerService())
+        ->SetURLLoaderFactoryForTesting(url_loader_factory_wrapper_);
   }
 
   void TearDown() override {
@@ -190,7 +184,6 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   int factory_request_callback_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
   std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
-  std::unique_ptr<NotImplementedNetworkURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<FakeNetworkURLLoaderFactory> fake_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
@@ -210,8 +203,6 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client;
   MessagePortChannel local_port;
@@ -286,8 +277,6 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -357,8 +346,6 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client1;
   MessagePortChannel local_port1;
@@ -422,8 +409,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -499,8 +484,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -512,8 +495,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client, creates worker.
 
@@ -590,8 +571,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -603,8 +582,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client, creates worker.
 
@@ -680,8 +657,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -693,8 +668,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the worker starts.
 
@@ -761,8 +734,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), renderer_host0->GetID()));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -773,8 +744,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), renderer_host1->GetID()));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the workers start.
 
@@ -855,8 +824,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -868,8 +835,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the workers start.
 
@@ -950,8 +915,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents1 =
       CreateWebContents(GURL("http://example.com/"));
@@ -962,8 +925,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents2 =
       CreateWebContents(GURL("http://example.com/"));
@@ -974,8 +935,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id2));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host2->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -1068,8 +1027,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents1 =
       CreateWebContents(GURL("http://example.com/"));
@@ -1080,8 +1037,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents2 =
       CreateWebContents(GURL("http://example.com/"));
@@ -1092,8 +1047,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id2));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host2->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -1170,8 +1123,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id0));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -1183,8 +1134,6 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
       blink::mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
                           base::Unretained(this), process_id1));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // Both clients try to connect/create a worker.
 

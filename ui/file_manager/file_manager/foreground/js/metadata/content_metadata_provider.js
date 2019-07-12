@@ -84,10 +84,10 @@ class ContentMetadataProvider extends MetadataProvider {
    * @private
    */
   getImpl_(entry, names, callback) {
-    // Directories do not have a thumbnail.
     if (entry.isDirectory) {
-      const error = this.createError_(entry.toURL(), 'get', 'no thumbnail');
-      setTimeout(callback.bind(null, error), 0);
+      const cause = 'Directories do not have a thumbnail.';
+      const error = this.createError_(entry.toURL(), 'get', cause);
+      setTimeout(callback, 0, error);
       return;
     }
 
@@ -108,13 +108,15 @@ class ContentMetadataProvider extends MetadataProvider {
     }
 
     if (type && type.type === 'raw' && names.includes('ifd')) {
-      names.splice(names.indexOf('ifd'), 1);  // Remove ifd from names.
+      // The RAW file ifd will be processed herein, so remove ifd from names.
+      names.splice(names.indexOf('ifd'), 1);
 
       /**
        * Creates an ifdError metadata item: when reading the fileEntry failed
        * or extracting its ifd data failed.
        * @param {!Entry} fileEntry
        * @param {string} error
+       * @return {!MetadataItem}
        */
       function createIfdError(fileEntry, error) {
         const url = fileEntry.toURL();
@@ -137,6 +139,7 @@ class ContentMetadataProvider extends MetadataProvider {
             },
             error => {
               callback(createIfdError(entry, error.toString()));
+              reject();
             });
       }).then(result => {
         if (result.status === LoadImageResponseStatus.SUCCESS) {

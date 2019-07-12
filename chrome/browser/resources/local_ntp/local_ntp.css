@@ -117,79 +117,32 @@ body.hide-fakebox #fakebox {
 
 #fakebox-container {
   margin: 0 auto 0 auto;
-  width: var(--content-width);
-}
-
-body.remove-fakebox #fakebox-container {
-  display: none;
-}
-
-.alternate-fakebox #fakebox-container {
-  /* Increase min-width to account for larger font + increased padding: 341px
-   * min-width + 50px */
-  min-width: 390px;
-}
-
-.show-fakebox-icon.alternate-fakebox #fakebox-container {
   /* Increase min-width again to account for the search icon: 390px new
    * min-width + additional 20px */
   min-width: 410px;
+  width: var(--content-width);
 }
 
 #fakebox {
-  background-color: rgb(var(--GG100-rgb));
-  border-radius: 22px;
-  cursor: text;
-  font-size: 18px;
-  height: 44px;
-  line-height: 36px;
-  margin: 0 auto;
-  max-width: 560px;
-  opacity: 1;
-  position: relative;
-  /* Transition should be similar to .mv-tile/.md-tile opacity transition. */
-  transition: background-color 300ms ease-in-out, opacity 200ms
-}
-
-.alternate-fakebox-rect #fakebox {
-  border-radius: 8px;
-}
-
-@media (prefers-color-scheme: dark) {
-  body:not(.alternate-fakebox):not(.light-chip) #fakebox {
-    background-color: rgb(var(--GG900-rgb));
-  }
-}
-
-.alternate-fakebox #fakebox {
   background: white;
+  border-radius: 22px;
   box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
   box-sizing: border-box;
+  cursor: text;
   font-size: 16px;
+  height: 44px;
   line-height: 21px;
+  margin: 0 auto;
   max-width: 584px;
+  opacity: 1;
+  position: relative;
   transition: none;
 }
 
 @media (prefers-color-scheme: dark) {
-  .alternate-fakebox #fakebox {
+  #fakebox {
     box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
   }
-}
-
-#fakebox:hover {
-  background-color: rgb(var(--GG200-rgb));
-}
-
-@media (prefers-color-scheme: dark) {
-  body:not(.alternate-fakebox):not(.light-chip) #fakebox:hover {
-    background-color: rgb(42, 43, 46);
-  }
-}
-
-.alternate-fakebox #fakebox:hover,
-.alternate-fakebox.fakebox-focused #fakebox {
-  background: white;
 }
 
 .non-google-page #fakebox-container {
@@ -219,7 +172,6 @@ html[dir=rtl] #fakebox > input {
   -webkit-mask-size: 100%;
   background: 24px 24px rgb(117, 117, 117);
   bottom: 0;
-  display: none;
   height: 24px;
   left: 0;
   margin: auto 0;
@@ -229,59 +181,27 @@ html[dir=rtl] #fakebox > input {
   width: 24px;
 }
 
-#fakebox-search-icon.color {
-  background-color: rgb(var(--GB600-rgb));
-}
-
-.show-fakebox-icon #fakebox-search-icon {
-  display: block;
-}
-
 html[dir=rtl] #fakebox-search-icon {
   right: 0;
 }
 
 #fakebox-text {
-  bottom: 4px;
-  color: rgb(var(--GG700-rgb));
-  font-size: 14px;
-  left: 0;
-  margin-top: 1px;
-  overflow: hidden;
-  padding-inline-start: 20px;
-  position: absolute;
-  right: 44px;
-  text-align: initial;
-  text-overflow: ellipsis;
-  top: 4px;
-  vertical-align: middle;
-  visibility: inherit;
-  white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  body:not(.alternate-fakebox):not(.light-chip) #fakebox-text {
-    color: rgb(var(--GG200-rgb));
-  }
-}
-
-html[dir=rtl] #fakebox-text {
-  left: auto;
-  right: 0;
-}
-
-.alternate-fakebox #fakebox-text {
   bottom: 0;
   color: rgb(117, 117, 117);
   font-size: 16px;
   height: 21px;
+  left: 0;
   margin: auto 0;
-  right: 44px;
-  top: 0;
-}
-
-.show-fakebox-icon.alternate-fakebox #fakebox-text {
+  overflow: hidden;
   padding-inline-start: 48px;
+  position: absolute;
+  right: 44px;
+  text-align: initial;
+  text-overflow: ellipsis;
+  top: 0;
+  vertical-align: middle;
+  visibility: inherit;
+  white-space: nowrap;
 }
 
 html[dir=rtl] #fakebox-text {
@@ -291,58 +211,31 @@ html[dir=rtl] #fakebox-text {
 
 #fakebox-cursor {
   background: #333;
-  /* Total 20px height: 44px fakebox height - 12px top - 12px bottom */
-  bottom: 12px;
-  left: 20px;
+  /* Total 16px height: (46px fakebox height - 2px border) - 14px top - 14px
+   * bottom */
+  bottom: 14px;
+  left: 48px;
   position: absolute;
-  top: 12px;
+  top: 14px;
   visibility: hidden;
   width: 1px;
 }
 
 html[dir=rtl] #fakebox-cursor {
   left: auto;
-  right: 20px;
-}
-
-@media (prefers-color-scheme: dark) {
-  body:not(.alternate-fakebox):not(.light-chip) #fakebox-cursor {
-    background: rgb(var(--GB300-rgb));
-  }
-}
-
-.alternate-fakebox #fakebox-cursor {
-  /* Total 16px height: (46px fakebox height - 2px border) - 14px top - 14px
-   * bottom */
-  bottom: 14px;
-  top: 14px;
-}
-
-.show-fakebox-icon.alternate-fakebox #fakebox-cursor {
-  left: 48px;
-}
-
-html[dir=rtl] .show-fakebox-icon.alternate-fakebox #fakebox-cursor {
-  left: auto;
   right: 48px;
 }
 
 #fakebox-microphone {
   background: url(icons/googlemic_clr_24px.svg) no-repeat center;
-  background-size: 24px 24px;
+  background-size: 21px 21px;
   bottom: 0;
   cursor: pointer;
-  margin-inline-end: 12px;
+  margin-inline-end: 16px;
   padding: 22px 12px 0;
   position: absolute;
   right: 0;
   top: 0;
-  width: 28px;
-}
-
-.alternate-fakebox #fakebox-microphone {
-  background-size: 21px 21px;
-  margin-inline-end: 16px;
   width: 21px;
 }
 
@@ -372,17 +265,6 @@ body.fakebox-drag-focused #fakebox-cursor {
 body.fakebox-focused #fakebox-cursor {
   animation: blink 1.3s step-end infinite;
   visibility: inherit;
-}
-
-.alternate-fakebox #user-content-wrapper {
-  /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
-  margin-top: -2px;
-}
-
-body.remove-fakebox #user-content {
-  /* Total of 48px margin between the logo and MV tiles/suggestions: 29px logo
-   * margin-bottom + 32px margin (from #most-visited or #suggestions) - 13px */
-  margin-top: -13px;
 }
 
 #most-visited {
@@ -800,6 +682,8 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 }
 
 #user-content {
+  /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
+  margin-top: -2px;
   z-index: -1;
 }
 

@@ -1,7 +1,7 @@
 Name: dav1d is an AV1 decoder :)
 Short Name: dav1d
 URL: https://code.videolan.org/videolan/dav1d
-Version: a1e3f35842de92b526422af05360c84cf233f07f
+Version: 6ef9a030145eef79fdeab6d4d38e00423ae7a83d
 License: 2-Clause BSD
 License File: LICENSE
 Security Critical: yes
@@ -27,3 +27,8 @@ Next you should update the dav1d_generated.gni file, to that run the
 
 Hopefully all that works and then you can roll DEPS to the new revision with
 all the updated configuration files. If not, you'll need to debug the bots :(
+
+
+-- [ OPEN ISSUES ] ------------------
+meson v0.51.1 (and possibly some earlier versions), have a bug with clang-cl on
+linux. See https://github.com/mesonbuild/meson/issues/5639 for issue and fix.

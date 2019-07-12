@@ -8,8 +8,11 @@ namespace notifications {
 
 ScheduleParams::ScheduleParams() : priority(Priority::kLow) {}
 
+ScheduleParams::ScheduleParams(const ScheduleParams& other) = default;
+
 bool ScheduleParams::operator==(const ScheduleParams& other) const {
-  return priority == other.priority;
+  return priority == other.priority &&
+         impression_mapping == other.impression_mapping;
 }
 
 ScheduleParams::~ScheduleParams() = default;

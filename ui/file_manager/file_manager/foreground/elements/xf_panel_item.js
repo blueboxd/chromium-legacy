@@ -38,6 +38,14 @@ class PanelItem extends HTMLElement {
      * @private @type {!function(*)}
      */
     this.signal_ = console.log;
+
+    /**
+     * User specific data, used as a reference to persist any custom
+     * data that the panel user may want to use in the signal callback.
+     * e.g. holding the file name(s) used in a copy operation.
+     * @type {string|Object}
+     */
+    this.userData = null;
   }
 
   /**
@@ -50,6 +58,7 @@ class PanelItem extends HTMLElement {
               .xf-panel-item {
                   align-items: center;
                   background-color: #FFF;
+                  border-radius: 4px;
                   display: flex;
                   flex-direction: row;
                   max-width: 400px;
@@ -199,12 +208,7 @@ class PanelItem extends HTMLElement {
         primaryButton.id = 'primary-action';
         primaryButton.onclick = this.onclick;
         primaryButton.dataset.category = 'dismiss';
-        buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
-
-        secondaryButton = document.createElement('xf-button');
-        secondaryButton.id = 'secondary-action';
-        secondaryButton.dataset.category = 'undo';
-        buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
+        buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
       case this.panelTypeError:
         this.setAttribute('indicator', 'status');

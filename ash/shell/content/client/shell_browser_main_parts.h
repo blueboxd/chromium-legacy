@@ -36,6 +36,8 @@ class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
+  static content::BrowserContext* GetBrowserContext();
+
   explicit ShellBrowserMainParts(const content::MainFunctionParams& parameters);
   ~ShellBrowserMainParts() override;
 

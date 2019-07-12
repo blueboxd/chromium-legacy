@@ -117,6 +117,7 @@ SharedWorkerHost::SharedWorkerHost(
       process_id_(process_id),
       next_connection_request_id_(1),
       interface_provider_binding_(this) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(instance_);
   // Set up the worker interface request. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
@@ -167,7 +168,6 @@ void SharedWorkerHost::Start(
     blink::mojom::SharedWorkerFactoryPtr factory,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -175,27 +175,12 @@ void SharedWorkerHost::Start(
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AdvanceTo(Phase::kStarted);
-
-#if DCHECK_IS_ON()
-  // Verify the combination of the given args based on the flags. See the
-  // function comment for details.
   DCHECK(service_worker_provider_info);
+  DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factories);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // NetworkService (PlzWorker):
-    DCHECK(!main_script_loader_factory);
-    DCHECK(main_script_load_params);
-    DCHECK(!subresource_loader_factories->default_factory_info());
-  } else {
-    // non-NetworkService:
-    DCHECK(main_script_loader_factory);
-    DCHECK(!main_script_load_params);
-    DCHECK(subresource_loader_factories->default_factory_info());
-    DCHECK(!controller);
-    DCHECK(!controller_service_worker_object_host);
-  }
-#endif  // DCHECK_IS_ON()
+  DCHECK(!subresource_loader_factories->default_factory_info());
+
+  AdvanceTo(Phase::kStarted);
 
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       instance_->url(), instance_->name(), instance_->content_security_policy(),
@@ -237,28 +222,19 @@ void SharedWorkerHost::Start(
       mojo::MakeRequest(&interface_provider)));
 
   // Set the default factory to the bundle for subresource loading to pass to
-  // the renderer when NetworkService is on. When NetworkService is off, the
-  // default factory is already provided by
-  // WorkerScriptFetchInitiator::CreateFactoryBundle().
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-    CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
-    subresource_loader_factories->default_factory_info() =
-        std::move(default_factory_info);
-  }
+  // the renderer.
+  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
+  subresource_loader_factories->default_factory_info() =
+      std::move(default_factory_info);
 
-  // NetworkService (PlzWorker):
   // Prepare the controller service worker info to pass to the renderer.
-  // |controller| is only provided if NetworkService is enabled. In the
-  // non-NetworkService case, the controller is sent in SetController IPCs
-  // during the request for the shared worker script.
   // |object_info| can be nullptr when the service worker context or the service
   // worker version is gone during shared worker startup.
   blink::mojom::ServiceWorkerObjectAssociatedPtrInfo
       service_worker_remote_object;
   blink::mojom::ServiceWorkerState service_worker_sent_state;
   if (controller && controller->object_info) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     controller->object_info->request =
         mojo::MakeRequest(&service_worker_remote_object);
     service_worker_sent_state = controller->object_info->state;
@@ -273,18 +249,17 @@ void SharedWorkerHost::Start(
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
-      std::move(main_script_loader_factory), std::move(main_script_load_params),
+      /*main_script_loader_factory=*/nullptr,
+      std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       std::move(host), std::move(worker_request_),
       std::move(interface_provider));
 
-  // NetworkService (PlzWorker):
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the
   // request endpoint was sent, it can be used, so add it to
   // ServiceWorkerObjectHost.
   if (service_worker_remote_object.is_valid()) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(

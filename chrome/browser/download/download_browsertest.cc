@@ -983,6 +983,7 @@ class DownloadTest : public InProcessBrowserTest {
         base::FilePath my_downloaded_file = item->GetTargetFilePath();
         EXPECT_TRUE(base::PathExists(my_downloaded_file));
         EXPECT_TRUE(base::DeleteFile(my_downloaded_file, false));
+        item->Remove();
 
         EXPECT_EQ(download_info.should_redirect_to_documents ?
                       std::string::npos :

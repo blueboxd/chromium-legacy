@@ -140,6 +140,17 @@ views::Widget* TranslateBubbleView::ShowBubble(
     view->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(view);
+
+  // TAB UI has the same view throughout. Select the right tab based on |step|
+  // upon initialization.
+  if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
+    TranslateBubbleModel::ViewState state =
+        TranslateBubbleModelImpl::TranslateStepToViewState(step);
+    translate_bubble_view_->SwitchView(state);
+  } else {
+    translate_bubble_view_->SwitchToErrorView(error_type);
+  }
+
   // |allow_refocus_alert| is set to false because translate bubble does not
   // have an additional screen reader alert instructing the user to use a
   // hotkey combination to focus the bubble.
@@ -202,9 +213,9 @@ base::string16 TranslateBubbleView::GetWindowTitle() const {
 
 void TranslateBubbleView::TabSelectedAt(int index) {
   // Tabbed pane is indexed from left to right starting at 0.
-  if (index == 1) {
+  if (!model_->IsPageTranslatedInCurrentLanguages() && index == 1) {
     Translate();
-  } else {
+  } else if (index == 0) {
     ShowOriginal();
   }
 }
@@ -755,8 +766,9 @@ void TranslateBubbleView::UpdateChildVisibilities() {
   for (views::View* view : children())
     view->SetVisible(view == GetCurrentView());
 
-  // Not required for TAB ui because the title is not shown.
-  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
+  // Not required for TAB UI or Button_GM2 UI because the title is not shown.
+  if (bubble_ui_model_ != language::TranslateUIBubbleModel::BUTTON_GM2 &&
+      bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
       GetWidget()) {
     GetWidget()->UpdateWindowTitle();
   }
@@ -888,6 +900,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   tab_translate_options_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
   tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
+  tab_translate_options_button->SetFocusForPlatform();
   tab_translate_options_button->set_request_focus_on_press(true);
 
   // Close button
@@ -1659,10 +1672,11 @@ views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {
 void TranslateBubbleView::SwitchView(
     TranslateBubbleModel::ViewState view_state) {
   TranslateBubbleModel::ViewState current_state = model_->GetViewState();
-  if ((bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
-       TabUiIsEquivalentState(view_state) &&
-       TabUiIsEquivalentState(current_state)) ||
-      current_state == view_state) {
+  if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
+    SwitchTabForViewState(view_state);
+  }
+
+  if (current_state == view_state) {
     return;
   }
 
@@ -1673,18 +1687,22 @@ void TranslateBubbleView::SwitchView(
   SizeToContents();
 }
 
+void TranslateBubbleView::SwitchTabForViewState(
+    TranslateBubbleModel::ViewState view_state) {
+  if ((view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE ||
+       view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING) &&
+      tabbed_pane_->GetSelectedTabIndex() != 1) {
+    tabbed_pane_->SelectTabAt(1);
+  } else if (view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE &&
+             tabbed_pane_->GetSelectedTabIndex() != 0) {
+    tabbed_pane_->SelectTabAt(0);
+  }
+}
 void TranslateBubbleView::SwitchToErrorView(
     translate::TranslateErrors::Type error_type) {
   SwitchView(TranslateBubbleModel::VIEW_STATE_ERROR);
   error_type_ = error_type;
   model_->ShowError(error_type);
-}
-
-bool TranslateBubbleView::TabUiIsEquivalentState(
-    TranslateBubbleModel::ViewState view_state) {
-  return view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE ||
-         view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
-         view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
 }
 
 void TranslateBubbleView::UpdateAdvancedView() {

@@ -95,7 +95,6 @@ const char kChromeUIManagementURL[] = "chrome://management";
 const char kChromeUIMdUserManagerHost[] = "md-user-manager";
 const char kChromeUIMdUserManagerUrl[] = "chrome://md-user-manager/";
 const char kChromeUIMediaEngagementHost[] = "media-engagement";
-const char kChromeUIMediaRouterURL[] = "chrome://media-router/";
 const char kChromeUIMediaRouterInternalsHost[] = "media-router-internals";
 const char kChromeUIMediaRouterInternalsURL[] =
     "chrome://media-router-internals/";

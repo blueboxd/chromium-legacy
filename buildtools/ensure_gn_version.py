@@ -18,6 +18,7 @@ TODO(crbug.com/944667): remove this script when it is no longer needed.
 from __future__ import print_function
 
 import argparse
+import errno
 import io
 import os
 import re
@@ -67,14 +68,22 @@ def main():
   except subprocess.CalledProcessError as e:
     print('`%s` returned %d:\n%s' % (cmd_str, e.returncode, e.output))
     return 1
+  except OSError as e:
+    if e.errno != errno.ENOENT:
+      print('`%s` failed:\n%s' % (cmd_str, e))
+      return 1
+
+    # The tool doesn't exist, so redownload it.
+    out = ''
   except Exception as e:
-    print('`%s` failed:\n%s' % (cmd_str, e.message))
+    print('`%s` failed:\n%s' % (cmd_str, e))
     return 1
 
-  current_revision = re.findall(r'\((.*)\)', out)[0]
-  if desired_revision.startswith(current_revision):
-    # We're on the right version, so we're done.
-    return 0
+  if out:
+    current_revision = re.findall(r'\((.*)\)', out)[0]
+    if desired_revision.startswith(current_revision):
+      # We're on the right version, so we're done.
+      return 0
 
   print("`%s` returned '%s', which wasn't what we were expecting."
           % (cmd_str, out.strip()))
@@ -96,7 +105,7 @@ def main():
     zf = zipfile.ZipFile(io.BytesIO(zipdata))
     zf.extract(member, os.path.join(BUILDTOOLS_DIR, dest_dir))
   except Exception as e:
-    print('Failed to extract the binary:\n%s\n' % e.msg)
+    print('Failed to extract the binary:\n%s\n' % e)
     return 1
 
   try:

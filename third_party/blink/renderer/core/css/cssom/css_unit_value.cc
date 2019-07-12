@@ -108,8 +108,8 @@ CSSUnitValue* CSSUnitValue::Create(double value,
   return MakeGarbageCollected<CSSUnitValue>(value, unit);
 }
 
-CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
-  CSSPrimitiveValue::UnitType unit = value.TypeWithCalcResolved();
+CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSNumericLiteralValue& value) {
+  CSSPrimitiveValue::UnitType unit = value.GetType();
   if (unit == CSSPrimitiveValue::UnitType::kInteger)
     unit = CSSPrimitiveValue::UnitType::kNumber;
 
@@ -170,7 +170,7 @@ bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
   return value_ == other_unit_value->value_ && unit_ == other_unit_value->unit_;
 }
 
-const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
+const CSSNumericLiteralValue* CSSUnitValue::ToCSSValue() const {
   return CSSNumericLiteralValue::Create(value_, unit_);
 }
 

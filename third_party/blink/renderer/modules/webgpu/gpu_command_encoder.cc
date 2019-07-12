@@ -87,6 +87,16 @@ DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   return dawn_view;
 }
 
+DawnCommandEncoderDescriptor AsDawnType(
+    const GPUCommandEncoderDescriptor* webgpu_desc) {
+  DCHECK(webgpu_desc);
+
+  DawnCommandEncoderDescriptor dawn_desc;
+  dawn_desc.nextInChain = nullptr;
+
+  return dawn_desc;
+}
+
 }  // anonymous namespace
 
 // static
@@ -97,9 +107,16 @@ GPUCommandEncoder* GPUCommandEncoder::Create(
   DCHECK(webgpu_desc);
   ALLOW_UNUSED_LOCAL(webgpu_desc);
 
+  DawnCommandEncoderDescriptor dawn_desc = {};
+  const DawnCommandEncoderDescriptor* dawn_desc_ptr = nullptr;
+  if (webgpu_desc) {
+    dawn_desc = AsDawnType(webgpu_desc);
+    dawn_desc_ptr = &dawn_desc;
+  }
+
   return MakeGarbageCollected<GPUCommandEncoder>(
-      device,
-      device->GetProcs().deviceCreateCommandEncoder(device->GetHandle()));
+      device, device->GetProcs().deviceCreateCommandEncoder(device->GetHandle(),
+                                                            dawn_desc_ptr));
 }
 
 GPUCommandEncoder::GPUCommandEncoder(GPUDevice* device,
@@ -158,7 +175,7 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
 
 GPUComputePassEncoder* GPUCommandEncoder::beginComputePass() {
   return GPUComputePassEncoder::Create(
-      device_, GetProcs().commandEncoderBeginComputePass(GetHandle()));
+      device_, GetProcs().commandEncoderBeginComputePass(GetHandle(), nullptr));
 }
 
 void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
@@ -207,8 +224,8 @@ void GPUCommandEncoder::copyTextureToTexture(GPUTextureCopyView* source,
 }
 
 GPUCommandBuffer* GPUCommandEncoder::finish() {
-  return GPUCommandBuffer::Create(device_,
-                                  GetProcs().commandEncoderFinish(GetHandle()));
+  return GPUCommandBuffer::Create(
+      device_, GetProcs().commandEncoderFinish(GetHandle(), nullptr));
 }
 
 }  // namespace blink

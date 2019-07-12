@@ -103,4 +103,14 @@ int TestAppRegistrar::CountUserInstalledApps() const {
   return 0;
 }
 
+std::string TestAppRegistrar::GetAppShortName(const AppId&) const {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
+  NOTIMPLEMENTED();
+  return GURL::EmptyGURL();
+}
+
 }  // namespace web_app

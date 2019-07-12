@@ -75,6 +75,11 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
 
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
+  // Checks whether downloaded files still exist. Updates state of downloads
+  // that refer to removed files. The check runs in the background and may
+  // finish asynchronously after this method returns.
+  void CheckForExternallyRemovedDownloads();
+
  private:
   // SimpleDownloadManager::Observer implementation.
   void OnDownloadsInitialized() override;

@@ -430,6 +430,7 @@ class DiskMountManagerImpl : public DiskMountManager,
                                                      mount_info));
     }
 
+    Disk* disk = nullptr;
     if ((entry.error_code() == MOUNT_ERROR_NONE ||
          mount_info.mount_condition) &&
         mount_info.mount_type == MOUNT_TYPE_DEVICE &&
@@ -437,7 +438,7 @@ class DiskMountManagerImpl : public DiskMountManager,
         !mount_info.mount_path.empty()) {
       DiskMap::iterator iter = disks_.find(mount_info.source_path);
       if (iter != disks_.end()) {  // disk might have been removed by now?
-        Disk* disk = iter->second.get();
+        disk = iter->second.get();
         DCHECK(disk);
         // Currently the MountCompleted signal doesn't tell whether the device
         // is mounted in read-only mode or not. Instead use the mount option
@@ -465,6 +466,9 @@ class DiskMountManagerImpl : public DiskMountManager,
     // Observers may read the values of disks_. So notify them after tweaking
     // values of disks_.
     NotifyMountStatusUpdate(MOUNTING, entry.error_code(), mount_info);
+    if (disk) {
+      disk->set_is_first_mount(false);
+    }
   }
 
   // Callback for UnmountPath.

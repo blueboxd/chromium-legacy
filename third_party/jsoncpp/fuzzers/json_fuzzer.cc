@@ -5,57 +5,56 @@
 // JsonCpp fuzzing wrapper to help with automated fuzz testing.
 
 #include <stdint.h>
+#include <array>
 #include <climits>
 #include <cstdio>
+#include <iostream>
 #include <memory>
 #include "third_party/jsoncpp/source/include/json/json.h"
 
+namespace {
 // JsonCpp has a few different parsing options. The code below makes sure that
 // the most intersting variants are tested.
-enum {
-  kFeatureSetAll = 0,
-  kFeatureSetDefault = 1,
-  kFeatureSetStrict = 2,
-  kFeatureSetLast
-};
-const int kSizeOfFeatureSet = kFeatureSetLast;
-
-namespace {
-struct Common {
-  Json::Features features[kSizeOfFeatureSet];
-};
+enum { kBuilderConfigDefault = 0, kBuilderConfigStrict, kNumBuilderConfig };
 }  // namespace
 
-static Common* Initialize() {
-  static Common common;
-  common.features[kFeatureSetAll].allowComments_ = true;
-  common.features[kFeatureSetAll].strictRoot_ = false;
+static const std::array<Json::CharReaderBuilder, kNumBuilderConfig>&
+Initialize() {
+  static std::array<Json::CharReaderBuilder, kNumBuilderConfig> builders{};
 
-  common.features[kFeatureSetStrict] = Json::Features::strictMode();
+  Json::CharReaderBuilder::strictMode(
+      &builders[kBuilderConfigStrict].settings_);
 
-  return &common;
+  return builders;
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  static Common* common = Initialize();
+  const auto& reader_builders = Initialize();
 
-  for (int i = 0; i < kSizeOfFeatureSet; ++i) {
+  for (const auto& reader_builder : reader_builders) {
     // Parse Json.
-    Json::Reader reader(common->features[i]);
+    auto reader =
+        std::unique_ptr<Json::CharReader>(reader_builder.newCharReader());
     Json::Value root;
-    bool res = reader.parse(reinterpret_cast<const char*>(data),
-                            reinterpret_cast<const char*>(data + size), root,
-                            /*collectComments=*/true);
+    bool res = reader->parse(reinterpret_cast<const char*>(data),
+                             reinterpret_cast<const char*>(data + size), &root,
+                             nullptr /* errs */);
     if (!res) {
       continue;
     }
 
     // Write and re-read json.
-    Json::FastWriter writer;
-    std::string output_json = writer.write(root);
+    const Json::StreamWriterBuilder writer_builder;
+    auto writer =
+        std::unique_ptr<Json::StreamWriter>(writer_builder.newStreamWriter());
+    std::stringstream out_stream;
+    writer->write(root, &out_stream);
+    std::string output_json = out_stream.str();
 
     Json::Value root_again;
-    res = reader.parse(output_json, root_again, /*collectComments=*/true);
+    res = reader->parse(output_json.data(),
+                        output_json.data() + output_json.length(), &root_again,
+                        nullptr /* errs */);
     if (!res) {
       continue;
     }

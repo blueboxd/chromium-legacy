@@ -90,7 +90,6 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
-#include "remoting/host/xmpp_heartbeat_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -106,7 +105,6 @@
 #include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/remoting_log_to_server.h"
-#include "remoting/signaling/xmpp_log_to_server.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -193,9 +191,6 @@ const char kWindowIdSwitchName[] = "window-id";
 
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
-
-// Command line switch used to disable signaling through FTL services.
-const char kDisableFtlSignalingSwitchName[] = "disable-ftl-signaling";
 
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
@@ -336,7 +331,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void StartHostIfReady();
   void StartHost();
 
-  // Error handler for XmppHeartbeatSender.
+  // Error handler for HeartbeatSender.
   void OnHeartbeatSuccessful();
   void OnUnknownHostIdError();
 
@@ -430,15 +425,12 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Must outlive |heartbeat_sender_| and |host_status_logger_|.
   std::unique_ptr<LogToServer> log_to_server_;
 
-  bool enable_ftl_signaling_ = false;
-
-  // Signal strategies must outlive |signaling_connector_|, |gcd_subscriber_|,
-  // and |xmpp_heartbeat_sender_|.
+  // Signal strategies must outlive |signaling_connector_| and
+  // |gcd_subscriber_|.
   std::unique_ptr<SignalStrategy> signal_strategy_;
 
   std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
-  std::unique_ptr<XmppHeartbeatSender> xmpp_heartbeat_sender_;
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
   std::unique_ptr<FtlHostChangeNotificationListener>
       ftl_host_change_notification_listener_;
@@ -607,7 +599,6 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     }
   }
 
-  enable_ftl_signaling_ = !cmd_line->HasSwitch(kDisableFtlSignalingSwitchName);
   return true;
 }
 
@@ -1461,7 +1452,6 @@ void HostProcess::InitializeSignaling() {
   DCHECK(!gcd_state_updater_);
   DCHECK(!gcd_subscriber_);
 #endif  // defined(USE_GCD)
-  DCHECK(!xmpp_heartbeat_sender_);
   DCHECK(!heartbeat_sender_);
 
   // Create SignalStrategy.
@@ -1489,43 +1479,31 @@ void HostProcess::InitializeSignaling() {
       oauth_token_getter_.get(),
       base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
 
-  if (enable_ftl_signaling_) {
-    log_to_server_ = std::make_unique<RemotingLogToServer>(
-        ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
-                                   oauth_token_getter_->GetWeakPtr()));
-    auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
-        std::make_unique<OAuthTokenGetterProxy>(
-            oauth_token_getter_->GetWeakPtr()),
-        std::make_unique<FtlHostDeviceIdProvider>(host_id_));
-    ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
-        ftl_signal_strategy.get(),
-        base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
-    ftl_signaling_connector_->Start();
-    auto muxing_signal_strategy = std::make_unique<MuxingSignalStrategy>(
-        std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
-    heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-        base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
-                       base::Unretained(this)),
-        base::BindOnce(&HostProcess::OnUnknownHostIdError,
-                       base::Unretained(this)),
-        base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
-        host_id_, muxing_signal_strategy.get(), oauth_token_getter_.get(),
-        log_to_server_.get());
-    ftl_host_change_notification_listener_ =
-        std::make_unique<FtlHostChangeNotificationListener>(
-            this, muxing_signal_strategy->ftl_signal_strategy());
-    signal_strategy_ = std::move(muxing_signal_strategy);
-  } else {
-    xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
-        base::BindRepeating(&HostProcess::OnHeartbeatSuccessful,
-                            base::Unretained(this)),
-        base::BindRepeating(&HostProcess::OnUnknownHostIdError,
-                            base::Unretained(this)),
-        host_id_, unowned_xmpp_signal_strategy, key_pair_, directory_bot_jid_));
-    signal_strategy_ = std::move(xmpp_signal_strategy);
-    log_to_server_ = std::make_unique<XmppLogToServer>(
-        ServerLogEntry::ME2ME, signal_strategy_.get(), directory_bot_jid_);
-  }
+  log_to_server_ = std::make_unique<RemotingLogToServer>(
+      ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
+                                 oauth_token_getter_->GetWeakPtr()));
+  auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
+      std::make_unique<OAuthTokenGetterProxy>(
+          oauth_token_getter_->GetWeakPtr()),
+      std::make_unique<FtlHostDeviceIdProvider>(host_id_));
+  ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
+      ftl_signal_strategy.get(),
+      base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
+  ftl_signaling_connector_->Start();
+  auto muxing_signal_strategy = std::make_unique<MuxingSignalStrategy>(
+      std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+  heartbeat_sender_ = std::make_unique<HeartbeatSender>(
+      base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
+                     base::Unretained(this)),
+      base::BindOnce(&HostProcess::OnUnknownHostIdError,
+                     base::Unretained(this)),
+      base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
+      host_id_, muxing_signal_strategy.get(), oauth_token_getter_.get(),
+      log_to_server_.get());
+  ftl_host_change_notification_listener_ =
+      std::make_unique<FtlHostChangeNotificationListener>(
+          this, muxing_signal_strategy->ftl_signal_strategy());
+  signal_strategy_ = std::move(muxing_signal_strategy);
 
   // XMPP based HostChangeNotificationListener is still needed by double
   // signaling hosts so that they can handle host deletion triggered by an old
@@ -1734,18 +1712,10 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
       InitializeSignaling();
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
-    if (xmpp_heartbeat_sender_) {
-      xmpp_heartbeat_sender_->SetHostOfflineReason(
-          host_offline_reason,
-          base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
-          base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
-    }
-    if (heartbeat_sender_) {
-      heartbeat_sender_->SetHostOfflineReason(
-          host_offline_reason,
-          base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
-          base::BindOnce(&HostProcess::OnHostOfflineReasonAck, this));
-    }
+    heartbeat_sender_->SetHostOfflineReason(
+        host_offline_reason,
+        base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
+        base::BindOnce(&HostProcess::OnHostOfflineReasonAck, this));
 #if defined(USE_GCD)
     if (gcd_state_updater_) {
       gcd_state_updater_->SetHostOfflineReason(
@@ -1769,7 +1739,6 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
 
   HOST_LOG << "SendHostOfflineReason " << (success ? "succeeded." : "failed.");
   log_to_server_.reset();
-  xmpp_heartbeat_sender_.reset();
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();

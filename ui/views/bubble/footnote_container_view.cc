@@ -54,10 +54,7 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, margins, 0));
   SetCornerRadius(corner_radius);
-  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
-                                   GetNativeTheme()->SystemDarkModeEnabled()
-                                       ? gfx::kGoogleGrey900
-                                       : gfx::kGoogleGrey200));
+  ResetBorder();
   auto* child_view_ptr = AddChildView(std::move(child_view));
   SetVisible(child_view_ptr->GetVisible());
 }
@@ -65,15 +62,33 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
 FootnoteContainerView::~FootnoteContainerView() = default;
 
 void FootnoteContainerView::SetCornerRadius(float corner_radius) {
-  SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_BubbleFooterBackground);
-  SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
-                                                            corner_radius));
+  corner_radius_ = corner_radius;
+  ResetBackground();
+}
+
+void FootnoteContainerView::OnThemeChanged() {
+  View::OnThemeChanged();
+  ResetBorder();
+  ResetBackground();
 }
 
 void FootnoteContainerView::ChildVisibilityChanged(View* child) {
   DCHECK_EQ(1u, children().size());
   SetVisible(child->GetVisible());
+}
+
+void FootnoteContainerView::ResetBackground() {
+  SkColor background_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleFooterBackground);
+  SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
+                                                            corner_radius_));
+}
+
+void FootnoteContainerView::ResetBorder() {
+  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
+                                   GetNativeTheme()->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleGrey900
+                                       : gfx::kGoogleGrey200));
 }
 
 BEGIN_METADATA(FootnoteContainerView)

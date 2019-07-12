@@ -89,8 +89,8 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     auto run_content_read_step = [](ContentVerifyJob* verify_job,
                                     std::string* resource_contents) {
       // Simulate serving |resource_contents| from |resource_path|.
-      verify_job->BytesRead(resource_contents->size(),
-                            base::data(*resource_contents));
+      verify_job->BytesRead(base::data(*resource_contents),
+                            resource_contents->size(), base::File::FILE_OK);
       verify_job->DoneReading();
     };
 

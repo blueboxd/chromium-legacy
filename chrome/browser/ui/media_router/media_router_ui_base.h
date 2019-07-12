@@ -232,11 +232,9 @@ class MediaRouterUIBase
 
  private:
   friend class MediaRouterUiForTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-                           UIMediaRoutesObserverAssignsCurrentCastModes);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-                           UIMediaRoutesObserverSkipsUnavailableCastModes);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest,
+                           RouteCreationLocalFileModeInTab);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest,
                            UpdateSinksWhenDialogMovesToAnotherDisplay);
 
   class WebContentsFullscreenOnLoadedObserver;

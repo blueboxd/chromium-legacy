@@ -183,11 +183,16 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
 void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
+  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    // TODO(crbug.com/877898): Port all other managers to support BMO.
+    return;
+  }
+
   pending_app_manager_->SetSubsystems(registrar_.get(),
                                       install_finalizer_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(pending_app_manager_.get());
-  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
 }
 
 void WebAppProvider::OnRegistryReady() {

@@ -188,13 +188,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
             IDS_NEW_TAB_MOST_VISITED);
 
   if (is_google) {
-    if (base::FeatureList::IsEnabled(features::kFakeboxShortHintTextOnNtp)) {
-      AddString(translated_strings.get(), "searchboxPlaceholder",
-                IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_SHORT);
-    } else {
-      AddString(translated_strings.get(), "searchboxPlaceholder",
-                IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
-    }
+    AddString(translated_strings.get(), "searchboxPlaceholder",
+              IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
 
     // Custom Backgrounds
     AddString(translated_strings.get(), "customizeButtonLabel",
@@ -615,18 +610,6 @@ class LocalNtpSource::SearchConfigurationProvider
       config_data.SetBoolean(
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
-      config_data.SetBoolean("removeFakebox", base::FeatureList::IsEnabled(
-                                                  features::kRemoveNtpFakebox));
-      config_data.SetBoolean("alternateFakebox",
-                             features::IsUseAlternateFakeboxOnNtpEnabled());
-      config_data.SetBoolean("alternateFakeboxRect",
-                             base::FeatureList::IsEnabled(
-                                 features::kUseAlternateFakeboxRectOnNtp));
-      config_data.SetBoolean("fakeboxSearchIcon",
-                             features::IsFakeboxSearchIconOnNtpEnabled());
-      config_data.SetBoolean(
-          "fakeboxSearchIconColor",
-          base::FeatureList::IsEnabled(features::kFakeboxSearchIconColorOnNtp));
       config_data.SetBoolean(
           "hideShortcuts",
           base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));

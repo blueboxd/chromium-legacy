@@ -16,6 +16,22 @@ ApplicationCacheHostForSharedWorker::ApplicationCacheHostForSharedWorker(
 ApplicationCacheHostForSharedWorker::~ApplicationCacheHostForSharedWorker() =
     default;
 
+bool ApplicationCacheHostForSharedWorker::Update() {
+  // ApplicationCacheHost::Update() is called from JavaScript's
+  // applicationCache.update() that is not exposed to workers.
+  // https://html.spec.whatwg.org/C/#application-cache-api
+  NOTREACHED();
+  return false;
+}
+
+bool ApplicationCacheHostForSharedWorker::SwapCache() {
+  // ApplicationCacheHost::SwapCache() is called from JavaScript's
+  // applicationCache.swapCache() that is not exposed to workers.
+  // https://html.spec.whatwg.org/C/#application-cache-api
+  NOTREACHED();
+  return false;
+}
+
 void ApplicationCacheHostForSharedWorker::LogMessage(
     mojom::blink::ConsoleMessageLevel log_level,
     const String& message) {}

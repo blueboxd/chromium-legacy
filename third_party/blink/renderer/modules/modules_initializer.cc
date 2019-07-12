@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/local_file_system_client.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
+#include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
@@ -157,10 +158,12 @@ void ModulesInitializer::Initialize() {
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
-  // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+    // Only main frame has ImageDownloader service.
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &ImageDownloaderImpl::CreateMojoService, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));

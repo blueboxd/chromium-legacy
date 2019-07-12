@@ -7,7 +7,7 @@ c_args = ['-m32', '-fuse-ld=lld',]
 
 
 [host_machine]
-system = 'win'
+system = 'windows'
 cpu_family = 'x86'
 cpu = 'i686'
 endian = 'little'

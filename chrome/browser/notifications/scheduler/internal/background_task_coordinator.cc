@@ -84,8 +84,15 @@ class BackgroundTaskCoordinatorHelper {
           MaybeUpdateBackgroundTaskTime(next_morning);
           break;
         case SchedulerTaskTime::kUnknown:
+          auto now = clock_->Now();
+          auto this_morning = ThisMorning();
+          if (now <= this_morning)
+            MaybeUpdateBackgroundTaskTime(this_morning);
+          else if (now <= this_evening)
+            MaybeUpdateBackgroundTaskTime(this_evening);
+          else
+            MaybeUpdateBackgroundTaskTime(next_morning);
           // TODO(xingliu): Support arbitrary time background task.
-          NOTIMPLEMENTED();
           break;
       }
     }
@@ -101,6 +108,15 @@ class BackgroundTaskCoordinatorHelper {
                                1 /*day_delta*/, &next_morning);
     DCHECK(success);
     return next_morning;
+  }
+
+  // Returns the morning background task time today.
+  base::Time ThisMorning() {
+    base::Time this_morning;
+    bool success = ToLocalHour(config_->morning_task_hour, clock_->Now(),
+                               0 /*day_delta*/, &this_morning);
+    DCHECK(success);
+    return this_morning;
   }
 
   // Returns the evening background task time on today.

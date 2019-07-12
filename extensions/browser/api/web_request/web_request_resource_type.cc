@@ -44,8 +44,10 @@ static_assert(kResourceTypesLength ==
 WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
   switch (type) {
     case content::ResourceType::kMainFrame:
+    case content::ResourceType::kNavigationPreloadMainFrame:
       return WebRequestResourceType::MAIN_FRAME;
     case content::ResourceType::kSubFrame:
+    case content::ResourceType::kNavigationPreloadSubFrame:
       return WebRequestResourceType::SUB_FRAME;
     case content::ResourceType::kStylesheet:
       return WebRequestResourceType::STYLESHEET;
@@ -78,8 +80,6 @@ WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
       return WebRequestResourceType::CSP_REPORT;
     case content::ResourceType::kPluginResource:
       return WebRequestResourceType::OBJECT;
-    case content::ResourceType::kNavigationPreload:
-      return WebRequestResourceType::OTHER;
   }
   NOTREACHED();
   return WebRequestResourceType::OTHER;

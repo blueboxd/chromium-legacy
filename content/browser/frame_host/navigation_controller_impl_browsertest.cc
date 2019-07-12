@@ -99,6 +99,24 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kExposeInternalsForTesting);
+  }
+
+  // TODO(bokan): There's one test whose result depends on whether the
+  // FractionalScrollOffsets feature is enabled in Blink's
+  // RuntimeEnabledFeatures. Since there's just one, we can determine the
+  // status of the feature using script, rather than plumbing this state across
+  // the browser/renderer boundary. This can be removed once the feature is
+  // shipped to stable and the flag removed. https://crbug.com/414283.
+  bool IsFractionalScrollOffsetsEnabled() {
+    std::string script =
+        "internals.runtimeFlags.fractionalScrollOffsetsEnabled";
+    return EvalJs(shell(), script).ExtractBool();
+  }
 };
 
 // Base class for tests that need to supply modifications to EmbeddedTestServer
@@ -1521,9 +1539,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
 
   double window_scroll_y = EvalJs(shell(), "window.scrollY").ExtractDouble();
 
+  // TODO(bokan): The floor hack below required when ZoomForDSFEnabled can go
+  // away once FractionalScrolLOffsets ships. The reason it's required is that,
+  // at certain device scale factors, the given CSS pixel scroll value may land
+  // between physical pixels. Without the feature Blink will truncate to the
+  // nearest physical pixel so the expectation must account for that. When the
+  // feature is enabled, Blink stores the fractional offset so the truncation
+  // is unnecessary. https://crbug.com/414283.
+  bool fractional_scroll_offsets_enabled = IsFractionalScrollOffsetsEnabled();
+
   // The 'center-element' y-position is 2000px. 2000px is an arbitrary value.
   double expected_window_scroll_y = 2000;
-  if (IsUseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled() && !fractional_scroll_offsets_enabled) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()
@@ -1556,8 +1583,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   double window_scroll_y = EvalJs(shell(), "window.scrollY").ExtractDouble();
 
+  // TODO(bokan): The floor hack below required when ZoomForDSFEnabled can go
+  // away once FractionalScrolLOffsets ships. The reason it's required is that,
+  // at certain device scale factors, the given CSS pixel scroll value may land
+  // between physical pixels. Without the feature Blink will truncate to the
+  // nearest physical pixel so the expectation must account for that. When the
+  // feature is enabled, Blink stores the fractional offset so the truncation
+  // is unnecessary. https://crbug.com/414283.
+  bool fractional_scroll_offsets_enabled = IsFractionalScrollOffsetsEnabled();
+
   double expected_window_scroll_y = 2100;
-  if (IsUseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled() && !fractional_scroll_offsets_enabled) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()

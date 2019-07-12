@@ -23,9 +23,15 @@ class FootnoteContainerView : public View {
   void SetCornerRadius(float corner_radius);
 
   // View:
+  void OnThemeChanged() override;
   void ChildVisibilityChanged(View* child) override;
 
  private:
+  void ResetBackground();
+  void ResetBorder();
+
+  float corner_radius_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(FootnoteContainerView);
 };
 

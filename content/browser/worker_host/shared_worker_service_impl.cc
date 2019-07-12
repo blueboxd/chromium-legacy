@@ -193,6 +193,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(!IsShuttingDown(RenderProcessHost::FromID(process_id)));
   DCHECK(!blob_url_loader_factory || instance->url().SchemeIsBlob());
 
@@ -205,16 +206,11 @@ void SharedWorkerServiceImpl::CreateWorker(
   auto weak_host = host->AsWeakPtr();
   worker_hosts_.insert(std::move(host));
 
-  // NetworkService (PlzWorker):
-  // An appcache interceptor is available only when the network service is
-  // enabled.
-  AppCacheNavigationHandleCore* appcache_handle_core = nullptr;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
-        appcache_service_.get(), process_id);
-    appcache_handle_core = appcache_handle->core();
-    weak_host->SetAppCacheHandle(std::move(appcache_handle));
-  }
+  auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
+      appcache_service_.get(), process_id);
+  AppCacheNavigationHandleCore* appcache_handle_core = appcache_handle_core =
+      appcache_handle->core();
+  weak_host->SetAppCacheHandle(std::move(appcache_handle));
 
   // Fetch classic shared worker script with "same-origin" credentials mode.
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
@@ -244,7 +240,6 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     const blink::MessagePortChannel& message_port,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -254,11 +249,9 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // NetworkService (PlzWorker):
   // If the script fetcher fails to load shared worker's main script, notify the
   // client of the failure and abort shared worker startup.
   if (!success) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     client->OnScriptLoadFailed();
     return;
   }
@@ -266,7 +259,6 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
   StartWorker(std::move(instance), std::move(host), std::move(client),
               process_id, frame_id, message_port,
               std::move(service_worker_provider_info),
-              std::move(main_script_loader_factory),
               std::move(subresource_loader_factories),
               std::move(main_script_load_params), std::move(controller),
               std::move(controller_service_worker_object_host));
@@ -281,7 +273,6 @@ void SharedWorkerServiceImpl::StartWorker(
     const blink::MessagePortChannel& message_port,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -310,7 +301,6 @@ void SharedWorkerServiceImpl::StartWorker(
   BindInterface(process_host, &factory);
 
   host->Start(std::move(factory), std::move(service_worker_provider_info),
-              std::move(main_script_loader_factory),
               std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),
               std::move(controller_service_worker_object_host));

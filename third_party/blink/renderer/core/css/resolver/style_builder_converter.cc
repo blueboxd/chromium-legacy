@@ -1082,9 +1082,10 @@ TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
     const CSSValue& value) {
   const auto& primitive_value = To<CSSPrimitiveValue>(value);
   if (primitive_value.IsNumber())
-    return TabSize(primitive_value.GetIntValue());
+    return TabSize(primitive_value.GetFloatValue(), TabSizeValueType::kSpace);
   return TabSize(
-      primitive_value.ComputeLength<float>(state.CssToLengthConversionData()));
+      primitive_value.ComputeLength<float>(state.CssToLengthConversionData()),
+      TabSizeValueType::kLength);
 }
 
 static CSSToLengthConversionData LineHeightToLengthConversionData(

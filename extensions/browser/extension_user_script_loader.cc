@@ -71,7 +71,8 @@ void VerifyContent(const VerifyContentInfo& info) {
   scoped_refptr<ContentVerifyJob> job(info.verifier->CreateAndStartJobFor(
       info.extension_id, info.extension_root, info.relative_path));
   if (job.get()) {
-    job->BytesRead(info.content.size(), info.content.data());
+    job->BytesRead(info.content.data(), info.content.size(),
+                   base::File::FILE_OK);
     job->DoneReading();
   }
 }

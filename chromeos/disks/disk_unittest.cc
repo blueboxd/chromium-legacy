@@ -141,6 +141,7 @@ TEST(DiskTest, ConstructFromDiskInfo) {
   EXPECT_FALSE(disk.is_mounted());
   EXPECT_FALSE(disk.IsStatefulPartition());
   EXPECT_FALSE(disk.is_auto_mountable());
+  EXPECT_TRUE(disk.is_first_mount());
 
   // Drives are hidden by default.
   EXPECT_TRUE(disk.is_hidden());

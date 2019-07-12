@@ -62,46 +62,18 @@ template("create_native_executable_dist") {
 
   _libraries_list = "${target_gen_dir}/${target_name}_library_dependencies.list"
 
-  _shared_library_list_file = "$target_gen_dir/${target_name}.native_libs"
-  _shared_library_list_target_name = "${target_name}__shared_library_list"
-  generated_file(_shared_library_list_target_name) {
+  generated_file("${target_name}__library_list") {
     forward_variables_from(invoker, [ "deps" ])
     metadata = {
       shared_libraries = _sanitizer_runtimes
     }
+    output_conversion = "json"
     outputs = [
-      _shared_library_list_file,
+      _libraries_list,
     ]
     data_keys = [ "shared_libraries" ]
     walk_keys = [ "shared_libraries_barrier" ]
     rebase = root_build_dir
-  }
-
-  _find_deps_target_name = "${target_name}__find_library_dependencies"
-
-  # TODO(agrieve): Extract dependent libs from GN rather than readelf.
-  action_with_pydeps(_find_deps_target_name) {
-    deps = invoker.deps + [ ":$_shared_library_list_target_name" ]
-    script = "//build/android/gyp/write_ordered_libraries.py"
-    depfile = "$target_gen_dir/$target_name.d"
-    inputs = [
-      invoker.binary,
-      _shared_library_list_file,
-      android_readelf,
-    ]
-    outputs = [
-      _libraries_list,
-    ]
-    args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--runtime-deps",
-      rebase_path(_shared_library_list_file, root_build_dir),
-      "--output",
-      rebase_path(_libraries_list, root_build_dir),
-      "--readelf",
-      rebase_path(android_readelf, root_build_dir),
-    ]
   }
 
   copy_ex(target_name) {
@@ -119,7 +91,7 @@ template("create_native_executable_dist") {
     _rebased_binaries_list = rebase_path([ invoker.binary ], root_build_dir)
     args = [
       "--clear",
-      "--files=@FileArg($_rebased_libraries_list:lib_paths)",
+      "--files=@FileArg($_rebased_libraries_list)",
       "--files=$_rebased_binaries_list",
     ]
     if (defined(invoker.extra_files)) {
@@ -140,7 +112,7 @@ template("create_native_executable_dist") {
     ]
 
     deps = [
-      ":$_find_deps_target_name",
+      ":${target_name}__library_list",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -729,6 +701,87 @@ if (enable_java_templates) {
       }
       if (defined(invoker.variables)) {
         args += [ "--variables=${invoker.variables}" ]
+      }
+    }
+  }
+
+  # Writes native libraries to a NativeLibaries.java file.
+  #
+  # This target will create a single .srcjar. Adding this target to an
+  # android_library target's srcjar_deps will make the generated java files be
+  # included in that library's final outputs.
+  #
+  # Variables:
+  #   native_libraries_list_file: (Optional) Path to file listing all native
+  #     libraries to write.
+  #   version_number: (Optional) String of expected version of 'main' native
+  #     library.
+  #   enable_chromium_linker: (Optional) Whether to use the Chromium linker.
+  #   load_library_from_apk: (Optional) Whether libraries should be loaded from
+  #     the APK without uncompressing.
+  #   enable_chromium_linker_tests: (Optional) Whether to run tests.
+  #   dont_load_shared_libraries: (Optional) List of native libraries to exclude
+  #     from output.
+  template("write_native_libraries_java") {
+    _native_libraries_file = "$target_gen_dir/$target_name.srcjar"
+    if (current_cpu == "arm" || current_cpu == "arm64") {
+      _cpu_family = "CPU_FAMILY_ARM"
+    } else if (current_cpu == "x86" || current_cpu == "x64") {
+      _cpu_family = "CPU_FAMILY_X86"
+    } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+      _cpu_family = "CPU_FAMILY_MIPS"
+    } else {
+      assert(false, "Unsupported CPU family")
+    }
+
+    action_with_pydeps(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
+      script = "//build/android/gyp/write_native_libraries_java.py"
+      outputs = [
+        _native_libraries_file,
+      ]
+      args = [
+        "--output",
+        rebase_path(_native_libraries_file, root_build_dir),
+        "--cpu-family",
+        _cpu_family,
+      ]
+      if (defined(invoker.native_libraries_list_file)) {
+        args += [
+          "--native-libraries-list",
+          rebase_path(invoker.native_libraries_list_file, root_build_dir),
+        ]
+        inputs = [
+          invoker.native_libraries_list_file,
+        ]
+      }
+      if (defined(invoker.version_number)) {
+        args += [
+          "--version-number",
+          invoker.version_number,
+        ]
+      }
+      if (defined(invoker.enable_chromium_linker) &&
+          invoker.enable_chromium_linker) {
+        args += [ "--enable-chromium-linker" ]
+      }
+      if (defined(invoker.load_library_from_apk) &&
+          invoker.load_library_from_apk) {
+        args += [ "--load-library-from-apk" ]
+      }
+      if (defined(invoker.enable_chromium_linker_tests) &&
+          invoker.enable_chromium_linker_tests) {
+        args += [ "--enable-chromium-linker-tests" ]
+      }
+
+      # TODO(tiborg): Remove once all usages are removed.
+      if (defined(invoker.dont_load_shared_libraries)) {
+        args += [ "--exclude-native-libraries=" +
+                  invoker.dont_load_shared_libraries ]
       }
     }
   }
@@ -2269,18 +2322,6 @@ if (enable_java_templates) {
       }
     }
 
-    if (_shared_libraries_is_valid ||
-        _secondary_abi_shared_libraries_is_valid) {
-      _native_lib_version_rule = ""
-      if (defined(invoker.native_lib_version_rule)) {
-        _native_lib_version_rule = invoker.native_lib_version_rule
-      }
-      _native_lib_version_arg = "\"\""
-      if (defined(invoker.native_lib_version_arg)) {
-        _native_lib_version_arg = invoker.native_lib_version_arg
-      }
-    }
-
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     assert(_rebased_build_config != "")  # Mark as used.
 
@@ -2599,88 +2640,31 @@ if (enable_java_templates) {
     }
 
     if (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) {
-      _enable_chromium_linker_tests = false
-      if (defined(invoker.enable_chromium_linker_tests)) {
-        _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
-      }
-      _ordered_libraries_json =
-          "$target_gen_dir/$target_name.ordered_libraries.json"
-      _rebased_ordered_libraries_json =
-          rebase_path(_ordered_libraries_json, root_build_dir)
-      _ordered_libraries_target = "${_template_name}__write_ordered_libraries"
-
-      # TODO(agrieve): Make GN write runtime deps in dependency order so as to
-      # not need this manual sorting step.
-      action_with_pydeps(_ordered_libraries_target) {
-        script = "//build/android/gyp/write_ordered_libraries.py"
+      write_native_libraries_java("${_template_name}__native_libraries") {
+        forward_variables_from(invoker,
+                               [
+                                 "dont_load_shared_libraries",
+                                 "enable_chromium_linker_tests",
+                               ])
         deps = [
-          ":$_build_config_target",
           ":${_template_name}__secondary_abi_shared_library_list",
           ":${_template_name}__shared_library_list",
         ]
+        if (defined(invoker.native_lib_version_rule)) {
+          deps += [ invoker.native_lib_version_rule ]
+        }
+        if (defined(invoker.native_lib_version_arg)) {
+          version_number = invoker.native_lib_version_arg
+        }
         if (_native_libs_deps != []) {
-          _deps_file_to_use = _shared_library_list_file
+          native_libraries_list_file = _shared_library_list_file
         } else {
-          _deps_file_to_use = _secondary_abi_shared_library_list_file
+          native_libraries_list_file = _secondary_abi_shared_library_list_file
         }
-        inputs = [
-          _deps_file_to_use,
-        ]
-        outputs = [
-          _ordered_libraries_json,
-        ]
-        _rebased_android_readelf = rebase_path(android_readelf, root_build_dir)
-        args = [
-          "--readelf=$_rebased_android_readelf",
-          "--output=$_rebased_ordered_libraries_json",
-          "--runtime-deps=" + rebase_path(_deps_file_to_use, root_build_dir),
-        ]
-        if (defined(invoker.dont_load_shared_libraries)) {
-          args += [ "--exclude-shared-libraries=" +
-                    invoker.dont_load_shared_libraries ]
-        }
+        enable_chromium_linker = _use_chromium_linker
+        load_library_from_apk = _load_library_from_apk
       }
-
-      java_cpp_template("${_template_name}__native_libraries_srcjar") {
-        package_path = "org/chromium/base/library_loader"
-        sources = [
-          "//base/android/java/templates/NativeLibraries.template",
-        ]
-        inputs = [
-          _ordered_libraries_json,
-        ]
-        deps = [
-          ":${_ordered_libraries_target}",
-        ]
-        if (_native_lib_version_rule != "") {
-          deps += [ _native_lib_version_rule ]
-        }
-
-        defines = [
-          "NATIVE_LIBRARIES_LIST=" +
-              "@FileArg($_rebased_ordered_libraries_json:java_libraries_list)",
-          "NATIVE_LIBRARIES_VERSION_NUMBER=$_native_lib_version_arg",
-        ]
-        if (current_cpu == "arm" || current_cpu == "arm64") {
-          defines += [ "ANDROID_APP_CPU_FAMILY_ARM" ]
-        } else if (current_cpu == "x86" || current_cpu == "x64") {
-          defines += [ "ANDROID_APP_CPU_FAMILY_X86" ]
-        } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
-          defines += [ "ANDROID_APP_CPU_FAMILY_MIPS" ]
-        } else {
-          assert(false, "Unsupported CPU family")
-        }
-        if (_use_chromium_linker) {
-          defines += [ "ENABLE_CHROMIUM_LINKER" ]
-        }
-        if (_load_library_from_apk) {
-          defines += [ "ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE" ]
-        }
-        if (_enable_chromium_linker_tests) {
-          defines += [ "ENABLE_CHROMIUM_LINKER_TESTS" ]
-        }
-      }
-      _srcjar_deps += [ ":${_template_name}__native_libraries_srcjar" ]
+      _srcjar_deps += [ ":${_template_name}__native_libraries" ]
     }
 
     _extra_native_libs = []

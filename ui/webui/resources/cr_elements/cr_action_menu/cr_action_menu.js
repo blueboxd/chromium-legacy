@@ -186,17 +186,6 @@ Polymer({
     return this.$.dialog;
   },
 
-  /**
-   * @return {!Array<!Element>}
-   * @private
-   */
-  getOptions_: function() {
-    return Array
-        .from(this.querySelectorAll(
-            '.dropdown-item:not([hidden]):not([disabled])'))
-        .map(cr.ui.FocusRow.getFocusableElement);
-  },
-
   /** @private */
   removeListeners_: function() {
     window.removeEventListener('resize', this.boundClose_);
@@ -248,19 +237,29 @@ Polymer({
    */
   onKeyDown_: function(e) {
     e.stopPropagation();
-
     if (e.key == 'Tab' || e.key == 'Escape') {
       this.close();
       e.preventDefault();
       return;
     }
 
-    let selectNext = e.key == 'ArrowDown';
+    if (e.key != 'Enter' && e.key != 'ArrowUp' && e.key != 'ArrowDown') {
+      return;
+    }
+
+    const query = '.dropdown-item:not([disabled]):not([hidden])';
+    const options = Array.from(this.querySelectorAll(query));
+    if (options.length == 0) {
+      return;
+    }
+
+    const focused = getDeepActiveElement();
+    const index = options.findIndex(
+        option => cr.ui.FocusRow.getFocusableElement(option) == focused);
+
     if (e.key == 'Enter') {
       // If a menu item has focus, don't change focus or close menu on 'Enter'.
-      const focusedIndex =
-          this.getOptions_().indexOf(assert(getDeepActiveElement()));
-      if (focusedIndex != -1) {
+      if (index != -1) {
         return;
       }
 
@@ -269,26 +268,18 @@ Polymer({
         e.preventDefault();
         return;
       }
-      selectNext = true;
-    }
-
-    if (e.key !== 'ArrowUp' && !selectNext) {
-      return;
-    }
-
-    const nextOption = this.getNextOption_(selectNext ? 1 : -1);
-    if (nextOption) {
-      if (!this.hasMousemoveListener_) {
-        this.hasMousemoveListener_ = true;
-        listenOnce(this, 'mousemove', e => {
-          this.onMouseover_(e);
-          this.hasMousemoveListener_ = false;
-        });
-      }
-      nextOption.focus();
     }
 
     e.preventDefault();
+    this.updateFocus_(options, index, e.key != 'ArrowUp');
+
+    if (!this.hasMousemoveListener_) {
+      this.hasMousemoveListener_ = true;
+      this.addEventListener('mousemove', e => {
+        this.onMouseover_(e);
+        this.hasMousemoveListener_ = false;
+      }, {once: true});
+    }
   },
 
   /**
@@ -296,49 +287,28 @@ Polymer({
    * @private
    */
   onMouseover_: function(e) {
-    let i = 0;
-    let target;
-    do {
-      target = e.path[i++];
-      if (target.classList && target.classList.contains('dropdown-item') &&
-          !target.disabled) {
-        target.focus();
-        return;
-      }
-    } while (this != target);
-
-    // The user moved the mouse off the options. Reset focus to the dialog.
-    this.$.dialog.focus();
+    const query = '.dropdown-item:not([disabled])';
+    const item = e.composedPath().find(el => el.matches && el.matches(query));
+    (item || this.$.dialog).focus();
   },
 
   /**
-   * @param {number} step -1 for getting previous option (up), 1 for getting
-   *     next option (down).
-   * @return {?Element} The next focusable option, taking into account
-   *     disabled/hidden attributes, or null if no focusable option exists.
+   * @param {!Array<!HTMLElement>} options
+   * @param {number} focusedIndex
+   * @param {boolean} next
    * @private
    */
-  getNextOption_: function(step) {
-    // Using a counter to ensure no infinite loop occurs if all elements are
-    // hidden/disabled.
-    let counter = 0;
-    let nextOption = null;
-    const options = this.getOptions_();
+  updateFocus_: function(options, focusedIndex, next) {
     const numOptions = options.length;
-    let focusedIndex = options.indexOf(assert(getDeepActiveElement()));
-
-    // Handle case where nothing is focused and up is pressed.
-    if (focusedIndex === -1 && step === -1) {
-      focusedIndex = 0;
+    assert(numOptions > 0);
+    let index;
+    if (focusedIndex == -1) {
+      index = next ? 0 : numOptions - 1;
+    } else {
+      const delta = next ? 1 : -1;
+      index = (numOptions + focusedIndex + delta) % numOptions;
     }
-
-    do {
-      focusedIndex = (numOptions + focusedIndex + step) % numOptions;
-      nextOption = options[focusedIndex];
-      counter++;
-    } while (!nextOption && counter < numOptions);
-
-    return nextOption;
+    options[index].focus();
   },
 
   close: function() {

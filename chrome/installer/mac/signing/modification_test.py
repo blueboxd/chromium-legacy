@@ -51,6 +51,34 @@ class TestModification(unittest.TestCase):
         self.paths = model.Paths('$I', '$O', '$W')
         self.config = test_config.TestConfig()
 
+    def _is_framework_unchanged(self, plistlib, mocks):
+        # Determines whether any modifications were made within the framework
+        # according to calls to plistlib.writePlist or any of the mocked calls
+        # in |mocks|. This is done by examining the calls' arguments for a
+        # substring pointing into the framework.
+
+        def _do_mock_calls_mention_framework(mock_calls):
+            for call in mock_calls:
+                for tup in call:
+                    for arg in tup:
+                        # Don't anchor this substring in a particular directory
+                        # because it may appear in any of $I, $O, or $W. Don't
+                        # anchor it with App Product.app either, because it may
+                        # be renamed (to App Product Canary.app).
+                        if 'Contents/Frameworks/Product Framework.framework' in arg:
+                            return True
+
+            return False
+
+        if _do_mock_calls_mention_framework(plistlib.writePlist.mock_calls):
+            return False
+
+        for mocked in mocks.values():
+            if _do_mock_calls_mention_framework(mocked):
+                return False
+
+        return True
+
     def test_base_distribution(self, plistlib, **kwargs):
         dist = model.Distribution()
         config = dist.to_config(self.config)
@@ -78,6 +106,8 @@ class TestModification(unittest.TestCase):
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
+        self.assertTrue(self._is_framework_unchanged(plistlib, kwargs))
+
     def test_distribution_with_brand(self, plistlib, **kwargs):
         dist = model.Distribution(branding_code='MOO')
         config = dist.to_config(self.config)
@@ -104,6 +134,8 @@ class TestModification(unittest.TestCase):
                       '$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
+
+        self.assertTrue(self._is_framework_unchanged(plistlib, kwargs))
 
     def test_distribution_with_channel(self, plistlib, **kwargs):
         dist = model.Distribution(channel='dev')
@@ -134,6 +166,8 @@ class TestModification(unittest.TestCase):
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
+        self.assertTrue(self._is_framework_unchanged(plistlib, kwargs))
+
     def test_distribution_with_product_dirname(self, plistlib, **kwargs):
         dist = model.Distribution(product_dirname='Farmland/Cows')
         config = dist.to_config(self.config)
@@ -161,6 +195,8 @@ class TestModification(unittest.TestCase):
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
+
+        self.assertTrue(self._is_framework_unchanged(plistlib, kwargs))
 
     def test_distribution_with_creator_code(self, plistlib, **kwargs):
         dist = model.Distribution(creator_code='Mooo')
@@ -292,3 +328,5 @@ class TestModification(unittest.TestCase):
             }, '$W/App Product Canary.app/Contents/Resources/test.signing.bundle_id.canary.manifest/Contents/Resources/test.signing.bundle_id.canary.manifest'
                      )
         ])
+
+        self.assertFalse(self._is_framework_unchanged(plistlib, kwargs))

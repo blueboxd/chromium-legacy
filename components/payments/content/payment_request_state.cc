@@ -22,6 +22,7 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
@@ -591,40 +592,32 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   profile_comparator()->RecordMissingFieldsOfContactProfile(
       contact_profiles().empty() ? nullptr : contact_profiles()[0]);
 
-  // TODO(crbug.com/702063): Change this code to prioritize instruments by use
-  // count and other means, and implement a way to modify this function's return
-  // value.
-  const std::vector<std::unique_ptr<PaymentInstrument>>& instruments =
-      available_instruments();
-  auto first_complete_instrument =
-      std::find_if(instruments.begin(), instruments.end(),
-                   [](const std::unique_ptr<PaymentInstrument>& instrument) {
-                     return instrument->IsCompleteForPayment() &&
-                            instrument->IsExactlyMatchingMerchantRequest();
-                   });
-  selected_instrument_ = first_complete_instrument == instruments.end()
-                             ? nullptr
-                             : first_complete_instrument->get();
+  // Sort instruments.
+  PaymentInstrument::SortInstruments(&available_instruments_);
+
+  selected_instrument_ = nullptr;
+  if (!available_instruments_.empty() &&
+      available_instruments_[0]->IsCompleteForPayment() &&
+      available_instruments_[0]->IsExactlyMatchingMerchantRequest()) {
+    selected_instrument_ = available_instruments_[0].get();
+  }
 
   // Record the missing required payment fields when no complete payment
   // info exists.
-  if (instruments.empty()) {
+  if (available_instruments_.empty()) {
     if (spec_->supports_basic_card()) {
       // All fields are missing when basic-card is requested but no card exits.
       base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
-                               autofill::CREDIT_CARD_EXPIRED |
-                                   autofill::CREDIT_CARD_NO_CARDHOLDER |
-                                   autofill::CREDIT_CARD_NO_NUMBER |
-                                   autofill::CREDIT_CARD_NO_BILLING_ADDRESS);
+                               CREDIT_CARD_EXPIRED | CREDIT_CARD_NO_CARDHOLDER |
+                                   CREDIT_CARD_NO_NUMBER |
+                                   CREDIT_CARD_NO_BILLING_ADDRESS);
     }
-  } else if (!selected_instrument_) {
-    // selected_instrument_ == false means no complete payment instrument is
-    // added to the available_instruments list. Since SW based payment
-    // instruments are always complete, selected_instrument_ == false also means
-    // all instruments added to the list are autofill based.
-    DCHECK_EQ(instruments[0]->type(), PaymentInstrument::Type::AUTOFILL);
-    // Record the missing info of the first available autofill instrument.
-    static_cast<const AutofillPaymentInstrument*>(instruments[0].get())
+  } else if (available_instruments_[0]->type() ==
+             PaymentInstrument::Type::AUTOFILL) {
+    // Record the missing fields (if any) of the most complete instrument when
+    // it's autofill based. SW based instruments are always complete.
+    static_cast<const AutofillPaymentInstrument*>(
+        available_instruments_[0].get())
         ->RecordMissingFieldsForInstrument();
   }
 

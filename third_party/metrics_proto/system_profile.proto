@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 30
+// Next tag: 31
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -130,7 +130,7 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 19
+  // Next tag: 20
   message Hardware {
     // CPU architecture. Taken from uname -m and modified in Chromium logic.
     // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
@@ -183,6 +183,18 @@ message SystemProfileProto {
     // Max DPI for any attached screen. (Windows only)
     optional float max_dpi_x = 9;
     optional float max_dpi_y = 10;
+
+    // Device form factors.
+    enum FormFactor {
+      FORM_FACTOR_UNKNOWN = 0;
+      FORM_FACTOR_DESKTOP = 1;
+      FORM_FACTOR_PHONE = 2;
+      FORM_FACTOR_TABLET = 3;
+      FORM_FACTOR_KIOSK = 4;
+    }
+
+    // The device form factor.
+    optional FormFactor form_factor = 19;
 
     // Information on the CPU obtained by CPUID.
     message CPU {
@@ -297,6 +309,62 @@ message SystemProfileProto {
       repeated PairedDevice paired_device = 3;
     }
     optional Bluetooth bluetooth = 11;
+
+    // Information about connected USB devices on Chrome OS systems.
+    message USB {
+      // The number of USB buses on the system.
+      optional uint32 bus_count = 1;
+
+      // Describes an attached USB device.
+      message USBDevice {
+        // Vendor ID (assigned by USB-IF).
+        optional fixed32 vendor_id = 1;
+
+        // Product ID (assigned by manufacturer).
+        optional fixed32 product_id = 2;
+
+        // Base Class as defined by USB-IF.
+        optional uint32 device_class = 3;
+
+        // SubClass as defined by USB-IF.
+        optional uint32 device_subclass = 4;
+
+        // The device release number with the decimal shifted out. The bcdDevice
+        // field from which this value originates is a 2-byte BCD in the range
+        // [00.00 - 99.99]. This value is multiplied by 100 to remove the
+        // decimal (device_release_number = bcdDevice * 100).
+        optional uint32 device_release_number = 5;
+
+        // A subset of information from the interface descriptors.
+        message InterfaceDescriptor {
+          // Base Class as defined by USB-IF.
+          optional uint32 interface_class = 1;
+
+          // SubClass as defined by USB-IF.
+          optional uint32 interface_subclass = 2;
+
+          // The configuration value for the configuration that holds this
+          // interface. Typically, all interfaces will belong to the same
+          // configuration.
+          optional uint32 configuration_value = 3;
+        }
+        repeated InterfaceDescriptor interface_descriptors = 6;
+
+        // The number of hubs above this device, including the root hub.
+        optional uint32 hops_from_root = 7;
+
+        // The vendor ID of the parent hub, if present.
+        optional fixed32 parent_vendor_id = 8;
+
+        // The product ID of the parent hub, if present.
+        optional fixed32 parent_product_id = 9;
+
+        // If this device is a hub, the number of ports on this hub.
+        optional uint32 port_count = 10;
+      }
+      repeated USBDevice usb_devices = 2;
+    }
+    optional USB usb = 30;
 
     // Whether the internal display produces touch events. Omitted if unknown.
     // Logged on ChromeOS only.

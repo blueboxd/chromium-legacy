@@ -10,6 +10,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_client_messages.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/render_view_test.h"
@@ -160,7 +161,7 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
   // Swap out the main frame so that the frame widget is destroyed.
   auto* view = static_cast<RenderViewImpl*>(view_);
   auto* main_frame = view->GetMainRenderFrame();
-  main_frame->OnMessageReceived(FrameMsg_SwapOut(
+  main_frame->OnMessageReceived(UnfreezableFrameMsg_SwapOut(
       main_frame->GetRoutingID(), 123, true, FrameReplicationState()));
 
   // We no longer have a frame widget.

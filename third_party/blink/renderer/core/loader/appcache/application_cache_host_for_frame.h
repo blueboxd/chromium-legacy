@@ -19,6 +19,8 @@ class ApplicationCacheHostForFrame final : public ApplicationCacheHost {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // ApplicationCacheHost:
+  bool Update() override;
+  bool SwapCache() override;
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override;
 

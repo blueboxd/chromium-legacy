@@ -28,8 +28,9 @@ def _get_adjacent_item(l, o):
 
 @mock.patch.multiple(
     'signing.commands', **{
-        m: mock.DEFAULT for m in ('move_file', 'copy_files', 'run_command',
-                                  'make_dir', 'shutil')
+        m: mock.DEFAULT for m in ('move_file', 'copy_files',
+                                  'copy_dir_overwrite_and_count_changes',
+                                  'run_command', 'make_dir', 'shutil')
     })
 @mock.patch.multiple(
     'signing.signing',
@@ -53,35 +54,138 @@ class TestPipelineHelpers(unittest.TestCase):
         dist_config = dist.to_config(config)
         paths = self.paths.replace_work('$W')
 
-        pipeline._customize_and_sign_chrome(paths, dist_config, '$D')
+        pipeline._customize_and_sign_chrome(paths, dist_config, '$D', None)
 
         manager.assert_has_calls([
             mock.call.copy_files('$I/App Product.app', '$W'),
             mock.call.customize_distribution(paths, dist, dist_config),
-            mock.call.sign_chrome(paths, dist_config),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=False),
+            mock.call.sign_chrome(paths, dist_config, sign_framework=True),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=True),
             mock.call.make_dir('$D'),
             mock.call.move_file('$W/App Product.app', '$D/App Product.app')
         ])
 
     @mock.patch('signing.modification.customize_distribution')
-    def test_customize_and_sign_chrome_customize(self, customize, **kwargs):
+    def test_customize_and_sign_chrome_customize_different_product(
+            self, customize, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
         manager.attach_mock(customize, 'customize_distribution')
 
         dist = model.Distribution(
-            channel_customize=True, app_name_fragment='Canary')
+            channel_customize=True,
+            channel='canary',
+            app_name_fragment='Canary')
         config = test_config.TestConfig()
         dist_config = dist.to_config(config)
         paths = self.paths.replace_work('$W')
 
-        pipeline._customize_and_sign_chrome(paths, dist_config, '$D')
+        pipeline._customize_and_sign_chrome(paths, dist_config, '$D', None)
 
         manager.assert_has_calls([
             mock.call.copy_files('$I/App Product.app', '$W'),
             mock.call.customize_distribution(paths, dist, dist_config),
-            mock.call.sign_chrome(paths, dist_config),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=False),
+            mock.call.sign_chrome(paths, dist_config, sign_framework=True),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=True),
+            mock.call.make_dir('$D'),
+            mock.call.move_file('$W/App Product Canary.app',
+                                '$D/App Product Canary.app')
+        ])
+
+    @mock.patch('signing.modification.customize_distribution')
+    def test_customize_and_sign_chrome_customize_multiple_times(
+            self, customize, **kwargs):
+        kwargs['copy_dir_overwrite_and_count_changes'].return_value = 0
+
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+        manager.attach_mock(customize, 'customize_distribution')
+
+        config = test_config.TestConfig()
+
+        base_dist = model.Distribution()
+        base_dist_config = base_dist.to_config(config)
+        paths = self.paths.replace_work('$W')
+
+        signed_frameworks = {}
+        pipeline._customize_and_sign_chrome(paths, base_dist_config, '$D',
+                                            signed_frameworks)
+
+        branded_dist = model.Distribution(
+            branding_code='c0de', dmg_name_fragment='Branded')
+        branded_dist_config = branded_dist.to_config(config)
+        paths = self.paths.replace_work('$W')
+
+        pipeline._customize_and_sign_chrome(paths, branded_dist_config, '$D',
+                                            signed_frameworks)
+
+        channel_dist = model.Distribution(
+            channel_customize=True,
+            channel='canary',
+            app_name_fragment='Canary')
+        channel_dist_config = channel_dist.to_config(config)
+        paths = self.paths.replace_work('$W')
+
+        pipeline._customize_and_sign_chrome(paths, channel_dist_config, '$D',
+                                            signed_frameworks)
+
+        manager.assert_has_calls([
+            mock.call.copy_files('$I/App Product.app', '$W'),
+            mock.call.customize_distribution(paths, base_dist,
+                                             base_dist_config),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=False),
+            mock.call.sign_chrome(paths, base_dist_config, sign_framework=True),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=True),
+            mock.call.make_dir('$D'),
+            mock.call.move_file('$W/App Product.app', '$D/App Product.app'),
+            mock.call.copy_files('$I/App Product.app', '$W'),
+            mock.call.customize_distribution(paths, branded_dist,
+                                             branded_dist_config),
+            # TODO(https://crbug.com/964608): $D/$D is a relative path treatment
+            # bug.
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$D/$D/App Product.app/Contents/Frameworks/Product Framework.framework',
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework',
+                dry_run=False),
+            mock.call.sign_chrome(
+                paths, branded_dist_config, sign_framework=False),
+            mock.call.make_dir('$D'),
+            mock.call.move_file('$W/App Product.app', '$D/App Product.app'),
+            mock.call.copy_files('$I/App Product.app', '$W'),
+            mock.call.customize_distribution(paths, channel_dist,
+                                             channel_dist_config),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=False),
+            mock.call.sign_chrome(
+                paths, channel_dist_config, sign_framework=True),
+            mock.call.copy_dir_overwrite_and_count_changes(
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
+                '$W/modified_unsigned_framework',
+                dry_run=True),
             mock.call.make_dir('$D'),
             mock.call.move_file('$W/App Product Canary.app',
                                 '$D/App Product Canary.app')
@@ -374,7 +478,7 @@ class TestSignAll(unittest.TestCase):
         manager.assert_has_calls([
             # First customize the distribution and sign it.
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
 
             # Prepare the app for notarization.
             mock.call.run_command([
@@ -422,7 +526,7 @@ class TestSignAll(unittest.TestCase):
         manager.assert_has_calls([
             # First customize the distribution and sign it.
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
 
             # Prepare the app for notarization.
             mock.call.run_command([
@@ -461,7 +565,7 @@ class TestSignAll(unittest.TestCase):
         manager.assert_has_calls([
             # First customize the distribution and sign it.
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
 
             # Make the DMG.
@@ -483,8 +587,8 @@ class TestSignAll(unittest.TestCase):
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
-            mock.call._customize_and_sign_chrome(mock.ANY, mock.ANY,
-                                                 '$O/AppProduct-99.0.9999.99'),
+            mock.call._customize_and_sign_chrome(
+                mock.ANY, mock.ANY, '$O/AppProduct-99.0.9999.99', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
             mock.call.shutil.rmtree('$W_1'),
 
@@ -522,10 +626,11 @@ class TestSignAll(unittest.TestCase):
 
         manager.assert_has_calls([
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99-ForCows'),
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99-ForCows',
+                mock.ANY),
             mock.call.shutil.rmtree('$W_3'),
             mock.call._package_and_sign_dmg(
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),

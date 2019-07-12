@@ -149,8 +149,8 @@ class VideoDecoderClient {
   void FireEvent(VideoPlayerEvent event);
 
   VideoPlayer::EventCallback event_cb_;
-  std::unique_ptr<FrameRenderer> const frame_renderer_;
-  std::vector<std::unique_ptr<VideoFrameProcessor>> const frame_processors_;
+  std::unique_ptr<FrameRenderer> frame_renderer_;
+  std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors_;
 
   std::unique_ptr<media::VideoDecoder> decoder_;
   const VideoDecoderClientConfig decoder_client_config_;

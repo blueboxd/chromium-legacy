@@ -296,8 +296,6 @@ static_library("common") {
     "usage_stats_consent_win.cc",
     "username.cc",
     "username.h",
-    "xmpp_heartbeat_sender.cc",
-    "xmpp_heartbeat_sender.h",
     "xmpp_register_support_host_request.cc",
     "xmpp_register_support_host_request.h",
   ]
@@ -523,7 +521,6 @@ source_set("unit_tests") {
     "token_validator_base_unittest.cc",
     "token_validator_factory_impl_unittest.cc",
     "touch_injector_win_unittest.cc",
-    "xmpp_heartbeat_sender_unittest.cc",
     "xmpp_register_support_host_request_unittest.cc",
   ]
 

@@ -1598,6 +1598,27 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'return arguments[0].value;',
         self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
 
+  def testShadowDomActionClick(self):
+    '''Checks that ChromeDriver can use actions API to click on an element in a
+    shadow DOM.'''
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    # Wait for page to stabilize. See https://crbug.com/954553#c7
+    time.sleep(1)
+    elem = self._FindElementInShadowDom(
+        ['#innerDiv', '#parentDiv', '#button'])
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [{'type': 'pointerMove', 'x': 0, 'y': 0, 'origin': elem},
+                  {'type': 'pointerDown', 'button': 0},
+                  {'type': 'pointerUp', 'button': 0}],
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    # the button's onClicked handler changes the text box's value
+    self.assertEqual('Button Was Clicked', self._driver.ExecuteScript(
+        'return arguments[0].value;',
+        self._FindElementInShadowDom(['#innerDiv', '#parentDiv', '#textBox'])))
+
   def testShadowDomHover(self):
     """Checks that chromedriver can call HoverOver on an element in a
     shadow DOM."""

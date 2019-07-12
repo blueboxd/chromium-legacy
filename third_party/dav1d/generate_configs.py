@@ -23,7 +23,8 @@ import gn_helpers
 MESON = ['meson.py']
 
 DEFAULT_BUILD_ARGS = [
-    '-Dbuild_tools=false', '-Dbuild_tests=false', '--buildtype', 'release'
+    '-Denable_tools=false', '-Denable_tests=false', '-Ddefault_library=static',
+    '--buildtype', 'release'
 ]
 
 WINDOWS_BUILD_ARGS = ['-Dc_winlibs=']
@@ -117,18 +118,23 @@ def GenerateConfig(config_dir, env, special_args=[]):
       cwd='libdav1d',
       env=env)
 
-  # We don't want non-visible log strings polluting the official binary.
   RewriteFile(
       os.path.join(temp_dir, 'config.h'),
-      [(r'(#define CONFIG_LOG .*)',
-        r'// \1 -- Logging is controlled by Chromium')])
+      [
+          # We don't want non-visible log strings polluting the official binary.
+          (r'(#define CONFIG_LOG .*)',
+           r'// \1 -- Logging is controlled by Chromium'),
 
-  # Clang LTO doesn't respect stack alignment, so we must use the platform's
-  # default stack alignment in that case; https://crbug.com/928743.
-  RewriteFile(
-      os.path.join(temp_dir, 'config.h'),
-      [(r'(#define STACK_ALIGNMENT \d{1,2})',
-        r'// \1 -- Stack alignment is controlled by Chromium')])
+          # The Chromium build system already defines this.
+          (r'(#define _WIN32_WINNT .*)',
+           r'// \1 -- Windows version is controlled by Chromium'),
+
+          # Clang LTO doesn't respect stack alignment, so we must use the
+          # platform's default stack alignment; https://crbug.com/928743.
+          (r'(#define STACK_ALIGNMENT \d{1,2})',
+           r'// \1 -- Stack alignment is controlled by Chromium'),
+      ])
+
   if (os.path.exists(os.path.join(config_dir, 'config.asm'))):
     RewriteFile(
         os.path.join(temp_dir, 'config.asm'),
@@ -158,7 +164,7 @@ def main():
   linux_env['CC'] = 'clang'
 
   GenerateConfig('config/linux/x64', linux_env)
-  GenerateConfig('config/linux-noasm/x64', linux_env, ['-Dbuild_asm=false'])
+  GenerateConfig('config/linux-noasm/x64', linux_env, ['-Denable_asm=false'])
 
   GenerateConfig('config/linux/x86', linux_env,
                  ['--cross-file', '../crossfiles/linux32.crossfile'])

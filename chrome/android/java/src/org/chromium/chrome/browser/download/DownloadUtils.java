@@ -259,6 +259,10 @@ public class DownloadUtils {
      * @param isOffTheRecord  Whether to check downloads for the off the record profile.
      */
     public static void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            return;
+        }
+
         if (isOffTheRecord) {
             DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                     true);

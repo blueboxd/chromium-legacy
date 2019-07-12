@@ -72,12 +72,9 @@ void FrameRendererDummy::Destroy() {
   DCHECK(pending_frames_.empty());
 }
 
-void FrameRendererDummy::AcquireGLContext() {
+bool FrameRendererDummy::AcquireGLContext() {
   // As no actual rendering is done we don't have a GLContext to acquire.
-}
-
-void FrameRendererDummy::ReleaseGLContext() {
-  // As no actual rendering is done we don't have a GLContext to release.
+  return true;
 }
 
 gl::GLContext* FrameRendererDummy::GetGLContext() {

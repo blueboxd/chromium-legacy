@@ -15,10 +15,6 @@ function getInViewPoint(rect) {
 }
 
 function inView(element) {
-  if (!window.document.contains(element)) {
-    return false;
-  }
-
   var rectangles = element.getClientRects();
   if (rectangles.length === 0) {
     return false;
@@ -38,10 +34,6 @@ function getElementLocation(element, center) {
   // Check that node type is element.
   if (element.nodeType != 1)
     throw new Error(element + ' is not an element');
-
-  if (!window.document.contains(element)) {
-    throw new Error("element in different document or shadow tree");
-  }
 
   if (!inView(element)) {
     element.scrollIntoView({behavior: "instant",

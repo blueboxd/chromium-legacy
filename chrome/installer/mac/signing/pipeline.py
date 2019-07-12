@@ -14,7 +14,7 @@ import os.path
 from . import commands, model, modification, notarize, signing
 
 
-def _customize_and_sign_chrome(paths, dist_config, dest_dir):
+def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
     """Does channel customization and signing of a Chrome distribution. The
     resulting app bundle is moved into |dest_dir|.
 
@@ -23,6 +23,14 @@ def _customize_and_sign_chrome(paths, dist_config, dest_dir):
         dist_config: A |config.CodeSignConfig| for the |model.Distribution|.
         dest_dir: The directory into which the product will be placed when
             the operations are completed.
+        signed_frameworks: A dict that will store paths and change counts of
+            already-signed inner frameworks keyed by bundle ID. Paths are used
+            to recycle already-signed frameworks instead of re-signing them.
+            Change counts are used to verify equivalence of frameworks when
+            recycling them. Callers can pass an empty dict on the first call,
+            and reuse the same dict for subsequent calls. This function will
+            produce and consume entries in the dict. If this sharing is
+            undesired, pass None instead of a dict.
     """
     # Copy the app to sign into the work dir.
     commands.copy_files(
@@ -32,7 +40,53 @@ def _customize_and_sign_chrome(paths, dist_config, dest_dir):
     modification.customize_distribution(paths, dist_config.distribution,
                                         dist_config)
 
-    signing.sign_chrome(paths, dist_config)
+    work_dir_framework_path = os.path.join(paths.work,
+                                           dist_config.framework_dir)
+    if signed_frameworks is not None and dist_config.base_bundle_id in signed_frameworks:
+        # If the inner framework has already been modified and signed for this
+        # bundle ID, recycle the existing signed copy without signing a new
+        # copy. This ensures that bit-for-bit identical input will result in
+        # bit-for-bit identical signatures not affected by differences in, for
+        # example, the signature's timestamp. All variants of a product sharing
+        # the same bundle ID are assumed to have bit-for-bit identical
+        # frameworks.
+        #
+        # This is significant because of how binary diff updates work. Binary
+        # diffs are built between two successive versions on the basis of their
+        # inner frameworks being bit-for-bit identical without regard to any
+        # customizations applied only to the outer app. In order for these to
+        # apply to all installations regardless of the presence or specific
+        # values of any app-level customizations, all inner frameworks for a
+        # single version and base bundle ID must always remain bit-for-bit
+        # identical, including their signatures.
+        (signed_framework_path, signed_framework_change_count
+        ) = signed_frameworks[dist_config.base_bundle_id]
+        actual_framework_change_count = commands.copy_dir_overwrite_and_count_changes(
+            os.path.join(dest_dir, signed_framework_path),
+            work_dir_framework_path,
+            dry_run=False)
+
+        if actual_framework_change_count != signed_framework_change_count:
+            raise ValueError(
+                'While customizing and signing {} ({}), actual_framework_change_count {} != signed_framework_change_count {}'
+                .format(dist_config.base_bundle_id, dist_config.dmg_basename,
+                        actual_framework_change_count,
+                        signed_framework_change_count))
+
+        signing.sign_chrome(paths, dist_config, sign_framework=False)
+    else:
+        unsigned_framework_path = os.path.join(paths.work,
+                                               'modified_unsigned_framework')
+        commands.copy_dir_overwrite_and_count_changes(
+            work_dir_framework_path, unsigned_framework_path, dry_run=False)
+        signing.sign_chrome(paths, dist_config, sign_framework=True)
+        actual_framework_change_count = commands.copy_dir_overwrite_and_count_changes(
+            work_dir_framework_path, unsigned_framework_path, dry_run=True)
+        if signed_frameworks is not None:
+            dest_dir_framework_path = os.path.join(dest_dir,
+                                                   dist_config.framework_dir)
+            signed_frameworks[dist_config.base_bundle_id] = (
+                dest_dir_framework_path, actual_framework_change_count)
 
     app_path = os.path.join(paths.work, dist_config.app_dir)
     commands.make_dir(dest_dir)
@@ -212,6 +266,7 @@ def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
         # First, sign all the distributions and optionally submit the
         # notarization requests.
         uuids_to_config = {}
+        signed_frameworks = {}
         for dist in config.distributions:
             with commands.WorkDirectory(orig_paths) as paths:
                 dist_config = dist.to_config(config)
@@ -224,7 +279,8 @@ def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
                     dest_dir = notary_paths.work
 
                 dest_dir = os.path.join(dest_dir, dist_config.dmg_basename)
-                _customize_and_sign_chrome(paths, dist_config, dest_dir)
+                _customize_and_sign_chrome(paths, dist_config, dest_dir,
+                                           signed_frameworks)
 
                 # If the build products are to be notarized, ZIP the app bundle
                 # and submit it for notarization.

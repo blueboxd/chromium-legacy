@@ -267,12 +267,28 @@ ScheduleParams::Priority ScheduleParamsPriorityFromProto(
 void ScheduleParamsToProto(ScheduleParams* params,
                            proto::ScheduleParams* proto) {
   proto->set_priority(ScheduleParamsPriorityToProto(params->priority));
+
+  for (const auto& mapping : params->impression_mapping) {
+    auto* proto_impression_mapping = proto->add_impression_mapping();
+    proto_impression_mapping->set_user_feedback(ToUserFeedback(mapping.first));
+    proto_impression_mapping->set_impression_result(
+        ToImpressionResult(mapping.second));
+  }
 }
 
 // Converts ScheduleParams from proto buffer type.
 void ScheduleParamsFromProto(proto::ScheduleParams* proto,
                              ScheduleParams* params) {
   params->priority = ScheduleParamsPriorityFromProto(proto->priority());
+
+  for (int i = 0; i < proto->impression_mapping_size(); ++i) {
+    const auto& proto_impression_mapping = proto->impression_mapping(i);
+    auto user_feedback =
+        FromUserFeedback(proto_impression_mapping.user_feedback());
+    auto impression_result =
+        FromImpressionResult(proto_impression_mapping.impression_result());
+    params->impression_mapping[user_feedback] = impression_result;
+  }
 }
 
 }  // namespace
@@ -303,6 +319,14 @@ void ClientStateToProto(ClientState* client_state,
     impression_ptr->set_task_start_time(
         ToSchedulerTaskTime(impression.task_start_time));
     impression_ptr->set_guid(impression.guid);
+
+    for (const auto& mapping : impression.impression_mapping) {
+      auto* proto_impression_mapping = impression_ptr->add_impression_mapping();
+      proto_impression_mapping->set_user_feedback(
+          ToUserFeedback(mapping.first));
+      proto_impression_mapping->set_impression_result(
+          ToImpressionResult(mapping.second));
+    }
   }
 
   if (client_state->suppression_info.has_value()) {
@@ -334,6 +358,17 @@ void ClientStateFromProto(proto::ClientState* proto,
         FromSchedulerTaskTime(proto_impression.task_start_time());
     impression.guid = proto_impression.guid();
     impression.type = client_state->type;
+
+    for (int i = 0; i < proto_impression.impression_mapping_size(); ++i) {
+      const auto& proto_impression_mapping =
+          proto_impression.impression_mapping(i);
+      auto user_feedback =
+          FromUserFeedback(proto_impression_mapping.user_feedback());
+      auto impression_result =
+          FromImpressionResult(proto_impression_mapping.impression_result());
+      impression.impression_mapping[user_feedback] = impression_result;
+    }
+
     client_state->impressions.emplace_back(std::move(impression));
   }
 

@@ -73,7 +73,6 @@ class NewTabUI : public content::WebUIController {
     DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
   };
 
-  void OnDefaultFontSizeChanged();
   void OnShowBookmarkBarChanged();
 
   Profile* GetProfile() const;

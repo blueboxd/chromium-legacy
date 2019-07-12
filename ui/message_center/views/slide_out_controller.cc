@@ -20,7 +20,9 @@ gfx::Tween::Type kSwipeTweenType = gfx::Tween::EASE_IN;
 
 SlideOutController::SlideOutController(ui::EventTarget* target,
                                        Delegate* delegate)
-    : target_handling_(target, this), delegate_(delegate) {}
+    : target_handling_(target, this),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {}
 
 SlideOutController::~SlideOutController() {}
 
@@ -215,8 +217,12 @@ void SlideOutController::OnImplicitAnimationsCompleted() {
   // delay operation that might result in deletion of LayerTreeHost.
   // https://crbug.com/895883
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Delegate::OnSlideOut, base::Unretained(delegate_)));
+      FROM_HERE, base::BindOnce(&SlideOutController::OnSlideOut,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SlideOutController::OnSlideOut() {
+  delegate_->OnSlideOut();
 }
 
 void SlideOutController::SetSwipeControlWidth(int swipe_control_width) {

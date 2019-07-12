@@ -11845,7 +11845,7 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 //     byte arrives quickly, and thus the navigation commits quickly.
 //  6.1) FrameTreeNode::has_committed_real_load is set to true for the child.
 //  6.2) The same-site RenderFrame in the child FrameTreeNode is swapped out,
-//       i.e. FrameMsg_SwapOut is sent.
+//       i.e. UnfreezableFrameMsg_SwapOut is sent.
 //  7) The renderer for site instance `a.com` exits from the busy loop,
 //     and starts processing messages in order:
 //  7.1) The first being processed is FrameMsg_CommitNavigation, so a

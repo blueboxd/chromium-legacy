@@ -26,7 +26,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -159,8 +158,6 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
     return base::FilePath();
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   // Flush the source dir completely before moving to make sure everything is
   // on disk. Otherwise a sudden power loss could cause the newly installed
   // extension to be in a corrupted state. Note that empty sub-directories
@@ -182,9 +179,6 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
   // data loss ExtensionPrefs should be pointing to the previous version which
   // is still fine.
   FlushFilesInDir(version_dir, ONE_FILE_ONLY);
-
-  UMA_HISTOGRAM_TIMES("Extensions.FileInstallation",
-                      base::TimeTicks::Now() - start_time);
 
   return version_dir;
 }

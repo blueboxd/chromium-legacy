@@ -204,10 +204,7 @@
       "internal": true,
       "channel": "stable",
       "contexts": ["webui"],
-      "matches": [
-        "chrome://cast/*",
-        "chrome://media-router/*"
-      ]
+      "matches": ["chrome://cast/*"]
     }
   ],
   "events": {
@@ -248,7 +245,6 @@
         "chrome://home/*",
         "chrome://chrome-signin/*",
         "chrome://hats/*",
-        "chrome://media-router/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
         "chrome://password-change/*"
@@ -662,7 +658,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*"
@@ -683,7 +678,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*"
@@ -702,7 +696,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*"
     ]

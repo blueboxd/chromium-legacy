@@ -57,7 +57,6 @@ class TestGetParts(unittest.TestCase):
         self.assertEqual('test.signing.bundle_id.helper',
                          all_parts['helper-app'].identifier)
 
-
     def test_part_options(self):
         parts = signing.get_parts(test_config.TestConfig())
         self.assertEqual(
@@ -73,13 +72,11 @@ class TestGetParts(unittest.TestCase):
                 model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-app'].options))
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT +
-                model.CodeSignOptions.KILL +
+            set(model.CodeSignOptions.RESTRICT + model.CodeSignOptions.KILL +
                 model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-renderer-app'].options))
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT +
-                model.CodeSignOptions.KILL +
+            set(model.CodeSignOptions.RESTRICT + model.CodeSignOptions.KILL +
                 model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-plugin-app'].options))
         self.assertEqual(
@@ -266,7 +263,7 @@ class TestSignChrome(unittest.TestCase):
         dist = model.Distribution()
         config = dist.to_config(test_config.TestConfig())
 
-        signing.sign_chrome(self.paths, config)
+        signing.sign_chrome(self.paths, config, sign_framework=True)
 
         # No files should be moved.
         self.assertEqual(0, kwargs['move_file'].call_count)
@@ -314,7 +311,7 @@ class TestSignChrome(unittest.TestCase):
 
         config = dist.to_config(Config())
 
-        signing.sign_chrome(self.paths, config)
+        signing.sign_chrome(self.paths, config, sign_framework=True)
 
         self.assertEqual(kwargs['run_command'].mock_calls, [
             mock.call.run_command([
@@ -334,7 +331,7 @@ class TestSignChrome(unittest.TestCase):
                 return None
 
         config = dist.to_config(Config())
-        signing.sign_chrome(self.paths, config)
+        signing.sign_chrome(self.paths, config, sign_framework=True)
 
         self.assertEqual(0, kwargs['copy_files'].call_count)
 
@@ -355,8 +352,9 @@ class TestSignChrome(unittest.TestCase):
             # If the file is missing, signing should fail since TestConfig has
             # no optional parts.
             config = model.Distribution().to_config(test_config.TestConfig())
-            self.assertRaises(FileNotFoundError,
-                              lambda: signing.sign_chrome(self.paths, config))
+            self.assertRaises(
+                FileNotFoundError,
+                lambda: signing.sign_chrome(self.paths, config, sign_framework=True))
 
             class Config(test_config.TestConfig):
 
@@ -366,14 +364,50 @@ class TestSignChrome(unittest.TestCase):
 
             # With the part marked as optional, it should succeed.
             config = model.Distribution().to_config(Config())
-            signing.sign_chrome(self.paths, config)
+            signing.sign_chrome(self.paths, config, sign_framework=True)
+
+    @mock.patch('signing.signing._sanity_check_version_keys')
+    def test_sign_chrome_no_framework(self, *args, **kwargs):
+        manager = mock.Mock()
+        for kwarg in kwargs:
+            manager.attach_mock(kwargs[kwarg], kwarg)
+
+        dist = model.Distribution()
+        config = dist.to_config(test_config.TestConfig())
+
+        signing.sign_chrome(self.paths, config, sign_framework=False)
+
+        # No files should be moved.
+        self.assertEqual(0, kwargs['move_file'].call_count)
+
+        # Test that the provisioning profile is copied.
+        self.assertEqual(kwargs['copy_files'].mock_calls, [
+            mock.call.copy_files(
+                '$I/Product Packaging/provisiontest.provisionprofile',
+                '$W/App Product.app/Contents/embedded.provisionprofile')
+        ])
+
+        # Ensure that only the app is signed.
+        signed_paths = [
+            call[1][2].path for call in kwargs['sign_part'].mock_calls
+        ]
+        self.assertEqual(signed_paths, ['App Product.app'])
+
+        self.assertEqual(kwargs['run_command'].mock_calls, [
+            mock.call.run_command([
+                'codesign', '--display', '--requirements', '-', '--verbose=5',
+                '$W/App Product.app'
+            ]),
+            mock.call.run_command(
+                ['spctl', '--assess', '-vv', '$W/App Product.app']),
+        ])
 
     @mock.patch(
         'signing.commands.plistlib.readPlist',
         side_effect=_get_plist_read('99.0.9999.99'))
     def test_sanity_check_ok(self, read_plist, **kwargs):
         config = model.Distribution().to_config(test_config.TestConfig())
-        signing.sign_chrome(self.paths, config)
+        signing.sign_chrome(self.paths, config, sign_framework=True)
 
     @mock.patch(
         'signing.commands.plistlib.readPlist',
@@ -381,4 +415,4 @@ class TestSignChrome(unittest.TestCase):
     def test_sanity_check_bad(self, read_plist, **kwargs):
         config = model.Distribution().to_config(test_config.TestConfig())
         self.assertRaises(ValueError,
-                          lambda: signing.sign_chrome(self.paths, config))
+                          lambda: signing.sign_chrome(self.paths, config, sign_framework=True))

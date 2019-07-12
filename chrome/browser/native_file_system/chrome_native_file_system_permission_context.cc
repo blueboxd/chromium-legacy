@@ -11,6 +11,7 @@
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -51,6 +52,27 @@ void ShowWritePermissionPromptOnUIThread(
 
   request_manager->AddRequest({origin, path, is_directory},
                               std::move(callback));
+}
+
+void ShowDirectoryAccessConfirmationPromptOnUIThread(
+    int process_id,
+    int frame_id,
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceCallback<void(PermissionAction result)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(process_id, frame_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+
+  if (!web_contents) {
+    // Requested from a worker, or a no longer existing tab.
+    std::move(callback).Run(PermissionAction::DISMISSED);
+  }
+
+  ShowNativeFileSystemDirectoryAccessConfirmationDialog(
+      origin, path, std::move(callback), web_contents);
 }
 
 // Returns a callback that calls the passed in |callback| by posting a task to
@@ -199,6 +221,32 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
                                                           is_directory);
   existing_grant = result.get();
   return result;
+}
+
+void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    int process_id,
+    int frame_id,
+    base::OnceCallback<void(PermissionStatus)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &ShowDirectoryAccessConfirmationPromptOnUIThread, process_id,
+          frame_id, origin, path,
+          base::BindOnce(
+              [](scoped_refptr<base::TaskRunner> task_runner,
+                 base::OnceCallback<void(PermissionStatus result)> callback,
+                 PermissionAction result) {
+                task_runner->PostTask(
+                    FROM_HERE,
+                    base::BindOnce(std::move(callback),
+                                   result == PermissionAction::GRANTED
+                                       ? PermissionStatus::GRANTED
+                                       : PermissionStatus::DENIED));
+              },
+              base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
 }
 
 ChromeNativeFileSystemPermissionContext::Grants

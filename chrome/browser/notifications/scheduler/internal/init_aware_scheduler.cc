@@ -59,23 +59,24 @@ void InitAwareNotificationScheduler::GetImpressionDetail(
 }
 
 void InitAwareNotificationScheduler::OnStartTask(
+    SchedulerTaskTime task_time,
     TaskFinishedCallback callback) {
   if (IsReady()) {
-    impl_->OnStartTask(std::move(callback));
+    impl_->OnStartTask(task_time, std::move(callback));
     return;
   }
   MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnStartTask,
-                                   weak_ptr_factory_.GetWeakPtr(),
+                                   weak_ptr_factory_.GetWeakPtr(), task_time,
                                    std::move(callback)));
 }
 
-void InitAwareNotificationScheduler::OnStopTask() {
+void InitAwareNotificationScheduler::OnStopTask(SchedulerTaskTime task_time) {
   if (IsReady()) {
-    impl_->OnStopTask();
+    impl_->OnStopTask(task_time);
     return;
   }
   MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnStopTask,
-                                   weak_ptr_factory_.GetWeakPtr()));
+                                   weak_ptr_factory_.GetWeakPtr(), task_time));
 }
 
 void InitAwareNotificationScheduler::OnClick(

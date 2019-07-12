@@ -32,6 +32,9 @@
 
 namespace app_list {
 
+const int kEmptyTotal = -1;
+const int kTopRank = 1;
+
 const base::Feature kUkmAppLaunchEventLogging{"UkmAppLaunchEventLogging",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -281,6 +284,28 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
                 });
 }
 
+void AppLaunchEventLogger::UpdateClickRank() {
+  std::vector<std::pair<int, std::string>> app_clicks;
+  for (auto& app : app_features_map_) {
+    if (app.second.has_total_clicks()) {
+      app_clicks.push_back({app.second.total_clicks(), app.first});
+    }
+  }
+  std::sort(app_clicks.begin(), app_clicks.end(), std::greater<>());
+  int rank = kTopRank;
+  int previous_total = kEmptyTotal;
+  for (int index = 0; index < static_cast<int>(app_clicks.size()); ++index) {
+    const auto& app = app_clicks[index];
+    // Only change rank when totals differ so that equal totals get equal rank.
+    if (app.first != previous_total) {
+      // Index is zero indexed; rank starts at kTopRank (i.e. at 1).
+      rank = index + kTopRank;
+      previous_total = app.first;
+    }
+    app_features_map_[app.second].set_click_rank(rank);
+  }
+}
+
 void AppLaunchEventLogger::ProcessClick(const AppLaunchEvent& event,
                                         const base::Time& now) {
   auto search = app_features_map_.find(event.app_id());
@@ -323,6 +348,8 @@ void AppLaunchEventLogger::ProcessClick(const AppLaunchEvent& event,
       app_clicks_last_hour_[event.app_id()]->GetTotal(duration));
   app_launch_features->set_clicks_last_24_hours(
       app_clicks_last_24_hours_[event.app_id()]->GetTotal(duration));
+
+  UpdateClickRank();
 }
 
 ukm::SourceId AppLaunchEventLogger::GetSourceId(
@@ -530,6 +557,7 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
         .SetClicksLast24Hours(
             Bucketize(app->second.clicks_last_24_hours(), kClickBuckets))
         .SetTotalClicks(Bucketize(app->second.total_clicks(), kClickBuckets))
+        .SetClickRank(app->second.click_rank())
         .SetLastLaunchedFrom(app->second.last_launched_from())
         .Record(ukm::UkmRecorder::Get());
   }

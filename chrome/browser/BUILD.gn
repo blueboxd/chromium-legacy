@@ -1080,6 +1080,8 @@ jumbo_split_static_library("browser") {
     "performance_manager/persistence/site_data/feature_usage.h",
     "performance_manager/persistence/site_data/leveldb_site_data_store.cc",
     "performance_manager/persistence/site_data/leveldb_site_data_store.h",
+    "performance_manager/persistence/site_data/non_recording_site_data_cache.cc",
+    "performance_manager/persistence/site_data/non_recording_site_data_cache.h",
     "performance_manager/persistence/site_data/noop_site_data_writer.cc",
     "performance_manager/persistence/site_data/noop_site_data_writer.h",
     "performance_manager/persistence/site_data/site_data_cache.h",

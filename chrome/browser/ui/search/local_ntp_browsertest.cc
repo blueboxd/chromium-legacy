@@ -109,8 +109,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   LocalNTPTest()
       : LocalNTPTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{features::kRemoveNtpFakebox,
-                                   features::kFirstRunDefaultSearchShortcut,
+            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut,
                                    ntp_tiles::kDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {

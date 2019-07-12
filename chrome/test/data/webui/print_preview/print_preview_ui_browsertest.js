@@ -623,95 +623,102 @@ TEST_F(
     });
 
 // eslint-disable-next-line no-var
-var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
+var PrintPreviewDestinationStoreTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_settings.html';
+    return 'chrome://print/data/destination_store.html';
   }
 
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '//ui/webui/resources/js/web_ui_listener_behavior.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
-      'destination_select_test.js',
+      'destination_store_test.js',
     ]);
   }
 
   /** @override */
   get suiteName() {
-    return destination_select_test.suiteName;
+    return destination_store_test.suiteName;
+  }
+
+  /** @override */
+  get customElementName() {
+    // This test is loading a data class, not an element.
+    return null;
   }
 };
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'SingleRecentDestination', function() {
+    'PrintPreviewDestinationStoreTest', 'SingleRecentDestination', function() {
       this.runMochaTest(
-          destination_select_test.TestNames.SingleRecentDestination);
+          destination_store_test.TestNames.SingleRecentDestination);
     });
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'MultipleRecentDestinations',
+    'PrintPreviewDestinationStoreTest', 'MultipleRecentDestinations',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.MultipleRecentDestinations);
+          destination_store_test.TestNames.MultipleRecentDestinations);
     });
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'MultipleRecentDestinationsOneRequest',
+    'PrintPreviewDestinationStoreTest', 'MultipleRecentDestinationsOneRequest',
     function() {
-      this.runMochaTest(destination_select_test.TestNames
+      this.runMochaTest(destination_store_test.TestNames
                             .MultipleRecentDestinationsOneRequest);
     });
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'DefaultDestinationSelectionRules',
+    'PrintPreviewDestinationStoreTest', 'DefaultDestinationSelectionRules',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.DefaultDestinationSelectionRules);
+          destination_store_test.TestNames.DefaultDestinationSelectionRules);
     });
 
 GEN('#if !defined(OS_CHROMEOS)');
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'SystemDefaultPrinterPolicy',
+    'PrintPreviewDestinationStoreTest', 'SystemDefaultPrinterPolicy',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.SystemDefaultPrinterPolicy);
+          destination_store_test.TestNames.SystemDefaultPrinterPolicy);
     });
 GEN('#endif');
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'KioskModeSelectsFirstPrinter',
+    'PrintPreviewDestinationStoreTest', 'KioskModeSelectsFirstPrinter',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.KioskModeSelectsFirstPrinter);
+          destination_store_test.TestNames.KioskModeSelectsFirstPrinter);
     });
 
 GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewDestinationSelectTest', 'NoPrintersShowsError', function() {
-  this.runMochaTest(destination_select_test.TestNames.NoPrintersShowsError);
+TEST_F('PrintPreviewDestinationStoreTest', 'NoPrintersShowsError', function() {
+  this.runMochaTest(destination_store_test.TestNames.NoPrintersShowsError);
 });
 GEN('#endif');
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'UnreachableRecentCloudPrinter',
+    'PrintPreviewDestinationStoreTest', 'UnreachableRecentCloudPrinter',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.UnreachableRecentCloudPrinter);
+          destination_store_test.TestNames.UnreachableRecentCloudPrinter);
     });
 
-TEST_F('PrintPreviewDestinationSelectTest', 'RecentSaveAsPdf', function() {
-  this.runMochaTest(destination_select_test.TestNames.RecentSaveAsPdf);
+TEST_F('PrintPreviewDestinationStoreTest', 'RecentSaveAsPdf', function() {
+  this.runMochaTest(destination_store_test.TestNames.RecentSaveAsPdf);
 });
 
 TEST_F(
-    'PrintPreviewDestinationSelectTest', 'MultipleRecentDestinationsAccounts',
+    'PrintPreviewDestinationStoreTest', 'MultipleRecentDestinationsAccounts',
     function() {
       this.runMochaTest(
-          destination_select_test.TestNames.MultipleRecentDestinationsAccounts);
+          destination_store_test.TestNames.MultipleRecentDestinationsAccounts);
     });
 
 // eslint-disable-next-line no-var

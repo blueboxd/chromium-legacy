@@ -82,6 +82,9 @@ enum class UserActionType {
 
 // Categorizes type of notification buttons. Different type of button clicks
 // may result in change of notification shown frequency.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
 enum class ActionButtonType {
   // The action button is not categorized.
   kUnknownAction = 0,

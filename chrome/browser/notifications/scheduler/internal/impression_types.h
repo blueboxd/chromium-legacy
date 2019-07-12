@@ -29,6 +29,8 @@ struct Impression {
   Impression(SchedulerClientType type,
              const std::string& guid,
              const base::Time& create_time);
+  Impression(const Impression& other);
+  ~Impression();
 
   bool operator==(const Impression& other) const;
 
@@ -58,6 +60,9 @@ struct Impression {
   // initialized.
   // TODO(xingliu): Consider to persist this as well.
   SchedulerClientType type = SchedulerClientType::kUnknown;
+
+  // Used to override default impression result.
+  std::map<UserFeedback, ImpressionResult> impression_mapping;
 };
 
 // Contains details about supression and recovery after suppression expired.

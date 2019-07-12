@@ -41,11 +41,17 @@ class CrOSSystemTracingSession {
   // |true| if tracing was started and |false| otherwise.
   void StartTracing(const std::string& config, SuccessCallback callback) {
     DCHECK(!is_tracing_);
+    if (!chromeos::DBusThreadManager::IsInitialized()) {
+      if (callback)
+        std::move(callback).Run(/*success=*/false);
+      return;
+    }
+
     base::trace_event::TraceConfig trace_config(config);
     debug_daemon_ = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
     if (!trace_config.IsSystraceEnabled() || !debug_daemon_) {
       if (callback)
-        std::move(callback).Run(false /* success */);
+        std::move(callback).Run(/*success=*/false);
       return;
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(

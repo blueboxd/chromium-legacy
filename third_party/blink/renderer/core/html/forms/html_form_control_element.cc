@@ -336,6 +336,9 @@ bool HTMLFormControlElement::SupportsFocus() const {
 }
 
 bool HTMLFormControlElement::IsKeyboardFocusable() const {
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return HTMLElement::IsKeyboardFocusable();
+
   // Skip tabIndex check in a parent class.
   return IsFocusable();
 }

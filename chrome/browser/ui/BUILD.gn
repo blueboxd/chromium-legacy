@@ -2413,7 +2413,6 @@ jumbo_split_static_library("ui") {
       defines += [ "USE_DBUS" ]
       deps += [
         "//components/dbus/menu",
-        "//components/dbus/menu:success_barrier_callback",
         "//components/dbus/thread_linux",
       ]
     }

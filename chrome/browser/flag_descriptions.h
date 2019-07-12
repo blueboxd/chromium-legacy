@@ -358,6 +358,9 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 
+extern const char kDesktopPWAsLocalUpdatingName[];
+extern const char kDesktopPWAsLocalUpdatingDescription[];
+
 extern const char kDesktopPWAsOmniboxInstallName[];
 extern const char kDesktopPWAsOmniboxInstallDescription[];
 
@@ -1559,9 +1562,6 @@ extern const char kDialMediaRouteProviderDescription[];
 
 extern const char kGridLayoutForNtpShortcutsName[];
 extern const char kGridLayoutForNtpShortcutsDescription[];
-
-extern const char kRemoveNtpFakeboxName[];
-extern const char kRemoveNtpFakeboxDescription[];
 
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];

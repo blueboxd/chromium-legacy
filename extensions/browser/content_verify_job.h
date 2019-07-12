@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -73,7 +74,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   // are read. Make sure to call DoneReading so that any final bytes that were
   // read that didn't align exactly on a block size boundary get their hash
   // checked as well.
-  void BytesRead(int count, const char* data);
+  void BytesRead(const char* data, int count, base::File::Error read_result);
 
   // Call once when finished adding bytes via BytesRead.
   void DoneReading();
@@ -104,7 +105,9 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   void DidGetContentHashOnIO(scoped_refptr<const ContentHash> hash);
 
   // Same as BytesRead, but is run without acquiring lock.
-  void BytesReadImpl(int count, const char* data);
+  void BytesReadImpl(const char* data,
+                     int count,
+                     base::File::Error read_result);
 
   // Called each time we're done adding bytes for the current block, and are
   // ready to finish the hash operation for those bytes and make sure it
@@ -117,6 +120,10 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   // Called when our ContentHashReader has finished initializing.
   void OnHashesReady(std::unique_ptr<const ContentHashReader> hash_reader);
+
+  // True if BytesRead has seen some errors that can be ignored from content
+  // verification's perspective.
+  bool has_ignorable_read_error_ = false;
 
   // Indicates whether the caller has told us they are done calling BytesRead.
   bool done_reading_;

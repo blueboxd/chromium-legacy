@@ -121,7 +121,8 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   void ClearDecodeTaskQueue(DecodeStatus status);
 
   // Output a single |video_frame| on the decoder thread.
-  void OutputFrameTask(scoped_refptr<VideoFrame> video_frame);
+  void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                       base::TimeDelta timestamp);
   // Called when a different output frame resolution is requested on the decoder
   // thread. This happens when either decoding just started or a resolution
   // change occurred in the video stream.
@@ -176,6 +177,9 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   std::unique_ptr<DmabufVideoFramePool> frame_pool_;
   // Video frame converter.
   std::unique_ptr<VideoFrameConverter> frame_converter_;
+
+  // The mapping between buffer id and the timestamp.
+  std::map<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
 
   // Queue containing all requested decode tasks.
   base::queue<DecodeTask> decode_task_queue_;

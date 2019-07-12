@@ -9,8 +9,6 @@ blink_core_sources("exported") {
     "local_frame_client_impl.h",
     "web_array_buffer.cc",
     "web_array_buffer_converter.cc",
-    "web_associated_url_loader_impl.cc",
-    "web_associated_url_loader_impl.h",
     "web_blob.cc",
     "web_console_message.cc",
     "web_content_holder.cc",

@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/scoped_com_initializer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -215,6 +216,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   Microsoft::WRL::ComPtr<D3D11VideoContextMock> mock_d3d11_video_context_;
 
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::win::ScopedCOMInitializer com_initializer_;
 };
 
 TEST_F(D3D11VideoDecoderTest, SupportsVP9Profile0WithDecoderEnabled) {
@@ -272,22 +274,6 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportH264IfNoSupportedConfig) {
   InitializeDecoder(normal, kExpectFailure);
 }
 
-TEST_F(D3D11VideoDecoderTest, RequiresZeroCopyPreference) {
-  gpu_preferences_.enable_zero_copy_dxgi_video = false;
-  CreateDecoder();
-  InitializeDecoder(
-      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
-      kExpectFailure);
-}
-
-TEST_F(D3D11VideoDecoderTest, FailsIfZeroCopyWorkaround) {
-  gpu_workarounds_.disable_dxgi_zero_copy_video = true;
-  CreateDecoder();
-  InitializeDecoder(
-      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
-      kExpectFailure);
-}
-
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
   CreateDecoder();
   VideoDecoderConfig encrypted_config =
@@ -296,6 +282,40 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
 
   DisableFeature(kHardwareSecureDecryption);
   InitializeDecoder(encrypted_config, kExpectFailure);
+}
+
+TEST_F(D3D11VideoDecoderTest, DoesNotSupportZeroCopyPreference) {
+  gpu_preferences_.enable_zero_copy_dxgi_video = false;
+  CreateDecoder();
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectFailure);
+}
+
+TEST_F(D3D11VideoDecoderTest, DoesNotSupportZeroCopyWorkaround) {
+  gpu_workarounds_.disable_dxgi_zero_copy_video = true;
+  CreateDecoder();
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectFailure);
+}
+
+TEST_F(D3D11VideoDecoderTest, SupportsZeroCopyPreferenceWithFlag) {
+  EnableFeature(kD3D11VideoDecoderIgnoreWorkarounds);
+  gpu_preferences_.enable_zero_copy_dxgi_video = false;
+  CreateDecoder();
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectSuccess);
+}
+
+TEST_F(D3D11VideoDecoderTest, SupportsZeroCopyWorkaroundWithFlag) {
+  EnableFeature(kD3D11VideoDecoderIgnoreWorkarounds);
+  gpu_workarounds_.disable_dxgi_zero_copy_video = true;
+  CreateDecoder();
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectSuccess);
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithFlagOn11_0) {

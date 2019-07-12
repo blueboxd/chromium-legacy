@@ -1017,7 +1017,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    associated RenderView will clean up the resources associated with the
   //    main RenderFrame.
   // 2. The RenderFrame can be swapped out. In this case, the browser sends a
-  //    FrameMsg_SwapOut for the RenderFrame to replace itself with a
+  //    UnfreezableFrameMsg_SwapOut for the RenderFrame to replace itself with a
   //    RenderFrameProxy and release its associated resources. |unload_state_|
   //    is advanced to UnloadState::InProgress to track that this IPC is in
   //    flight.
@@ -2492,8 +2492,8 @@ void RenderFrameHostImpl::SwapOut(
   if (IsRenderFrameLive()) {
     FrameReplicationState replication_state =
         proxy->frame_tree_node()->current_replication_state();
-    Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(), is_loading,
-                              replication_state));
+    Send(new UnfreezableFrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(),
+                                         is_loading, replication_state));
     // Remember that a RenderFrameProxy was created as part of processing the
     // SwapOut message above.
     proxy->set_render_frame_proxy_created(true);

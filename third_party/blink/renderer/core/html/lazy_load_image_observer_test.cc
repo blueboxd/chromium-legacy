@@ -350,11 +350,11 @@ class ScopedDataSaverSetting {
   explicit ScopedDataSaverSetting(bool is_data_saver_enabled)
       : was_data_saver_previously_enabled_(
             GetNetworkStateNotifier().SaveDataEnabled()) {
-    GetNetworkStateNotifier().SetSaveDataEnabled(is_data_saver_enabled);
+    GetNetworkStateNotifier().SetSaveDataEnabledOverride(is_data_saver_enabled);
   }
 
   ~ScopedDataSaverSetting() {
-    GetNetworkStateNotifier().SetSaveDataEnabled(
+    GetNetworkStateNotifier().SetSaveDataEnabledOverride(
         was_data_saver_previously_enabled_);
   }
 
@@ -417,8 +417,10 @@ class LazyLoadImagesParamsTest : public SimTest,
                     kEnabledAutomaticMetadataFetchDisabled) {}
 
   void SetUp() override {
-    WebFrameClient().SetEffectiveConnectionTypeForTesting(
-        std::get<WebEffectiveConnectionType>(GetParam()));
+    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+        true /*on_line*/, kWebConnectionTypeWifi,
+        std::get<WebEffectiveConnectionType>(GetParam()),
+        1000 /*http_rtt_msec*/, 100 /*max_bandwidth_mbps*/);
 
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(
@@ -828,9 +830,6 @@ class LazyLoadAutomaticImagesTest : public SimTest {
             false) {}
 
   void SetUp() override {
-    WebFrameClient().SetEffectiveConnectionTypeForTesting(
-        WebEffectiveConnectionType::kTypeUnknown);
-
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(
         WebSize(kViewportWidth, kViewportHeight));

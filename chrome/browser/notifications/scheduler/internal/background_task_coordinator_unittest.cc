@@ -120,6 +120,23 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
                                          test_data_.task_start_time);
   }
 
+  void TestScheduleNewNotification(const char* now,
+                                   const char* expected_task_start_time) {
+    SetNow(now);
+    EXPECT_CALL(*background_task(), Cancel()).Times(0);
+    auto expected_window_start =
+        GetTime(expected_task_start_time) - GetTime(now);
+    EXPECT_CALL(*background_task(),
+                Schedule(_, expected_window_start,
+                         expected_window_start +
+                             config()->background_task_window_duration));
+
+    NotificationEntry entry(SchedulerClientType::kTest1, kGuid);
+    TestData test_data{
+        kSingleClientImpressionTestData, {entry}, SchedulerTaskTime::kUnknown};
+    ScheduleTask(test_data);
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   test::FakeClock clock_;
@@ -309,6 +326,14 @@ TEST_F(BackgroundTaskCoordinatorTest, ThrottledAllTypesAndSuppression) {
   TestData test_data{
       impression_data, {entry1, entry2}, SchedulerTaskTime::kMorning};
   ScheduleTask(test_data);
+}
+
+// Schedules a new notification when Chrome is not running in a background task
+// at different time of a day.
+TEST_F(BackgroundTaskCoordinatorTest, ScheduleNewNotification) {
+  TestScheduleNewNotification("04/25/20 01:00:00 AM", "04/25/20 06:00:00 AM");
+  TestScheduleNewNotification("04/25/20 07:00:00 AM", "04/25/20 18:00:00 PM");
+  TestScheduleNewNotification("04/25/20 18:30:00 PM", "04/26/20 06:00:00 AM");
 }
 
 }  // namespace

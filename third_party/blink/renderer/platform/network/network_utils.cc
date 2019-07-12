@@ -100,10 +100,10 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
-bool IsDataURLMimeTypeSupported(const KURL& url) {
+bool IsDataURLMimeTypeSupported(const KURL& url, std::string* data) {
   std::string utf8_mime_type;
   std::string utf8_charset;
-  if (net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, nullptr)) {
+  if (net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, data)) {
     return blink::IsSupportedMimeType(utf8_mime_type);
   }
   return false;

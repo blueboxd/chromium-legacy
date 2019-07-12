@@ -22,8 +22,9 @@ using ::perfetto::protos::TrackEvent;
 const std::string& GetInternedName(
     uint32_t iid,
     const std::unordered_map<uint32_t, std::string>& interned) {
+  DCHECK(iid);
   auto iter = interned.find(iid);
-  DCHECK(iter != interned.end());
+  DCHECK(iter != interned.end()) << "Missing interned ID: " << iid;
   return iter->second;
 }
 
@@ -122,6 +123,8 @@ void TrackEventJSONExporter::ProcessPackets(
       HandleProcessDescriptor(packet);
     } else if (packet.has_trace_stats()) {
       SetTraceStatsMetadata(packet.trace_stats());
+    } else if (packet.has_streaming_profile_packet()) {
+      HandleStreamingProfilePacket(packet.streaming_profile_packet());
     } else {
       // If none of the above matched, this packet was emitted by the service
       // and has no equivalent in the old trace format. We thus ignore it.
@@ -170,7 +173,7 @@ int64_t TrackEventJSONExporter::ComputeTimeUs(const TrackEvent& event) {
     case TrackEvent::kTimestampAbsoluteUs:
       return event.timestamp_absolute_us();
     case TrackEvent::kTimestampDeltaUs:
-      DCHECK(current_state_->time_us != -1);
+      DCHECK_NE(current_state_->time_us, -1);
       current_state_->time_us += event.timestamp_delta_us();
       return current_state_->time_us;
     case TrackEvent::TIMESTAMP_NOT_SET:
@@ -185,7 +188,7 @@ base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadTimeUs(
     case TrackEvent::kThreadTimeAbsoluteUs:
       return event.thread_time_absolute_us();
     case TrackEvent::kThreadTimeDeltaUs:
-      DCHECK(current_state_->thread_time_us != -1);
+      DCHECK_NE(current_state_->thread_time_us, -1);
       current_state_->thread_time_us += event.thread_time_delta_us();
       return current_state_->thread_time_us;
     case TrackEvent::THREAD_TIME_NOT_SET:
@@ -228,6 +231,43 @@ void TrackEventJSONExporter::HandleInternedData(
            (iter.first->second.first == src_loc.file_name() &&
             iter.first->second.second == src_loc.function_name()));
   }
+  for (const auto& frame_name : data.function_names()) {
+    auto iter = current_state_->interned_frame_names_.insert(
+        std::make_pair(frame_name.iid(), frame_name.str()));
+    DCHECK(iter.second || iter.first->second == frame_name.str());
+  }
+  for (const auto& frame : data.frames()) {
+    auto iter = current_state_->interned_frames_.emplace(
+        frame.iid(),
+        ProducerWriterState::Frame{frame.function_name_id(), frame.mapping_id(),
+                                   frame.rel_pc()});
+    DCHECK(iter.second || iter.first->second.rel_pc == frame.rel_pc());
+  }
+  for (const auto& module_name : data.mapping_paths()) {
+    auto iter = current_state_->interned_module_names_.insert(
+        std::make_pair(module_name.iid(), module_name.str()));
+    DCHECK(iter.second || iter.first->second == module_name.str());
+  }
+  for (const auto& mapping_id : data.build_ids()) {
+    auto iter = current_state_->interned_module_ids_.insert(
+        std::make_pair(mapping_id.iid(), mapping_id.str()));
+    DCHECK(iter.second || iter.first->second == mapping_id.str());
+  }
+  for (const auto& mapping : data.mappings()) {
+    DCHECK_EQ(mapping.path_string_ids_size(), 1);
+    auto iter = current_state_->interned_mappings_.emplace(
+        mapping.iid(), ProducerWriterState::Mapping{
+                           mapping.build_id(), mapping.path_string_ids(0)});
+    DCHECK(iter.second || iter.first->second.build_id == mapping.build_id());
+  }
+  for (const auto& callstack : data.callstacks()) {
+    std::vector<uint32_t> frame_ids;
+    for (const auto& frame_id : callstack.frame_ids())
+      frame_ids.push_back(frame_id);
+
+    current_state_->interned_callstacks_.emplace(callstack.iid(),
+                                                 std::move(frame_ids));
+  }
 }
 
 void TrackEventJSONExporter::HandleProcessDescriptor(
@@ -236,6 +276,9 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   const auto& process = packet.process_descriptor();
   // Save the current state we need for future packets.
   current_state_->pid = process.pid();
+  if (process.has_process_priority()) {
+    current_state_->process_priority = process.process_priority();
+  }
 
   // ProcessDescriptor is only emitted on sequences with incremental state.
   if (current_state_->incomplete) {
@@ -364,7 +407,7 @@ void TrackEventJSONExporter::EmitThreadDescriptorIfNeeded() {
   };
   if (thread.has_thread_name()) {
     emit_thread_name(thread.thread_name().c_str());
-  } else {
+  } else if (thread.has_chrome_thread_type()) {
     const char* name = ThreadTypeToName(thread.chrome_thread_type());
     if (name) {
       emit_thread_name(name);
@@ -411,7 +454,7 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
   // Get the time data out of the TrackEvent.
   int64_t timestamp_us = ComputeTimeUs(track);
-  DCHECK(timestamp_us != -1);
+  DCHECK_NE(timestamp_us, -1);
   base::Optional<int64_t> thread_time_us = ComputeThreadTimeUs(track);
 
   std::vector<base::StringPiece> all_categories;
@@ -447,6 +490,95 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
   if (track.has_task_execution()) {
     HandleTaskExecution(track.task_execution(), args_builder.get());
+  }
+}
+
+void TrackEventJSONExporter::HandleStreamingProfilePacket(
+    const perfetto::protos::StreamingProfilePacket& profile_packet) {
+  if (current_state_->incomplete || !ShouldOutputTraceEvents()) {
+    return;
+  }
+
+  // Insert an event with the frames rendered as a string with the following
+  // formats:
+  //   offset - module [debugid]
+  //  [OR]
+  //   symbol - module []
+  // The offset is difference between the load module address and the
+  // frame address.
+  //
+  // Example:
+  //
+  //   "malloc             - libc.so    []
+  //    std::string::alloc - stdc++.so  []
+  //    off:7ffb3f991b2d   - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
+  //    off:7ffb3d439164   - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
+  //    off:7ffaf3e26201   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    off:7ffaf3e26008   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    [...] "
+
+  DCHECK_EQ(profile_packet.callstack_iid_size(), 1);
+  DCHECK_EQ(profile_packet.timestamp_delta_us_size(), 1);
+
+  auto callstack = current_state_->interned_callstacks_.find(
+      profile_packet.callstack_iid(0));
+  DCHECK(callstack != current_state_->interned_callstacks_.end());
+
+  std::string result;
+  for (const auto& frame_id : callstack->second) {
+    auto frame = current_state_->interned_frames_.find(frame_id);
+    DCHECK(frame != current_state_->interned_frames_.end());
+
+    std::string frame_name;
+    std::string module_name;
+    std::string module_id;
+    uintptr_t rel_pc = frame->second.rel_pc;
+    if (rel_pc) {
+      frame_name = base::StringPrintf("off:0x%" PRIxPTR, rel_pc);
+    } else {
+      frame_name = GetInternedName(frame->second.function_name_id,
+                                   current_state_->interned_frame_names_);
+    }
+
+    auto module =
+        current_state_->interned_mappings_.find(frame->second.mapping_id);
+    DCHECK(module != current_state_->interned_mappings_.end());
+
+    module_name = GetInternedName(module->second.name_id,
+                                  current_state_->interned_module_names_);
+    module_id = GetInternedName(module->second.build_id,
+                                current_state_->interned_module_ids_);
+
+    base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
+                        module_name.c_str(), module_id.c_str());
+  }
+
+  if (result.empty()) {
+    result = "empty";
+  }
+
+  current_state_->time_us += profile_packet.timestamp_delta_us(0);
+
+  auto event_builder = AddTraceEvent(
+      "StackCpuSampling", TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+      TRACE_EVENT_PHASE_INSTANT, current_state_->time_us, current_state_->pid,
+      current_state_->tid);
+  auto args_builder = event_builder.BuildArgs();
+  auto* add_arg = args_builder->MaybeAddArg("frames");
+  if (add_arg) {
+    std::string escaped_result;
+    base::EscapeJSONString(result, true, &escaped_result);
+    add_arg->AppendF("%s", escaped_result.c_str());
+  }
+  add_arg = args_builder->MaybeAddArg("process_priority");
+  if (add_arg) {
+    add_arg->AppendF("%" PRId32, current_state_->process_priority);
+  }
+  // Used for backwards compatibility with the memlog pipeline,
+  // should remove once we've switched to looking directly at the tid.
+  add_arg = args_builder->MaybeAddArg("thread_id");
+  if (add_arg) {
+    add_arg->AppendF("%" PRId32, current_state_->tid);
   }
 }
 

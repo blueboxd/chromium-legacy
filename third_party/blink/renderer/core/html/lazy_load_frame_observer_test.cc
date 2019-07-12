@@ -102,8 +102,10 @@ class LazyLoadFramesParamsTest
             LazyFrameVisibleLoadTimeFeatureStatus::kEnabled) {}
 
   void SetUp() override {
-    WebFrameClient().SetEffectiveConnectionTypeForTesting(
-        std::get<WebEffectiveConnectionType>(GetParam()));
+    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+        true /*on_line*/, kWebConnectionTypeWifi,
+        std::get<WebEffectiveConnectionType>(GetParam()),
+        1000 /*http_rtt_msec*/, 100 /*max_bandwidth_mbps*/);
 
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(
@@ -1135,8 +1137,6 @@ class LazyLoadFramesTest : public SimTest {
 
   void SetUp() override {
     GetNetworkStateNotifier().SetSaveDataEnabled(false);
-    WebFrameClient().SetEffectiveConnectionTypeForTesting(
-        WebEffectiveConnectionType::kTypeUnknown);
 
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(

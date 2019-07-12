@@ -29,10 +29,9 @@ template("polymer_modulizer") {
       inputs += [ invoker.js_file ]
     }
 
-    output_js_file = "$target_gen_dir/" + invoker.js_file
+    output_js_file = invoker.js_file
     if (invoker.html_type == "dom-module") {
-      output_js_file =
-          "$target_gen_dir/" + get_path_info(invoker.js_file, "file") + ".m.js"
+      output_js_file = get_path_info(invoker.js_file, "name") + ".m.js"
     }
     outputs = [
       "$target_gen_dir/" + output_js_file,

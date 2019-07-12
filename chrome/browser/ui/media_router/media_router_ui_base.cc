@@ -693,10 +693,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetLocalFileRouteParameters(
   RouteParameters params;
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents).id();
   params.source_id = MediaSource::ForTab(tab_id).id();
-
-  // Use a placeholder URL as origin for local file casting, which is
-  // essentially mirroring.
-  params.origin = url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
+  params.origin = url::Origin();
 
   int request_id = current_route_request() ? current_route_request()->id : -1;
   params.route_result_callbacks.push_back(base::BindOnce(

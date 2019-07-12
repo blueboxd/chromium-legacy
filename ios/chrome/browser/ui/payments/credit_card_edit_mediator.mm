@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -133,11 +134,11 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   if (!self.creditCard)
     return l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
 
-  const autofill::CreditCardCompletionStatus status =
-      autofill::GetCompletionStatusForCard(
+  const payments::CreditCardCompletionStatus status =
+      payments::GetCompletionStatusForCard(
           *self.creditCard, self.paymentRequest->GetApplicationLocale(),
           self.paymentRequest->billing_profiles());
-  return base::SysUTF16ToNSString(autofill::GetEditDialogTitleForCard(status));
+  return base::SysUTF16ToNSString(payments::GetEditDialogTitleForCard(status));
 }
 
 - (CollectionViewItem*)headerItem {

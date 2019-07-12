@@ -46,6 +46,13 @@ class ChromeNativeFileSystemPermissionContext
                           const base::FilePath& path,
                           bool is_directory) override;
 
+  void ConfirmDirectoryReadAccess(
+      const url::Origin& origin,
+      const base::FilePath& path,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(PermissionStatus)> callback) override;
+
   struct Grants {
     Grants();
     ~Grants();

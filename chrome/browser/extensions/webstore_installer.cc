@@ -738,11 +738,6 @@ void WebstoreInstaller::StartCrxInstaller(const DownloadItem& download) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!crx_installer_.get());
 
-  // The clock may be backward, e.g. daylight savings time just happenned.
-  if (download.GetEndTime() >= download.GetStartTime()) {
-    UMA_HISTOGRAM_TIMES("Extensions.WebstoreDownload.FileDownload",
-                        download.GetEndTime() - download.GetStartTime());
-  }
   ExtensionService* service = ExtensionSystem::Get(profile_)->
       extension_service();
   CHECK(service);

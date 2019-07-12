@@ -1841,6 +1841,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)},
+    {"enable-desktop-pwas-local-updating",
+     flag_descriptions::kDesktopPWAsLocalUpdatingName,
+     flag_descriptions::kDesktopPWAsLocalUpdatingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsLocalUpdating)},
     {"enable-desktop-pwas-unified-install",
      flag_descriptions::kDesktopPWAsUnifiedInstallName,
      flag_descriptions::kDesktopPWAsUnifiedInstallDescription, kOsDesktop,
@@ -2808,10 +2812,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGridLayoutForNtpShortcutsName,
      flag_descriptions::kGridLayoutForNtpShortcutsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kGridLayoutForNtpShortcuts)},
-
-    {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
-     flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},
 
     {"ntp-customization-menu-v2",
      flag_descriptions::kNtpCustomizationMenuV2Name,

@@ -9344,7 +9344,9 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
   <int value="16" label="RESOURCE_TYPE_CSP_REPORT"/>
   <int value="17" label="RESOURCE_TYPE_PLUGIN_RESOURCE"/>
-  <int value="18" label="RESOURCE_TYPE_NAVIGATION_PRELOAD"/>
+  <int value="18" label="RESOURCE_TYPE_NAVIGATION_PRELOAD (obsolete)"/>
+  <int value="19" label="RESOURCE_TYPE_NAVIGATION_PRELOAD_MAIN_FRAME"/>
+  <int value="20" label="RESOURCE_TYPE_NAVIGATION_PRELOAD_SUB_FRAME"/>
 </enum>
 
 <enum name="ContentSetting">
@@ -35464,6 +35466,7 @@ from previous Chrome versions.
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="613629912" label="LookalikeUrlNavigationSuggestions:enabled"/>
   <int value="616660621" label="ImeInputLogicFst:disabled"/>
+  <int value="618532343" label="DesktopPWAsLocalUpdating:disabled"/>
   <int value="620989380" label="ImeInputLogicFst:enabled"/>
   <int value="621484660" label="ReorderBookmarks:disabled"/>
   <int value="623772100" label="EnableIncognitoWindowCounter:disabled"/>
@@ -36394,6 +36397,7 @@ from previous Chrome versions.
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>
+  <int value="1962485086" label="DesktopPWAsLocalUpdating:enabled"/>
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
   <int value="1965976546" label="NewOverviewAnimations:disabled"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
@@ -38209,6 +38213,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MediaEngagementClearReason">
+  <obsolete>
+    Deprecated 07/2019 as no longer needed.
+  </obsolete>
   <int value="0" label="Data (all)"/>
   <int value="1" label="Data (range)"/>
   <int value="2" label="History (all)"/>
@@ -38217,6 +38224,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MediaEngagementSessionEvent">
+  <obsolete>
+    Deprecated 07/2019 as no longer needed.
+  </obsolete>
   <int value="0" label="Created"/>
   <int value="1" label="Significant Playback"/>
 </enum>

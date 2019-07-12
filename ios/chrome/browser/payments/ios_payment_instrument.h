@@ -50,6 +50,8 @@ class IOSPaymentInstrument : public PaymentInstrument {
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
   bool IsCompleteForPayment() const override;
+  uint32_t GetCompletenessScore() const override;
+  bool CanPreselect() const override;
   bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;

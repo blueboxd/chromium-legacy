@@ -232,6 +232,20 @@ tbody.head th {
   color: red;
 }
 
+.cell-additional-info a {
+  background-image: url(../../../../third_party/blink/renderer/modules/media_controls/resources/ic_download.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.cell-additional-info:not(:hover) a {
+  visibility: hidden;
+}
+
 /* boolean cells */
 
 .check-mark,

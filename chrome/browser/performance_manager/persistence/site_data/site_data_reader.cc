@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 
 namespace performance_manager {

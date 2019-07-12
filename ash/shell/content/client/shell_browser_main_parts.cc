@@ -39,12 +39,27 @@
 
 namespace ash {
 namespace shell {
+namespace {
+ShellBrowserMainParts* main_parts = nullptr;
+}
+
+// static
+content::BrowserContext* ShellBrowserMainParts::GetBrowserContext() {
+  DCHECK(main_parts);
+  return main_parts->browser_context();
+}
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : parameters_(parameters) {}
+    : parameters_(parameters) {
+  DCHECK(!main_parts);
+  main_parts = this;
+}
 
-ShellBrowserMainParts::~ShellBrowserMainParts() = default;
+ShellBrowserMainParts::~ShellBrowserMainParts() {
+  DCHECK(main_parts);
+  main_parts = nullptr;
+}
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
@@ -66,14 +81,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
           content::GetSystemConnector());
 
   AshTestHelper::InitParams init_params;
-  init_params.start_session = true;
-  init_params.provide_local_state = true;
-
-  if (parameters_.ui_task) {
-    init_params.config_type = AshTestHelper::kUnitTest;
-  } else {
+  if (parameters_.ui_task)
+    init_params.config_type = AshTestHelper::kPerfTest;
+  else
     init_params.config_type = AshTestHelper::kShell;
-  }
 
   ShellInitParams shell_init_params;
   shell_init_params.delegate =
@@ -124,6 +135,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   ash_test_helper_.reset();
 
   views_delegate_.reset();
+
+  network_config_helper_.reset();
 
   // The keyboard may have created a WebContents. The WebContents is destroyed
   // with the UI, and it needs the BrowserContext to be alive during its

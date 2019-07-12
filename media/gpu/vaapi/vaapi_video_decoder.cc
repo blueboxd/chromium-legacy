@@ -296,6 +296,9 @@ void VaapiVideoDecoder::QueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
+  if (!buffer->end_of_stream())
+    buffer_id_to_timestamp_.emplace(next_buffer_id_, buffer->timestamp());
+
   decode_task_queue_.emplace(std::move(buffer), next_buffer_id_,
                              std::move(decode_cb));
 
@@ -459,7 +462,7 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 }
 
 void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
-                                     int32_t /*buffer_id*/,
+                                     int32_t buffer_id,
                                      const gfx::Rect& visible_rect,
                                      const VideoColorSpace& /*color_space*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -474,13 +477,19 @@ void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
     frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
   }
 
+  auto it = buffer_id_to_timestamp_.find(buffer_id);
+  DCHECK(it != buffer_id_to_timestamp_.end());
+  base::TimeDelta timestamp = it->second;
+  buffer_id_to_timestamp_.erase(it);
+
   // Find the frame associated with the surface. We won't erase it from
   // |output_frames_| yet, as the decoder might still be using it for reference.
   DCHECK_EQ(output_frames_.count(va_surface->id()), 1u);
-  OutputFrameTask(output_frames_[va_surface->id()]);
+  OutputFrameTask(output_frames_[va_surface->id()], timestamp);
 }
 
-void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame) {
+void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                                        base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(video_frame);
@@ -490,10 +499,12 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame) {
   // modify the attributes of the frame directly, we wrap the frame into a new
   // frame with updated attributes. The old frame is bound to a destruction
   // observer so it's not destroyed before the wrapped frame.
-  if (video_frame->visible_rect() != visible_rect_) {
+  if (video_frame->visible_rect() != visible_rect_ ||
+      video_frame->timestamp() != timestamp) {
     gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
         *video_frame, video_frame->format(), visible_rect_, natural_size);
+    wrapped_frame->set_timestamp(timestamp);
     wrapped_frame->AddDestructionObserver(
         base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
                        std::move(video_frame)));

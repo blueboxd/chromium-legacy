@@ -404,7 +404,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // between the two coordinate transforms.
   mutable gfx::PointF mouse_down_pre_transformed_coordinate_;
   mutable gfx::PointF mouse_down_post_transformed_coordinate_;
-  RenderWidgetHostViewBase* last_mouse_down_target_;
+  RenderWidgetHostViewBase* last_mouse_down_target_ = nullptr;
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_{
       this};

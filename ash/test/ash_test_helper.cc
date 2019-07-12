@@ -90,14 +90,22 @@ void AshTestHelper::SetUp(const InitParams& init_params,
         ::switches::kHostWindowBounds, "1+1-800x600");
   }
 
-  if (init_params.config_type == kUnitTest) {
-    // Default for unit tests but not for perf tests.
-    zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-    TabletModeController::SetUseScreenshotForTest(false);
-    ui::test::EnableTestConfigForPlatformWindows();
-    display::ResetDisplayIdForTest();
-    ui::InitializeInputMethodForTesting();
+  // Pre shell creation config init.
+  switch (init_params.config_type) {
+    case kUnitTest:
+      // Default for unit tests but not for perf tests.
+      zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+      TabletModeController::SetUseScreenshotForTest(false);
+      FALLTHROUGH;
+    case kPerfTest:
+      // Default for both unit and perf tests.
+      ui::test::EnableTestConfigForPlatformWindows();
+      display::ResetDisplayIdForTest();
+      ui::InitializeInputMethodForTesting();
+      break;
+    case kShell:
+      break;
   }
 
   statistics_provider_ =
@@ -178,34 +186,40 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
 
   // Post shell creation config init.
-  if (init_params.config_type == kUnitTest) {
-    // Tests that change the display configuration generally don't care about
-    // the notifications and the popup UI can interfere with things like
-    // cursors.
-    shell->screen_layout_observer()->set_show_notifications_for_testing(false);
+  switch (init_params.config_type) {
+    case kUnitTest:
+      // Tests that change the display configuration generally don't care about
+      // the notifications and the popup UI can interfere with things like
+      // cursors.
+      shell->screen_layout_observer()->set_show_notifications_for_testing(
+          false);
 
-    // Disable display change animations in unit tests.
-    DisplayConfigurationControllerTestApi(
-        shell->display_configuration_controller())
-        .SetDisplayAnimator(false);
+      // Disable display change animations in unit tests.
+      DisplayConfigurationControllerTestApi(
+          shell->display_configuration_controller())
+          .SetDisplayAnimator(false);
 
-    // Remove the app dragging animations delay for testing purposes.
-    shell->overview_controller()->set_delayed_animation_task_delay_for_test(
-        base::TimeDelta());
+      // Remove the app dragging animations delay for testing purposes.
+      shell->overview_controller()->set_delayed_animation_task_delay_for_test(
+          base::TimeDelta());
+      // Tests expect empty wallpaper.
+      shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
 
-    // Don't change the display size due to host size resize.
-    display::test::DisplayManagerTestApi(shell->display_manager())
-        .DisableChangeDisplayUponHostResize();
+      FALLTHROUGH;
+    case kPerfTest:
+      // Don't change the display size due to host size resize.
+      display::test::DisplayManagerTestApi(shell->display_manager())
+          .DisableChangeDisplayUponHostResize();
 
-    // Create the test keyboard controller observer to respond to
-    // OnLoadKeyboardContentsRequested().
-    test_keyboard_controller_observer_ =
-        std::make_unique<TestKeyboardControllerObserver>(
-            shell->keyboard_controller());
-    // Unit test expects empty wallpaper.
-    shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
-  } else {
-    shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+      // Create the test keyboard controller observer to respond to
+      // OnLoadKeyboardContentsRequested().
+      test_keyboard_controller_observer_ =
+          std::make_unique<TestKeyboardControllerObserver>(
+              shell->keyboard_controller());
+      break;
+    case kShell:
+      shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+      break;
   }
 }
 

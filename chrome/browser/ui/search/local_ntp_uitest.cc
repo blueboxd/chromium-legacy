@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -31,16 +29,6 @@ class LocalNtpUiTest : public InProcessBrowserTest {
   OmniboxView* omnibox() {
     return browser()->window()->GetLocationBar()->GetOmniboxView();
   }
-
- private:
-  void SetUp() override {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kRemoveNtpFakebox});
-    InProcessBrowserTest::SetUp();
-  }
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNtpUiTest, FakeboxRedirectsToOmnibox) {

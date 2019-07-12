@@ -4,12 +4,14 @@
 
 #include "ash/shell/content/embedded_browser.h"
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/fill_layout.h"
@@ -46,7 +48,6 @@ class HostWidget : public views::WidgetDelegateView {
     widget->Init(params);
     widget->Show();
 
-    title_ = base::ASCIIToUTF16("Classic: Embed by NativeViewHost");
     auto* host = new views::NativeViewHost();
     AddChildView(host);
     host->Attach(native_window);
@@ -55,9 +56,11 @@ class HostWidget : public views::WidgetDelegateView {
   }
 
   // views::WidgetDelegateView:
-  base::string16 GetWindowTitle() const override { return title_; }
-
-  base::string16 title_;
+  base::string16 GetWindowTitle() const override {
+    const static base::string16 title =
+        base::ASCIIToUTF16("Classic: Embed by NativeViewHost");
+    return title;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(HostWidget);
 };
@@ -77,11 +80,21 @@ EmbeddedBrowser::EmbeddedBrowser(content::BrowserContext* context,
 
 EmbeddedBrowser::~EmbeddedBrowser() = default;
 
+aura::Window* EmbeddedBrowser::GetWindow() {
+  return contents_->GetNativeView()->GetToplevelWindow();
+}
+
 // static
-void EmbeddedBrowser::Create(content::BrowserContext* context,
-                             const GURL& url) {
+aura::Window* EmbeddedBrowser::Create(content::BrowserContext* context,
+                                      const GURL& url) {
   // EmbeddedBrowser deletes itself when the hosting widget is closed.
-  new EmbeddedBrowser(context, url);
+  // TODO(oshima): This leaks site process map for some reason. Fix it.
+  // crbug.com/983397.
+  aura::Window* browser_window =
+      (new EmbeddedBrowser(context, url))->GetWindow();
+  browser_window->SetProperty(aura::client::kAppType,
+                              static_cast<int>(ash::AppType::BROWSER));
+  return browser_window;
 }
 
 void EmbeddedBrowser::OnUnembed() {

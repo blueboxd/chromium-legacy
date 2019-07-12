@@ -1586,6 +1586,18 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_AlreadyUnmounted) {
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, error_code);
 }
 
+TEST_F(DiskMountManagerTest, Mount_MountUnsetsFirstMount) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const Disk* device1 = manager->FindDiskBySourcePath(kDevice1SourcePath);
+  EXPECT_TRUE(device1->is_first_mount());
+
+  fake_cros_disks_client_->NotifyMountCompleted(
+      chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
+      chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
+
+  EXPECT_FALSE(device1->is_first_mount());
+}
+
 }  // namespace
 
 }  // namespace disks

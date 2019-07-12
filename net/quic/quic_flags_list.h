@@ -61,6 +61,10 @@ QUIC_FLAG(bool,
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 
+// If true, use BBRv2 as the default congestion controller.
+// Takes precedence over --quic_default_to_bbr.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr_v2, false)
+
 // If buffered data in QUIC stream is less than this threshold, buffers all
 // provided data or asks upper layer for more data.
 QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
@@ -185,8 +189,11 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
           true)
 
-// If true, enable QUIC version 47 which adds CRYPTO frames.
+// If true, enable QUIC version 47.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
+
+// If true, enable QUIC version 48.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48, false)
 
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)

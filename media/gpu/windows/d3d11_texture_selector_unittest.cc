@@ -34,10 +34,20 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
                          pattern));
     return result;
   }
+
+  std::unique_ptr<TextureSelector> CreateWithDefaultGPUInfo(
+      const VideoDecoderConfig& config,
+      bool zero_copy_enabled = true) {
+    gpu::GpuPreferences prefs;
+    prefs.enable_zero_copy_dxgi_video = zero_copy_enabled;
+    gpu::GpuDriverBugWorkarounds workarounds;
+    workarounds.disable_dxgi_zero_copy_video = false;
+    return TextureSelector::Create(prefs, workarounds, config);
+  }
 };
 
 TEST_F(D3D11TextureSelectorUnittest, VP9Profile0RightFormats) {
-  auto tex_sel = TextureSelector::Create(
+  auto tex_sel = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
   EXPECT_EQ(tex_sel->DecoderGuid(), D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0);
@@ -45,8 +55,18 @@ TEST_F(D3D11TextureSelectorUnittest, VP9Profile0RightFormats) {
   EXPECT_EQ(tex_sel->DecoderDescriptor()->OutputFormat, DXGI_FORMAT_NV12);
 }
 
+TEST_F(D3D11TextureSelectorUnittest, VP9Profile2RightFormats) {
+  auto tex_sel = CreateWithDefaultGPUInfo(
+      CreateDecoderConfig(VP9PROFILE_PROFILE2, {0, 0}, false), false);
+
+  EXPECT_EQ(tex_sel->DecoderGuid(),
+            D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2);
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->DecoderDescriptor()->OutputFormat, DXGI_FORMAT_P010);
+}
+
 TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceNoProfiles) {
-  auto tex_sel = TextureSelector::Create(
+  auto tex_sel = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
   auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
@@ -58,7 +78,7 @@ TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceNoProfiles) {
 }
 
 TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceWrongProfiles) {
-  auto tex_sel = TextureSelector::Create(
+  auto tex_sel = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
   auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
@@ -78,7 +98,7 @@ TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceWrongProfiles) {
 }
 
 TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceCorrectProfile) {
-  auto tex_sel = TextureSelector::Create(
+  auto tex_sel = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
   auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();

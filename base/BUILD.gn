@@ -3500,11 +3500,7 @@ if (is_android) {
     use_final_fields = false
   }
 
-  java_cpp_template("base_native_libraries_gen") {
-    sources = [
-      "android/java/templates/NativeLibraries.template",
-    ]
-    package_path = "org/chromium/base/library_loader"
+  write_native_libraries_java("base_native_libraries_gen") {
   }
 
   android_library("base_java_unittest_support") {

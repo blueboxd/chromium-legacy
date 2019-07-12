@@ -42,7 +42,8 @@ net::RequestPriority GetRequestPriority(content::ResourceType resource_type) {
     case content::ResourceType::kServiceWorker:
     case content::ResourceType::kCspReport:
     case content::ResourceType::kPluginResource:
-    case content::ResourceType::kNavigationPreload:
+    case content::ResourceType::kNavigationPreloadMainFrame:
+    case content::ResourceType::kNavigationPreloadSubFrame:
       return net::LOWEST;
   }
 }

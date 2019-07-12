@@ -55,6 +55,10 @@ ASH_EXPORT constexpr int kShelfButtonSize = kShelfSize;
 // Size of the space between buttons on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSpacing = 8;
 
+// The margin around the overflow button on the shelf.
+constexpr int kShelfOverflowButtonMargin =
+    (kShelfButtonSize - kShelfControlSize) / 2;
+
 // Ink drop color for shelf items.
 constexpr SkColor kShelfInkDropBaseColor = SK_ColorWHITE;
 
@@ -109,6 +113,8 @@ class ShelfConstants {
 
   // The radius of shelf control buttons.
   static int control_border_radius() { return kShelfControlSize / 2; }
+
+  static int overflow_button_margin() { return kShelfOverflowButtonMargin; }
 
   // The distance between the edge of the shelf and the status indicators.
   static int status_indicator_offset_from_edge() {

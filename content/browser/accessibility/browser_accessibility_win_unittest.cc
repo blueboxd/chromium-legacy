@@ -656,7 +656,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
-  EXPECT_EQ(0, root->GetId());
+  EXPECT_EQ(1, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
   EXPECT_EQ(0, root->GetState());
   EXPECT_EQ(true, root->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
@@ -674,18 +674,17 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   // Process a load complete.
   AXEventNotificationDetails event_bundle;
   event_bundle.updates.resize(1);
+  event_bundle.updates[0].node_id_to_clear = root->GetId();
   event_bundle.updates[0].root_id = tree1_1.id;
   event_bundle.updates[0].nodes.push_back(tree1_1);
   event_bundle.updates[0].nodes.push_back(tree1_2);
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
-  // Save for later comparison.
+  // The root should have been cleared,not replaced, because in the former case
+  // this could cause multiple focus and load complete events.
+  EXPECT_EQ(root, manager->GetRoot());
+
   BrowserAccessibility* acc1_2 = manager->GetFromID(2);
-
-  // Verify the root has changed.
-  EXPECT_NE(root, manager->GetRoot());
-
-  // And the proper child remains.
   EXPECT_EQ(ax::mojom::Role::kTextField, acc1_2->GetRole());
   EXPECT_EQ(2, acc1_2->GetId());
 
@@ -700,18 +699,18 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   tree2_2.role = ax::mojom::Role::kButton;
 
   event_bundle.updates[0].nodes.clear();
+  event_bundle.updates[0].node_id_to_clear = tree1_1.id;
+  event_bundle.updates[0].root_id = tree2_1.id;
   event_bundle.updates[0].nodes.push_back(tree2_1);
   event_bundle.updates[0].nodes.push_back(tree2_2);
 
-  // Fire another load complete.
+  // Unserialize the new tree update.
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
+  // Verify that the root has been cleared, not replaced.
+  EXPECT_EQ(root, manager->GetRoot());
+
   BrowserAccessibility* acc2_2 = manager->GetFromID(3);
-
-  // Verify the root has changed.
-  EXPECT_NE(root, manager->GetRoot());
-
-  // And the new child exists.
   EXPECT_EQ(ax::mojom::Role::kButton, acc2_2->GetRole());
   EXPECT_EQ(3, acc2_2->GetId());
 
@@ -738,7 +737,7 @@ TEST_F(BrowserAccessibilityWinTest, EmptyDocHasUniqueIdWin) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
-  EXPECT_EQ(0, root->GetId());
+  EXPECT_EQ(1, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
   EXPECT_EQ(0, root->GetState());
   EXPECT_EQ(true, root->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));

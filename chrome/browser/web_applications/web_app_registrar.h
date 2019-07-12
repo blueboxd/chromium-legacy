@@ -44,6 +44,8 @@ class WebAppRegistrar : public AppRegistrar {
   GURL GetScopeUrlForApp(const AppId& app_id) const override;
   AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
+  std::string GetAppShortName(const AppId& app_id) const override;
+  const GURL& GetAppLaunchURL(const AppId& app_id) const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

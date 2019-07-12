@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
@@ -57,9 +58,14 @@ class SiteDataCacheFactory {
   // destroyed. They should be called from the UI thread, a task will then be
   // posted to the task_runner owned by |factory| to create the data store
   // associated with this browser context.
+  //
+  // If this browser context is inheriting from a parent context (e.g. if it's
+  // off the record) then this parent context should be specified via
+  // |parent_context|.
   static void OnBrowserContextCreatedOnUIThread(
       SiteDataCacheFactory* factory,
-      content::BrowserContext* browser_context);
+      content::BrowserContext* browser_context,
+      content::BrowserContext* parent_context);
   static void OnBrowserContextDestroyedOnUIThread(
       SiteDataCacheFactory* factory,
       content::BrowserContext* browser_context);
@@ -98,7 +104,7 @@ class SiteDataCacheFactory {
   // that runs on this object's task runner.
   void OnBrowserContextCreated(const std::string& browser_context_id,
                                const base::FilePath& context_path,
-                               bool context_is_off_the_record);
+                               base::Optional<std::string> parent_context_id);
   void OnBrowserContextDestroyed(const std::string& browser_context_id);
 
   // The task runner on which this object lives, this is expected to be the

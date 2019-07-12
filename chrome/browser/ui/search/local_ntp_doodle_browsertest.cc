@@ -13,11 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
@@ -295,7 +293,6 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
 
  private:
   void SetUp() override {
-    feature_list_.InitWithFeatures({}, {features::kRemoveNtpFakebox});
     InProcessBrowserTest::SetUp();
   }
 
@@ -317,8 +314,6 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
     LogoServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&LocalNTPDoodleTest::CreateLogoService));
   }
-
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>

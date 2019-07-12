@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -18,6 +19,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
 
@@ -25,10 +27,16 @@ namespace app_list {
 
 const char kGmailChromeApp[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char kMapsArcApp[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
+const char kCalculatorArcApp[] = "adeiokjnhlgkiokkojlphcelpojmlkpj";
 const char kPhotosPWAApp[] = "ncmjhecbjeaamljdfahankockkkdmedg";
+
 const GURL kPhotosPWAUrl = GURL("http://photos.google.com/");
+const GURL kMapsArcUrl = GURL("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
+const GURL kCalculatorArcUrl =
+    GURL("app://play/adeiokjnhlgkiokkojlphcelpojmlkpj");
 
 const char kMapsPackageName[] = "com.google.android.apps.maps";
+const char kCalculatorPackageName[] = "com.google.android.calculator";
 
 namespace {
 
@@ -134,8 +142,6 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
   auto arc_apps = std::make_unique<base::DictionaryValue>();
   arc_apps->SetKey(kMapsArcApp, app.Clone());
 
-  GURL url("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
-
   AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(nullptr, arc_apps.get(),
                                                 packages.get());
@@ -146,13 +152,12 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kMapsArcUrl);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 2);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 1);
 }
 
 TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
-  // Click on PWA photos, then Chrome Maps, then PWA Photos again.
   extensions::ExtensionRegistry registry(nullptr);
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("test")
@@ -161,71 +166,125 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
           .Build();
   registry.AddEnabled(extension);
 
-  base::Value package(base::Value::Type::DICTIONARY);
-  package.SetKey(AppLaunchEventLogger::kShouldSync, base::Value(true));
+  base::Value maps_package(base::Value::Type::DICTIONARY);
+  base::Value calculator_package(base::Value::Type::DICTIONARY);
+  maps_package.SetKey(AppLaunchEventLogger::kShouldSync, base::Value(true));
+  calculator_package.SetKey(AppLaunchEventLogger::kShouldSync,
+                            base::Value(true));
 
   auto packages = std::make_unique<base::DictionaryValue>();
-  packages->SetKey(kMapsPackageName, package.Clone());
+  packages->SetKey(kMapsPackageName, maps_package.Clone());
+  packages->SetKey(kCalculatorPackageName, calculator_package.Clone());
 
-  base::Value app(base::Value::Type::DICTIONARY);
-  app.SetKey(AppLaunchEventLogger::kPackageName, base::Value(kMapsPackageName));
+  base::Value maps_app(base::Value::Type::DICTIONARY);
+  base::Value calculator_app(base::Value::Type::DICTIONARY);
+  maps_app.SetKey(AppLaunchEventLogger::kPackageName,
+                  base::Value(kMapsPackageName));
+  calculator_app.SetKey(AppLaunchEventLogger::kPackageName,
+                        base::Value(kCalculatorPackageName));
 
   auto arc_apps = std::make_unique<base::DictionaryValue>();
-  arc_apps->SetKey(kMapsArcApp, app.Clone());
-
-  GURL maps_url("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
+  arc_apps->SetKey(kMapsArcApp, maps_app.Clone());
+  arc_apps->SetKey(kCalculatorArcApp, calculator_app.Clone());
 
   AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, arc_apps.get(),
                                                 packages.get());
+  // 3 clicks on photos, 2 clicks on calculator, 1 click on maps.
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
+  app_launch_event_logger_.OnGridClicked(kCalculatorArcApp);
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               2);
+  app_launch_event_logger_.OnGridClicked(kCalculatorArcApp);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
   scoped_task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
-  ASSERT_EQ(4ul, entries.size());
+  ASSERT_EQ(6ul, entries.size());
   const auto* entry = entries.back();
   test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
-  test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 4);
-  test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 4);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 6);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 6);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 3);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 1);
   test_ukm_recorder_.ExpectEntryMetric(entry, "TotalHours", 0);
 
   const auto click_entries =
       test_ukm_recorder_.GetEntriesByName("AppListAppClickData");
-  ASSERT_EQ(8ul, click_entries.size());
-  // Examine the last two events, which are created by the last click.
-  const auto* maps_entry = click_entries.at(6);
-  const auto* photos_entry = click_entries.at(7);
-  if (test_ukm_recorder_.GetSourceForSourceId(maps_entry->source_id)->url() ==
-      kPhotosPWAUrl) {
-    const auto* tmp_entry = photos_entry;
-    photos_entry = maps_entry;
-    maps_entry = tmp_entry;
-  }
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, kPhotosPWAUrl);
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(maps_entry, maps_url);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppLaunchId",
+  // Three apps for each of the 6 events.
+  ASSERT_EQ(18ul, click_entries.size());
+  // Examine the last three events, which are created by the last click.
+  base::flat_map<GURL, const ukm::mojom::UkmEntry*> entries_map;
+  entries_map[test_ukm_recorder_
+                  .GetSourceForSourceId(click_entries.at(15)->source_id)
+                  ->url()] = click_entries.at(15);
+  entries_map[test_ukm_recorder_
+                  .GetSourceForSourceId(click_entries.at(16)->source_id)
+                  ->url()] = click_entries.at(16);
+  entries_map[test_ukm_recorder_
+                  .GetSourceForSourceId(click_entries.at(17)->source_id)
+                  ->url()] = click_entries.at(17);
+
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kPhotosPWAUrl],
+                                             kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kMapsArcUrl],
+                                             kMapsArcUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kCalculatorArcUrl],
+                                             kCalculatorArcUrl);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "AppLaunchId", entry->source_id);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "AppLaunchId",
                                        entry->source_id);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "AppLaunchId",
-                                       entry->source_id);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "ClicksLast24Hours", 2);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "ClicksLast24Hours", 1);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "ClicksLastHour", 2);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "ClicksLastHour", 1);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "MostRecentlyUsedIndex",
-                                       0);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "MostRecentlyUsedIndex", 1);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "TimeSinceLastClick", 0);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "TotalClicks", 2);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "TotalClicks", 1);
-  test_ukm_recorder_.ExpectEntryMetric(photos_entry, "LastLaunchedFrom", 2);
-  test_ukm_recorder_.ExpectEntryMetric(maps_entry, "LastLaunchedFrom", 1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "AppLaunchId", entry->source_id);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "ClicksLast24Hours", 2);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+                                       "ClicksLast24Hours", 1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "ClicksLast24Hours", 2);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "ClicksLastHour", 2);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+                                       "ClicksLastHour", 1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "ClicksLastHour", 2);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "MostRecentlyUsedIndex", 1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+                                       "MostRecentlyUsedIndex", 3);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "MostRecentlyUsedIndex", 0);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "TimeSinceLastClick", 0);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "TotalClicks", 2);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "TotalClicks",
+                                       1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "TotalClicks", 2);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+                                       "LastLaunchedFrom", 2);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+                                       "LastLaunchedFrom", 1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "LastLaunchedFrom", 1);
+
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl], "ClickRank",
+                                       1);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "ClickRank",
+                                       3);
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+                                       "ClickRank", 1);
 }
 
 TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {

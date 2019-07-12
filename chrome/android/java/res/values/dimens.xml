@@ -503,10 +503,13 @@
     <dimen name="pref_list_padding_kitkat">16dp</dimen>
     <dimen name="pref_spinner_padding_end">8dp</dimen>
 
-    <dimen name="pref_languages_padding">16dp</dimen>
     <dimen name="pref_languages_add_button_padding">24dp</dimen>
     <dimen name="pref_languages_item_popup_width">260dp</dimen>
-    <dimen name="pref_languages_item_dragged_elevation">6dp</dimen>
+
+
+    <!-- Drag-Reorderable List dimensions -->
+    <dimen name="draggable_list_item_padding">16dp</dimen>
+    <dimen name="list_item_dragged_elevation">6dp</dimen>
 
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
@@ -621,8 +624,8 @@
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_border_width">1dp</dimen>
-    <dimen name="navigation_bubble_default_height">32dp</dimen>
-    <dimen name="navigation_bubble_bg_vertical_inset">0dp</dimen>
+    <dimen name="navigation_bubble_default_height">48dp</dimen>
+    <dimen name="navigation_bubble_bg_vertical_inset">8dp</dimen>
     <dimen name="navigation_bubble_vertical_padding">4dp</dimen>
     <dimen name="navigation_bubble_horizontal_padding">8dp</dimen>
     <dimen name="navigation_bubble_icon_size">20dp</dimen>

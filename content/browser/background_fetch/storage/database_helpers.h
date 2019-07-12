@@ -10,7 +10,6 @@
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 

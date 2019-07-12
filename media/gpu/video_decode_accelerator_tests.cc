@@ -62,9 +62,14 @@ class VideoDecoderTest : public ::testing::Test {
     LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
+    // Force allocate mode if import mode is not supported.
+    if (!g_env->ImportSupported())
+      config.allocation_mode = AllocationMode::kAllocate;
+
     // Use the video frame validator to validate decoded video frames if import
-    // mode is supported.
-    if (g_env->IsValidatorEnabled() && g_env->ImportSupported()) {
+    // mode is supported and enabled.
+    if (g_env->IsValidatorEnabled() &&
+        config.allocation_mode == AllocationMode::kImport) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
@@ -80,10 +85,6 @@ class VideoDecoderTest : public ::testing::Test {
 
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
-
-    // Force allocate mode if import mode is not supported.
-    if (!g_env->ImportSupported())
-      config.allocation_mode = AllocationMode::kAllocate;
 
     return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
@@ -258,11 +259,14 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 // Play a video from start to finish. Thumbnails of the decoded frames will be
 // rendered into a image, whose checksum is compared to a golden value. This
 // test is only run on older platforms that don't support the video frame
-// validator, which requires import mode. This test will be deprecated once all
-// devices support import mode.
+// validator, which requires import mode. If no thumbnail checksums are present
+// in the video metadata the test will be skipped. This test will be deprecated
+// once all devices support import mode.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
-  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported())
+  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported() ||
+      g_env->Video()->ThumbnailChecksums().empty()) {
     GTEST_SKIP();
+  }
 
   base::FilePath output_folder =
       base::FilePath(g_env->OutputFolder())

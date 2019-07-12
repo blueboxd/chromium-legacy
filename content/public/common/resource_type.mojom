@@ -24,5 +24,9 @@ enum ResourceType {
   kServiceWorker = 15,      // the main resource of a service worker.
   kCspReport = 16,          // a report of Content Security Policy violations.
   kPluginResource = 17,     // a resource that a plugin requested.
-  kNavigationPreload = 18,  // a service worker navigation preload request.
+  // kNavigationPreload = 18,  // Deprecated.
+  // a main-frame service worker navigation preload request.
+  kNavigationPreloadMainFrame = 19,
+  // a sub-frame service worker navigation preload request.
+  kNavigationPreloadSubFrame = 20,
 };

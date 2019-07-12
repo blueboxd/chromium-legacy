@@ -162,12 +162,12 @@ class InstantService : public KeyedService,
 
   // Calculates the most frequent color of the image and stores it in prefs.
   void UpdateCustomBackgroundColorAsync(
-      base::TimeTicks timestamp,
+      const GURL& image_url,
       const gfx::Image& fetched_image,
       const image_fetcher::RequestMetadata& metadata);
 
   // Fetches the image for the given |fetch_url|.
-  void FetchCustomBackground(base::TimeTicks timestamp, const GURL& fetch_url);
+  void FetchCustomBackground(const GURL& image_url, const GURL& fetch_url);
 
  private:
   class SearchProviderObserver;
@@ -184,9 +184,6 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DoesToggleShortcutsVisibility);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, IsCustomLinksEnabled);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
-  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestUpdateCustomBackgroundColor);
-  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
-                           LocalImageDoesNotUpdateCustomBackgroundColor);
 
   // KeyedService:
   void Shutdown() override;
@@ -240,16 +237,11 @@ class InstantService : public KeyedService,
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
 
-  // Updates custom background prefs with color if the background hasn't changed
-  // since the calculation started.
-  void UpdateCustomBackgroundPrefsWithColor(base::TimeTicks timestamp,
+  // Updates custom background prefs with color for the given |image_url|.
+  void UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,
                                             SkColor color);
 
   void SetImageFetcherForTesting(image_fetcher::ImageFetcher* image_fetcher);
-
-  base::TimeTicks GetBackgroundUpdatedTimestampForTesting() {
-    return background_updated_timestamp_;
-  }
 
   Profile* const profile_;
 
@@ -286,8 +278,6 @@ class InstantService : public KeyedService,
   NtpBackgroundService* background_service_;
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
-
-  base::TimeTicks background_updated_timestamp_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 

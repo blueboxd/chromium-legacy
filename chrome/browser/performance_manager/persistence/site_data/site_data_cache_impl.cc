@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -156,6 +157,11 @@ void SiteDataCacheImpl::ClearAllSiteData() {
   for (auto& data : origin_data_map_)
     data.second->ClearObservationsAndInvalidateReadOperation();
   data_store_->ClearStore();
+}
+
+void SiteDataCacheImpl::SetInitializationCallbackForTesting(
+    base::OnceClosure callback) {
+  data_store_->SetInitializationCallbackForTesting(std::move(callback));
 }
 
 }  // namespace performance_manager

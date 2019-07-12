@@ -35,10 +35,6 @@ constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 constexpr int kSeparatorSize = 20;
 constexpr int kSeparatorThickness = 1;
 
-// The margin between app icons and the overflow button. This is bigger than
-// between app icons because the overflow button is a little smaller.
-constexpr int kMarginBetweenAppsAndOverflow = 16;
-
 // The margin on either side of the group of app icons (including the overflow
 // button).
 constexpr int kAppIconGroupMargin = 16;
@@ -55,15 +51,19 @@ bool IsTabletModeEnabled() {
 // true, returns the size of |count| app icons followed by an overflow
 // button.
 int GetSizeOfAppIcons(int count, bool with_overflow) {
+  const int control_size = ShelfConstants::control_size();
+  const int button_spacing = ShelfConstants::button_spacing();
+  const int overflow_button_margin = ShelfConstants::overflow_button_margin();
+
   if (count == 0)
-    return with_overflow ? ShelfConstants::control_size() : 0;
+    return with_overflow ? control_size + 2 * overflow_button_margin : 0;
 
   const int app_size = count * ShelfConstants::button_size();
   int overflow_size = 0;
-  int total_padding = ShelfConstants::button_spacing() * (count - 1);
+  int total_padding = button_spacing * (count - 1);
   if (with_overflow) {
-    overflow_size += ShelfConstants::control_size();
-    total_padding += kMarginBetweenAppsAndOverflow;
+    overflow_size += control_size;
+    total_padding += button_spacing + 2 * overflow_button_margin;
   }
   return app_size + total_padding + overflow_size;
 }
@@ -160,10 +160,9 @@ void DefaultShelfView::CalculateIdealBounds() {
     x = shelf()->PrimaryAxisValue(home_button_position, 0);
     y = shelf()->PrimaryAxisValue(0, home_button_position);
 
-    // A larger minimum padding after the home button is required:
-    // increment with the necessary extra amount.
-    x += shelf()->PrimaryAxisValue(kAppIconGroupMargin - button_spacing, 0);
-    y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin - button_spacing);
+    // Add the minimum padding required after the home button.
+    x += shelf()->PrimaryAxisValue(kAppIconGroupMargin, 0);
+    y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin);
 
     // Now add the necessary padding to center app icons.
     StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
@@ -183,9 +182,10 @@ void DefaultShelfView::CalculateIdealBounds() {
       padding_for_centering = (screen_size - icons_size) / 2;
     } else {
       padding_for_centering =
-          kShelfButtonSpacing +
+          button_spacing +
           (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() +
-          kAppIconGroupMargin + (available_size_for_app_icons - icons_size) / 2;
+          (IsTabletModeEnabled() ? button_spacing : 0) + kAppIconGroupMargin +
+          (available_size_for_app_icons - icons_size) / 2;
     }
 
     if (padding_for_centering > home_button_position + kAppIconGroupMargin) {
@@ -294,6 +294,7 @@ int DefaultShelfView::GetAvailableSpaceForAppIcons() const {
   // button if applicable.
   return shelf()->PrimaryAxisValue(width(), height()) - kShelfButtonSpacing -
          (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() -
+         (IsTabletModeEnabled() ? ShelfConstants::button_spacing() : 0) -
          2 * kAppIconGroupMargin;
 }
 

@@ -45,7 +45,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
@@ -2421,14 +2421,6 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
 }
 
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
-  if (!eliminate_static_stream_map()) {
-    while (!dynamic_streams().empty()) {
-      quic::QuicStream* stream = dynamic_streams().begin()->second.get();
-      quic::QuicStreamId id = stream->id();
-      static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
-      CloseStream(id);
-    }
-  } else {
     quic::QuicSmallMap<quic::QuicStreamId, quic::QuicStream*, 10>
         non_static_streams;
     for (const auto& stream : dynamic_streams()) {
@@ -2441,7 +2433,6 @@ void QuicChromiumClientSession::CloseAllStreams(int net_error) {
       static_cast<QuicChromiumClientStream*>(stream.second)->OnError(net_error);
       CloseStream(id);
     }
-  }
 }
 
 void QuicChromiumClientSession::CloseAllHandles(int net_error) {
@@ -2649,7 +2640,7 @@ void QuicChromiumClientSession::ResetNonMigratableStreams() {
   auto it = dynamic_streams().begin();
   // Stream may be deleted when iterating through the map.
   while (it != dynamic_streams().end()) {
-    if (eliminate_static_stream_map() && it->second->is_static()) {
+    if (it->second->is_static()) {
       it++;
       continue;
     }
@@ -2774,8 +2765,9 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (DynamicStreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
-    if (eliminate_static_stream_map() && it->second->is_static())
+    if (it->second->is_static()) {
       continue;
+    }
     stream_list->AppendString(base::NumberToString(it->second->id()));
   }
   dict.Set("active_streams", std::move(stream_list));
@@ -3037,7 +3029,7 @@ bool QuicChromiumClientSession::HandlePromised(
     // promise has been received.
     if (push_delegate_) {
       std::string pushed_url =
-          quic::SpdyUtils::GetPromisedUrlFromHeaders(headers);
+          quic::SpdyServerPushUtils::GetPromisedUrlFromHeaders(headers);
       push_delegate_->OnPush(std::make_unique<QuicServerPushHelper>(
                                  weak_factory_.GetWeakPtr(), GURL(pushed_url)),
                              net_log_);

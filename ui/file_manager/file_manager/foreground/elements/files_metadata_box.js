@@ -15,62 +15,27 @@ var FilesMetadataBox = Polymer({
     modificationTime: String,
     mediaMimeType: String,
 
-    // File type specific metadata below.
-    imageWidth: {
-      type: Number,
-      observer: 'metadataUpdated_',
-    },
-    imageHeight: {
-      type: Number,
-      observer: 'metadataUpdated_',
-    },
-    mediaAlbum: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-    mediaArtist: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-    mediaDuration: {
-      type: Number,
-      observer: 'metadataUpdated_',
-    },
-    mediaGenre: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-    mediaTitle: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-    mediaTrack: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-    mediaYearRecorded: {
-      type: String,
-      observer: 'metadataUpdated_',
-    },
-
-    /**
-     * Exif parsed by exif_parser.js or extracted from RAW files, or null if
-     * there is no Exif information. For RAW files, the Exif data resides in
-     * the object |ifd.raw| field.
-     * @type {?Object}
-     */
-    ifd: {
-      type: Object,
-      observer: 'metadataUpdated_',
-    },
-
-    // Whether the size is the middle of loading.
+    // True if the size field is loading.
     isSizeLoading: Boolean,
 
+    // File-specific metadata.
+    /** @type {?Object} */
+    ifd: Object,
+    imageWidth: Number,
+    imageHeight: Number,
+    mediaAlbum: String,
+    mediaArtist: String,
+    mediaDuration: Number,
+    mediaGenre: String,
+    mediaTitle: String,
+    mediaTrack: String,
+    mediaYearRecorded: String,
+
     /**
+     * True if the file has file-specific metadata.
      * @private
      */
-    hasFileSpecificInfo_: Boolean,
+    hasFileSpecificMetadata_: Boolean,
 
     /**
      * FilesMetadataBox [metadata] attribute. Used to indicate the metadata box
@@ -89,7 +54,7 @@ var FilesMetadataBox = Polymer({
    */
   clear: function(keepSizeFields) {
     this.filePath = '';
-    this.type = '';
+    this.metadata = '';
 
     if (!keepSizeFields) {
       this.size = '';
@@ -98,6 +63,11 @@ var FilesMetadataBox = Polymer({
     this.modificationTime = '';
     this.mediaMimeType = '';
 
+    this.type = '';
+    this.hasFileSpecificMetadata_ = false;
+
+    /** @type {?Object} */
+    this.ifd = null;
     this.imageWidth = 0;
     this.imageHeight = 0;
     this.mediaTitle = '';
@@ -107,9 +77,6 @@ var FilesMetadataBox = Polymer({
     this.mediaGenre = '';
     this.mediaTrack = '';
     this.mediaYearRecorded = '';
-    this.ifd = null;
-
-    this.metadata = '';
   },
 
   /**
@@ -143,15 +110,26 @@ var FilesMetadataBox = Polymer({
   },
 
   /**
-   * Update private properties computed from metadata.
+   * Sets this.hasFileSpecificMetadata_ if there is file-specific metadata.
+   * @return {boolean}
+   *
    * @private
    */
-  metadataUpdated_: function() {
-    this.hasFileSpecificInfo_ =
+  setFileSpecificMetadata_: function() {
+    this.hasFileSpecificMetadata_ =
         !!(this.imageWidth && this.imageHeight || this.mediaTitle ||
            this.mediaArtist || this.mediaAlbum || this.mediaDuration ||
            this.mediaGenre || this.mediaTrack || this.mediaYearRecorded ||
            this.ifd);
+    return this.hasFileSpecificMetadata_;
+  },
+
+  /**
+   * Sets the file |type| field based on setFileSpecificMetadata_().
+   * @public
+   */
+  setFileTypeInfo: function(type) {
+    this.type = this.setFileSpecificMetadata_() ? type : '';
   },
 
   /**

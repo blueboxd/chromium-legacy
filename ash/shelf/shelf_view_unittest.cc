@@ -2324,7 +2324,8 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
       app_buttons[0]->GetBoundsInScreen().x() -
           shelf_view_->GetHomeButton()->GetBoundsInScreen().right(),
       status_area_->GetBoundsInScreen().x() -
-          shelf_view_->GetOverflowButton()->GetBoundsInScreen().right());
+          (shelf_view_->GetOverflowButton()->GetBoundsInScreen().right() +
+           ShelfConstants::overflow_button_margin()));
 }
 
 TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {

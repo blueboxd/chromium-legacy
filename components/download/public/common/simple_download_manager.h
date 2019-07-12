@@ -56,6 +56,11 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
   // Get the download item for |guid|.
   virtual DownloadItem* GetDownloadByGuid(const std::string& guid) = 0;
 
+  // Checks whether downloaded files still exist. Updates state of downloads
+  // that refer to removed files. The check runs in the background and may
+  // finish asynchronously after this method returns.
+  virtual void CheckForHistoryFilesRemoval() {}
+
  protected:
   // Called when the manager is initailized.
   void OnInitialized();

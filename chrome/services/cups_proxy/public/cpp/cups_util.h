@@ -9,8 +9,15 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/services/cups_proxy/public/cpp/ipp_messages.h"
+
+namespace chromeos {
+class Printer;
+}  // namespace chromeos
 
 // Utility namespace that encapsulates helpful libCUPS-dependent
 // constants/methods.
@@ -19,6 +26,13 @@ namespace cups_proxy {
 // Max HTTP buffer size, as defined libCUPS at cups/http.h.
 // Note: This is assumed to be stable.
 static const size_t kHttpMaxBufferSize = 2048;
+
+// Expects |request| to be an IPP_OP_GET_PRINTERS IPP request. This function
+// creates an appropriate IPP response referencing |printers|.
+// TODO(crbug.com/945409): Expand testing suite.
+base::Optional<IppResponse> BuildGetDestsResponse(
+    const IppRequest& request,
+    std::vector<chromeos::Printer> printers);
 
 // If |ipp| refers to a printer, we return the associated printer_id.
 // Note: Expects the printer id to be embedded in the resource field of the

@@ -92,8 +92,8 @@ class CORE_EXPORT ApplicationCacheHost
   void WillStartLoading(ResourceRequest&);
 
   mojom::blink::AppCacheStatus GetStatus() const;
-  bool Update();
-  bool SwapCache();
+  virtual bool Update() { return false; }
+  virtual bool SwapCache() { return false; }
   void Abort();
 
   void SetApplicationCache(ApplicationCache*);
@@ -128,6 +128,8 @@ class CORE_EXPORT ApplicationCacheHost
   virtual void Trace(blink::Visitor*);
 
  protected:
+  DocumentLoader* GetDocumentLoader() const { return document_loader_; }
+
   mojom::blink::AppCacheHostPtr backend_host_;
   mojom::blink::AppCacheStatus status_ =
       mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
@@ -143,7 +145,6 @@ class CORE_EXPORT ApplicationCacheHost
 
   void GetAssociatedCacheInfo(CacheInfo* info);
   bool IsApplicationCacheEnabled();
-  DocumentLoader* GetDocumentLoader() const { return document_loader_; }
   bool BindBackend();
   void DispatchDOMEvent(mojom::AppCacheEventID,
                         int progress_total,
@@ -178,7 +179,10 @@ class CORE_EXPORT ApplicationCacheHost
   };
 
   WeakMember<ApplicationCache> dom_application_cache_ = nullptr;
+
+  // TODO(https://crbug.com/982996): Move this to ApplicationCacheHostForFrame.
   Member<DocumentLoader> document_loader_;
+
   bool defers_events_ =
       true;  // Events are deferred until after document onload.
   Vector<DeferredEvent> deferred_events_;

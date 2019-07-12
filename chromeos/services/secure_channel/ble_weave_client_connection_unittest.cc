@@ -262,7 +262,9 @@ class TestBluetoothLowEnergyWeaveClientConnection
 class MockBluetoothLowEnergyCharacteristicsFinder
     : public BluetoothLowEnergyCharacteristicsFinder {
  public:
-  MockBluetoothLowEnergyCharacteristicsFinder() {}
+  MockBluetoothLowEnergyCharacteristicsFinder(
+      multidevice::RemoteDeviceRef remote_device)
+      : BluetoothLowEnergyCharacteristicsFinder(remote_device) {}
   ~MockBluetoothLowEnergyCharacteristicsFinder() override {}
 
  private:
@@ -456,7 +458,8 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
         .WillOnce(DoAll(
             SaveArg<0>(&characteristics_finder_success_callback_),
             SaveArg<1>(&characteristics_finder_error_callback_),
-            Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
+            Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>(
+                remote_device_))));
 
     create_gatt_connection_success_callback_.Run(
         std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
@@ -1391,7 +1394,8 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
       .WillOnce(DoAll(
           SaveArg<0>(&characteristics_finder_success_callback_),
           SaveArg<1>(&characteristics_finder_error_callback_),
-          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
+          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>(
+              remote_device_))));
 
   create_gatt_connection_success_callback_.Run(
       std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
@@ -1436,7 +1440,8 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
       .WillOnce(DoAll(
           SaveArg<0>(&characteristics_finder_success_callback_),
           SaveArg<1>(&characteristics_finder_error_callback_),
-          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
+          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>(
+              remote_device_))));
 
   create_gatt_connection_success_callback_.Run(
       std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
@@ -1492,7 +1497,8 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
       .WillOnce(DoAll(
           SaveArg<0>(&characteristics_finder_success_callback_),
           SaveArg<1>(&characteristics_finder_error_callback_),
-          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
+          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>(
+              remote_device_))));
 
   create_gatt_connection_success_callback_.Run(
       std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(

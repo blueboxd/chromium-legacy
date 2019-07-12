@@ -54,7 +54,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_write_blocked_list.h"
@@ -364,7 +364,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
     promised_response_[":version"] = "HTTP/1.1";
     promised_response_["content-type"] = "text/plain";
 
-    promise_url_ = quic::SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+    promise_url_ =
+        quic::SpdyServerPushUtils::GetPromisedUrlFromHeaders(push_promise_);
   }
 
   void SetRequest(const string& method,
@@ -2099,7 +2100,8 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
   // packet, but does it matter?
 
   push_promise_[":authority"] = "mail.example.org";
-  promise_url_ = quic::SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+  promise_url_ =
+      quic::SpdyServerPushUtils::GetPromisedUrlFromHeaders(push_promise_);
 
   ReceivePromise(promise_id_);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -2169,7 +2171,8 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginFail) {
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
   // packet, but does it matter?
   push_promise_[":authority"] = "www.notexample.org";
-  promise_url_ = quic::SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
+  promise_url_ =
+      quic::SpdyServerPushUtils::GetPromisedUrlFromHeaders(push_promise_);
 
   ReceivePromise(promise_id_);
   // The promise will have been rejected because the cert doesn't

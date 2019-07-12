@@ -43,7 +43,8 @@ class PanelButton extends HTMLElement {
                   nPg==') no-repeat center;
               }
 
-              :host([data-category='cancel']) {
+              :host([data-category='cancel']),
+              :host([data-category='dismiss']) {
                 background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR\
                   0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczNnB4JyBoZWlnaHQ\
                   9JzM2cHgnIHZpZXdCb3g9JzAgMCAzNiAzNic+CiAgICA8ZyBzdHJva2U9JyM\

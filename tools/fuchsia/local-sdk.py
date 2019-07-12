@@ -64,7 +64,7 @@ def main(args):
   EnsureEmptyDir(output_dir)
 
   original_dir = os.getcwd()
-  fuchsia_root = args[0]
+  fuchsia_root = os.path.abspath(args[0])
   merged_manifest = None
   manifest_parts = set()
 

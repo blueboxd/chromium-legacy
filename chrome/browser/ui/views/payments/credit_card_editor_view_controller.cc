@@ -37,6 +37,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -450,10 +451,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   }
 
   // TODO(crbug.com/711365): Display global error message.
-  if (autofill::GetCompletionStatusForCard(
+  if (GetCompletionStatusForCard(
           credit_card, locale,
           state()->GetPersonalDataManager()->GetProfiles()) !=
-      autofill::CREDIT_CARD_COMPLETE) {
+      CREDIT_CARD_COMPLETE) {
     return false;
   }
 
@@ -597,10 +598,9 @@ base::string16 CreditCardEditorViewController::GetSheetTitle() {
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
 
   // Gets the completion message, or empty if nothing is missing from the card.
-  base::string16 title = autofill::GetCompletionMessageForCard(
-      autofill::GetCompletionStatusForCard(
-          *credit_card_to_edit_, state()->GetApplicationLocale(),
-          state()->GetPersonalDataManager()->GetProfiles()));
+  base::string16 title = GetCompletionMessageForCard(GetCompletionStatusForCard(
+      *credit_card_to_edit_, state()->GetApplicationLocale(),
+      state()->GetPersonalDataManager()->GetProfiles()));
   return title.empty() ? l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_CARD)
                        : title;
 }

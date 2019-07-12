@@ -11,7 +11,7 @@ package notifications.proto;
 // Contains data to determine when a notification should be shown to the user
 // and the user impression towards this notification. Should match Impression in
 // impression_types.h.
-// Next tag: 7
+// Next tag: 8
 message Impression {
   // The type of user feedback from a displayed notification. Should match
   // UserFeedback in notification_scheduler_types.h.
@@ -41,6 +41,13 @@ message Impression {
     EVENING = 2;
   }
 
+  // Used to override default user action and impression mapping.
+  // Next tag: 3
+  message ImpressionMapping {
+    optional UserFeedback user_feedback = 1;
+    optional ImpressionResult impression_result = 2;
+  }
+
   // Creation time stamp in milliseconds since epoch.
   optional int64 create_time = 1;
 
@@ -59,4 +66,6 @@ message Impression {
 
   // The unique identifier of the notification.
   optional string guid = 6;
+
+  repeated ImpressionMapping impression_mapping = 7;
 }

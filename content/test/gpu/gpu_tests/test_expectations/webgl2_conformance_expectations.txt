@@ -102,8 +102,6 @@ crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ Re
 crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-texture-base-level.html [ Failure ]
 crbug.com/735464 [ d3d11 win nvidia ] deqp/functional/gles3/textureshadow/* [ RetryOnFailure ]
 crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-default-values.html [ RetryOnFailure ]
-crbug.com/945877 [ win passthrough ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
-crbug.com/945877 [ linux passthrough ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
 
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]
@@ -229,15 +227,6 @@ crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
 # Passthrough command decoder / OpenGL
-crbug.com/602688 [ opengl passthrough ] conformance2/misc/uninitialized-test-2.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance2/rendering/draw-buffers-dirty-state-bug.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance2/state/gl-get-calls.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] deqp/functional/gles3/integerstatequery.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/795030 [ opengl passthrough ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
-crbug.com/794341 [ opengl passthrough ] deqp/functional/gles3/shaderpackingfunction.html [ Failure ]
-crbug.com/814905 [ opengl passthrough ] conformance2/rendering/attrib-type-match.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl passthrough ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
 
 # Passthrough command decoder / OpenGL / Windows
@@ -254,21 +243,12 @@ crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/tex
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
+crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
-crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/766918 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/766918 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/793055 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shaderoperator/common_functions_* [ Failure ]
-crbug.com/927407 [ opengl linux passthrough nvidia ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
-
-# Passthrough command decoder / Linux / OpenGL / Intel
-crbug.com/angleproject/2761 [ opengl linux passthrough intel ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/950787 [ opengl linux passthrough intel ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 
 # Regressions in 10.12.4.
 crbug.com/705865 [ sierra intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
@@ -584,8 +564,6 @@ crbug.com/905011 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-s
 crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
 crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
-crbug.com/666384 [ linux intel opengl passthrough ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
-crbug.com/666384 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.

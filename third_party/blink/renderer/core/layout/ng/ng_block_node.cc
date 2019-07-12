@@ -289,6 +289,13 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     // without that check.
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
 
+#if DCHECK_IS_ON()
+    // Ensure turning on/off scrollbars only once at most, when we call
+    // |LayoutWithAlgorithm| recursively.
+    DEFINE_STATIC_LOCAL(HashSet<LayoutBox*>, scrollbar_changed, ());
+    DCHECK(scrollbar_changed.insert(box_).is_new_entry);
+#endif
+
     // Must not call SetNeedsLayout in intermediate layout. If we do,
     // the NeedsLayout flag might not be cleared. crbug.com/967361
     DCHECK(!constraint_space.IsIntermediateLayout() || box_->NeedsLayout());
@@ -301,6 +308,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
         CalculateInitialFragmentGeometry(constraint_space, *this);
     layout_result = LayoutWithAlgorithm(params);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);
+
+#if DCHECK_IS_ON()
+    scrollbar_changed.erase(box_);
+#endif
   }
 
   // We always need to update the ShapeOutsideInfo even if the layout is

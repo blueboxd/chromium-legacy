@@ -231,6 +231,11 @@ const base::Feature kDesktopCaptureTabSharingInfobar{
 const base::Feature kDesktopPWAsWithoutExtensions{
     "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables local PWA installs to update their app manifest data if the site
+// changes its manifest.
+const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables new Desktop PWAs unified |InstallManager| that does not
 // use extensions.
 const base::Feature kDesktopPWAsUnifiedInstall{

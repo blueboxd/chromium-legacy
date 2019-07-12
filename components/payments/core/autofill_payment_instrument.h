@@ -42,6 +42,8 @@ class AutofillPaymentInstrument
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
   bool IsCompleteForPayment() const override;
+  uint32_t GetCompletenessScore() const override;
+  bool CanPreselect() const override;
   bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;
@@ -67,6 +69,7 @@ class AutofillPaymentInstrument
   void RecordMissingFieldsForInstrument() const;
 
   autofill::CreditCard* credit_card() { return &credit_card_; }
+  const autofill::CreditCard* credit_card() const { return &credit_card_; }
 
   const std::string& method_name() const { return method_name_; }
 

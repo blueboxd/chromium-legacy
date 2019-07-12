@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/bind_test_util.h"

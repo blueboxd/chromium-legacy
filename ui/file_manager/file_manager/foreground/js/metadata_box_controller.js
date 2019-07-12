@@ -148,8 +148,7 @@ MetadataBoxController.prototype.updateView_ = function(event) {
 };
 
 /**
- * Update metadata box with general file information.
- * Then retrieve file specific metadata if any.
+ * Updates the metadata box with general and file-specific metadata.
  *
  * @param {!Entry} entry
  * @param {boolean} isSameEntry if the entry is not changed from the last time.
@@ -182,14 +181,13 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     });
   }
 
-  this.metadataBox_.type = type;
-
   if (['image', 'video', 'audio'].includes(type)) {
     if (item.externalFileUrl || item.alternateUrl) {
       const data = ['imageHeight', 'imageWidth'];
       this.metadataModel_.get([entry], data).then(items => {
         this.metadataBox_.imageWidth = items[0].imageWidth || 0;
         this.metadataBox_.imageHeight = items[0].imageHeight || 0;
+        this.metadataBox_.setFileTypeInfo(type);
         this.metadataBox_.metadataRendered('meta');
       });
     } else {
@@ -206,6 +204,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
         this.metadataBox_.mediaTitle = item.mediaTitle || '';
         this.metadataBox_.mediaTrack = item.mediaTrack || '';
         this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
+        this.metadataBox_.setFileTypeInfo(type);
         this.metadataBox_.metadataRendered('meta');
       });
     }
@@ -213,10 +212,10 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     const data = ['ifd'];
     this.metadataModel_.get([entry], data).then(items => {
       const raw = items[0].ifd ? items[0].ifd : {};
-      this.metadataBox_.type = items[0].ifd ? 'image' : '';
       this.metadataBox_.ifd = items[0].ifd ? {raw} : null;
       this.metadataBox_.imageWidth = raw.width || 0;
       this.metadataBox_.imageHeight = raw.height || 0;
+      this.metadataBox_.setFileTypeInfo('image');
       this.metadataBox_.metadataRendered('meta');
     });
   }

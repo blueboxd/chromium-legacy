@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
 
+#include <utility>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
@@ -19,6 +21,7 @@ void JNI_NotificationSchedulerTask_OnStartTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
     const base::android::JavaParamRef<jobject>& j_profile,
+    jint j_task_time,
     const base::android::JavaParamRef<jobject>& j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* service =
@@ -27,19 +30,23 @@ void JNI_NotificationSchedulerTask_OnStartTask(
   auto callback =
       base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback));
-  handler->OnStartTask(std::move(callback));
+  handler->OnStartTask(
+      static_cast<notifications::SchedulerTaskTime>(j_task_time),
+      std::move(callback));
 }
 
 // static
 jboolean JNI_NotificationSchedulerTask_OnStopTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile) {
+    const base::android::JavaParamRef<jobject>& j_profile,
+    jint j_task_time) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* service =
       NotificationScheduleServiceFactory::GetForBrowserContext(profile);
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
-  handler->OnStopTask();
+  handler->OnStopTask(
+      static_cast<notifications::SchedulerTaskTime>(j_task_time));
   // TODO(Hesen): Handle the return value and stoptask.
   return true;
 }

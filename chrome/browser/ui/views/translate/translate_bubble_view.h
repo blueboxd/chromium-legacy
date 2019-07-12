@@ -200,6 +200,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            AlwaysTranslateLanguageMenuItem);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            TabUiAlwaysTranslateLanguageMenuItem);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiTabSelectedAfterTranslation);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewBrowserTest,
                            CheckNeverTranslateThisSiteBlacklist);
@@ -304,6 +306,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Switches the view type.
   void SwitchView(TranslateBubbleModel::ViewState view_state);
 
+  // SwitchView handler for TAB UI since TAB UI has the same view throughout.
+  void SwitchTabForViewState(TranslateBubbleModel::ViewState view_state);
+
   // Switches to the error view.
   void SwitchToErrorView(translate::TranslateErrors::Type error_type);
 
@@ -314,9 +319,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void Translate();
   void ShowOriginal();
   void ConfirmAdvancedOptions();
-
-  // Return true if the current state is in advanced state for TAB UI.
-  bool TabUiIsEquivalentState(TranslateBubbleModel::ViewState view_state);
 
   // Handles the reset button in advanced view under Tab UI.
   void ResetLanguage();

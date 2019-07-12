@@ -1205,7 +1205,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/proguard.pydeps',
     'build/android/gyp/write_build_config.pydeps',
-    'build/android/gyp/write_ordered_libraries.pydeps',
+    'build/android/gyp/write_native_libraries_java.pydeps',
     'build/android/gyp/zip.pydeps',
     'build/android/incremental_install/generate_android_manifest.pydeps',
     'build/android/incremental_install/write_installer_json.pydeps',

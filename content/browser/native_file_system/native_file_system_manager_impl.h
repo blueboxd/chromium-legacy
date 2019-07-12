@@ -141,6 +141,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   }
   storage::FileSystemOperationRunner* operation_runner();
 
+  void SetPermissionContextForTesting(
+      NativeFileSystemPermissionContext* permission_context) {
+    permission_context_ = permission_context;
+  }
+
  private:
   ~NativeFileSystemManagerImpl() override;
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
@@ -154,6 +159,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
                         ChooseEntriesCallback callback,
                         blink::mojom::NativeFileSystemErrorPtr result,
                         std::vector<base::FilePath> entries);
+  void DidChooseDirectory(
+      const BindingContext& binding_context,
+      const base::FilePath& path,
+      ChooseEntriesCallback callback,
+      NativeFileSystemPermissionContext::PermissionStatus permission);
 
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,
@@ -178,7 +188,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
-  NativeFileSystemPermissionContext* const permission_context_;
+  NativeFileSystemPermissionContext* permission_context_;
 
   // All the mojo bindings for this NativeFileSystemManager itself. Keeps track
   // of associated origin and other state as well to not have to rely on the

@@ -6,6 +6,8 @@
 
 #include <d3d11.h>
 
+#include "base/feature_list.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -27,35 +29,53 @@ TextureSelector::TextureSelector(VideoPixelFormat pixfmt,
   SetUpTextureDescriptor();
 }
 
+bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
+                      const gpu::GpuDriverBugWorkarounds& workarounds) {
+  if (!preferences.enable_zero_copy_dxgi_video)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds))
+    if (workarounds.disable_dxgi_zero_copy_video)
+      return false;
+
+  return true;
+}
+
 // static
 std::unique_ptr<TextureSelector> TextureSelector::Create(
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& workarounds,
     const VideoDecoderConfig& config) {
-  // TODO(tmathmeyer) use a CopyTextureSelector
-  if (config.profile() == VP9PROFILE_PROFILE2) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_YUV420P10, DXGI_FORMAT_P010,
-        D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2, config.coded_size(),
-        config.is_encrypted(), false);
-  }
-
   bool supports_nv12_decode_swap_chain = base::FeatureList::IsEnabled(
       features::kDirectCompositionUseNV12DecodeSwapChain);
+  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds);
 
-  if (config.profile() == VP9PROFILE_PROFILE0) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0, config.coded_size(),
-        config.is_encrypted(), supports_nv12_decode_swap_chain);
-  }
-
+  DXGI_FORMAT input_dxgi_format = DXGI_FORMAT_NV12;
+  DXGI_FORMAT output_dxgi_format = DXGI_FORMAT_NV12;
+  GUID decoder_guid = {};
   if (config.codec() == kCodecH264) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_H264_VLD_NOFGT, config.coded_size(),
-        config.is_encrypted(), supports_nv12_decode_swap_chain);
+    decoder_guid = D3D11_DECODER_PROFILE_H264_VLD_NOFGT;
+  } else if (config.profile() == VP9PROFILE_PROFILE0) {
+    decoder_guid = D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0;
+  } else if (config.profile() == VP9PROFILE_PROFILE2) {
+    decoder_guid = D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2;
+    input_dxgi_format = DXGI_FORMAT_P010;
+  } else {
+    // TODO(tmathmeyer) support other profiles in the future.
+    return nullptr;
   }
 
-  return nullptr;
+  if ((input_dxgi_format != output_dxgi_format) || needs_texture_copy) {
+    return std::make_unique<CopyTextureSelector>(
+        PIXEL_FORMAT_NV12, input_dxgi_format, output_dxgi_format, decoder_guid,
+        config.coded_size(), config.is_encrypted(),
+        supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
+  } else {
+    return std::make_unique<TextureSelector>(
+        PIXEL_FORMAT_NV12, output_dxgi_format, decoder_guid,
+        config.coded_size(), config.is_encrypted(),
+        supports_nv12_decode_swap_chain);
+  }
 }
 
 bool TextureSelector::SupportsDevice(
@@ -131,6 +151,7 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
       D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
   texture_desc_.ArraySize = 1;
   texture_desc_.CPUAccessFlags = 0;
+  texture_desc_.Format = output_dxgifmt_;
 
   ComD3D11Texture2D out_texture = CreateOutputTexture(device, size);
   if (!out_texture)

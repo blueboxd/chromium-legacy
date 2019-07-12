@@ -12,6 +12,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -95,6 +96,36 @@ IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, TypedNavigation) {
     NavigateForHeader("Sec-Fetch-User");
     EXPECT_EQ("?1", GetContent());
   }
+}
+
+// Verify that cross-port navigations are treated as same-site by
+// Sec-Fetch-Site.
+IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, CrossPortNavigation) {
+  net::EmbeddedTestServer server2(net::EmbeddedTestServer::TYPE_HTTPS);
+  server2.AddDefaultHandlers(GetTestDataFilePath());
+  server2.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(server2.Start());
+
+  GURL initial_url = server2.GetURL("/title1.html");
+  GURL final_url = GetSecFetchUrl();
+  EXPECT_EQ(initial_url.scheme(), final_url.scheme());
+  EXPECT_EQ(initial_url.host(), final_url.host());
+  EXPECT_NE(initial_url.port(), final_url.port());
+
+  // Navigate to (paraphrasing): https://foo.com:port1/...
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Navigate to (paraphrasing): https://foo.com:port2/...  when the navigation
+  // is initiated from (paraphrasing): https://foo.com:port1/...
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    ASSERT_TRUE(ExecJs(shell(), JsReplace("location = $1", final_url)));
+    nav_observer.Wait();
+  }
+
+  // Verify that https://foo.com:port1 is treated as same-site wrt
+  // https://foo.com:port2.
+  EXPECT_EQ("same-site", GetContent());
 }
 
 }  // namespace content

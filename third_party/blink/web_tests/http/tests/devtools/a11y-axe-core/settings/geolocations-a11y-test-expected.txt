@@ -1,0 +1,13 @@
+Tests accessibility in the settings tool geolocations pane using the axe-core linter.
+
+Running: testAddLocation
+Opened input box: true
+aXe violations: []
+
+
+Running: testNewLocationError
+Invalidating the Location name input
+Error message: Location name cannot be empty
+aXe violations: []
+
+

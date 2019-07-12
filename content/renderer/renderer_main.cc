@@ -190,8 +190,7 @@ int RendererMain(const MainFunctionParams& parameters) {
                          std::move(main_thread_scheduler));
 
     // Setup tracing sampler profiler as early as possible.
-    auto tracing_sampler_profiler =
-        tracing::TracingSamplerProfiler::CreateOnMainThread();
+    tracing::TracingSamplerProfiler::CreateForCurrentThread();
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();

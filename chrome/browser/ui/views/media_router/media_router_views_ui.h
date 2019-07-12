@@ -35,16 +35,12 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, NotifyObserver);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, SinkFriendlyName);
+  friend class MediaRouterViewsUITest;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, SetDialogHeader);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, RemovePseudoSink);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ConnectingState);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, DisconnectingState);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, AddAndRemoveIssue);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ShowDomainForHangouts);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUIIncognitoTest,
-                           HidesCloudSinksForIncognito);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest,
+                           RouteCreationTimeoutForPresentation);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest,
+                           UpdateSinksWhenDialogMovesToAnotherDisplay);
 
   // MediaRouterUIBase:
   void InitCommon(content::WebContents* initiator) override;

@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/notifications/notification_database_conversions.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_database_data.h"

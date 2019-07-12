@@ -47,6 +47,13 @@ class PaymentInstrument {
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
   virtual bool IsCompleteForPayment() const = 0;
+  // Returns the calculated completeness score. Used to sort the list of
+  // available instruments.
+  virtual uint32_t GetCompletenessScore() const = 0;
+  // Returns whether the instrument can be preselected in the payment sheet or
+  // not. If none of the instruments can be preselected, the user must
+  // explicitly select an instrument from a list.
+  virtual bool CanPreselect() const = 0;
   // Returns whether the instrument is exactly matching all filters provided by
   // the merchant. For example, this can return "false" for unknown card types,
   // if the merchant requested only debit cards.
@@ -84,13 +91,19 @@ class PaymentInstrument {
   virtual bool IsValidForPaymentMethodIdentifier(
       const std::string& payment_method_identifier) const = 0;
 
+  // Sorts the instruments using the overloaded < operator.
+  static void SortInstruments(
+      std::vector<std::unique_ptr<PaymentInstrument>>* instruments);
+  static void SortInstruments(std::vector<PaymentInstrument*>* instruments);
+
   int icon_resource_id() const { return icon_resource_id_; }
-  Type type() { return type_; }
+  Type type() const { return type_; }
 
  protected:
   PaymentInstrument(int icon_resource_id, Type type);
 
  private:
+  bool operator<(const PaymentInstrument& other) const;
   int icon_resource_id_;
   Type type_;
 

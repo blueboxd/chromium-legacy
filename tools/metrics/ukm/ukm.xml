@@ -347,6 +347,12 @@ be describing additional metrics about the same event.
       The type of app. 1: CHROME, 2: PLAY, 3: PWA/Bookmark app.
     </summary>
   </metric>
+  <metric name="ClickRank">
+    <summary>
+      Rank apps by total number of clicks. The app with the most clicks has rank
+      1.
+    </summary>
+  </metric>
   <metric name="ClicksEachHour00">
     <summary>
       The number of clicks on this app in the current session that occurred

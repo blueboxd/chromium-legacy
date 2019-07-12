@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -43,6 +44,37 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
                            interface_broker,
                            std::move(task_runner)),
       local_frame_(document_loader->GetFrame()) {}
+
+bool ApplicationCacheHostForFrame::Update() {
+  if (!backend_host_.is_bound())
+    return false;
+
+  bool result = false;
+  backend_host_->StartUpdate(&result);
+  if (!result)
+    return false;
+  if (status_ == mojom::blink::AppCacheStatus::APPCACHE_STATUS_IDLE ||
+      status_ == mojom::blink::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY) {
+    status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_CHECKING;
+  } else {
+    status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+    backend_host_->GetStatus(&status_);
+  }
+  return true;
+}
+
+bool ApplicationCacheHostForFrame::SwapCache() {
+  if (!backend_host_.is_bound())
+    return false;
+
+  bool success = false;
+  backend_host_->SwapCache(&success);
+  if (!success)
+    return false;
+  backend_host_->GetStatus(&status_);
+  probe::UpdateApplicationCacheStatus(GetDocumentLoader()->GetFrame());
+  return true;
+}
 
 void ApplicationCacheHostForFrame::LogMessage(
     mojom::blink::ConsoleMessageLevel log_level,

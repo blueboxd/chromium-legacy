@@ -7,7 +7,6 @@
 #include <functional>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -26,9 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "url/origin.h"
-
-const char MediaEngagementService::kHistogramClearName[] =
-    "Media.Engagement.Clear";
 
 namespace {
 
@@ -66,11 +62,6 @@ bool MediaEngagementTimeFilterAdapter(
   MediaEngagementScore score = service->CreateEngagementScore(origin);
   base::Time playback_time = score.last_media_playback_time();
   return playback_time >= delete_begin && playback_time <= delete_end;
-}
-
-void RecordClear(MediaEngagementClearReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(MediaEngagementService::kHistogramClearName, reason,
-                            MediaEngagementClearReason::kCount);
 }
 
 }  // namespace
@@ -147,11 +138,6 @@ void MediaEngagementService::SetSchemaVersion(int version) {
 void MediaEngagementService::ClearDataBetweenTime(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
-  if (delete_begin == base::Time() && delete_end == base::Time::Max())
-    RecordClear(MediaEngagementClearReason::kDataAll);
-  else
-    RecordClear(MediaEngagementClearReason::kDataRange);
-
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
@@ -171,8 +157,6 @@ void MediaEngagementService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
-    RecordClear(MediaEngagementClearReason::kHistoryAll);
-
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT);
     return;
@@ -203,9 +187,6 @@ void MediaEngagementService::OnURLsDeleted(
     origins[origin]++;
   }
 
-  if (!origins.empty())
-    RecordClear(MediaEngagementClearReason::kHistoryRange);
-
   for (auto const& kv : origins) {
     // Remove the number of visits consistent with the number
     // of URLs from the same origin we are removing.
@@ -232,18 +213,13 @@ void MediaEngagementService::RemoveOriginsWithNoVisits(
     const history::OriginCountAndLastVisitMap& origin_data) {
   // Find all origins that are in |deleted_origins| and not in
   // |remaining_origins| and clear MEI data on them.
-  bool has_deleted_origins = false;
   for (const url::Origin& origin : deleted_origins) {
     const auto& origin_count = origin_data.find(origin.GetURL());
     if (origin_count == origin_data.end() || origin_count->second.first > 0)
       continue;
 
     Clear(origin);
-    has_deleted_origins = true;
   }
-
-  if (has_deleted_origins)
-    RecordClear(MediaEngagementClearReason::kHistoryExpired);
 }
 
 void MediaEngagementService::Clear(const url::Origin& origin) {

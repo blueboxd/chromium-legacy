@@ -60,4 +60,5 @@ message AppLaunchFeatures {
   // checking procedure, which removes apps with |is_policy_compliant| false.
   // Not logged in UKM.
   optional bool is_policy_compliant = 14;
+  optional int32 click_rank = 15;
 }

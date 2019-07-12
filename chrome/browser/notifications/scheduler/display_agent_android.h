@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 
@@ -14,6 +15,13 @@ class DisplayAgentAndroid : public notifications::DisplayAgent {
  public:
   DisplayAgentAndroid();
   ~DisplayAgentAndroid() override;
+
+ protected:
+  // Protected for testing.
+  virtual void ShowNotificationInternal(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& notificationData,
+      const base::android::JavaRef<jobject>& systemData);
 
  private:
   void ShowNotification(

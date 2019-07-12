@@ -577,6 +577,12 @@ const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "
     "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
+extern const char kDesktopPWAsLocalUpdatingName[] =
+    "Desktop PWAs local updating";
+extern const char kDesktopPWAsLocalUpdatingDescription[] =
+    "Enable installed PWAs to update their app manifest data when the site "
+    "manifest data has changed.";
+
 const char kDesktopPWAsOmniboxInstallName[] =
     "Desktop PWAs installable from the omnibox";
 const char kDesktopPWAsOmniboxInstallDescription[] =
@@ -2636,10 +2642,6 @@ const char kGridLayoutForNtpShortcutsName[] =
 const char kGridLayoutForNtpShortcutsDescription[] =
     "Enables better animations for the shortcuts, including improved "
     "drag-and-drop.";
-
-const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
-const char kRemoveNtpFakeboxDescription[] =
-    "Do not show the fakebox on the New Tab page.";
 
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =

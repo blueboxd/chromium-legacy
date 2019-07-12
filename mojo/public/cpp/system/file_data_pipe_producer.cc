@@ -206,6 +206,8 @@ class FileDataPipeProducer::FileSequenceState
 
   void Finish(MojoResult result) {
     if (observer_) {
+      if (result != MOJO_RESULT_OK)
+        observer_->OnBytesRead(nullptr, 0u, base::File::FILE_ERROR_ABORT);
       observer_->OnDoneReading();
       observer_ = nullptr;
     }

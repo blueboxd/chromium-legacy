@@ -98,7 +98,7 @@ def CopyDirectoryContents(src, dst):
 def CheckoutLLVM(commit, dir):
   """Checkout the LLVM monorepo at a certain git commit in dir. Any local
   modifications in dir will be lost."""
-  print("Checking out LLVM monorepo %s into '%s'" % (commit, dir))
+  print('Checking out LLVM monorepo %s into %s' % (commit, dir))
 
   git_dir = os.path.join(dir, '.git')
   fetch_cmd = ['git', '--git-dir', git_dir, 'fetch']
@@ -119,7 +119,7 @@ def CheckoutLLVM(commit, dir):
 
   # Otherwise, do a fresh clone.
   if os.path.isdir(dir):
-    print("Removing %s." % dir)
+    print('Removing %s.' % dir)
     RmTree(dir)
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
@@ -460,15 +460,15 @@ def main():
       # libraries are needed though, and only libclang_rt (i.e.
       # COMPILER_RT_BUILD_BUILTINS).
       bootstrap_args.extend([
-          "-DDARWIN_osx_ARCHS=x86_64",
-          "-DCOMPILER_RT_BUILD_BUILTINS=ON",
-          "-DCOMPILER_RT_BUILD_CRT=OFF",
-          "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
-          "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-          "-DCOMPILER_RT_BUILD_XRAY=OFF",
-          "-DCOMPILER_RT_ENABLE_IOS=OFF",
-          "-DCOMPILER_RT_ENABLE_WATCHOS=OFF",
-          "-DCOMPILER_RT_ENABLE_TVOS=OFF",
+          '-DDARWIN_osx_ARCHS=x86_64',
+          '-DCOMPILER_RT_BUILD_BUILTINS=ON',
+          '-DCOMPILER_RT_BUILD_CRT=OFF',
+          '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+          '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+          '-DCOMPILER_RT_BUILD_XRAY=OFF',
+          '-DCOMPILER_RT_ENABLE_IOS=OFF',
+          '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
+          '-DCOMPILER_RT_ENABLE_TVOS=OFF',
           ])
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
@@ -567,27 +567,27 @@ def main():
     print('Profile generated.')
 
   compiler_rt_args = [
-    "-DCOMPILER_RT_BUILD_CRT=OFF",
-    "-DCOMPILER_RT_BUILD_LIBFUZZER=ON",
-    "-DCOMPILER_RT_BUILD_PROFILE=ON",
-    "-DCOMPILER_RT_BUILD_SANITIZERS=ON",
-    "-DCOMPILER_RT_BUILD_XRAY=OFF",
+    '-DCOMPILER_RT_BUILD_CRT=OFF',
+    '-DCOMPILER_RT_BUILD_LIBFUZZER=ON',
+    '-DCOMPILER_RT_BUILD_PROFILE=ON',
+    '-DCOMPILER_RT_BUILD_SANITIZERS=ON',
+    '-DCOMPILER_RT_BUILD_XRAY=OFF',
   ]
   if sys.platform == 'darwin':
     compiler_rt_args.extend([
-        "-DCOMPILER_RT_BUILD_BUILTINS=ON",
-        "-DCOMPILER_RT_ENABLE_IOS=ON",
-        "-DCOMPILER_RT_ENABLE_WATCHOS=OFF",
-        "-DCOMPILER_RT_ENABLE_TVOS=OFF",
+        '-DCOMPILER_RT_BUILD_BUILTINS=ON',
+        '-DCOMPILER_RT_ENABLE_IOS=ON',
+        '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
+        '-DCOMPILER_RT_ENABLE_TVOS=OFF',
         # armv7 is A5 and earlier, armv7s is A6+ (2012 and later, before 64-bit
         # iPhones). armv7k is Apple Watch, which we don't need.
-        "-DDARWIN_ios_ARCHS=armv7;armv7s;arm64",
-        "-DDARWIN_iossim_ARCHS=i386;x86_64",
+        '-DDARWIN_ios_ARCHS=armv7;armv7s;arm64',
+        '-DDARWIN_iossim_ARCHS=i386;x86_64',
         # We don't need 32-bit intel support for macOS, we only ship 64-bit.
-        "-DDARWIN_osx_ARCHS=x86_64",
+        '-DDARWIN_osx_ARCHS=x86_64',
         ])
   else:
-    compiler_rt_args.append("-DCOMPILER_RT_BUILD_BUILTINS=OFF")
+    compiler_rt_args.append('-DCOMPILER_RT_BUILD_BUILTINS=OFF')
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
@@ -730,8 +730,7 @@ def main():
   rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
                                 RELEASE_VERSION, 'lib', platform)
 
-  # Do an out-of-tree build of compiler-rt for 32-bit Win ASan.
-  # TODO(hans): Do we use 32-bit ASan? Can we drop it?
+  # Do an out-of-tree build of compiler-rt for 32-bit Win clang_rt.profile.lib.
   if sys.platform == 'win32':
     if os.path.isdir(COMPILER_RT_BUILD_DIR):
       RmTree(COMPILER_RT_BUILD_DIR)
@@ -741,10 +740,17 @@ def main():
       # The bootstrap compiler produces 64-bit binaries by default.
       cflags += ['-m32']
       cxxflags += ['-m32']
-    compiler_rt_args = base_cmake_args + compiler_rt_args + [
+    compiler_rt_args = base_cmake_args + [
         '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
-        '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
+        '-DCOMPILER_RT_BUILD_CRT=OFF',
+        '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+        '-DCOMPILER_RT_BUILD_PROFILE=ON',
+        '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+        '-DCOMPILER_RT_BUILD_XRAY=OFF',
+        ]
     RunCommand(['cmake'] + compiler_rt_args +
                [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x86', env=deployment_env)
@@ -753,9 +759,6 @@ def main():
     # Copy select output to the main tree.
     rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
                                   RELEASE_VERSION, 'lib', platform)
-    # Blacklists:
-    CopyDirectoryContents(os.path.join(rt_lib_src_dir, '..', '..', 'share'),
-                          os.path.join(rt_lib_dst_dir, '..', '..', 'share'))
     # Static and dynamic libraries:
     CopyDirectoryContents(rt_lib_src_dir, rt_lib_dst_dir)
 
@@ -810,12 +813,12 @@ def main():
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_ASM_FLAGS=' + ' '.join(cflags),
-        "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
-        "-DCOMPILER_RT_BUILD_CRT=OFF",
-        "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
-        "-DCOMPILER_RT_BUILD_PROFILE=ON",
-        "-DCOMPILER_RT_BUILD_SANITIZERS=ON",
-        "-DCOMPILER_RT_BUILD_XRAY=OFF",
+        '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
+        '-DCOMPILER_RT_BUILD_CRT=OFF',
+        '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+        '-DCOMPILER_RT_BUILD_PROFILE=ON',
+        '-DCOMPILER_RT_BUILD_SANITIZERS=ON',
+        '-DCOMPILER_RT_BUILD_XRAY=OFF',
         '-DSANITIZER_CXX_ABI=libcxxabi',
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
@@ -861,12 +864,12 @@ def main():
         '-DCMAKE_SYSTEM_NAME=Fuchsia',
         '-DCMAKE_C_COMPILER_TARGET=%s-fuchsia' % target_arch,
         '-DCMAKE_ASM_COMPILER_TARGET=%s-fuchsia' % target_arch,
-        "-DCOMPILER_RT_BUILD_BUILTINS=ON",
-        "-DCOMPILER_RT_BUILD_CRT=OFF",
-        "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
-        "-DCOMPILER_RT_BUILD_PROFILE=OFF",
-        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-        "-DCOMPILER_RT_BUILD_XRAY=OFF",
+        '-DCOMPILER_RT_BUILD_BUILTINS=ON',
+        '-DCOMPILER_RT_BUILD_CRT=OFF',
+        '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+        '-DCOMPILER_RT_BUILD_PROFILE=OFF',
+        '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+        '-DCOMPILER_RT_BUILD_XRAY=OFF',
         '-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON',
         '-DCMAKE_SYSROOT=%s' % toolchain_dir,
         # TODO(thakis|scottmg): Use PER_TARGET_RUNTIME_DIR for all platforms.

@@ -106,4 +106,8 @@ AllDownloadEventNotifier* SimpleDownloadManagerCoordinator::GetNotifier() {
   return notifier_.get();
 }
 
+void SimpleDownloadManagerCoordinator::CheckForExternallyRemovedDownloads() {
+  simple_download_manager_->CheckForHistoryFilesRemoval();
+}
+
 }  // namespace download

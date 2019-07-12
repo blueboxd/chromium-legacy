@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_UTILS_H_
 
+#include <string>
 #include <tuple>
 
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -38,7 +39,8 @@ ParseDataURL(const KURL&);
 
 // Returns true if the URL is a data URL and its MIME type is in the list of
 // supported/recognized MIME types.
-PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(const KURL&);
+PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(const KURL&,
+                                                std::string* data = nullptr);
 
 PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 

@@ -11,6 +11,10 @@
 
 class GURL;
 
+namespace aura {
+class Window;
+}
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -25,8 +29,11 @@ class EmbeddedBrowser {
   EmbeddedBrowser(content::BrowserContext* context, const GURL& url);
   ~EmbeddedBrowser();
 
+  aura::Window* GetWindow();
+
   // Factory.
-  static void Create(content::BrowserContext* context, const GURL& url);
+  static aura::Window* Create(content::BrowserContext* context,
+                              const GURL& url);
 
  private:
   // Callback invoked when the embedding is broken.

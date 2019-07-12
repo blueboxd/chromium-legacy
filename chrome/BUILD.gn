@@ -1480,6 +1480,7 @@ group("browser_dependencies") {
     "//chrome/common",
     "//components/gwp_asan/buildflags",
     "//components/sync",
+    "//services/tracing/public/cpp",
   ]
   if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
@@ -1529,6 +1530,7 @@ group("child_dependencies") {
     "//components/services/heap_profiling",
     "//content/public/child",
     "//pdf",
+    "//services/tracing/public/cpp",
     "//third_party/blink/public:blink_devtools_frontend_resources",
   ]
 

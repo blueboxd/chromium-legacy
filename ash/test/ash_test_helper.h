@@ -65,6 +65,9 @@ class AshTestHelper {
     kShell,
     // The configuration for unit tests.
     kUnitTest,
+    // The configuration for perf tests. Unlike kUnitTest, this
+    // does not disable animations.
+    kPerfTest,
   };
 
   struct InitParams {

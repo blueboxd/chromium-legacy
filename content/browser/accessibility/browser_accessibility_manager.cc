@@ -227,9 +227,10 @@ base::Optional<ui::AXTreeID>
 // static
 ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 0;
+  empty_document.id = 1;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   ui::AXTreeUpdate update;
+  update.root_id = empty_document.id;
   update.nodes.push_back(empty_document);
   return update;
 }
@@ -262,10 +263,13 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   // Don't allow the top document to be focused if it has no children and hasn't
   // finished loading yet. Wait for at least a tiny bit of content, or for the
   // document to actually finish loading.
+  // Even after the document has loaded, we shouldn't fire a focus event if the
+  // document is completely empty, otherwise the user will be placed inside an
+  // empty container. This would result in user confusion, since none of the
+  // screen reader commands will read anything.
   if (focus == focus->manager()->GetRoot() &&
-      focus->PlatformChildCount() == 0 &&
-      !focus->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      !focus->manager()->GetTreeData().loaded) {
+      (focus->PlatformChildCount() == 0 ||
+       !focus->manager()->GetTreeData().loaded)) {
     return;
   }
 
@@ -419,20 +423,16 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // itself isn't focused or if focus hasn't changed.
   FireFocusEventsIfNeeded();
 
+  bool received_load_complete_event = false;
   // Fire any events related to changes to the tree.
   for (const auto& targeted_event : event_generator_) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
     if (!event_target || !event_target->CanFireEvents())
       continue;
 
-    // Perform initial run of language detection if we have seen a LOAD_COMPLETE
-    // event.
-    // TODO(chrishall): we will want to run this more often for dynamic pages.
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      tree_->language_detection_manager->DetectLanguageForSubtree(
-          tree_->root());
-      tree_->language_detection_manager->LabelLanguageForSubtree(tree_->root());
+      received_load_complete_event = true;
     }
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);
@@ -452,6 +452,18 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       root_manager->CacheHitTestResult(event_target);
 
     FireBlinkEvent(event.event_type, event_target);
+  }
+
+  if (received_load_complete_event) {
+    // Fire a focus event after the document has finished loading, but after all
+    // the platform independent events have already fired, e.g. kLayoutComplete.
+    // Some screen readers need a focus event in order to work properly.
+    FireFocusEventsIfNeeded();
+
+    // Also, perform the initial run of language detection.
+    // TODO(chrishall): we will want to run this more often for dynamic pages.
+    tree_->language_detection_manager->DetectLanguageForSubtree(tree_->root());
+    tree_->language_detection_manager->LabelLanguageForSubtree(tree_->root());
   }
 
   // Allow derived classes to do event post-processing.

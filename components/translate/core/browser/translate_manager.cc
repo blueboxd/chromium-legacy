@@ -283,11 +283,12 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
         TranslateErrors::IDENTICAL_LANGUAGES, triggered_from_menu);
     NotifyTranslateError(TranslateErrors::IDENTICAL_LANGUAGES);
     return;
+  } else {
+    // Trigger the "translating now" UI.
+    translate_client_->ShowTranslateUI(
+        translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
+        TranslateErrors::NONE, triggered_from_menu);
   }
-
-  translate_client_->ShowTranslateUI(
-      translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
-      TranslateErrors::NONE, triggered_from_menu);
 
   TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
   DCHECK(script != nullptr);

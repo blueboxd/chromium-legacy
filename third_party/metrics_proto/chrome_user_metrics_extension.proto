@@ -24,8 +24,9 @@ import "system_profile.proto";
 import "trace_log.proto";
 import "translate_event.proto";
 import "user_action_event.proto";
+import "user_demographics.proto";
 
-// Next tag: 21
+// Next tag: 22
 message ChromeUserMetricsExtension {
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
@@ -65,6 +66,11 @@ message ChromeUserMetricsExtension {
 
   // Information about the user's browser and system configuration.
   optional SystemProfileProto system_profile = 3;
+
+  // The user's demographic information. This data is made available to Chrome
+  // via syncable priority pref, so is only available if the user is signed-in
+  // and syncing.
+  optional UserDemographicsProto user_demographics = 21;
 
   // This message will log one or more of the following event types:
   repeated UserActionEventProto user_action_event = 4;

@@ -658,8 +658,15 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  resource_request.resource_type =
-      static_cast<int>(ResourceType::kNavigationPreload);
+  if (resource_type_ == ResourceType::kMainFrame) {
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kNavigationPreloadMainFrame);
+  } else {
+    DCHECK_EQ(ResourceType::kSubFrame, resource_type_);
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kNavigationPreloadSubFrame);
+  }
+
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 

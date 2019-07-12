@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 
@@ -33,8 +33,7 @@ int GetLazyImageLoadingViewportDistanceThresholdPx(const Document& document) {
   if (!settings)
     return 0;
 
-  DCHECK(document.GetFrame() && document.GetFrame()->Client());
-  switch (document.GetFrame()->Client()->GetEffectiveConnectionType()) {
+  switch (GetNetworkStateNotifier().EffectiveType()) {
     case WebEffectiveConnectionType::kTypeUnknown:
       return settings->GetLazyImageLoadingDistanceThresholdPxUnknown();
     case WebEffectiveConnectionType::kTypeOffline:
@@ -226,10 +225,7 @@ void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
         CurrentTimeTicks() - visible_load_time_metrics.time_when_first_visible;
   }
 
-  switch (image_element->GetDocument()
-              .GetFrame()
-              ->Client()
-              ->GetEffectiveConnectionType()) {
+  switch (GetNetworkStateNotifier().EffectiveType()) {
     case WebEffectiveConnectionType::kTypeSlow2G:
       if (visible_load_time_metrics.is_initially_intersecting) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -317,17 +313,11 @@ void LazyLoadImageObserver::OnVisibilityChanged(
           if (visible_load_time_metrics.is_initially_intersecting) {
             UMA_HISTOGRAM_ENUMERATION(
                 "Blink.VisibleBeforeLoaded.LazyLoadImages.AboveTheFold",
-                image_element->GetDocument()
-                    .GetFrame()
-                    ->Client()
-                    ->GetEffectiveConnectionType());
+                GetNetworkStateNotifier().EffectiveType());
           } else {
             UMA_HISTOGRAM_ENUMERATION(
                 "Blink.VisibleBeforeLoaded.LazyLoadImages.BelowTheFold",
-                image_element->GetDocument()
-                    .GetFrame()
-                    ->Client()
-                    ->GetEffectiveConnectionType());
+                GetNetworkStateNotifier().EffectiveType());
           }
         }
 

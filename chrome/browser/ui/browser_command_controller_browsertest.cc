@@ -29,7 +29,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)

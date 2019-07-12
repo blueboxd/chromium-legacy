@@ -29,6 +29,7 @@ proto_library("metrics_proto") {
     "ukm/report.proto",
     "ukm/source.proto",
     "user_action_event.proto",
+    "user_demographics.proto",
   ]
   proto_in_dir = "."
 }

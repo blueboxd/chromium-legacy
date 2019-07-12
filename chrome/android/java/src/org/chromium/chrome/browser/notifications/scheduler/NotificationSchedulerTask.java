@@ -24,7 +24,8 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
  * notifications.
  */
 public class NotificationSchedulerTask extends NativeBackgroundTask {
-    public static final String EXTRA_SCHEDULER_TASK_TIME = "extra_scheduler_task_time";
+    private static final String EXTRA_SCHEDULER_TASK_TIME = "extra_scheduler_task_time";
+    private static final int NO_EXTRA_SCHEDULER_TASK_TIME = -1;
 
     @Override
     public void reschedule(Context context) {}
@@ -46,7 +47,12 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
                 callback.taskFinished(needsReschedule);
             }
         };
-        nativeOnStartTask(Profile.getLastUsedProfile().getOriginalProfile(), taskCallback);
+
+        @SchedulerTaskTime
+        int taskStartTime = taskParameters.getExtras().getInt(
+                EXTRA_SCHEDULER_TASK_TIME, NO_EXTRA_SCHEDULER_TASK_TIME);
+        nativeOnStartTask(
+                Profile.getLastUsedProfile().getOriginalProfile(), taskStartTime, taskCallback);
     }
 
     @Override
@@ -58,8 +64,10 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
 
     @Override
     protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
-        // TODO(xingliu): Check with native to see if we need to reschedule.
-        return nativeOnStopTask(Profile.getLastUsedProfile().getOriginalProfile());
+        @SchedulerTaskTime
+        int taskStartTime = taskParameters.getExtras().getInt(
+                EXTRA_SCHEDULER_TASK_TIME, NO_EXTRA_SCHEDULER_TASK_TIME);
+        return nativeOnStopTask(Profile.getLastUsedProfile().getOriginalProfile(), taskStartTime);
     }
 
     /**
@@ -73,7 +81,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
     @MainThread
     @CalledByNative
     private static void schedule(
-            int /*@SchedulerTaskTime*/ schedulerTaskTime, long windowStartMs, long windowEndMs) {
+            @SchedulerTaskTime int schedulerTaskTime, long windowStartMs, long windowEndMs) {
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
         Bundle bundle = new Bundle();
         bundle.putInt(EXTRA_SCHEDULER_TASK_TIME, schedulerTaskTime);
@@ -97,6 +105,8 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
                 ContextUtils.getApplicationContext(), TaskIds.NOTIFICATION_SCHEDULER_JOB_ID);
     }
 
-    private native void nativeOnStartTask(Profile profile, Callback<Boolean> callback);
-    private native boolean nativeOnStopTask(Profile profile);
+    private native void nativeOnStartTask(
+            Profile profile, @SchedulerTaskTime int schedulerTaskTime, Callback<Boolean> callback);
+    private native boolean nativeOnStopTask(
+            Profile profile, @SchedulerTaskTime int schedulerTaskTime);
 }

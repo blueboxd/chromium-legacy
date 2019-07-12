@@ -708,3 +708,19 @@ TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateLanguageMenuItem) {
   TriggerOptionsMenuTab();
   EXPECT_FALSE(bubble_->tab_options_menu_model_->IsItemCheckedAt(index));
 }
+
+TEST_F(TranslateBubbleViewTest, TabUiTabSelectedAfterTranslation) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kUseButtonTranslateBubbleUi,
+      {{language::kTranslateUIBubbleKey,
+        language::kTranslateUIBubbleTabValue}});
+
+  CreateAndShowBubble();
+  EXPECT_EQ(bubble_->tabbed_pane_->GetSelectedTabIndex(),
+            static_cast<size_t>(0));
+  mock_model_->Translate();
+  EXPECT_TRUE(mock_model_->translate_called_);
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
+  EXPECT_EQ(bubble_->tabbed_pane_->GetSelectedTabIndex(),
+            static_cast<size_t>(1));
+}

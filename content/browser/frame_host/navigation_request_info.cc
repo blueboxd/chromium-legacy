@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 

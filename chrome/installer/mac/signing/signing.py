@@ -85,8 +85,7 @@ def get_parts(config):
                 '{}.helper.renderer'.format(uncustomized_bundle_id),
                 # Do not use |full_hardened_runtime_options| because library
                 # validation is incompatible with the JIT entitlement.
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.KILL +
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-renderer-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
@@ -98,8 +97,7 @@ def get_parts(config):
                 # Do not use |full_hardened_runtime_options| because library
                 # validation is incompatible with the disable-library-validation
                 # entitlement.
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.KILL +
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-plugin-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
@@ -226,7 +224,7 @@ def _validate_chrome(paths, config, app):
         commands.run_command(['spctl', '--assess', '-vv', app_path])
 
 
-def sign_chrome(paths, config):
+def sign_chrome(paths, config, sign_framework=False):
     """Code signs the Chrome application bundle and all of its internal nested
     code parts.
 
@@ -234,6 +232,9 @@ def sign_chrome(paths, config):
         paths: A |model.Paths| object.
         config: The |model.CodeSignConfig| object. The |app_product| binary and
             nested binaries must exist in |paths.work|.
+        sign_framework: True if the inner framework is to be signed in addition
+            to the outer application. False if only the outer application is to
+            be signed.
     """
     parts = get_parts(config)
 
@@ -247,18 +248,20 @@ def sign_chrome(paths, config):
 
     _sanity_check_version_keys(paths, parts)
 
-    # To sign an .app bundle that contains nested code, the nested components
-    # themselves must be signed. Each of these components is signed below. Note
-    # that unless a framework has multiple versions (which is discouraged),
-    # signing the entire framework is equivalent to signing the Current version.
-    # https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
-    for name, part in parts.items():
-        if name in ('app', 'framework'):
-            continue
-        sign_part(paths, config, part)
+    if sign_framework:
+        # To sign an .app bundle that contains nested code, the nested
+        # components themselves must be signed. Each of these components is
+        # signed below. Note that unless a framework has multiple versions
+        # (which is discouraged), signing the entire framework is equivalent to
+        # signing the Current version.
+        # https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
+        for name, part in parts.items():
+            if name in ('app', 'framework'):
+                continue
+            sign_part(paths, config, part)
 
-    # Sign the framework bundle.
-    sign_part(paths, config, parts['framework'])
+        # Sign the framework bundle.
+        sign_part(paths, config, parts['framework'])
 
     provisioning_profile_basename = config.provisioning_profile_basename
     if provisioning_profile_basename:

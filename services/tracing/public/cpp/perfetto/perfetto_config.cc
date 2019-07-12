@@ -5,6 +5,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 
 #include <cstdint>
+#include <string>
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -106,6 +107,13 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   // Also capture global metadata.
   AddDataSourceConfig(&perfetto_config, tracing::mojom::kMetaDataSourceName,
                       chrome_config_string, privacy_filtering_enabled);
+
+  if (chrome_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
+    AddDataSourceConfig(&perfetto_config,
+                        tracing::mojom::kSamplerProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
 
   return perfetto_config;
 }

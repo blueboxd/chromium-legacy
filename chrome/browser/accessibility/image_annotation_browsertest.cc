@@ -401,6 +401,12 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
       "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
 }
 
+// Flaky on Windows.  http://crbug.com/983404
+#if defined(OS_WIN)
+#define MAYBE_AnnotationLanguages DISABLED_AnnotationLanguages
+#else
+#define MAYBE_AnnotationLanguages AnnotationLanguages
+#endif
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationLanguages) {
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);

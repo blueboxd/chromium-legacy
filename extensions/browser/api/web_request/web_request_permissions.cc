@@ -249,14 +249,13 @@ bool WebRequestPermissions::HideRequest(
 
   if (is_request_from_browser) {
     // Hide all non-navigation requests made by the browser. crbug.com/884932.
-    if (!request.is_navigation_request &&
-        request.type != content::ResourceType::kNavigationPreload) {
+    if (!request.is_navigation_request)
       return true;
-    }
 
     DCHECK(request.type == content::ResourceType::kMainFrame ||
            request.type == content::ResourceType::kSubFrame ||
-           request.type == content::ResourceType::kNavigationPreload);
+           request.type == content::ResourceType::kNavigationPreloadMainFrame ||
+           request.type == content::ResourceType::kNavigationPreloadSubFrame);
 
     // Hide sub-frame requests to clientsX.google.com.
     // TODO(crbug.com/890006): Determine if the code here can be cleaned up

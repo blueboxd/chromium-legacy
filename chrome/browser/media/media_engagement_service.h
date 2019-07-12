@@ -92,10 +92,6 @@ class MediaEngagementService : public KeyedService,
 
   Profile* profile() const;
 
-  // The name of the histogram that records the reason why the engagement was
-  // cleared, either partially or fully.
-  static const char kHistogramClearName[];
-
   const base::Clock* clock() const { return clock_; }
 
  private:

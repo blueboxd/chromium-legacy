@@ -110,4 +110,14 @@ int WebAppRegistrar::CountUserInstalledApps() const {
   return 0;
 }
 
+std::string WebAppRegistrar::GetAppShortName(const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->name() : std::string();
+}
+
+const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->launch_url() : GURL::EmptyGURL();
+}
+
 }  // namespace web_app

@@ -43,6 +43,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/page_messages.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
@@ -578,11 +579,15 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(
     std::unique_ptr<RenderFrameHostImpl> rfh) {
-  delegate_->GetControllerForRenderManager().back_forward_cache().UnFreeze(
-      rfh.get());
-
   rfh->GetProcess()->AddPendingView();  // Matched in CommitPending().
+  // Save as a temp variable to check later to match |current_frame_host()|.
+  RenderFrameHostImpl* tmp_rfh = rfh.get();
   CommitPending(std::move(rfh));
+  DCHECK_EQ(tmp_rfh, current_frame_host());
+
+  // Resume the page after CommitPending.
+  delegate_->GetControllerForRenderManager().back_forward_cache().Resume(
+      current_frame_host());
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {
@@ -2125,7 +2130,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
   // TODO(lazyboy): This |is_loading| behavior might not be what we want,
   // investigate and fix.
   DCHECK_EQ(render_frame_host->GetSiteInstance(), proxy->GetSiteInstance());
-  render_frame_host->Send(new FrameMsg_SwapOut(
+  render_frame_host->Send(new UnfreezableFrameMsg_SwapOut(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));

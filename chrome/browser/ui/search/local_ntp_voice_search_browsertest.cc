@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,18 +28,11 @@ class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
   LocalNTPVoiceSearchSmokeTest() {}
 
  private:
-  void SetUp() override {
-    feature_list_.InitWithFeatures({}, {features::kRemoveNtpFakebox});
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* cmdline) override {
     // Requesting microphone permission doesn't work unless there's a device
     // available.
     cmdline->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,

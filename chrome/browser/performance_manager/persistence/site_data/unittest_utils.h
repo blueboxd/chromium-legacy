@@ -44,6 +44,7 @@ class NoopSiteDataStore : public SiteDataStore {
       const std::vector<url::Origin>& site_origins) override;
   void ClearStore() override;
   void GetStoreSize(GetStoreSizeCallback callback) override;
+  void SetInitializationCallbackForTesting(base::OnceClosure callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoopSiteDataStore);

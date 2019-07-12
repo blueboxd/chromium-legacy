@@ -149,6 +149,11 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
     first_impression.task_start_time = task_start_time;
     TestClientStateConversion(&client_state);
   }
+
+  // Verify impression mapping.
+  first_impression.impression_mapping[UserFeedback::kClick] =
+      ImpressionResult::kNeutral;
+  TestClientStateConversion(&client_state);
 }
 
 // Verifies multiple impressions are serialized correctly.
@@ -195,6 +200,11 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
     entry.schedule_params.priority = priority;
     TestNotificationEntryConversion(&entry);
   }
+  entry.schedule_params.impression_mapping[UserFeedback::kDismiss] =
+      ImpressionResult::kPositive;
+  entry.schedule_params.impression_mapping[UserFeedback::kClick] =
+      ImpressionResult::kNeutral;
+  TestNotificationEntryConversion(&entry);
 }
 
 // Verifies buttons are converted correctly to proto buffers.

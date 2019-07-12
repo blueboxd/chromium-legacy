@@ -111,7 +111,7 @@ bool GetW3CSetting(const base::DictionaryValue& params) {
     }
   }
 
-  if (!params.HasKey("capabilities")) {
+  if (!params.HasKey("capabilities") && params.HasKey("desiredCapabilities")) {
     return false;
   }
 

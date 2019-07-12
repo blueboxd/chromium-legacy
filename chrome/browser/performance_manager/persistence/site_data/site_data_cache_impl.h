@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -36,7 +37,7 @@ class SiteDataCacheImpl : public SiteDataCache,
                     const base::FilePath& browser_context_path);
   ~SiteDataCacheImpl() override;
 
-  // SiteCharacteristicDataCache:
+  // SiteDataCache:
   std::unique_ptr<SiteDataReader> GetReaderForOrigin(
       const url::Origin& origin) override;
   std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
@@ -69,6 +70,10 @@ class SiteDataCacheImpl : public SiteDataCache,
 
   // Clear the data cache and the on-disk store.
   void ClearAllSiteData();
+
+  // Set a callback that will be called once the data store backing this cache
+  // has been fully initialized.
+  void SetInitializationCallbackForTesting(base::OnceClosure callback);
 
  private:
   // Returns a pointer to the SiteDataImpl object associated with |origin|,

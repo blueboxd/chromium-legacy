@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
+#include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/test_file_system_context.h"
@@ -21,17 +22,6 @@ namespace content {
 using base::test::RunOnceCallback;
 using blink::mojom::PermissionStatus;
 using storage::FileSystemURL;
-
-// Mock NativeFileSystemPermissionContext implementation.
-class MockNativeFileSystemPermissionContext
-    : public NativeFileSystemPermissionContext {
- public:
-  MOCK_METHOD3(
-      GetWritePermissionGrant,
-      scoped_refptr<NativeFileSystemPermissionGrant>(const url::Origin& origin,
-                                                     const base::FilePath& path,
-                                                     bool is_directory));
-};
 
 class NativeFileSystemManagerImplTest : public testing::Test {
  public:

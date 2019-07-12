@@ -242,42 +242,43 @@ suite('CrActionMenu', function() {
     });
   }
 
-  test('close on Tab', function() {
-    return testFocusAfterClosing('Tab');
-  });
-  test('close on Escape', function() {
-    return testFocusAfterClosing('Escape');
-  });
+  test('close on Tab', () => testFocusAfterClosing('Tab'));
 
-  test('mouse movement focus options', function() {
-    function makeMouseoverEvent(node) {
-      const e = new MouseEvent('mouseover', {bubbles: true});
-      node.dispatchEvent(e);
-    }
+  test('close on Escape', () => testFocusAfterClosing('Escape'));
 
+  /** @param {!EventTarget} eventTarget */
+  function dispatchMouseoverEvent(eventTarget) {
+    eventTarget.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+  }
+
+  test('moving mouse on option 1 should focus it', () => {
     menu.showAt(dots);
-
-    // Moving mouse on option 1 should focus it.
     assertNotEquals(items[0], getDeepActiveElement());
-    makeMouseoverEvent(items[0]);
+    dispatchMouseoverEvent(items[0]);
     assertEquals(items[0], getDeepActiveElement());
+  });
 
-    // Moving mouse on the menu (not on option) should focus the menu.
-    makeMouseoverEvent(menu);
-    assertNotEquals(items[0], getDeepActiveElement());
-    assertEquals(menu, document.activeElement);
+  test('moving mouse on the menu (not on option) should focus the menu', () => {
+    menu.showAt(dots);
+    items[0].focus();
+    dispatchMouseoverEvent(menu);
+    assertEquals(dialog, getDeepActiveElement());
+  });
 
-    // Moving mouse on a disabled item should focus the menu.
+  test('moving mouse on a disabled item should focus the menu', () => {
+    menu.showAt(dots);
     items[2].toggleAttribute('disabled', true);
-    makeMouseoverEvent(items[2]);
-    assertNotEquals(checkboxFocusableElement, getDeepActiveElement());
-    assertEquals(menu, document.activeElement);
+    items[0].focus();
+    dispatchMouseoverEvent(items[2]);
+    assertEquals(dialog, getDeepActiveElement());
+  });
 
-    // Mouse movements should override keyboard focus.
-    down();
+  test('mouse movements should override keyboard focus', () => {
+    menu.showAt(dots);
+    items[0].focus();
     down();
     assertEquals(items[1], getDeepActiveElement());
-    makeMouseoverEvent(items[0]);
+    dispatchMouseoverEvent(items[0]);
     assertEquals(items[0], getDeepActiveElement());
   });
 

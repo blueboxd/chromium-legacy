@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
@@ -52,6 +52,11 @@ class SiteDataStore {
 
   // Retrieve the size of the store.
   virtual void GetStoreSize(GetStoreSizeCallback callback) = 0;
+
+  // Set a callback that will be called once the data store has been fully
+  // initialized.
+  virtual void SetInitializationCallbackForTesting(
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace performance_manager

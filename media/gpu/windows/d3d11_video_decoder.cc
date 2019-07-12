@@ -6,6 +6,7 @@
 
 #include <d3d11_4.h>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -243,7 +244,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  texture_selector_ = TextureSelector::Create(config);
+  texture_selector_ =
+      TextureSelector::Create(gpu_preferences_, gpu_workarounds_, config);
   if (!texture_selector_) {
     NotifyError("D3DD11: Config provided unsupported profile");
     return;
@@ -711,16 +713,16 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     GetD3D11DeviceCB get_d3d11_device_cb) {
   const std::string uma_name("Media.D3D11.WasVideoSupported");
 
-  // Must allow zero-copy of nv12 textures.
-  if (!gpu_preferences.enable_zero_copy_dxgi_video) {
-    UMA_HISTOGRAM_ENUMERATION(uma_name,
-                              NotSupportedReason::kZeroCopyNv12Required);
-    return {};
-  }
-
   // This workaround accounts for almost half of all startup results, and it's
   // unclear that it's relevant here.
   if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+    // Must allow zero-copy of nv12 textures.
+    if (!gpu_preferences.enable_zero_copy_dxgi_video) {
+      UMA_HISTOGRAM_ENUMERATION(uma_name,
+                                NotSupportedReason::kZeroCopyNv12Required);
+      return {};
+    }
+
     if (gpu_workarounds.disable_dxgi_zero_copy_video) {
       UMA_HISTOGRAM_ENUMERATION(uma_name,
                                 NotSupportedReason::kZeroCopyVideoRequired);

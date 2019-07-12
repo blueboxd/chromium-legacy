@@ -293,9 +293,6 @@ class ReleaseNode(base.Node):
   def DefaultAttributes(self):
     return { 'allow_pseudo' : 'true' }
 
-  def GetReleaseNumber():
-    """Returns the sequence number of this release."""
-    return self.attribs['seq']
 
 class GritNode(base.Node):
   """The <grit> root element."""

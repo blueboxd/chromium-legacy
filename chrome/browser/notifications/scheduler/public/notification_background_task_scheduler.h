@@ -20,13 +20,14 @@ class NotificationBackgroundTaskScheduler {
    public:
     using TaskFinishedCallback = base::OnceCallback<void(bool)>;
     // Called when the background task is started.
-    virtual void OnStartTask(TaskFinishedCallback callback) = 0;
+    virtual void OnStartTask(SchedulerTaskTime task_time,
+                             TaskFinishedCallback callback) = 0;
 
     // Called when the background task is stopped by the OS when it wants to
     // reallocate resources, our task is not finished yet in this case. The
     // handler implementation should explicitly decide whether the task should
     // be rescheduled and run later.
-    virtual void OnStopTask() = 0;
+    virtual void OnStopTask(SchedulerTaskTime task_time) = 0;
 
    protected:
     Handler() = default;

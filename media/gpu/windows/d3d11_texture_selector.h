@@ -30,6 +30,8 @@ class MEDIA_GPU_EXPORT TextureSelector {
   virtual ~TextureSelector() = default;
 
   static std::unique_ptr<TextureSelector> Create(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& workarounds,
       const VideoDecoderConfig& config);
 
   bool SupportsDevice(Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device);
@@ -67,17 +69,19 @@ class MEDIA_GPU_EXPORT TextureSelector {
 class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
  public:
   CopyTextureSelector(VideoPixelFormat pixfmt,
-                      DXGI_FORMAT dxgifmt,
+                      DXGI_FORMAT input_dxgifmt,
+                      DXGI_FORMAT output_dxgifmt,
                       GUID decoder_guid,
                       gfx::Size coded_size,
                       bool is_encrypted,
                       bool supports_swap_chain)
       : TextureSelector(pixfmt,
-                        dxgifmt,
+                        input_dxgifmt,
                         decoder_guid,
                         coded_size,
                         is_encrypted,
-                        supports_swap_chain) {}
+                        supports_swap_chain),
+        output_dxgifmt_(output_dxgifmt) {}
 
   std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(
       ComD3D11Device device,
@@ -85,6 +89,9 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
       ComD3D11DeviceContext,
       ComD3D11Texture2D input_texture,
       gfx::Size size) override;
+
+ private:
+  DXGI_FORMAT output_dxgifmt_;
 };
 
 }  // namespace media

@@ -84,7 +84,7 @@
     <!-- Bottom navigation bar styling. -->
     <bool name="window_light_navigation_bar">true</bool>
 
-    <!-- Preferences-Languages -->
+    <!-- Drag-Reorderable List Item -->
     <!-- Used for 90% = 230/255 alpha -->
-    <integer name="pref_languages_item_dragged_alpha">230</integer>
+    <integer name="list_item_dragged_alpha">230</integer>
 </resources>

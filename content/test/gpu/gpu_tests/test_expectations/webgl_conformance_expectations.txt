@@ -95,27 +95,8 @@ crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # And restore ['linux', 'intel'], bug=928530 as Fail
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
-# Passthrough command decoder / OpenGL
-crbug.com/angleproject/2952 [ opengl passthrough ] conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
-crbug.com/angleproject/2952 [ opengl passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-
-# Intel graphics driver issue. Passed on 25.20.100.6471
-crbug.com/665521 [ intel opengl passthrough ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
-
-# Passthrough command decoder / OpenGL / AMD
-crbug.com/1523 [ amd opengl linux passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-
-crbug.com/665521 [ amd opengl passthrough ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
-crbug.com/665521 [ amd opengl passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-corner-cases.html [ Failure ]
-crbug.com/665521 [ linux amd opengl passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-index.html [ Failure ]
-crbug.com/665521 [ linux amd opengl passthrough ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
 # TODO(kbr): re-add after global suppression is removed.
 # crbug.com/1007 [ linux amd opengl passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
-crbug.com/665521 [ linux amd opengl passthrough ] conformance/glsl/misc/struct-nesting-of-variable-names.html [ Failure ]
-crbug.com/angleproject/1635 [ amd opengl passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
-crbug.com/665521 [ amd opengl passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
-crbug.com/665521 [ amd opengl passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Failure ]
-crbug.com/665521 [ amd opengl passthrough ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
 
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytexsubimage2d-subrects.html [ RetryOnFailure ]
@@ -413,9 +394,6 @@ crbug.com/479260 [ linux amd no-angle ] conformance/extensions/angle-instanced-a
 # crbug.com/479952 [ linux amd no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Linux passthrough AMD
-crbug.com/794339 [ linux amd passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
-crbug.com/794339 [ linux amd passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
-crbug.com/906066 [ linux amd passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
 crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Linux passthrough AMD OpenGL

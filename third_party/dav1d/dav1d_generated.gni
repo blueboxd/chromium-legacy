@@ -37,6 +37,7 @@ arm32_asm_sources = [
 
 arm64_asm_sources = [
   "libdav1d/src/arm/64/cdef.S",
+  "libdav1d/src/arm/64/itx.S",
   "libdav1d/src/arm/64/loopfilter.S",
   "libdav1d/src/arm/64/looprestoration.S",
   "libdav1d/src/arm/64/mc.S",
@@ -46,6 +47,7 @@ arm64_asm_sources = [
 
 arm_template_sources = [
   "libdav1d/src/arm/cdef_init_tmpl.c",
+  "libdav1d/src/arm/itx_init_tmpl.c",
   "libdav1d/src/arm/loopfilter_init_tmpl.c",
   "libdav1d/src/arm/looprestoration_init_tmpl.c",
   "libdav1d/src/arm/mc_init_tmpl.c",

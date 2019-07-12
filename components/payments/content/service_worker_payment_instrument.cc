@@ -4,6 +4,7 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -315,6 +316,18 @@ void ServiceWorkerPaymentInstrument::OnPaymentAppInvoked(
 
 bool ServiceWorkerPaymentInstrument::IsCompleteForPayment() const {
   return true;
+}
+
+uint32_t ServiceWorkerPaymentInstrument::GetCompletenessScore() const {
+  // Return max value to ensure that SW instruments always score higher than
+  // autofill.
+  return std::numeric_limits<uint32_t>::max();
+}
+
+bool ServiceWorkerPaymentInstrument::CanPreselect() const {
+  // Do not preselect the payment instrument when the name and/or icon is
+  // missing.
+  return !GetLabel().empty() && !icon_image_.size().IsEmpty();
 }
 
 bool ServiceWorkerPaymentInstrument::IsExactlyMatchingMerchantRequest() const {

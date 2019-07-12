@@ -1,0 +1,20 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module module_b_old_names;
+
+import "mojo/public/js/test/module_a_old_names.test-mojom";
+import "mojo/public/js/test/module_b_1_old_names.test-mojom";
+
+struct TestStructB2 {
+  module_a_old_names.TestStructA1 a1;
+  module_a_old_names.TestStructA2 a2;
+  TestStructB2 b2;
+};
+
+interface TestInterface {
+  PassA1(module_a_old_names.TestStructA1 a1);
+  PassB1(TestStructB1 b1);
+  PassB2(TestStructB2 b2);
+};

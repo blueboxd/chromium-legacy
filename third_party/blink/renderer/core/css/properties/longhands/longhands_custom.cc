@@ -5966,7 +5966,7 @@ const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
   CSSPrimitiveValue* parsed_value =
-      css_property_parser_helpers::ConsumeInteger(range, 0);
+      css_property_parser_helpers::ConsumeNumber(range, kValueRangeNonNegative);
   if (parsed_value)
     return parsed_value;
   return css_property_parser_helpers::ConsumeLength(range, context.Mode(),

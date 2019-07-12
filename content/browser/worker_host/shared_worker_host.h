@@ -73,33 +73,21 @@ class CONTENT_EXPORT SharedWorkerHost
   // information about its ServiceWorkerProviderHost, the browser-side host for
   // supporting the shared worker as a service worker client.
   //
-  // |main_script_loader_factory| is sent to the renderer process and is to be
-  // used to request the shared worker's main script. This is null when
-  // NetworkService is enabled in favor of |main_script_load_params|.
-  //
-  // NetworkService (PlzWorker):
   // |main_script_load_params| is sent to the renderer process and to be used to
   // load the shared worker main script pre-requested by the browser process.
-  // This is only non-null when NetworkService is enabled.
   //
-  // NetworkService:
   // |subresource_loader_factories| is sent to the renderer process and is to be
   // used to request subresources where applicable. For example, this allows the
   // shared worker to load chrome-extension:// URLs which the renderer's default
   // loader factory can't load.
   //
-  // NetworkService (PlzWorker):
   // |controller| contains information about the service worker controller. Once
   // a ServiceWorker object about the controller is prepared, it is registered
-  // to |controller_service_worker_object_host|. These can be non-null only when
-  // NetworkService is enabled.
-  // When NetworkService is disabled, the service worker controller is sent via
-  // ServiceWorkerContainer#SetController.
+  // to |controller_service_worker_object_host|.
   void Start(
       blink::mojom::SharedWorkerFactoryPtr factory,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
@@ -211,7 +199,6 @@ class CONTENT_EXPORT SharedWorkerHost
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
 
-  // NetworkService:
   // The handle owns the precreated AppCacheHost until it's claimed by the
   // renderer after main script loading finishes.
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;

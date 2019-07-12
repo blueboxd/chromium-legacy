@@ -296,6 +296,7 @@ class TracingConsumerTest : public testing::Test,
                             public mojo::DataPipeDrainer::Client {
  public:
   void SetUp() override {
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();
@@ -662,7 +663,7 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
 
 class MockConsumerHost : public mojom::TracingSessionClient {
  public:
-  MockConsumerHost(PerfettoService* service)
+  explicit MockConsumerHost(PerfettoService* service)
       : consumer_host_(std::make_unique<ConsumerHost>(service)) {}
 
   void EnableTracing(const perfetto::TraceConfig& config,

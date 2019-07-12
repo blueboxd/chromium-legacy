@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
+#include "base/callback.h"
 
 #include <utility>
 
@@ -34,6 +35,11 @@ void NoopSiteDataStore::ClearStore() {}
 
 void NoopSiteDataStore::GetStoreSize(GetStoreSizeCallback callback) {
   std::move(callback).Run(base::nullopt, base::nullopt);
+}
+
+void NoopSiteDataStore::SetInitializationCallbackForTesting(
+    base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 }  // namespace testing

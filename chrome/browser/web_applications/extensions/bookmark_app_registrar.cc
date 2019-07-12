@@ -127,4 +127,17 @@ const Extension* BookmarkAppRegistrar::GetExtension(
       app_id);
 }
 
+std::string BookmarkAppRegistrar::GetAppShortName(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? extension->short_name() : std::string();
+}
+
+const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? AppLaunchInfo::GetLaunchWebURL(extension)
+                   : GURL::EmptyGURL();
+}
+
 }  // namespace extensions

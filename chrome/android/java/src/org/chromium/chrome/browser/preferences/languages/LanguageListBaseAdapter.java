@@ -136,8 +136,8 @@ public class LanguageListBaseAdapter
         // Set the alpha to 90% when dragging which is 230/255
         mDraggedBackgroundColor = ColorUtils.setAlphaComponent(
                 ApiCompatibilityUtils.getColor(resource, R.color.default_bg_color_elev_1),
-                resource.getInteger(R.integer.pref_languages_item_dragged_alpha));
-        mDraggedElevation = resource.getDimension(R.dimen.pref_languages_item_dragged_elevation);
+                resource.getInteger(R.integer.list_item_dragged_alpha));
+        mDraggedElevation = resource.getDimension(R.dimen.list_item_dragged_elevation);
     }
 
     @Override

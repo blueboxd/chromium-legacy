@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -503,7 +502,6 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   EXPECT_EQ(0.5, GetActualScore(origin4));
 
   {
-    base::HistogramTester histogram_tester;
     MediaEngagementChangeWaiter waiter(profile());
 
     base::CancelableTaskTracker task_tracker;
@@ -526,15 +524,9 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramClearName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramClearName, 3, 1);
   }
 
   {
-    base::HistogramTester histogram_tester;
     MediaEngagementChangeWaiter waiter(profile());
 
     // Expire url1b.
@@ -555,15 +547,9 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramClearName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramClearName, 3, 1);
   }
 
   {
-    base::HistogramTester histogram_tester;
     MediaEngagementChangeWaiter waiter(profile());
 
     // Expire origin3.
@@ -586,17 +572,10 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramClearName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramClearName, 3, 1);
   }
 }
 
 TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
-  base::HistogramTester histogram_tester;
-
   // |origin1| will have history that is before the expiry threshold and should
   // not be deleted. |origin2| will have history either side of the threshold
   // and should also not be deleted. |origin3| will have history before the
@@ -637,12 +616,6 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   ExpectScores(origin1, 1.0, 20, 20, TimeNotSet());
   ExpectScores(origin2, 1.0, 30, 30, TimeNotSet());
   ExpectScores(origin3, 0, 0, 0, TimeNotSet());
-
-  // Check that we recorded the expiry event to a histogram.
-  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramClearName, 4, 1);
 }
 
 TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
@@ -696,8 +669,6 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
   EXPECT_EQ(0.5, GetActualScore(origin4));
 
   {
-    base::HistogramTester histogram_tester;
-
     base::RunLoop run_loop;
     base::CancelableTaskTracker task_tracker;
     // Clear all history.
@@ -717,11 +688,6 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
     EXPECT_EQ(0, GetActualScore(origin2));
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
     ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramClearName, 1);
-    histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramClearName, 2, 1);
   }
 }
 
@@ -752,8 +718,6 @@ TEST_P(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
   EXPECT_EQ(0.5, GetActualScore(origin4));
 
   {
-    base::HistogramTester histogram_tester;
-
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
@@ -774,16 +738,12 @@ TEST_P(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
     ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
     EXPECT_EQ(0.5, GetActualScore(origin4));
-
-    histogram_tester.ExpectTotalCount(
-        MediaEngagementService::kHistogramClearName, 0);
   }
 }
 
 TEST_P(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_OutsideBoundary) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
-  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
   SetNow(today);
@@ -794,18 +754,12 @@ TEST_P(MediaEngagementServiceTest,
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
   ExpectScores(origin, 0.05, 1, 1, today);
-
-  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_P(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_WithinBoundary) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
-  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = today - base::TimeDelta::FromDays(1);
@@ -820,16 +774,10 @@ TEST_P(MediaEngagementServiceTest,
   ClearDataBetweenTime(two_days_ago, yesterday);
   ExpectScores(origin1, 0, 0, 0, TimeNotSet());
   ExpectScores(origin2, 0, 0, 0, TimeNotSet());
-
-  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
-  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
 
@@ -839,17 +787,11 @@ TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
   ExpectScores(origin, 0.0, 1, 0, TimeNotSet());
-
-  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
-  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = today - base::TimeDelta::FromDays(1);
@@ -864,11 +806,6 @@ TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
   ClearDataBetweenTime(base::Time(), base::Time::Max());
   ExpectScores(origin1, 0, 0, 0, TimeNotSet());
   ExpectScores(origin2, 0, 0, 0, TimeNotSet());
-
-  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramClearName, 0, 1);
 }
 
 TEST_P(MediaEngagementServiceTest, HasHighEngagement) {

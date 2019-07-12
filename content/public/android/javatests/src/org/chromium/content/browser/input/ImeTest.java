@@ -899,9 +899,9 @@ public class ImeTest {
         mRule.setComposingText("h", 1);
         Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
 
-        // O
-        mRule.setComposingText("ho", 1);
-        Assert.assertEquals("ho", mRule.getTextBeforeCursor(9, 0));
+        // A
+        mRule.setComposingText("ha", 1);
+        Assert.assertEquals("ha", mRule.getTextBeforeCursor(9, 0));
 
         mRule.setComposingText("h", 1);
         mRule.setComposingRegion(0, 1);
@@ -995,9 +995,9 @@ public class ImeTest {
         mRule.commitText("h", 1);
         Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
 
-        // O
-        mRule.commitText("o", 1);
-        Assert.assertEquals("ho", mRule.getTextBeforeCursor(9, 0));
+        // A
+        mRule.commitText("a", 1);
+        Assert.assertEquals("ha", mRule.getTextBeforeCursor(9, 0));
 
         // DEL, sent via mRule.dispatchKeyEvent like it is in Android WebView or a physical
         // keyboard.
@@ -1018,9 +1018,9 @@ public class ImeTest {
         mRule.commitText("h", 1);
         Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
 
-        // O
-        mRule.commitText("o", 1);
-        Assert.assertEquals("ho", mRule.getTextBeforeCursor(9, 0));
+        // A
+        mRule.commitText("a", 1);
+        Assert.assertEquals("ha", mRule.getTextBeforeCursor(9, 0));
 
         // Multiple keydowns should each delete one character (this is for physical keyboard
         // key-repeat).

@@ -32,3 +32,15 @@
 #define HAVE_IO_H 1
 
 // #define STACK_ALIGNMENT 16 -- Stack alignment is controlled by Chromium
+
+#define UNICODE 1
+
+#define _UNICODE 1
+
+// #define _WIN32_WINNT 0x0601 -- Windows version is controlled by Chromium
+
+#define __USE_MINGW_ANSI_STDIO 1
+
+#define fseeko _fseeki64
+
+#define ftello _ftelli64

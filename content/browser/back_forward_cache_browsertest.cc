@@ -84,7 +84,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   RenderFrameDeletedObserver delete_rfh_b(rfh_b);
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kHidden);
   EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kVisible);
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
@@ -93,7 +95,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_FALSE(delete_rfh_b.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
   EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kVisible);
   EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kHidden);
 }
 
 // Navigate from back and forward repeatedly.

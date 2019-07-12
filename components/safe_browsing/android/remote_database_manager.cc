@@ -120,7 +120,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
   if (ints_str.empty()) {
     // By default, we check all types except a few.
     static_assert(content::ResourceType::kMaxValue ==
-                      content::ResourceType::kNavigationPreload,
+                      content::ResourceType::kNavigationPreloadSubFrame,
                   "Decide if new resource type should be skipped on mobile.");
     for (int t_int = 0;
          t_int <= static_cast<int>(content::ResourceType::kMaxValue); t_int++) {

@@ -61,10 +61,8 @@ void TestVDAVideoDecoder::Destroy() {
   weak_this_factory_.InvalidateWeakPtrs();
 
   // Delete all video frames and related textures and the decoder.
-  frame_renderer_->AcquireGLContext();
   video_frames_.clear();
   decoder_ = nullptr;
-  frame_renderer_->ReleaseGLContext();
 
   delete this;
 }
@@ -83,24 +81,25 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
+
   output_cb_ = output_cb;
 
   // Create decoder factory.
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory;
-  frame_renderer_->AcquireGLContext();
   bool hasGLContext = frame_renderer_->GetGLContext() != nullptr;
   if (hasGLContext) {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::Create(
         base::BindRepeating(&FrameRenderer::GetGLContext,
                             base::Unretained(frame_renderer_)),
-        base::BindRepeating([]() { return true; }),
+        base::BindRepeating(&FrameRenderer::AcquireGLContext,
+                            base::Unretained(frame_renderer_)),
         base::BindRepeating([](uint32_t, uint32_t,
                                const scoped_refptr<gl::GLImage>&,
                                bool) { return true; }));
   } else {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
   }
-  frame_renderer_->ReleaseGLContext();
 
   if (!decoder_factory) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
@@ -192,6 +191,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
     const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
+  ASSERT_EQ(video_frames_.size(), 0u);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
             << " picture buffers with size " << dimensions.height() << "x"
@@ -249,9 +249,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         video_frames_.emplace(picture_buffer_id, std::move(video_frame));
       }
       // The decoder requires an active GL context to allocate memory.
-      frame_renderer_->AcquireGLContext();
       decoder_->AssignPictureBuffers(picture_buffers);
-      frame_renderer_->ReleaseGLContext();
       break;
     default:
       LOG(ERROR) << "Unsupported output mode "
@@ -302,15 +300,24 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   }
 
   DCHECK(wrapped_video_frame);
+
+  // It's important to bind the original video frame to the destruction callback
+  // of the wrapped frame, to avoid deleting it before rendering of the wrapped
+  // frame is done. A reference to the video frame is already stored in
+  // |video_frames_| to map between picture buffers and frames, but that
+  // reference will be released when the decoder calls DismissPictureBuffer()
+  // (e.g. on a resolution change).
   base::OnceClosure reuse_cb = BindToCurrentLoop(
       base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                     picture.picture_buffer_id()));
+                     picture.picture_buffer_id(), video_frame));
   wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
   output_cb_.Run(std::move(wrapped_video_frame));
 }
 
 // Called when a picture buffer is ready to be re-used.
-void TestVDAVideoDecoder::ReusePictureBufferTask(int32_t picture_buffer_id) {
+void TestVDAVideoDecoder::ReusePictureBufferTask(
+    int32_t picture_buffer_id,
+    scoped_refptr<VideoFrame> /*video_frame*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -75,13 +76,14 @@ class DownloadOfflineContentProvider
   // observing the given download.
   void OnDownloadStarted(DownloadItem* download_item);
 
- private:
   // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
   void OnDownloadDestroyed(DownloadItem* download) override;
 
+ private:
   // SimpleDownloadManagerCoordinator::Observer overrides
+  void OnDownloadsInitialized(bool active_downloads_only) override;
   void OnManagerGoingDown() override;
 
   void GetAllDownloads(std::vector<DownloadItem*>* all_items);
@@ -98,6 +100,7 @@ class DownloadOfflineContentProvider
                                     DownloadItem::DownloadRenameResult result);
   void UpdateObservers(const OfflineItem& item,
                        const base::Optional<UpdateDelta>& update_delta);
+  void CheckForExternallyRemovedDownloads();
 
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
@@ -106,6 +109,9 @@ class DownloadOfflineContentProvider
 
   // Tracks the completed downloads in the current session.
   std::set<std::string> completed_downloads_;
+  std::unique_ptr<download::AllDownloadEventNotifier::Observer>
+      all_download_observer_;
+  bool checked_for_externally_removed_downloads_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;
 

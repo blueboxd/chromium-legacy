@@ -29,6 +29,16 @@ class NativeFileSystemPermissionContext {
                           const base::FilePath& path,
                           bool is_directory) = 0;
 
+  // Displays a dialog to confirm that the user intended to give read access to
+  // a specific directory.
+  using PermissionStatus = blink::mojom::PermissionStatus;
+  virtual void ConfirmDirectoryReadAccess(
+      const url::Origin& origin,
+      const base::FilePath& path,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(PermissionStatus)> callback) = 0;
+
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;
 };

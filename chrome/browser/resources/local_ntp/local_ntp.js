@@ -75,20 +75,13 @@ const NTP_DESIGN = {
  * @const
  */
 const CLASSES = {
-  // Shows a Google search style fakebox.
-  ALTERNATE_FAKEBOX: 'alternate-fakebox',
-  // Shows a rectangular Google search style fakebox with rounded corners.
-  ALTERNATE_FAKEBOX_RECT: 'alternate-fakebox-rect',
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FAKEBOX_ICON_COLOR: 'color',       // Use a blue search icon for the fakebox.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
-  // Shows a search icon in the fakebox.
-  SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
   // Applied when the fakebox placeholder text should not be hidden on focus.
   SHOW_PLACEHOLDER: 'show-placeholder',
   // Applies float animations to the Most Visited notification
@@ -105,8 +98,7 @@ const CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  REMOVE_FAKEBOX: 'remove-fakebox',  // Hides the fakebox from the page.
-  RTL: 'rtl',                        // Right-to-left language text.
+  RTL: 'rtl',  // Right-to-left language text.
   SHOW_ELEMENT: 'show-element',
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
@@ -1076,86 +1068,70 @@ function init() {
 
     customize.init(showErrorNotification, hideNotification);
 
-    if (configData.alternateFakebox) {
-      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX);
-    }
-    if (configData.alternateFakeboxRect) {
-      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX_RECT);
-    }
-    if (configData.fakeboxSearchIcon) {
-      document.body.classList.add(CLASSES.SHOW_FAKEBOX_ICON);
-    }
-    if (configData.fakeboxSearchIconColor) {
-      $(IDS.FAKEBOX_ICON).classList.add(CLASSES.FAKEBOX_ICON_COLOR);
-    }
     if (configData.showFakeboxPlaceholderOnFocus) {
       $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
     }
 
-    if (configData.removeFakebox) {
-      document.body.classList.add(CLASSES.REMOVE_FAKEBOX);
-    } else {
-      // Set up the fakebox (which only exists on the Google NTP).
-      ntpApiHandle.oninputstart = onInputStart;
-      ntpApiHandle.oninputcancel = onInputCancel;
+    // Set up the fakebox (which only exists on the Google NTP).
+    ntpApiHandle.oninputstart = onInputStart;
+    ntpApiHandle.oninputcancel = onInputCancel;
 
-      if (ntpApiHandle.isInputInProgress) {
-        onInputStart();
-      }
+    if (ntpApiHandle.isInputInProgress) {
+      onInputStart();
+    }
 
-      $(IDS.FAKEBOX_TEXT).textContent =
-          configData.translatedStrings.searchboxPlaceholder;
+    $(IDS.FAKEBOX_TEXT).textContent =
+        configData.translatedStrings.searchboxPlaceholder;
 
-      if (!iframesAndVoiceSearchDisabledForTesting) {
-        speech.init(
-            configData.googleBaseUrl, configData.translatedStrings,
-            $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
-      }
+    if (!iframesAndVoiceSearchDisabledForTesting) {
+      speech.init(
+          configData.googleBaseUrl, configData.translatedStrings,
+          $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
+    }
 
-      // Listener for updating the key capture state.
-      document.body.onmousedown = function(event) {
-        if (isFakeboxClick(event)) {
-          searchboxApiHandle.startCapturingKeyStrokes();
-        } else if (isFakeboxFocused()) {
-          searchboxApiHandle.stopCapturingKeyStrokes();
-        }
-      };
-      searchboxApiHandle.onkeycapturechange = function() {
-        setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-      };
-      const inputbox = $(IDS.FAKEBOX_INPUT);
-      inputbox.onpaste = function(event) {
-        event.preventDefault();
-        // Send pasted text to Omnibox.
-        const text = event.clipboardData.getData('text/plain');
-        if (text) {
-          searchboxApiHandle.paste(text);
-        }
-      };
-      inputbox.ondrop = function(event) {
-        event.preventDefault();
-        const text = event.dataTransfer.getData('text/plain');
-        if (text) {
-          searchboxApiHandle.paste(text);
-        }
-        setFakeboxDragFocus(false);
-      };
-      inputbox.ondragenter = function() {
-        setFakeboxDragFocus(true);
-      };
-      inputbox.ondragleave = function() {
-        setFakeboxDragFocus(false);
-      };
-      utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
-
-      // Update the fakebox style to match the current key capturing state.
-      setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-      // Also tell the browser that we're capturing, otherwise it's possible
-      // that both fakebox and Omnibox have visible focus at the same time, see
-      // crbug.com/792850.
-      if (searchboxApiHandle.isKeyCaptureEnabled) {
+    // Listener for updating the key capture state.
+    document.body.onmousedown = function(event) {
+      if (isFakeboxClick(event)) {
         searchboxApiHandle.startCapturingKeyStrokes();
+      } else if (isFakeboxFocused()) {
+        searchboxApiHandle.stopCapturingKeyStrokes();
       }
+    };
+    searchboxApiHandle.onkeycapturechange = function() {
+      setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+    };
+    const inputbox = $(IDS.FAKEBOX_INPUT);
+    inputbox.onpaste = function(event) {
+      event.preventDefault();
+      // Send pasted text to Omnibox.
+      const text = event.clipboardData.getData('text/plain');
+      if (text) {
+        searchboxApiHandle.paste(text);
+      }
+    };
+    inputbox.ondrop = function(event) {
+      event.preventDefault();
+      const text = event.dataTransfer.getData('text/plain');
+      if (text) {
+        searchboxApiHandle.paste(text);
+      }
+      setFakeboxDragFocus(false);
+    };
+    inputbox.ondragenter = function() {
+      setFakeboxDragFocus(true);
+    };
+    inputbox.ondragleave = function() {
+      setFakeboxDragFocus(false);
+    };
+    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
+
+    // Update the fakebox style to match the current key capturing state.
+    setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+    // Also tell the browser that we're capturing, otherwise it's possible
+    // that both fakebox and Omnibox have visible focus at the same time, see
+    // crbug.com/792850.
+    if (searchboxApiHandle.isKeyCaptureEnabled) {
+      searchboxApiHandle.startCapturingKeyStrokes();
     }
 
     doodles.init();

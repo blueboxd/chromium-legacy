@@ -84,6 +84,9 @@ class AppLaunchEventLogger {
   // contains apps that are allowed to be logged. All apps are rechecked in case
   // they have been uninstalled since the previous check.
   void EnforceLoggingPolicy();
+  // Update the click rank (which ranks app by the number of clicks) for the
+  // apps that have been clicked.
+  void UpdateClickRank();
   // Updates the app data following a click.
   void ProcessClick(const AppLaunchEvent& event, const base::Time& now);
   // Returns a source id. |arc_package_name| is only required for Arc apps,

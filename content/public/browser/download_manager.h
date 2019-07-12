@@ -213,11 +213,6 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
 
   virtual BrowserContext* GetBrowserContext() = 0;
 
-  // Checks whether downloaded files still exist. Updates state of downloads
-  // that refer to removed files. The check runs in the background and may
-  // finish asynchronously after this method returns.
-  virtual void CheckForHistoryFilesRemoval() = 0;
-
   // Called when download history query completes. Call
   // |load_history_downloads_cb| to load all the history downloads.
   virtual void OnHistoryQueryComplete(

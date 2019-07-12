@@ -295,18 +295,48 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     std::move(callback).Run(std::move(result), std::move(result_entries));
     return;
   }
-  result_entries.reserve(entries.size());
-  for (const auto& entry : entries) {
-    if (type == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
-      result_entries.push_back(
-          CreateDirectoryEntryFromPath(binding_context, entry));
+
+  if (type == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
+    DCHECK_EQ(entries.size(), 1u);
+    if (permission_context_) {
+      permission_context_->ConfirmDirectoryReadAccess(
+          binding_context.origin, entries.front(), binding_context.process_id,
+          binding_context.frame_id,
+          base::BindOnce(&NativeFileSystemManagerImpl::DidChooseDirectory, this,
+                         binding_context, entries.front(),
+                         std::move(callback)));
     } else {
-      result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+      DidChooseDirectory(binding_context, entries.front(), std::move(callback),
+                         PermissionStatus::GRANTED);
     }
+    return;
   }
+
+  result_entries.reserve(entries.size());
+  for (const auto& entry : entries)
+    result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+
   // TODO(mek): Auto-grant write permission if this was a file as a result of a
   // save dialog.
   std::move(callback).Run(std::move(result), std::move(result_entries));
+}
+
+void NativeFileSystemManagerImpl::DidChooseDirectory(
+    const BindingContext& binding_context,
+    const base::FilePath& path,
+    ChooseEntriesCallback callback,
+    NativeFileSystemPermissionContext::PermissionStatus permission) {
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
+  if (permission != PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
+        std::move(result_entries));
+    return;
+  }
+
+  result_entries.push_back(CreateDirectoryEntryFromPath(binding_context, path));
+  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+                          std::move(result_entries));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferTokenImpl(

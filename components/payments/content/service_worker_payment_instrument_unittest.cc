@@ -9,48 +9,15 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/payments/core/payment_request_delegate.h"
+#include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace payments {
-namespace {
-
-class MockPaymentRequestDelegate : public PaymentRequestDelegate {
- public:
-  MockPaymentRequestDelegate() {}
-  ~MockPaymentRequestDelegate() override {}
-  MOCK_METHOD1(ShowDialog, void(PaymentRequest* request));
-  MOCK_METHOD0(RetryDialog, void());
-  MOCK_METHOD0(CloseDialog, void());
-  MOCK_METHOD0(ShowErrorMessage, void());
-  MOCK_METHOD0(ShowProcessingSpinner, void());
-  MOCK_CONST_METHOD0(IsBrowserWindowActive, bool());
-  MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
-  MOCK_CONST_METHOD0(GetApplicationLocale, const std::string&());
-  MOCK_CONST_METHOD0(IsIncognito, bool());
-  MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
-  MOCK_METHOD2(
-      DoFullCardRequest,
-      void(const autofill::CreditCard& credit_card,
-           base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
-               result_delegate));
-  MOCK_METHOD0(GetAddressNormalizer, autofill::AddressNormalizer*());
-  MOCK_METHOD0(GetRegionDataLoader, autofill::RegionDataLoader*());
-  MOCK_METHOD0(GetUkmRecorder, ukm::UkmRecorder*());
-  MOCK_CONST_METHOD0(GetAuthenticatedEmail, std::string());
-  MOCK_METHOD0(GetPrefService, PrefService*());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPaymentRequestDelegate);
-};
-
-}  // namespace
 
 class ServiceWorkerPaymentInstrumentTest : public testing::Test,
                                            public PaymentRequestSpec::Observer {

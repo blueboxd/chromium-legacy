@@ -34,9 +34,7 @@ class FrameRenderer {
   virtual ~FrameRenderer() = default;
   // Acquire the GL context for the current thread. This is needed if the
   // context is shared between multiple threads.
-  virtual void AcquireGLContext() = 0;
-  // Release the GL context on the current thread.
-  virtual void ReleaseGLContext() = 0;
+  virtual bool AcquireGLContext() = 0;
   // Get the current GL context.
   virtual gl::GLContext* GetGLContext() = 0;
 

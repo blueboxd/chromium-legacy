@@ -36,7 +36,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -277,12 +276,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest,
 
 // Tests the value of |request_initiator| for shared worker resources.
 IN_PROC_BROWSER_TEST_F(WorkerTest, VerifyInitiatorSharedWorker) {
-  // TODO(cammie): Remove the condition that network service must be
-  // enabled once it is enabled on all platforms?
-  // The main body of the test won't currently work unless network service
-  // is enabled (e.g. not on cast-shell-linux as of 2019/04).
-  if (!SupportsSharedWorker() ||
-      !base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!SupportsSharedWorker())
     return;
 
   const GURL start_url(embedded_test_server()->GetURL("/frame_tree/top.html"));

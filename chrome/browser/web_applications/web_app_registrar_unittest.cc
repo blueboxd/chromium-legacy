@@ -188,4 +188,24 @@ TEST(WebAppRegistrar, AbstractWebAppDatabase) {
   EXPECT_TRUE(registrar->is_empty());
 }
 
+TEST(WebAppRegistrar, GetAppDetails) {
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
+
+  const GURL launch_url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+  const std::string name = "Name";
+
+  EXPECT_EQ(std::string(), registrar->GetAppShortName(app_id));
+  EXPECT_EQ(GURL(), registrar->GetAppLaunchURL(app_id));
+
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->SetName(name);
+  web_app->SetLaunchUrl(launch_url);
+  registrar->RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(name, registrar->GetAppShortName(app_id));
+  EXPECT_EQ(launch_url, registrar->GetAppLaunchURL(app_id));
+}
+
 }  // namespace web_app

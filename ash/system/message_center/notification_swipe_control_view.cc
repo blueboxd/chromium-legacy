@@ -86,7 +86,7 @@ void NotificationSwipeControlView::UpdateButtonsVisibility() {
   int control_button_width =
       message_center_style::kSwipeControlButtonSize * control_button_count +
       message_center_style::kSwipeControlButtonHorizontalMargin *
-          (control_button_count + 1);
+          (control_button_count ? control_button_count + 1 : 0);
   message_view_->SetSlideButtonWidth(control_button_width);
 
   // Update opacity based on the swipe progress. The swipe controls should

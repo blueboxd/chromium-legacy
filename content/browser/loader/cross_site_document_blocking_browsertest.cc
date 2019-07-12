@@ -520,6 +520,7 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
 enum class TestMode {
   kWithoutOutOfBlinkCors,
   kWithOutOfBlinkCors,
+  kWithoutCORBProtectionSniffing,
 };
 class CrossSiteDocumentBlockingTest
     : public CrossSiteDocumentBlockingTestBase,
@@ -535,6 +536,9 @@ class CrossSiteDocumentBlockingTest
         scoped_feature_list_.InitAndEnableFeature(
             network::features::kOutOfBlinkCors);
         break;
+      case TestMode::kWithoutCORBProtectionSniffing:
+        scoped_feature_list_.InitAndDisableFeature(
+            network::features::kCORBProtectionSniffing);
     }
   }
   ~CrossSiteDocumentBlockingTest() override = default;
@@ -1514,6 +1518,11 @@ INSTANTIATE_TEST_SUITE_P(WithoutOutOfBlinkCors,
 INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
                          CrossSiteDocumentBlockingTest,
                          ::testing::Values(TestMode::kWithOutOfBlinkCors));
+
+INSTANTIATE_TEST_SUITE_P(
+    WithoutCORBProtectionSniffing,
+    CrossSiteDocumentBlockingTest,
+    ::testing::Values(TestMode::kWithoutCORBProtectionSniffing));
 
 // This test class sets up a service worker that can be used to try to respond
 // to same-origin requests with cross-origin responses.

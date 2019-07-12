@@ -77,13 +77,6 @@ using views::View;
 
 namespace ash {
 
-namespace {
-
-// The margin between app icons and the overflow button. This is bigger than
-// between app icons because the overflow button is a little smaller.
-constexpr int kMarginBetweenAppsAndOverflow = 16;
-}  // namespace
-
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
 constexpr int kRipOffDistance = 48;
@@ -1176,23 +1169,18 @@ void ShelfView::LayoutOverflowButton() const {
   int x = 0;
   int y = 0;
   if (last_visible_index_ != -1) {
-    const int offset =
-        (ShelfConstants::button_size() - ShelfConstants::control_size()) / 2;
+    const int offset = ShelfConstants::overflow_button_margin();
     x = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).right(),
         offset + view_model_->ideal_bounds(last_visible_index_).x());
     y = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).y(),
         offset + view_model_->ideal_bounds(last_visible_index_).bottom());
-  }
 
-  const int extra_space_before_overflow =
-      kMarginBetweenAppsAndOverflow - ShelfConstants::button_spacing();
-  if (last_visible_index_ >= 0) {
-    // Add more space between last visible item and overflow button.
-    // Without this, two buttons look too close compared with other items.
-    x = shelf_->PrimaryAxisValue(x + extra_space_before_overflow, x);
-    y = shelf_->PrimaryAxisValue(y, y + extra_space_before_overflow);
+    // Add button spacing to correctly position overflow button next to app
+    // buttons.
+    x = shelf_->PrimaryAxisValue(x + ShelfConstants::button_spacing(), x);
+    y = shelf_->PrimaryAxisValue(y, y + ShelfConstants::button_spacing());
   }
 
   overflow_button_->SetBoundsRect(gfx::Rect(

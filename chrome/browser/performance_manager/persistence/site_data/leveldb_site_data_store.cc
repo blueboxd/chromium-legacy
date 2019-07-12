@@ -7,7 +7,9 @@
 #include <limits>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
@@ -20,11 +22,14 @@
 #include "build/build_config.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace performance_manager {
 
 namespace {
+
+bool g_use_in_memory_db_for_testing = false;
 
 // The name of the following histograms is the same as the one used in the
 // //c/b/resource_coordinator version of this file. It's fine to keep the same
@@ -159,6 +164,12 @@ class LevelDBSiteDataStore::AsyncHelper {
     return db_.get();
   }
 
+  void SetInitializationCallbackForTesting(base::OnceClosure callback) {
+    init_callback_for_testing_ = std::move(callback);
+    if (DBIsInitialized())
+      std::move(init_callback_for_testing_).Run();
+  }
+
  private:
   enum class OpeningType {
     // A new database has been created.
@@ -170,6 +181,10 @@ class LevelDBSiteDataStore::AsyncHelper {
   // Implementation for the OpenOrCreateDatabase function.
   OpeningType OpenOrCreateDatabaseImpl();
 
+  // A levelDB environment that gets used for testing. This allows using an
+  // in-memory database when needed.
+  std::unique_ptr<leveldb::Env> env_for_testing_;
+
   // The on disk location of the database.
   const base::FilePath db_path_;
   // The connection to the LevelDB database.
@@ -179,12 +194,18 @@ class LevelDBSiteDataStore::AsyncHelper {
   // The options to be used for all database write operations.
   leveldb::WriteOptions write_options_;
 
+  base::OnceClosure init_callback_for_testing_;
+
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(AsyncHelper);
 };
 
 void LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabase() {
   OpeningType opening_type = OpenOrCreateDatabaseImpl();
+
+  if (init_callback_for_testing_)
+    std::move(init_callback_for_testing_).Run();
+
   if (!db_)
     return;
   std::string db_metadata;
@@ -362,6 +383,12 @@ LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabaseImpl() {
 
   leveldb_env::Options options;
   options.create_if_missing = true;
+
+  if (g_use_in_memory_db_for_testing) {
+    env_for_testing_ = leveldb_chrome::NewMemEnv("LevelDBSiteDataStore");
+    options.env = env_for_testing_.get();
+  }
+
   leveldb::Status status =
       leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
 
@@ -468,12 +495,29 @@ void LevelDBSiteDataStore::GetStoreSize(GetStoreSizeCallback callback) {
       std::move(reply_callback));
 }
 
+void LevelDBSiteDataStore::SetInitializationCallbackForTesting(
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&LevelDBSiteDataStore::AsyncHelper::
+                                    SetInitializationCallbackForTesting,
+                                base::Unretained(async_helper_.get()),
+                                std::move(callback)));
+}
+
 bool LevelDBSiteDataStore::DatabaseIsInitializedForTesting() {
   return async_helper_->DBIsInitialized();
 }
 
 leveldb::DB* LevelDBSiteDataStore::GetDBForTesting() {
   return async_helper_->GetDBForTesting();
+}
+
+// static
+std::unique_ptr<base::AutoReset<bool>>
+LevelDBSiteDataStore::UseInMemoryDBForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &g_use_in_memory_db_for_testing, true);
 }
 
 }  // namespace performance_manager

@@ -105,6 +105,10 @@ test("blink_unittests") {
       "//content/shell/android:content_shell_assets",
       "//net/android:net_java",
     ]
+
+    if (enable_chrome_android_internal) {
+      data_deps += [ "//clank/build/bot/filters:blink_unittests_filters" ]
+    }
   }
 }
 

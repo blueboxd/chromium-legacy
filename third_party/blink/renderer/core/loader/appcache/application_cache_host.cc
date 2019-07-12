@@ -252,38 +252,8 @@ mojom::AppCacheStatus ApplicationCacheHost::GetStatus() const {
   return status_;
 }
 
-bool ApplicationCacheHost::Update() {
-  if (!backend_host_.is_bound())
-    return false;
-
-  bool result = false;
-  backend_host_->StartUpdate(&result);
-  if (!result)
-    return false;
-  if (status_ == mojom::blink::AppCacheStatus::APPCACHE_STATUS_IDLE ||
-      status_ == mojom::blink::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY) {
-    status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_CHECKING;
-  } else {
-    status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
-    backend_host_->GetStatus(&status_);
-  }
-  return true;
-}
-
-bool ApplicationCacheHost::SwapCache() {
-  if (!backend_host_.is_bound())
-    return false;
-
-  bool success = false;
-  backend_host_->SwapCache(&success);
-  if (!success)
-    return false;
-  backend_host_->GetStatus(&status_);
-  probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
-  return true;
-}
-
 void ApplicationCacheHost::Abort() {
+  // This is not implemented intentionally. See https://crbug.com/175063
 }
 
 bool ApplicationCacheHost::IsApplicationCacheEnabled() {

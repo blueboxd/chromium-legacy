@@ -131,6 +131,11 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
 
   bool IsStatefulPartition() const;
 
+  // Is the disk being mounted for the first time since being plugged in.
+  bool is_first_mount() const { return is_first_mount_; }
+
+  void set_is_first_mount(bool first_mount) { is_first_mount_ = first_mount; }
+
  private:
   friend class Builder;
 
@@ -158,6 +163,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
   bool is_hidden_ = false;
   bool is_auto_mountable_ = false;
   bool is_mounted_ = false;
+  bool is_first_mount_ = true;
   std::string file_system_type_;
   std::string base_mount_path_;
 };

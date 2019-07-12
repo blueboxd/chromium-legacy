@@ -76,58 +76,28 @@ class SharedWorkerHostTest : public testing::Test {
 
   void StartWorker(SharedWorkerHost* host,
                    blink::mojom::SharedWorkerFactoryPtr factory) {
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr provider_info = nullptr;
-    network::mojom::URLLoaderFactoryPtr main_script_loader_factory;
-    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories;
-    base::Optional<SubresourceLoaderParams> subresource_loader_params;
+    auto provider_info =
+        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+    ServiceWorkerProviderHost::PreCreateForWebWorker(
+        helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+        blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+        &provider_info);
 
-    // Set up various mocks based on NetworkService configuration. See the
-    // comment on SharedWorkerHost::Start() for details.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-      ServiceWorkerProviderHost::PreCreateForWebWorker(
-          helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
-          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-          &provider_info);
+    auto main_script_load_params =
+        blink::mojom::WorkerMainScriptLoadParams::New();
+    auto subresource_loader_factories =
+        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
 
-      main_script_load_params = blink::mojom::WorkerMainScriptLoadParams::New();
-      subresource_loader_factories.reset(
-          new blink::URLLoaderFactoryBundleInfo());
-      subresource_loader_params = SubresourceLoaderParams();
-
-      network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
-      mojo::MakeStrongBinding(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
-          mojo::MakeRequest(&loader_factory_ptr));
-
-      subresource_loader_params->appcache_loader_factory_info =
-          loader_factory_ptr.PassInterface();
-    } else {
-      provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-      ServiceWorkerProviderHost::PreCreateForWebWorker(
-          helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
-          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-          &provider_info);
-
-      mojo::MakeStrongBinding(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
-          mojo::MakeRequest(&main_script_loader_factory));
-
-      network::mojom::URLLoaderFactoryPtr default_factory_ptr;
-      mojo::MakeStrongBinding(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
-          mojo::MakeRequest(&default_factory_ptr));
-      subresource_loader_factories.reset(new blink::URLLoaderFactoryBundleInfo(
-          default_factory_ptr.PassInterface(),
-          blink::URLLoaderFactoryBundleInfo::SchemeMap(),
-          blink::URLLoaderFactoryBundleInfo::OriginMap(),
-          true /* bypass_redirect_checks */));
-    }
+    base::Optional<SubresourceLoaderParams> subresource_loader_params =
+        SubresourceLoaderParams();
+    network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
+    mojo::MakeStrongBinding(
+        std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
+        mojo::MakeRequest(&loader_factory_ptr));
+    subresource_loader_params->appcache_loader_factory_info =
+        loader_factory_ptr.PassInterface();
 
     host->Start(std::move(factory), std::move(provider_info),
-                std::move(main_script_loader_factory),
                 std::move(main_script_load_params),
                 std::move(subresource_loader_factories),
                 nullptr /* controller */,

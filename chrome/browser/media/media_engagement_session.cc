@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/media_engagement_session.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
@@ -12,30 +11,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-
-namespace {
-
-// This is used for histograms. Do not re-order or change values.
-enum class SessionStatus {
-  kCreated = 0,
-  kSignificantPlayback = 1,
-  // Leave at the end.
-  kSize,
-};
-
-void RecordSessionStatus(SessionStatus status) {
-  static const char kSessionStatus[] = "Media.Engagement.Session";
-  UMA_HISTOGRAM_ENUMERATION(kSessionStatus, status, SessionStatus::kSize);
-}
-
-void RecordRestoredSessionStatus(SessionStatus status) {
-  static const char kSessionRestoredStatus[] =
-      "Media.Engagement.Session.Restored";
-  UMA_HISTOGRAM_ENUMERATION(kSessionRestoredStatus, status,
-                            SessionStatus::kSize);
-}
-
-}  // anonymous namespace
 
 MediaEngagementSession::MediaEngagementSession(MediaEngagementService* service,
                                                const url::Origin& origin,
@@ -117,12 +92,8 @@ MediaEngagementSession::~MediaEngagementSession() {
   // The destructor is called when all the tabs associated te the MEI session
   // are closed. Metrics and data related to "visits" need to be recorded now.
 
-  if (HasPendingDataToCommit()) {
+  if (HasPendingDataToCommit())
     CommitPendingData();
-  } else if ((restore_status_ == RestoreType::kRestored) &&
-             !WasSignificantPlaybackRecorded()) {
-    RecordStatusHistograms();
-  }
 
   RecordUkmMetrics();
 }
@@ -184,25 +155,8 @@ bool MediaEngagementSession::HasPendingDataToCommit() const {
          HasPendingPlaybackToCommit();
 }
 
-void MediaEngagementSession::RecordStatusHistograms() const {
-  DCHECK(HasPendingDataToCommit() ||
-         (restore_status_ == RestoreType::kRestored));
-
-  RecordSessionStatus(SessionStatus::kCreated);
-  if (HasPendingPlaybackToCommit())
-    RecordSessionStatus(SessionStatus::kSignificantPlayback);
-
-  if (restore_status_ == RestoreType::kRestored) {
-    RecordRestoredSessionStatus(SessionStatus::kCreated);
-    if (HasPendingPlaybackToCommit())
-      RecordRestoredSessionStatus(SessionStatus::kSignificantPlayback);
-  }
-}
-
 void MediaEngagementSession::CommitPendingData() {
   DCHECK(HasPendingDataToCommit());
-
-  RecordStatusHistograms();
 
   MediaEngagementScore score = service_->CreateEngagementScore(origin_);
   bool previous_high_value = score.high_score();

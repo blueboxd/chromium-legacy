@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler.h"
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -100,7 +101,9 @@ class NotificationSchedulerImpl : public NotificationScheduler,
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
-      : context_(std::move(context)), weak_ptr_factory_(this) {}
+      : context_(std::move(context)),
+        task_start_time_(SchedulerTaskTime::kUnknown),
+        weak_ptr_factory_(this) {}
 
   ~NotificationSchedulerImpl() override = default;
 
@@ -168,12 +171,15 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask(TaskFinishedCallback callback) override {
+  void OnStartTask(SchedulerTaskTime task_time,
+                   TaskFinishedCallback callback) override {
+    task_start_time_ = task_time;
+
     // Updates the impression data to compute daily notification shown budget.
     context_->impression_tracker()->AnalyzeImpressionHistory();
 
-    // TODO(xingliu): Pass SchedulerTaskTime from background task.
-    FindNotificationToShow(SchedulerTaskTime::kMorning);
+    // Show notifications.
+    FindNotificationToShow(task_start_time_);
 
     // Schedule the next background task based on scheduled notifications.
     ScheduleBackgroundTask();
@@ -181,7 +187,10 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     std::move(callback).Run(false /*need_reschedule*/);
   }
 
-  void OnStopTask() override { ScheduleBackgroundTask(); }
+  void OnStopTask(SchedulerTaskTime task_time) override {
+    task_start_time_ = task_time;
+    ScheduleBackgroundTask();
+  }
 
   // ScheduledNotificationManager::Delegate implementation.
   void DisplayNotification(std::unique_ptr<NotificationEntry> entry) override {
@@ -254,10 +263,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     BackgroundTaskCoordinator::ClientStates client_states;
     context_->impression_tracker()->GetClientStates(&client_states);
 
-    // TODO(xingliu): Pass SchedulerTaskTime from background task.
     context_->background_task_coordinator()->ScheduleBackgroundTask(
-        std::move(notifications), std::move(client_states),
-        SchedulerTaskTime::kMorning);
+        std::move(notifications), std::move(client_states), task_start_time_);
   }
 
   void OnClick(const std::string& notification_id) override {
@@ -274,6 +281,10 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;
+
+  // The start time of the background task. SchedulerTaskTime::kUnknown if
+  // currently not running in a background task.
+  SchedulerTaskTime task_start_time_;
 
   base::WeakPtrFactory<NotificationSchedulerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerImpl);

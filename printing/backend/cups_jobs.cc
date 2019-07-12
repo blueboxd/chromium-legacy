@@ -297,12 +297,6 @@ void ParseJobs(ipp_t* response,
   }
 }
 
-// Returns the uri for printer with |id| as served by CUPS.  Assumes that |id|
-// is a valid CUPS printer name and performs no error checking or escaping.
-std::string PrinterUriFromName(const std::string& id) {
-  return base::StringPrintf("ipp://localhost/printers/%s", id.c_str());
-}
-
 // Extracts PrinterInfo fields from |response| and populates |printer_info|.
 // Returns true if at least printer-make-and-model and ipp-versions-supported
 // were read.
@@ -352,6 +346,10 @@ PrinterStatus::~PrinterStatus() = default;
 PrinterInfo::PrinterInfo() = default;
 
 PrinterInfo::~PrinterInfo() = default;
+
+std::string PrinterUriFromName(const std::string& id) {
+  return base::StringPrintf("ipp://localhost/printers/%s", id.c_str());
+}
 
 void ParseJobsResponse(ipp_t* response,
                        const std::string& printer_id,

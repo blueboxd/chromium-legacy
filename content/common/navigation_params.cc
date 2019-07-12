@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"

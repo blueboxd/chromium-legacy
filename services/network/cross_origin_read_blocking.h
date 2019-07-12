@@ -130,9 +130,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // a warning message written to the DevTools console.
     bool ShouldReportBlockedResponse() const;
 
-    // Whether ShouldBlockBasedOnHeaders asked to sniff the body.
+    // Whether ShouldBlockBasedOnHeaders asked to sniff the body or the CORB
+    // protection logging needs extra sniffing.
     bool needs_sniffing() const {
-      return should_block_based_on_headers_ == kNeedToSniffMore;
+      return should_block_based_on_headers_ == kNeedToSniffMore ||
+             corb_protection_logging_needs_sniffing_;
     }
 
     // The MIME type determined by ShouldBlockBasedOnHeaders.
@@ -204,6 +206,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     static MimeTypeBucket GetMimeTypeBucket(
         const ResourceResponseInfo& response);
 
+    // Translates a blocking decision into a protection decision for use by
+    // LogSensitiveResponseProtection.
+    static CrossOriginProtectionDecision BlockingDecisionToProtectionDecision(
+        BlockingDecision would_protect_based_on_headers);
+
+    // Returns a protection decision (blocked after sniffing or allowed after
+    // sniffing) depending on if the sniffers found blockable content.
+    static CrossOriginProtectionDecision SniffingDecisionToProtectionDecision(
+        bool found_blockable_content);
+
     // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
     void CreateSniffers();
@@ -211,12 +223,24 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // Reports potentially sensitive responses and whether CORB would have
     // protected them, were they made cross origin. Also reports if the server
     // supports range requests.
-    static void LogSensitiveResponseProtection(
-        const ResourceResponseInfo& response,
-        BlockingDecision would_protect_based_on_headers);
+    void LogSensitiveResponseProtection(
+        CrossOriginProtectionDecision protection_decision) const;
 
     // Outcome of ShouldBlockBasedOnHeaders recorded inside the Create method.
     BlockingDecision should_block_based_on_headers_;
+
+    // The following values store information about the response and are used by
+    // the CORB protection logging in LogSensitiveResponseProtection.
+    bool corb_protection_logging_needs_sniffing_ = false;
+    // |mime_type_bucket_| is either kProtected (if it's a type we expect to
+    // protect such as HTML), kPublic (for javascript etc.) or kOther.
+    MimeTypeBucket mime_type_bucket_ = kOther;
+    const bool seems_sensitive_from_cors_heuristic_;
+    const bool seems_sensitive_from_cache_heuristic_;
+    const bool supports_range_requests_;
+    // |hypothetical_sniffing_mode_| is true if we need to sniff only because of
+    // the CORB protection logging (and otherwise, CORB would not sniff).
+    bool hypothetical_sniffing_mode_ = false;
 
     // Canonical MIME type detected by ShouldBlockBasedOnHeaders.  Used to
     // determine if blocking the response is needed, as well as which type of
@@ -224,11 +248,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     MimeType canonical_mime_type_ = MimeType::kInvalidMimeType;
 
     // Content length if available. -1 if not available.
-    int64_t content_length_ = -1;
+    const int64_t content_length_;
 
     // The HTTP response code (e.g. 200 or 404) received in response to this
     // resource request.
-    int http_response_code_ = 0;
+    const int http_response_code_;
 
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;

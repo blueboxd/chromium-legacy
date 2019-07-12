@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/permission_type.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"

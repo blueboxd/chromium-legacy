@@ -155,7 +155,7 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // We use this factory to create callback tasks for UpgradeDetected. We pass
   // the task to the actual upgrade detection code, which is in
   // DetectUpgradeTask.
-  base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_;
+  base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImpl);
 };

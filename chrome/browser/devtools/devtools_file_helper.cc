@@ -218,8 +218,7 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
       profile_(profile),
       delegate_(delegate),
       file_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      weak_factory_(this) {
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})) {
   pref_change_registrar_.Init(profile_->GetPrefs());
 }
 

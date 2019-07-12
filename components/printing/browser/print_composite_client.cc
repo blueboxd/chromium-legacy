@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
@@ -206,7 +205,6 @@ void PrintCompositeClient::OnDidCompositePageToPdf(
     mojom::PdfCompositor::CompositePageToPdfCallback callback,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
-  UMA_HISTOGRAM_ENUMERATION("CompositePageToPdf.Status", status);
   std::move(callback).Run(status, std::move(region));
 }
 
@@ -219,7 +217,6 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
   // Clear all stored printed subframes.
   printed_subframes_.erase(document_cookie);
 
-  UMA_HISTOGRAM_ENUMERATION("CompositeDocToPdf.Status", status);
   std::move(callback).Run(status, std::move(region));
 }
 

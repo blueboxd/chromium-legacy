@@ -32,8 +32,7 @@ FileDownloader::FileDownloader(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : url_loader_factory_(url_loader_factory),
       callback_(std::move(callback)),
-      local_path_(path),
-      weak_ptr_factory_(this) {
+      local_path_(path) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->load_flags =

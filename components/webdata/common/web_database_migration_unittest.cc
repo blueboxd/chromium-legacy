@@ -25,7 +25,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/search_engines/keyword_table.h"
-#include "components/signin/core/browser/webdata/token_service_table.h"
+#include "components/signin/public/webdata/token_service_table.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"

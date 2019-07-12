@@ -112,15 +112,13 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   int session_;
   base::string16 last_result_str_;
 
-  base::WeakPtrFactory<SpeechRecognizerOnIO> weak_factory_;
+  base::WeakPtrFactory<SpeechRecognizerOnIO> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerOnIO);
 };
 
 SpeechRecognizerOnIO::SpeechRecognizerOnIO()
-    : speech_timeout_(new base::OneShotTimer()),
-      session_(kInvalidSessionId),
-      weak_factory_(this) {}
+    : speech_timeout_(new base::OneShotTimer()), session_(kInvalidSessionId) {}
 
 SpeechRecognizerOnIO::~SpeechRecognizerOnIO() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -303,8 +301,7 @@ SpeechRecognizer::SpeechRecognizer(
           std::move(shared_url_loader_factory_info)),
       accept_language_(accept_language),
       locale_(locale),
-      speech_recognizer_on_io_(std::make_unique<SpeechRecognizerOnIO>()),
-      weak_factory_(this) {
+      speech_recognizer_on_io_(std::make_unique<SpeechRecognizerOnIO>()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

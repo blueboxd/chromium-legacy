@@ -219,7 +219,8 @@ class DownloadRequestLimiter
     // infobar.  User responses to the throttling prompt will be returned
     // through this channel, and it can be revoked if the user prompt result
     // becomes moot.
-    base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_;
+    base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_{
+        this};
 
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
@@ -321,7 +322,7 @@ class DownloadRequestLimiter
 
   // Weak ptr factory used when |CanDownload| asks the delegate asynchronously
   // about the download.
-  base::WeakPtrFactory<DownloadRequestLimiter> factory_;
+  base::WeakPtrFactory<DownloadRequestLimiter> factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiter);
 };

@@ -112,8 +112,7 @@ JavaScriptDialogViews::JavaScriptDialogViews(
       message_text_(message_text),
       default_prompt_text_(default_prompt_text),
       dialog_callback_(std::move(dialog_callback)),
-      dialog_force_closed_callback_(std::move(dialog_force_closed_callback)),
-      weak_factory_(this) {
+      dialog_force_closed_callback_(std::move(dialog_force_closed_callback)) {
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
   if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;

@@ -54,7 +54,7 @@ class RootDeleteHelper {
   // Not owned; owner of this instance owns it.
   LocalFileSyncStatus* sync_status_;
 
-  base::WeakPtrFactory<RootDeleteHelper> weak_factory_;
+  base::WeakPtrFactory<RootDeleteHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RootDeleteHelper);
 };

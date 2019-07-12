@@ -263,7 +263,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // initialization is completed.
   bool delete_all_data_requested_ = false;
 
-  base::WeakPtrFactory<ResourcePrefetchPredictor> weak_factory_;
+  base::WeakPtrFactory<ResourcePrefetchPredictor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);
 };

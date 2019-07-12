@@ -128,7 +128,7 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
  private:
   ResourceBundleFileLoader(const std::string& content_security_policy,
                            bool send_cors_header)
-      : binding_(this), weak_factory_(this) {
+      : binding_(this) {
     response_headers_ = extensions::BuildHttpHeaders(
         content_security_policy, send_cors_header, base::Time());
   }
@@ -220,7 +220,7 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  base::WeakPtrFactory<ResourceBundleFileLoader> weak_factory_;
+  base::WeakPtrFactory<ResourceBundleFileLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleFileLoader);
 };

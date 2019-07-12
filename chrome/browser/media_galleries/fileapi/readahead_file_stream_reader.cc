@@ -24,11 +24,7 @@ const int kBufferSize = 1024*1024;  // 1MB to minimize transaction costs.
 }  // namespace
 
 ReadaheadFileStreamReader::ReadaheadFileStreamReader(FileStreamReader* source)
-    : source_(source),
-      source_error_(0),
-      source_has_pending_read_(false),
-      weak_factory_(this) {
-}
+    : source_(source), source_error_(0), source_has_pending_read_(false) {}
 
 ReadaheadFileStreamReader::~ReadaheadFileStreamReader() {}
 

@@ -284,7 +284,7 @@ class ThreadWatcher {
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
   // thread.
-  base::WeakPtrFactory<ThreadWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<ThreadWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcher);
 };

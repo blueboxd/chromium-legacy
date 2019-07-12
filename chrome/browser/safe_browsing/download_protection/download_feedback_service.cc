@@ -73,8 +73,7 @@ DownloadFeedbackService::DownloadFeedbackService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TaskRunner* file_task_runner)
     : url_loader_factory_(url_loader_factory),
-      file_task_runner_(file_task_runner),
-      weak_ptr_factory_(this) {
+      file_task_runner_(file_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

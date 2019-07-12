@@ -208,7 +208,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   scoped_refptr<PrintQueriesQueue> queue_;
 
-  base::WeakPtrFactory<PrintViewManagerBase> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintViewManagerBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBase);
 };

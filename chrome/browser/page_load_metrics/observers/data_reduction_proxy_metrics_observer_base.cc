@@ -113,8 +113,7 @@ DataReductionProxyMetricsObserverBase::DataReductionProxyMetricsObserverBase()
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
       touch_count_(0),
       scroll_count_(0),
-      redirect_count_(0),
-      weak_ptr_factory_(this) {}
+      redirect_count_(0) {}
 
 DataReductionProxyMetricsObserverBase::
     ~DataReductionProxyMetricsObserverBase() {}

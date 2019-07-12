@@ -618,7 +618,7 @@ class PrerenderManager : public content::NotificationObserver,
 
   std::vector<std::unique_ptr<PrerenderManagerObserver>> observers_;
 
-  base::WeakPtrFactory<PrerenderManager> weak_factory_;
+  base::WeakPtrFactory<PrerenderManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

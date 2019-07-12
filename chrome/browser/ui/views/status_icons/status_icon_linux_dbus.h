@@ -111,7 +111,7 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   // our own menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
-  base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_;
+  base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconLinuxDbus);
 };

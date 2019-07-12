@@ -158,8 +158,7 @@ BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
     : id_(id),
       runtime_(std::move(runtime)),
       display_info_(ValidateVRDisplayInfo(display_info.get(), id)),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   device::mojom::XRRuntimeEventListenerAssociatedPtr listener;
   binding_.Bind(mojo::MakeRequest(&listener));
 

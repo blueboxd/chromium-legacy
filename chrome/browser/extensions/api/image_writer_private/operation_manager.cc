@@ -39,9 +39,7 @@ namespace image_writer {
 using content::BrowserThread;
 
 OperationManager::OperationManager(content::BrowserContext* context)
-    : browser_context_(context),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+    : browser_context_(context), extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,

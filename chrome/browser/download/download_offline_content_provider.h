@@ -113,7 +113,7 @@ class DownloadOfflineContentProvider
       all_download_observer_;
   bool checked_for_externally_removed_downloads_;
 
-  base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadOfflineContentProvider);
 };

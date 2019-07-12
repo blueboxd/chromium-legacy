@@ -68,8 +68,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       read_file_(-1),
 #endif
       read_pending_(false),
-      write_pending_(false),
-      weak_factory_(this) {
+      write_pending_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(

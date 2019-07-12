@@ -141,8 +141,8 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSubmitCompositorFrame() {
-  compositor_timing_history_->DidSubmitCompositorFrame();
+void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token) {
+  compositor_timing_history_->DidSubmitCompositorFrame(frame_token);
   state_machine_.DidSubmitCompositorFrame();
 
   // There is no need to call ProcessScheduledActions here because
@@ -194,6 +194,12 @@ void Scheduler::WillPrepareTiles() {
 void Scheduler::DidPrepareTiles() {
   compositor_timing_history_->DidPrepareTiles();
   state_machine_.DidPrepareTiles();
+}
+
+void Scheduler::DidPresentCompositorFrame(uint32_t frame_token,
+                                          base::TimeTicks presentation_time) {
+  compositor_timing_history_->DidPresentCompositorFrame(frame_token,
+                                                        presentation_time);
 }
 
 void Scheduler::DidLoseLayerTreeFrameSink() {

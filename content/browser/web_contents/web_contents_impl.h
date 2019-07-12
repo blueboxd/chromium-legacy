@@ -744,6 +744,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   InputEventShim* GetInputEventShim() const override;
   void NotifyVisibleViewportSizeChanged(
       const gfx::Size& visible_viewport_size) override;
+  RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;
@@ -1912,13 +1913,16 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // with OOPIF renderers.
   blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
 
-  // Observe native theme for changes to dark mode and high contrast. Used to
-  // notify the renderer of preferred color scheme and forced colors changes.
+  // Observe native theme for changes to dark mode, high contrast and preferred
+  // color scheme. Used to notify the renderer of preferred color scheme and
+  // forced colors changes.
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observer_;
 
   bool in_high_contrast_ = false;
   bool in_dark_mode_ = false;
+  ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
+      ui::NativeTheme::PreferredColorScheme::kNoPreference;
 
   // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
   // user gesture is properly propagated. This is a temporary fix for history

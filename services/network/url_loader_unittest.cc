@@ -750,7 +750,7 @@ class URLLoaderNetworkIsolationTest : public URLLoaderTest {
  protected:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByTopFrameOrigin);
+        net::features::kSplitCacheByNetworkIsolationKey);
     URLLoaderTest::SetUp();
   }
 

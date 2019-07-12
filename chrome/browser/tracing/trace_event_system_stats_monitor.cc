@@ -45,8 +45,7 @@ class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
 
 //////////////////////////////////////////////////////////////////////////////
 
-TraceEventSystemStatsMonitor::TraceEventSystemStatsMonitor()
-    : weak_factory_(this) {
+TraceEventSystemStatsMonitor::TraceEventSystemStatsMonitor() {
   // Force the "system_stats" category to show up in the trace viewer.
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("system_stats"));

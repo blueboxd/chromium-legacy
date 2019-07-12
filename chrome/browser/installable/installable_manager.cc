@@ -149,8 +149,7 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
       valid_manifest_(std::make_unique<ValidManifestProperty>()),
       worker_(std::make_unique<ServiceWorkerProperty>()),
       service_worker_context_(nullptr),
-      has_pwa_check_(false),
-      weak_factory_(this) {
+      has_pwa_check_(false) {
   // This is null in unit tests.
   if (web_contents) {
     content::StoragePartition* storage_partition =

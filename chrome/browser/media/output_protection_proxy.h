@@ -55,7 +55,7 @@ class OutputProtectionProxy {
   ash::OutputProtectionDelegate output_protection_delegate_;
 #endif
 
-  base::WeakPtrFactory<OutputProtectionProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<OutputProtectionProxy> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_OUTPUT_PROTECTION_PROXY_H_

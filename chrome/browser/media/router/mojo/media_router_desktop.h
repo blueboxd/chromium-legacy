@@ -177,7 +177,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // message pipe to |extension_provider_proxy_|.
   int extension_provider_error_count_ = 0;
 
-  base::WeakPtrFactory<MediaRouterDesktop> weak_factory_;
+  base::WeakPtrFactory<MediaRouterDesktop> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktop);
 };

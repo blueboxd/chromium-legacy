@@ -1293,16 +1293,13 @@ SyncStatusCode MetadataDatabase::SweepDirtyTrackers(
   return WriteToDatabase();
 }
 
-MetadataDatabase::MetadataDatabase(
-    const base::FilePath& database_path,
-    bool enable_on_disk_index,
-    leveldb::Env* env_override)
+MetadataDatabase::MetadataDatabase(const base::FilePath& database_path,
+                                   bool enable_on_disk_index,
+                                   leveldb::Env* env_override)
     : database_path_(database_path),
       env_override_(env_override),
       enable_on_disk_index_(enable_on_disk_index),
-      largest_known_change_id_(0),
-      weak_ptr_factory_(this) {
-}
+      largest_known_change_id_(0) {}
 
 SyncStatusCode MetadataDatabase::Initialize() {
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;

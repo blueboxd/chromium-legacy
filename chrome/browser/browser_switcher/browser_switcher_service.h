@@ -108,7 +108,7 @@ class XmlDownloader {
   base::Time last_refresh_time_;
   base::Time next_refresh_time_;
 
-  base::WeakPtrFactory<XmlDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<XmlDownloader> weak_ptr_factory_{this};
 };
 
 // Manages per-profile resources for BrowserSwitcher.
@@ -197,7 +197,7 @@ class BrowserSwitcherService : public KeyedService {
   std::unique_ptr<AlternativeBrowserDriver> driver_;
   std::unique_ptr<BrowserSwitcherSitelist> sitelist_;
 
-  base::WeakPtrFactory<BrowserSwitcherService> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserSwitcherService> weak_ptr_factory_{this};
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherService);

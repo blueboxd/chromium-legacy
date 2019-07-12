@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -105,11 +106,14 @@ bool CastAudioManagerAlsa::HasAudioInputDevices() {
 void CastAudioManagerAlsa::GetAudioInputDeviceNames(
     ::media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
+
   // Prepend the default device since we always want it to be on the top of the
   // list for all platforms. Note, pulse has exclusively opened the default
   // device, so we must open the device via the "default" moniker.
   device_names->push_front(::media::AudioDeviceName::CreateDefault());
+#if BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
   device_names->push_back(::media::AudioDeviceName::CreateCommunications());
+#endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
 
   GetAlsaAudioDevices(kStreamCapture, device_names);
 }
@@ -117,6 +121,11 @@ void CastAudioManagerAlsa::GetAudioInputDeviceNames(
 ::media::AudioParameters CastAudioManagerAlsa::GetInputStreamParameters(
     const std::string& device_id) {
   if (device_id == ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
+#if !BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
+    NOTIMPLEMENTED()
+        << "Capture Service is not enabled, return a fake AudioParameters.";
+    return ::media::AudioParameters();
+#endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
     return ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
                                     ::media::CHANNEL_LAYOUT_MONO,
                                     kCommunicationsSampleRate,
@@ -154,6 +163,10 @@ void CastAudioManagerAlsa::GetAudioInputDeviceNames(
           ? ::media::AlsaPcmInputStream::kAutoSelectDevice
           : device_id;
   if (device_name == ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
+#if !BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
+    NOTIMPLEMENTED() << "Capture Service is not enabled, return nullptr.";
+    return nullptr;
+#endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
     return new CastAudioInputStream(params, device_name);
   }
   return new ::media::AlsaPcmInputStream(this, device_name, params,

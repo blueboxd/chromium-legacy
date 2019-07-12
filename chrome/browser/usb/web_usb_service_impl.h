@@ -98,7 +98,7 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
       permission_observer_;
 
-  base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_;
+  base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbServiceImpl);
 };

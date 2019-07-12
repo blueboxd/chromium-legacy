@@ -98,7 +98,7 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   // Called when the page requests (successfully or not) or loses mouse lock.
   base::OnceClosure lock_state_callback_for_test_;
 
-  base::WeakPtrFactory<MouseLockController> weak_ptr_factory_;
+  base::WeakPtrFactory<MouseLockController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MouseLockController);
 };

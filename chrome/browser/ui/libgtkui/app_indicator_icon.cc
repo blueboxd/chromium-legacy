@@ -152,11 +152,7 @@ namespace libgtkui {
 AppIndicatorIcon::AppIndicatorIcon(std::string id,
                                    const gfx::ImageSkia& image,
                                    const base::string16& tool_tip)
-    : id_(id),
-      icon_(nullptr),
-      menu_model_(nullptr),
-      icon_change_count_(0),
-      weak_factory_(this) {
+    : id_(id), icon_(nullptr), menu_model_(nullptr), icon_change_count_(0) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   desktop_env_ = base::nix::GetDesktopEnvironment(env.get());
 

@@ -15245,7 +15245,7 @@
       When this policy is unset it is not possible to verify Parent Access Code on child user's device.'''
     },
     {
-      'name': 'ClientCertificateManagementAllowed',
+      'name': 'CertificateManagementAllowed',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -15276,8 +15276,8 @@
       },
       'example_value': 1,
       'id': 518,
-      'caption': '''Allow users to manage installed client certificates.''',
-      'desc': '''This policy controls whether user are able to import and remove client certificates via Certificate Manager.
+      'caption': '''Allow users to manage installed certificates.''',
+      'desc': '''This policy controls whether user are able to import and remove certificates via Certificate Manager.
 
       If this policy is set to ''Allow users to manage all certificates'' or left not set, users will be able to manage certificates.
 

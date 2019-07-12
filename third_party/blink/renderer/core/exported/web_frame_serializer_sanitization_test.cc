@@ -36,38 +36,17 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/exported/web_frame_serializer_test_helper.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
-#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 namespace {
-
-class SimpleMHTMLPartsGenerationDelegate
-    : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
- public:
-  SimpleMHTMLPartsGenerationDelegate() : remove_popup_overlay_(false) {}
-
-  void SetRemovePopupOverlay(bool remove_popup_overlay) {
-    remove_popup_overlay_ = remove_popup_overlay;
-  }
-
- private:
-  bool ShouldSkipResource(const WebURL&) final { return false; }
-
-  bool UseBinaryEncoding() final { return false; }
-  bool RemovePopupOverlay() final { return remove_popup_overlay_; }
-  bool UsePageProblemDetectors() final { return false; }
-
-  bool remove_popup_overlay_;
-};
 
 // Returns the count of match for substring |pattern| in string |str|.
 int MatchSubstring(const String& str, const char* pattern, size_t size) {
@@ -97,12 +76,12 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
 
   String GenerateMHTMLFromHtml(const String& url, const String& file_name) {
     LoadFrame(url, file_name, "text/html");
-    return GenerateMHTML(false);
+    return WebFrameSerializerTestHelper::GenerateMHTML(MainFrameImpl());
   }
 
   String GenerateMHTMLPartsFromPng(const String& url, const String& file_name) {
     LoadFrame(url, file_name, "image/png");
-    return GenerateMHTML(true);
+    return WebFrameSerializerTestHelper::GenerateMHTMLParts(MainFrameImpl());
   }
 
   void LoadFrame(const String& url,
@@ -114,40 +93,8 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().c_str());
     MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
-  }
-
-  String GenerateMHTML(const bool only_body_parts) {
-    // Boundaries are normally randomly generated but this one is predefined for
-    // simplicity and as good as any other. Plus it gets used in almost all the
-    // examples in the MHTML spec - RFC 2557.
-    const WebString boundary("boundary-example");
-    StringBuilder mhtml;
-    if (!only_body_parts) {
-      WebThreadSafeData header_result = WebFrameSerializer::GenerateMHTMLHeader(
-          boundary, MainFrameImpl(), &mhtml_delegate_);
-      mhtml.Append(header_result.Data(), header_result.size());
-    }
-
-    WebThreadSafeData body_result = WebFrameSerializer::GenerateMHTMLParts(
-        boundary, MainFrameImpl(), &mhtml_delegate_);
-    mhtml.Append(body_result.Data(), body_result.size());
-
-    if (!only_body_parts) {
-      scoped_refptr<RawData> footer_data = RawData::Create();
-      MHTMLArchive::GenerateMHTMLFooterForTesting(boundary,
-                                                  *footer_data->MutableData());
-      mhtml.Append(footer_data->data(), footer_data->length());
-    }
-
-    String mhtml_string = mhtml.ToString();
-    if (!only_body_parts) {
-      // Validate the generated MHTML.
-      MHTMLParser parser(SharedBuffer::Create(mhtml_string.Characters8(),
-                                              size_t(mhtml_string.length())));
-      EXPECT_FALSE(parser.ParseArchive().IsEmpty())
-          << "Generated MHTML is not well formed";
-    }
-    return mhtml_string;
+    MainFrameImpl()->GetFrame()->GetDocument()->UpdateStyleAndLayoutTree();
+    test::RunPendingTasks();
   }
 
   ShadowRoot* SetShadowContent(TreeScope& scope,
@@ -172,10 +119,6 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     return shadow_root;
   }
 
-  void SetRemovePopupOverlay(bool remove_popup_overlay) {
-    mhtml_delegate_.SetRemovePopupOverlay(remove_popup_overlay);
-  }
-
   void RegisterMockedFileURLLoad(const KURL& url,
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
@@ -189,7 +132,6 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
 
  private:
   frame_test_helpers::WebViewHelper helper_;
-  SimpleMHTMLPartsGenerationDelegate mhtml_delegate_;
 };
 
 TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
@@ -316,22 +258,23 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
 
 TEST_F(WebFrameSerializerSanitizationTest, RemovePopupOverlayIfRequested) {
   WebView()->MainFrameWidget()->Resize(WebSize(500, 500));
-  SetRemovePopupOverlay(true);
-  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
+  LoadFrame("http://www.test.com", "popup.html", "text/html");
+  String mhtml =
+      WebFrameSerializerTestHelper::GenerateMHTMLWithPopupOverlayRemoved(
+          MainFrameImpl());
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
   WebView()->MainFrameWidget()->Resize(WebSize(500, 500));
-  SetRemovePopupOverlay(true);
-  String mhtml =
-      GenerateMHTMLFromHtml("http://www.test.com", "text_only_page.html");
+  LoadFrame("http://www.test.com", "text_only_page.html", "text/html");
+  WebFrameSerializerTestHelper::GenerateMHTMLWithPopupOverlayRemoved(
+      MainFrameImpl());
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
   WebView()->MainFrameWidget()->Resize(WebSize(500, 500));
-  SetRemovePopupOverlay(false);
   String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
@@ -381,7 +324,7 @@ TEST_F(WebFrameSerializerSanitizationTest, ShadowDOM) {
       SetShadowContent(*document, "h2", ShadowRootType::kOpen,
                        "Parent shadow\n<p id=\"h3\">Foo</p>", true);
   SetShadowContent(*shadowRoot, "h3", ShadowRootType::kClosed, "Nested shadow");
-  String mhtml = GenerateMHTML(false);
+  String mhtml = WebFrameSerializerTestHelper::GenerateMHTML(MainFrameImpl());
 
   // Template with special attribute should be created for each shadow DOM tree.
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<template shadowmode=3D\"v0\">"));

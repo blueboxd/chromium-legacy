@@ -709,7 +709,7 @@ class TabStripModel {
   // |tab_scrubbing_interval_timer_|.
   size_t tabs_scrubbed_by_key_press_count_ = 0;
 
-  base::WeakPtrFactory<TabStripModel> weak_factory_;
+  base::WeakPtrFactory<TabStripModel> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };

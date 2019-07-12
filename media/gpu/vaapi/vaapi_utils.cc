@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi/vaapi_utils.h"
 
 #include <type_traits>
+#include <utility>
 
 #include <va/va.h>
 
@@ -107,27 +108,20 @@ ScopedVAImage::~ScopedVAImage() {
   }
 }
 
-ScopedVASurface::ScopedVASurface(base::Lock* va_lock,
-                                 VADisplay va_display,
+ScopedVASurface::ScopedVASurface(scoped_refptr<VaapiWrapper> vaapi_wrapper,
                                  VASurfaceID va_surface_id,
                                  const gfx::Size& size,
                                  unsigned int va_rt_format)
-    : va_lock_(va_lock),
-      va_display_(va_display),
+    : vaapi_wrapper_(std::move(vaapi_wrapper)),
       va_surface_id_(va_surface_id),
       size_(size),
-      va_rt_format_(va_rt_format) {}
+      va_rt_format_(va_rt_format) {
+  DCHECK(vaapi_wrapper_);
+}
 
 ScopedVASurface::~ScopedVASurface() {
-  if (VA_INVALID_ID == va_surface_id_)
-    return;
-
-  base::AutoLock auto_lock(*va_lock_);
-  VASurfaceID va_surface_to_destroy = va_surface_id_;
-  const VAStatus va_res =
-      vaDestroySurfaces(va_display_, &va_surface_to_destroy, 1);
-  if (VA_STATUS_SUCCESS != va_res)
-    LOG(ERROR) << "vaDestroySurfaces failed: " << vaErrorStr(va_res);
+  if (va_surface_id_ != VA_INVALID_ID)
+    vaapi_wrapper_->DestroySurface(va_surface_id_);
 }
 
 bool ScopedVASurface::IsValid() const {

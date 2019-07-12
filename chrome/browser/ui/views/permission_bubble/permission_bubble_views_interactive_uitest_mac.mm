@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "content/public/test/test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/base/ui_base_features.h"
@@ -92,13 +92,10 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleViewsInteractiveUITest,
       base::scoped_policy::RETAIN);
   EXPECT_TRUE([browser_window isVisible]);
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
-
   SendAccelerator(ui::VKEY_W);
 
   // The actual window close happens via a posted task.
   EXPECT_TRUE([browser_window isVisible]);
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser());
   EXPECT_FALSE([browser_window isVisible]);
 }

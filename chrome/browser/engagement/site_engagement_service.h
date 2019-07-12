@@ -341,7 +341,7 @@ class SiteEngagementService : public KeyedService,
   // event, each observer's OnEngagementEvent method will be called.
   base::ObserverList<SiteEngagementObserver>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<SiteEngagementService> weak_factory_;
+  base::WeakPtrFactory<SiteEngagementService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementService);
 };

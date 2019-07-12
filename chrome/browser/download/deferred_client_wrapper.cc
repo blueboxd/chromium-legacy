@@ -22,9 +22,7 @@ namespace download {
 DeferredClientWrapper::DeferredClientWrapper(DownloadClient client_id,
                                              ClientFactory client_factory,
                                              SimpleFactoryKey* key)
-    : client_factory_(std::move(client_factory)),
-      key_(key),
-      weak_ptr_factory_(this) {
+    : client_factory_(std::move(client_factory)), key_(key) {
 #if defined(OS_ANDROID)
   client_id_ = client_id;
   full_browser_requested_ = false;

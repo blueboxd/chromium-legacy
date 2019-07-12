@@ -124,7 +124,8 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<PreviewsLitePageRedirectURLLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<PreviewsLitePageRedirectURLLoader> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageRedirectURLLoader);
 };

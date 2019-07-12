@@ -127,8 +127,7 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
                   ->resource_prefetch_tables()),
-      history_service_observer_(this),
-      weak_factory_(this) {
+      history_service_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

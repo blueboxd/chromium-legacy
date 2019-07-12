@@ -70,9 +70,9 @@ class ContentIndexProviderImplTest : public testing::Test,
     auto description = blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
         "icon_url", "launch_url");
-    return content::ContentIndexEntry(kServiceWorkerRegistrationId,
-                                      std::move(description),
-                                      base::Time::Now());
+    return content::ContentIndexEntry(
+        kServiceWorkerRegistrationId, std::move(description),
+        /* launch_url= */ GURL(), base::Time::Now());
   }
 
   SkBitmap GetVisuals(const ContentId& id) {

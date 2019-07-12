@@ -1086,13 +1086,16 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // On Gemini Lake, Kaby Lake and later we can pass to libva the client's
   // PictureBuffers to decode onto, which skips the use of the Vpp unit and its
   // associated format reconciliation copy, avoiding all internal buffer
-  // allocations.  This only works for H264, VP8 and VP9.
+  // allocations.  This only works for VP8 and VP9: H264 GetNumReferenceFrames()
+  // depends on the bitstream and sometimes it's not enough to cover the amount
+  // of frames needed by the client pipeline (see b/133733739).
   // TODO(crbug.com/911754): Enable for VP9 Profile 2.
-  if (IsGeminiLakeOrLater() && profile_ != VP9PROFILE_PROFILE2) {
+  if (IsGeminiLakeOrLater() &&
+      (profile_ == VP9PROFILE_PROFILE0 || profile_ == VP8PROFILE_ANY)) {
     // Add one to the reference frames for the one being currently egressed, and
     // an extra allocation for both |client_| and |decoder_|, see
     // crrev.com/c/1576560.
-    if (profile_ != VP9PROFILE_PROFILE0)
+    if (profile_ == VP8PROFILE_ANY)
       num_extra_pics_ = 3;
     return BufferAllocationMode::kNone;
   }

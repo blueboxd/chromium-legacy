@@ -45,9 +45,7 @@ std::unique_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
 
 }  // namespace
 
-ChildProcessTaskProvider::ChildProcessTaskProvider()
-    : weak_ptr_factory_(this) {
-}
+ChildProcessTaskProvider::ChildProcessTaskProvider() {}
 
 ChildProcessTaskProvider::~ChildProcessTaskProvider() {
 }

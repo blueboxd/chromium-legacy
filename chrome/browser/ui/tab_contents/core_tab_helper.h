@@ -70,7 +70,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  base::WeakPtrFactory<CoreTabHelper> weak_factory_;
+  base::WeakPtrFactory<CoreTabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

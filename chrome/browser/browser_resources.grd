@@ -96,11 +96,6 @@
         <structure name="IDR_ASSISTANT_OPTIN_HTML" file="resources\chromeos\assistant_optin\assistant_optin.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_JS" file="resources\chromeos\assistant_optin\assistant_optin.js" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
-      <if expr="is_win">
-        <structure name="IDR_WELCOME_WIN10_CSS" file="resources\welcome\welcome_win10.css" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_HTML" file="resources\welcome\welcome_win10.html" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_JS" file="resources\welcome\welcome_win10.js" type="chrome_html" />
-      </if>
     </structures>
     <includes>
       <if expr="is_win or is_macosx or desktop_linux or chromeos">
@@ -647,10 +642,6 @@
         <include name="IDR_IME_WINDOW_CLOSE" file="resources\input_ime\ime_window_close.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
-      </if>
-      <if expr="is_win">
-        <include name="IDR_WELCOME_WIN10_DEFAULT_WEBP" file="resources\welcome\default.webp" type="BINDATA" />
-        <include name="IDR_WELCOME_WIN10_PIN_WEBP" file="resources\welcome\pin.webp" type="BINDATA" />
       </if>
       <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" />
       <if expr="is_android or is_linux">

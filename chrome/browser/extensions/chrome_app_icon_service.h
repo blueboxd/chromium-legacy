@@ -116,7 +116,7 @@ class ChromeAppIconService : public KeyedService,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 
-  base::WeakPtrFactory<ChromeAppIconService> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeAppIconService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppIconService);
 };

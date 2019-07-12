@@ -177,8 +177,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
         start_point_(params.start_point),
         do_drag_callback_(std::move(do_drag_callback)),
         drag_data_(std::make_unique<ui::OSExchangeData>()),
-        observer_(this),
-        weak_factory_(this) {
+        observer_(this) {
     observer_.Add(model_);
 
     // Set up our OLE machinery.
@@ -273,7 +272,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
       observer_;
 
-  base::WeakPtrFactory<BookmarkDragHelper> weak_factory_;
+  base::WeakPtrFactory<BookmarkDragHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDragHelper);
 };

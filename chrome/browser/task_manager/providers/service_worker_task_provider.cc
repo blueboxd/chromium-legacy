@@ -23,8 +23,7 @@ using content::BrowserThread;
 
 namespace task_manager {
 
-ServiceWorkerTaskProvider::ServiceWorkerTaskProvider()
-    : weak_ptr_factory_(this) {}
+ServiceWorkerTaskProvider::ServiceWorkerTaskProvider() {}
 
 ServiceWorkerTaskProvider::~ServiceWorkerTaskProvider() = default;
 

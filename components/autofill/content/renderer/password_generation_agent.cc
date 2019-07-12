@@ -147,19 +147,19 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       mark_generation_element_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kShowAutofillSignatures)),
-      password_agent_(password_agent),
-      binding_(this) {
+      password_agent_(password_agent) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
   registry->AddInterface(base::BindRepeating(
-      &PasswordGenerationAgent::BindRequest, base::Unretained(this)));
+      &PasswordGenerationAgent::BindPendingReceiver, base::Unretained(this)));
   password_agent_->SetPasswordGenerationAgent(this);
 }
 
 PasswordGenerationAgent::~PasswordGenerationAgent() = default;
 
-void PasswordGenerationAgent::BindRequest(
-    mojom::PasswordGenerationAgentAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void PasswordGenerationAgent::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::PasswordGenerationAgent>
+        pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void PasswordGenerationAgent::DidCommitProvisionalLoad(
@@ -196,7 +196,7 @@ void PasswordGenerationAgent::DidChangeScrollOffset() {
 }
 
 void PasswordGenerationAgent::OnDestruct() {
-  binding_.Close();
+  receiver_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -603,13 +603,13 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
   element.SetAttribute("aria-autocomplete", "list");
 }
 
-const mojom::PasswordManagerDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
 PasswordGenerationAgent::GetPasswordManagerDriver() {
   DCHECK(password_agent_);
   return password_agent_->GetPasswordManagerDriver();
 }
 
-const mojom::PasswordGenerationDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordGenerationDriver>&
 PasswordGenerationAgent::GetPasswordGenerationDriver() {
   if (!password_generation_client_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(

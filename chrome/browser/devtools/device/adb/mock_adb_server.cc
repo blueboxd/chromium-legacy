@@ -221,7 +221,7 @@ class SimpleHttpServer {
 
     SEQUENCE_CHECKER(sequence_checker_);
 
-    base::WeakPtrFactory<Connection> weak_factory_;
+    base::WeakPtrFactory<Connection> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Connection);
   };
@@ -235,7 +235,7 @@ class SimpleHttpServer {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SimpleHttpServer> weak_factory_;
+  base::WeakPtrFactory<SimpleHttpServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SimpleHttpServer);
 };
@@ -243,8 +243,7 @@ class SimpleHttpServer {
 SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
                                    net::IPEndPoint endpoint)
     : factory_(factory),
-      socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
-      weak_factory_(this) {
+      socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())) {
   socket_->Listen(endpoint, 5);
   OnConnect();
 }
@@ -261,8 +260,7 @@ SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
       input_buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       output_buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       bytes_to_write_(0),
-      read_closed_(false),
-      weak_factory_(this) {
+      read_closed_(false) {
   input_buffer_->SetCapacity(kBufferSize);
   ReadData();
 }

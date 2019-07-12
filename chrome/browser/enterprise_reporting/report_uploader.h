@@ -87,7 +87,7 @@ class ReportUploader {
   base::OneShotTimer backoff_request_timer_;
   const int maximum_number_of_retries_;
 
-  base::WeakPtrFactory<ReportUploader> weak_ptr_factory_;
+  base::WeakPtrFactory<ReportUploader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ReportUploader);
 };
 

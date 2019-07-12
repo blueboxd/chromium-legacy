@@ -98,8 +98,7 @@ LoginHandler::LoginHandler(const net::AuthChallengeInfo& auth_info,
     : WebContentsObserver(web_contents),
       auth_info_(auth_info),
       auth_required_callback_(std::move(auth_required_callback)),
-      prompt_started_(false),
-      weak_factory_(this) {
+      prompt_started_(false) {
   DCHECK(web_contents);
 }
 

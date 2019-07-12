@@ -53,9 +53,7 @@ bool DumpTypeContainsOutgoing(RtpDumpType type) {
 WebRtcRtpDumpHandler::WebRtcRtpDumpHandler(const base::FilePath& dump_dir)
     : dump_dir_(dump_dir),
       incoming_state_(STATE_NONE),
-      outgoing_state_(STATE_NONE),
-      weak_ptr_factory_(this) {
-}
+      outgoing_state_(STATE_NONE) {}
 
 WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);

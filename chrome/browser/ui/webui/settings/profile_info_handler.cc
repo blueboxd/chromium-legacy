@@ -40,8 +40,7 @@ ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
 #if defined(OS_CHROMEOS)
       user_manager_observer_(this),
 #endif
-      profile_observer_(this),
-      callback_weak_ptr_factory_(this) {
+      profile_observer_(this) {
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
   content::URLDataSource::Add(profile,

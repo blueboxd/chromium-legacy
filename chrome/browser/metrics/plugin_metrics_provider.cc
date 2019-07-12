@@ -106,8 +106,7 @@ struct PluginMetricsProvider::ChildProcessStats {
 };
 
 PluginMetricsProvider::PluginMetricsProvider(PrefService* local_state)
-    : local_state_(local_state),
-      weak_ptr_factory_(this) {
+    : local_state_(local_state) {
   DCHECK(local_state_);
 
   BrowserChildProcessObserver::Add(this);

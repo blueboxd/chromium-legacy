@@ -123,8 +123,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
                          web_contents->GetNativeView()),
       password_selected_(false),
       state_(kOfferGeneration),
-      key_press_handler_manager_(new KeyPressRegistrator(frame)),
-      weak_ptr_factory_(this) {
+      key_press_handler_manager_(new KeyPressRegistrator(frame)) {
 #if !defined(OS_ANDROID)
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(web_contents);

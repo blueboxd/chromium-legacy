@@ -208,8 +208,7 @@ SearchSuggestLoaderImpl::SearchSuggestLoaderImpl(
     const std::string& application_locale)
     : url_loader_factory_(url_loader_factory),
       google_url_tracker_(google_url_tracker),
-      application_locale_(application_locale),
-      weak_ptr_factory_(this) {}
+      application_locale_(application_locale) {}
 
 SearchSuggestLoaderImpl::~SearchSuggestLoaderImpl() = default;
 

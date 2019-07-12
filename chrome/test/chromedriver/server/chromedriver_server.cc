@@ -120,9 +120,7 @@ void EnsureSharedMemory(base::CommandLine* cmd_line) {
 class HttpServer : public net::HttpServer::Delegate {
  public:
   explicit HttpServer(const HttpRequestHandlerFunc& handle_request_func)
-      : handle_request_func_(handle_request_func),
-        allow_remote_(false),
-        weak_factory_(this) {}
+      : handle_request_func_(handle_request_func), allow_remote_(false) {}
 
   ~HttpServer() override {}
 
@@ -184,7 +182,7 @@ class HttpServer : public net::HttpServer::Delegate {
   HttpRequestHandlerFunc handle_request_func_;
   std::unique_ptr<net::HttpServer> server_;
   bool allow_remote_;
-  base::WeakPtrFactory<HttpServer> weak_factory_;  // Should be last.
+  base::WeakPtrFactory<HttpServer> weak_factory_{this};  // Should be last.
 };
 
 void SendResponseOnCmdThread(

@@ -100,7 +100,7 @@ class ServiceWorkerTaskProvider : public TaskProvider,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ServiceWorkerTaskProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerTaskProvider> weak_ptr_factory_{this};
 };
 
 }  // namespace task_manager

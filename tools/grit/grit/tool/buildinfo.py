@@ -54,7 +54,7 @@ The output directory is used for display only.
       if output.attrs['lang']:
         langs[output.attrs['lang']] = os.path.dirname(output.GetFilename())
 
-    for lang, dirname in langs.iteritems():
+    for lang, dirname in langs.items():
       old_output_language = res_tree.output_language
       res_tree.SetOutputLanguage(lang)
       for node in res_tree.ActiveDescendants():

@@ -56,8 +56,7 @@ ToolbarActionsModel::ToolbarActionsModel(
       has_active_bubble_(false),
       extension_action_observer_(this),
       extension_registry_observer_(this),
-      load_error_reporter_observer_(this),
-      weak_ptr_factory_(this) {
+      load_error_reporter_observer_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ToolbarActionsModel::OnReady,
                                 weak_ptr_factory_.GetWeakPtr()));

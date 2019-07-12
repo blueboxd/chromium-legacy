@@ -13,7 +13,7 @@
 namespace performance_manager {
 
 SiteDataReader::SiteDataReader(scoped_refptr<internal::SiteDataImpl> impl)
-    : impl_(std::move(impl)), weak_factory_(this) {}
+    : impl_(std::move(impl)) {}
 
 SiteDataReader::~SiteDataReader() {}
 

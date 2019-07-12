@@ -250,7 +250,7 @@ class InstallableManager
   // which queries the full PWA parameters.
   bool has_pwa_check_;
 
-  base::WeakPtrFactory<InstallableManager> weak_factory_;
+  base::WeakPtrFactory<InstallableManager> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

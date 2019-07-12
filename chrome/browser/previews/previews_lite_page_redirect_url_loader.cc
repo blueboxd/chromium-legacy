@@ -30,8 +30,7 @@ PreviewsLitePageRedirectURLLoader::PreviewsLitePageRedirectURLLoader(
     HandleRequest callback)
     : modified_resource_request_(tentative_resource_request),
       callback_(std::move(callback)),
-      binding_(this),
-      weak_ptr_factory_(this) {}
+      binding_(this) {}
 
 PreviewsLitePageRedirectURLLoader::~PreviewsLitePageRedirectURLLoader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

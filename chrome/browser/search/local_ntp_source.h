@@ -166,7 +166,7 @@ class LocalNtpSource : public content::URLDataSource,
 
   std::unique_ptr<SearchConfigurationProvider> search_config_provider_;
 
-  base::WeakPtrFactory<LocalNtpSource> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalNtpSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalNtpSource);
 };

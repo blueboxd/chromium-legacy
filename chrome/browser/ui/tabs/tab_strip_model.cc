@@ -287,7 +287,7 @@ struct TabStripModel::DetachNotifications {
 // TabStripModel, public:
 
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
-    : delegate_(delegate), profile_(profile), weak_factory_(this) {
+    : delegate_(delegate), profile_(profile) {
   DCHECK(delegate_);
   order_controller_.reset(new TabStripModelOrderController(this));
 

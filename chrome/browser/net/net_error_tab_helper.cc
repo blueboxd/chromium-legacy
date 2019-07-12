@@ -141,8 +141,7 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
       is_showing_download_button_in_error_page_(false),
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-      dns_probe_status_(error_page::DNS_PROBE_POSSIBLE),
-      weak_factory_(this) {
+      dns_probe_status_(error_page::DNS_PROBE_POSSIBLE) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If this helper is under test, it won't have a WebContents.

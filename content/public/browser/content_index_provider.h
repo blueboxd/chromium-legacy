@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 
@@ -21,6 +22,7 @@ namespace content {
 struct CONTENT_EXPORT ContentIndexEntry {
   ContentIndexEntry(int64_t service_worker_registration_id,
                     blink::mojom::ContentDescriptionPtr description,
+                    const GURL& launch_url,
                     base::Time registration_time);
   ContentIndexEntry(ContentIndexEntry&& other);
   ~ContentIndexEntry();
@@ -31,6 +33,9 @@ struct CONTENT_EXPORT ContentIndexEntry {
 
   // All the developer provided information.
   blink::mojom::ContentDescriptionPtr description;
+
+  // The fully-resolved URL of the content.
+  GURL launch_url;
 
   // The time the registration was created.
   base::Time registration_time;

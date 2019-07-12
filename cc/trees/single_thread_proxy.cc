@@ -27,6 +27,7 @@
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
 
@@ -523,6 +524,11 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
                                               feedback);
+
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token,
+                                                         feedback.timestamp);
+  }
 }
 
 void SingleThreadProxy::NotifyAnimationWorkletStateChange(
@@ -671,9 +677,11 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     draw_frame = draw_result == DRAW_SUCCESS;
     if (draw_frame) {
       if (host_impl_->DrawLayers(frame)) {
-        if (scheduler_on_impl_thread_)
+        if (scheduler_on_impl_thread_) {
           // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-          scheduler_on_impl_thread_->DidSubmitCompositorFrame();
+          scheduler_on_impl_thread_->DidSubmitCompositorFrame(
+              frame->frame_token);
+        }
         single_thread_client_->DidSubmitCompositorFrame();
       }
     }

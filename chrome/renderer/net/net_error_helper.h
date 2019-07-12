@@ -199,13 +199,13 @@ class NetErrorHelper
   // pointers are invalidated on each commit, to prevent getting messages from
   // Controllers used for the previous commit that haven't yet been cleaned up.
   base::WeakPtrFactory<NetErrorPageController::Delegate>
-      weak_controller_delegate_factory_;
+      weak_controller_delegate_factory_{this};
 
   base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
-      weak_security_interstitial_controller_delegate_factory_;
+      weak_security_interstitial_controller_delegate_factory_{this};
 
   base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
-      weak_supervised_user_error_controller_delegate_factory_;
+      weak_supervised_user_error_controller_delegate_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };

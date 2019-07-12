@@ -70,7 +70,7 @@ class ProfileReportGenerator {
 
   std::unique_ptr<em::ChromeUserProfileInfo> report_ = nullptr;
 
-  base::WeakPtrFactory<ProfileReportGenerator> weak_ptr_factory_;
+  base::WeakPtrFactory<ProfileReportGenerator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileReportGenerator);
 };

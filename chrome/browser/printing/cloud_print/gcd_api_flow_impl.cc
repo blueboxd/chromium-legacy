@@ -93,8 +93,7 @@ GCDApiFlowImpl::GCDApiFlowImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     identity::IdentityManager* identity_manager)
     : url_loader_factory_(url_loader_factory),
-      identity_manager_(identity_manager),
-      weak_factory_(this) {}
+      identity_manager_(identity_manager) {}
 
 GCDApiFlowImpl::~GCDApiFlowImpl() {}
 

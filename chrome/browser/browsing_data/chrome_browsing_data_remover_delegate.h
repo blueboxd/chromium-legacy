@@ -327,7 +327,8 @@ class ChromeBrowsingDataRemoverDelegate
   std::unique_ptr<WebappRegistry> webapp_registry_;
 #endif
 
-  base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegate);
 };

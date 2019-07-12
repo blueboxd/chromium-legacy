@@ -72,7 +72,7 @@ class UkmBackgroundRecorderService : public KeyedService {
   // Task tracker used for querying URLs in the history service.
   base::CancelableTaskTracker task_tracker_;
 
-  base::WeakPtrFactory<UkmBackgroundRecorderService> weak_ptr_factory_;
+  base::WeakPtrFactory<UkmBackgroundRecorderService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UkmBackgroundRecorderService);
 };

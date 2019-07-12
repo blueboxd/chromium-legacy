@@ -119,8 +119,7 @@ TaskGroup::TaskGroup(
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
       idle_wakeups_per_second_(-1),
       gpu_memory_has_duplicates_(false),
-      is_backgrounded_(false),
-      weak_ptr_factory_(this) {
+      is_backgrounded_(false) {
   if (process_id_ != base::kNullProcessId && !is_running_in_vm_) {
     worker_thread_sampler_ = base::MakeRefCounted<TaskGroupSampler>(
         base::Process::Open(process_id_), blocking_pool_runner,

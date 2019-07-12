@@ -29,9 +29,7 @@
 // UnloadController, public:
 
 UnloadController::UnloadController(Browser* browser)
-    : browser_(browser),
-      is_attempting_to_close_browser_(false),
-      weak_factory_(this) {
+    : browser_(browser), is_attempting_to_close_browser_(false) {
   browser_->tab_strip_model()->AddObserver(this);
 }
 

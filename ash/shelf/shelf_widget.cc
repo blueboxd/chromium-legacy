@@ -15,7 +15,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/default_shelf_view.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -305,7 +304,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new DefaultShelfView(ShelfModel::Get(), shelf_, this)),
+      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_, this)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),

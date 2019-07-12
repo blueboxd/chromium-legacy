@@ -12,7 +12,7 @@
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
     syncer::ProfileSyncService* service)
-    : SingleClientStatusChangeChecker(service), weak_ptr_factory_(this) {
+    : SingleClientStatusChangeChecker(service) {
   DCHECK(sync_datatype_helper::test()->TestUsesSelfNotifications());
 
   // HasUnsyncedItemsForTest() posts a task to the sync thread which guarantees

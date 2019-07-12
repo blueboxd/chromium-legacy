@@ -91,6 +91,9 @@
       <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
         Your session has expired. Sign in using your work account.
       </message>
+      <message name="IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION" desc="">
+        Sign in using your gsuite work account.
+      </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add work account
       </message>

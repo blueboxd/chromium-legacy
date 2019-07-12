@@ -66,7 +66,7 @@ class NotificationStore : public CollectionStore<NotificationEntry> {
       leveldb_proto::ProtoDatabase<proto::NotificationEntry, NotificationEntry>>
       db_;
 
-  base::WeakPtrFactory<NotificationStore> weak_ptr_factory_;
+  base::WeakPtrFactory<NotificationStore> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NotificationStore);
 };
 

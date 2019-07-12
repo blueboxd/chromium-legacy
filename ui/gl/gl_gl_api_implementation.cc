@@ -323,7 +323,8 @@ void RealGLApi::glTexImage2DFn(GLenum target,
 
   // TODO(yizhou): Check if cubemap, 3d texture or texture2d array has the same
   // bug on intel mac.
-  if (gl_workarounds_.reset_teximage2d_base_level && target == GL_TEXTURE_2D) {
+  if (!version_->is_angle && gl_workarounds_.reset_teximage2d_base_level &&
+      target == GL_TEXTURE_2D) {
     GLint base_level = 0;
     GLApiBase::glGetTexParameterivFn(target, GL_TEXTURE_BASE_LEVEL,
                                      &base_level);
@@ -417,9 +418,9 @@ void RealGLApi::glClearColorFn(GLclampf red,
                                GLclampf green,
                                GLclampf blue,
                                GLclampf alpha) {
-  if (gl_workarounds_.clear_to_zero_or_one_broken && (1 == red || 0 == red) &&
-      (1 == green || 0 == green) && (1 == blue || 0 == blue) &&
-      (1 == alpha || 0 == alpha)) {
+  if (!version_->is_angle && gl_workarounds_.clear_to_zero_or_one_broken &&
+      (1 == red || 0 == red) && (1 == green || 0 == green) &&
+      (1 == blue || 0 == blue) && (1 == alpha || 0 == alpha)) {
     if (1 == alpha)
       alpha = 2;
     else

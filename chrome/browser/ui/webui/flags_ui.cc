@@ -315,9 +315,7 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      weak_factory_(this) {
+FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
   auto handler_owner = std::make_unique<FlagsDOMHandler>();

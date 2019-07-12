@@ -18,7 +18,7 @@
     <h2>$i18n{switchAssignmentHeading}</h2>
     <div class="list-frame">
       <div class="settings-box continuation list-item">
-        <div class="start sub-item">
+        <div class="start sub-item settings-box-text">
           $i18n{assignSelectSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignSelectSwitchLabel}"
@@ -28,7 +28,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
-        <div class="start sub-item">
+        <div class="start sub-item settings-box-text">
           $i18n{assignNextSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignNextSwitchLabel}"
@@ -38,7 +38,7 @@
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
-        <div class="start sub-item">
+        <div class="start sub-item settings-box-text">
           $i18n{assignPreviousSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignPreviousSwitchLabel}"
@@ -56,7 +56,7 @@
       </settings-toggle-button>
       <div class="settings-box continuation list-item"
           hidden$="[[!prefs.switch_access.auto_scan.enabled.value]]">
-        <div class="start sub-item" id="scanSpeed">
+        <div class="start sub-item settings-box-text" id="scanSpeed">
           [[getLabelForSpeedSlider_(prefs.switch_access.auto_scan.speed_ms.*)]]
         </div>
         <settings-slider id="scanSpeedSlider" aria-describedby="scanSpeed"

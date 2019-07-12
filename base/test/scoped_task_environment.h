@@ -231,34 +231,6 @@ class ScopedTaskEnvironment {
   // returning from this method, NowTicks() will be >= the initial |NowTicks() +
   // delta|. It is guaranteed to be == iff tasks executed in this
   // FastForwardBy() didn't result in nested calls to time-advancing-methods.
-  //
-  // Nesting FastForwardBy() calls is fairly rare but here's what will happen if
-  // you do: Each FastForwardBy() call will set a goal equal to |NowTicks() +
-  // delta|, how far the combined nesting calls reach depends on the current
-  // NowTicks() at the time each nesting fast-forward call is made.
-  //
-  // e.g. nesting a FastForwardBy(2ms) from a 1ms delayed task running from a
-  // FastForwardBy(1ms) will:
-  //   FastForwardBy(1ms)
-  //   ================
-  //                  FastForwardBy(2ms)
-  //                  ================================
-  //   Result: NowTicks() is 3ms further in the future
-  //
-  // but, nesting the same FastForwardBy(2ms) from an immediate task running
-  // from the same FastForwardBy(1ms) would:
-  //   FastForwardBy(1ms)
-  //   ================
-  //    FastForwardBy(2ms)
-  //    ================================
-  //   Result: NowTicks() is 2ms further in the future
-  //
-  // and if the initial call was instead a FastForwardBy(5ms), we'd get:
-  //   FastForwardBy(5ms)                             (cover remaining delta)
-  //   ================                               ==========================
-  //                  FastForwardBy(2ms)
-  //                  ================================
-  //   Result: NowTicks() is 5ms further in the future.
   void FastForwardBy(TimeDelta delta);
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
@@ -351,7 +323,7 @@ class ScopedTaskEnvironment {
   // ScopedTaskEnvironment's constructor. Helper for the migration (while
   // TimeSource is optionally defined by MainThreadType or NowSource).
   template <class... ArgTypes>
-  constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
+  static constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
     const auto explicit_time_source =
         trait_helpers::GetOptionalEnum<TimeSource>(args...);
     const auto explicit_main_thread_type =

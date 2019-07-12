@@ -656,7 +656,7 @@ class TabDragController : public views::WidgetObserver {
 
   std::unique_ptr<WindowFinder> window_finder_;
 
-  base::WeakPtrFactory<TabDragController> weak_factory_;
+  base::WeakPtrFactory<TabDragController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabDragController);
 };

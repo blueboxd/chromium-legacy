@@ -88,7 +88,7 @@ class SystemInfoHandler : public WebUIMessageHandler {
   void OnSystemInfo(std::unique_ptr<SystemLogsResponse> sys_info);
 
  private:
-  base::WeakPtrFactory<SystemInfoHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemInfoHandler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);
 };
 
@@ -97,7 +97,7 @@ class SystemInfoHandler : public WebUIMessageHandler {
 // SystemInfoHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-SystemInfoHandler::SystemInfoHandler() : weak_ptr_factory_(this) {}
+SystemInfoHandler::SystemInfoHandler() {}
 
 SystemInfoHandler::~SystemInfoHandler() {}
 

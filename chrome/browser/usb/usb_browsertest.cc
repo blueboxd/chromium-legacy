@@ -73,7 +73,7 @@ class FakeChooserView : public ChooserController::View {
 class FakeUsbChooser : public WebUsbChooser {
  public:
   explicit FakeUsbChooser(RenderFrameHost* render_frame_host)
-      : WebUsbChooser(render_frame_host), weak_factory_(this) {}
+      : WebUsbChooser(render_frame_host) {}
 
   ~FakeUsbChooser() override {}
 
@@ -92,7 +92,7 @@ class FakeUsbChooser : public WebUsbChooser {
   }
 
  private:
-  base::WeakPtrFactory<FakeUsbChooser> weak_factory_;
+  base::WeakPtrFactory<FakeUsbChooser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeUsbChooser);
 };

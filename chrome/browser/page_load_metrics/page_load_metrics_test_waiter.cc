@@ -14,7 +14,7 @@ namespace page_load_metrics {
 
 PageLoadMetricsTestWaiter::PageLoadMetricsTestWaiter(
     content::WebContents* web_contents)
-    : TestingObserver(web_contents), weak_factory_(this) {}
+    : TestingObserver(web_contents) {}
 
 PageLoadMetricsTestWaiter::~PageLoadMetricsTestWaiter() {
   CHECK(did_add_observer_);

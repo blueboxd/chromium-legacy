@@ -87,9 +87,7 @@ void SupportedAudioVideoChecker::StartPreWriteValidation(
 
 SupportedAudioVideoChecker::SupportedAudioVideoChecker(
     const base::FilePath& path)
-    : path_(path),
-      weak_factory_(this) {
-}
+    : path_(path) {}
 
 // static
 void SupportedAudioVideoChecker::RetrieveConnectorOnUIThread(

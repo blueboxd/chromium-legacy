@@ -1399,7 +1399,8 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
 
 TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
   url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
 
   net::MockHttpCache mock_cache;

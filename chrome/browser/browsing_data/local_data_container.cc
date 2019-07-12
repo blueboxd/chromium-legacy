@@ -41,8 +41,7 @@ LocalDataContainer::LocalDataContainer(
       shared_worker_helper_(std::move(shared_worker_helper)),
       cache_storage_helper_(std::move(cache_storage_helper)),
       flash_lso_helper_(std::move(flash_lso_helper)),
-      media_license_helper_(std::move(media_license_helper)),
-      weak_ptr_factory_(this) {}
+      media_license_helper_(std::move(media_license_helper)) {}
 
 LocalDataContainer::~LocalDataContainer() {}
 

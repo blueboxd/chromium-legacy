@@ -19,7 +19,7 @@
 
 namespace enterprise_reporting {
 
-ProfileReportGenerator::ProfileReportGenerator() : weak_ptr_factory_(this) {}
+ProfileReportGenerator::ProfileReportGenerator() {}
 
 ProfileReportGenerator::~ProfileReportGenerator() = default;
 

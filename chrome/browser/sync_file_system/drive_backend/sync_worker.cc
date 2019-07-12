@@ -56,8 +56,7 @@ SyncWorker::SyncWorker(
       should_check_remote_change_(true),
       listing_remote_changes_(false),
       sync_enabled_(false),
-      extension_service_(extension_service),
-      weak_ptr_factory_(this) {
+      extension_service_(extension_service) {
   sequence_checker_.DetachFromSequence();
   DCHECK(base_dir_.IsAbsolute());
 }

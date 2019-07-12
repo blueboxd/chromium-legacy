@@ -148,7 +148,7 @@ void SetBrowserStartupIsComplete() {
 // flag accordingly.
 class StartupObserver : public WebContentsObserver {
  public:
-  StartupObserver() : weak_factory_(this) {}
+  StartupObserver() {}
   ~StartupObserver() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(IsBrowserStartupComplete());
@@ -184,7 +184,7 @@ class StartupObserver : public WebContentsObserver {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<StartupObserver> weak_factory_;
+  base::WeakPtrFactory<StartupObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StartupObserver);
 };

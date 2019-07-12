@@ -79,7 +79,7 @@ ContentAutofillDriverFactory* ContentAutofillDriverFactory::FromWebContents(
 
 // static
 void ContentAutofillDriverFactory::BindAutofillDriver(
-    mojom::AutofillDriverAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<mojom::AutofillDriver> pending_receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -98,7 +98,7 @@ void ContentAutofillDriverFactory::BindAutofillDriver(
 
   ContentAutofillDriver* driver = factory->DriverForFrame(render_frame_host);
   if (driver)
-    driver->BindRequest(std::move(request));
+    driver->BindPendingReceiver(std::move(pending_receiver));
 }
 
 ContentAutofillDriverFactory::ContentAutofillDriverFactory(

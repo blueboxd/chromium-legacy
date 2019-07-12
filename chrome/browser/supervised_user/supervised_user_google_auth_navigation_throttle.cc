@@ -39,12 +39,12 @@ SupervisedUserGoogleAuthNavigationThrottle::
         Profile* profile,
         content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
-      child_account_service_(
-          ChildAccountServiceFactory::GetForProfile(profile)),
+      child_account_service_(ChildAccountServiceFactory::GetForProfile(profile))
 #if defined(OS_ANDROID)
-      has_shown_reauth_(false),
+      ,
+      has_shown_reauth_(false)
 #endif
-      weak_ptr_factory_(this) {
+{
 }
 
 SupervisedUserGoogleAuthNavigationThrottle::

@@ -147,8 +147,7 @@ ExtensionUpdater::ExtensionUpdater(
       profile_(profile),
       next_request_id_(0),
       crx_install_is_running_(false),
-      extension_cache_(cache),
-      weak_ptr_factory_(this) {
+      extension_cache_(cache) {
   DCHECK_LE(frequency_seconds, kMaxUpdateFrequencySeconds);
 #if defined(NDEBUG)
   // In Release mode we enforce that update checks don't happen too often.

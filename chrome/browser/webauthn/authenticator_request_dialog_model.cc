@@ -94,7 +94,7 @@ void AuthenticatorRequestDialogModel::EphemeralState::Reset() {
 
 AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel(
     const std::string& relying_party_id)
-    : relying_party_id_(relying_party_id), weak_factory_(this) {}
+    : relying_party_id_(relying_party_id) {}
 
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)

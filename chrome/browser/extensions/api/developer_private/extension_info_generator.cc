@@ -398,9 +398,7 @@ ExtensionInfoGenerator::ExtensionInfoGenerator(
       warning_service_(WarningService::Get(browser_context)),
       error_console_(ErrorConsole::Get(browser_context)),
       image_loader_(ImageLoader::Get(browser_context)),
-      pending_image_loads_(0u),
-      weak_factory_(this) {
-}
+      pending_image_loads_(0u) {}
 
 ExtensionInfoGenerator::~ExtensionInfoGenerator() {
 }

@@ -193,6 +193,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                         ExceptionState&);
 
   void clearMarks(const AtomicString& mark_name);
+  void clearMarks() { return clearMarks(AtomicString()); }
 
   // This enum is used to index different possible strings for for UMA enum
   // histogram. New enum values can be added, but existing enums must never be
@@ -250,6 +251,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ExceptionState&);
 
   void clearMeasures(const AtomicString& measure_name);
+  void clearMeasures() { return clearMeasures(AtomicString()); }
 
   ScriptPromise profile(ScriptState*,
                         const ProfilerInitOptions*,

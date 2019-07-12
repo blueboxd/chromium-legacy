@@ -113,7 +113,7 @@ class NetworkServiceQuicPacketWriter : quic::QuicPacketWriter {
   size_t packets_in_flight_ = 0;
   bool writable_ = true;
 
-  base::WeakPtrFactory<NetworkServiceQuicPacketWriter> weak_factory_;
+  base::WeakPtrFactory<NetworkServiceQuicPacketWriter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceQuicPacketWriter);
 };
 

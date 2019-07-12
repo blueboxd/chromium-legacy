@@ -53,7 +53,7 @@ class SupervisedUserBlacklist {
 
   std::vector<Hash> host_hashes_;
 
-  base::WeakPtrFactory<SupervisedUserBlacklist> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserBlacklist> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserBlacklist);
 };

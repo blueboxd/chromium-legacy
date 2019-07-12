@@ -692,7 +692,7 @@ void DeviceActiveDirectoryPolicyStatusProvider::GetStatus(
 
 #endif  // defined(OS_CHROMEOS)
 
-PolicyUIHandler::PolicyUIHandler() : weak_factory_(this) {}
+PolicyUIHandler::PolicyUIHandler() {}
 
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);

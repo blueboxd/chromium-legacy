@@ -106,7 +106,7 @@ TEST(NetworkIsolationKeyTest, UniqueOriginOperators) {
   EXPECT_TRUE(!(key1 < key2) || !(key2 < key1));
 }
 
-TEST(NetworkIsolationKeyTest, WithInitiatingFrame) {
+TEST(NetworkIsolationKeyTest, WithFrameOrigin) {
   NetworkIsolationKey key1(url::Origin::Create(GURL("http://b.test")));
   NetworkIsolationKey key2(url::Origin::Create(GURL("http://b.test")),
                            url::Origin::Create(GURL("http://a.test/")));
@@ -121,7 +121,7 @@ TEST(NetworkIsolationKeyTest, WithInitiatingFrame) {
   EXPECT_FALSE(key2 < key1);
 }
 
-TEST(NetworkIsolationKeyTest, OpaqueOriginKeyWithInitiatingFrame) {
+TEST(NetworkIsolationKeyTest, OpaqueOriginKeyWithFrameOrigin) {
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
 
@@ -142,18 +142,18 @@ TEST(NetworkIsolationKeyTest, OpaqueOriginKeyWithInitiatingFrame) {
             key2.ToDebugString());
 }
 
-class NetworkIsolationKeyWithInitiatingFrameOriginTest : public testing::Test {
+class NetworkIsolationKeyWithFrameOriginTest : public testing::Test {
  public:
-  NetworkIsolationKeyWithInitiatingFrameOriginTest() {
+  NetworkIsolationKeyWithFrameOriginTest() {
     feature_list_.InitAndEnableFeature(
-        net::features::kAppendInitiatingFrameOriginToNetworkIsolationKey);
+        net::features::kAppendFrameOriginToNetworkIsolationKey);
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(NetworkIsolationKeyWithInitiatingFrameOriginTest, WithInitiatingFrame) {
+TEST_F(NetworkIsolationKeyWithFrameOriginTest, WithFrameOrigin) {
   NetworkIsolationKey key(url::Origin::Create(GURL("http://b.test")),
                           url::Origin::Create(GURL("http://a.test/")));
   EXPECT_TRUE(key.IsFullyPopulated());
@@ -166,7 +166,7 @@ TEST_F(NetworkIsolationKeyWithInitiatingFrameOriginTest, WithInitiatingFrame) {
   EXPECT_FALSE(key < key);
 }
 
-TEST_F(NetworkIsolationKeyWithInitiatingFrameOriginTest, OpaqueOriginKey) {
+TEST_F(NetworkIsolationKeyWithFrameOriginTest, OpaqueOriginKey) {
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
 
@@ -193,7 +193,7 @@ TEST_F(NetworkIsolationKeyWithInitiatingFrameOriginTest, OpaqueOriginKey) {
       key2.ToDebugString());
 }
 
-TEST_F(NetworkIsolationKeyWithInitiatingFrameOriginTest, OpaqueOriginKeyBoth) {
+TEST_F(NetworkIsolationKeyWithFrameOriginTest, OpaqueOriginKeyBoth) {
   url::Origin origin_data_1 =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
   url::Origin origin_data_2 =

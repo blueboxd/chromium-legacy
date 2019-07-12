@@ -351,7 +351,7 @@ DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
 }
 
 DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_factory_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   RegisterNotifications();
 }
 
@@ -365,8 +365,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       extension_management_observer_(this),
       command_service_observer_(this),
       profile_(profile),
-      event_router_(EventRouter::Get(profile_)),
-      weak_factory_(this) {
+      event_router_(EventRouter::Get(profile_)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));

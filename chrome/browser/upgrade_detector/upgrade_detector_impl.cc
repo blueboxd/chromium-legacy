@@ -155,8 +155,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
       is_auto_update_enabled_(true),
       simulating_outdated_(SimulatingOutdated()),
       is_testing_(simulating_outdated_ || IsTesting()),
-      build_date_(base::GetBuildTime()),
-      weak_factory_(this) {
+      build_date_(base::GetBuildTime()) {
   InitializeThresholds();
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   // The different command line switches that affect testing can't be used

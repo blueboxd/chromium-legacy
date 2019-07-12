@@ -390,10 +390,9 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     uint32_t preferred_fourcc,
     VaapiImageDecodeStatus* status) {
-  VaapiImageDecodeStatus decode_status;
-  scoped_refptr<VASurface> surface =
-      decoder_.Decode(encoded_image, &decode_status);
-  EXPECT_EQ(!!surface, decode_status == VaapiImageDecodeStatus::kSuccess);
+  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
+  EXPECT_EQ(!!decoder_.GetScopedVASurface(),
+            decode_status == VaapiImageDecodeStatus::kSuccess);
 
   // Still try to get image when decode fails.
   VaapiImageDecodeStatus image_status;
@@ -419,10 +418,9 @@ scoped_refptr<gfx::NativePixmapDmaBuf>
 VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
     base::span<const uint8_t> encoded_image,
     VaapiImageDecodeStatus* status) {
-  VaapiImageDecodeStatus decode_status;
-  scoped_refptr<VASurface> surface =
-      decoder_.Decode(encoded_image, &decode_status);
-  EXPECT_EQ(!!surface, decode_status == VaapiImageDecodeStatus::kSuccess);
+  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
+  EXPECT_EQ(!!decoder_.GetScopedVASurface(),
+            decode_status == VaapiImageDecodeStatus::kSuccess);
 
   // Still try to get the pixmap when decode fails.
   VaapiImageDecodeStatus pixmap_status;
@@ -462,52 +460,6 @@ TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
     yuyv_format.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
     ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(yuyv_format));
   }
-}
-
-TEST_F(VaapiJpegDecoderTest, ReleaseVASurface) {
-  base::FilePath input_file = FindTestDataFilePath(kYuv420Filename);
-  std::string jpeg_data;
-  ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
-      << "failed to read input data from " << input_file.value();
-  const auto encoded_image = base::make_span<const uint8_t>(
-      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
-
-  VAImageFormat i420_format{};
-  i420_format.fourcc = VA_FOURCC_I420;
-  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
-
-  // Get the first VASurface and validate success.
-  VaapiImageDecodeStatus decode_status;
-  scoped_refptr<VASurface> pre_release_surface =
-      decoder_.Decode(encoded_image, &decode_status);
-  ASSERT_TRUE(pre_release_surface);
-  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, decode_status);
-
-  // Take ownership of the |decoder_| surface.
-  scoped_refptr<VASurface> post_release_surface = decoder_.ReleaseVASurface();
-  ASSERT_TRUE(post_release_surface);
-
-  EXPECT_EQ(pre_release_surface->id(), post_release_surface->id());
-  EXPECT_EQ(pre_release_surface->size(), post_release_surface->size());
-  EXPECT_EQ(pre_release_surface->format(), post_release_surface->format());
-
-  // GetImage() should fail now because ReleaseVASurface() removed the internal
-  // |decoder_| surface.
-  VaapiImageDecodeStatus image_status;
-  ASSERT_FALSE(decoder_.GetImage(i420_format.fourcc, &image_status));
-  ASSERT_EQ(VaapiImageDecodeStatus::kInvalidState, image_status);
-
-  // Decode the same image again and get the new VASurface.
-  scoped_refptr<VASurface> new_surface =
-      decoder_.Decode(encoded_image, &decode_status);
-  ASSERT_TRUE(new_surface);
-  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, decode_status);
-
-  // The new VASurface should have a different surface ID than that of the old
-  // one, but same size and format since the same exact image was decoded.
-  EXPECT_NE(new_surface->id(), post_release_surface->id());
-  EXPECT_EQ(new_surface->size(), post_release_surface->size());
-  EXPECT_EQ(new_surface->format(), post_release_surface->format());
 }
 
 TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
@@ -563,6 +515,13 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
     std::unique_ptr<ScopedVAImage> scoped_image =
         Decode(encoded_image, image_format.fourcc);
     ASSERT_TRUE(scoped_image);
+    ASSERT_TRUE(decoder_.GetScopedVASurface());
+    EXPECT_TRUE(decoder_.GetScopedVASurface()->IsValid());
+    EXPECT_EQ(decoder_.GetScopedVASurface()->size().width(),
+              base::strict_cast<int>(parse_result.frame_header.coded_width));
+    EXPECT_EQ(decoder_.GetScopedVASurface()->size().height(),
+              base::strict_cast<int>(parse_result.frame_header.coded_height));
+    EXPECT_EQ(rt_format, decoder_.GetScopedVASurface()->format());
     const uint32_t actual_fourcc = scoped_image->image()->format.fourcc;
     // TODO(andrescj): CompareImages() only supports I420, NV12, YUY2, and YUYV.
     // Make it support all the image formats we expect and call it
@@ -583,6 +542,8 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
 // successfully.
 //
 // TODO(andrescj): for now, this assumes 4:2:0. Handle other formats.
+// TODO(andrescj): consider recreating the decoder for every size so that no
+// state is retained.
 TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
   gfx::Size min_supported_size;
   ASSERT_TRUE(VaapiWrapper::GetDecodeMinResolution(VAProfileJPEGBaseline,
@@ -619,6 +580,8 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
     std::unique_ptr<ScopedVAImage> scoped_image = Decode(jpeg_data_span);
     ASSERT_TRUE(scoped_image)
         << "Decode unexpectedly failed for size = " << test_size.ToString();
+    ASSERT_TRUE(decoder_.GetScopedVASurface());
+    EXPECT_TRUE(decoder_.GetScopedVASurface()->IsValid());
     EXPECT_TRUE(CompareImages(
         jpeg_data_span, ScopedVAImageToDecodedVAImage(scoped_image.get())))
         << "The SSIM check unexpectedly failed for size = "
@@ -651,6 +614,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
   scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
       DecodeToNativePixmapDmaBuf(encoded_image, &status);
   ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
+  EXPECT_FALSE(decoder_.GetScopedVASurface());
   ASSERT_TRUE(pixmap);
 
   // After exporting the surface, we should not be able to obtain a VAImage with
@@ -752,6 +716,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
+    EXPECT_FALSE(decoder_.GetScopedVASurface());
   }
 }
 
@@ -801,6 +766,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
+    EXPECT_FALSE(decoder_.GetScopedVASurface());
   }
 }
 
@@ -816,6 +782,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
           reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
       &status));
   EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedSubsampling, status);
+  EXPECT_FALSE(decoder_.GetScopedVASurface());
 }
 
 std::string TestParamToString(

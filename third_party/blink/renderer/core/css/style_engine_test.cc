@@ -1585,6 +1585,70 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
                 GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
+  ScopedForcedColorsForTest scoped_feature(true);
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @media (forced-colors: none) and (prefers-color-scheme: light) {
+        body { color: red }
+      }
+      @media (forced-colors: none) and (prefers-color-scheme: dark) {
+        body { color: green }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: no-preference) {
+        body { color: yellow }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: dark) {
+        body { color: orange }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: light) {
+        body { color: blue }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  // ForcedColors = kNone, PreferredColorScheme = kLight
+  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kNone);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kNone, PreferredColorScheme = kDark
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kDark
+  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 165, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kNoPreference
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kNoPreference);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kLight
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 0, 255),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
   auto* host = To<HTMLElement>(GetDocument().getElementById("host"));

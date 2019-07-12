@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
@@ -41,8 +42,9 @@ class ContentPasswordManagerDriverFactory
   static ContentPasswordManagerDriverFactory* FromWebContents(
       content::WebContents* web_contents);
 
-  static void BindAutofillDriver(
-      autofill::mojom::PasswordManagerDriverAssociatedRequest request,
+  static void BindPasswordManagerDriver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+          pending_receiver,
       content::RenderFrameHost* render_frame_host);
 
   ContentPasswordManagerDriver* GetDriverForFrame(

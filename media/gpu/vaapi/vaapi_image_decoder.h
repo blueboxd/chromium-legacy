@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include <va/va.h>
 
 #include "base/callback_forward.h"
@@ -21,8 +23,15 @@ class NativePixmapDmaBuf;
 
 namespace media {
 
-class VASurface;
+class ScopedVASurface;
 class VaapiWrapper;
+
+struct VAContextAndScopedVASurfaceDeleter {
+  void operator()(ScopedVASurface* scoped_va_surface) const;
+};
+
+using ScopedVAContextAndSurface =
+    std::unique_ptr<ScopedVASurface, VAContextAndScopedVASurfaceDeleter>;
 
 enum class VaapiImageDecodeStatus : uint32_t {
   kSuccess,
@@ -54,13 +63,15 @@ class VaapiImageDecoder {
 
   // Decodes a picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the image in |encoded_image|.
-  // The image will be decoded into an internally allocated VA surface. It
-  // will be returned as an unowned VASurface, which remains valid until the
-  // next Decode() call or destruction of this class. Returns nullptr on
-  // failure and sets *|status| to the reason for failure.
-  virtual scoped_refptr<VASurface> Decode(
-      base::span<const uint8_t> encoded_image,
-      VaapiImageDecodeStatus* status) = 0;
+  // The image will be decoded into an internally allocated ScopedVASurface.
+  // This VA surface will remain valid until the next Decode() call or
+  // destruction of this class. Returns a VaapiImageDecodeStatus that will
+  // indicate whether the decode succeeded or the reason it failed. Note that
+  // the internal ScopedVASurface is destroyed on failure.
+  VaapiImageDecodeStatus Decode(base::span<const uint8_t> encoded_image);
+
+  // Returns a pointer to the internally managed ScopedVASurface.
+  const ScopedVASurface* GetScopedVASurface() const;
 
   // Returns the type of image supported by this decoder.
   virtual gpu::ImageDecodeAcceleratorType GetType() const = 0;
@@ -78,10 +89,14 @@ class VaapiImageDecoder {
  protected:
   explicit VaapiImageDecoder(VAProfile va_profile);
 
-  // Transfers ownership of the VASurface that contains the result of the last
-  // decode to the caller. The returned VASurface is self-cleaning.
-  // Returns a nullptr on failure.
-  virtual scoped_refptr<VASurface> ReleaseVASurface() = 0;
+  // Submits an image to the VA-API by filling its parameters and calling on the
+  // corresponding methods according to the image in |encoded_image|. Returns a
+  // VaapiImageDecodeStatus that will indicate whether the operation succeeded
+  // or the reason it failed.
+  virtual VaapiImageDecodeStatus AllocateVASurfaceAndSubmitVABuffers(
+      base::span<const uint8_t> encoded_image) = 0;
+
+  ScopedVAContextAndSurface scoped_va_context_and_surface_;
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 

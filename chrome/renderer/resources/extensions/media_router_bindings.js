@@ -97,22 +97,6 @@ CastMediaSinkAdapter.prototype.toNewVersion = function() {
 };
 
 /**
- * Adapter for mediaRouter.mojom.HangoutsMediaStatusExtraData.
- * @constructor
- */
-function HangoutsMediaStatusExtraDataAdapter(fields) {
-  this.local_present = false;
-
-  assignFields(this, fields);
-}
-
-HangoutsMediaStatusExtraDataAdapter.prototype.toNewVersion = function() {
-  return new mediaRouter.mojom.HangoutsMediaStatusExtraData({
-    'localPresent': this.local_present,
-  });
-};
-
-/**
  * Adapter for net.interfaces.IPAddress.
  * @constructor
  */
@@ -174,7 +158,6 @@ function MediaStatusAdapter(fields) {
   this.volume = 0;
   this.duration = null;
   this.current_time = null;
-  this.hangouts_extra_data = null;
 
   assignFields(this, fields);
 }
@@ -193,8 +176,6 @@ MediaStatusAdapter.prototype.toNewVersion = function() {
     'volume': this.volume,
     'duration': this.duration,
     'currentTime': this.current_time,
-    'hangoutsExtraData':
-        this.hangouts_extra_data && this.hangouts_extra_data.toNewVersion(),
   });
 };
 
@@ -740,9 +721,6 @@ MediaRouter.prototype.getMojoExports = function() {
     Binding: mojo.Binding,
     DialMediaSink: DialMediaSinkAdapter,
     CastMediaSink: CastMediaSinkAdapter,
-    HangoutsMediaRouteController:
-        mediaRouter.mojom.HangoutsMediaRouteController,
-    HangoutsMediaStatusExtraData: HangoutsMediaStatusExtraDataAdapter,
     IPAddress: IPAddressAdapter,
     IPEndpoint: IPEndpointAdapter,
     InterfacePtrController: mojo.InterfacePtrController,

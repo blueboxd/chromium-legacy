@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"

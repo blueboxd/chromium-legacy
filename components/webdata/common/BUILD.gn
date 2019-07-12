@@ -89,7 +89,7 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/password_manager/core/browser",
     "//components/search_engines",
-    "//components/signin/core/browser/webdata",
+    "//components/signin/public/webdata",
     "//sql",
     "//testing/gtest",
   ]

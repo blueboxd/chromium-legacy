@@ -188,16 +188,10 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
     return;
   media_thread_state_ = kOpened;
 
-  MediaPipelineDeviceParams::AudioStreamType stream_type =
-      MediaPipelineDeviceParams::kAudioStreamSoundEffects;
-  if (audio_params_.effects() & ::media::AudioParameters::MULTIZONE ||
-      device_id_ != ::media::AudioDeviceDescription::kDefaultDeviceId) {
-    stream_type = MediaPipelineDeviceParams::kAudioStreamNormal;
-  }
-
   cma_backend_task_runner_ = std::make_unique<TaskRunnerImpl>();
   MediaPipelineDeviceParams device_params(
-      MediaPipelineDeviceParams::kModeIgnorePts, stream_type,
+      MediaPipelineDeviceParams::kModeIgnorePts,
+      MediaPipelineDeviceParams::kAudioStreamNormal,
       cma_backend_task_runner_.get(), GetContentType(device_id_), device_id_);
   device_params.session_id = application_session_id;
   device_params.multiroom = multiroom_info->multiroom;
@@ -503,17 +497,8 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   media::mixer_service::MixerStreamParams params;
   params.set_content_type(ConvertContentType(GetContentType(device_id_)));
   params.set_device_id(device_id_);
-  // We use the default device ID for sound effects (eg volume boop), so mark
-  // those as SFX streams so they are treated correctly. Other device ID
-  // streams should act like normal (non-sound-effects) streams for redirection
-  // and other features.
-  if (device_id_ == ::media::AudioDeviceDescription::kDefaultDeviceId) {
-    params.set_stream_type(
-        media::mixer_service::MixerStreamParams::STREAM_TYPE_SFX);
-  } else {
-    params.set_stream_type(
-        media::mixer_service::MixerStreamParams::STREAM_TYPE_DEFAULT);
-  }
+  params.set_stream_type(
+      media::mixer_service::MixerStreamParams::STREAM_TYPE_DEFAULT);
   params.set_sample_format(
       media::mixer_service::MixerStreamParams::SAMPLE_FORMAT_FLOAT_P);
   params.set_sample_rate(audio_params_.sample_rate());

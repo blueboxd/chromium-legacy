@@ -2343,6 +2343,11 @@ const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
 
+const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
+const char kInterestFeedNotificationsDescription[] =
+    "Show notifications for some suggested content from the interest feed. "
+    "#interest-feed-content-suggestions should also be enabled.";
+
 const char kForegroundNotificationManagerName[] =
     "Foreground notification manager";
 const char kForegroundNotificationManagerDescription[] =

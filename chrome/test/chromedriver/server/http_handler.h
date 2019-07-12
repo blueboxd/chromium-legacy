@@ -128,7 +128,7 @@ class HttpHandler {
   std::unique_ptr<Adb> adb_;
   std::unique_ptr<DeviceManager> device_manager_;
 
-  base::WeakPtrFactory<HttpHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<HttpHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };

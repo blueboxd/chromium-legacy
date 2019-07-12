@@ -52,7 +52,7 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
   media::cast::VideoFrameDecodedCallback on_video_decoded_cb_;
   std::unique_ptr<media::cast::CastReceiver> cast_receiver_;
   media::VideoCaptureFormat format_;
-  base::WeakPtrFactory<CastReceiverSessionDelegate> weak_factory_;
+  base::WeakPtrFactory<CastReceiverSessionDelegate> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CastReceiverSessionDelegate);
 };
 

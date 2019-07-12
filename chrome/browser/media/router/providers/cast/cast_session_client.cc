@@ -47,8 +47,7 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
       auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
       activity_(activity),
-      connection_binding_(this),
-      weak_ptr_factory_(this) {}
+      connection_binding_(this) {}
 
 CastSessionClientImpl::~CastSessionClientImpl() = default;
 

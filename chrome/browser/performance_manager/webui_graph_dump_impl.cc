@@ -103,7 +103,7 @@ void WebUIGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
 }
 
 WebUIGraphDumpImpl::WebUIGraphDumpImpl(GraphImpl* graph)
-    : graph_(graph), binding_(this), weak_factory_(this) {
+    : graph_(graph), binding_(this) {
   DCHECK(graph);
 }
 

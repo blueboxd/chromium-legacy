@@ -87,8 +87,7 @@ PrivetURLLoader::PrivetURLLoader(
       url_loader_factory_(url_loader_factory),
       traffic_annotation_(traffic_annotation),
       delegate_(delegate),
-      max_retries_(kPrivetMaxRetries),
-      weak_factory_(this) {}
+      max_retries_(kPrivetMaxRetries) {}
 
 PrivetURLLoader::~PrivetURLLoader() {}
 

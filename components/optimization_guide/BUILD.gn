@@ -4,6 +4,12 @@
 
 static_library("optimization_guide") {
   sources = [
+    "hint_cache.cc",
+    "hint_cache.h",
+    "hint_cache_store.cc",
+    "hint_cache_store.h",
+    "hint_update_data.cc",
+    "hint_update_data.h",
     "hints_component_info.h",
     "hints_component_util.cc",
     "hints_component_util.h",
@@ -26,6 +32,7 @@ static_library("optimization_guide") {
 
   deps = [
     "//base",
+    "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
     "//google_apis",
@@ -37,12 +44,15 @@ static_library("optimization_guide") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "proto_database_provider_test_base.cc",
+    "proto_database_provider_test_base.h",
     "test_hints_component_creator.cc",
     "test_hints_component_creator.h",
   ]
   deps = [
     ":optimization_guide",
     "//base",
+    "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//testing/gtest",
   ]
@@ -51,6 +61,9 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "hint_cache_store_unittest.cc",
+    "hint_cache_unittest.cc",
+    "hint_update_data_unittest.cc",
     "hints_component_util_unittest.cc",
     "hints_processing_util_unittest.cc",
     "optimization_guide_features_unittest.cc",
@@ -60,9 +73,13 @@ source_set("unit_tests") {
 
   deps = [
     ":optimization_guide",
+    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/leveldb_proto:test_support",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/prefs:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//url:url",
   ]

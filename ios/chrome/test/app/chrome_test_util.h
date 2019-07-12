@@ -28,9 +28,6 @@ MainController* GetMainController();
 // Returns the DeviceSharingManager object.
 DeviceSharingManager* GetDeviceSharingManager();
 
-// Returns the current WebState.
-web::WebState* GetCurrentWebState();
-
 // Returns the current, non-incognito ChromeBrowserState.
 ios::ChromeBrowserState* GetOriginalBrowserState();
 

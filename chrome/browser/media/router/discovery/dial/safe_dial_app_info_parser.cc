@@ -77,7 +77,7 @@ SafeDialAppInfoParser::ParsingResult ValidateParsedAppInfo(
 }  // namespace
 
 SafeDialAppInfoParser::SafeDialAppInfoParser(DataDecoder* data_decoder)
-    : data_decoder_(data_decoder), weak_factory_(this) {}
+    : data_decoder_(data_decoder) {}
 
 SafeDialAppInfoParser::~SafeDialAppInfoParser() {}
 

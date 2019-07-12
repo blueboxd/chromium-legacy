@@ -202,7 +202,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
 
-  base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceClient);
 };

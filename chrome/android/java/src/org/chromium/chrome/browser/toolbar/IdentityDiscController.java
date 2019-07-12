@@ -98,10 +98,10 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         if (shouldShowIdentityDisc == mIsIdentityDiscVisible) return;
 
         if (shouldShowIdentityDisc) {
-            mIsIdentityDiscVisible = true;
             createProfileDataCache(accountName);
             showIdentityDisc(accountName);
             maybeShowIPH();
+            mIsIdentityDiscVisible = true;
         } else {
             mIsIdentityDiscVisible = false;
             mToolbarManager.disableExperimentalButton();

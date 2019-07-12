@@ -349,7 +349,7 @@ class ThemeService : public content::NotificationObserver,
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observer_{this};
 
-  base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
+  base::WeakPtrFactory<ThemeService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThemeService);
 };

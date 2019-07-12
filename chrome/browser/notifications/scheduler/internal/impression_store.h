@@ -63,7 +63,7 @@ class ImpressionStore : public CollectionStore<ClientState> {
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::ClientState, ClientState>>
       db_;
-  base::WeakPtrFactory<ImpressionStore> weak_ptr_factory_;
+  base::WeakPtrFactory<ImpressionStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImpressionStore);
 };

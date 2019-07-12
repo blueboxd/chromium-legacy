@@ -111,8 +111,8 @@ TEST_F(BrowserAboutHandlerTest, NoVirtualURLForFixup) {
   TestingProfile profile;
   std::unique_ptr<NavigationEntry> entry(
       NavigationController::CreateNavigationEntry(
-          url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false, std::string(),
-          &profile, nullptr /* blob_url_loader_factory */));
+          url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
+          std::string(), &profile, nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(fixed_url, entry->GetVirtualURL());
   EXPECT_EQ(rewritten_url, entry->GetURL());
 }

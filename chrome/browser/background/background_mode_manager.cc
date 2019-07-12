@@ -225,9 +225,7 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
 BackgroundModeManager::BackgroundModeManager(
     const base::CommandLine& command_line,
     ProfileAttributesStorage* profile_storage)
-    : profile_storage_(profile_storage),
-      task_runner_(CreateTaskRunner()),
-      weak_factory_(this) {
+    : profile_storage_(profile_storage), task_runner_(CreateTaskRunner()) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
   CHECK(g_browser_process);

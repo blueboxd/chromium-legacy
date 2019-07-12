@@ -75,7 +75,7 @@ class InterventionPolicyDatabase {
   // The map that stores all the per-origin intervention policies.
   InterventionsMap database_;
 
-  base::WeakPtrFactory<InterventionPolicyDatabase> weak_factory_;
+  base::WeakPtrFactory<InterventionPolicyDatabase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterventionPolicyDatabase);
 };

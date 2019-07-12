@@ -103,7 +103,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
 
   std::unique_ptr<extensions::GcmJsEventRouter> js_event_router_;
 
-  base::WeakPtrFactory<ExtensionGCMAppHandler> weak_factory_;
+  base::WeakPtrFactory<ExtensionGCMAppHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionGCMAppHandler);
 };

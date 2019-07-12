@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/watch_time_recorder.h"
-
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,6 +12,7 @@
 #include "base/test/test_message_loop.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/mojo/services/media_metrics_provider.h"
+#include "media/mojo/services/watch_time_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +31,7 @@ class MediaMetricsProviderTest : public testing::Test {
   ~MediaMetricsProviderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(bool is_mse,
+                  bool is_incognito,
                   bool is_top_frame,
                   const std::string& origin,
                   mojom::MediaURLScheme scheme) {
@@ -38,7 +39,10 @@ class MediaMetricsProviderTest : public testing::Test {
     test_recorder_->UpdateSourceURL(source_id_, GURL(origin));
 
     MediaMetricsProvider::Create(
-        is_top_frame,
+        (is_incognito ? MediaMetricsProvider::BrowsingMode::kIncognito
+                      : MediaMetricsProvider::BrowsingMode::kNormal),
+        (is_top_frame ? MediaMetricsProvider::FrameStatus::kTopFrame
+                      : MediaMetricsProvider::FrameStatus::kNotTopFrame),
         base::BindRepeating(&MediaMetricsProviderTest::GetSourceId,
                             base::Unretained(this)),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
@@ -71,7 +75,7 @@ class MediaMetricsProviderTest : public testing::Test {
   EXPECT_TRUE(test_recorder_->EntryHasMetric(entry, name));
 
 TEST_F(MediaMetricsProviderTest, TestUkm) {
-  Initialize(true, true, kTestOrigin, mojom::MediaURLScheme::kHttp);
+  Initialize(true, false, true, kTestOrigin, mojom::MediaURLScheme::kHttp);
   provider_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -106,7 +110,7 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
   const base::TimeDelta kPlayReadyTime = base::TimeDelta::FromSeconds(3);
 
   ResetMetricRecorders();
-  Initialize(false, false, kTestOrigin2, mojom::MediaURLScheme::kHttps);
+  Initialize(false, false, false, kTestOrigin2, mojom::MediaURLScheme::kHttps);
   provider_->SetIsEME();
   provider_->SetTimeToMetadata(kMetadataTime);
   provider_->SetTimeToFirstFrame(kFirstFrameTime);
@@ -141,7 +145,7 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
 
 TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
   base::HistogramTester histogram_tester;
-  Initialize(false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
+  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
   provider_->AddBytesReceived(1 << 10);
   provider_.reset();
   base::RunLoop().RunUntilIdle();
@@ -152,7 +156,7 @@ TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
   histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived", 0);
 
   // EME is recorded in before MSE/SRC.
-  Initialize(true, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
+  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
   provider_->AddBytesReceived(1 << 10);
   provider_->SetIsEME();
   provider_->SetIsAdMedia();
@@ -165,7 +169,7 @@ TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
   histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.EME", 1, 1);
   histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived.MSE", 0);
 
-  Initialize(true, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
+  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
   provider_->AddBytesReceived(1 << 10);
   provider_->SetIsAdMedia();
   provider_.reset();
@@ -174,6 +178,59 @@ TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
   histogram_tester.ExpectBucketCount("Media.BytesReceived.MSE", 1, 1);
   histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.MSE", 1, 1);
   histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived", 1, 2);
+}
+
+TEST_F(MediaMetricsProviderTest, TestPipelineUMA) {
+  base::HistogramTester histogram_tester;
+  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttps);
+  provider_->SetAudioPipelineInfo({false, false, "TestAudioDecoder"});
+  provider_->SetVideoPipelineInfo({false, false, "TestVideoDecoder"});
+  provider_->SetHasAudio(AudioCodec::kCodecVorbis);
+  provider_->SetHasVideo(VideoCodec::kCodecVP9);
+  provider_->SetHasPlayed();
+  provider_->SetHaveEnough();
+  provider_.reset();
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount("Media.PipelineStatus.AudioVideo.VP9.SW",
+                                     PIPELINE_OK, 1);
+  histogram_tester.ExpectBucketCount("Media.VideoDecoderFallback", false, 1);
+  histogram_tester.ExpectBucketCount("Media.HasEverPlayed", true, 1);
+}
+
+TEST_F(MediaMetricsProviderTest, TestPipelineUMANoAudioEMEHW) {
+  base::HistogramTester histogram_tester;
+  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttps);
+  provider_->SetIsEME();
+  provider_->SetVideoPipelineInfo({true, true, "TestEMEVideoDecoder"});
+  provider_->SetHasVideo(VideoCodec::kCodecAV1);
+  provider_->SetHasPlayed();
+  provider_->SetHaveEnough();
+  provider_.reset();
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount("Media.PipelineStatus.VideoOnly",
+                                     PIPELINE_OK, 1);
+  histogram_tester.ExpectBucketCount("Media.VideoDecoderFallback", false, 1);
+  histogram_tester.ExpectBucketCount("Media.HasEverPlayed", true, 1);
+  histogram_tester.ExpectBucketCount("Media.EME.IsIncognito", false, 1);
+}
+
+TEST_F(MediaMetricsProviderTest, TestPipelineUMADecoderFallback) {
+  base::HistogramTester histogram_tester;
+  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttps);
+  provider_->SetIsEME();
+  provider_->SetAudioPipelineInfo({false, false, "TestAudioDecoder"});
+  provider_->SetVideoPipelineInfo({true, false, "D3D11VideoDecoder"});
+  provider_->SetHasVideo(VideoCodec::kCodecVP9);
+  provider_->SetHasAudio(AudioCodec::kCodecVorbis);
+  provider_->SetHasPlayed();
+  provider_->SetHaveEnough();
+  provider_->SetVideoPipelineInfo({true, false, "DXVAVideoDecoder"});
+  provider_.reset();
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectBucketCount("Media.PipelineStatus.AudioVideo.VP9.HW",
+                                     PIPELINE_OK, 1);
+  histogram_tester.ExpectBucketCount("Media.VideoDecoderFallback", true, 1);
+  histogram_tester.ExpectBucketCount("Media.HasEverPlayed", true, 1);
 }
 
 // Note: Tests for various Acquire* methods are contained with the unittests for

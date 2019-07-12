@@ -15,7 +15,7 @@
 #include "components/download/public/background_service/download_service.h"
 
 DownloadTaskSchedulerImpl::DownloadTaskSchedulerImpl(SimpleFactoryKey* key)
-    : key_(key), weak_factory_(this) {}
+    : key_(key) {}
 
 DownloadTaskSchedulerImpl::~DownloadTaskSchedulerImpl() = default;
 

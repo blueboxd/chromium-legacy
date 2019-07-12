@@ -31,6 +31,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
+#include "url/origin.h"
 
 namespace content {
 struct CommonNavigationParams;
@@ -39,8 +40,7 @@ struct CommitNavigationParams;
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
   // Represents a tree of FrameNavigationEntries that make up this joint session
-  // history item.  The tree currently only tracks the main frame by default,
-  // and is populated with subframe nodes in --site-per-process mode.
+  // history item.
   struct TreeNode {
     TreeNode(TreeNode* parent, scoped_refptr<FrameNavigationEntry> frame_entry);
     ~TreeNode();
@@ -90,6 +90,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       scoped_refptr<SiteInstanceImpl> instance,
       const GURL& url,
       const Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       const base::string16& title,
       ui::PageTransition transition_type,
       bool is_renderer_initiated,
@@ -229,6 +230,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const GURL& url,
       const base::Optional<url::Origin>& origin,
       const Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
       const std::string& method,

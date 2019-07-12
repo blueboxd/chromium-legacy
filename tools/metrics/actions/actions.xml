@@ -5174,46 +5174,55 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="DevicesPage_AddPrintersClicked">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_LogInStartedFromDeviceListPromo">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_LogInStartedFromRegisterPromo">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_ManageClicked">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_Opened">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_RegisterCancel">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_RegisterClicked">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_RegisterFailure">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevicesPage_RegisterSuccess">
+  <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

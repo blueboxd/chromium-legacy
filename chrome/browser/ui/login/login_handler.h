@@ -204,7 +204,7 @@ class LoginHandler : public content::LoginDelegate,
 
   // True if the extensions logic has run and the prompt logic has started.
   bool prompt_started_;
-  base::WeakPtrFactory<LoginHandler> weak_factory_;
+  base::WeakPtrFactory<LoginHandler> weak_factory_{this};
 };
 
 // Details to provide the content::NotificationObserver.  Used by the automation

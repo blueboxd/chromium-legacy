@@ -60,7 +60,7 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
   std::vector<SearchSuggestionsCallback> callbacks_;
   std::unique_ptr<AuthenticatedURLLoader> pending_request_;
 
-  base::WeakPtrFactory<SearchSuggestLoaderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchSuggestLoaderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestLoaderImpl);
 };

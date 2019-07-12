@@ -28,19 +28,13 @@ class RollingTimeDeltaHistory;
 // reported to UMA is "[SingleThreaded]Compositor.[MissedFrame.].<StageName>".
 class CC_EXPORT CompositorFrameReporter {
  public:
-  enum FrameTerminationStatus {
-    // Compositor frame (with main thread updates) is submitted before a new
-    // BeginImplFrame is issued (i.e. BF -> BMF -> Commit -> Activate ->
-    // Submit).
-    kSubmittedFrame,
+  enum class FrameTerminationStatus {
+    // The tracked compositor frame was presented.
+    kPresentedFrame,
 
-    // Same as SubmittedFrame, but with the condition that there is another
-    // frame being processed in the pipeline at an earlier stage.
-    // This would imply that a new BeginImplFrame was issued during the lifetime
-    // of this reporter, and therefore it missed its deadline
-    // (e.g. BF1 -> BMF1 -> Submit -> BF2 -> Commit1 -> Activate1 -> BMF2 ->
-    // Submit).
-    kSubmittedFrameMissedDeadline,
+    // The tracked compositor frame was submitted to the display compositor but
+    // was not presented.
+    kDidNotPresentFrame,
 
     // Main frame was aborted; the reporter will not continue reporting.
     kMainFrameAborted,
@@ -73,6 +67,7 @@ class CC_EXPORT CompositorFrameReporter {
     kEndCommitToActivation,
     kActivation,
     kEndActivateToSubmitCompositorFrame,
+    kSubmitCompositorFrameToPresentationCompositorFrame,
     kTotalLatency,
     kStageTypeCount
   };
@@ -83,6 +78,8 @@ class CC_EXPORT CompositorFrameReporter {
   CompositorFrameReporter(const CompositorFrameReporter& reporter) = delete;
   CompositorFrameReporter& operator=(const CompositorFrameReporter& reporter) =
       delete;
+
+  void MissedSubmittedFrame();
 
   // Note that the started stage may be reported to UMA. If the histogram is
   // intended to be reported then the histograms.xml file must be updated too.
@@ -105,8 +102,8 @@ class CC_EXPORT CompositorFrameReporter {
   StageData current_stage_;
 
   // Stage data is recorded here. On destruction these stages will be reported
-  // to UMA if the termination status is kSubmittedFrame or
-  // kSubmittedFrameMissedDeadline.
+  // to UMA if the termination status is |kPresentedFrame|. Reported data will
+  // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
 
  private:
@@ -122,6 +119,7 @@ class CC_EXPORT CompositorFrameReporter {
   base::TimeDelta GetStateNormalUpperLimit(const StageData& stage) const;
 
   const bool is_single_threaded_;
+  bool submitted_frame_missed_deadline_ = false;
   base::TimeTicks frame_termination_time_;
   FrameTerminationStatus frame_termination_status_ =
       FrameTerminationStatus::kUnknown;

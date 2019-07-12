@@ -223,8 +223,11 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
     auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>();
+    CommonNavigationParams common_params;
+    common_params.initiator_origin =
+        url::Origin::Create(GURL("https://initiator.example.com"));
     request_ = NavigationRequest::CreateBrowserInitiated(
-        main_test_rfh()->frame_tree_node(), CommonNavigationParams(),
+        main_test_rfh()->frame_tree_node(), common_params,
         CommitNavigationParams(), false /* browser-initiated */, std::string(),
         *frame_entry, nullptr, nullptr, nullptr);
     request_->CreateNavigationHandle(true);

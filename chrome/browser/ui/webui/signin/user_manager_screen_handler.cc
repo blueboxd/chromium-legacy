@@ -273,7 +273,7 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
 // UserManagerScreenHandler ---------------------------------------------------
 
-UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
+UserManagerScreenHandler::UserManagerScreenHandler() {
   profile_attributes_storage_observer_.reset(
       new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));

@@ -50,9 +50,7 @@ namespace extensions {
 
 class MockTtsPlatformImpl : public content::TtsPlatform {
  public:
-  MockTtsPlatformImpl()
-      : should_fake_get_voices_(false),
-        ptr_factory_(this) {}
+  MockTtsPlatformImpl() : should_fake_get_voices_(false) {}
 
   bool PlatformImplAvailable() override { return true; }
 
@@ -208,7 +206,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
   int speak_error_count_ = 0;
   bool should_fake_get_voices_;
   std::string error_;
-  base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
+  base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_{this};
 };
 
 class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {

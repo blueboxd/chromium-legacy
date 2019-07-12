@@ -106,8 +106,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       origin_(contents->GetVisibleURL()),
       download_count_(0),
       download_seen_(false),
-      observer_(this),
-      factory_(this) {
+      observer_(this) {
   observer_.Add(GetContentSettings(contents));
   NavigationEntry* last_entry =
       contents->GetController().GetLastCommittedEntry();
@@ -302,8 +301,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
       ui_status_(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT),
       download_count_(0),
       download_seen_(false),
-      observer_(this),
-      factory_(this) {}
+      observer_(this) {}
 
 bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
   return factory_.HasWeakPtrs();
@@ -465,7 +463,7 @@ bool DownloadRequestLimiter::TabDownloadState::IsNavigationRestricted(
 
 // DownloadRequestLimiter ------------------------------------------------------
 
-DownloadRequestLimiter::DownloadRequestLimiter() : factory_(this) {}
+DownloadRequestLimiter::DownloadRequestLimiter() {}
 
 DownloadRequestLimiter::~DownloadRequestLimiter() {
   // All the tabs should have closed before us, which sends notification and

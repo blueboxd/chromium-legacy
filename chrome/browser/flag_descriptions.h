@@ -1392,6 +1392,9 @@ extern const char kEphemeralTabDescription[];
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
+extern const char kInterestFeedNotificationsName[];
+extern const char kInterestFeedNotificationsDescription[];
+
 extern const char kForegroundNotificationManagerName[];
 extern const char kForegroundNotificationManagerDescription[];
 

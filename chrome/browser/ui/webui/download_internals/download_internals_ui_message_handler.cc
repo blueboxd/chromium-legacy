@@ -17,7 +17,7 @@
 namespace download_internals {
 
 DownloadInternalsUIMessageHandler::DownloadInternalsUIMessageHandler()
-    : download_service_(nullptr), weak_ptr_factory_(this) {}
+    : download_service_(nullptr) {}
 
 DownloadInternalsUIMessageHandler::~DownloadInternalsUIMessageHandler() {
   if (download_service_)

@@ -44,7 +44,7 @@ void SupervisedUserErrorPageController::Install(
 SupervisedUserErrorPageController::SupervisedUserErrorPageController(
     base::WeakPtr<SupervisedUserErrorPageControllerDelegate> delegate,
     content::RenderFrame* render_frame)
-    : delegate_(delegate), render_frame_(render_frame), weak_factory_(this) {}
+    : delegate_(delegate), render_frame_(render_frame) {}
 
 SupervisedUserErrorPageController::~SupervisedUserErrorPageController() {}
 

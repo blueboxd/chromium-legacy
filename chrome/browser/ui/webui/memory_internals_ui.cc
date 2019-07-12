@@ -167,13 +167,13 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   content::WebUI* web_ui_;  // The WebUI that owns us.
 
-  base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_;
+  base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInternalsDOMHandler);
 };
 
 MemoryInternalsDOMHandler::MemoryInternalsDOMHandler(content::WebUI* web_ui)
-    : web_ui_(web_ui), weak_factory_(this) {}
+    : web_ui_(web_ui) {}
 
 MemoryInternalsDOMHandler::~MemoryInternalsDOMHandler() {
   if (select_file_dialog_)

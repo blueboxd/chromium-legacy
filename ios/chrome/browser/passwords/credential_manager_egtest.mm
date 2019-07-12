@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"

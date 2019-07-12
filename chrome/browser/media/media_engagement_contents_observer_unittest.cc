@@ -37,13 +37,12 @@ class MediaEngagementContentsObserverTest
     : public ChromeRenderViewHostTestHarness {
  public:
   MediaEngagementContentsObserverTest()
-      : task_runner_(new base::TestMockTimeTaskRunner()) {}
+      : task_runner_(new base::TestMockTimeTaskRunner()),
+        test_service_manager_context_(
+            std::make_unique<content::TestServiceManagerContext>()) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-
-    test_service_manager_context_ =
-        std::make_unique<content::TestServiceManagerContext>();
 
     SetContents(content::WebContentsTester::CreateTestWebContents(
         browser_context(), nullptr));

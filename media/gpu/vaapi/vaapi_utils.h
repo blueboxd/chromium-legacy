@@ -26,6 +26,7 @@ class Lock;
 namespace media {
 class VaapiWrapper;
 class Vp8ReferenceFrameVector;
+struct VAContextAndScopedVASurfaceDeleter;
 struct Vp8FrameHeader;
 
 // Class to map a given VABuffer, identified by |buffer_id|, for its lifetime.
@@ -90,13 +91,10 @@ class ScopedVAImage {
 };
 
 // A VA-API-specific surface used by video/image codec accelerators to work on.
-// As the name suggests, this class is self-cleaning. It calls
-// vaDestroySurfaces() on the underlying VA surface upon destruction. Thus
-// |va_lock| is acquired for destruction purposes.
+// As the name suggests, this class is self-cleaning.
 class ScopedVASurface {
  public:
-  ScopedVASurface(base::Lock* va_lock,
-                  VADisplay va_display,
+  ScopedVASurface(scoped_refptr<VaapiWrapper> vaapi_wrapper,
                   VASurfaceID va_surface_id,
                   const gfx::Size& size,
                   unsigned int va_rt_format);
@@ -108,8 +106,8 @@ class ScopedVASurface {
   unsigned int format() const { return va_rt_format_; }
 
  private:
-  base::Lock* const va_lock_;
-  const VADisplay va_display_ GUARDED_BY(va_lock_);
+  friend struct VAContextAndScopedVASurfaceDeleter;
+  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   const VASurfaceID va_surface_id_;
   const gfx::Size size_;
   const unsigned int va_rt_format_;

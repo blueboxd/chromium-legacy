@@ -214,7 +214,7 @@ class ServiceProcessControl : public UpgradeObserver {
   // Same as |Launcher::saved_pid_|.
   base::ProcessId saved_pid_;
 
-  base::WeakPtrFactory<ServiceProcessControl> weak_factory_;
+  base::WeakPtrFactory<ServiceProcessControl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessControl);
 };

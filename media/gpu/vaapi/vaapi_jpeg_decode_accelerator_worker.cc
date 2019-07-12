@@ -55,10 +55,8 @@ void DecodeTask(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(decode_cb),
                                                   nullptr);
   DCHECK(decoder);
-  VaapiImageDecodeStatus status;
-  decoder->Decode(
-      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()),
-      &status);
+  VaapiImageDecodeStatus status = decoder->Decode(
+      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()));
   if (status != VaapiImageDecodeStatus::kSuccess) {
     DVLOGF(1) << "Failed to decode - status = "
               << static_cast<uint32_t>(status);

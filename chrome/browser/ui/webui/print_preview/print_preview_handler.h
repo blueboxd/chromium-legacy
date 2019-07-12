@@ -365,7 +365,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Set of preview request ids for failed previews.
   std::set<int> preview_failures_;
 
-  base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
+  base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

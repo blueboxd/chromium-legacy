@@ -61,7 +61,7 @@ class DefaultBrowserHandler : public SettingsPageUIHandler {
   PrefChangeRegistrar local_state_pref_registrar_;
 
   // Used to invalidate the DefaultBrowserWorker callback.
-  base::WeakPtrFactory<DefaultBrowserHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DefaultBrowserHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserHandler);
 };

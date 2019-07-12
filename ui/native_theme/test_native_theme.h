@@ -30,15 +30,20 @@ class TestNativeTheme : public NativeTheme {
   gfx::Rect GetNinePatchAperture(Part part) const override;
   bool UsesHighContrastColors() const override;
   bool SystemDarkModeEnabled() const override;
+  PreferredColorScheme GetPreferredColorScheme() const override;
 
   void SetDarkMode(bool dark_mode) { dark_mode_ = dark_mode; }
   void SetUsesHighContrastColors(bool high_contrast) {
     high_contrast_ = high_contrast;
   }
+  void AddColorSchemeNativeThemeObserver(NativeTheme* theme_to_update);
 
  private:
   bool dark_mode_ = false;
   bool high_contrast_ = false;
+
+  std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
+      color_scheme_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);
 };

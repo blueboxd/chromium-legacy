@@ -365,7 +365,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   service_manager::BinderRegistry registry_;
 
-  base::WeakPtrFactory<PrerenderContents> weak_factory_;
+  base::WeakPtrFactory<PrerenderContents> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

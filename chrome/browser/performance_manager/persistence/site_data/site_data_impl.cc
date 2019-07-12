@@ -182,8 +182,7 @@ SiteDataImpl::SiteDataImpl(const url::Origin& origin,
       data_store_(data_store),
       delegate_(delegate),
       fully_initialized_(false),
-      is_dirty_(false),
-      weak_factory_(this) {
+      is_dirty_(false) {
   DCHECK(data_store_);
   DCHECK(delegate_);
 

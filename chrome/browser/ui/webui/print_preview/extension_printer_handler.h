@@ -102,7 +102,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   std::unique_ptr<PwgRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
-  base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrinterHandler);
 };

@@ -70,8 +70,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
       const extensions::Extension* extension,
       const base::Callback<void(bool)>& callback)
       : install_prompt_(new ExtensionInstallPrompt(web_contents)),
-        callback_(callback),
-        weak_factory_(this) {
+        callback_(callback) {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             browser_context, extension);
@@ -97,7 +96,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   base::Callback<void(bool)> callback_;
 
   base::WeakPtrFactory<ManagementSetEnabledFunctionInstallPromptDelegate>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManagementSetEnabledFunctionInstallPromptDelegate);
 };

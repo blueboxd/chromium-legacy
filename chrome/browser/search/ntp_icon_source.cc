@@ -270,8 +270,7 @@ NtpIconSource::NtpIconSource(Profile* profile)
       image_fetcher_(std::make_unique<image_fetcher::ImageFetcherImpl>(
           std::make_unique<ImageDecoderImpl>(),
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess())),
-      weak_ptr_factory_(this) {}
+              ->GetURLLoaderFactoryForBrowserProcess())) {}
 
 NtpIconSource::~NtpIconSource() = default;
 

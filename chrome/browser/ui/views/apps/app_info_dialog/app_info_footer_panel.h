@@ -89,7 +89,7 @@ class AppInfoFooterPanel
   std::unique_ptr<extensions::ExtensionUninstallDialog>
       extension_uninstall_dialog_;
 
-  base::WeakPtrFactory<AppInfoFooterPanel> weak_ptr_factory_;
+  base::WeakPtrFactory<AppInfoFooterPanel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoFooterPanel);
 };

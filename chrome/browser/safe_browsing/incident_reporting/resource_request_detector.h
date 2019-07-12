@@ -56,7 +56,7 @@ class ResourceRequestDetector {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   bool allow_null_profile_for_testing_;
 
-  base::WeakPtrFactory<ResourceRequestDetector> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceRequestDetector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestDetector);
 };

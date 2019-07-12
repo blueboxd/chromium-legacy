@@ -172,19 +172,6 @@ void SearchTabHelper::DidStartNavigation(
   }
 }
 
-void SearchTabHelper::DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
-
-  if (IsCacheableNTP(web_contents_)) {
-    UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
-                              search::CACHEABLE_NTP_LOAD_SUCCEEDED,
-                              search::CACHEABLE_NTP_LOAD_MAX);
-  }
-}
-
 void SearchTabHelper::TitleWasSet(content::NavigationEntry* entry) {
   if (is_setting_title_ || !entry)
     return;

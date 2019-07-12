@@ -126,9 +126,6 @@ def _AddTracingResults(thread, results):
 
 class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
 
-  def __init__(self, action_name=''):
-    super(_OilpanGCTimesBase, self).__init__(action_name)
-
   def WillNavigateToPage(self, page, tab):
     del page  # unused
     # FIXME: Remove webkit.console when blink.console lands in chromium and

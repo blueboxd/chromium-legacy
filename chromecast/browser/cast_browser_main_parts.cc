@@ -67,6 +67,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -358,7 +359,9 @@ CastBrowserMainParts::CastBrowserMainParts(
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
       url_request_context_factory_(url_request_context_factory),
-      net_log_(new CastNetLog()),
+      net_log_(!base::FeatureList::IsEnabled(network::features::kNetworkService)
+                   ? new CastNetLog()
+                   : nullptr),
       media_caps_(new media::MediaCapsImpl()) {
   DCHECK(cast_content_browser_client);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

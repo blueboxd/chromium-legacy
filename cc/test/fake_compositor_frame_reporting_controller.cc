@@ -44,4 +44,15 @@ void FakeCompositorFrameReportingController::DidActivate() {
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }
+
+void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
+    uint32_t frame_token) {
+  CompositorFrameReportingController::DidSubmitCompositorFrame(frame_token);
+  CompositorFrameReportingController::DidPresentCompositorFrame(
+      frame_token, base::TimeTicks::Now());
+}
+
+void FakeCompositorFrameReportingController::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    base::TimeTicks presentation_time) {}
 }  // namespace cc

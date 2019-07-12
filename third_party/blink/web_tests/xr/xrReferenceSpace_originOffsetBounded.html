@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -41,7 +40,13 @@ const fakeDeviceInitParams = {
   supportsImmersive: true,
   views: VIEWS_WITH_OFFSET,
   viewerOrigin: IDENTITY_TRANSFORM,
-  localToFloorLevelTransform: FLOOR_TRANSFORM
+  localToFloorLevelTransform: FLOOR_TRANSFORM,
+  boundsCoordinates: [
+    { x:  1, z: -1.5 },
+    { x:  1, z:  1.5 },
+    { x: -1, z:  1.5 },
+    { x: -1, z: -1.5 }
+  ]
 };
 
 const requestSessionModes = ['immersive-vr'];
@@ -50,29 +55,22 @@ function testFunction(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
+  const INITIAL_GRIP_TRANSFORM = {
+    position: [1, 2, 3],
+    orientation: [0, 0, 0, 1]
+  };
 
-  const INITIAL_GRIP_MATRIX = [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    1, 2, 3, 1,
-  ];
+  const LOCAL_POINTER_TRANSFORM = {
+    position: [0.01, 0.02, 0.03],
+    orientation: [0, 0, 0, 1]
+  }
 
-  const LOCAL_POINTER_OFFSET = [
-    1,    0,    0,    0,
-    0,    1,    0,    0,
-    0,    0,    1,    0,
-    0.01, 0.02, 0.03, 1,
-  ];
-
-  fakeDeviceController.setStageSize(2.0, 3.0);
-
-  let input_source = new MockXRInputSource();
-  input_source.targetRayMode = "tracked-pointer";
-  input_source.handedness = "right";
-  input_source.grip = INITIAL_GRIP_MATRIX;
-  input_source.pointerOffset = LOCAL_POINTER_OFFSET;
-  fakeDeviceController.addInputSource(input_source);
+  let input_source = fakeDeviceController.simulateInputSourceConnection({
+    handedness: "right",
+    targetRayMode: "tracked-pointer",
+    pointerOrigin: LOCAL_POINTER_TRANSFORM,
+    gripOrigin: INITIAL_GRIP_TRANSFORM
+  });
 
   return new Promise((resolve, reject) => {
     session.requestAnimationFrame((time, frame) => {

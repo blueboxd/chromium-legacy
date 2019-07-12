@@ -17,7 +17,7 @@ static_library("webdata_services") {
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//components/search_engines",
-    "//components/signin/core/browser/webdata",
+    "//components/signin/public/webdata",
     "//components/sync",
     "//components/webdata/common",
     "//sql",

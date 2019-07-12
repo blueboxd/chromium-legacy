@@ -177,7 +177,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final TabCountProvider mTabCountProvider;
     private final ThemeColorProvider mTabThemeColorProvider;
     private final AppThemeColorProvider mAppThemeColorProvider;
-    private TopToolbarCoordinator mToolbar;
+    private final TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
     private BottomControlsCoordinator mBottomControlsCoordinator;

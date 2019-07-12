@@ -362,8 +362,7 @@ PresentationServiceDelegateImpl::PresentationServiceDelegateImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
       router_(MediaRouterFactory::GetApiForBrowserContext(
-          web_contents_->GetBrowserContext())),
-      weak_factory_(this) {
+          web_contents_->GetBrowserContext())) {
   DCHECK(web_contents_);
   DCHECK(router_);
 }

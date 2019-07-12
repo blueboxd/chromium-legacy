@@ -52,7 +52,7 @@ class PluginResponseInterceptorURLLoaderThrottle
   const int frame_tree_node_id_;
 
   base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PluginResponseInterceptorURLLoaderThrottle);
 };

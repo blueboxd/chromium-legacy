@@ -95,7 +95,7 @@ class DeferredClientWrapper : public Client {
   void LaunchFullBrowser();
 #endif
 
-  base::WeakPtrFactory<DeferredClientWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<DeferredClientWrapper> weak_ptr_factory_{this};
 };
 
 }  // namespace download

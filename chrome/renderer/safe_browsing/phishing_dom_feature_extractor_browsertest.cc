@@ -138,9 +138,7 @@ class TestChromeContentRendererClient : public ChromeContentRendererClient {
 class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
  public:
   PhishingDOMFeatureExtractorTest()
-      : success_(false),
-        message_loop_(new content::MessageLoopRunner),
-        weak_factory_(this) {}
+      : success_(false), message_loop_(new content::MessageLoopRunner) {}
 
   bool GetSuccess() { return success_; }
   void ResetTest() {
@@ -224,7 +222,7 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
   bool success_;
   std::unique_ptr<TestPhishingDOMFeatureExtractor> extractor_;
   scoped_refptr<content::MessageLoopRunner> message_loop_;
-  base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
+  base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_{this};
 };
 
 TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {

@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -74,10 +73,8 @@ let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-  let input_source = new MockXRInputSource();
-
-  fakeDeviceController.addInputSource(input_source);
-
+  let input_source =
+    fakeDeviceController.simulateInputSourceConnection(VALID_CONTROLLER);
   let currentReferenceSpace = null;
 
   session.requestReferenceSpace('viewer').then(function(viewerSpace) {
@@ -88,10 +85,10 @@ let testFunction = function(session, t, fakeDeviceController) {
 
       // Press the primary input button and then release it a short time later.
       session.requestAnimationFrame((time, xrFrame) => {
-        input_source.primaryInputPressed = true;
+        input_source.startSelection();
 
           session.requestAnimationFrame((time, xrFrame) => {
-            input_source.primaryInputPressed = false;
+            input_source.endSelection();
 
             session.requestAnimationFrame((time, xrFrame) => {
               // Need to process one more frame to allow select to propegate.

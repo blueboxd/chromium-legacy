@@ -32,6 +32,10 @@ public class WebViewApkApplication extends Application {
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
+        maybeInitProcessGlobals();
+
+        // MonochromeApplication has its own locale configuration already, so call this here
+        // rather than in maybeInitProcessGlobals.
         ResourceBundle.setAvailablePakLocales(
                 new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
     }
@@ -42,7 +46,13 @@ public class WebViewApkApplication extends Application {
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
     }
 
-    /** Initializes globals needed for components that run in the "webview_apk" process. */
+    /**
+     * Initializes globals needed for components that run in the "webview_apk" or "webview_service"
+     * process.
+     *
+     * This is also called by MonochromeApplication, so the initialization here will run
+     * for those processes regardless of whether the WebView is standalone or Monochrome.
+     */
     public static void maybeInitProcessGlobals() {
         // Either "webview_service", or "webview_apk".
         // "webview_service" is meant to be very light-weight and never load the native library.

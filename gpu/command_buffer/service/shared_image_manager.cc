@@ -118,7 +118,8 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
-                  "representation from a non-existent mailbox.";
+                  "representation from a non-existent mailbox. "
+               << mailbox.ToDebugString();
     return nullptr;
   }
 

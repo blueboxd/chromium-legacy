@@ -179,7 +179,6 @@ void It2MeHost::ConnectOnNetworkThread(
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signal_strategy_.get(),
           base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
           base::WrapUnique(new ChromiumUrlRequestFactory(
               host_context_->url_loader_factory())),

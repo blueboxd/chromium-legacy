@@ -21,6 +21,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "media/base/android/media_codec_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -227,7 +228,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
 #if defined(OS_ANDROID)
-  if (!media::PlatformHasOpusSupport())
+  if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
     return;
 #endif
   TestSimplePlayback("bear-320x240-opus-a_enc-a.webm");
@@ -235,7 +236,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
 #if defined(OS_ANDROID)
-  if (!media::PlatformHasOpusSupport())
+  if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
     return;
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-av.webm");
@@ -243,7 +244,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
 #if defined(OS_ANDROID)
-  if (!media::PlatformHasOpusSupport())
+  if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
     return;
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm");

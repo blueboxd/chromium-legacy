@@ -17,7 +17,9 @@
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "url/gurl.h"
@@ -47,7 +49,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
                           blink::AssociatedInterfaceRegistry* registry);
   ~PasswordGenerationAgent() override;
 
-  void BindRequest(mojom::PasswordGenerationAgentAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordGenerationAgent>
+          pending_receiver);
 
   // mojom::PasswordGenerationAgent:
   void GeneratedPasswordAccepted(const base::string16& password) override;
@@ -102,9 +106,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void DidChangeScrollOffset() override;
   void OnDestruct() override;
 
-  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
+  const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
+  GetPasswordManagerDriver();
 
-  const mojom::PasswordGenerationDriverAssociatedPtr&
+  const mojo::AssociatedRemote<mojom::PasswordGenerationDriver>&
   GetPasswordGenerationDriver();
 
   // Helper function which takes care of the form processing and collecting the
@@ -174,9 +179,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // in password fields are updated.
   PasswordAutofillAgent* password_agent_;
 
-  mojom::PasswordGenerationDriverAssociatedPtr password_generation_client_;
+  mojo::AssociatedRemote<mojom::PasswordGenerationDriver>
+      password_generation_client_;
 
-  mojo::AssociatedBinding<mojom::PasswordGenerationAgent> binding_;
+  mojo::AssociatedReceiver<mojom::PasswordGenerationAgent> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };

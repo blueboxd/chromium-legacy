@@ -85,7 +85,7 @@ int GetContentProcessType(
 
 BackgroundProfilingTriggers::BackgroundProfilingTriggers(
     ProfilingProcessHost* host)
-    : host_(host), weak_ptr_factory_(this) {
+    : host_(host) {
   DCHECK(host_);
 }
 

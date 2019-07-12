@@ -203,7 +203,7 @@ void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
   RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_ERROR);
   CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
          base::Value("failure"));
-  LOG(ERROR) << "Speaker ID enrollment failure.";
+  LOG(ERROR) << "Speaker ID enrollmend failure.";
 }
 
 void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {

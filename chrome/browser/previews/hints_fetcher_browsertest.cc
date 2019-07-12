@@ -452,13 +452,14 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
       1);
 
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
       static_cast<int>(
-          previews::HintCacheStore::StoreEntryType::kComponentHint),
+          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
       0);
 }
 
@@ -514,12 +515,12 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectBucketCount(
         "Previews.OptimizationGuide.HintCache.HintType.Loaded",
         static_cast<int>(
-            previews::HintCacheStore::StoreEntryType::kComponentHint),
+            optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
         1);
     histogram_tester->ExpectBucketCount(
         "Previews.OptimizationGuide.HintCache.HintType.Loaded",
         static_cast<int>(
-            previews::HintCacheStore::StoreEntryType::kFetchedHint),
+            optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
         0);
 
   } else {
@@ -564,13 +565,14 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
       1);
 
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
       static_cast<int>(
-          previews::HintCacheStore::StoreEntryType::kComponentHint),
+          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
       0);
 
   // Wipe the browser history - clear all the fetched hints.
@@ -584,14 +586,15 @@ IN_PROC_BROWSER_TEST_F(
   // Fetched Hints count should not change.
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
       1);
 
   // Component Hints count should increase.
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
       static_cast<int>(
-          previews::HintCacheStore::StoreEntryType::kComponentHint),
+          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
       1);
 }
 
@@ -639,12 +642,13 @@ IN_PROC_BROWSER_TEST_F(
   // fetched hints are prioritized.
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
       1);
 
   histogram_tester->ExpectBucketCount(
       "Previews.OptimizationGuide.HintCache.HintType.Loaded",
       static_cast<int>(
-          previews::HintCacheStore::StoreEntryType::kComponentHint),
+          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
       0);
 }

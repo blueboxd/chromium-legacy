@@ -100,7 +100,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   base::FilePath temp_dir_;
   int icon_change_count_;
 
-  base::WeakPtrFactory<AppIndicatorIcon> weak_factory_;
+  base::WeakPtrFactory<AppIndicatorIcon> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppIndicatorIcon);
 };

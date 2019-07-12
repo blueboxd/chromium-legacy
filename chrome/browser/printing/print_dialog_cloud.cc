@@ -29,9 +29,7 @@ namespace {
 class SignInObserver : public content::WebContentsObserver {
  public:
   SignInObserver(content::WebContents* web_contents, base::OnceClosure callback)
-      : WebContentsObserver(web_contents),
-        callback_(std::move(callback)),
-        weak_ptr_factory_(this) {}
+      : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -58,7 +56,7 @@ class SignInObserver : public content::WebContentsObserver {
   }
 
   base::OnceClosure callback_;
-  base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<SignInObserver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignInObserver);
 };

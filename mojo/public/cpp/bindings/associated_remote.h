@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
+#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -169,6 +170,36 @@ class AssociatedRemote {
         &remote_handle, &receiver_handle);
     Bind(PendingAssociatedRemote<Interface>(std::move(remote_handle), 0),
          std::move(task_runner));
+    return PendingAssociatedReceiver<Interface>(std::move(receiver_handle));
+  }
+
+  // Like BindNewEndpointAndPassReceiver() above, but it creates a dedicated
+  // message pipe. The returned receiver can be bound directly to an
+  // implementation, without being first passed through a message pipe endpoint.
+  //
+  // For testing, where the returned request is bound to e.g. a mock and there
+  // are no other interfaces involved.
+  PendingAssociatedReceiver<Interface>
+  BindNewEndpointAndPassDedicatedReceiverForTesting() WARN_UNUSED_RESULT {
+    MessagePipe pipe;
+    scoped_refptr<internal::MultiplexRouter> router0 =
+        new internal::MultiplexRouter(
+            std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
+            false, base::SequencedTaskRunnerHandle::Get());
+    scoped_refptr<internal::MultiplexRouter> router1 =
+        new internal::MultiplexRouter(
+            std::move(pipe.handle1), internal::MultiplexRouter::MULTI_INTERFACE,
+            true, base::SequencedTaskRunnerHandle::Get());
+
+    ScopedInterfaceEndpointHandle remote_handle;
+    ScopedInterfaceEndpointHandle receiver_handle;
+    ScopedInterfaceEndpointHandle::CreatePairPendingAssociation(
+        &remote_handle, &receiver_handle);
+    InterfaceId id = router1->AssociateInterface(std::move(remote_handle));
+    remote_handle = router0->CreateLocalEndpointHandle(id);
+
+    Bind(PendingAssociatedRemote<Interface>(std::move(remote_handle), 0),
+         nullptr);
     return PendingAssociatedReceiver<Interface>(std::move(receiver_handle));
   }
 

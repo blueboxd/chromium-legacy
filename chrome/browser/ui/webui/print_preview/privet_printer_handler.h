@@ -106,7 +106,7 @@ class PrivetPrinterHandler
   PrintCallback print_callback_;
   GetCapabilityCallback capabilities_callback_;
 
-  base::WeakPtrFactory<PrivetPrinterHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PrivetPrinterHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrivetPrinterHandler);
 };

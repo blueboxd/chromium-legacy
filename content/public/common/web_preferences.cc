@@ -166,6 +166,7 @@ WebPreferences::WebPreferences()
       smart_insert_delete_enabled(false),
 #endif
       spatial_navigation_enabled(false),
+      caret_browsing_enabled(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
       v8_cache_options(blink::mojom::V8CacheOptions::kDefault),

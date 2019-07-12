@@ -18,20 +18,20 @@ std::string GetOriginDebugString(const base::Optional<url::Origin>& origin) {
 
 NetworkIsolationKey::NetworkIsolationKey(
     const base::Optional<url::Origin>& top_frame_origin,
-    const base::Optional<url::Origin>& initiating_frame_origin)
-    : use_initiating_frame_origin_(base::FeatureList::IsEnabled(
-          net::features::kAppendInitiatingFrameOriginToNetworkIsolationKey)),
+    const base::Optional<url::Origin>& frame_origin)
+    : use_frame_origin_(base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey)),
       top_frame_origin_(top_frame_origin) {
-  if (use_initiating_frame_origin_) {
+  if (use_frame_origin_) {
     // TODO(crbug.com/950069): Move this above if once call sites are modified.
-    DCHECK(initiating_frame_origin);
-    initiating_frame_origin_ = initiating_frame_origin;
+    DCHECK(frame_origin);
+    frame_origin_ = frame_origin;
   }
 }
 
 NetworkIsolationKey::NetworkIsolationKey()
-    : use_initiating_frame_origin_(base::FeatureList::IsEnabled(
-          net::features::kAppendInitiatingFrameOriginToNetworkIsolationKey)) {}
+    : use_frame_origin_(base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey)) {}
 
 NetworkIsolationKey::NetworkIsolationKey(
     const NetworkIsolationKey& network_isolation_key) = default;
@@ -49,22 +49,21 @@ std::string NetworkIsolationKey::ToString() const {
     return "";
 
   return top_frame_origin_->Serialize() +
-         (use_initiating_frame_origin_
-              ? " " + initiating_frame_origin_->Serialize()
-              : "");
+         (use_frame_origin_ ? " " + frame_origin_->Serialize() : "");
 }
 
 std::string NetworkIsolationKey::ToDebugString() const {
-  // The space-separated serialization of the top frame and initiating origins.
+  // The space-separated serialization of |top_frame_origin_| and
+  // |frame_origin_|.
   std::string return_string = GetOriginDebugString(top_frame_origin_);
-  if (use_initiating_frame_origin_) {
-    return_string += " " + GetOriginDebugString(initiating_frame_origin_);
+  if (use_frame_origin_) {
+    return_string += " " + GetOriginDebugString(frame_origin_);
   }
   return return_string;
 }
 
 bool NetworkIsolationKey::IsFullyPopulated() const {
-  DCHECK(!use_initiating_frame_origin_ || initiating_frame_origin_.has_value());
+  DCHECK(!use_frame_origin_ || frame_origin_.has_value());
   return top_frame_origin_.has_value();
 }
 
@@ -72,7 +71,7 @@ bool NetworkIsolationKey::IsTransient() const {
   if (!IsFullyPopulated())
     return true;
   return top_frame_origin_->opaque() ||
-         (use_initiating_frame_origin_ && initiating_frame_origin_->opaque());
+         (use_frame_origin_ && frame_origin_->opaque());
 }
 
 bool NetworkIsolationKey::IsEmpty() const {

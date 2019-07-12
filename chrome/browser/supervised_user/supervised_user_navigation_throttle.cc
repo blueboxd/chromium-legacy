@@ -141,8 +141,7 @@ SupervisedUserNavigationThrottle::SupervisedUserNavigationThrottle(
                   navigation_handle->GetWebContents()->GetBrowserContext()))
               ->GetURLFilter()),
       deferred_(false),
-      behavior_(SupervisedUserURLFilter::INVALID),
-      weak_ptr_factory_(this) {}
+      behavior_(SupervisedUserURLFilter::INVALID) {}
 
 SupervisedUserNavigationThrottle::~SupervisedUserNavigationThrottle() {}
 

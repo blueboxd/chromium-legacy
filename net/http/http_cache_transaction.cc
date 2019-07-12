@@ -2418,7 +2418,8 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   // again. Also, if the request does not have a top frame origin, bypass the
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
-  if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin) &&
+  if (base::FeatureList::IsEnabled(
+          features::kSplitCacheByNetworkIsolationKey) &&
       request_->network_isolation_key.IsTransient()) {
     return true;
   }

@@ -11,9 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 
-CastReceiverSessionDelegate::CastReceiverSessionDelegate()
-    : weak_factory_(this) {
-}
+CastReceiverSessionDelegate::CastReceiverSessionDelegate() {}
 CastReceiverSessionDelegate::~CastReceiverSessionDelegate() {}
 
 void CastReceiverSessionDelegate::Start(

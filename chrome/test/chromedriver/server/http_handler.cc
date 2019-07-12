@@ -115,18 +115,14 @@ CommandMapping::~CommandMapping() {}
 HttpHandler::HttpHandler(const std::string& url_base)
     : url_base_(url_base),
       received_shutdown_(false),
-      command_map_(new CommandMap()),
-      weak_ptr_factory_(this) {}
+      command_map_(new CommandMap()) {}
 
 HttpHandler::HttpHandler(
     const base::Closure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& url_base,
     int adb_port)
-    : quit_func_(quit_func),
-      url_base_(url_base),
-      received_shutdown_(false),
-      weak_ptr_factory_(this) {
+    : quit_func_(quit_func), url_base_(url_base), received_shutdown_(false) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif

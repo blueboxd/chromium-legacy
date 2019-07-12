@@ -59,27 +59,27 @@ const char kLinksTestURL2Text[] = "arrived";
   // Create a tab that will act as the parent tab.
   [ChromeEarlGrey loadURL:URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text];
-  Tab* parentTab = chrome_test_util::GetCurrentTab();
+  web::WebState* parentWebState = GetCurrentWebState();
 
   // Child tab should be inserted after the parent.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(parentWebState)]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:2U];
-  Tab* childTab1 = chrome_test_util::GetNextTab();
+  web::WebState* childWebState1 = chrome_test_util::GetNextWebState();
 
-  // New child tab should be inserted AFTER |childTab1|.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  // New child tab should be inserted AFTER |childWebState1|.
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(parentWebState)]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:3U];
-  GREYAssertEqual(childTab1, chrome_test_util::GetNextTab(),
+  GREYAssertEqual(childWebState1, chrome_test_util::GetNextWebState(),
                   @"Unexpected next tab");
 
   // Navigate the parent tab away and again to |kLinksTestURL1| to break
@@ -96,7 +96,7 @@ const char kLinksTestURL2Text[] = "arrived";
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
-  // New child tab should be inserted BEFORE |childTab1|.
+  // New child WebState should be inserted BEFORE |childWebState1|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
@@ -104,10 +104,11 @@ const char kLinksTestURL2Text[] = "arrived";
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:4U];
-  Tab* childTab3 = chrome_test_util::GetNextTab();
-  GREYAssertNotEqual(childTab1, childTab3, @"Unexpected next tab");
+  web::WebState* childWebState3 = chrome_test_util::GetNextWebState();
+  GREYAssertNotEqual(childWebState1, childWebState3,
+                     @"Unexpected next web state");
 
-  // New child tab should be inserted AFTER |childTab3|.
+  // New child WebState should be inserted AFTER |childWebState3|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
@@ -115,26 +116,27 @@ const char kLinksTestURL2Text[] = "arrived";
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:5U];
-  GREYAssertEqual(childTab3, chrome_test_util::GetNextTab(),
-                  @"Unexpected next tab");
+  GREYAssertEqual(childWebState3, chrome_test_util::GetNextWebState(),
+                  @"Unexpected next web state");
 
-  // Verify that |childTab1| is now at index 3.
+  // Verify that |childWebState1| is now at index 3.
   [ChromeEarlGrey selectTabAtIndex:3];
-  GREYAssertEqual(childTab1, chrome_test_util::GetCurrentTab(),
-                  @"Unexpected current tab");
+  GREYAssertEqual(childWebState1, GetCurrentWebState(),
+                  @"Unexpected current web state");
 
   // Add a non-owned tab. It should be added at the end and marked as the
-  // current tab. Next tab should wrap back to index 0, the original parent tab.
+  // current web state. Next web state should wrap back to index 0, the original
+  // parent web state.
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:6U];
-  GREYAssertEqual(parentTab, chrome_test_util::GetNextTab(),
-                  @"Unexpected next tab");
+  GREYAssertEqual(parentWebState, chrome_test_util::GetNextWebState(),
+                  @"Unexpected next web state");
 
-  // Verify that |anotherTab| is at index 5.
-  Tab* anotherTab = chrome_test_util::GetCurrentTab();
+  // Verify that |anotherWebState| is at index 5.
+  web::WebState* anotherWebState = GetCurrentWebState();
   [ChromeEarlGrey selectTabAtIndex:5];
-  GREYAssertEqual(anotherTab, chrome_test_util::GetCurrentTab(),
-                  @"Unexpected current tab");
+  GREYAssertEqual(anotherWebState, GetCurrentWebState(),
+                  @"Unexpected current web state");
 }
 
 @end

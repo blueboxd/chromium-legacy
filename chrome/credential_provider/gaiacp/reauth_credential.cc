@@ -8,6 +8,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
@@ -79,7 +80,27 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
         GetStringResource(IDS_EXISTING_AUTH_FID_PROVIDER_LABEL_BASE));
     return ::SHStrDupW(label.c_str(), value);
   } else if (field_id == FID_DESCRIPTION) {
-    base::string16 label(GetStringResource(IDS_REAUTH_FID_DESCRIPTION_BASE));
+    wchar_t* sid_buffer = nullptr;
+    HRESULT hr = GetUserSid(&sid_buffer);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GetUserSid: Empty sid found";
+      return ::SHStrDupW(base::string16().c_str(), value);
+    }
+    base::string16 sid = sid_buffer;
+    ::CoTaskMemFree(sid_buffer);
+
+    int description_label_id;
+    // If its an AD user sid without a user_id set in the registry, then
+    // we need to show a different description message.
+    if (email_for_reauth_.Length() == 0 &&
+        CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+        OSUserManager::Get()->IsUserDomainJoined(sid)) {
+      description_label_id = IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION_BASE;
+    } else {
+      description_label_id = IDS_REAUTH_FID_DESCRIPTION_BASE;
+    }
+
+    base::string16 label(GetStringResource(description_label_id));
     return ::SHStrDupW(label.c_str(), value);
   }
 

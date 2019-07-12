@@ -96,7 +96,7 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   // A JSON-RPC client that calls the remote Spelling service.
   SpellingServiceClient client_;
 
-  base::WeakPtrFactory<SpellCheckHostChromeImpl> weak_factory_;
+  base::WeakPtrFactory<SpellCheckHostChromeImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckHostChromeImpl);
 };

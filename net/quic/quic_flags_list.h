@@ -93,12 +93,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
 // pacing.
 QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
-// If true, static streams in a QuicSession will be stored inside dynamic
-// stream map. static_stream_map will no longer be used.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map_3,
-          true)
-
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
@@ -218,11 +212,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_do_not_accept_stop_waiting,
           false)
 
-// If true, deprecate queued_control_frames_ from QuicPacketGenerator.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_queued_control_frames,
-          true)
-
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 
@@ -231,9 +220,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
           true)
-
-// Do not send STOP_WAITING if no_stop_waiting_frame_ is true.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, true)
 
 // If true, export number of packets written per write operation histogram.")
 QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
@@ -294,7 +280,7 @@ QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
 // QuicVersionHasLongHeaderLengths is false.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_get_packet_header_size,
-          false)
+          true)
 
 // Calls ClearQueuedPackets after sending a connection close packet.
 QUIC_FLAG(
@@ -313,4 +299,18 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
+    false)
+
+// If true, QuicSpdySession::GetSpdyDataStream() will close the connection
+// if the returned stream is static.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_handle_staticness_for_spdy_stream,
+          false)
+
+// If true, do not add connection ID of packets with unknown connection ID
+// and no version to time wait list, instead, send appropriate responses
+// depending on the packets' sizes and drop them.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
     false)

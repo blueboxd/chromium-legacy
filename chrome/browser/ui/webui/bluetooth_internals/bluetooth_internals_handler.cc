@@ -15,7 +15,7 @@
 
 BluetoothInternalsHandler::BluetoothInternalsHandler(
     mojom::BluetoothInternalsHandlerRequest request)
-    : binding_(this, std::move(request)), weak_ptr_factory_(this) {}
+    : binding_(this, std::move(request)) {}
 
 BluetoothInternalsHandler::~BluetoothInternalsHandler() {}
 

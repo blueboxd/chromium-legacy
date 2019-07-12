@@ -32,13 +32,15 @@
 
     <div id="proxy" class="settings-box" on-click="onProxyTap_"
         actionable$="[[isProxyDefault_]]">
-      <div class="start" hidden$="[[!isProxyDefault_]]">
+      <div class="start settings-box-text" hidden$="[[!isProxyDefault_]]">
         $i18n{proxySettingsLabel}
       </div>
-      <div class="start" hidden$="[[!prefs.proxy.extensionId]]">
+      <div class="start settings-box-text"
+          hidden$="[[!prefs.proxy.extensionId]]">
         $i18n{proxySettingsExtensionLabel}
       </div>
-      <div class="start" hidden$="[[!isProxyEnforcedByPolicy_]]">
+      <div class="start settings-box-text"
+          hidden$="[[!isProxyEnforcedByPolicy_]]">
         $i18n{proxySettingsPolicyLabel}
       </div>
       <cr-icon-button class="icon-external"

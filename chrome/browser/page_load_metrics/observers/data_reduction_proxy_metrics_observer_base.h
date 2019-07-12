@@ -196,7 +196,8 @@ class DataReductionProxyMetricsObserverBase
   // The status of an attempted lite page redirect preview.
   base::Optional<previews::ServerLitePageStatus> lite_page_redirect_status_;
 
-  base::WeakPtrFactory<DataReductionProxyMetricsObserverBase> weak_ptr_factory_;
+  base::WeakPtrFactory<DataReductionProxyMetricsObserverBase> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserverBase);
 };

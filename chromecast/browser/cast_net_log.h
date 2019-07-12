@@ -17,6 +17,8 @@ class FileNetLogObserver;
 
 namespace chromecast {
 
+// TODO(http://crbug.com/904910): Delete this once full switched over to Network
+// Service.
 class CastNetLog : public net::NetLog {
  public:
   CastNetLog();

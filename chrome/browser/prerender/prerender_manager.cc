@@ -177,8 +177,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       profile_network_bytes_(0),
       last_recorded_profile_network_bytes_(0),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      page_load_metric_observer_disabled_(false),
-      weak_factory_(this) {
+      page_load_metric_observer_disabled_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   last_prerender_start_time_ =

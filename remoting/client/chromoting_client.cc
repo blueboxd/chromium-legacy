@@ -90,9 +90,7 @@ void ChromotingClient::Start(
 #endif
     } else {
       DCHECK(protocol_config_->ice_supported());
-      bool use_turn_api = SignalingAddress(host_jid).channel() ==
-                          SignalingAddress::Channel::FTL;
-      connection_.reset(new protocol::IceConnectionToHost(use_turn_api));
+      connection_.reset(new protocol::IceConnectionToHost());
     }
   }
   connection_->set_client_stub(this);

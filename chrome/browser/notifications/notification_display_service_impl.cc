@@ -111,8 +111,7 @@ NotificationDisplayServiceImpl* NotificationDisplayServiceImpl::GetForProfile(
 NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     : profile_(profile),
       message_center_bridge_(CreateMessageCenterBridge(profile)),
-      bridge_(GetNativeNotificationPlatformBridge()),
-      weak_factory_(this) {
+      bridge_(GetNativeNotificationPlatformBridge()) {
   // TODO(peter): Move these to the NotificationDisplayServiceFactory.
   if (profile_) {
     AddNotificationHandler(

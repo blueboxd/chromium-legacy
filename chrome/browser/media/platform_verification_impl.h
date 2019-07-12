@@ -57,7 +57,7 @@ class PlatformVerificationImpl final
 #endif
 
   content::RenderFrameHost* const render_frame_host_;
-  base::WeakPtrFactory<PlatformVerificationImpl> weak_factory_;
+  base::WeakPtrFactory<PlatformVerificationImpl> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_PLATFORM_VERIFICATION_IMPL_H_

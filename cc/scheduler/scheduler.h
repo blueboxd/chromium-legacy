@@ -149,7 +149,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   // Drawing should result in submitting a CompositorFrame to the
   // LayerTreeFrameSink and then calling this.
-  void DidSubmitCompositorFrame();
+  void DidSubmitCompositorFrame(uint32_t frame_token);
   // The LayerTreeFrameSink acks when it is ready for a new frame which
   // should result in this getting called to unblock the next draw.
   void DidReceiveCompositorFrameAck();
@@ -174,6 +174,11 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // |DidPrepareTiles| is called after PrepareTiles step to have the scheduler
   // track how long PrepareTiles takes.
   void DidPrepareTiles();
+
+  // |DidPresentCompositorFrame| is called when the renderer receives
+  // presentation feedback.
+  void DidPresentCompositorFrame(uint32_t frame_token,
+                                 base::TimeTicks presentation_time);
 
   void DidLoseLayerTreeFrameSink();
   void DidCreateAndInitializeLayerTreeFrameSink();

@@ -60,8 +60,7 @@ ExtensionActionViewController::ExtensionActionViewController(
       icon_factory_(browser->profile(), extension, extension_action, this),
       extension_registry_(
           extensions::ExtensionRegistry::Get(browser_->profile())),
-      popup_host_observer_(this),
-      weak_factory_(this) {
+      popup_host_observer_(this) {
   DCHECK(extensions_container);
   DCHECK(extension_action);
   DCHECK(extension);

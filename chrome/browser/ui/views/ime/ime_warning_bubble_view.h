@@ -94,7 +94,7 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
       toolbar_actions_bar_observer_;
 
-  base::WeakPtrFactory<ImeWarningBubbleView> weak_ptr_factory_;
+  base::WeakPtrFactory<ImeWarningBubbleView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImeWarningBubbleView);
 };

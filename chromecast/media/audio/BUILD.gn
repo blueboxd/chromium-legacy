@@ -47,7 +47,10 @@ cast_source_set("audio") {
       "cast_audio_manager_alsa.cc",
       "cast_audio_manager_alsa.h",
     ]
-    deps += [ "//content/public/browser" ]
+    deps += [
+      ":audio_buildflags",
+      "//content/public/browser",
+    ]
   }
 
   configs += [ "//media/audio:platform_config" ]
@@ -98,6 +101,7 @@ buildflag_header("audio_buildflags") {
     "MINIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$minimum_output_buffer_size_in_frames",
     "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
     "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",
+    "ENABLE_AUDIO_CAPTURE_SERVICE=$enable_audio_capture_service",
   ]
 
   if (use_alsa) {

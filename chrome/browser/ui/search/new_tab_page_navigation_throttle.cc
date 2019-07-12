@@ -60,9 +60,6 @@ NewTabPageNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 NewTabPageNavigationThrottle::OpenLocalNewTabPage() {
-  UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
-                            search::CACHEABLE_NTP_LOAD_FAILED,
-                            search::CACHEABLE_NTP_LOAD_MAX);
   navigation_handle()->GetWebContents()->OpenURL(
       content::OpenURLParams(GURL(chrome::kChromeSearchLocalNtpUrl),
                              navigation_handle()->GetReferrer(),

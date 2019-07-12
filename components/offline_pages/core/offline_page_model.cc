@@ -12,7 +12,8 @@ const int64_t OfflinePageModel::kInvalidOfflineId;
 
 OfflinePageModel::SavePageParams::SavePageParams()
     : proposed_offline_id(OfflinePageModel::kInvalidOfflineId),
-      is_background(false) {}
+      is_background(false),
+      use_page_problem_detectors(false) {}
 
 OfflinePageModel::SavePageParams::SavePageParams(const SavePageParams& other) =
     default;

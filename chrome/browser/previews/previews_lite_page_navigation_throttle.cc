@@ -104,8 +104,7 @@ class PreviewsWebContentsLifetimeHelper
  public:
   explicit PreviewsWebContentsLifetimeHelper(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        web_contents_(web_contents),
-        weak_factory_(this) {}
+        web_contents_(web_contents) {}
 
   // Keep track of all ongoing navigations in this WebContents.
   void DidStartNavigation(content::NavigationHandle* handle) override {
@@ -242,7 +241,7 @@ class PreviewsWebContentsLifetimeHelper
 
   content::WebContents* web_contents_;
   std::unordered_set<content::NavigationHandle*> navigations_;
-  base::WeakPtrFactory<PreviewsWebContentsLifetimeHelper> weak_factory_;
+  base::WeakPtrFactory<PreviewsWebContentsLifetimeHelper> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

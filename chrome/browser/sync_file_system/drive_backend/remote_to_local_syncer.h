@@ -214,7 +214,7 @@ class RemoteToLocalSyncer : public SyncTask {
   std::unique_ptr<SyncFileMetadata> local_metadata_;
   std::unique_ptr<FileChangeList> local_changes_;
 
-  base::WeakPtrFactory<RemoteToLocalSyncer> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoteToLocalSyncer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemoteToLocalSyncer);
 };

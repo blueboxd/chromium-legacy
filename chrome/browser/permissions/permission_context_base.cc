@@ -102,8 +102,7 @@ PermissionContextBase::PermissionContextBase(
     blink::mojom::FeaturePolicyFeature feature_policy_feature)
     : profile_(profile),
       content_settings_type_(content_settings_type),
-      feature_policy_feature_(feature_policy_feature),
-      weak_factory_(this) {
+      feature_policy_feature_(feature_policy_feature) {
   PermissionDecisionAutoBlocker::UpdateFromVariations();
 }
 

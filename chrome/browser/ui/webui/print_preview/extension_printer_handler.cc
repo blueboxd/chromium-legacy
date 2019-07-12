@@ -107,7 +107,7 @@ extensions::PrinterProviderAPI* GetPrinterProviderAPI(Profile* profile) {
 }  // namespace
 
 ExtensionPrinterHandler::ExtensionPrinterHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 ExtensionPrinterHandler::~ExtensionPrinterHandler() {
 }

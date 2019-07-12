@@ -395,6 +395,7 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
   // experimentally check if the theme is dark by checking if the window
   // background color is dark.
   set_dark_mode(color_utils::IsDark(GetSystemColor(kColorId_WindowBackground)));
+  set_preferred_color_scheme(CalculatePreferredColorScheme());
 
   // GTK doesn't have a native high contrast setting.  Rather, it's implied by
   // the theme name.  The only high contrast GTK themes that I know of are

@@ -11,9 +11,7 @@
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "url/origin.h"
 
-namespace url {
-class Origin;
-}  // namespace url
+class GURL;
 
 namespace content {
 
@@ -37,6 +35,7 @@ class CONTENT_EXPORT ContentIndexServiceImpl
   void Add(int64_t service_worker_registration_id,
            blink::mojom::ContentDescriptionPtr description,
            const SkBitmap& icon,
+           const GURL& launch_url,
            AddCallback callback) override;
   void Delete(int64_t service_worker_registration_id,
               const std::string& content_id,

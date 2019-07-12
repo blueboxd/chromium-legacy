@@ -83,8 +83,7 @@ PromoService::PromoService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GoogleURLTracker* google_url_tracker)
     : url_loader_factory_(url_loader_factory),
-      google_url_tracker_(google_url_tracker),
-      weak_ptr_factory_(this) {}
+      google_url_tracker_(google_url_tracker) {}
 
 PromoService::~PromoService() = default;
 

@@ -39,9 +39,7 @@ const char kAdvancedFontSettingsExtensionId[] =
 namespace settings {
 
 FontHandler::FontHandler(content::WebUI* webui)
-    : extension_registry_observer_(this),
-      profile_(Profile::FromWebUI(webui)),
-      weak_ptr_factory_(this) {
+    : extension_registry_observer_(this), profile_(Profile::FromWebUI(webui)) {
 #if defined(OS_MACOSX)
   // Perform validation for saved fonts.
   settings_utils::ValidateSavedFonts(profile_->GetPrefs());

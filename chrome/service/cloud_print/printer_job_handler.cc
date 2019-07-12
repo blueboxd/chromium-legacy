@@ -95,8 +95,7 @@ PrinterJobHandler::PrinterJobHandler(
       cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
-      job_handler_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      job_handler_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_);
 }
 

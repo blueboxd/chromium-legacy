@@ -96,30 +96,17 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
       ExtensionFunctionRegistry::GetInstance();
 
   // Actions
+  // TODO(devlin): Remove this bespoke registration when action.enable() and
+  // action.disable() have appropriate tests.
   registry.RegisterFunction<ActionSetIconFunction>();
-
-  // Browser Actions
-  registry.RegisterFunction<BrowserActionSetIconFunction>();
-  registry.RegisterFunction<BrowserActionSetTitleFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionSetPopupFunction>();
-  registry.RegisterFunction<BrowserActionGetTitleFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionGetPopupFunction>();
-  registry.RegisterFunction<BrowserActionEnableFunction>();
-  registry.RegisterFunction<BrowserActionDisableFunction>();
-  registry.RegisterFunction<BrowserActionOpenPopupFunction>();
-
-  // Page Actions
-  registry.RegisterFunction<PageActionShowFunction>();
-  registry.RegisterFunction<PageActionHideFunction>();
-  registry.RegisterFunction<PageActionSetIconFunction>();
-  registry.RegisterFunction<PageActionSetTitleFunction>();
-  registry.RegisterFunction<PageActionSetPopupFunction>();
-  registry.RegisterFunction<PageActionGetTitleFunction>();
-  registry.RegisterFunction<PageActionGetPopupFunction>();
+  registry.RegisterFunction<ActionGetPopupFunction>();
+  registry.RegisterFunction<ActionSetPopupFunction>();
+  registry.RegisterFunction<ActionGetTitleFunction>();
+  registry.RegisterFunction<ActionSetTitleFunction>();
+  registry.RegisterFunction<ActionGetBadgeTextFunction>();
+  registry.RegisterFunction<ActionSetBadgeTextFunction>();
+  registry.RegisterFunction<ActionGetBadgeBackgroundColorFunction>();
+  registry.RegisterFunction<ActionSetBadgeBackgroundColorFunction>();
 }
 
 ExtensionActionAPI::~ExtensionActionAPI() {
@@ -319,9 +306,9 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
-    // Only browser actions have a default tabId.
-    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() ==
-                                ActionInfo::TYPE_BROWSER);
+    // Page actions do not have a default tabId.
+    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() !=
+                                ActionInfo::TYPE_PAGE);
   }
   return RunExtensionAction();
 }

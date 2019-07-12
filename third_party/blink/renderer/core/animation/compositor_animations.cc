@@ -271,7 +271,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           // property types. Otherwise they are treated as unsupported.
           if (keyframe->GetCompositorKeyframeValue()) {
             DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-            DCHECK(keyframe->GetCompositorKeyframeValue()->IsDouble());
+            DCHECK(keyframe->GetCompositorKeyframeValue()->IsDouble() ||
+                   keyframe->GetCompositorKeyframeValue()->IsColor());
           } else {
             // We skip the rest of the loop in this case for the same reason as
             // unsupported CSS properties - see below.

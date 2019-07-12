@@ -220,8 +220,7 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
       blacklist_(nullptr),
       blocking_task_runner_(base::CreateTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {}
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

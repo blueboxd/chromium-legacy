@@ -252,8 +252,11 @@ class OpenLastTabMediator extends EmptyTabObserver
                             SharedPreferences prefs = getSharedPreferences();
                             prefs.edit().remove(LAST_TAB_URL).apply();
                         });
-                        mHistoryBridge.markItemForRemoval(mHistoryItem);
-                        mHistoryBridge.removeItems();
+                        // Don't actually remove the element from history db. This is fine since
+                        // we're tracking it in the pref, the open last tab button will not show it.
+                        // If this history item is backed by 2+ rows a history deletion could
+                        // trigger a clear and suppression of suggested articles, see
+                        // https://crbug.com/982973.
                         mHistoryItem = null;
                         mLastTabUrl = null;
                         updateModel();

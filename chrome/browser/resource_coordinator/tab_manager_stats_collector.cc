@@ -127,7 +127,7 @@ class TabManagerStatsCollector::SwapMetricsDelegate
   const SessionType session_type_;
 };
 
-TabManagerStatsCollector::TabManagerStatsCollector() : weak_factory_(this) {
+TabManagerStatsCollector::TabManagerStatsCollector() {
   SessionRestore::AddObserver(this);
 
   // Post BEST_EFFORT task (which will only run after startup is completed) that

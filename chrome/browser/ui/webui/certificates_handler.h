@@ -178,14 +178,13 @@ class CertificatesHandler : public content::WebUIMessageHandler,
 
 #if defined(OS_CHROMEOS)
   // Returns true if the user may manage certificates on |slot| according
-  // ClientCertificateManagementAllowed to policy.
-  bool IsClientCertificateManagementAllowedPolicy(Slot slot) const;
+  // CertificateManagementAllowed to policy.
+  bool IsCertificateManagementAllowedPolicy(Slot slot) const;
 #endif
 
   // Returns true if the certificate represented by |cert_info| is read-only
   // (i.e. can not be deleted). Evaluates the certificate attributes and, on
-  // Chrome OS devices, the enterprise policy
-  // ClientCertificateManagementAllowed.
+  // Chrome OS devices, the enterprise policy CertificateManagementAllowed.
   bool IsCertificateReadOnly(
       const CertificateManagerModel::CertInfo* cert_info);
 
@@ -214,7 +213,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   base::IDMap<std::unique_ptr<CertificateManagerModel::CertInfo>>
       cert_info_id_map_;
 
-  base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertificatesHandler);
 };

@@ -120,7 +120,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
 
   void SetCPUTimeBudgetPoolForTesting(CPUTimeBudgetPool* cpu_time_budget_pool);
 
-  std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
+  HashSet<WorkerScheduler*>& GetWorkerSchedulersForTesting();
 
   void SetUkmTaskSamplingRateForTest(double rate);
   void SetUkmRecorderForTest(std::unique_ptr<ukm::UkmRecorder> ukm_recorder);
@@ -150,7 +150,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
   TraceableVariableController traceable_variable_controller_;
 
   // Worker schedulers associated with this thread.
-  std::unordered_set<WorkerScheduler*> worker_schedulers_;
+  HashSet<WorkerScheduler*> worker_schedulers_;
 
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   // Owned by |task_queue_throttler_|.

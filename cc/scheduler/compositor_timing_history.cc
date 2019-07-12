@@ -922,9 +922,9 @@ void CompositorTimingHistory::DidDraw(
   draw_start_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidSubmitCompositorFrame() {
+void CompositorTimingHistory::DidSubmitCompositorFrame(uint32_t frame_token) {
   DCHECK_EQ(base::TimeTicks(), submit_start_time_);
-  compositor_frame_reporting_controller_->DidSubmitCompositorFrame();
+  compositor_frame_reporting_controller_->DidSubmitCompositorFrame(frame_token);
   submit_start_time_ = Now();
   submit_ack_watchdog_enabled_ = true;
 }
@@ -940,6 +940,13 @@ void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
   if (submit_ack_watchdog_enabled_)
     submit_ack_watchdog_enabled_ = false;
   submit_start_time_ = base::TimeTicks();
+}
+
+void CompositorTimingHistory::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    base::TimeTicks presentation_time) {
+  compositor_frame_reporting_controller_->DidPresentCompositorFrame(
+      frame_token, presentation_time);
 }
 
 void CompositorTimingHistory::SetTreePriority(TreePriority priority) {

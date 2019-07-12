@@ -123,7 +123,7 @@ class ChromeSigninClient
   scoped_refptr<network::SharedURLLoaderFactory>
       url_loader_factory_for_testing_;
 
-  base::WeakPtrFactory<ChromeSigninClient> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeSigninClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };

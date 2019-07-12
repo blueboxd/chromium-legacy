@@ -35,7 +35,7 @@ namespace internal {
 namespace {
 
 constexpr const char* kExecutionModeString[] = {"parallel", "sequenced",
-                                                "single thread"};
+                                                "single thread", "job"};
 static_assert(
     size(kExecutionModeString) ==
         static_cast<size_t>(TaskSourceExecutionMode::kMax) + 1,
@@ -465,8 +465,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   {
     TaskSource::Transaction task_source_transaction(
         task_source->BeginTransaction());
-    task = task_source_transaction.TakeTask(
-        std::move(run_intent_with_task_source));
+    task = task_source_transaction.TakeTask(&run_intent_with_task_source);
     traits = task_source_transaction.traits();
   }
 
@@ -481,7 +480,10 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
                   can_run_task);
 
     const bool task_source_must_be_queued =
-        task_source->BeginTransaction().DidProcessTask(can_run_task);
+        task_source->BeginTransaction().DidProcessTask(
+            std::move(run_intent_with_task_source),
+            can_run_task ? TaskSource::RunResult::kDidRun
+                         : TaskSource::RunResult::kSkippedAtShutdown);
 
     if (can_run_task) {
       IncrementNumTasksRun();
@@ -588,6 +590,7 @@ void TaskTracker::RunOrSkipTask(Task task,
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
     switch (task_source->execution_mode()) {
+      case TaskSourceExecutionMode::kJob:
       case TaskSourceExecutionMode::kParallel:
         break;
       case TaskSourceExecutionMode::kSequenced:

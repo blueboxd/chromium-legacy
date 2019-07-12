@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "ios/web/public/thread/web_task_traits.h"

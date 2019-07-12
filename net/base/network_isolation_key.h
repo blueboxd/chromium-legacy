@@ -19,13 +19,12 @@ namespace net {
 class NET_EXPORT NetworkIsolationKey {
  public:
   // Full constructor.  When a request is initiated by the top frame, it must
-  // also populate the initiating frame parameter when calling this constructor.
+  // also populate the |frame_origin| parameter when calling this constructor.
   explicit NetworkIsolationKey(
       // TODO(crbug.com/950069): Make the arguments non-optional once all call
-      // sites are updated to include the initiating_frame_origin.
+      // sites are updated to include the frame_origin.
       const base::Optional<url::Origin>& top_frame_origin,
-      const base::Optional<url::Origin>& initiating_frame_origin =
-          base::nullopt);
+      const base::Optional<url::Origin>& frame_origin = base::nullopt);
 
   // Construct an empty key.
   NetworkIsolationKey();
@@ -41,20 +40,20 @@ class NET_EXPORT NetworkIsolationKey {
   // Compare keys for equality, true if all enabled fields are equal.
   bool operator==(const NetworkIsolationKey& other) const {
     return top_frame_origin_ == other.top_frame_origin_ &&
-           initiating_frame_origin_ == other.initiating_frame_origin_;
+           frame_origin_ == other.frame_origin_;
   }
 
   // Compare keys for inequality, true if any enabled field varies.
   bool operator!=(const NetworkIsolationKey& other) const {
     return (top_frame_origin_ != other.top_frame_origin_) ||
-           (initiating_frame_origin_ != other.initiating_frame_origin_);
+           (frame_origin_ != other.frame_origin_);
   }
 
   // Provide an ordering for keys based on all enabled fields.
   bool operator<(const NetworkIsolationKey& other) const {
     return top_frame_origin_ < other.top_frame_origin_ ||
            (top_frame_origin_ == other.top_frame_origin_ &&
-            initiating_frame_origin_ < other.initiating_frame_origin_);
+            frame_origin_ < other.frame_origin_);
   }
 
   // Returns the string representation of the key, which is the string
@@ -77,22 +76,22 @@ class NET_EXPORT NetworkIsolationKey {
     return top_frame_origin_;
   }
 
-  const base::Optional<url::Origin>& GetInitiatingFrameOrigin() const {
-    return initiating_frame_origin_;
+  const base::Optional<url::Origin>& GetFrameOrigin() const {
+    return frame_origin_;
   }
 
   // Returns true if all parts of the key are empty.
   bool IsEmpty() const;
 
  private:
-  // Whether or not to use the initiating frame origin as part of the key.
-  bool use_initiating_frame_origin_;
+  // Whether or not to use the |frame_origin_| as part of the key.
+  bool use_frame_origin_;
 
   // The origin of the top frame of the page making the request.
   base::Optional<url::Origin> top_frame_origin_;
 
   // The origin of the frame that initiates the request.
-  base::Optional<url::Origin> initiating_frame_origin_;
+  base::Optional<url::Origin> frame_origin_;
 };
 
 }  // namespace net

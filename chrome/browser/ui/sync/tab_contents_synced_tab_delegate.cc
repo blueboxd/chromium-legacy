@@ -167,8 +167,8 @@ int64_t TabContentsSyncedTabDelegate::GetTaskIdForNavigationId(
     int nav_id) const {
   const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
   if (task_tab_helper &&
-      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
-    return task_tab_helper->get_context_record_task_id(nav_id)->task_id();
+      task_tab_helper->get_task_id_for_navigation(nav_id) != nullptr) {
+    return task_tab_helper->get_task_id_for_navigation(nav_id)->id();
   }
   return -1;
 }
@@ -177,9 +177,8 @@ int64_t TabContentsSyncedTabDelegate::GetParentTaskIdForNavigationId(
     int nav_id) const {
   const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
   if (task_tab_helper &&
-      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
-    return task_tab_helper->get_context_record_task_id(nav_id)
-        ->parent_task_id();
+      task_tab_helper->get_task_id_for_navigation(nav_id) != nullptr) {
+    return task_tab_helper->get_task_id_for_navigation(nav_id)->parent_id();
   }
   return -1;
 }
@@ -188,8 +187,8 @@ int64_t TabContentsSyncedTabDelegate::GetRootTaskIdForNavigationId(
     int nav_id) const {
   const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
   if (task_tab_helper &&
-      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
-    return task_tab_helper->get_context_record_task_id(nav_id)->root_task_id();
+      task_tab_helper->get_task_id_for_navigation(nav_id) != nullptr) {
+    return task_tab_helper->get_task_id_for_navigation(nav_id)->root_id();
   }
   return -1;
 }

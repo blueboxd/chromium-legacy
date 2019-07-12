@@ -79,8 +79,7 @@ SharingService::SharingService(
       fcm_handler_(std::move(fcm_handler)),
       device_info_tracker_(device_info_tracker),
       sync_service_(sync_service),
-      backoff_entry_(&kRetryBackoffPolicy),
-      weak_ptr_factory_(this) {
+      backoff_entry_(&kRetryBackoffPolicy) {
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       &ack_message_handler_);

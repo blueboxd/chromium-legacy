@@ -26,6 +26,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 
 #include <memory>
+
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -63,11 +67,75 @@ void HTMLResourcePreloader::Preload(std::unique_ptr<PreloadRequest> preload) {
     PreconnectHost(preload.get());
     return;
   }
+
+  if (!AllowPreloadRequest(preload.get())) {
+    return;
+  }
   // TODO(yoichio): Should preload if document is imported.
   if (!document_->Loader())
     return;
 
   preload->Start(document_);
+}
+
+bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
+  if (!base::FeatureList::IsEnabled(features::kLightweightNoStatePrefetch))
+    return true;
+
+  if (!document_->IsPrefetchOnly())
+    return true;
+
+  // Don't fetch any other resources when in the HTML only arm of the
+  // experiment.
+  if (GetFieldTrialParamByFeatureAsBool(features::kLightweightNoStatePrefetch,
+                                        "html_only", false)) {
+    return false;
+  }
+
+  switch (preload->Importance()) {
+    case mojom::FetchImportanceMode::kImportanceHigh:
+      return true;
+    case mojom::FetchImportanceMode::kImportanceLow:
+    case mojom::FetchImportanceMode::kImportanceAuto:
+      break;
+  }
+
+  // When running lightweight prefetch, always skip image resources. Other
+  // resources are either classified into CSS (always fetched when not in the
+  // HTML only arm), JS (skip_script param), or other.
+  switch (preload->GetResourceType()) {
+    case ResourceType::kFont:
+    case ResourceType::kRaw:
+    case ResourceType::kSVGDocument:
+    case ResourceType::kXSLStyleSheet:
+    case ResourceType::kLinkPrefetch:
+    case ResourceType::kTextTrack:
+    case ResourceType::kImportResource:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
+    case ResourceType::kManifest:
+    case ResourceType::kMock:
+      if (GetFieldTrialParamByFeatureAsBool(
+              features::kLightweightNoStatePrefetch, "skip_other", false)) {
+        return false;
+      }
+      break;
+    case ResourceType::kImage:
+      return false;
+    case ResourceType::kCSSStyleSheet:
+      break;
+    case ResourceType::kScript:
+      if (GetFieldTrialParamByFeatureAsBool(
+              features::kLightweightNoStatePrefetch, "skip_script", false)) {
+        // TODO(ryansturm): Add an arm to block async script only.
+        // https://crbug.com/934466
+        return false;
+      }
+      break;
+  }
+
+  // Skip lazy-loaded resources.
+  return preload->DeferOption() == FetchParameters::DeferOption::kNoDefer;
 }
 
 }  // namespace blink

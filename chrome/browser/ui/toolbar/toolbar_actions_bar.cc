@@ -110,8 +110,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
       is_showing_bubble_(false),
-      tab_strip_observer_(this),
-      weak_ptr_factory_(this) {
+      tab_strip_observer_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 

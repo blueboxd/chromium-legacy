@@ -10,16 +10,16 @@ bool StructTraits<network::mojom::NetworkIsolationKeyDataView,
                   net::NetworkIsolationKey>::
     Read(network::mojom::NetworkIsolationKeyDataView data,
          net::NetworkIsolationKey* out) {
-  base::Optional<url::Origin> top_frame_origin, initiating_frame_origin;
+  base::Optional<url::Origin> top_frame_origin, frame_origin;
   if (!data.ReadTopFrameOrigin(&top_frame_origin))
     return false;
-  if (!data.ReadInitiatingFrameOrigin(&initiating_frame_origin))
+  if (!data.ReadFrameOrigin(&frame_origin))
     return false;
   // A key is either fully empty or fully populated (for all fields relevant
   // given the flags set).  The constructor verifies this, so if the top-frame
   // origin is populated, we call the full constructor, otherwise, the empty.
   if (top_frame_origin.has_value()) {
-    *out = net::NetworkIsolationKey(top_frame_origin, initiating_frame_origin);
+    *out = net::NetworkIsolationKey(top_frame_origin, frame_origin);
   } else {
     *out = net::NetworkIsolationKey();
   }

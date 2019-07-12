@@ -14,7 +14,7 @@ source_set("webdata_services") {
     "//components/keyed_service/ios",
     "//components/search_engines",
     "//components/signin/core/browser",
-    "//components/signin/core/browser/webdata",
+    "//components/signin/public/webdata",
     "//components/webdata_services",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

@@ -242,7 +242,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ActivityLog> weak_factory_;
+  base::WeakPtrFactory<ActivityLog> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(ActivityLogApiTest, TriggerEvent);
   FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, AppAndCommandLine);

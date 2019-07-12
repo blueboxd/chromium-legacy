@@ -67,6 +67,95 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   ::CoTaskMemFree(sid);
 }
 
+// Tests the GetStringValue method specific to FID_DESCRIPTION label for AD and
+// non-AD user scenarios with existence of email & non-existence scenarios.
+// Parameters are:
+// 1. Is active directory association registry flag enabled / disabled.
+// 2. Email registry entry is set or unset.
+// 3. Is user domain joined or not.
+// 4. Is sid empty.
+class GcpReauthCredentialGetStringValueTest
+    : public GcpReauthCredentialTest,
+      public ::testing::WithParamInterface<std::tuple<int, bool, bool, bool>> {
+};
+
+TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  const bool is_ad_association_enabled = std::get<0>(GetParam());
+  const bool is_email_entry_set = std::get<1>(GetParam());
+  const bool is_user_domain_joined = std::get<2>(GetParam());
+  const bool is_sid_empty = std::get<3>(GetParam());
+
+  // Override registry to enable AD association with google.
+  constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation,
+                                          is_ad_association_enabled));
+
+  CComPtr<IReauthCredential> reauth;
+  ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
+                      nullptr, IID_IReauthCredential, (void**)&reauth));
+  ASSERT_TRUE(!!reauth);
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake user to reauth.
+  CComBSTR sid = nullptr;
+  if (!is_sid_empty && is_user_domain_joined) {
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                        L"comment",
+                        base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                        OLE2CW(email), L"domain", &sid));
+  } else if (!is_sid_empty) {
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                        L"comment",
+                        base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                        OLE2CW(email), &sid));
+  }
+
+  if (!is_sid_empty) {
+    ASSERT_EQ(S_OK, reauth->SetOSUserInfo(sid, CComBSTR(L"domain"),
+                                          CComBSTR(W2COLE(L"username"))));
+  }
+
+  if (is_email_entry_set) {
+    ASSERT_EQ(S_OK, reauth->SetEmailForReauth(CComBSTR(email)));
+  }
+
+  CComPtr<ICredentialProviderCredential2> cpc2;
+  ASSERT_EQ(S_OK, reauth->QueryInterface(IID_ICredentialProviderCredential2,
+                                         reinterpret_cast<void**>(&cpc2)));
+  LPWSTR string_value = nullptr;
+  ASSERT_EQ(S_OK, cpc2->GetStringValue(FID_DESCRIPTION, &string_value));
+
+  if (is_sid_empty) {
+    ASSERT_TRUE(string_value[0] == 0);
+  } else if (!is_email_entry_set && is_ad_association_enabled &&
+             is_user_domain_joined) {
+    ASSERT_STREQ(
+        string_value,
+        W2COLE(GetStringResource(IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION_BASE)
+                   .c_str()));
+  } else {
+    ASSERT_STREQ(
+        string_value,
+        W2COLE(GetStringResource(IDS_REAUTH_FID_DESCRIPTION_BASE).c_str()));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpReauthCredentialGetStringValueTest,
+                         ::testing::Combine(::testing::Values(0, 1),
+                                            ::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
+
 class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {

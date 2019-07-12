@@ -31,6 +31,13 @@
 @property(class, nonatomic, readonly) UIColor* cr_separatorColor;
 @property(class, nonatomic, readonly) UIColor* cr_opaqueSeparatorColor;
 
+// Gray Colors
+@property(class, nonatomic, readonly) UIColor* cr_systemGray2Color;
+@property(class, nonatomic, readonly) UIColor* cr_systemGray3Color;
+@property(class, nonatomic, readonly) UIColor* cr_systemGray4Color;
+@property(class, nonatomic, readonly) UIColor* cr_systemGray5Color;
+@property(class, nonatomic, readonly) UIColor* cr_systemGray6Color;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_COLORS_UICOLOR_CR_SEMANTIC_COLORS_H_

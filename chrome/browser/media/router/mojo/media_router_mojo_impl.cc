@@ -129,9 +129,7 @@ MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
 MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 
 MediaRouterMojoImpl::MediaRouterMojoImpl(content::BrowserContext* context)
-    : instance_id_(base::GenerateGUID()),
-      context_(context),
-      weak_factory_(this) {
+    : instance_id_(base::GenerateGUID()), context_(context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -462,10 +460,6 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
       return nullptr;
     case RouteControllerType::kGeneric:
       route_controller = new MediaRouteController(route_id, context_, this);
-      break;
-    case RouteControllerType::kHangouts:
-      route_controller =
-          new HangoutsMediaRouteController(route_id, context_, this);
       break;
     case RouteControllerType::kMirroring:
       route_controller =

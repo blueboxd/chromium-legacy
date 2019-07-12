@@ -522,7 +522,8 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   std::string isolation_key;
 
-  if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
+  if (base::FeatureList::IsEnabled(
+          features::kSplitCacheByNetworkIsolationKey)) {
     // Prepend the key with |kDoubleKeyPrefix| = "_dk_" to mark it as
     // double-keyed (and makes it an invalid url so that it doesn't get
     // confused with a single-keyed entry). Separate the origin and url

@@ -39,8 +39,7 @@ CloudPrintConnector::CloudPrintConnector(
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
     : client_(client),
       next_response_handler_(NULL),
-      partial_traffic_annotation_(partial_traffic_annotation),
-      stats_ptr_factory_(this) {
+      partial_traffic_annotation_(partial_traffic_annotation) {
   settings_.CopyFrom(settings);
 }
 

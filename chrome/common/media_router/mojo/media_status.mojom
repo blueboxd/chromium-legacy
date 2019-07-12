@@ -54,14 +54,6 @@ struct MediaStatus {
 
   // Current playback position. Must be less than or equal to |duration|.
   mojo_base.mojom.TimeDelta current_time;
-
-  // Only set for Hangouts routes.
-  HangoutsMediaStatusExtraData? hangouts_extra_data;
-};
-
-struct HangoutsMediaStatusExtraData {
-  // Whether local present mode (aka "smooth motion") is on.
-  bool local_present;
 };
 
 // Interface for being notified whenever the MediaStatus of a media changes.

@@ -42,7 +42,7 @@ class WorkerNetworkIsolationKeyBrowserTest
  public:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByTopFrameOrigin);
+        net::features::kSplitCacheByNetworkIsolationKey);
     ContentBrowserTest::SetUp();
   }
 

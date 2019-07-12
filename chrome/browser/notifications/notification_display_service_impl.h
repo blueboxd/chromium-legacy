@@ -101,7 +101,7 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   std::map<NotificationHandler::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
 
-  base::WeakPtrFactory<NotificationDisplayServiceImpl> weak_factory_;
+  base::WeakPtrFactory<NotificationDisplayServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayServiceImpl);
 };

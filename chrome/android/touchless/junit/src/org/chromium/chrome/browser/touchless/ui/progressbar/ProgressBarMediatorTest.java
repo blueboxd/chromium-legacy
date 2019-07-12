@@ -47,7 +47,9 @@ public class ProgressBarMediatorTest {
         ShadowUrlUtilities.setTestImpl(new ShadowUrlUtilities.TestImpl() {
             @Override
             public String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
-                return SAMPLE_URL_SHORT;
+                if (uri.equals(SAMPLE_URL)) return SAMPLE_URL_SHORT;
+
+                return uri;
             }
         });
         mModel = new PropertyModel.Builder(ProgressBarProperties.ALL_KEYS).build();
@@ -112,17 +114,19 @@ public class ProgressBarMediatorTest {
         NavigationHandle navigationHandle = mock(NavigationHandle.class);
         when(navigationHandle.isInMainFrame()).thenReturn(true);
         when(navigationHandle.getUrl()).thenReturn(SAMPLE_URL);
-
+        when(mTab.getUrl()).thenReturn(SAMPLE_URL);
         mTabObserver.getValue().onDidStartNavigation(mTab, navigationHandle);
 
-        when(mTab.getUrl()).thenReturn(SAMPLE_URL);
+        mTabObserver.getValue().onUrlUpdated(mTab);
+        Assert.assertEquals(mModel.get(ProgressBarProperties.URL), SAMPLE_URL_SHORT);
+
         mTabObserver.getValue().onLoadProgressChanged(mTab, 10);
         Assert.assertEquals(mModel.get(ProgressBarProperties.PROGRESS_FRACTION), .1, .001);
-        Assert.assertEquals(mModel.get(ProgressBarProperties.URL), SAMPLE_URL_SHORT);
 
         // Progress and URL should not be updated for native pages.
         when(mTab.getUrl()).thenReturn(UrlConstants.NTP_URL);
         mTabObserver.getValue().onLoadProgressChanged(mTab, 20);
+        mTabObserver.getValue().onUrlUpdated(mTab);
         Assert.assertEquals(mModel.get(ProgressBarProperties.PROGRESS_FRACTION), .1, .001);
         Assert.assertEquals(mModel.get(ProgressBarProperties.URL), SAMPLE_URL_SHORT);
     }

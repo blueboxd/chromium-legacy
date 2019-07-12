@@ -347,7 +347,7 @@ void SiteEngagementService::SetAndroidService(
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
                                              base::Clock* clock)
-    : profile_(profile), clock_(clock), weak_factory_(this) {
+    : profile_(profile), clock_(clock) {
   // May be null in tests.
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);

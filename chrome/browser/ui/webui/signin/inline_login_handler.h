@@ -88,7 +88,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
                              bool trusted_found,
                              bool choose_what_to_sync) = 0;
 
-  base::WeakPtrFactory<InlineLoginHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<InlineLoginHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandler);
 };

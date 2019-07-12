@@ -10,6 +10,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_menu_list.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11.h"

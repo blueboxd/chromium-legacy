@@ -143,7 +143,7 @@ class CheckClientDownloadRequest : public download::DownloadItem::Observer {
   int file_count_;
   int directory_count_;
 
-  base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
+  base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(CheckClientDownloadRequestTest,
                            CheckLimitArchivedExtensions);

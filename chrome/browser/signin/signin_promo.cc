@@ -17,7 +17,6 @@
 #include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"

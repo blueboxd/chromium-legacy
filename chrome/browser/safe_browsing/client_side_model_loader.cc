@@ -91,8 +91,7 @@ ModelLoader::ModelLoader(
     : name_(FillInModelName(is_extended_reporting, GetModelNumber())),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      url_loader_factory_(url_loader_factory),
-      weak_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(url_.is_valid());
 }
 
@@ -104,8 +103,7 @@ ModelLoader::ModelLoader(
     : name_(model_name),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      url_loader_factory_(url_loader_factory),
-      weak_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(url_.is_valid());
 }
 

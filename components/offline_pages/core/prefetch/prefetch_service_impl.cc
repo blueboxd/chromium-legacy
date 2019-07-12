@@ -71,10 +71,13 @@ void PrefetchServiceImpl::ForceRefreshSuggestions() {
   if (suggestions_provider_) {
     // Feed only.
     NewSuggestionsAvailable();
-  } else {
+  } else if (suggested_articles_observer_) {
     // Zine only.
-    DCHECK(suggested_articles_observer_);
     suggested_articles_observer_->ConsumeSuggestions();
+  } else {
+    // Neither |suggestions_provider_| nor |suggested_articles_observer_| are
+    // set in reduced mode, which is only supported with Feed.
+    // ForceRefreshSuggestions() is only called in reduced mode in tests.
   }
 }
 

@@ -666,6 +666,7 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
 
 INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
 
+#if !defined(OS_MACOSX)
 class ForcedColorsTest : public testing::WithParamInterface<bool>,
                          public InProcessBrowserTest {
  protected:
@@ -730,6 +731,7 @@ IN_PROC_BROWSER_TEST_P(ForcedColorsTest, ForcedColors) {
 }
 
 INSTANTIATE_TEST_SUITE_P(All, ForcedColorsTest, testing::Bool());
+#endif  // !defined(OS_MACOSX)
 
 class ProtocolHandlerTest : public InProcessBrowserTest {
  public:

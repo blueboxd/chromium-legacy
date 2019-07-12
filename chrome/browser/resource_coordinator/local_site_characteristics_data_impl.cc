@@ -221,8 +221,7 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       database_(database),
       delegate_(delegate),
       fully_initialized_(false),
-      is_dirty_(false),
-      weak_factory_(this) {
+      is_dirty_(false) {
   DCHECK(database_);
   DCHECK(delegate_);
 

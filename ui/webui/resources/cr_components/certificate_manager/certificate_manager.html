@@ -56,7 +56,7 @@
         <certificate-list id="personalCerts"
             certificates="[[personalCerts]]"
             certificate-type="[[certificateTypeEnum_.PERSONAL]]"
-            import-allowed="[[clientImportAllowed]]">
+            import-allowed="[[importAllowed]]">
         </certificate-list>
       </div>
       <div>
@@ -64,7 +64,7 @@
           <certificate-list id="serverCerts"
               certificates="[[serverCerts]]"
               certificate-type="[[certificateTypeEnum_.SERVER]]"
-              import-allowed="true">
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>
@@ -73,7 +73,7 @@
           <certificate-list id="caCerts"
               certificates="[[caCerts]]"
               certificate-type="[[certificateTypeEnum_.CA]]"
-              import-allowed="true">
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>
@@ -82,7 +82,7 @@
           <certificate-list id="otherCerts"
               certificates="[[otherCerts]]"
               certificate-type="[[certificateTypeEnum_.OTHER]]"
-              import-allowed="false">
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>

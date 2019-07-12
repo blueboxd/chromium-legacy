@@ -457,8 +457,7 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
-      identity_manager_(nullptr),
-      weak_factory_(this) {
+      identity_manager_(nullptr) {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
 

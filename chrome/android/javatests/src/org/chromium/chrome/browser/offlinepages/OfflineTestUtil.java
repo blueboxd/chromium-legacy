@@ -111,6 +111,20 @@ public class OfflineTestUtil {
         return result.get();
     }
 
+    public static byte[] getRawThumbnail(long offlineId)
+            throws TimeoutException, InterruptedException {
+        final AtomicReference<byte[]> result = new AtomicReference<>();
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            nativeGetRawThumbnail(offlineId, (byte[] rawThumbnail) -> {
+                result.set(rawThumbnail);
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForCallback(0);
+        return result.get();
+    }
+
     // Waits for the offline model to initialize and returns an OfflinePageBridge.
     public static OfflinePageBridge getOfflinePageBridge()
             throws TimeoutException, InterruptedException {
@@ -175,6 +189,7 @@ public class OfflineTestUtil {
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
     private static native void nativeGetAllPages(
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
+    private static native void nativeGetRawThumbnail(long offlineId, Callback<byte[]> callback);
     private static native void nativeStartRequestCoordinatorProcessing();
     private static native void nativeInterceptWithOfflineError(String url, Runnable readyRunnable);
     private static native void nativeClearIntercepts();

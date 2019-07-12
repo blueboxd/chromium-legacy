@@ -79,8 +79,7 @@ PermissionRequestManager::PermissionRequestManager(
       main_frame_has_fully_loaded_(false),
       tab_is_hidden_(web_contents->GetVisibility() ==
                      content::Visibility::HIDDEN),
-      auto_response_for_test_(NONE),
-      weak_factory_(this) {}
+      auto_response_for_test_(NONE) {}
 
 PermissionRequestManager::~PermissionRequestManager() {
   DCHECK(requests_.empty());

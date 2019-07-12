@@ -47,6 +47,8 @@ class MediaController : public mojom::MediaController,
                      int desired_size_px,
                      mojo::PendingRemote<mojom::MediaControllerImageObserver>
                          observer) override;
+  void SeekTo(base::TimeDelta seek_time) override;
+  void ScrubTo(base::TimeDelta seek_time) override;
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(

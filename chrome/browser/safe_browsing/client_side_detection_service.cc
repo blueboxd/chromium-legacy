@@ -100,9 +100,7 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 
 ClientSideDetectionService::ClientSideDetectionService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : enabled_(false),
-      url_loader_factory_(url_loader_factory),
-      weak_factory_(this) {
+    : enabled_(false), url_loader_factory_(url_loader_factory) {
   base::Closure update_renderers =
       base::Bind(&ClientSideDetectionService::SendModelToRenderers,
                  base::Unretained(this));

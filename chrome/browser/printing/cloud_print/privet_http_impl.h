@@ -241,7 +241,7 @@ class PrivetLocalPrintOperationImpl : public PrivetLocalPrintOperation,
   std::unique_ptr<PrivetJSONOperation> info_operation_;
   std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
 
-  base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
+  base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_{this};
 
   static bool run_tasks_immediately_for_testing_;
 };

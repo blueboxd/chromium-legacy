@@ -115,8 +115,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
 PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
                                        PP_Instance instance,
                                        PP_Resource resource)
-    : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      weak_factory_(this) {
+    : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource) {
   // Grant permissions to read the flash voucher file.
   int render_process_id;
   int render_frame_id;

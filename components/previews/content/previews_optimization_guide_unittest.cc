@@ -24,20 +24,19 @@
 #include "base/test/simple_test_clock.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -200,7 +199,8 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   bool fetched_hints_stored_ = false;
 };
 
-class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
+class PreviewsOptimizationGuideTest
+    : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsOptimizationGuideTest()
       : scoped_task_environment_(
@@ -285,8 +285,8 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
         optimization_guide_service_.get(),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
-        pref_service_.get(), db_provider_, previews_top_host_provider_.get(),
-        url_loader_factory_);
+        pref_service_.get(), db_provider_.get(),
+        previews_top_host_provider_.get(), url_loader_factory_);
 
     guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
 

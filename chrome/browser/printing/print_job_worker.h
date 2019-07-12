@@ -177,7 +177,7 @@ class PrintJobWorker {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to generate a WeakPtr for callbacks.
-  base::WeakPtrFactory<PrintJobWorker> weak_factory_;
+  base::WeakPtrFactory<PrintJobWorker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobWorker);
 };

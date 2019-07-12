@@ -212,7 +212,7 @@ public class GridTabSwitcherLayoutTest {
     private void testTabToGrid(String fromUrl) throws InterruptedException {
         mActivityTestRule.loadUrl(fromUrl);
 
-        int initCount = getCaptureCount();
+        final int initCount = getCaptureCount();
 
         GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
         for (int i = 0; i < mRepeat; i++) {
@@ -321,7 +321,7 @@ public class GridTabSwitcherLayoutTest {
             } else {
                 delta = 0;
             }
-            CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
+            checkCaptureCount(delta, count);
         }
         checkFinalCaptureCount(switchToAnotherTab, initCount);
         assertThumbnailsAreReleased();
@@ -451,7 +451,7 @@ public class GridTabSwitcherLayoutTest {
                 delta += 1;
             }
         }
-        CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
+        checkCaptureCount(delta, count);
         if (checkThumbnail) checkThumbnailsExist(currentTab);
     }
 
@@ -471,7 +471,13 @@ public class GridTabSwitcherLayoutTest {
                 expected += mRepeat;
             }
         }
-        Assert.assertEquals(expected, getCaptureCount() - initCount);
+        checkCaptureCount(expected, initCount);
+    }
+
+    private void checkCaptureCount(int expectedDelta, int initCount) {
+        // TODO(wychen): With animation, the 2nd capture might be skipped if the 1st takes too long.
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(expectedDelta, () -> getCaptureCount() - initCount));
     }
 
     private void checkThumbnailsExist(Tab tab) {

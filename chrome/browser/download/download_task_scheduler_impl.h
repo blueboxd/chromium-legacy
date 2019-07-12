@@ -42,7 +42,7 @@ class DownloadTaskSchedulerImpl : public download::TaskScheduler {
   std::map<download::DownloadTaskType, base::CancelableClosure>
       scheduled_tasks_;
 
-  base::WeakPtrFactory<DownloadTaskSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<DownloadTaskSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTaskSchedulerImpl);
 };

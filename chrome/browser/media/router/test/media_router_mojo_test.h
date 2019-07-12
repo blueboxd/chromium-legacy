@@ -214,8 +214,7 @@ class MockMediaStatusObserver : public mojom::MediaStatusObserver {
   mojo::Binding<mojom::MediaStatusObserver> binding_;
 };
 
-class MockMediaController : public mojom::MediaController,
-                            mojom::HangoutsMediaRouteController {
+class MockMediaController : public mojom::MediaController {
  public:
   MockMediaController();
   ~MockMediaController() override;
@@ -229,17 +228,9 @@ class MockMediaController : public mojom::MediaController,
   MOCK_METHOD1(SetMute, void(bool mute));
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD1(Seek, void(base::TimeDelta time));
-  void ConnectHangoutsMediaRouteController(
-      mojom::HangoutsMediaRouteControllerRequest controller_request) override {
-    hangouts_binding_.Bind(std::move(controller_request));
-    ConnectHangoutsMediaRouteController();
-  }
-  MOCK_METHOD0(ConnectHangoutsMediaRouteController, void());
-  MOCK_METHOD1(SetLocalPresent, void(bool local_present));
 
  private:
   mojo::Binding<mojom::MediaController> binding_;
-  mojo::Binding<mojom::HangoutsMediaRouteController> hangouts_binding_;
 };
 
 class MockMediaRouteController : public MediaRouteController {
@@ -305,7 +296,6 @@ class MediaRouterMojoTest : public ::testing::Test {
   void TestDetachRoute();
   void TestSearchSinks();
   void TestCreateMediaRouteController();
-  void TestCreateHangoutsMediaRouteController();
 
   const std::string& extension_id() const { return extension_->id(); }
 

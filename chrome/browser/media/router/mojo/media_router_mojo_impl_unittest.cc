@@ -988,10 +988,6 @@ TEST_F(MediaRouterMojoImplTest, GetRouteController) {
   TestCreateMediaRouteController();
 }
 
-TEST_F(MediaRouterMojoImplTest, GetHangoutsRouteController) {
-  TestCreateHangoutsMediaRouteController();
-}
-
 TEST_F(MediaRouterMojoImplTest, GetRouteControllerMultipleTimes) {
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION,
                             {CreateMediaRoute(), CreateMediaRoute2()},

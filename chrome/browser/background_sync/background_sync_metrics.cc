@@ -12,7 +12,7 @@
 
 BackgroundSyncMetrics::BackgroundSyncMetrics(
     ukm::UkmBackgroundRecorderService* ukm_background_service)
-    : ukm_background_service_(ukm_background_service), weak_ptr_factory_(this) {
+    : ukm_background_service_(ukm_background_service) {
   DCHECK(ukm_background_service_);
 }
 

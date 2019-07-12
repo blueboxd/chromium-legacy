@@ -125,8 +125,7 @@ class PluginObserver::ComponentObserver
 
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      plugin_host_bindings_(web_contents, this),
-      weak_ptr_factory_(this) {}
+      plugin_host_bindings_(web_contents, this) {}
 
 PluginObserver::~PluginObserver() {
 }

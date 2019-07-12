@@ -126,8 +126,7 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
     : compositor_(std::move(compositor)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      triggered_capturing_transience_(&triggered_capturing_state_model_),
-      weak_ptr_factory_(this) {
+      triggered_capturing_transience_(&triggered_capturing_state_model_) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 

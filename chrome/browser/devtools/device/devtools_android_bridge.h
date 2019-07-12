@@ -192,7 +192,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
   std::unique_ptr<DevToolsDeviceDiscovery> device_discovery_;
 
-  base::WeakPtrFactory<DevToolsAndroidBridge> weak_factory_;
+  base::WeakPtrFactory<DevToolsAndroidBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAndroidBridge);
 };

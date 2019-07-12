@@ -215,7 +215,7 @@ class CloudPrintProxyBackend::Core
   std::string robot_email_;
   std::unique_ptr<CloudPrintTokenStore> token_store_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -303,8 +303,7 @@ CloudPrintProxyBackend::Core::Core(
       job_poll_scheduled_(false),
       enable_job_poll_(enable_job_poll),
       xmpp_ping_scheduled_(false),
-      pending_xmpp_pings_(0),
-      weak_ptr_factory_(this) {
+      pending_xmpp_pings_(0) {
   settings_.CopyFrom(settings);
 }
 

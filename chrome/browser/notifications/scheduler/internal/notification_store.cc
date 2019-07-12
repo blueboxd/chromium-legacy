@@ -24,7 +24,7 @@ namespace notifications {
 NotificationStore::NotificationStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::NotificationEntry,
                                                  NotificationEntry>> db)
-    : db_(std::move(db)), weak_ptr_factory_(this) {}
+    : db_(std::move(db)) {}
 
 NotificationStore::~NotificationStore() = default;
 

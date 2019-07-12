@@ -123,7 +123,7 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 
-  DCHECK(worker_schedulers_.empty());
+  DCHECK(worker_schedulers_.IsEmpty());
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -308,7 +308,7 @@ void WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting(
   cpu_time_budget_pool_ = cpu_time_budget_pool;
 }
 
-std::unordered_set<WorkerScheduler*>&
+HashSet<WorkerScheduler*>&
 WorkerThreadScheduler::GetWorkerSchedulersForTesting() {
   return worker_schedulers_;
 }

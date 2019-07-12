@@ -86,7 +86,7 @@ class BASE_EXPORT Sequence : public TaskSource {
   // TaskSource:
   ExecutionEnvironment GetExecutionEnvironment() override;
   RunIntent WillRunTask() override;
-  size_t GetMaxConcurrency() const override;
+  size_t GetRemainingConcurrency() const override;
 
   // Returns a token that uniquely identifies this Sequence.
   const SequenceToken& token() const { return token_; }
@@ -100,7 +100,7 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // TaskSource:
   Optional<Task> TakeTask() override WARN_UNUSED_RESULT;
-  bool DidProcessTask(bool can_keep_running) override;
+  bool DidProcessTask(RunResult run_result) override;
   SequenceSortKey GetSortKey() const override;
   void Clear() override;
 

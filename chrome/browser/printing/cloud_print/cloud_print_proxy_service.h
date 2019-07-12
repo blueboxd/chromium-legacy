@@ -100,7 +100,7 @@ class CloudPrintProxyService : public KeyedService {
 
   cloud_print::mojom::CloudPrintPtr cloud_print_proxy_;
 
-  base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
+  base::WeakPtrFactory<CloudPrintProxyService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

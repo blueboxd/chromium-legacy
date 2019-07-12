@@ -85,7 +85,7 @@ class SafeMediaMetadataParser : public MediaParserProvider {
   std::unique_ptr<chrome::mojom::MediaDataSource> media_data_source_;
   std::unique_ptr<MediaDataSourceFactory> media_source_factory_;
 
-  base::WeakPtrFactory<SafeMediaMetadataParser> weak_factory_;
+  base::WeakPtrFactory<SafeMediaMetadataParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SafeMediaMetadataParser);
 };

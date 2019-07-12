@@ -293,7 +293,7 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
     content::NavigationController& controller = contents->GetController();
     controller.SetTransientEntry(
         content::NavigationController::CreateNavigationEntry(
-            GURL("chrome://blank"), content::Referrer(),
+            GURL("chrome://blank"), content::Referrer(), base::nullopt,
             ui::PAGE_TRANSITION_LINK, false, std::string(),
             contents->GetBrowserContext(),
             nullptr /* blob_url_loader_factory */));

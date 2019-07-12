@@ -121,7 +121,7 @@ class PrintPreviewMessageHandler
                                    mojom::PdfNupConverter::Status status,
                                    base::ReadOnlySharedMemoryRegion region);
 
-  base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

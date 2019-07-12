@@ -45,8 +45,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 SigninCreateProfileHandler::SigninCreateProfileHandler()
-    : profile_creation_type_(NO_CREATION_IN_PROGRESS),
-      weak_ptr_factory_(this) {}
+    : profile_creation_type_(NO_CREATION_IN_PROGRESS) {}
 
 SigninCreateProfileHandler::~SigninCreateProfileHandler() {}
 

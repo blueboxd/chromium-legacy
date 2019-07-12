@@ -17,7 +17,8 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 class NavigationHandle;
@@ -48,7 +49,8 @@ class ContentAutofillDriver : public AutofillDriver,
   static ContentAutofillDriver* GetForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
 
-  void BindRequest(mojom::AutofillDriverAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::AutofillDriver> pending_receiver);
 
   // AutofillDriver:
   bool IsIncognito() const override;
@@ -123,7 +125,7 @@ class ContentAutofillDriver : public AutofillDriver,
   AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
-  const mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();
+  const mojo::AssociatedRemote<mojom::AutofillAgent>& GetAutofillAgent();
 
   // Methods forwarded to key_press_handler_manager_.
   void RegisterKeyPressHandler(
@@ -170,9 +172,9 @@ class ContentAutofillDriver : public AutofillDriver,
 
   KeyPressHandlerManager key_press_handler_manager_;
 
-  mojo::AssociatedBinding<mojom::AutofillDriver> binding_;
+  mojo::AssociatedReceiver<mojom::AutofillDriver> receiver_{this};
 
-  mojom::AutofillAgentAssociatedPtr autofill_agent_;
+  mojo::AssociatedRemote<mojom::AutofillAgent> autofill_agent_;
 };
 
 }  // namespace autofill

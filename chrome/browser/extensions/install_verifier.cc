@@ -187,11 +187,7 @@ void LogAddVerifiedSuccess(bool success) {
 
 InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
                                  content::BrowserContext* context)
-    : prefs_(prefs),
-      context_(context),
-      bootstrap_check_complete_(false),
-      weak_factory_(this) {
-}
+    : prefs_(prefs), context_(context), bootstrap_check_complete_(false) {}
 
 InstallVerifier::~InstallVerifier() {}
 

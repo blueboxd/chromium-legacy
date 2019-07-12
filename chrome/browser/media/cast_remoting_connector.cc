@@ -193,8 +193,7 @@ CastRemotingConnector::CastRemotingConnector(
       active_bridge_(nullptr),
       deprecated_binding_(this),
       binding_(this),
-      pref_service_(pref_service),
-      weak_factory_(this) {
+      pref_service_(pref_service) {
   DCHECK(permission_request_callback_);
 #if !defined(OS_ANDROID)
   if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid()) {

@@ -146,8 +146,7 @@ ResourceRequestDetector::ResourceRequestDetector(
     std::unique_ptr<IncidentReceiver> incident_receiver)
     : incident_receiver_(std::move(incident_receiver)),
       database_manager_(database_manager),
-      allow_null_profile_for_testing_(false),
-      weak_ptr_factory_(this) {}
+      allow_null_profile_for_testing_(false) {}
 
 ResourceRequestDetector::~ResourceRequestDetector() {
 }

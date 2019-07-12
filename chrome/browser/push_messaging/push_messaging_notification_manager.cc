@@ -114,7 +114,7 @@ int CountVisibleNotifications(
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
     Profile* profile)
-    : profile_(profile), budget_database_(profile), weak_factory_(this) {}
+    : profile_(profile), budget_database_(profile) {}
 
 PushMessagingNotificationManager::~PushMessagingNotificationManager() = default;
 

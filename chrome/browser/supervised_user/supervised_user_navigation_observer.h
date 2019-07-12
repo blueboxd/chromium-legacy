@@ -111,7 +111,8 @@ class SupervisedUserNavigationObserver
       supervised_user::mojom::SupervisedUserCommands>
       binding_;
 
-  base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_{
+      this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

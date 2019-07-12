@@ -75,7 +75,7 @@ class FontHandler : public SettingsPageUIHandler,
 
   Profile* profile_;  // Weak pointer.
 
-  base::WeakPtrFactory<FontHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FontHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FontHandler);
 };

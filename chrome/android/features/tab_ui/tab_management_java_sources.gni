@@ -14,6 +14,7 @@ tab_management_test_java_sources = [
   "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/GridTabSwitcherLayoutPerfTest.java",
   "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/GridTabSwitcherLayoutTest.java",
   "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/TabGridContainerViewBinderTest.java",
+  "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogParentTest.java",
   "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/TabListViewHolderTest.java",
   "//chrome/android/features/tab_ui/javatests/src/org/chromium/chrome/browser/tasks/tab_management/TestRecyclerViewSimpleViewBinder.java",
 ]

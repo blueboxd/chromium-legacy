@@ -76,8 +76,9 @@ ContentPasswordManagerDriverFactory::FromWebContents(
 }
 
 // static
-void ContentPasswordManagerDriverFactory::BindAutofillDriver(
-    autofill::mojom::PasswordManagerDriverAssociatedRequest request,
+void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+        pending_receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -97,7 +98,7 @@ void ContentPasswordManagerDriverFactory::BindAutofillDriver(
   ContentPasswordManagerDriver* driver =
       factory->GetDriverForFrame(render_frame_host);
   if (driver)
-    driver->BindRequest(std::move(request));
+    driver->BindPendingReceiver(std::move(pending_receiver));
 }
 
 ContentPasswordManagerDriver*

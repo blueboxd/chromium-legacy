@@ -28,6 +28,8 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -84,7 +86,9 @@ void RecordMemoryMetricsAfterDelay() {
   // Compute the actual delay before sampling using a Poisson process.
   double uniform = base::RandDouble();
   base::TimeDelta delay = -std::log(uniform) * mean_time;
-  base::PostDelayedTask(FROM_HERE, base::BindOnce(&RecordMemoryMetrics), delay);
+
+  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                  base::BindOnce(&RecordMemoryMetrics), delay);
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.

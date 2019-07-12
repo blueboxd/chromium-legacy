@@ -78,9 +78,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       last_committed_nav_entry_unique_id_(0),
       script_executor_(new ScriptExecutor(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
-      registry_observer_(this),
-      image_loader_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+      registry_observer_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);

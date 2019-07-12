@@ -263,14 +263,16 @@ void OnClearedCookies(base::OnceClosure done,
 
 ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
     BrowserContext* browser_context)
-    : profile_(Profile::FromBrowserContext(browser_context)),
+    : profile_(Profile::FromBrowserContext(browser_context))
 #if BUILDFLAG(ENABLE_PLUGINS)
-      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
+      ,
+      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context))
 #endif
 #if defined(OS_ANDROID)
-      webapp_registry_(new WebappRegistry()),
+      ,
+      webapp_registry_(new WebappRegistry())
 #endif
-      weak_ptr_factory_(this) {
+{
   domain_reliability_clearer_ = base::BindRepeating(
       [](BrowserContext* browser_context,
          content::BrowsingDataFilterBuilder* filter_builder,

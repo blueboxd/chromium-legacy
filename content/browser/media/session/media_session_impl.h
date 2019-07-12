@@ -256,6 +256,12 @@ class MediaSessionImpl : public MediaSession,
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
+  // Seek the media session to a specific time.
+  void SeekTo(base::TimeDelta seek_time) override {}
+
+  // Scrub ("fast seek") the media session to a specific time.
+  void ScrubTo(base::TimeDelta seek_time) override {}
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;

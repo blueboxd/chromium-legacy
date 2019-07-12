@@ -32,6 +32,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_color.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
@@ -45,6 +48,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -129,6 +133,39 @@ StringKeyframeVector KeyframesAtZeroAndOne(
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   return keyframes;
+}
+
+const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
+    const AtomicString& property_name,
+    const AtomicString& type,
+    Document* document,
+    Element* element,
+    const String& zero_value,
+    const String& one_value,
+    ExceptionState& exception_state) {
+  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
+  property_descriptor->setName(property_name);
+  property_descriptor->setSyntax(type);
+  property_descriptor->setInitialValue(zero_value);
+  property_descriptor->setInherits(false);
+  PropertyRegistration::registerProperty(document, property_descriptor,
+                                         exception_state);
+
+  StringKeyframeVector keyframes = KeyframesAtZeroAndOne(
+      property_name, document->GetPropertyRegistry(), zero_value, one_value);
+
+  element->style()->setProperty(document, property_name, zero_value,
+                                g_empty_string, exception_state);
+
+  auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+
+  auto style = document->EnsureStyleResolver().StyleForElement(element);
+
+  // Snapshot should update first time after construction
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+
+  return effect->GetPropertySpecificKeyframes(PropertyHandle(property_name));
 }
 
 void ExpectProperty(CSSPropertyID property,
@@ -666,39 +703,95 @@ TEST_F(AnimationKeyframeEffectModel,
 TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName("--foo");
-  property_descriptor->setSyntax("<number>");
-  property_descriptor->setInitialValue("0");
-  property_descriptor->setInherits(false);
-  PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
-                                         exception_state);
-  EXPECT_FALSE(exception_state.HadException());
-
-  StringKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AtomicString("--foo"), GetDocument().GetPropertyRegistry(), "0", "100");
-
-  element->style()->setProperty(&GetDocument(), "--foo", "0", g_empty_string,
-                                exception_state);
-  EXPECT_FALSE(exception_state.HadException());
-
-  auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
-
-  auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
-
-  const CompositorKeyframeValue* value;
-
-  // Snapshot should update first time after construction
-  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *style, nullptr));
 
   // Compositor keyframe value available after snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(AtomicString("--foo")))[0]
-              ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value =
+      ConstructEffectAndGetKeyframes("--foo", "<number>", &GetDocument(),
+                                     element, "0", "100", exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  ASSERT_FALSE(exception_state.HadException());
+
+  // Test value holds the correct number type
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
+  EXPECT_EQ(ToCompositorKeyframeDouble(value)->ToDouble(), 100);
+}
+
+TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+  DummyExceptionStateForTesting exception_state;
+
+  element->style()->setProperty(&GetDocument(), "color", "rgb(0, 255, 0)",
+                                g_empty_string, exception_state);
+
+  // Compositor keyframe value available after snapshot
+  const CompositorKeyframeValue* value_rgb =
+      ConstructEffectAndGetKeyframes("--rgb", "<color>", &GetDocument(),
+                                     element, "rgb(0, 0, 0)", "rgb(0, 255, 0)",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_hsl =
+      ConstructEffectAndGetKeyframes("--hsl", "<color>", &GetDocument(),
+                                     element, "hsl(0, 0%, 0%)",
+                                     "hsl(120, 100%, 50%)", exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_name =
+      ConstructEffectAndGetKeyframes("--named", "<color>", &GetDocument(),
+                                     element, "black", "lime",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_hex =
+      ConstructEffectAndGetKeyframes("--hex", "<color>", &GetDocument(),
+                                     element, "#000000", "#00FF00",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_curr =
+      ConstructEffectAndGetKeyframes("--curr", "<color>", &GetDocument(),
+                                     element, "#000000", "currentcolor",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const PropertySpecificKeyframeVector& values_mixed =
+      ConstructEffectAndGetKeyframes("--mixed", "<color>", &GetDocument(),
+                                     element, "#000000", "lime",
+                                     exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  // Test rgb color input
+  EXPECT_TRUE(value_rgb);
+  EXPECT_TRUE(value_rgb->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_rgb)->ToColor(), SK_ColorGREEN);
+
+  // Test hsl color input
+  EXPECT_TRUE(value_hsl);
+  EXPECT_TRUE(value_hsl->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_hsl)->ToColor(), SK_ColorGREEN);
+
+  // Test named color input
+  EXPECT_TRUE(value_name);
+  EXPECT_TRUE(value_name->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_name)->ToColor(), SK_ColorGREEN);
+
+  // Test hex color input
+  EXPECT_TRUE(value_hex);
+  EXPECT_TRUE(value_hex->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_hex)->ToColor(), SK_ColorGREEN);
+
+  // currentcolor is a CSSIdentifierValue not a color
+  EXPECT_FALSE(value_curr);
+
+  // Ensure both frames are consistent when values are mixed
+  const CompositorKeyframeValue* value_mixed0 =
+      values_mixed[0]->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_mixed1 =
+      values_mixed[1]->GetCompositorKeyframeValue();
+
+  EXPECT_TRUE(value_mixed0);
+  EXPECT_TRUE(value_mixed0->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed0)->ToColor(), SK_ColorBLACK);
+
+  EXPECT_TRUE(value_mixed1);
+  EXPECT_TRUE(value_mixed1->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed1)->ToColor(), SK_ColorGREEN);
 }
 
 }  // namespace blink

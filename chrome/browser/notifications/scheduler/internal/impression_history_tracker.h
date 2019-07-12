@@ -182,7 +182,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   // The clock to provide the current timestamp.
   base::Clock* clock_;
 
-  base::WeakPtrFactory<ImpressionHistoryTrackerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ImpressionHistoryTrackerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerImpl);
 };
 

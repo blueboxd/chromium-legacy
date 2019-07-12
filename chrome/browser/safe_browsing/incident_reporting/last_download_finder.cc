@@ -257,9 +257,7 @@ std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
   return finder;
 }
 
-LastDownloadFinder::LastDownloadFinder()
-    : history_service_observer_(this), weak_ptr_factory_(this) {
-}
+LastDownloadFinder::LastDownloadFinder() : history_service_observer_(this) {}
 
 LastDownloadFinder::LastDownloadFinder(
     const DownloadDetailsGetter& download_details_getter,
@@ -267,8 +265,7 @@ LastDownloadFinder::LastDownloadFinder(
     const LastDownloadCallback& callback)
     : download_details_getter_(download_details_getter),
       callback_(callback),
-      history_service_observer_(this),
-      weak_ptr_factory_(this) {
+      history_service_observer_(this) {
   // Observe profile lifecycle events so that the finder can begin or abandon
   // the search in profiles while it is running.
   notification_registrar_.Add(this,

@@ -138,8 +138,7 @@ source_set("unit_tests") {
   }
 
   sources = [
-    #TODO(lgrey,weili): fix and enable css agent tests.
-    #"css_agent_unittest.cc",
+    "css_agent_unittest.cc",
     "devtools_server_unittest.cc",
   ]
 

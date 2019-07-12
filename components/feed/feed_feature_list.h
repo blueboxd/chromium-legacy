@@ -18,6 +18,8 @@ extern const base::FeatureParam<std::string> kDisableTriggerTypes;
 extern const base::FeatureParam<int> kSuppressRefreshDurationMinutes;
 extern const base::FeatureParam<int> kTimeoutDurationSeconds;
 
+extern const base::Feature kInterestFeedNotifications;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

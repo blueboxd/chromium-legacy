@@ -51,10 +51,21 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidCommit();
   virtual void WillActivate();
   virtual void DidActivate();
-  virtual void DidSubmitCompositorFrame();
+  virtual void DidSubmitCompositorFrame(uint32_t frame_token);
   virtual void DidNotProduceFrame();
+  virtual void DidPresentCompositorFrame(uint32_t frame_token,
+                                         base::TimeTicks presentation_time);
 
  protected:
+  struct SubmittedCompositorFrame {
+    uint32_t frame_token;
+    std::unique_ptr<CompositorFrameReporter> reporter;
+    SubmittedCompositorFrame();
+    SubmittedCompositorFrame(uint32_t frame_token,
+                             std::unique_ptr<CompositorFrameReporter> reporter);
+    SubmittedCompositorFrame(SubmittedCompositorFrame&& other);
+    ~SubmittedCompositorFrame();
+  };
   base::TimeTicks Now() const;
   std::unique_ptr<CompositorFrameReporter>
       reporters_[PipelineStage::kNumPipelineStages];
@@ -66,6 +77,10 @@ class CC_EXPORT CompositorFrameReportingController {
   // reporting to UMA.
   const bool is_single_threaded_;
   bool next_activate_has_invalidation_ = false;
+
+  // Mapping of frame token to pipeline reporter for submitted compositor
+  // frames.
+  base::circular_deque<SubmittedCompositorFrame> submitted_compositor_frames_;
 
   // These keep track of stage durations for when a frame did not miss a
   // deadline. The history is used by reporter instances to determine if a

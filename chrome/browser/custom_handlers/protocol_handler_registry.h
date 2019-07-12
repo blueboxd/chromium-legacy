@@ -404,7 +404,7 @@ class ProtocolHandlerRegistry : public KeyedService {
 
   // Makes it possible to invalidate the callback for the
   // DefaultProtocolClientWorker.
-  base::WeakPtrFactory<ProtocolHandlerRegistry> weak_ptr_factory_;
+  base::WeakPtrFactory<ProtocolHandlerRegistry> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };

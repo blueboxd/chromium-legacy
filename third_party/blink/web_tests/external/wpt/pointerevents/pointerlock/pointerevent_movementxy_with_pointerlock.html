@@ -73,6 +73,7 @@
                 });
                 on_event(document, 'pointerlockchange', function(event) {
                     phase++;
+                    last_event = null;
                     if (phase == PhaseEnum.PointerLocked) {
                         test_pointerEvent.step(function() {
                             assert_equals(document.pointerLockElement, target, "document.pointerLockElement should be target.");
@@ -84,18 +85,13 @@
                             assert_array_equals(pointereventMovements, mouseeventMovements, "pointermove should have movementX/Y same as mousemove");
                         });
                     }
+                    pointerHoverInTarget('mouse', target, 'right').then(function() {
+                        return clickInTarget("mouse", target);
+                    });
                 });
 
                 // Inject mouse inputs.
                 pointerHoverInTarget('mouse', target, 'right').then(function() {
-                    return clickInTarget("mouse", target);
-                }).then(function() {
-                    return pointerHoverInTarget('mouse', target, 'right');
-                }).then(function() {
-                    return clickInTarget("mouse", target);
-                }).then(function() {
-                    return pointerHoverInTarget('mouse', target, 'right');
-                }).then(function() {
                     return clickInTarget("mouse", target);
                 });
             }

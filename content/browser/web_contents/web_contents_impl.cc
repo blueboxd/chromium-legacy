@@ -635,6 +635,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   native_theme_observer_.Add(native_theme);
   in_high_contrast_ = native_theme->UsesHighContrastColors();
   in_dark_mode_ = native_theme->SystemDarkModeEnabled();
+  preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -1673,6 +1674,12 @@ void WebContentsImpl::NotifyVisibleViewportSizeChanged(
     const gfx::Size& visible_viewport_size) {
   SendPageMessage(new PageMsg_UpdatePageVisualProperties(
       MSG_ROUTING_NONE, visible_viewport_size));
+}
+
+RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
+  FrameTreeNode* focused_node =
+      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
+  return focused_node ? focused_node->current_frame_host() : nullptr;
 }
 
 void WebContentsImpl::OnAudioStateChanged() {
@@ -4641,14 +4648,16 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // that view source has a consistent process model and always ends up in a new
   // process (https://crbug.com/699493).
   scoped_refptr<SiteInstanceImpl> site_instance_for_view_source = nullptr;
-  // Referrer is not important, because view-source should not hit the network,
-  // but should be served from the cache instead.
+  // Referrer and initiator are not important, because view-source should not
+  // hit the network, but should be served from the cache instead.
   Referrer referrer_for_view_source;
+  base::Optional<url::Origin> initiator_for_view_source = base::nullopt;
   // Do not restore title, derive it from the url.
   base::string16 title_for_view_source;
   auto navigation_entry = std::make_unique<NavigationEntryImpl>(
       site_instance_for_view_source, frame_entry->url(),
-      referrer_for_view_source, title_for_view_source, ui::PAGE_TRANSITION_LINK,
+      referrer_for_view_source, initiator_for_view_source,
+      title_for_view_source, ui::PAGE_TRANSITION_LINK,
       /* is_renderer_initiated = */ false,
       /* blob_url_loader_factory = */ nullptr);
   navigation_entry->SetVirtualURL(GURL(content::kViewSourceScheme +
@@ -7277,6 +7286,8 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
   bool in_dark_mode = observed_theme->SystemDarkModeEnabled();
   bool in_high_contrast = observed_theme->UsesHighContrastColors();
+  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
+      observed_theme->GetPreferredColorScheme();
   bool preferences_changed = false;
 
   if (in_dark_mode_ != in_dark_mode) {
@@ -7285,6 +7296,10 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   }
   if (in_high_contrast_ != in_high_contrast) {
     in_high_contrast_ = in_high_contrast;
+    preferences_changed = true;
+  }
+  if (preferred_color_scheme_ != preferred_color_scheme) {
+    preferred_color_scheme_ = preferred_color_scheme;
     preferences_changed = true;
   }
 

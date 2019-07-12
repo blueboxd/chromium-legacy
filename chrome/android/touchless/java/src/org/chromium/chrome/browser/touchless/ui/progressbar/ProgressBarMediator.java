@@ -162,6 +162,8 @@ public class ProgressBarMediator {
         }
 
         private void updateUrl(Tab tab) {
+            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+
             mModel.set(ProgressBarProperties.URL,
                     UrlUtilities.getDomainAndRegistry(tab.getUrl(), false));
         }

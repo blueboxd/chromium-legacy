@@ -486,6 +486,41 @@ TEST_F(ScopedTaskEnvironmentTest, NestedFastForwardBy) {
   EXPECT_EQ(scoped_task_environment.NowTicks(), start_time + kDelayPerTask * 5);
 }
 
+TEST_F(ScopedTaskEnvironmentTest, NestedRunInFastForwardBy) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  constexpr TimeDelta kDelayPerTask = TimeDelta::FromMilliseconds(1);
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+
+  std::vector<RunLoop*> run_loops;
+
+  RepeatingClosure post_and_runloop_task;
+  post_and_runloop_task = BindLambdaForTesting([&]() {
+    // Run 4 nested run loops on top of the initial FastForwardBy().
+    if (run_loops.size() < 4U) {
+      ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, post_and_runloop_task, kDelayPerTask);
+
+      RunLoop run_loop(RunLoop::Type::kNestableTasksAllowed);
+      run_loops.push_back(&run_loop);
+      run_loop.Run();
+    } else {
+      for (RunLoop* run_loop : run_loops) {
+        run_loop->Quit();
+      }
+    }
+  });
+
+  // Initial task is FastForwardBy().
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, post_and_runloop_task, kDelayPerTask);
+  scoped_task_environment.FastForwardBy(kDelayPerTask);
+
+  EXPECT_EQ(run_loops.size(), 4U);
+  EXPECT_EQ(scoped_task_environment.NowTicks(), start_time + kDelayPerTask * 5);
+}
+
 TEST_F(ScopedTaskEnvironmentTest,
        CrossThreadImmediateTaskPostingDoesntAffectMockTime) {
   ScopedTaskEnvironment scoped_task_environment(
@@ -600,6 +635,28 @@ TEST_F(ScopedTaskEnvironmentTest, MultiThreadedMockTime) {
   EXPECT_EQ(last_main_thread_ticks, end_time);
   EXPECT_EQ(last_thread_pool_ticks, end_time);
   EXPECT_EQ(scoped_task_environment.NowTicks(), end_time);
+}
+
+// This test ensures the implementation of FastForwardBy() doesn't fast-forward
+// beyond the cap it reaches idle with pending delayed tasks further ahead on
+// the main thread.
+TEST_F(ScopedTaskEnvironmentTest, MultiThreadedFastForwardBy) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  const TimeTicks start_time = scoped_task_environment.NowTicks();
+
+  // The 1s delayed task in the pool should run but not the 5s delayed task on
+  // the main thread and fast-forward by should be capped at +2s.
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE),
+      TimeDelta::FromSeconds(5));
+  PostDelayedTask(FROM_HERE, {ThreadPool()}, MakeExpectedRunClosure(FROM_HERE),
+                  TimeDelta::FromSeconds(1));
+  scoped_task_environment.FastForwardBy(TimeDelta::FromSeconds(2));
+
+  EXPECT_EQ(scoped_task_environment.NowTicks(),
+            start_time + TimeDelta::FromSeconds(2));
 }
 
 // Verify that ThreadPoolExecutionMode::QUEUED doesn't prevent running tasks and

@@ -392,7 +392,8 @@ static const unsigned kCMaxWriteRecursionDepth = 21;
 // a layout without a delay.
 // FIXME: For faster machines this value can really be lowered to 200.  250 is
 // adequate, but a little high for dual G5s. :)
-static const int kCLayoutScheduleThreshold = 250;
+static const base::TimeDelta kCLayoutScheduleThreshold =
+    base::TimeDelta::FromMilliseconds(250);
 
 // DOM Level 2 says (letters added):
 //
@@ -796,6 +797,17 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     } else {
       security_origin_ = document_origin;
     }
+
+    // If we are a page popup in LayoutTests ensure we use the popup
+    // owner's security origin so the tests can possibly access the
+    // document via internals API.
+    auto* frame = initializer.GetFrame();
+    if (IsPagePopupRunningInWebTest(frame)) {
+      security_origin_ = frame->PagePopupOwner()
+                             ->GetDocument()
+                             .GetSecurityOrigin()
+                             ->IsolatedCopy();
+    }
   }
 
   void InitializeFeaturePolicy(const DocumentInit& initializer,
@@ -884,13 +896,21 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   }
 
   void InitializeAgent(const DocumentInit& initializer) {
-    Document* context_document = initializer.ContextDocument();
-    Frame* frame = nullptr;
-    if (context_document) {
-      frame = context_document->GetFrame();
-    } else {
-      frame = initializer.GetFrame();
+    auto* frame = initializer.GetFrame();
+
+    // If we are a page popup in LayoutTests ensure we use the popup
+    // owner's frame for looking up the Agent so the tests can possibly
+    // access the document via internals API.
+    if (IsPagePopupRunningInWebTest(frame)) {
+      frame = frame->PagePopupOwner()->GetDocument().GetFrame();
+    } else if (!frame) {
+      if (Document* context_document = initializer.ContextDocument()) {
+        frame = context_document->GetFrame();
+      } else if (Document* owner_document = initializer.OwnerDocument()) {
+        frame = owner_document->GetFrame();
+      }
     }
+
     if (frame) {
       bool has_potential_universal_access_privilege = false;
       if (Settings* settings = frame->GetSettings()) {
@@ -909,6 +929,11 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
       agent_ = MakeGarbageCollected<WindowAgent>(
           V8PerIsolateData::MainThreadIsolate());
     }
+  }
+
+  bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+    return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+           WebTestSupport::IsRunningWebTest();
   }
 
   scoped_refptr<SecurityOrigin> security_origin_;
@@ -989,7 +1014,6 @@ Document::Document(const DocumentInit& initializer,
       was_discarded_(false),
       load_event_progress_(kLoadEventCompleted),
       is_freezing_in_progress_(false),
-      start_time_(CurrentTime()),
       script_runner_(MakeGarbageCollected<ScriptRunner>(this)),
       xml_version_("1.0"),
       xml_standalone_(kStandaloneUnspecified),
@@ -3804,7 +3828,7 @@ void Document::ImplicitClose() {
   }
 
   if (GetFrame()->Loader().HasProvisionalNavigation() &&
-      ElapsedTime() < kCLayoutScheduleThreshold) {
+      start_time_.Elapsed() < kCLayoutScheduleThreshold) {
     // Just bail out. Before or during the onload we were shifted to another
     // page.  The old i-Bench suite does this. When this happens don't bother
     // painting or laying out.
@@ -4172,10 +4196,6 @@ bool Document::ShouldScheduleLayout() const {
     return true;
 
   return false;
-}
-
-int Document::ElapsedTime() const {
-  return static_cast<int>((CurrentTime() - start_time_) * 1000);
 }
 
 void Document::write(const String& text,
@@ -6832,13 +6852,6 @@ void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
   CHECK(origin);
   CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
   SecurityContext::SetSecurityOrigin(origin);
-}
-
-void Document::SetSecurityOriginForTesting(
-    scoped_refptr<SecurityOrigin> origin) {
-  SecurityContext::SetSecurityOrigin(origin);
-  if (frame_)
-    frame_->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
 }
 
 void Document::BindContentSecurityPolicy() {

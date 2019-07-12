@@ -226,7 +226,7 @@ class ComponentLoader {
 
   bool ignore_whitelist_for_testing_;
 
-  base::WeakPtrFactory<ComponentLoader> weak_factory_;
+  base::WeakPtrFactory<ComponentLoader> weak_factory_{this};
 
   friend class TtsApiTest;
 

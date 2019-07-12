@@ -704,6 +704,11 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
 
     [self setUnblockEventQueueTimer];
     [self setUpdateEventTimeoutTimer];
+  } else {
+    paymentRequest->journey_logger().RecordTransactionAmount(
+        paymentRequest->payment_details().total->amount->currency,
+        paymentRequest->payment_details().total->amount->value,
+        false /*completed*/);
   }
 
   return YES;
@@ -862,6 +867,10 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     _pendingPaymentRequest->RecordUseStats();
     _pendingPaymentRequest->GetPrefService()->SetBoolean(
         payments::kPaymentsFirstTransactionCompleted, true);
+    _pendingPaymentRequest->journey_logger().RecordTransactionAmount(
+        _pendingPaymentRequest->payment_details().total->amount->currency,
+        _pendingPaymentRequest->payment_details().total->amount->value,
+        true /*completed*/);
     [self dismissPaymentRequestUIWithCallback:callback];
   }
 
@@ -913,6 +922,11 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     LOG(ERROR) << errorMessage;
     return NO;
   }
+
+  _pendingPaymentRequest->journey_logger().RecordTransactionAmount(
+      _pendingPaymentRequest->payment_details().total->amount->currency,
+      _pendingPaymentRequest->payment_details().total->amount->value,
+      false /*completed*/);
 
   [_paymentRequestCoordinator updatePaymentDetails:paymentDetails];
 

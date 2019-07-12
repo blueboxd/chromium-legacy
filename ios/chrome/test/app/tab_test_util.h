@@ -9,7 +9,9 @@
 
 #include "base/compiler_specific.h"
 
-@class Tab;
+namespace web {
+class WebState;
+}
 
 namespace chrome_test_util {
 
@@ -22,15 +24,15 @@ void OpenNewIncognitoTab();
 // Returns YES if the browser is in incognito mode, and NO otherwise.
 BOOL IsIncognitoMode();
 
-// Gets current tab.
-Tab* GetCurrentTab();
+// Gets current active WebState.
+web::WebState* GetCurrentWebState();
 
-// Gets next tab and returns nil if less than two tabs are open.
-Tab* GetNextTab();
+// Gets next WebState and returns nullptr if less than two tabs are open.
+web::WebState* GetNextWebState();
 
-// Gets the tab with the given index in the current mode (incognito or normal).
-// Returns nil if less than |index| + 1 tabs are open.
-Tab* GetTabAtIndexInCurrentMode(NSUInteger index);
+// Gets the WebState with the given index in the current mode (incognito or
+// normal). Returns nullptr if less than |index| + 1 tabs are open.
+web::WebState* GetWebStateAtIndexInCurrentMode(int index);
 
 // Closes current tab.
 void CloseCurrentTab();

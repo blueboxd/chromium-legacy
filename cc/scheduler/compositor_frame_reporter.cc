@@ -30,13 +30,15 @@ static constexpr int kStageTypeCount =
 
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
-constexpr const char* kStageNames[]{"BeginImplFrameToSendBeginMainFrame",
-                                    "SendBeginMainFrameToCommit",
-                                    "Commit",
-                                    "EndCommitToActivation",
-                                    "Activation",
-                                    "EndActivateToSubmitCompositorFrame",
-                                    "TotalLatency"};
+constexpr const char* kStageNames[]{
+    "BeginImplFrameToSendBeginMainFrame",
+    "SendBeginMainFrameToCommit",
+    "Commit",
+    "EndCommitToActivation",
+    "Activation",
+    "EndActivateToSubmitCompositorFrame",
+    "SubmitCompositorFrameToPresentationCompositorFrame",
+    "TotalLatency"};
 static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) == kStageTypeCount,
               "Compositor latency stages has changed.");
 
@@ -93,6 +95,10 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
   current_stage_.time_delta_history = nullptr;
 }
 
+void CompositorFrameReporter::MissedSubmittedFrame() {
+  submitted_frame_missed_deadline_ = true;
+}
+
 void CompositorFrameReporter::TerminateFrame(
     FrameTerminationStatus termination_status,
     base::TimeTicks termination_time) {
@@ -104,17 +110,14 @@ void CompositorFrameReporter::TerminateFrame(
 void CompositorFrameReporter::TerminateReporter() {
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
   bool report_latency = false;
-  bool missed_frame = false;
   const char* termination_status_str = nullptr;
   switch (frame_termination_status_) {
-    case FrameTerminationStatus::kSubmittedFrame:
+    case FrameTerminationStatus::kPresentedFrame:
       report_latency = true;
-      termination_status_str = "submitted_frame";
+      termination_status_str = "presented_frame";
       break;
-    case FrameTerminationStatus::kSubmittedFrameMissedDeadline:
-      report_latency = true;
-      missed_frame = true;
-      termination_status_str = "missed_frame";
+    case FrameTerminationStatus::kDidNotPresentFrame:
+      termination_status_str = "did_not_present_frame";
       break;
     case FrameTerminationStatus::kMainFrameAborted:
       termination_status_str = "main_frame_aborted";
@@ -130,15 +133,22 @@ void CompositorFrameReporter::TerminateReporter() {
       break;
   }
 
-  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(
+  const char* submission_status_str =
+      submitted_frame_missed_deadline_ ? "missed_frame" : "non_missed_frame";
+
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP2(
       "cc,benchmark", "PipelineReporter", this, frame_termination_time_,
-      "termination_status", TRACE_STR_COPY(termination_status_str));
+      "termination_status", TRACE_STR_COPY(termination_status_str),
+      "compositor_frame_submission_status",
+      TRACE_STR_COPY(submission_status_str));
+
+  // Only report histograms if the frame was presented.
   if (report_latency) {
     DCHECK(stage_history_.size());
     stage_history_.emplace_back(
         StageData{StageType::kTotalLatency, stage_history_.front().start_time,
                   stage_history_.back().end_time, nullptr});
-    ReportStageHistograms(missed_frame);
+    ReportStageHistograms(submitted_frame_missed_deadline_);
   }
 }
 

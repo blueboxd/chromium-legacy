@@ -2436,11 +2436,11 @@ if (!is_android) {
     # (and android, which is excluded from browser_tests).
     if (enable_supervised_users && is_chromeos) {
       sources += [
-        "../browser/supervised_user/supervised_user_browsertest.cc",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
         "../browser/supervised_user/supervised_user_test_base.cc",
         "../browser/supervised_user/supervised_user_test_base.h",
+        "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
       ]
     }
     if (is_linux && is_asan && is_lsan) {
@@ -4330,6 +4330,7 @@ test("unit_tests") {
       "../common/extensions/permissions/permissions_data_unittest.cc",
       "../common/extensions/permissions/settings_override_permission_unittest.cc",
       "../common/extensions/sync_type_unittest.cc",
+      "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       "../renderer/extensions/chrome_native_extension_bindings_system_unittest.cc",
       "../renderer/extensions/custom_types_unittest.cc",
       "../renderer/extensions/extension_hooks_delegate_unittest.cc",

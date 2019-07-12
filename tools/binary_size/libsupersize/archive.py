@@ -1116,9 +1116,30 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
   return section_sizes, 0
 
 
+def _LoadResourcesPathmap(pathmap_path):
+  """Load the pathmap of obfuscated resource paths.
+
+  Returns: A dict mapping from obfuscated paths to original paths or an
+           empty dict if passed a None |pathmap_path|.
+  """
+  if pathmap_path is None:
+    return {}
+
+  pathmap = {}
+  with open(pathmap_path, 'r') as f:
+    for line in f:
+      line = line.strip()
+      if line.startswith('--') or line == '':
+        continue
+      original, renamed = line.split(' -> ')
+      pathmap[renamed] = original
+  return pathmap
+
+
 def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
-                          size_info_prefix, knobs):
+                          resources_pathmap_path, size_info_prefix, knobs):
   res_source_mapper = _ResourceSourceMapper(size_info_prefix, knobs)
+  resources_pathmap = _LoadResourcesPathmap(resources_pathmap_path)
   apk_symbols = []
   dex_size = 0
   zip_info_total = 0
@@ -1133,13 +1154,17 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
         dex_size += zip_info.file_size
         continue
 
-      source_path = res_source_mapper.FindSourceForPath(zip_info.filename)
+      resource_filename = resources_pathmap.get(zip_info.filename,
+                                                zip_info.filename)
+      source_path = res_source_mapper.FindSourceForPath(resource_filename)
       if source_path is None:
-        source_path = os.path.join(models.APK_PREFIX_PATH, zip_info.filename)
-      apk_symbols.append(models.Symbol(
-            models.SECTION_OTHER, zip_info.compress_size,
-            source_path=source_path,
-            full_name=zip_info.filename))  # Full name must disambiguate
+        source_path = os.path.join(models.APK_PREFIX_PATH, resource_filename)
+      apk_symbols.append(
+          models.Symbol(
+              models.SECTION_OTHER,
+              zip_info.compress_size,
+              source_path=source_path,
+              full_name=resource_filename))  # Full name must disambiguate
   overhead_size = os.path.getsize(apk_path) - zip_info_total
   assert overhead_size >= 0, 'Apk overhead must be non-negative'
   zip_overhead_symbol = models.Symbol(
@@ -1225,11 +1250,21 @@ def _CalculateElfOverhead(section_sizes, elf_path):
   return 0
 
 
-def CreateSectionSizesAndSymbols(
-      map_path=None, tool_prefix=None, output_directory=None, elf_path=None,
-      apk_path=None, mapping_path=None, track_string_literals=True,
-      metadata=None, apk_so_path=None, pak_files=None, pak_info_file=None,
-      linker_name=None, size_info_prefix=None, knobs=None):
+def CreateSectionSizesAndSymbols(map_path=None,
+                                 tool_prefix=None,
+                                 output_directory=None,
+                                 elf_path=None,
+                                 apk_path=None,
+                                 mapping_path=None,
+                                 resources_pathmap_path=None,
+                                 track_string_literals=True,
+                                 metadata=None,
+                                 apk_so_path=None,
+                                 pak_files=None,
+                                 pak_info_file=None,
+                                 linker_name=None,
+                                 size_info_prefix=None,
+                                 knobs=None):
   """Creates sections sizes and symbols for a SizeInfo.
 
   Args:
@@ -1240,6 +1275,8 @@ def CreateSectionSizesAndSymbols(
     elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
         aliases and inlined functions. Can be None.
     apk_path: Path to the .apk file to measure.
+    resources_pathmap_path: Path to the pathmap file that maps original
+        resource paths to shortened resource paths.
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
     metadata: Metadata dict from CreateMetadata().
@@ -1315,7 +1352,8 @@ def CreateSectionSizesAndSymbols(
         apk_path, mapping_path, size_info_prefix, output_directory)
     raw_symbols.extend(dex_symbols)
     dex_size, other_symbols = _ParseApkOtherSymbols(
-        section_sizes, apk_path, apk_so_path, size_info_prefix, knobs)
+        section_sizes, apk_path, apk_so_path, resources_pathmap_path,
+        size_info_prefix, knobs)
     raw_symbols.extend(other_symbols)
 
     # We can't meaningfully track section size of dex methods vs other, so just
@@ -1486,6 +1524,9 @@ def AddMainPathsArguments(parser):
   parser.add_argument('--apk-file',
                       help='.apk file to measure. Other flags can generally be '
                            'derived when this is used.')
+  parser.add_argument('--resources-pathmap-file',
+                      help='.pathmap.txt file that contains a maping from '
+                      'original resource paths to shortened resource paths.')
   parser.add_argument('--minimal-apks-file',
                       help='.minimal.apks file to measure. Other flags can '
                            'generally be derived when this is used.')
@@ -1537,6 +1578,7 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
 
   aab_or_apk = args.apk_file or args.minimal_apks_file
   mapping_path = args.mapping_file
+  resources_pathmap_path = args.resources_pathmap_file
   if aab_or_apk:
     # Allow either .minimal.apks or just .apks.
     aab_or_apk = aab_or_apk.replace('.minimal.apks', '.aab')
@@ -1544,6 +1586,17 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
     if not mapping_path:
       mapping_path = aab_or_apk + '.mapping'
       logging.debug('Detected --mapping-file=%s', mapping_path)
+    if not resources_pathmap_path:
+      possible_pathmap_path = aab_or_apk + '.pathmap.txt'
+      # This could be pointing to a stale pathmap file if path shortening was
+      # previously enabled but is disabled for the current build. However, since
+      # current apk/aab will have unshortened paths, looking those paths up in
+      # the stale pathmap which is keyed by shortened paths would not find any
+      # mapping and thus should not cause any issues.
+      if os.path.exists(possible_pathmap_path):
+        resources_pathmap_path = possible_pathmap_path
+        logging.debug('Detected --resources-pathmap-file=%s',
+                      resources_pathmap_path)
 
   apk_path = extracted_minimal_apk_path or args.apk_file
   apk_so_path = None
@@ -1594,7 +1647,8 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
         output_directory, 'size-info', os.path.basename(aab_or_apk))
 
   return (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path,
-          elf_path, map_path, linker_name, size_info_prefix)
+          elf_path, map_path, resources_pathmap_path, linker_name,
+          size_info_prefix)
 
 
 def Run(args, parser):
@@ -1625,7 +1679,8 @@ def Run(args, parser):
 
 def _RunInternal(args, parser, extracted_minimal_apk_path):
   (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path, elf_path,
-   map_path, linker_name, size_info_prefix) = _DeduceMainPaths(
+   map_path, resources_pathmap_path,
+   linker_name, size_info_prefix) = _DeduceMainPaths(
        args, parser, extracted_minimal_apk_path)
 
   metadata = CreateMetadata(map_path, elf_path, args.apk_file,
@@ -1637,13 +1692,21 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
     knobs.src_root = args.source_directory
 
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
-      map_path=map_path, tool_prefix=tool_prefix, elf_path=elf_path,
-      apk_path=apk_path, mapping_path=mapping_path,
+      map_path=map_path,
+      tool_prefix=tool_prefix,
+      elf_path=elf_path,
+      apk_path=apk_path,
+      mapping_path=mapping_path,
       output_directory=output_directory,
+      resources_pathmap_path=resources_pathmap_path,
       track_string_literals=args.track_string_literals,
-      metadata=metadata, apk_so_path=apk_so_path,
-      pak_files=args.pak_file, pak_info_file=args.pak_info_file,
-      linker_name=linker_name, size_info_prefix=size_info_prefix, knobs=knobs)
+      metadata=metadata,
+      apk_so_path=apk_so_path,
+      pak_files=args.pak_file,
+      pak_info_file=args.pak_info_file,
+      linker_name=linker_name,
+      size_info_prefix=size_info_prefix,
+      knobs=knobs)
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 

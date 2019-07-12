@@ -192,8 +192,7 @@ PrerenderContents::PrerenderContents(
       child_id_(-1),
       route_id_(-1),
       origin_(origin),
-      network_bytes_(0),
-      weak_factory_(this) {
+      network_bytes_(0) {
   switch (origin) {
     case ORIGIN_OMNIBOX:
     case ORIGIN_EXTERNAL_REQUEST:

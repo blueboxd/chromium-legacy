@@ -43,9 +43,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback)
-    : profile_(profile),
-      close_callback_(close_callback),
-      weak_ptr_factory_(this) {
+    : profile_(profile), close_callback_(close_callback) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   InitControls();

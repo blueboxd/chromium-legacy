@@ -40,7 +40,7 @@ class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
 
-  base::WeakPtrFactory<WebUsbDetector> weak_factory_;
+  base::WeakPtrFactory<WebUsbDetector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetector);
 };

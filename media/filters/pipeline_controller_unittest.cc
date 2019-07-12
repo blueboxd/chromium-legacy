@@ -154,8 +154,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoConfigChange(const VideoDecoderConfig& config) override {}
   void OnVideoOpacityChange(bool opaque) override {}
   void OnVideoAverageKeyframeDistanceUpdate() override {}
-  void OnAudioDecoderChange(const std::string& name) override {}
-  void OnVideoDecoderChange(const std::string& name) override {}
+  void OnAudioDecoderChange(const PipelineDecoderInfo& info) override {}
+  void OnVideoDecoderChange(const PipelineDecoderInfo& info) override {}
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 

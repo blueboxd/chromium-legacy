@@ -30,12 +30,12 @@ struct ContentIndexProviderImpl::EntryData {
 namespace {
 
 constexpr char kProviderNamespace[] = "content_index";
-constexpr char kSeparator[] = "-";
+constexpr char kSWRIdDescriptionSeparator[] = "-";
 
 std::string EntryKey(int64_t service_worker_registration_id,
                      const std::string& description_id) {
-  return base::NumberToString(service_worker_registration_id) + kSeparator +
-         description_id;
+  return base::NumberToString(service_worker_registration_id) +
+         kSWRIdDescriptionSeparator + description_id;
 }
 
 std::string EntryKey(const content::ContentIndexEntry& entry) {
@@ -43,7 +43,7 @@ std::string EntryKey(const content::ContentIndexEntry& entry) {
 }
 
 std::pair<int64_t, std::string> GetEntryKeyComponents(const std::string& key) {
-  size_t pos = key.find_first_of(kSeparator);
+  size_t pos = key.find_first_of(kSWRIdDescriptionSeparator);
   DCHECK_NE(pos, std::string::npos);
 
   int64_t service_worker_registration_id = -1;

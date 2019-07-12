@@ -21,9 +21,7 @@ using content::BrowserThread;
 namespace quota_internals {
 
 QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
-    : handler_(handler),
-      weak_factory_(this) {
-}
+    : handler_(handler) {}
 
 void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<storage::QuotaManager> quota_manager) {

@@ -198,11 +198,14 @@ Polymer({
    *     is only used if the state is discard related.
    * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
    * @param {boolean} hasFocus Whether or not the tab has input focus.
+   * @param {mojoBase.mojom.TimeDelta} stateChangeTime Delta between Unix Epoch
+   *     and time at which the lifecycle state has changed.
    * @return {string} A string representation of the lifecycle state, augmented
    *     with the discard reason if appropriate.
    * @private
    */
-  lifecycleStateToString_: function(state, reason, visibility, hasFocus) {
+  lifecycleStateToString_: function(
+      state, reason, visibility, hasFocus, stateChangeTime) {
     const pageLifecycleStateFromVisibilityAndFocus = function() {
       switch (visibility) {
         case mojom.LifecycleUnitVisibility.HIDDEN:
@@ -228,7 +231,12 @@ Polymer({
         return pageLifecycleStateFromVisibilityAndFocus() +
             ' (pending discard (' + this.discardReasonToString_(reason) + '))';
       case mojom.LifecycleUnitState.DISCARDED:
-        return 'discarded (' + this.discardReasonToString_(reason) + ')';
+        return 'discarded (' + this.discardReasonToString_(reason) + ')' +
+            ((reason == mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
+                     // Must convert since Date constructor takes milliseconds.
+                     (new Date(stateChangeTime.microseconds / 1000))
+                         .toLocaleString() :
+                                                                   '');
       case mojom.LifecycleUnitState.PENDING_UNFREEZE:
         return 'frozen (pending unfreeze)';
     }
@@ -300,7 +308,8 @@ Polymer({
     if (item.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
         item.discardCount > 0) {
       return this.lifecycleStateToString_(
-          item.state, item.discardReason, item.visibility, item.hasFocus);
+          item.state, item.discardReason, item.visibility, item.hasFocus,
+          item.stateChangeTime);
     } else {
       return '';
     }

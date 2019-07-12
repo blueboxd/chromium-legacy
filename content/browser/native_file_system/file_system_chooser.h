@@ -15,6 +15,8 @@
 
 namespace content {
 
+class WebContents;
+
 // This is a ui::SelectFileDialog::Listener implementation that grants access to
 // the selected files to a specific renderer process on success, and then calls
 // a callback on a specific task runner. Furthermore the listener will delete
@@ -27,8 +29,7 @@ class CONTENT_EXPORT FileSystemChooser : public ui::SelectFileDialog::Listener {
                               std::vector<base::FilePath>)>;
 
   static void CreateAndShow(
-      int render_process_id,
-      int frame_id,
+      WebContents* web_contents,
       blink::mojom::ChooseFileSystemEntryType type,
       std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
       bool include_accepts_all,

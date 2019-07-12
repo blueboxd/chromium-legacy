@@ -106,7 +106,7 @@ class AndroidDeviceManager {
     scoped_refptr<Device> device_;
     std::unique_ptr<WebSocketImpl, base::OnTaskRunnerDeleter> socket_impl_;
     Delegate* delegate_;
-    base::WeakPtrFactory<AndroidWebSocket> weak_factory_;
+    base::WeakPtrFactory<AndroidWebSocket> weak_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
   };
 
@@ -149,7 +149,7 @@ class AndroidDeviceManager {
     scoped_refptr<DeviceProvider> provider_;
     const std::string serial_;
 
-    base::WeakPtrFactory<Device> weak_factory_;
+    base::WeakPtrFactory<Device> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Device);
   };
@@ -254,7 +254,7 @@ class AndroidDeviceManager {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AndroidDeviceManager> weak_factory_;
+  base::WeakPtrFactory<AndroidDeviceManager> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_

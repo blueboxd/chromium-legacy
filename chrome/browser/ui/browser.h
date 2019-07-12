@@ -1101,10 +1101,10 @@ class Browser : public TabStripModelObserver,
 #endif
 
   // The following factory is used for chrome update coalescing.
-  base::WeakPtrFactory<Browser> chrome_updater_factory_;
+  base::WeakPtrFactory<Browser> chrome_updater_factory_{this};
 
   // The following factory is used to close the frame at a later time.
-  base::WeakPtrFactory<Browser> weak_factory_;
+  base::WeakPtrFactory<Browser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

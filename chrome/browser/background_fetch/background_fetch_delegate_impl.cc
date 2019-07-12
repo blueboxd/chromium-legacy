@@ -46,9 +46,8 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
     const std::string& provider_namespace)
     : profile_(profile),
       provider_namespace_(provider_namespace),
-      offline_content_aggregator_(
-          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
-      weak_ptr_factory_(this) {
+      offline_content_aggregator_(OfflineContentAggregatorFactory::GetForKey(
+          profile->GetProfileKey())) {
   DCHECK(profile_);
   DCHECK(!provider_namespace_.empty());
   offline_content_aggregator_->RegisterProvider(provider_namespace_, this);

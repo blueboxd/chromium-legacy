@@ -156,8 +156,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
-      announce_accessible_alert_soon_(false),
-      weak_ptr_factory_(this) {
+      announce_accessible_alert_soon_(false) {
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
   set_context_menu_controller(this);

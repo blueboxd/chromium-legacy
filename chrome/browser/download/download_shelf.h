@@ -136,7 +136,7 @@ class DownloadShelf {
 
   bool should_show_on_unhide_;
   bool is_hidden_;
-  base::WeakPtrFactory<DownloadShelf> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadShelf> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_

@@ -73,7 +73,7 @@ ResetRequestOriginFromString(const std::string& request_origin) {
 const char ResetSettingsHandler::kCctResetSettingsHash[] = "cct";
 
 ResetSettingsHandler::ResetSettingsHandler(Profile* profile)
-    : profile_(profile), callback_weak_ptr_factory_(this) {
+    : profile_(profile) {
   google_brand::GetBrand(&brandcode_);
 }
 

@@ -29,9 +29,7 @@ SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
 
 SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      binding_(web_contents, this),
-      weak_ptr_factory_(this) {
+    : content::WebContentsObserver(web_contents), binding_(web_contents, this) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   supervised_user_service_ =

@@ -198,8 +198,7 @@ ExtensionActionStorageManager::ExtensionActionStorageManager(
     content::BrowserContext* context)
     : browser_context_(context),
       extension_action_observer_(this),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+      extension_registry_observer_(this) {
   extension_action_observer_.Add(ExtensionActionAPI::Get(browser_context_));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 

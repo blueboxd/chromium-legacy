@@ -138,8 +138,7 @@ MediaRouterActionController::MediaRouterActionController(
       media_router::MediaRoutesObserver(router),
       profile_(profile),
       shown_by_policy_(
-          MediaRouterActionController::IsActionShownByPolicy(profile)),
-      weak_factory_(this) {
+          MediaRouterActionController::IsActionShownByPolicy(profile)) {
   CHECK(profile_);
   media_router::IssuesObserver::Init();
   pref_change_registrar_.Init(profile->GetPrefs());

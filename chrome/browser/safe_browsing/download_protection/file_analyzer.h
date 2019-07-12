@@ -121,7 +121,7 @@ class FileAnalyzer {
   base::TimeTicks dmg_analysis_start_time_;
 #endif
 
-  base::WeakPtrFactory<FileAnalyzer> weakptr_factory_;
+  base::WeakPtrFactory<FileAnalyzer> weakptr_factory_{this};
 };
 
 }  // namespace safe_browsing

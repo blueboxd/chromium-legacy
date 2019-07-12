@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
@@ -12,8 +14,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/testing/compositor_test.h"
-
-#include <memory>
 
 namespace blink {
 

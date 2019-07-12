@@ -408,7 +408,7 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
-  base::WeakPtrFactory<DownloadItemView> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadItemView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };

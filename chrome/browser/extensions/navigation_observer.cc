@@ -26,9 +26,7 @@ bool g_repeat_prompting = false;
 }
 
 NavigationObserver::NavigationObserver(Profile* profile)
-    : profile_(profile),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+    : profile_(profile), extension_registry_observer_(this) {
   RegisterForNotifications();
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }

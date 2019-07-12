@@ -148,6 +148,8 @@ void HardwareKeyMediaController::PerformAction(MediaSessionAction action) {
     case MediaSessionAction::kSeekBackward:
     case MediaSessionAction::kSeekForward:
     case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
       NOTREACHED();
       return;
   }
@@ -191,6 +193,8 @@ HardwareKeyMediaController::MediaSessionActionToKeyCode(
     case MediaSessionAction::kSeekBackward:
     case MediaSessionAction::kSeekForward:
     case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
       return base::nullopt;
   }
 }

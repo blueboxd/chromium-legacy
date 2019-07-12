@@ -12825,6 +12825,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DevicesPageEvents">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="OPENED"/>
   <int value="1" label="LOG_IN_STARTED_FROM_REGISTER_PROMO"/>
   <int value="2" label="LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO"/>
@@ -13447,6 +13450,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DomainBoundCerts.DBLoadStatus">
+  <obsolete>
+    Feature was removed (crbug.com/875053).
+  </obsolete>
   <int value="0" label="Database path doesn't exist and couldn't be created"/>
   <int value="1" label="Unable to open database"/>
   <int value="2" label="Failed to migrate db to current version"/>
@@ -17327,7 +17333,7 @@ Called by update_net_error_codes.py.-->
   <int value="515" label="PluginVmLicenseKey"/>
   <int value="516" label="ExtensionAllowInsecureUpdates"/>
   <int value="517" label="BrowserSwitcherEnabled"/>
-  <int value="518" label="ClientCertificateManagementAllowed"/>
+  <int value="518" label="CertificateManagementAllowed"/>
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
   <int value="520" label="DeviceRebootOnUserSignout"/>
   <int value="521" label="ForceNetworkInProcess"/>
@@ -19889,6 +19895,14 @@ Called by update_net_error_codes.py.-->
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
   <int value="1352"
       label="ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND"/>
+  <int value="1353" label="ACTION_GETPOPUP"/>
+  <int value="1354" label="ACTION_SETPOPUP"/>
+  <int value="1355" label="ACTION_GETTITLE"/>
+  <int value="1356" label="ACTION_SETTITLE"/>
+  <int value="1357" label="ACTION_GETBADGETEXT"/>
+  <int value="1358" label="ACTION_SETBADGETEXT"/>
+  <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
+  <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -23858,6 +23872,8 @@ Called by update_net_error_codes.py.-->
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
   <int value="2954" label="BasicCardType"/>
   <int value="2955" label="ExecutedJavaScriptURL"/>
+  <int value="2956" label="LinkPrefetchLoadEvent"/>
+  <int value="2957" label="LinkPrefetchErrorEvent"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34875,6 +34891,7 @@ from previous Chrome versions.
   <int value="-279493876" label="WebVRExperimentalRendering:enabled"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
+  <int value="-277118813" label="InterestFeedNotifications:disabled"/>
   <int value="-276260362" label="GamepadVibration:enabled"/>
   <int value="-275870837"
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
@@ -35359,6 +35376,7 @@ from previous Chrome versions.
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
+  <int value="425520856" label="InterestFeedNotifications:enabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
@@ -46092,6 +46110,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Email, Shipping Address and Name"/>
   <int value="14" label="Phone, Shipping Address and Name"/>
   <int value="15" label="Email, Phone, Shipping Address and Name"/>
+</enum>
+
+<enum name="PaymentRequestTransactionSize">
+  <int value="0" label="Zero"/>
+  <int value="1" label="Micro"/>
+  <int value="2" label="Regular"/>
 </enum>
 
 <enum name="PdfCompositionStatus">

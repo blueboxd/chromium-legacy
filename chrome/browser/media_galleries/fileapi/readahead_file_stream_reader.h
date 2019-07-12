@@ -56,7 +56,7 @@ class ReadaheadFileStreamReader : public storage::FileStreamReader {
   scoped_refptr<net::DrainableIOBuffer> pending_sink_buffer_;
   net::CompletionOnceCallback pending_read_callback_;
 
-  base::WeakPtrFactory<ReadaheadFileStreamReader> weak_factory_;
+  base::WeakPtrFactory<ReadaheadFileStreamReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReadaheadFileStreamReader);
 };

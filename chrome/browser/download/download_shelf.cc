@@ -107,10 +107,7 @@ void GetDownload(Profile* profile,
 }  // namespace
 
 DownloadShelf::DownloadShelf()
-    : should_show_on_unhide_(false),
-      is_hidden_(false),
-      weak_ptr_factory_(this) {
-}
+    : should_show_on_unhide_(false), is_hidden_(false) {}
 
 DownloadShelf::~DownloadShelf() {}
 

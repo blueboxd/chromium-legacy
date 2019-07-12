@@ -363,12 +363,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-// Deprecated 6/2018.
-const char kResetHasSeenWin10PromoPage[] =
-    "browser.reset_has_seen_win10_promo_page";
-#endif
-
 // Deprecated 8/2018.
 const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
 const char kDnsPrefetchingHostReferralList[] =
@@ -466,6 +460,9 @@ const char kMediaCacheSize[] = "browser.media_cache_size";
 const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
 #endif  // defined(OS_WIN)
 
+// Deprecated 7/2019
+const char kSignedInTime[] = "signin.signedin_time";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -527,6 +524,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kBookmarkAppCreationLaunchType, 0);
 
   registry->RegisterIntegerPref(kMediaCacheSize, 0);
+
+  registry->RegisterInt64Pref(kSignedInTime, 0);
 }
 
 }  // namespace
@@ -676,7 +675,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   registry->RegisterBooleanPref(kHasSeenWin10PromoPage, false);  // DEPRECATED
-  registry->RegisterBooleanPref(kResetHasSeenWin10PromoPage, false);
   registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
 #endif  // defined(OS_WIN)
 
@@ -1003,9 +1001,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  // Added 6/2018.
-  local_state->ClearPref(kResetHasSeenWin10PromoPage);
-
   // Added 9/2018
   local_state->ClearPref(kLastWelcomedOSVersion);
 #endif
@@ -1132,4 +1127,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 7/2019.
   syncer::MigrateSyncSuppressedPref(profile_prefs);
+  profile_prefs->ClearPref(kSignedInTime);
 }

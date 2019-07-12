@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -80,17 +81,27 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     reporting_controller_.DidActivate();
   }
 
-  void SimulateSubmitCompositorFrame() {
+  void SimulateSubmitCompositorFrame(uint32_t frame_token) {
     if (!reporting_controller_.reporters()
              [CompositorFrameReportingController::PipelineStage::kActivate])
       SimulateActivate();
     CHECK(reporting_controller_.reporters()
               [CompositorFrameReportingController::PipelineStage::kActivate]);
-    reporting_controller_.DidSubmitCompositorFrame();
+    reporting_controller_.DidSubmitCompositorFrame(frame_token);
+  }
+
+  void SimulatePresentCompositorFrame() {
+    ++next_token_;
+    SimulateSubmitCompositorFrame(*next_token_);
+    reporting_controller_.DidPresentCompositorFrame(*next_token_,
+                                                    base::TimeTicks::Now());
   }
 
  protected:
   TestCompositorFrameReportingController reporting_controller_;
+
+ private:
+  viz::FrameTokenGenerator next_token_;
 };
 
 TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
@@ -136,7 +147,7 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   reporting_controller_.DidActivate();
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
-  reporting_controller_.DidSubmitCompositorFrame();
+  reporting_controller_.DidSubmitCompositorFrame(0);
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
   // 4 simultaneous reporters active.
@@ -162,8 +173,8 @@ TEST_F(CompositorFrameReportingControllerTest,
   SimulateActivate();
   SimulateBeginImplFrame();
 
-  // Submitting the next reporter should be missed.
-  SimulateSubmitCompositorFrame();
+  // Submitting and Presenting the next reporter should be a missed.
+  SimulatePresentCompositorFrame();
 
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
@@ -193,7 +204,7 @@ TEST_F(CompositorFrameReportingControllerTest,
   // In practice this submitted frame should be considered as missed because a
   // new BeginFrame would have been issued, which is the cause for this frame
   // submission.
-  SimulateSubmitCompositorFrame();
+  SimulatePresentCompositorFrame();
   // Other histograms should not be reported.
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);

@@ -80,9 +80,7 @@ const int kCacheStatsDelayMS = 2000;
 
 class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
  public:
-  RendererResourceDelegate()
-      : weak_factory_(this) {
-  }
+  RendererResourceDelegate() {}
 
   void OnRequestComplete() override {
     // Update the browser about our cache.
@@ -121,7 +119,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
   chrome::mojom::CacheStatsRecorderAssociatedPtr cache_stats_recorder_;
 
-  base::WeakPtrFactory<RendererResourceDelegate> weak_factory_;
+  base::WeakPtrFactory<RendererResourceDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };

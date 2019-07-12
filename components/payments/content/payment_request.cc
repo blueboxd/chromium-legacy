@@ -251,6 +251,11 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     // This method does not block.
     spec_->StartWaitingForUpdateWith(
         PaymentRequestSpec::UpdateReason::INITIAL_PAYMENT_DETAILS);
+  } else {
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, false /*completed*/);
   }
 
   display_handle_->Show(this);
@@ -327,6 +332,10 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   spec_->UpdateWith(std::move(details));
 
   if (is_resolving_promise_passed_into_show_method) {
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, false /*completed*/);
     if (SatisfiesSkipUIConstraints()) {
       Pay();
     } else if (spec_->request_shipping()) {
@@ -411,6 +420,10 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
     DCHECK(!has_recorded_completion_);
     journey_logger_.SetCompleted();
     has_recorded_completion_ = true;
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, true /*completed*/);
 
     delegate_->GetPrefService()->SetBoolean(kPaymentsFirstTransactionCompleted,
                                             true);

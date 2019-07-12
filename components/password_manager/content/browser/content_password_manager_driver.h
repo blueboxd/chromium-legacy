@@ -19,7 +19,9 @@
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -48,8 +50,9 @@ class ContentPasswordManagerDriver
   static ContentPasswordManagerDriver* GetForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
 
-  void BindRequest(
-      autofill::mojom::PasswordManagerDriverAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+          pending_receiver);
 
   // PasswordManagerDriver implementation.
   void FillPasswordForm(
@@ -118,12 +121,13 @@ class ContentPasswordManagerDriver
                              int32_t result) override;
 
  private:
-  const autofill::mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();
+  const mojo::AssociatedRemote<autofill::mojom::AutofillAgent>&
+  GetAutofillAgent();
 
-  const autofill::mojom::PasswordAutofillAgentAssociatedPtr&
+  const mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>&
   GetPasswordAutofillAgent();
 
-  const autofill::mojom::PasswordGenerationAgentAssociatedPtr&
+  const mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>&
   GetPasswordGenerationAgent();
 
   content::RenderFrameHost* render_frame_host_;
@@ -136,12 +140,14 @@ class ContentPasswordManagerDriver
   // frame.
   const bool is_main_frame_;
 
-  autofill::mojom::PasswordAutofillAgentAssociatedPtr password_autofill_agent_;
+  mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>
+      password_autofill_agent_;
 
-  autofill::mojom::PasswordGenerationAgentAssociatedPtr password_gen_agent_;
+  mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>
+      password_gen_agent_;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver>
-      password_manager_binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+      password_manager_receiver_;
 
   base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_;
 

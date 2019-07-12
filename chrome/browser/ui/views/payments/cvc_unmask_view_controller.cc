@@ -70,8 +70,7 @@ CvcUnmaskViewController::CvcUnmaskViewController(
               ->IsOffTheRecord()),
       full_card_request_(this,
                          &payments_client_,
-                         state->GetPersonalDataManager()),
-      weak_ptr_factory_(this) {
+                         state->GetPersonalDataManager()) {
   full_card_request_.GetFullCard(
       credit_card,
       autofill::AutofillClient::UnmaskCardReason::UNMASK_FOR_PAYMENT_REQUEST,

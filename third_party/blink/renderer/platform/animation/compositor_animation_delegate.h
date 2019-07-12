@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_DELEGATE_H_
 
+#include <memory>
+
 #include "cc/animation/animation_curve.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-
-#include <memory>
 
 namespace blink {
 

@@ -156,6 +156,9 @@ function resetAllFlags() {
  */
 function showRestartToast(show) {
   $('needs-restart').classList.toggle('show', show);
+  if (show) {
+    $('needs-restart').setAttribute("role", "alert");
+  }
 }
 
 /**

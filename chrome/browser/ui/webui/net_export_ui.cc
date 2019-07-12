@@ -151,7 +151,7 @@ class NetExportMessageHandler
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
-  base::WeakPtrFactory<NetExportMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetExportMessageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetExportMessageHandler);
 };
@@ -159,8 +159,7 @@ class NetExportMessageHandler
 NetExportMessageHandler::NetExportMessageHandler()
     : file_writer_(g_browser_process->system_network_context_manager()
                        ->GetNetExportFileWriter()),
-      state_observer_manager_(this),
-      weak_ptr_factory_(this) {
+      state_observer_manager_(this) {
   file_writer_->Initialize();
 }
 

@@ -242,7 +242,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
-  base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

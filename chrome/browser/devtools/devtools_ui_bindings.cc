@@ -547,8 +547,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       web_contents_(web_contents),
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
-      frontend_loaded_(false),
-      weak_factory_(this) {
+      frontend_loaded_(false) {
   g_devtools_ui_bindings_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -756,11 +755,12 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
         nullptr /* shared_cors_origin_access_list */);
     url_loader_factory = file_url_loader_factory.get();
   } else if (content::HasWebUIScheme(gurl)) {
+    content::WebContents* target_tab;
 #ifndef NDEBUG
-    // In debug builds, allow retrieving files from the chrome:// scheme
-    content::WebContents* target_tab =
-        DevToolsWindow::AsDevToolsWindow(web_contents_)
-            ->GetInspectedWebContents();
+    // In debug builds, allow retrieving files from the chrome:// and
+    // devtools:// schemes
+    target_tab = DevToolsWindow::AsDevToolsWindow(web_contents_)
+                     ->GetInspectedWebContents();
     const bool allow_web_ui_scheme =
         target_tab && content::HasWebUIScheme(target_tab->GetURL());
 #else
@@ -770,7 +770,8 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
       std::vector<std::string> allowed_webui_hosts;
       content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
       webui_url_loader_factory = content::CreateWebUIURLLoader(
-          frame_host, content::kChromeUIScheme, std::move(allowed_webui_hosts));
+          frame_host, target_tab->GetURL().scheme(),
+          std::move(allowed_webui_hosts));
       url_loader_factory = webui_url_loader_factory.get();
     } else {
       base::DictionaryValue response;

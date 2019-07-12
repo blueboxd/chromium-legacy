@@ -264,8 +264,7 @@ WebRtcRtpDumpWriter::WebRtcRtpDumpWriter(
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       incoming_file_thread_worker_(new FileWorker(incoming_dump_path)),
-      outgoing_file_thread_worker_(new FileWorker(outgoing_dump_path)),
-      weak_ptr_factory_(this) {}
+      outgoing_file_thread_worker_(new FileWorker(outgoing_dump_path)) {}
 
 WebRtcRtpDumpWriter::~WebRtcRtpDumpWriter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

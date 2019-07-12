@@ -106,8 +106,7 @@ void DesktopSessionDurationTracker::OnAudioEnd() {
 DesktopSessionDurationTracker::DesktopSessionDurationTracker()
     : session_start_(base::TimeTicks::Now()),
       last_user_event_(session_start_),
-      audio_tracker_(this),
-      weak_factory_(this) {
+      audio_tracker_(this) {
   InitInactivityTimeout();
 }
 

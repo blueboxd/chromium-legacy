@@ -48,7 +48,7 @@ const char kProfileShortcutNotFound[] = "profileShortcutNotFound";
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler(Profile* profile)
-    : profile_(profile), observer_(this), weak_factory_(this) {}
+    : profile_(profile), observer_(this) {}
 
 ManageProfileHandler::~ManageProfileHandler() {}
 

@@ -23,9 +23,9 @@ source_set("identity_manager") {
   deps = [
     "//components/prefs",
     "//components/signin/core/browser:internals",
-    "//components/signin/core/browser/webdata",
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",
+    "//components/signin/public/webdata",
     "//google_apis",
   ]
 

@@ -49,8 +49,7 @@ class ExtensionInstalledBubbleObserver
       : bubble_(std::move(bubble)),
         extension_registry_observer_(this),
         browser_list_observer_(this),
-        animation_wait_retries_(0),
-        weak_factory_(this) {
+        animation_wait_retries_(0) {
     // |extension| has been initialized but not loaded at this point. We need to
     // wait on showing the Bubble until the EXTENSION_LOADED gets fired.
     extension_registry_observer_.Add(
@@ -142,7 +141,7 @@ class ExtensionInstalledBubbleObserver
   // action toolbar is animating.
   int animation_wait_retries_;
 
-  base::WeakPtrFactory<ExtensionInstalledBubbleObserver> weak_factory_;
+  base::WeakPtrFactory<ExtensionInstalledBubbleObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleObserver);
 };

@@ -184,8 +184,7 @@ ChromeAppDelegate::ChromeAppDelegate(bool keep_alive)
     : has_been_shown_(false),
       is_hidden_(true),
       for_lock_screen_app_(false),
-      new_window_contents_delegate_(new NewWindowContentsDelegate()),
-      weak_factory_(this) {
+      new_window_contents_delegate_(new NewWindowContentsDelegate()) {
   if (keep_alive) {
     keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                           KeepAliveRestartOption::DISABLED));

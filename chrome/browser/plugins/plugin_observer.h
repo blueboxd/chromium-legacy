@@ -69,7 +69,7 @@ class PluginObserver : public content::WebContentsObserver,
   content::WebContentsFrameBindingSet<chrome::mojom::PluginHost>
       plugin_host_bindings_;
 
-  base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<PluginObserver> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

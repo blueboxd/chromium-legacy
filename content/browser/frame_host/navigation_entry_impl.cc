@@ -65,6 +65,10 @@ void RecursivelyGenerateFrameEntries(
   EncodePageState(page_state, &data);
   DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
 
+  // TODO(lukasza): https://crbug.com/976055: |initiator_origin| should be
+  // persisted across session restore.
+  base::Optional<url::Origin> initiator_origin = base::nullopt;
+
   node->frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       UTF16ToUTF8(state.target.value_or(base::string16())),
       state.item_sequence_number, state.document_sequence_number, nullptr,
@@ -74,7 +78,8 @@ void RecursivelyGenerateFrameEntries(
       nullptr /* origin */,
       Referrer(GURL(state.referrer.value_or(base::string16())),
                state.referrer_policy),
-      std::vector<GURL>(), PageState::CreateFromEncodedData(data), "GET", -1,
+      initiator_origin, std::vector<GURL>(),
+      PageState::CreateFromEncodedData(data), "GET", -1,
       nullptr /* blob_url_loader_factory */);
 
   // Don't pass the file list to subframes, since that would result in multiple
@@ -245,6 +250,7 @@ NavigationEntryImpl::NavigationEntryImpl()
     : NavigationEntryImpl(nullptr,
                           GURL(),
                           Referrer(),
+                          base::nullopt,
                           base::string16(),
                           ui::PAGE_TRANSITION_LINK,
                           false,
@@ -254,6 +260,7 @@ NavigationEntryImpl::NavigationEntryImpl(
     scoped_refptr<SiteInstanceImpl> instance,
     const GURL& url,
     const Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     const base::string16& title,
     ui::PageTransition transition_type,
     bool is_renderer_initiated,
@@ -269,6 +276,7 @@ NavigationEntryImpl::NavigationEntryImpl(
                                          url,
                                          nullptr /* origin */,
                                          referrer,
+                                         initiator_origin,
                                          std::vector<GURL>(),
                                          PageState(),
                                          "GET",
@@ -672,15 +680,13 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
 
   return CommonNavigationParams(
-      dest_url,
-      // This is constructing parameters for browser-initiated navigation,
-      // therefore there is no initiator origin.
-      base::nullopt, dest_referrer, GetTransitionType(), navigation_type,
-      download_policy, should_replace_entry(), GetBaseURLForDataURL(),
-      GetHistoryURLForDataURL(), previews_state, navigation_start,
-      frame_entry.method(), post_body ? post_body : post_data_,
-      base::Optional<SourceLocation>(), has_started_from_context_menu(),
-      has_user_gesture(), InitiatorCSPInfo(), std::vector<int>(), std::string(),
+      dest_url, frame_entry.initiator_origin(), dest_referrer,
+      GetTransitionType(), navigation_type, download_policy,
+      should_replace_entry(), GetBaseURLForDataURL(), GetHistoryURLForDataURL(),
+      previews_state, navigation_start, frame_entry.method(),
+      post_body ? post_body : post_data_, base::Optional<SourceLocation>(),
+      has_started_from_context_menu(), has_user_gesture(), InitiatorCSPInfo(),
+      std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 
@@ -773,6 +779,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     const GURL& url,
     const base::Optional<url::Origin>& origin,
     const Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
@@ -790,8 +797,9 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     root_node()->frame_entry->UpdateEntry(
         frame_tree_node->unique_name(), item_sequence_number,
         document_sequence_number, site_instance,
-        std::move(source_site_instance), url, origin, referrer, redirect_chain,
-        page_state, method, post_id, std::move(blob_url_loader_factory));
+        std::move(source_site_instance), url, origin, referrer,
+        initiator_origin, redirect_chain, page_state, method, post_id,
+        std::move(blob_url_loader_factory));
     return;
   }
 
@@ -819,7 +827,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       child->frame_entry->UpdateEntry(
           unique_name, item_sequence_number, document_sequence_number,
           site_instance, std::move(source_site_instance), url, origin, referrer,
-          redirect_chain, page_state, method, post_id,
+          initiator_origin, redirect_chain, page_state, method, post_id,
           std::move(blob_url_loader_factory));
       return;
     }
@@ -831,8 +839,9 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       unique_name, item_sequence_number, document_sequence_number,
       site_instance, std::move(source_site_instance), url,
-      base::OptionalOrNullptr(origin), referrer, redirect_chain, page_state,
-      method, post_id, std::move(blob_url_loader_factory));
+      base::OptionalOrNullptr(origin), referrer, initiator_origin,
+      redirect_chain, page_state, method, post_id,
+      std::move(blob_url_loader_factory));
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       std::move(frame_entry)));

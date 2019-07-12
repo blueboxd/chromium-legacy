@@ -39,12 +39,8 @@ class IceTransport : public Transport,
   };
 
   // |transport_context| must outlive the session.
-  // If |use_turn_api| is true, ICE connection will use TURN API instead of the
-  // gTalk TURN services to allocate relay sessions.
-  // TODO(yuweih): Remove |use_turn_api| once the XMPP->FTL transition is done.
   IceTransport(scoped_refptr<TransportContext> transport_context,
-               EventHandler* event_handler,
-               bool use_turn_api);
+               EventHandler* event_handler);
   ~IceTransport() override;
 
   MessageChannelFactory* GetChannelFactory();

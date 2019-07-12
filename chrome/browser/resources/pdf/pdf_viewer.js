@@ -240,6 +240,7 @@ function PDFViewer(browserApi) {
 
   // Setup the button event listeners.
   this.zoomToolbar_ = $('zoom-toolbar');
+  this.zoomToolbar_.setIsPrintPreview(this.isPrintPreview_);
   this.zoomToolbar_.addEventListener(
       'fit-to-changed', this.fitToChanged_.bind(this));
   this.zoomToolbar_.addEventListener(
@@ -776,7 +777,7 @@ PDFViewer.prototype = {
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    $('zoom-toolbar').strings = strings;
+    $('zoom-toolbar').setStrings(strings);
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
     if ($('form-warning')) {

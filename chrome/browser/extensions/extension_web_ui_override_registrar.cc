@@ -16,8 +16,7 @@ namespace extensions {
 
 ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
     content::BrowserContext* context)
-    : extension_registry_observer_(this),
-      weak_factory_(this) {
+    : extension_registry_observer_(this) {
   ExtensionWebUI::InitializeChromeURLOverrides(
       Profile::FromBrowserContext(context));
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));

@@ -340,6 +340,11 @@ const char kEnablePreferCompositingToLCDText[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
+// Enable native caret browsing, in which a moveable cursor is placed on a web
+// page, allowing a user to select and navigate through non-editable text using
+// just a keyboard. See https://crbug.com/977390 for links to i2i.
+const char kEnableCaretBrowsing[] = "enable-caret-browsing";
+
 // Enable default SiteInstance to be used for all unisolated sites.
 const char kEnableDefaultSiteInstance[] = "enable-default-site-instance";
 

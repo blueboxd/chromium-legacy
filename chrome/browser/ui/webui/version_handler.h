@@ -38,7 +38,7 @@ class VersionHandler : public content::WebUIMessageHandler {
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
 
   // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<VersionHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<VersionHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VersionHandler);
 };

@@ -59,14 +59,14 @@ bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   }
 }
 
-int64_t LayoutJankUkmValue(float jank_score) {
-  // Report (jank_score * 100) as an int in the range [0, 1000].
-  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+int64_t LayoutShiftUkmValue(float shift_score) {
+  // Report (shift_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
 }
 
-int32_t LayoutJankUmaValue(float jank_score) {
-  // Report (jank_score * 10) as an int in the range [0, 100].
-  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
 }  // namespace
@@ -563,21 +563,21 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::PageLoad(info.source_id)
       .SetLayoutStability_JankScore(
-          LayoutJankUkmValue(info.page_render_data.layout_jank_score))
+          LayoutShiftUkmValue(info.page_render_data.layout_shift_score))
       .SetLayoutStability_JankScore_MainFrame(
-          LayoutJankUkmValue(info.main_frame_render_data.layout_jank_score))
+          LayoutShiftUkmValue(info.main_frame_render_data.layout_shift_score))
       .SetLayoutStability_JankScore_MainFrame_BeforeInputOrScroll(
-          LayoutJankUkmValue(info.main_frame_render_data
-                                 .layout_jank_score_before_input_or_scroll))
+          LayoutShiftUkmValue(info.main_frame_render_data
+                                  .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.Experimental.LayoutStability.JankScore",
-      LayoutJankUmaValue(info.page_render_data.layout_jank_score));
+      LayoutShiftUmaValue(info.page_render_data.layout_shift_score));
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.Experimental.LayoutStability.JankScore.MainFrame",
-      LayoutJankUmaValue(info.main_frame_render_data.layout_jank_score));
+      LayoutShiftUmaValue(info.main_frame_render_data.layout_shift_score));
 }
 
 base::Optional<int64_t>

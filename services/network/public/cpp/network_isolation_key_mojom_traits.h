@@ -22,9 +22,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return input.GetTopFrameOrigin();
   }
 
-  static const base::Optional<url::Origin>& initiating_frame_origin(
+  static const base::Optional<url::Origin>& frame_origin(
       const net::NetworkIsolationKey& input) {
-    return input.GetInitiatingFrameOrigin();
+    return input.GetFrameOrigin();
   }
 
   static bool Read(network::mojom::NetworkIsolationKeyDataView data,

@@ -122,7 +122,7 @@ class OperationManager : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<OperationManager> weak_factory_;
+  base::WeakPtrFactory<OperationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OperationManager);
 };

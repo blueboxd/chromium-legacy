@@ -61,7 +61,7 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
   std::vector<OneGoogleCallback> callbacks_;
   std::unique_ptr<AuthenticatedURLLoader> pending_request_;
 
-  base::WeakPtrFactory<OneGoogleBarLoaderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<OneGoogleBarLoaderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OneGoogleBarLoaderImpl);
 };

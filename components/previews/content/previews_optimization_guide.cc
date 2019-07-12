@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -21,7 +22,6 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
@@ -146,11 +146,12 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
       background_task_runner_(background_task_runner),
-      hint_cache_(std::make_unique<HintCache>(
-          std::make_unique<HintCacheStore>(database_provider,
-                                           profile_path,
-                                           pref_service,
-                                           background_task_runner_))),
+      hint_cache_(std::make_unique<optimization_guide::HintCache>(
+          std::make_unique<optimization_guide::HintCacheStore>(
+              database_provider,
+              profile_path,
+              pref_service,
+              background_task_runner_))),
       previews_top_host_provider_(previews_top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),

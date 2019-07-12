@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
@@ -84,10 +83,6 @@ DeviceSharingManager* GetDeviceSharingManager() {
   return [GetMainController() deviceSharingManager];
 }
 
-web::WebState* GetCurrentWebState() {
-  return GetCurrentTab().webState;
-}
-
 ios::ChromeBrowserState* GetOriginalBrowserState() {
   return GetBrowserState(false);
 }
@@ -145,7 +140,7 @@ DispatcherForActiveBrowserViewController() {
 }
 
 void RemoveAllInfoBars() {
-  web::WebState* webState = [GetCurrentTab() webState];
+  web::WebState* webState = GetCurrentWebState();
   if (webState) {
     infobars::InfoBarManager* info_bar_manager =
         InfoBarManagerImpl::FromWebState(webState);

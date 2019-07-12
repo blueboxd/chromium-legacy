@@ -281,6 +281,8 @@ jumbo_static_library("renderer") {
 
   if (enable_extensions) {
     sources += [
+      "extensions/accessibility_private_hooks_delegate.cc",
+      "extensions/accessibility_private_hooks_delegate.h",
       "extensions/app_hooks_delegate.cc",
       "extensions/app_hooks_delegate.h",
       "extensions/chrome_extensions_dispatcher_delegate.cc",

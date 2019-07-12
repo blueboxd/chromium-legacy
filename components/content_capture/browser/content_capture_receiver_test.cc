@@ -40,14 +40,15 @@ class FakeContentCaptureSender {
     content_capture_receiver_->DidRemoveContent(data);
   }
 
-  mojom::ContentCaptureReceiverAssociatedRequest GetAssociatedRequest() {
-    return mojo::MakeRequestAssociatedWithDedicatedPipe(
-        &content_capture_receiver_);
+  mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+  GetPendingAssociatedReceiver() {
+    return content_capture_receiver_
+        .BindNewEndpointAndPassDedicatedReceiverForTesting();
   }
 
  private:
-  mojom::ContentCaptureReceiverAssociatedPtr content_capture_receiver_ =
-      nullptr;
+  mojo::AssociatedRemote<mojom::ContentCaptureReceiver>
+      content_capture_receiver_;
 };
 
 class SessionRemovedTestHelper {
@@ -158,7 +159,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     main_frame_ = web_contents()->GetMainFrame();
     // Binds sender with receiver.
     ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        content_capture_sender_->GetAssociatedRequest(), main_frame_);
+        content_capture_sender_->GetPendingAssociatedReceiver(), main_frame_);
 
     ContentCaptureData child;
     // Have the unique id for text content.
@@ -206,7 +207,8 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
         content::RenderFrameHostTester::For(main_frame_)->AppendChild("child");
     // Binds sender with receiver for child frame.
     ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        child_content_capture_sender_->GetAssociatedRequest(), child_frame_);
+        child_content_capture_sender_->GetPendingAssociatedReceiver(),
+        child_frame_);
   }
 
   FakeContentCaptureSender* content_capture_sender() {

@@ -141,7 +141,7 @@ class DevToolsDeviceDiscovery {
   AndroidDeviceManager* device_manager_;
   const DeviceListCallback callback_;
   base::Callback<void(const base::Closure&)> task_scheduler_;
-  base::WeakPtrFactory<DevToolsDeviceDiscovery> weak_factory_;
+  base::WeakPtrFactory<DevToolsDeviceDiscovery> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDeviceDiscovery);
 };

@@ -232,7 +232,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   AccountListeningMode account_listening_mode_ =
       AccountListeningMode::kNotListening;
 
-  base::WeakPtrFactory<IdentityGetAuthTokenFunction> weak_ptr_factory_;
+  base::WeakPtrFactory<IdentityGetAuthTokenFunction> weak_ptr_factory_{this};
 };
 
 }  // namespace extensions

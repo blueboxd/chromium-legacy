@@ -31,8 +31,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 
 #include <algorithm>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/platform.h"

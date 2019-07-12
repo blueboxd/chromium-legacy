@@ -107,7 +107,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   std::unique_ptr<PolicyStatusProvider> device_status_provider_;
   std::unique_ptr<PolicyStatusProvider> machine_status_provider_;
 
-  base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
+  base::WeakPtrFactory<PolicyUIHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };

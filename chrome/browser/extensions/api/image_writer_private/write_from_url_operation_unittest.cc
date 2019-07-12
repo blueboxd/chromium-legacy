@@ -212,7 +212,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   operation->Cancel();
 }
 
-TEST_F(ImageWriterWriteFromUrlOperationTest, DISABLED_VerifyFile) {
+TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
   std::unique_ptr<char[]> data_buffer(new char[kTestFileSize]);
   base::ReadFile(test_utils_.GetImagePath(), data_buffer.get(), kTestFileSize);
   base::MD5Digest expected_digest;
@@ -254,6 +254,14 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DISABLED_VerifyFile) {
   }
 
   operation->Cancel();
+
+  // The OnProgress calls we're expecting are posted to the Operation's
+  // SequencedTaskRunner. Flush it before the mock's expectations are checked.
+  {
+    base::RunLoop run_loop;
+    operation->PostTask(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 }
 
 }  // namespace image_writer

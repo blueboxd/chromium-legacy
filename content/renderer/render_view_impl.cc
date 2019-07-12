@@ -787,6 +787,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   if (prefs.spatial_navigation_enabled)
     WebRuntimeFeatures::EnableKeyboardFocusableScrollers(true);
 
+  settings->SetCaretBrowsingEnabled(prefs.caret_browsing_enabled);
+
   settings->SetSelectionIncludesAltImageText(true);
 
   settings->SetV8CacheOptions(

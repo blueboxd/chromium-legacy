@@ -118,8 +118,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
 #if !defined(OS_ANDROID)
       spellcheck_service_(spellcheck_service),
 #endif
-      download_status_(DOWNLOAD_NONE),
-      weak_ptr_factory_(this) {
+      download_status_(DOWNLOAD_NONE) {
 }
 
 SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {

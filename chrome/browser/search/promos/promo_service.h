@@ -87,7 +87,7 @@ class PromoService : public KeyedService {
   base::Optional<PromoData> promo_data_;
   Status promo_status_;
 
-  base::WeakPtrFactory<PromoService> weak_ptr_factory_;
+  base::WeakPtrFactory<PromoService> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_SEARCH_PROMOS_PROMO_SERVICE_H_

@@ -98,9 +98,9 @@ void PageTimingMetricsSender::DidObserveLayoutShift(
     double score,
     bool after_input_or_scroll) {
   DCHECK(score > 0);
-  render_data_.layout_jank_delta += score;
+  render_data_.layout_shift_delta += score;
   if (!after_input_or_scroll)
-    render_data_.layout_jank_delta_before_input_or_scroll += score;
+    render_data_.layout_shift_delta_before_input_or_scroll += score;
   EnsureSendTimer();
 }
 
@@ -267,8 +267,8 @@ void PageTimingMetricsSender::SendNow() {
   new_features_ = mojom::PageLoadFeatures::New();
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
-  render_data_.layout_jank_delta = 0;
-  render_data_.layout_jank_delta_before_input_or_scroll = 0;
+  render_data_.layout_shift_delta = 0;
+  render_data_.layout_shift_delta_before_input_or_scroll = 0;
 }
 
 }  // namespace page_load_metrics

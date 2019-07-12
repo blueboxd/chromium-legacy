@@ -18,7 +18,6 @@ import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -184,13 +183,12 @@ public class SavePasswordsPreferences
      * Empty screen message when no passwords or exceptions are stored.
      */
     private void displayEmptyScreenMessage() {
-        mEmptyView = new TextMessagePreferenceCompat(
-                new ContextThemeWrapper(
-                        getStyledContext(), R.style.Theme_Chromium_PreferenceItemNoDividers),
-                null);
+        mEmptyView = new TextMessagePreferenceCompat(getStyledContext(), null);
         mEmptyView.setSummary(R.string.saved_passwords_none_text);
         mEmptyView.setKey(PREF_KEY_SAVED_PASSWORDS_NO_TEXT);
         mEmptyView.setOrder(ORDER_SAVED_PASSWORDS_NO_TEXT);
+        mEmptyView.setDividerAllowedAbove(false);
+        mEmptyView.setDividerAllowedBelow(false);
         getPreferenceScreen().addPreference(mEmptyView);
     }
 

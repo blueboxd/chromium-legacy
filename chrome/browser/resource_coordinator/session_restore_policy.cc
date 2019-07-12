@@ -96,8 +96,7 @@ class SysInfoDelegate : public SessionRestorePolicy::Delegate {
 SessionRestorePolicy::SessionRestorePolicy()
     : policy_enabled_(true),
       delegate_(SysInfoDelegate::Get()),
-      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()),
-      weak_factory_(this) {}
+      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()) {}
 
 SessionRestorePolicy::~SessionRestorePolicy() {
   // Record the number of tabs involved in the session restore that use
@@ -266,8 +265,7 @@ SessionRestorePolicy::SessionRestorePolicy(bool policy_enabled,
                                            const Delegate* delegate)
     : policy_enabled_(policy_enabled),
       delegate_(delegate),
-      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()),
-      weak_factory_(this) {}
+      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()) {}
 
 // static
 size_t SessionRestorePolicy::CalculateSimultaneousTabLoads(

@@ -725,8 +725,7 @@ SSLErrorHandler::SSLErrorHandler(
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      decision_callback_(decision_callback),
-      weak_ptr_factory_(this) {}
+      decision_callback_(decision_callback) {}
 
 SSLErrorHandler::~SSLErrorHandler() {
 }

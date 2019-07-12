@@ -150,12 +150,10 @@ void DevToolsAndroidBridge::OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
   SendJsonRequest(browser->GetId(), request, base::DoNothing());
 }
 
-DevToolsAndroidBridge::DevToolsAndroidBridge(
-    Profile* profile)
+DevToolsAndroidBridge::DevToolsAndroidBridge(Profile* profile)
     : profile_(profile),
       device_manager_(AndroidDeviceManager::Create()),
-      port_forwarding_controller_(new PortForwardingController(profile)),
-      weak_factory_(this) {
+      port_forwarding_controller_(new PortForwardingController(profile)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,

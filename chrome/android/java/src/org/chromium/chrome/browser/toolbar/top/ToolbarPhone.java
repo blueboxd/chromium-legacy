@@ -1865,7 +1865,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (!getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) return false;
 
         mIsHomeButtonEnabled = !inTabSwitcherMode;
-        mToggleTabStackButton.setVisibility(inTabSwitcherMode ? GONE : VISIBLE);
+
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setVisibility(
+                    inTabSwitcherMode || mIsBottomToolbarVisible ? GONE : VISIBLE);
+        }
+
         if (getMenuButton() != null)
             getMenuButton().setVisibility(inTabSwitcherMode ? GONE : VISIBLE);
 

@@ -97,7 +97,7 @@ PreviewsUITabHelper::~PreviewsUITabHelper() {
 }
 
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 

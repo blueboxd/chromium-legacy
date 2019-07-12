@@ -96,7 +96,7 @@ class SiteDataSizeCollector {
   // Keeps track of the sum of all fetched size.
   int64_t total_bytes_;
 
-  base::WeakPtrFactory<SiteDataSizeCollector> weak_ptr_factory_;
+  base::WeakPtrFactory<SiteDataSizeCollector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataSizeCollector);
 };

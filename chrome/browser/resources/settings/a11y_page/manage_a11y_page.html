@@ -81,7 +81,9 @@
         disabled="[[prefs.ash.docked_magnifier.enabled.value]]">
     </settings-toggle-button>
     <div class="settings-box continuation">
-      <div class="start sub-item">$i18n{screenMagnifierZoomLabel}</div>
+      <div class="start sub-item settings-box-text">
+        $i18n{screenMagnifierZoomLabel}
+      </div>
       <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
           pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
           menu-options="[[screenMagnifierZoomOptions_]]"
@@ -94,7 +96,9 @@
         disabled="[[prefs.settings.a11y.screen_magnifier.value]]">
     </settings-toggle-button>
     <div class="settings-box continuation">
-      <div class="start sub-item">$i18n{dockedMagnifierZoomLabel}</div>
+      <div class="start sub-item settings-box-text">
+        $i18n{dockedMagnifierZoomLabel}
+      </div>
       <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
           pref="{{prefs.ash.docked_magnifier.scale}}"
           menu-options="[[screenMagnifierZoomOptions_]]"
@@ -153,7 +157,9 @@
     </settings-toggle-button>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-      <div class="start sub-item">$i18n{delayBeforeClickLabel}</div>
+      <div class="start sub-item settings-box-text">
+        $i18n{delayBeforeClickLabel}
+      </div>
       <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
           pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
           menu-options="[[autoClickDelayOptions_]]"
@@ -176,7 +182,8 @@
     </div>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-      <div class="start sub-item" id="autoclickMovementThresholdLabel">
+      <div class="start sub-item settings-box-text"
+          id="autoclickMovementThresholdLabel">
         $i18n{autoclickMovementThresholdLabel}
       </div>
       <settings-dropdown-menu
@@ -192,7 +199,9 @@
     </settings-toggle-button>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
-      <div class="start sub-item">$i18n{largeMouseCursorSizeLabel}</div>
+      <div class="start sub-item settings-box-text">
+        $i18n{largeMouseCursorSizeLabel}
+      </div>
       <settings-slider
           pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
           min="25" max="64"
@@ -220,10 +229,10 @@
     </settings-toggle-button>
 
     <template is="dom-if" if="[[!isGuest_]]">
-      <a class="settings-box two-line inherit-color no-outline" tabindex="-1"
+      <a class="settings-box inherit-color no-outline" tabindex="-1"
           target="_blank"
           href="https://chrome.google.com/webstore/category/collection/accessibility">
-        <div class="start">
+        <div class="start settings-box-text">
           $i18n{additionalFeaturesTitle}
           <div class="secondary" id="moreFeaturesSecondary">
             $i18n{a11yWebStore}

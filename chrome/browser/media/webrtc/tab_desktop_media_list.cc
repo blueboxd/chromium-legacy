@@ -61,8 +61,7 @@ const int kDefaultTabDesktopMediaListUpdatePeriod = 1000;
 
 TabDesktopMediaList::TabDesktopMediaList()
     : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
-          kDefaultTabDesktopMediaListUpdatePeriod)),
-      weak_factory_(this) {
+          kDefaultTabDesktopMediaListUpdatePeriod)) {
   type_ = DesktopMediaID::TYPE_WEB_CONTENTS;
   thumbnail_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});

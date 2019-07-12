@@ -60,8 +60,7 @@ PlatformVerificationImpl::PlatformVerificationImpl(
     content::RenderFrameHost* render_frame_host,
     media::mojom::PlatformVerificationRequest request)
     : FrameServiceBase(render_frame_host, std::move(request)),
-      render_frame_host_(render_frame_host),
-      weak_factory_(this) {}
+      render_frame_host_(render_frame_host) {}
 
 PlatformVerificationImpl::~PlatformVerificationImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

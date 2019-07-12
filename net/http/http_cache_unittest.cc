@@ -5826,7 +5826,8 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205) {
 // with cache split by top-frame origin.
 TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
   url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
   url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
 
@@ -9617,7 +9618,8 @@ TEST_F(HttpCacheTest, UpdatesRequestResponseTimeOn304) {
 
 TEST_F(HttpCacheTest, SplitCache) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
 
   base::HistogramTester histograms;
   MockHttpCache cache;
@@ -9704,7 +9706,7 @@ TEST_F(HttpCacheTest, SplitCache) {
 TEST_F(HttpCacheTest, NonSplitCache) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
-      net::features::kSplitCacheByTopFrameOrigin);
+      net::features::kSplitCacheByNetworkIsolationKey);
 
   base::HistogramTester histograms;
   MockHttpCache cache;
@@ -11133,7 +11135,8 @@ TEST_F(HttpCacheTest, CacheEntryStatusCantConditionalize) {
 
 TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromKey) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
   MockHttpCache cache;
   std::string urls[] = {"http://www.a.com/", "https://b.com/example.html",
                         "http://example.com/Some Path/Some Leaf?some query"};

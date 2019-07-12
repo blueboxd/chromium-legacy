@@ -69,14 +69,14 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
         LanguageSwitching.decideNewLanguage(node, language, probability);
     if (LanguageSwitching.didLanguageSwitch(newLanguage)) {
       LanguageSwitching.currentLanguage_ = newLanguage;
-      // TODO(akihiroota): Pass in human-readable language instead of language
-      // code if language switches.
-      // Prepend the language to outputString if language switched.
-      outputString = Msgs.getMsg(
-          'language_switch',
-          [LanguageSwitching.currentLanguage_, outputString]);
+      var displayLanguage =
+          chrome.accessibilityPrivate.getDisplayLanguage(newLanguage);
+      // Prepend the human-readable language to outputString if language
+      // switched.
+      outputString =
+          Msgs.getMsg('language_switch', [displayLanguage, outputString]);
     }
-    appendStringWithLanguage(outputString, newLanguage);
+    appendStringWithLanguage(newLanguage, outputString);
   }
 };
 

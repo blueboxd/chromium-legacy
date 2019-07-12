@@ -38,7 +38,7 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
   virtual std::string ReadMachineIdFile();
 
   // This should always be the last member of the class.
-  base::WeakPtrFactory<BrowserDMTokenStorageLinux> weak_factory_;
+  base::WeakPtrFactory<BrowserDMTokenStorageLinux> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken);

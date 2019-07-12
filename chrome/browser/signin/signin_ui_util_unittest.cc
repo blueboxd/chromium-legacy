@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/google/core/browser/google_url_tracker.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"

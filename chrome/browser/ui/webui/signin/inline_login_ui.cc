@@ -98,9 +98,7 @@ bool IsValidChromeSigninReason(const GURL& url) {
 
 }  // namespace
 
-InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
-    : WebDialogUI(web_ui),
-      weak_factory_(this) {
+InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   if (!IsValidChromeSigninReason(web_ui->GetWebContents()->GetVisibleURL()))
     return;
 

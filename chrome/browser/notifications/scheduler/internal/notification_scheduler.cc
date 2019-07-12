@@ -41,8 +41,7 @@ class InitHelper {
   InitHelper()
       : context_(nullptr),
         notification_manager_delegate_(nullptr),
-        impression_tracker_delegate_(nullptr),
-        weak_ptr_factory_(this) {}
+        impression_tracker_delegate_(nullptr) {}
 
   ~InitHelper() = default;
 
@@ -90,7 +89,7 @@ class InitHelper {
   ImpressionHistoryTracker::Delegate* impression_tracker_delegate_;
   InitCallback callback_;
 
-  base::WeakPtrFactory<InitHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<InitHelper> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InitHelper);
 };
 
@@ -102,8 +101,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
       : context_(std::move(context)),
-        task_start_time_(SchedulerTaskTime::kUnknown),
-        weak_ptr_factory_(this) {}
+        task_start_time_(SchedulerTaskTime::kUnknown) {}
 
   ~NotificationSchedulerImpl() override = default;
 
@@ -286,7 +284,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   // currently not running in a background task.
   SchedulerTaskTime task_start_time_;
 
-  base::WeakPtrFactory<NotificationSchedulerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<NotificationSchedulerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerImpl);
 };
 

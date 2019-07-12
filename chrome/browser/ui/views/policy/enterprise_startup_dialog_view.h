@@ -65,7 +65,7 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
   EnterpriseStartupDialog::DialogResultCallback callback_;
   bool can_show_browser_window_ = false;
 
-  base::WeakPtrFactory<EnterpriseStartupDialogView> weak_factory_;
+  base::WeakPtrFactory<EnterpriseStartupDialogView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseStartupDialogView);
 };

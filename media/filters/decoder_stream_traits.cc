@@ -35,6 +35,16 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::CreateEOSOutput() {
   return OutputType::CreateEOSBuffer();
 }
 
+void DecoderStreamTraits<DemuxerStream::AUDIO>::SetIsPlatformDecoder(
+    bool is_platform_decoder) {
+  stats_.audio_decoder_info.is_platform_decoder = is_platform_decoder;
+}
+
+void DecoderStreamTraits<DemuxerStream::AUDIO>::SetIsDecryptingDemuxerStream(
+    bool is_dds) {
+  stats_.audio_decoder_info.is_decrypting_demuxer_stream = is_dds;
+}
+
 DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderStreamTraits(
     MediaLog* media_log,
     ChannelLayout initial_hw_layout)
@@ -70,7 +80,7 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     OnConfigChanged(config);
   config_ = config;
 
-  stats_.audio_decoder_name = decoder->GetDisplayName();
+  stats_.audio_decoder_info.decoder_name = decoder->GetDisplayName();
   decoder->Initialize(config, cdm_context, std::move(init_cb), output_cb,
                       waiting_cb);
 }
@@ -121,6 +131,16 @@ DecoderStreamTraits<DemuxerStream::VIDEO>::CreateEOSOutput() {
   return OutputType::CreateEOSFrame();
 }
 
+void DecoderStreamTraits<DemuxerStream::VIDEO>::SetIsPlatformDecoder(
+    bool is_platform_decoder) {
+  stats_.video_decoder_info.is_platform_decoder = is_platform_decoder;
+}
+
+void DecoderStreamTraits<DemuxerStream::VIDEO>::SetIsDecryptingDemuxerStream(
+    bool is_dds) {
+  stats_.video_decoder_info.is_decrypting_demuxer_stream = is_dds;
+}
+
 DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderStreamTraits(
     MediaLog* media_log)
     // Randomly selected number of samples to keep.
@@ -158,8 +178,8 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
     const OutputCB& output_cb,
     const WaitingCB& waiting_cb) {
   DCHECK(config.IsValidConfig());
-  stats_.video_decoder_name = decoder->GetDisplayName();
-  DVLOG(2) << stats_.video_decoder_name;
+  stats_.video_decoder_info.decoder_name = decoder->GetDisplayName();
+  DVLOG(2) << stats_.video_decoder_info.decoder_name;
   decoder->Initialize(config, low_delay, cdm_context, std::move(init_cb),
                       output_cb, waiting_cb);
 }

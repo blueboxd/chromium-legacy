@@ -14,14 +14,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/optimization_guide/hint_cache.h"
+#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache.h"
-#include "components/previews/content/hint_cache_store.h"
-#include "components/previews/content/hint_update_data.h"
-#include "components/previews/content/proto_database_provider_test_base.h"
+#include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -71,7 +70,8 @@ class TestHostFilter : public previews::HostFilter {
   std::string single_host_match_;
 };
 
-class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
+class PreviewsHintsTest
+    : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsHintsTest() {}
 
@@ -79,9 +79,10 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
 
   void SetUp() override {
     ProtoDatabaseProviderTestBase::SetUp();
-    hint_cache_ = std::make_unique<HintCache>(std::make_unique<HintCacheStore>(
-        db_provider_, temp_dir_.GetPath(), nullptr /* pref_service */,
-        scoped_task_environment_.GetMainThreadTaskRunner()));
+    hint_cache_ = std::make_unique<optimization_guide::HintCache>(
+        std::make_unique<optimization_guide::HintCacheStore>(
+            db_provider_.get(), temp_dir_.GetPath(), nullptr /* pref_service */,
+            scoped_task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
     hint_cache_->Initialize(
@@ -167,7 +168,7 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
   bool are_previews_hints_initialized_;
   bool is_hint_loaded_;
 
-  std::unique_ptr<HintCache> hint_cache_;
+  std::unique_ptr<optimization_guide::HintCache> hint_cache_;
   std::unique_ptr<PreviewsHints> previews_hints_;
 };
 

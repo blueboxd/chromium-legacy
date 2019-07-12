@@ -157,12 +157,6 @@
   _latestErrorAlertMessage = [message copy];
 }
 
-- (void)showActivityServiceContextMenu:(NSString*)title
-                                 items:(NSArray<ContextMenuItem*>*)items {
-  _latestContextMenuTitle = [title copy];
-  EXPECT_GE([items count], 1U);
-}
-
 #pragma mark - ActivityServicePositioner
 
 - (UIView*)shareButtonView {

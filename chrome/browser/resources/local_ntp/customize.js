@@ -91,7 +91,7 @@ customize.IDS = {
   BACKGROUNDS_UPLOAD_WRAPPER: 'backgrounds-upload-wrapper',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
-  COLORS_DEFAULT: 'colors-default',
+  COLORS_DEFAULT_ICON: 'colors-default-icon',
   COLORS_THEME: 'colors-theme',
   COLORS_THEME_NAME: 'colors-theme-name',
   COLORS_THEME_UNINSTALL: 'colors-theme-uninstall',
@@ -413,6 +413,7 @@ customize.richerPicker_showSubmenu = function(menuButton, menu, title = '') {
   menuButton.classList.toggle(customize.CLASSES.SELECTED, true);
   menu.classList.toggle(customize.CLASSES.MENU_SHOWN, true);
   $(customize.IDS.MENU_TITLE).textContent = title;
+  menuButton.setAttribute('aria-selected', true);
 
   // Indicate if this is a Background collection's image menu, which will enable
   // the back button.
@@ -435,6 +436,8 @@ customize.richerPicker_hideOpenSubmenu = function() {
   customize.richerPicker_selectedSubmenu.menu.classList.toggle(
       customize.CLASSES.MENU_SHOWN, false);
   $(customize.IDS.MENU_TITLE).textContent = customize.richerPicker_defaultTitle;
+  customize.richerPicker_selectedSubmenu.menuButton.setAttribute(
+      'aria-selected', false);
 
   customize.richerPicker_selectedSubmenu.menuButton = null;
   customize.richerPicker_selectedSubmenu.menu = null;
@@ -518,7 +521,7 @@ customize.richerPicker_setShortcutOptions = function() {
  */
 customize.createTileWithTitle = function(
     id, imageUrl, name, dataset, onClickInteraction, onKeyInteraction) {
-  const tile = customize.createTile(
+  const tile = customize.createTileThumbnail(
       id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
   customize.fadeInImageTile(tile, imageUrl, null);
 
@@ -534,14 +537,34 @@ customize.createTileWithTitle = function(
 };
 
 /**
- * Create a tile for customization menu.
+ * Creates a tile for the customization menu without a title.
  * @param {string} id The id for the new element.
  * @param {string} imageUrl The background image url for the new element.
  * @param {Object} dataset The dataset for the new element.
  * @param {?Function} onClickInteraction Function for onclick interaction.
  * @param {?Function} onKeyInteraction Function for onkeydown interaction.
  */
-customize.createTile = function(
+customize.createTileWithoutTitle = function(
+    id, imageUrl, dataset, onClickInteraction, onKeyInteraction) {
+  const tile = customize.createTileThumbnail(
+      id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  customize.fadeInImageTile(tile, imageUrl, null);
+
+  const tileBackground = document.createElement('div');
+  tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
+  tileBackground.appendChild(tile);
+  return tileBackground;
+};
+
+/**
+ * Create a tile thumbnail with image for customization menu.
+ * @param {string} id The id for the new element.
+ * @param {string} imageUrl The background image url for the new element.
+ * @param {Object} dataset The dataset for the new element.
+ * @param {?Function} onClickInteraction Function for onclick interaction.
+ * @param {?Function} onKeyInteraction Function for onkeydown interaction.
+ */
+customize.createTileThumbnail = function(
     id, imageUrl, dataset, onClickInteraction, onKeyInteraction) {
   const tile = document.createElement('div');
   tile.id = id;
@@ -834,6 +857,7 @@ customize.richerPicker_applySelectedState = function(option) {
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
   option.appendChild(selectedCircle);
   option.appendChild(selectedCheck);
+  option.setAttribute('aria-pressed', true);
 };
 
 /**
@@ -855,6 +879,7 @@ customize.richerPicker_removeSelectedState = function(option) {
   select.forEach((element) => {
     element.remove();
   });
+  option.setAttribute('aria-pressed', false);
 };
 
 /**
@@ -1115,7 +1140,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     if (configData.richerPicker) {
       tileId = 'coll_' + collIndex + '_' + tileId;
     }
-    const tile = customize.createTile(
+    const tile = customize.createTileThumbnail(
         tileId, collImg[i].imageUrl, dataset, tileOnClickInteraction,
         tileOnKeyDownInteraction);
 
@@ -1975,18 +2000,16 @@ customize.loadColorsMenu = function() {
   for (let i = 0; i < colorsColl.length; ++i) {
     const id = 'color_' + i;
     const imageUrl = colorsColl[i].icon;
-    const name = colorsColl[i].label;
     const dataset = {'color': colorsColl[i].color};
 
-    const tile = customize.createTileWithTitle(
-        id, imageUrl, name, dataset, customize.colorTileInteraction,
+    const tile = customize.createTileWithoutTitle(
+        id, imageUrl, dataset, customize.colorTileInteraction,
         customize.colorTileInteraction);
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
 
   // Configure the default tile.
-  $(customize.IDS.COLORS_DEFAULT).dataset.color = null;
-  $(customize.IDS.COLORS_DEFAULT).onclick =
+  $(customize.IDS.COLORS_DEFAULT_ICON).onclick =
       customize.defaultThemeTileInteraction;
 
   customize.colorsMenuLoaded = true;

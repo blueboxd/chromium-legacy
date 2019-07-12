@@ -337,12 +337,13 @@ class IncidentReportingService : public content::NotificationObserver {
   std::unique_ptr<LastDownloadFinder> last_download_finder_;
 
   // A factory for handing out weak pointers for IncidentReceiver objects.
-  base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_;
+  base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_{
+      this};
 
   // A factory for handing out weak pointers for internal asynchronous tasks
   // that are posted during normal processing (e.g., environment collection,
   // and report uploads).
-  base::WeakPtrFactory<IncidentReportingService> weak_ptr_factory_;
+  base::WeakPtrFactory<IncidentReportingService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IncidentReportingService);
 };

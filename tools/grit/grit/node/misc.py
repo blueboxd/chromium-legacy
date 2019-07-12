@@ -49,7 +49,7 @@ def _ReadFirstIdsFromFile(filename, defines):
                                               first_ids_dict['SRCDIR']))
 
   def ReplaceVariable(matchobj):
-    for key, value in defines.iteritems():
+    for key, value in defines.items():
       if matchobj.group(1) == key:
         return value
     return ''
@@ -95,7 +95,7 @@ def _ComputeIds(root, predetermined_tids):
   group = None
   last_id = None
   predetermined_ids = {value: key
-                       for key, value in predetermined_tids.iteritems()}
+                       for key, value in predetermined_tids.items()}
 
   for item in root:
     if isinstance(item, empty.GroupingNode):

@@ -85,7 +85,7 @@ class IconProtoDbStore : public IconStore {
   // The proto database instance that persists data.
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db_;
 
-  base::WeakPtrFactory<IconProtoDbStore> weak_ptr_factory_;
+  base::WeakPtrFactory<IconProtoDbStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IconProtoDbStore);
 };

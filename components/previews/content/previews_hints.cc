@@ -12,10 +12,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
-#include "components/previews/content/hint_update_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
@@ -176,7 +176,7 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
 
 PreviewsProcessHintsResult ProcessConfigurationHints(
     optimization_guide::proto::Configuration* config,
-    HintUpdateData* component_update_data) {
+    optimization_guide::HintUpdateData* component_update_data) {
   DCHECK(config);
   // If there's no component update data, then there's nothing to do. This
   // component is not newer than the one contained within the hint cache.
@@ -246,7 +246,7 @@ void RecordOptimizationFilterStatus(PreviewsType previews_type,
 }  // namespace
 
 PreviewsHints::PreviewsHints(
-    std::unique_ptr<HintUpdateData> component_update_data)
+    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data)
     : hint_cache_(nullptr),
       component_update_data_(std::move(component_update_data)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -259,7 +259,7 @@ PreviewsHints::~PreviewsHints() {
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
-    std::unique_ptr<HintUpdateData> component_update_data) {
+    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
   std::unique_ptr<optimization_guide::proto::Configuration> config =
       ProcessHintsComponent(info);
   if (!config) {
@@ -284,7 +284,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     std::unique_ptr<optimization_guide::proto::Configuration> config,
-    std::unique_ptr<HintUpdateData> component_update_data) {
+    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
   // Process the hints within the configuration. This will move the hints from
   // |config| into |component_update_data|.
   PreviewsProcessHintsResult process_hints_result =
@@ -305,7 +305,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
   return hints;
 }
 
-void PreviewsHints::Initialize(HintCache* hint_cache,
+void PreviewsHints::Initialize(optimization_guide::HintCache* hint_cache,
                                base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!hint_cache_);
@@ -473,7 +473,7 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
 
 bool PreviewsHints::MaybeLoadOptimizationHints(
     const GURL& url,
-    HintLoadedCallback callback) const {
+    optimization_guide::HintLoadedCallback callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(hint_cache_);
 

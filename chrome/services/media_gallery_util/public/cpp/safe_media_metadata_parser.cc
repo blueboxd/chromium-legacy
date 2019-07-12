@@ -19,8 +19,7 @@ SafeMediaMetadataParser::SafeMediaMetadataParser(
     : size_(size),
       mime_type_(mime_type),
       get_attached_images_(get_attached_images),
-      media_source_factory_(std::move(media_source_factory)),
-      weak_factory_(this) {}
+      media_source_factory_(std::move(media_source_factory)) {}
 
 SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
 

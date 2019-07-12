@@ -105,7 +105,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   bool interstitials_enabled_;
 
   Profile* profile_;
-  base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_;
+  base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_{this};
 };
 
 }  // namespace lookalikes

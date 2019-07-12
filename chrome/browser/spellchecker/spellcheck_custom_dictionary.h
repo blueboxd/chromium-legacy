@@ -226,7 +226,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   base::CancelableOnceClosure fix_invalid_file_;
 
   // Used to create weak pointers for an instance of this class.
-  base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
+  base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckCustomDictionary);
 };

@@ -5,13 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
 
-#include <unordered_map>
-
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 class FrameScheduler;
@@ -137,7 +136,7 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   void RemoveLifecycleObserver(Observer* observer);
 
   // Observers are not owned by the scheduler.
-  std::unordered_map<Observer*, ObserverType> lifecycle_observers_;
+  HashMap<Observer*, ObserverType> lifecycle_observers_;
   base::WeakPtrFactory<FrameOrWorkerScheduler> weak_factory_{this};
 };
 

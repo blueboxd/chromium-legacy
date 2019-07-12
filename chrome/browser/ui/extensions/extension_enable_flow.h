@@ -114,7 +114,7 @@ class ExtensionEnableFlow : public content::NotificationObserver,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<ExtensionEnableFlow> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionEnableFlow> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEnableFlow);
 };

@@ -110,7 +110,7 @@ class PushMessagingNotificationManager {
       nullptr;
 #endif
 
-  base::WeakPtrFactory<PushMessagingNotificationManager> weak_factory_;
+  base::WeakPtrFactory<PushMessagingNotificationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingNotificationManager);
 };

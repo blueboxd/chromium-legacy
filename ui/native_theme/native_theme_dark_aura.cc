@@ -22,6 +22,11 @@ bool NativeThemeDarkAura::SystemDarkModeEnabled() const {
   return true;
 }
 
+NativeTheme::PreferredColorScheme NativeThemeDarkAura::GetPreferredColorScheme()
+    const {
+  return NativeTheme::PreferredColorScheme::kDark;
+}
+
 NativeThemeDarkAura::NativeThemeDarkAura() : NativeThemeAura(false) {}
 
 NativeThemeDarkAura::~NativeThemeDarkAura() {}

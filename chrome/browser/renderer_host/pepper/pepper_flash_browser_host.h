@@ -67,7 +67,7 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
 
   // For fetching the Flash LSO settings.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-  base::WeakPtrFactory<PepperFlashBrowserHost> weak_factory_;
+  base::WeakPtrFactory<PepperFlashBrowserHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHost);
 };

@@ -54,13 +54,12 @@ IceConnectionToClient::IceConnectionToClient(
     std::unique_ptr<protocol::Session> session,
     scoped_refptr<TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    bool use_turn_api)
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner)
     : event_handler_(nullptr),
       session_(std::move(session)),
       video_encode_task_runner_(std::move(video_encode_task_runner)),
       audio_task_runner_(std::move(audio_task_runner)),
-      transport_(transport_context, this, use_turn_api),
+      transport_(transport_context, this),
       control_dispatcher_(new HostControlDispatcher()),
       event_dispatcher_(new HostEventDispatcher()),
       video_dispatcher_(new HostVideoDispatcher()) {

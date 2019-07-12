@@ -132,7 +132,7 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
 
   NativeExtensionBindingsSystem* bindings_system_;
 
-  base::WeakPtrFactory<CastStreamingNativeHandler> weak_factory_;
+  base::WeakPtrFactory<CastStreamingNativeHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastStreamingNativeHandler);
 };

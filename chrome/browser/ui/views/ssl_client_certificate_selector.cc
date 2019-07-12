@@ -88,8 +88,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       auth_observer_impl_(
           std::make_unique<SSLClientAuthObserverImpl>(web_contents,
                                                       cert_request_info,
-                                                      std::move(delegate))),
-      weak_factory_(this) {
+                                                      std::move(delegate))) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SSL_CLIENT_CERTIFICATE_SELECTOR);
 }

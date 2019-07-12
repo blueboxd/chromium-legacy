@@ -51,7 +51,7 @@ constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
 class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
  public:
   explicit WindowAdoptionAgent(aura::Window* content_window)
-      : content_window_(content_window), weak_ptr_factory_(this) {
+      : content_window_(content_window) {
     if (content_window_) {
       content_window->AddObserver(this);
       ScheduleFindNewParentIfDetached(content_window_->GetRootWindow());
@@ -115,7 +115,7 @@ class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
   }
 
   aura::Window* content_window_;
-  base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_;
+  base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowAdoptionAgent);
 };

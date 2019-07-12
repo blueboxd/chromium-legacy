@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -94,6 +95,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
+  IOSTaskTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {
     CaptivePortalMetricsTabHelper::CreateForWebState(web_state);

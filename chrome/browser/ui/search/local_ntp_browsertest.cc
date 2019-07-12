@@ -905,7 +905,8 @@ class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
   }
 };
 
@@ -973,7 +974,8 @@ class LocalNTPDarkModeStartupTest : public LocalNTPDarkModeTest,
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
 
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
@@ -1035,7 +1037,7 @@ class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
 class TestNavigationThrottle : public content::NavigationThrottle {
  public:
   explicit TestNavigationThrottle(content::NavigationHandle* handle)
-      : content::NavigationThrottle(handle), weak_ptr_factory_(this) {}
+      : content::NavigationThrottle(handle) {}
 
   static std::unique_ptr<NavigationThrottle> Create(
       content::NavigationHandle* handle) {
@@ -1063,7 +1065,7 @@ class TestNavigationThrottle : public content::NavigationThrottle {
                                        navigation_handle()->GetURL());
   }
 
-  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationThrottle);
 };

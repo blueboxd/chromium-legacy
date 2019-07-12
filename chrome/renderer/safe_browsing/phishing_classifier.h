@@ -145,7 +145,7 @@ class PhishingClassifier {
 
   // Used in scheduling BeginFeatureExtraction tasks.
   // These pointers are invalidated if classification is cancelled.
-  base::WeakPtrFactory<PhishingClassifier> weak_factory_;
+  base::WeakPtrFactory<PhishingClassifier> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifier);
 };

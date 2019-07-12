@@ -26,7 +26,7 @@ class BluetoothInternalsHandler : public mojom::BluetoothInternalsHandler {
                     scoped_refptr<device::BluetoothAdapter> adapter);
 
   mojo::Binding<mojom::BluetoothInternalsHandler> binding_;
-  base::WeakPtrFactory<BluetoothInternalsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothInternalsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothInternalsHandler);
 };

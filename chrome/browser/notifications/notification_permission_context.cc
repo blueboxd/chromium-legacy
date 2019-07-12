@@ -198,8 +198,7 @@ void NotificationPermissionContext::UpdatePermission(Profile* profile,
 NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                            blink::mojom::FeaturePolicyFeature::kNotFound),
-      weak_factory_ui_thread_(this) {}
+                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
 

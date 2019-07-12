@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
@@ -552,6 +553,70 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
   ASSERT_TRUE(logged_error);
   EXPECT_THAT(*logged_error,
               testing::StartsWith("Error handling response: Error: hello"));
+}
+
+// Tests promise-based requests with the promise being fulfilled.
+TEST_F(APIRequestHandlerTest, PromiseBasedRequests_Fulfilled) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  std::unique_ptr<APIRequestHandler> request_handler = CreateRequestHandler();
+  EXPECT_TRUE(request_handler->GetPendingRequestIdsForTesting().empty());
+
+  v8::Local<v8::Promise> promise;
+  int request_id = -1;
+  std::tie(request_id, promise) = request_handler->StartPromiseBasedRequest(
+      context, kMethod, std::make_unique<base::ListValue>(),
+      binding::RequestThread::UI);
+
+  EXPECT_NE(-1, request_id);
+  ASSERT_FALSE(promise.IsEmpty());
+  EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
+              testing::UnorderedElementsAre(request_id));
+
+  EXPECT_EQ(v8::Promise::kPending, promise->State());
+
+  request_handler->CompleteRequest(request_id, *ListValueFromString("['foo']"),
+                                   std::string());
+
+  ASSERT_EQ(v8::Promise::kFulfilled, promise->State());
+  EXPECT_EQ(R"("foo")", V8ToString(promise->Result(), context));
+
+  EXPECT_TRUE(request_handler->GetPendingRequestIdsForTesting().empty());
+}
+
+// Tests promise-based requests with the promise being rejected.
+TEST_F(APIRequestHandlerTest, PromiseBasedRequests_Rejected) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  std::unique_ptr<APIRequestHandler> request_handler = CreateRequestHandler();
+  EXPECT_TRUE(request_handler->GetPendingRequestIdsForTesting().empty());
+
+  v8::Local<v8::Promise> promise;
+  int request_id = -1;
+  std::tie(request_id, promise) = request_handler->StartPromiseBasedRequest(
+      context, kMethod, std::make_unique<base::ListValue>(),
+      binding::RequestThread::UI);
+
+  EXPECT_NE(-1, request_id);
+  ASSERT_FALSE(promise.IsEmpty());
+  EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
+              testing::UnorderedElementsAre(request_id));
+
+  EXPECT_EQ(v8::Promise::kPending, promise->State());
+
+  constexpr char kError[] = "Something went wrong!";
+  request_handler->CompleteRequest(request_id, base::ListValue(), kError);
+
+  ASSERT_EQ(v8::Promise::kRejected, promise->State());
+  v8::Local<v8::Value> result = promise->Result();
+  ASSERT_FALSE(result.IsEmpty());
+  EXPECT_EQ(
+      base::StrCat({"Error: ", kError}),
+      gin::V8ToString(isolate(), result->ToString(context).ToLocalChecked()));
+
+  EXPECT_TRUE(request_handler->GetPendingRequestIdsForTesting().empty());
 }
 
 }  // namespace extensions

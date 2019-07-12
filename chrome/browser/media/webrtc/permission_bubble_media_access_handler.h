@@ -61,7 +61,7 @@ class PermissionBubbleMediaAccessHandler
   RequestsMaps pending_requests_;
   content::NotificationRegistrar notifications_registrar_;
 
-  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_;
+  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_

@@ -187,7 +187,7 @@ class ExtensionActionViewController
   ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
       popup_host_observer_;
 
-  base::WeakPtrFactory<ExtensionActionViewController> weak_factory_;
+  base::WeakPtrFactory<ExtensionActionViewController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewController);
 };

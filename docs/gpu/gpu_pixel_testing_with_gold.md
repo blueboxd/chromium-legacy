@@ -156,7 +156,7 @@ into
 
 It's possible, particularly if a test is regularly producing multiple images,
 for an image to be untriaged but not show up on the front page of the Gold
-instance (for details, see [this crbug comment][non tot untriaged comment]). To
+instance (for details, see [this crbug comment][untriaged non tot comment]). To
 see all such images, visit [this link][untriaged non tot].
 
 [untriaged non tot comment]: https://bugs.chromium.org/p/skia/issues/detail?id=9189#c4

@@ -333,7 +333,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                  extensions::LoadErrorReporter::Observer>
       load_error_reporter_observer_;
 
-  base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_;
+  base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsModel);
 };

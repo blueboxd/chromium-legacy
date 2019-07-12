@@ -159,57 +159,6 @@ void MediaRouteController::RemoveObserver(Observer* observer) {
 }
 
 // static
-HangoutsMediaRouteController* HangoutsMediaRouteController::From(
-    MediaRouteController* controller) {
-  if (!controller || controller->GetType() != RouteControllerType::kHangouts)
-    return nullptr;
-
-  return static_cast<HangoutsMediaRouteController*>(controller);
-}
-
-HangoutsMediaRouteController::HangoutsMediaRouteController(
-    const MediaRoute::Id& route_id,
-    content::BrowserContext* context,
-    MediaRouter* router)
-    : MediaRouteController(route_id, context, router) {}
-
-HangoutsMediaRouteController::~HangoutsMediaRouteController() {}
-
-RouteControllerType HangoutsMediaRouteController::GetType() const {
-  return RouteControllerType::kHangouts;
-}
-
-void HangoutsMediaRouteController::SetLocalPresent(bool local_present) {
-  if (request_manager()->mojo_connections_ready()) {
-    DCHECK(mojo_hangouts_controller_);
-    mojo_hangouts_controller_->SetLocalPresent(local_present);
-    return;
-  }
-  request_manager()->RunOrDefer(
-      base::BindOnce(&HangoutsMediaRouteController::SetLocalPresent,
-                     base::AsWeakPtr(this), local_present),
-      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
-}
-
-void HangoutsMediaRouteController::InitAdditionalMojoConnections() {
-  auto request = mojo::MakeRequest(&mojo_hangouts_controller_);
-  mojo_hangouts_controller_.set_connection_error_handler(
-      base::BindOnce(&HangoutsMediaRouteController::OnMojoConnectionError,
-                     base::Unretained(this)));
-  mojo_media_controller()->ConnectHangoutsMediaRouteController(
-      std::move(request));
-}
-
-void HangoutsMediaRouteController::OnMojoConnectionError() {
-  mojo_hangouts_controller_.reset();
-  MediaRouteController::OnMojoConnectionError();
-}
-
-void HangoutsMediaRouteController::InvalidateInternal() {
-  mojo_hangouts_controller_.reset();
-}
-
-// static
 MirroringMediaRouteController* MirroringMediaRouteController::From(
     MediaRouteController* controller) {
   if (!controller || controller->GetType() != RouteControllerType::kMirroring)

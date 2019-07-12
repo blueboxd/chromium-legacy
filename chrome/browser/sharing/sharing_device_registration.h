@@ -91,7 +91,7 @@ class SharingDeviceRegistration {
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   std::string registered_public_key_;
 
-  base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_;
+  base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharingDeviceRegistration);
 };

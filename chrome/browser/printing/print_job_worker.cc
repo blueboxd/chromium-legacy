@@ -128,8 +128,7 @@ PrintJobWorker::PrintJobWorker(int render_process_id, int render_frame_id)
                                                     render_frame_id)),
       printing_context_(
           PrintingContext::Create(printing_context_delegate_.get())),
-      thread_("Printing_Worker"),
-      weak_factory_(this) {
+      thread_("Printing_Worker") {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 

@@ -192,24 +192,20 @@ const AcceleratorData kAcceleratorData[] = {
     // Desk creation and removal:
     // Due to https://crbug.com/976487, Search + "=" is always automatically
     // rewritten to F12, and so is Search + "-" to F11. So we had to implement
-    // the following two shortcuts as Ctrl + F11/F12 until we resolve the above
+    // the following two shortcuts as Shift + F11/F12 until we resolve the above
     // issue, accepting the fact that these two shortcuts might sometimes be
     // consumed by apps and pages (since they're not search-based).
-    // TODO(afakhry): Change the following to Ctrl+Search+"+"/"-" once
+    // TODO(afakhry): Change the following to Search+Shift+"+"/"-" once
     // https://crbug.com/976487 is fixed.
-    {true, ui::VKEY_F12, ui::EF_CONTROL_DOWN, DESKS_NEW_DESK},
-    {true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, DESKS_REMOVE_CURRENT_DESK},
+    {true, ui::VKEY_F12, ui::EF_SHIFT_DOWN, DESKS_NEW_DESK},
+    {true, ui::VKEY_F11, ui::EF_SHIFT_DOWN, DESKS_REMOVE_CURRENT_DESK},
     // Desk activation:
-    {true, ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
-     DESKS_ACTIVATE_DESK},
-    {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
-     DESKS_ACTIVATE_DESK},
+    {true, ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN, DESKS_ACTIVATE_DESK},
+    {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN, DESKS_ACTIVATE_DESK},
     // Moving windows to desks:
-    {true, ui::VKEY_OEM_4,
-     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+    {true, ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DESKS_MOVE_ACTIVE_ITEM},
-    {true, ui::VKEY_OEM_6,
-     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+    {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DESKS_MOVE_ACTIVE_ITEM},
     // TODO(afakhry): Implement activating and moving windows to a desk by
     // its index directly.

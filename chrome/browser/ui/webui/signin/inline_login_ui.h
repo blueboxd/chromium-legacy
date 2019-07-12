@@ -18,7 +18,7 @@ class InlineLoginUI : public ui::WebDialogUI {
   ~InlineLoginUI() override;
 
  private:
-  base::WeakPtrFactory<InlineLoginUI> weak_factory_;
+  base::WeakPtrFactory<InlineLoginUI> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InlineLoginUI);
 };
 

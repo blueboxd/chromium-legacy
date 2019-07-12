@@ -71,12 +71,12 @@ class ResourceContextData : public base::SupportsUserData::Data {
   }
 
  private:
-  ResourceContextData() : weak_factory_(this) {}
+  ResourceContextData() {}
 
   std::set<std::unique_ptr<ProxyingURLLoaderFactory>, base::UniquePtrComparator>
       proxies_;
 
-  base::WeakPtrFactory<ResourceContextData> weak_factory_;
+  base::WeakPtrFactory<ResourceContextData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContextData);
 };

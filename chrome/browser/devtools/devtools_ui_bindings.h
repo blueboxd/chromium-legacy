@@ -254,7 +254,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   using ExtensionsAPIs = std::map<std::string, std::string>;
   ExtensionsAPIs extensions_api_;
 
-  base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
+  base::WeakPtrFactory<DevToolsUIBindings> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);
 };

@@ -368,7 +368,7 @@ class MediaGalleriesPreferences
   base::ObserverList<GalleryChangeObserver>::Unchecked
       gallery_change_observers_;
 
-  base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
+  base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferences);
 };

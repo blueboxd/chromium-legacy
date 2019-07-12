@@ -280,6 +280,10 @@ const base::Feature kBlockingFocusWithoutUserActivation{
 const base::Feature kAudioWorkletRealtimeThread{
     "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A feature to reduce the set of resources fetched by No-State Prefetch.
+const base::Feature kLightweightNoStatePrefetch{
+    "kLightweightNoStatePrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
 const base::Feature kScrollbarInjectScrollGestures{
     "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};

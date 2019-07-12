@@ -170,8 +170,7 @@ class MediaRouterUIBase::WebContentsFullscreenOnLoadedObserver final
   }
 };
 
-MediaRouterUIBase::MediaRouterUIBase()
-    : initiator_(nullptr), weak_factory_(this) {}
+MediaRouterUIBase::MediaRouterUIBase() : initiator_(nullptr) {}
 
 MediaRouterUIBase::~MediaRouterUIBase() {
   if (query_result_manager_.get())

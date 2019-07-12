@@ -154,10 +154,7 @@ const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
 
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
-      weak_controller_delegate_factory_(this),
-      weak_security_interstitial_controller_delegate_factory_(this),
-      weak_supervised_user_error_controller_delegate_factory_(this) {
+      content::RenderFrameObserverTracker<NetErrorHelper>(render_frame) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =

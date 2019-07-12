@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.util.Pair;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -265,19 +264,18 @@ public class TestOfflinePageService {
         synchronized (mIncompleteOperations) {
             operationName = mIncompleteOperations.remove(0);
         }
+        final String prefetchSubtype = "com.google.chrome.OfflinePagePrefetch";
         // We have to wait until Chrome gets the GCM token.
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
+                FakeInstanceIDWithSubtype.getAuthorizedEntityForSubtype(prefetchSubtype);
                 return true;
             } catch (IllegalStateException e) {
                 return false;
             }
         }, "GetGCMToken not complete", 15000, 500);
-        final Pair<String, String> appIdAndSenderId =
-                FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
-        final String appId = appIdAndSenderId.first;
-        final String senderId = appIdAndSenderId.second;
+        final String senderId =
+                FakeInstanceIDWithSubtype.getAuthorizedEntityForSubtype(prefetchSubtype);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Context context = InstrumentationRegistry.getInstrumentation()
                                       .getTargetContext()
@@ -285,7 +283,7 @@ public class TestOfflinePageService {
 
             Bundle extras = new Bundle();
             extras.putString("pageBundle", operationName);
-            extras.putString("subtype", appId); // is this necessary?
+            extras.putString("subtype", prefetchSubtype); // is this necessary?
 
             GCMMessage message = new GCMMessage(senderId, extras);
             try {

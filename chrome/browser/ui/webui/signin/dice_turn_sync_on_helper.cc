@@ -152,8 +152,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
               ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                     base::Unretained(this)))),
-      weak_pointer_factory_(this) {
+                                     base::Unretained(this)))) {
   DCHECK(delegate_);
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated

@@ -17,9 +17,7 @@ const int kAckTimeToLiveMinutes = 30;
 
 SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
                                      SharingFCMSender* sharing_fcm_sender)
-    : gcm_driver_(gcm_driver),
-      sharing_fcm_sender_(sharing_fcm_sender),
-      weak_ptr_factory_(this) {}
+    : gcm_driver_(gcm_driver), sharing_fcm_sender_(sharing_fcm_sender) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
   StopListening();

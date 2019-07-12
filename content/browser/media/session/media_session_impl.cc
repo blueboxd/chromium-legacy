@@ -95,6 +95,10 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::SkipAd;
     case media_session::mojom::MediaSessionAction::kStop:
       return MediaSessionUserAction::Stop;
+    case media_session::mojom::MediaSessionAction::kSeekTo:
+      return MediaSessionUserAction::SeekTo;
+    case media_session::mojom::MediaSessionAction::kScrubTo:
+      return MediaSessionUserAction::ScrubTo;
   }
   NOTREACHED();
   return MediaSessionUserAction::Play;

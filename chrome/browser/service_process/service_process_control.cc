@@ -82,7 +82,7 @@ void ConnectAsyncWithBackoff(
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl()
-    : apply_changes_from_upgrade_observer_(false), weak_factory_(this) {
+    : apply_changes_from_upgrade_observer_(false) {
   UpgradeDetector::GetInstance()->AddObserver(this);
 }
 

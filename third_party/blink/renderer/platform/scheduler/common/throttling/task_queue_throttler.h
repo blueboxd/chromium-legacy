@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
 
-#include <unordered_map>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +18,8 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
 namespace trace_event {
@@ -174,20 +174,19 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
 
     size_t throttling_ref_count() const { return throttling_ref_count_; }
 
-    const std::unordered_set<BudgetPool*>& budget_pools() const {
-      return budget_pools_;
-    }
+    const HashSet<BudgetPool*>& budget_pools() const { return budget_pools_; }
 
-    std::unordered_set<BudgetPool*>& budget_pools() { return budget_pools_; }
+    HashSet<BudgetPool*>& budget_pools() { return budget_pools_; }
 
    private:
     base::sequence_manager::TaskQueue* const queue_;
     TaskQueueThrottler* const throttler_;
     size_t throttling_ref_count_ = 0;
-    std::unordered_set<BudgetPool*> budget_pools_;
+    HashSet<BudgetPool*> budget_pools_;
   };
+
   using TaskQueueMap =
-      std::unordered_map<base::sequence_manager::TaskQueue*, Metadata>;
+      HashMap<base::sequence_manager::TaskQueue*, std::unique_ptr<Metadata>>;
 
   void PumpThrottledTasks();
 
@@ -238,7 +237,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;
   bool allow_throttling_;
 
-  std::unordered_map<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
+  HashMap<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
 
   base::WeakPtrFactory<TaskQueueThrottler> weak_factory_{this};
 

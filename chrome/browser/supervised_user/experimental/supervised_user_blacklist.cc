@@ -55,7 +55,7 @@ bool SupervisedUserBlacklist::Hash::operator<(const Hash& rhs) const {
   return memcmp(data, rhs.data, base::kSHA1Length) < 0;
 }
 
-SupervisedUserBlacklist::SupervisedUserBlacklist() : weak_ptr_factory_(this) {}
+SupervisedUserBlacklist::SupervisedUserBlacklist() {}
 
 SupervisedUserBlacklist::~SupervisedUserBlacklist() {}
 

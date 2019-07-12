@@ -2627,12 +2627,6 @@
             ],
             "experiments": [
                 {
-                    "name": "Control",
-                    "disable_features": [
-                        "InterestFeedContentSuggestions"
-                    ]
-                },
-                {
                     "name": "Enabled",
                     "enable_features": [
                         "InterestFeedContentSuggestions"
@@ -2740,26 +2734,6 @@
                         "IPH_KeyboardAccessoryPaymentFilling"
                     ],
                     "disable_features": []
-                }
-            ]
-        }
-    ],
-    "LayoutInstabilityMoveDistance": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LayoutInstabilityMoveDistance"
-                    ]
                 }
             ]
         }

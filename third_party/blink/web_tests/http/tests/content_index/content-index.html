@@ -33,11 +33,21 @@ contentIndexTest(async (t, index) => {
       index.add(createDescription({category: 'fake-category'})));
 
   await expectTypeErrorWithMessage(
+      index.add(createDescription({iconUrl: 'file://some-local-file.png'})),
+      'Invalid icon URL protocol');
+  await expectTypeErrorWithMessage(
       index.add(createDescription({iconUrl: '/non-existent-icon.png'})),
       'Icon could not be loaded');
   await expectTypeErrorWithMessage(
       index.add(createDescription({iconUrl: '/resources/dummy.txt'})),
       'Icon could not be loaded');
+
+  await expectTypeErrorWithMessage(
+      index.add(createDescription({launchUrl: 'https://other-domain.com/'})),
+      'Service Worker cannot request provided launch URL');
+  await expectTypeErrorWithMessage(
+      index.add(createDescription({launchUrl: '/different-scope'})),
+      `Launch URL must belong to the Service Worker's scope`);
 
   await index.add(createDescription({}));
 

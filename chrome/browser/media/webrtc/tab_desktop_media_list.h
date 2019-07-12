@@ -23,7 +23,7 @@ class TabDesktopMediaList : public DesktopMediaListBase {
   // Task runner used for the |worker_|.
   scoped_refptr<base::SequencedTaskRunner> thumbnail_task_runner_;
 
-  base::WeakPtrFactory<TabDesktopMediaList> weak_factory_;
+  base::WeakPtrFactory<TabDesktopMediaList> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabDesktopMediaList);
 };

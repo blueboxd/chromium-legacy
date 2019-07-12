@@ -75,8 +75,7 @@ FileAnalyzer::Results::Results(const FileAnalyzer::Results& other) = default;
 
 FileAnalyzer::FileAnalyzer(
     scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor)
-    : binary_feature_extractor_(binary_feature_extractor),
-      weakptr_factory_(this) {
+    : binary_feature_extractor_(binary_feature_extractor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

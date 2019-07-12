@@ -54,7 +54,7 @@ Polymer({
      * CertificateManagementAllowed.
      * Value exists only for Chrome OS.
      */
-    clientImportAllowed: {
+    importAllowed: {
       type: Boolean,
       value: true,
     },
@@ -127,14 +127,14 @@ Polymer({
   attached: function() {
     this.addWebUIListener('certificates-changed', this.set.bind(this));
     this.addWebUIListener(
-        'certificates-model-ready', this.setClientImportAllowed.bind(this));
+        'certificates-model-ready', this.setImportAllowed.bind(this));
     certificate_manager.CertificatesBrowserProxyImpl.getInstance()
         .refreshCertificates();
   },
 
   /** @private */
-  setClientImportAllowed: function(allowed) {
-    this.clientImportAllowed = allowed;
+  setImportAllowed: function(allowed) {
+    this.importAllowed = allowed;
   },
 
   /**

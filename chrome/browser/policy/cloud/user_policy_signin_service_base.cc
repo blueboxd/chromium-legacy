@@ -36,8 +36,7 @@ UserPolicySigninServiceBase::UserPolicySigninServiceBase(
       identity_manager_(identity_manager),
       local_state_(local_state),
       device_management_service_(device_management_service),
-      system_url_loader_factory_(system_url_loader_factory),
-      weak_factory_(this) {
+      system_url_loader_factory_(system_url_loader_factory) {
   // Register a listener to be called back once the current profile has finished
   // initializing, so we can startup/shutdown the UserCloudPolicyManager.
   registrar_.Add(this,

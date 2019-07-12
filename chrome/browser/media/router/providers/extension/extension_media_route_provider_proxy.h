@@ -173,7 +173,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
   // the requests to it.
   EventPageRequestManager* const request_manager_;
 
-  base::WeakPtrFactory<ExtensionMediaRouteProviderProxy> weak_factory_;
+  base::WeakPtrFactory<ExtensionMediaRouteProviderProxy> weak_factory_{this};
 };
 
 }  // namespace media_router

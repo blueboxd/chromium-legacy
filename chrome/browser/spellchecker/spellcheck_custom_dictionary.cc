@@ -226,8 +226,7 @@ SpellcheckCustomDictionary::SpellcheckCustomDictionary(
           base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       custom_dictionary_path_(
           dictionary_directory_name.Append(chrome::kCustomDictionaryFileName)),
-      is_loaded_(false),
-      weak_ptr_factory_(this) {}
+      is_loaded_(false) {}
 
 SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {
 }

@@ -16,7 +16,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_filter.h"
 
-BatteryMetrics::BatteryMetrics() : weak_factory_(this) {
+BatteryMetrics::BatteryMetrics() {
   StartRecording();
 }
 

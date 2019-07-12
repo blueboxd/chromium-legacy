@@ -52,9 +52,7 @@ std::string ReadCloudPrintSetupProxyList(const base::FilePath& path) {
 }  // namespace
 
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
-    : profile_(profile),
-      weak_factory_(this) {
-}
+    : profile_(profile) {}
 
 CloudPrintProxyService::~CloudPrintProxyService() {
 }

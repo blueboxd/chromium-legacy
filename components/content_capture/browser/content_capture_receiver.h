@@ -9,7 +9,9 @@
 
 #include "components/content_capture/common/content_capture.mojom.h"
 #include "components/content_capture/common/content_capture_data.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace content {
 class RenderFrameHost;
@@ -27,7 +29,9 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   ~ContentCaptureReceiver() override;
 
   // Binds to mojom.
-  void BindRequest(mojom::ContentCaptureReceiverAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+          pending_receiver);
 
   // mojom::ContentCaptureReceiver
   void DidCaptureContent(const ContentCaptureData& data,
@@ -46,9 +50,10 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   }
 
  private:
-  const mojom::ContentCaptureSenderAssociatedPtr& GetContentCaptureSender();
+  const mojo::AssociatedRemote<mojom::ContentCaptureSender>&
+  GetContentCaptureSender();
 
-  mojo::AssociatedBinding<mojom::ContentCaptureReceiver> bindings_;
+  mojo::AssociatedReceiver<mojom::ContentCaptureReceiver> receiver_{this};
   content::RenderFrameHost* rfh_;
   ContentCaptureData frame_content_capture_data_;
 
@@ -60,7 +65,7 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   // ContentCaptureReceiverManager can't get parent frame id in both cases.
   int64_t id_;
   bool content_capture_enabled_ = false;
-  mojom::ContentCaptureSenderAssociatedPtr content_capture_sender_ = nullptr;
+  mojo::AssociatedRemote<mojom::ContentCaptureSender> content_capture_sender_;
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureReceiver);
 };
 

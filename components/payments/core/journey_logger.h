@@ -6,6 +6,7 @@
 #define COMPONENTS_PAYMENTS_CORE_JOURNEY_LOGGER_H_
 
 #include <string>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -188,6 +189,12 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
+  // Records the transcation amount separated by currency and completion status
+  // (complete vs triggered).
+  void RecordTransactionAmount(std::string currency,
+                               const std::string& value,
+                               bool completed);
+
  private:
   static const int NUMBER_OF_SECTIONS = 3;
 
@@ -246,6 +253,10 @@ class JourneyLogger {
 
   // Accumulates the many events that have happened during the Payment Request.
   int events_;
+
+  // Keeps track of whether transaction amounts are recorded or not to catch
+  // multiple recording. Triggered is the first index and Completed the second.
+  bool has_recorded_transaction_amount_[2] = {false};
 
   ukm::SourceId source_id_;
 

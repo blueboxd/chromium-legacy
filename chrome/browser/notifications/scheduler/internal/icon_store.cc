@@ -31,7 +31,7 @@ using KeyVector = std::vector<std::string>;
 
 IconProtoDbStore::IconProtoDbStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db)
-    : db_(std::move(db)), weak_ptr_factory_(this) {}
+    : db_(std::move(db)) {}
 
 IconProtoDbStore::~IconProtoDbStore() = default;
 

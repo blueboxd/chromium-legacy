@@ -59,6 +59,8 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   switch (module) {
     case layered_api::Module::kBlank:
       return true;
+    case layered_api::Module::kVirtualScroller:
+      return false;
     case layered_api::Module::kKvStorage:
       return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
           GetExecutionContext());
@@ -69,8 +71,6 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
       return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
     case layered_api::Module::kElementsToast:
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
-    case layered_api::Module::kElementsVirtualScroller:
-      return false;
   }
 }
 
@@ -90,7 +90,7 @@ void ModulatorImplBase::BuiltInModuleUseCount(
     case layered_api::Module::kElementsToast:
       UseCounter::Count(GetExecutionContext(), WebFeature::kBuiltInModuleToast);
       break;
-    case layered_api::Module::kElementsVirtualScroller:
+    case layered_api::Module::kVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleVirtualScroller);
       break;

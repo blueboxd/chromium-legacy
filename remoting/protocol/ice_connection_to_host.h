@@ -39,7 +39,7 @@ class IceConnectionToHost : public ConnectionToHost,
                             public IceTransport::EventHandler,
                             public ChannelDispatcherBase::EventHandler {
  public:
-  IceConnectionToHost(bool use_turn_api);
+  IceConnectionToHost();
   ~IceConnectionToHost() override;
 
   // ConnectionToHost interface.
@@ -105,10 +105,6 @@ class IceConnectionToHost : public ConnectionToHost,
   // Internal state of the connection.
   State state_ = INITIALIZING;
   ErrorCode error_ = OK;
-
-  // If this is true, ICE connection will use TURN API instead of the gTalk TURN
-  // services to allocate relay sessions.
-  bool use_turn_api_;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

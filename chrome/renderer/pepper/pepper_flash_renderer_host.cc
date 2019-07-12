@@ -144,9 +144,7 @@ PepperFlashRendererHost::PepperFlashRendererHost(
     content::RendererPpapiHost* host,
     PP_Instance instance,
     PP_Resource resource)
-    : ResourceHost(host->GetPpapiHost(), instance, resource),
-      host_(host),
-      weak_factory_(this) {}
+    : ResourceHost(host->GetPpapiHost(), instance, resource), host_(host) {}
 
 PepperFlashRendererHost::~PepperFlashRendererHost() {
   // This object may be destroyed in the middle of a sync message. If that is

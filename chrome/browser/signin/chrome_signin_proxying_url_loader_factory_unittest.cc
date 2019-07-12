@@ -30,7 +30,7 @@ namespace {
 
 class MockDelegate : public HeaderModificationDelegate {
  public:
-  MockDelegate() : weak_factory_(this) {}
+  MockDelegate() {}
   ~MockDelegate() override {}
 
   MOCK_METHOD1(ShouldInterceptNavigation,
@@ -47,7 +47,7 @@ class MockDelegate : public HeaderModificationDelegate {
   }
 
  private:
-  base::WeakPtrFactory<MockDelegate> weak_factory_;
+  base::WeakPtrFactory<MockDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };

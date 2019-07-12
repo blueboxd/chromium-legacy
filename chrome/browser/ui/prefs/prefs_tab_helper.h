@@ -70,7 +70,7 @@ class PrefsTabHelper : public content::NotificationObserver,
       default_zoom_level_subscription_;
   FontPrefChangeNotifier::Registrar font_change_registrar_;
 #endif  // !defined(OS_ANDROID)
-  base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

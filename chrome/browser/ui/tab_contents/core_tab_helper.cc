@@ -58,9 +58,7 @@ const int kImageSearchThumbnailMaxHeight = 600;
 }  // namespace
 
 CoreTabHelper::CoreTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      content_restrictions_(0),
-      weak_factory_(this) {}
+    : content::WebContentsObserver(web_contents), content_restrictions_(0) {}
 
 CoreTabHelper::~CoreTabHelper() {}
 

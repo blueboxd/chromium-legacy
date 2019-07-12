@@ -13,7 +13,7 @@ namespace resource_coordinator {
 
 LocalSiteCharacteristicsDataReader::LocalSiteCharacteristicsDataReader(
     scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl)
-    : impl_(std::move(impl)), weak_factory_(this) {}
+    : impl_(std::move(impl)) {}
 
 LocalSiteCharacteristicsDataReader::~LocalSiteCharacteristicsDataReader() {}
 

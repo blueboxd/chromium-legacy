@@ -156,8 +156,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       is_extended_reporting_(false),
       is_incognito_(false),
       is_under_advanced_protection_(false),
-      requests_ap_verdicts_(false),
-      weakptr_factory_(this) {
+      requests_ap_verdicts_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   item_->AddObserver(this);
 }

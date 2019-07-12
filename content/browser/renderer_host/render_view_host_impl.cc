@@ -562,6 +562,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   if (delegate_ && delegate_->IsSpatialNavigationDisabled())
     prefs.spatial_navigation_enabled = false;
 
+  prefs.caret_browsing_enabled =
+      command_line.HasSwitch(switches::kEnableCaretBrowsing);
+
   prefs.disable_reading_from_canvas = command_line.HasSwitch(
       switches::kDisableReadingFromCanvas);
 

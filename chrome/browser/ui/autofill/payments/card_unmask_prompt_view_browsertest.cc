@@ -37,7 +37,7 @@ constexpr const char kExpiryValidPermanentError[] = "valid_PermanentError";
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
-  TestCardUnmaskDelegate() : weak_factory_(this) {}
+  TestCardUnmaskDelegate() {}
 
   virtual ~TestCardUnmaskDelegate() {}
 
@@ -56,7 +56,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  private:
   UnmaskResponse response_;
 
-  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
 };
@@ -69,8 +69,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       : CardUnmaskPromptControllerImpl(
             user_prefs::UserPrefs::Get(contents->GetBrowserContext()),
             false),
-        runner_(runner),
-        weak_factory_(this) {}
+        runner_(runner) {}
 
   // CardUnmaskPromptControllerImpl:.
   // When the confirm button is clicked.
@@ -136,7 +135,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   bool expected_failure_temporary_ = false;
   bool expected_failure_permanent_ = false;
   scoped_refptr<content::MessageLoopRunner> runner_;
-  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };

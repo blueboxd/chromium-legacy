@@ -35,8 +35,7 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       callback_(callback),
       last_cursor_x_(-1),
       last_cursor_y_(-1),
-      host_(nullptr),
-      weak_factory_(this) {
+      host_(nullptr) {
   mouse_event_callback_ =
       base::Bind(&DevToolsEyeDropper::HandleMouseEvent, base::Unretained(this));
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();

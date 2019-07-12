@@ -96,8 +96,7 @@ UsbChooserController::UsbChooserController(
       filters_(std::move(device_filters)),
       callback_(std::move(callback)),
       web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
-      observer_(this),
-      weak_factory_(this) {
+      observer_(this) {
   RenderFrameHost* main_frame = web_contents_->GetMainFrame();
   requesting_origin_ = render_frame_host->GetLastCommittedOrigin();
   embedding_origin_ = main_frame->GetLastCommittedOrigin();

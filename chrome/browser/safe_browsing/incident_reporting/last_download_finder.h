@@ -152,7 +152,7 @@ class LastDownloadFinder : public content::NotificationObserver,
       history_service_observer_;
 
   // A factory for asynchronous operations on profiles' HistoryService.
-  base::WeakPtrFactory<LastDownloadFinder> weak_ptr_factory_;
+  base::WeakPtrFactory<LastDownloadFinder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LastDownloadFinder);
 };

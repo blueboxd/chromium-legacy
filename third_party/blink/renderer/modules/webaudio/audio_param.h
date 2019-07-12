@@ -46,46 +46,6 @@ namespace blink {
 
 class AudioNodeOutput;
 
-// Each AudioParam gets an identifier here.  This is mostly for instrospection
-// if warnings or other messages need to be printed. It's useful to know what
-// the AudioParam represents.  The name should include the node type and the
-// name of the AudioParam.
-enum AudioParamType {
-  kParamTypeAudioBufferSourcePlaybackRate,
-  kParamTypeAudioBufferSourceDetune,
-  kParamTypeBiquadFilterFrequency,
-  kParamTypeBiquadFilterQ,
-  kParamTypeBiquadFilterGain,
-  kParamTypeBiquadFilterDetune,
-  kParamTypeDelayDelayTime,
-  kParamTypeDynamicsCompressorThreshold,
-  kParamTypeDynamicsCompressorKnee,
-  kParamTypeDynamicsCompressorRatio,
-  kParamTypeDynamicsCompressorAttack,
-  kParamTypeDynamicsCompressorRelease,
-  kParamTypeGainGain,
-  kParamTypeOscillatorFrequency,
-  kParamTypeOscillatorDetune,
-  kParamTypeStereoPannerPan,
-  kParamTypePannerPositionX,
-  kParamTypePannerPositionY,
-  kParamTypePannerPositionZ,
-  kParamTypePannerOrientationX,
-  kParamTypePannerOrientationY,
-  kParamTypePannerOrientationZ,
-  kParamTypeAudioListenerPositionX,
-  kParamTypeAudioListenerPositionY,
-  kParamTypeAudioListenerPositionZ,
-  kParamTypeAudioListenerForwardX,
-  kParamTypeAudioListenerForwardY,
-  kParamTypeAudioListenerForwardZ,
-  kParamTypeAudioListenerUpX,
-  kParamTypeAudioListenerUpY,
-  kParamTypeAudioListenerUpZ,
-  kParamTypeConstantSourceOffset,
-  kParamTypeAudioWorklet,
-};
-
 // AudioParamHandler is an actual implementation of web-exposed AudioParam
 // interface. Each of AudioParam object creates and owns an AudioParamHandler,
 // and it is responsible for all of AudioParam tasks. An AudioParamHandler
@@ -98,6 +58,46 @@ enum AudioParamType {
 class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
                                 public AudioSummingJunction {
  public:
+  // Each AudioParam gets an identifier here.  This is mostly for instrospection
+  // if warnings or other messages need to be printed. It's useful to know what
+  // the AudioParam represents.  The name should include the node type and the
+  // name of the AudioParam.
+  enum AudioParamType {
+    kParamTypeAudioBufferSourcePlaybackRate,
+    kParamTypeAudioBufferSourceDetune,
+    kParamTypeBiquadFilterFrequency,
+    kParamTypeBiquadFilterQ,
+    kParamTypeBiquadFilterGain,
+    kParamTypeBiquadFilterDetune,
+    kParamTypeDelayDelayTime,
+    kParamTypeDynamicsCompressorThreshold,
+    kParamTypeDynamicsCompressorKnee,
+    kParamTypeDynamicsCompressorRatio,
+    kParamTypeDynamicsCompressorAttack,
+    kParamTypeDynamicsCompressorRelease,
+    kParamTypeGainGain,
+    kParamTypeOscillatorFrequency,
+    kParamTypeOscillatorDetune,
+    kParamTypeStereoPannerPan,
+    kParamTypePannerPositionX,
+    kParamTypePannerPositionY,
+    kParamTypePannerPositionZ,
+    kParamTypePannerOrientationX,
+    kParamTypePannerOrientationY,
+    kParamTypePannerOrientationZ,
+    kParamTypeAudioListenerPositionX,
+    kParamTypeAudioListenerPositionY,
+    kParamTypeAudioListenerPositionZ,
+    kParamTypeAudioListenerForwardX,
+    kParamTypeAudioListenerForwardY,
+    kParamTypeAudioListenerForwardZ,
+    kParamTypeAudioListenerUpX,
+    kParamTypeAudioListenerUpY,
+    kParamTypeAudioListenerUpZ,
+    kParamTypeConstantSourceOffset,
+    kParamTypeAudioWorklet,
+  };
+
   // Automation rate of the AudioParam
   enum AutomationRate {
     // a-rate
@@ -263,7 +263,7 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
   static AudioParam* Create(
       BaseAudioContext&,
       const String& parent_uuid,
-      AudioParamType,
+      AudioParamHandler::AudioParamType,
       double default_value,
       AudioParamHandler::AutomationRate rate,
       AudioParamHandler::AutomationRateMode rate_mode,
@@ -272,7 +272,7 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
 
   AudioParam(BaseAudioContext&,
              const String& parent_uuid,
-             AudioParamType,
+             AudioParamHandler::AudioParamType,
              double default_value,
              AudioParamHandler::AutomationRate rate,
              AudioParamHandler::AutomationRateMode rate_mode,
@@ -287,10 +287,11 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
   // |context| always returns a valid object.
   BaseAudioContext* Context() const { return context_; }
 
-  AudioParamType GetParamType() const { return Handler().GetParamType(); }
-  void SetParamType(AudioParamType);
+  AudioParamHandler::AudioParamType GetParamType() const {
+    return Handler().GetParamType();
+  }
+  void SetParamType(AudioParamHandler::AudioParamType);
   void SetCustomParamName(const String name);
-  String GetParamName() const;
 
   float value() const;
   void setValue(float, ExceptionState&);

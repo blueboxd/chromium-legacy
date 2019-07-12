@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 
-#include <unordered_map>
-
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"

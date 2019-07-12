@@ -166,7 +166,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   DeviceManagementService* device_management_service_;
   scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
 
-  base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;
+  base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninServiceBase);
 };

@@ -38,7 +38,9 @@
 
     <h2>$i18n{textToSpeechProperties}</h2>
     <div class="settings-box first">
-      <div class="start" id="rate">$i18n{textToSpeechRate}</div>
+      <div class="start settings-box-text" id="rate">
+        $i18n{textToSpeechRate}
+      </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_rate}}"
           ticks="[[speechRateTicks_()]]"
@@ -48,7 +50,9 @@
       </settings-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start" id="pitch">$i18n{textToSpeechPitch}</div>
+      <div class="start settings-box-text" id="pitch">
+        $i18n{textToSpeechPitch}
+      </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_pitch}}"
           ticks="[[speechPitchTicks_()]]"
@@ -58,7 +62,9 @@
       </settings-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start" id="volume">$i18n{textToSpeechVolume}</div>
+      <div class="start settings-box-text" id="volume">
+        $i18n{textToSpeechVolume}
+      </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_volume}}"
           ticks="[[speechVolumeTicks_()]]"
@@ -70,7 +76,7 @@
 
     <h2>$i18n{textToSpeechPreviewHeading}</h2>
     <div class="settings-box first">
-      <div class="start">
+      <div class="start settings-box-text">
         $i18n{textToSpeechPreviewVoice}
       </div>
       <select id="previewVoice" class="md-select"
@@ -104,7 +110,7 @@
         filter="isPrimaryLanguage_"
         sort="alphabeticalSort_">
       <div class="settings-box first">
-        <div class="start">
+        <div class="start settings-box-text">
           [[lang.language]]
         </div>
         <settings-dropdown-menu label="[[lang.language]]"
@@ -127,7 +133,7 @@
       <template is="dom-repeat" items="[[languagesToVoices]]"
           as="lang" sort="alphabeticalSort_" filter="isSecondaryLanguage_">
         <div class="settings-box continuation">
-          <div class="start">
+          <div class="start settings-box-text">
             [[lang.language]]
           </div>
           <settings-dropdown-menu label="[[lang.language]]"
@@ -140,14 +146,14 @@
         </div>
       </template>
     </iron-collapse>
-    <div class="settings-box first" hidden$="[[hasVoices]]">
+    <div class="settings-box first settings-box-text" hidden$="[[hasVoices]]">
       $i18n{textToSpeechNoVoicesMessage}
     </div>
 
     <h2>$i18n{textToSpeechEngines}</h2>
     <template is="dom-repeat" items="[[extensions]]" as="extension">
       <div class="settings-box continuation">
-        <div id="extension_name_[[index]]" class="start">
+        <div id="extension_name_[[index]]" class="start settings-box-text">
           [[extension.name]]
         </div>
         <cr-button on-click="onEngineSettingsTap_"

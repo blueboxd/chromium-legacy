@@ -23,7 +23,7 @@ using content::BrowserThread;
 
 namespace extensions {
 
-BlacklistStateFetcher::BlacklistStateFetcher() : weak_ptr_factory_(this) {}
+BlacklistStateFetcher::BlacklistStateFetcher() {}
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

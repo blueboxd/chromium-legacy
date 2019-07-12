@@ -76,7 +76,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       sharing_handlers_;
   bool is_listening_ = false;
 
-  base::WeakPtrFactory<SharingFCMHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SharingFCMHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharingFCMHandler);
 };

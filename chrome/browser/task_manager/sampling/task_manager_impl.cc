@@ -81,8 +81,7 @@ TaskManagerImpl::TaskManagerImpl()
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       shared_sampler_(new SharedSampler(blocking_pool_runner_)),
       is_running_(false),
-      waiting_for_memory_dump_(false),
-      weak_ptr_factory_(this) {
+      waiting_for_memory_dump_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   task_providers_.emplace_back(new BrowserProcessTaskProvider());

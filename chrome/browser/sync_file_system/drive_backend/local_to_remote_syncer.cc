@@ -88,8 +88,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       sync_action_(SYNC_ACTION_NONE),
       remote_file_change_id_(0),
       retry_on_success_(false),
-      needs_remote_change_listing_(false),
-      weak_ptr_factory_(this) {
+      needs_remote_change_listing_(false) {
   DCHECK(local_is_missing_ ||
          local_change.file_type() == local_metadata.file_type)
       << local_change.DebugString() << " metadata:" << local_metadata.file_type;

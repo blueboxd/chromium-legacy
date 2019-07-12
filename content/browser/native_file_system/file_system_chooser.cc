@@ -82,16 +82,13 @@ void ConvertAcceptsToFileTypeInfo(
 
 // static
 void FileSystemChooser::CreateAndShow(
-    int render_process_id,
-    int frame_id,
+    WebContents* web_contents,
     blink::mojom::ChooseFileSystemEntryType type,
     std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
     bool include_accepts_all,
     ResultCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
   auto* listener = new FileSystemChooser(type, std::move(callback),
                                          std::move(callback_runner));
   listener->dialog_ = ui::SelectFileDialog::Create(

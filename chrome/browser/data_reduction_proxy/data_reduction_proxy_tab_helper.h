@@ -37,7 +37,7 @@ class DataReductionProxyTabHelper
 
   data_reduction_proxy::DataReductionProxySettings* drp_settings_;
 
-  base::WeakPtrFactory<DataReductionProxyTabHelper> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyTabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

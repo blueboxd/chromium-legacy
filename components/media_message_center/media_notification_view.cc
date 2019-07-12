@@ -87,6 +87,8 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
       return &vector_icons::kMediaNextTrackIcon;
     case MediaSessionAction::kStop:
     case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
       NOTREACHED();
       break;
   }

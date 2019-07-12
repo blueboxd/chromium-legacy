@@ -1186,7 +1186,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // touch end would pass (15, 10) to subframe which should be (15, 15) in
 // subframe.
 // https://crbug.com/959848: Flaky on Linux MSAN bots
-#if defined(OS_LINUX)
+// https://crbug.com/959924: Flaky on Android MSAN bots
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #define MAYBE_TouchAndGestureEventPositionChange \
   DISABLED_TouchAndGestureEventPositionChange
 #else

@@ -68,7 +68,7 @@ class IsolatedXRRuntimeProvider
 #endif
 
   device::mojom::IsolatedXRRuntimeProviderClientPtr client_;
-  base::WeakPtrFactory<IsolatedXRRuntimeProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<IsolatedXRRuntimeProvider> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_SERVICES_ISOLATED_XR_DEVICE_XR_RUNTIME_PROVIDER_H_

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/content_index/content_index_database.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -60,13 +61,27 @@ void ContentIndexServiceImpl::Add(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,
     const SkBitmap& icon,
+    const GURL& launch_url,
     AddCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(crbug.com/973844): Add parameter validation.
 
-  content_index_context_->database().AddEntry(service_worker_registration_id,
-                                              origin_, std::move(description),
-                                              icon, std::move(callback));
+  if (icon.isNull() || icon.width() > kMaxIconDimension ||
+      icon.height() > kMaxIconDimension) {
+    mojo::ReportBadMessage("Invalid icon");
+    std::move(callback).Run(blink::mojom::ContentIndexError::INVALID_PARAMETER);
+    return;
+  }
+
+  if (!launch_url.is_valid() ||
+      !origin_.IsSameOriginWith(url::Origin::Create(launch_url.GetOrigin()))) {
+    mojo::ReportBadMessage("Invalid launch URL");
+    std::move(callback).Run(blink::mojom::ContentIndexError::INVALID_PARAMETER);
+    return;
+  }
+
+  content_index_context_->database().AddEntry(
+      service_worker_registration_id, origin_, std::move(description), icon,
+      launch_url, std::move(callback));
 }
 
 void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,

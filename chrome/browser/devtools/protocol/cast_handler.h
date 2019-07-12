@@ -99,7 +99,7 @@ class CastHandler : public protocol::Cast::Backend,
 
   std::unique_ptr<protocol::Cast::Frontend> frontend_;
 
-  base::WeakPtrFactory<CastHandler> weak_factory_;
+  base::WeakPtrFactory<CastHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastHandler);
 };

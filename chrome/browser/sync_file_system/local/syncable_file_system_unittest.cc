@@ -39,8 +39,7 @@ class SyncableFileSystemTest : public testing::Test {
         file_system_(GURL("http://example.com/"),
                      in_memory_env_.get(),
                      base::ThreadTaskRunnerHandle::Get().get(),
-                     base::ThreadTaskRunnerHandle::Get().get()),
-        weak_factory_(this) {}
+                     base::ThreadTaskRunnerHandle::Get().get()) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -105,7 +104,7 @@ class SyncableFileSystemTest : public testing::Test {
  private:
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
-  base::WeakPtrFactory<SyncableFileSystemTest> weak_factory_;
+  base::WeakPtrFactory<SyncableFileSystemTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileSystemTest);
 };

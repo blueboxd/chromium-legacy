@@ -102,9 +102,7 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
       file_type_(SYNC_FILE_TYPE_UNKNOWN),
       sync_action_(SYNC_ACTION_NONE),
       prepared_(false),
-      sync_root_deletion_(false),
-      weak_ptr_factory_(this) {
-}
+      sync_root_deletion_(false) {}
 
 RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 }

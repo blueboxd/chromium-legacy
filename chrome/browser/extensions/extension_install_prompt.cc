@@ -489,8 +489,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       extension_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(profile_)),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
-      did_call_show_dialog_(false),
-      weak_factory_(this) {}
+      did_call_show_dialog_(false) {}
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
                                                gfx::NativeWindow native_window)
@@ -499,9 +498,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
           new ExtensionInstallPromptShowParams(profile, native_window)),
-      did_call_show_dialog_(false),
-      weak_factory_(this) {
-}
+      did_call_show_dialog_(false) {}
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 }

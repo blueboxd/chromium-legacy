@@ -18,7 +18,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/search_engines/keyword_web_data_service.h"
-#include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

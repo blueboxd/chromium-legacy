@@ -222,7 +222,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
 
-  base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_;
+  base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };
 

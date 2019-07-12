@@ -7653,8 +7653,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());
@@ -7761,8 +7761,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());
@@ -7825,8 +7825,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());

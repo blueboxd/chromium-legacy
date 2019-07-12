@@ -178,7 +178,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
 
 }  // namespace
 
-WebUsbDetector::WebUsbDetector() : client_binding_(this), weak_factory_(this) {}
+WebUsbDetector::WebUsbDetector() : client_binding_(this) {}
 
 WebUsbDetector::~WebUsbDetector() {}
 

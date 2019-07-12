@@ -60,8 +60,7 @@ void ConvertExtensionStatusToDictionary(
 }  // namespace
 
 ExtensionStatusesHandler::ExtensionStatusesHandler(Profile* profile)
-    : profile_(profile),
-      weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 ExtensionStatusesHandler::~ExtensionStatusesHandler() {}
 

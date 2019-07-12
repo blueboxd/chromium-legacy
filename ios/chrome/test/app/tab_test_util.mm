@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -21,6 +20,7 @@
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,6 +33,13 @@ namespace {
 // Returns the tab model for the current mode (incognito or normal).
 TabModel* GetCurrentTabModel() {
   return GetMainController().interfaceProvider.currentInterface.tabModel;
+}
+
+// Returns the WebStateList for the current mode. Or nullptr of there is no
+// tabModel.
+WebStateList* GetCurrentWebStateList() {
+  TabModel* tab_model = GetCurrentTabModel();
+  return tab_model ? tab_model.webStateList : nullptr;
 }
 
 }  // namespace
@@ -81,29 +88,26 @@ void OpenNewIncognitoTab() {
   }
 }
 
-Tab* GetCurrentTab() {
-  TabModel* tab_model = GetCurrentTabModel();
-  return tab_model.currentTab;
+web::WebState* GetCurrentWebState() {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  return web_state_list ? web_state_list->GetActiveWebState() : nullptr;
 }
 
-Tab* GetNextTab() {
-  TabModel* tabModel = GetCurrentTabModel();
-  NSUInteger tabCount = [tabModel count];
-  if (tabCount < 2)
-    return nil;
-  Tab* currentTab = [tabModel currentTab];
-  NSUInteger nextTabIndex = [tabModel indexOfTab:currentTab] + 1;
-  if (nextTabIndex >= tabCount)
-    nextTabIndex = 0;
-  return [tabModel tabAtIndex:nextTabIndex];
+web::WebState* GetNextWebState() {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  if (!web_state_list || web_state_list->count() < 2)
+    return nullptr;
+  int next_index = web_state_list->active_index() + 1;
+  if (next_index >= web_state_list->count())
+    next_index = 0;
+  return web_state_list->GetWebStateAt(next_index);
 }
 
-Tab* GetTabAtIndexInCurrentMode(NSUInteger index) {
-  TabModel* tabModel = GetCurrentTabModel();
-  NSUInteger tabCount = [tabModel count];
-  if (tabCount < index + 1)
-    return nil;
-  return [tabModel tabAtIndex:index];
+web::WebState* GetWebStateAtIndexInCurrentMode(int index) {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  if (!web_state_list || !web_state_list->ContainsIndex(index))
+    return nullptr;
+  return web_state_list->GetWebStateAt(index);
 }
 
 void CloseCurrentTab() {

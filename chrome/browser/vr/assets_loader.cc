@@ -245,8 +245,7 @@ void AssetsLoader::LoadAssetsTask(
 
 AssetsLoader::AssetsLoader()
     : main_thread_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})),
-      weak_ptr_factory_(this) {
+          {content::BrowserThread::UI})) {
   DCHECK(main_thread_task_runner_.get());
 }
 

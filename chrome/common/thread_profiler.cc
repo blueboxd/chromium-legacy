@@ -235,8 +235,7 @@ ThreadProfiler::ThreadProfiler(
     : thread_(thread),
       owning_thread_task_runner_(owning_thread_task_runner),
       work_id_recorder_(std::make_unique<WorkIdRecorder>(
-          base::WorkIdProvider::GetForCurrentThread())),
-      weak_factory_(this) {
+          base::WorkIdProvider::GetForCurrentThread())) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 

@@ -79,7 +79,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  base::WeakPtrFactory<JavaScriptDialogViews> weak_factory_;
+  base::WeakPtrFactory<JavaScriptDialogViews> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogViews);
 };

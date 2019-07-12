@@ -136,8 +136,7 @@ Ui::Ui(UiBrowserInterface* browser,
       input_manager_(std::make_unique<UiInputManager>(scene_.get())),
       keyboard_delegate_(std::move(keyboard_delegate)),
       text_input_delegate_(std::move(text_input_delegate)),
-      audio_delegate_(std::move(audio_delegate)),
-      weak_ptr_factory_(this) {
+      audio_delegate_(std::move(audio_delegate)) {
   UiInitialState state = ui_initial_state;
   if (text_input_delegate_) {
     text_input_delegate_->SetRequestFocusCallback(

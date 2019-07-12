@@ -324,8 +324,7 @@ CastStreamingNativeHandler::CastStreamingNativeHandler(
           context->extension()
               ? (((base::Hash(context->extension()->id()) & 0x7fff) << 16) + 1)
               : 1),
-      bindings_system_(bindings_system),
-      weak_factory_(this) {}
+      bindings_system_(bindings_system) {}
 
 CastStreamingNativeHandler::~CastStreamingNativeHandler() {
   // Note: A superclass's destructor will call Invalidate(), but Invalidate()

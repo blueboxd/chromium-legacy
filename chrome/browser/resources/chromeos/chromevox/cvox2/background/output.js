@@ -1249,12 +1249,12 @@ Output.prototype = {
              * @param {!Array<Spannable>} buff
              * @param {{isUnique: (boolean|undefined),
              *      annotation: !Array<*>}} opt_options
-             * @param {string} outputString
              * @param {string} newLanguage
+             * @param {string} outputString
              */
             var appendStringWithLanguage = function(
-                                               buff, options, outputString,
-                                               newLanguage) {
+                                               buff, options, newLanguage,
+                                               outputString) {
               var speechProps = new Output.SpeechProperties();
               // Set output language.
               speechProps['lang'] = newLanguage;

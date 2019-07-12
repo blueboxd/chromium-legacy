@@ -67,7 +67,7 @@ void AccessibilityLabelsService::Init() {
 }
 
 AccessibilityLabelsService::AccessibilityLabelsService(Profile* profile)
-    : profile_(profile), weak_factory_(this) {}
+    : profile_(profile) {}
 
 ui::AXMode AccessibilityLabelsService::GetAXMode() {
   ui::AXMode ax_mode =

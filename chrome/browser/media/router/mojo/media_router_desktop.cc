@@ -101,8 +101,7 @@ MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
     : MediaRouterMojoImpl(context),
       cast_provider_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
       dial_provider_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
-      media_sink_service_(media_sink_service),
-      weak_factory_(this) {
+      media_sink_service_(media_sink_service) {
   InitializeMediaRouteProviders();
 }
 

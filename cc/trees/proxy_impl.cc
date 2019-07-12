@@ -497,6 +497,8 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
       FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
                                 proxy_main_weak_ptr_, frame_token,
                                 std::move(callbacks), feedback));
+  if (scheduler_)
+    scheduler_->DidPresentCompositorFrame(frame_token, feedback.timestamp);
 }
 
 void ProxyImpl::NotifyAnimationWorkletStateChange(
@@ -706,9 +708,11 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    if (host_impl_->DrawLayers(&frame))
+    if (host_impl_->DrawLayers(&frame)) {
+      DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-      scheduler_->DidSubmitCompositorFrame();
+      scheduler_->DidSubmitCompositorFrame(frame.frame_token);
+    }
     result = DRAW_SUCCESS;
   } else {
     DCHECK_NE(DRAW_SUCCESS, result);

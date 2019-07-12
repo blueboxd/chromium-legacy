@@ -136,7 +136,7 @@ class EventPageRequestManager : public KeyedService {
   MediaRouteProviderWakeReason current_wake_reason_ =
       MediaRouteProviderWakeReason::TOTAL_COUNT;
 
-  base::WeakPtrFactory<EventPageRequestManager> weak_factory_;
+  base::WeakPtrFactory<EventPageRequestManager> weak_factory_{this};
 };
 
 }  // namespace media_router

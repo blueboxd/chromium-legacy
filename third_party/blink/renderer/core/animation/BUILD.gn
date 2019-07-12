@@ -28,6 +28,7 @@ blink_core_sources("animation") {
     "color_property_functions.h",
     "compositor_animations.cc",
     "compositor_animations.h",
+    "css/compositor_keyframe_color.h",
     "css/compositor_keyframe_double.h",
     "css/compositor_keyframe_filter_operations.h",
     "css/compositor_keyframe_transform.h",

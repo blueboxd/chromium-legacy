@@ -67,7 +67,7 @@ class NtpIconSource : public content::URLDataSource {
   Profile* profile_;
   std::unique_ptr<image_fetcher::ImageFetcher> const image_fetcher_;
 
-  base::WeakPtrFactory<NtpIconSource> weak_ptr_factory_;
+  base::WeakPtrFactory<NtpIconSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NtpIconSource);
 };

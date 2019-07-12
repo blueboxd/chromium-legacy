@@ -68,7 +68,9 @@ def _ParseArgs(args):
   parser.add_argument(
       '--pathmap-in-paths',
       action='append',
-      help='GN-list of module pathmap files.')
+      help='List of module pathmap files.')
+  parser.add_argument(
+      '--module-names', action='append', help='List of module names.')
   parser.add_argument(
       '--pathmap-out-path', help='Path to combined pathmap file for bundle.')
   parser.add_argument(
@@ -329,6 +331,46 @@ def _ConcatTextFiles(in_paths, out_path):
         out_file.write(in_file.read())
 
 
+def _LoadPathmap(pathmap_path):
+  """Load the pathmap of obfuscated resource paths.
+
+  Returns: A dict mapping from obfuscated paths to original paths or an
+           empty dict if passed a None |pathmap_path|.
+  """
+  if pathmap_path is None:
+    return {}
+
+  pathmap = {}
+  with open(pathmap_path, 'r') as f:
+    for line in f:
+      line = line.strip()
+      if line.startswith('--') or line == '':
+        continue
+      original, renamed = line.split(' -> ')
+      pathmap[renamed] = original
+  return pathmap
+
+
+def _WriteBundlePathmap(module_pathmap_paths, module_names,
+                        bundle_pathmap_path):
+  """Combine the contents of module pathmaps into a bundle pathmap.
+
+  This rebases the resource paths inside the module pathmap before adding them
+  to the bundle pathmap. So res/a.xml inside the base module pathmap would be
+  base/res/a.xml in the bundle pathmap.
+  """
+  with open(bundle_pathmap_path, 'w') as bundle_pathmap_file:
+    for module_pathmap_path, module_name in zip(module_pathmap_paths,
+                                                module_names):
+      if not os.path.exists(module_pathmap_path):
+        continue
+      module_pathmap = _LoadPathmap(module_pathmap_path)
+      for short_path, long_path in module_pathmap.iteritems():
+        rebased_long_path = '{}/{}'.format(module_name, long_path)
+        rebased_short_path = '{}/{}'.format(module_name, short_path)
+        line = '{} -> {}\n'.format(rebased_long_path, rebased_short_path)
+        bundle_pathmap_file.write(line)
+
 
 def main(args):
   args = build_utils.ExpandFileArgs(args)
@@ -371,6 +413,7 @@ def main(args):
     cmd_args += ['--output=%s' % tmp_unsigned_bundle]
     cmd_args += ['--config=%s' % tmp_bundle_config]
 
+    print ' '.join(cmd_args)
     build_utils.CheckOutput(cmd_args, print_stdout=True, print_stderr=True)
 
     if options.keystore_path:
@@ -394,7 +437,8 @@ def main(args):
     _ConcatTextFiles(options.rtxt_in_paths, options.rtxt_out_path)
 
   if options.pathmap_out_path:
-    _ConcatTextFiles(options.pathmap_in_paths, options.pathmap_out_path)
+    _WriteBundlePathmap(options.pathmap_in_paths, options.module_names,
+                        options.pathmap_out_path)
 
 
 if __name__ == '__main__':

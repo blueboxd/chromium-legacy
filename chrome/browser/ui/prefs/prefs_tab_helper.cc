@@ -284,8 +284,8 @@ void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
 
 PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     : web_contents_(contents),
-      profile_(Profile::FromBrowserContext(web_contents_->GetBrowserContext())),
-      weak_ptr_factory_(this) {
+      profile_(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext())) {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
 #if !defined(OS_ANDROID)

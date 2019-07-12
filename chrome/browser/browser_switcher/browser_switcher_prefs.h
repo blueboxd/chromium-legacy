@@ -176,7 +176,7 @@ class BrowserSwitcherPrefs : public KeyedService,
 
   base::CallbackList<PrefsChangedSignature> callback_list_;
 
-  base::WeakPtrFactory<BrowserSwitcherPrefs> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserSwitcherPrefs> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherPrefs);
 };

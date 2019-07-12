@@ -145,7 +145,8 @@ class ChromeAuthenticatorRequestDelegate
   // rendered and all request handler callbacks will be ignored.
   bool disable_ui_ = false;
 
-  base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAuthenticatorRequestDelegate);
 };

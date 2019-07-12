@@ -52,12 +52,8 @@ TEST_F(LayoutShiftTrackerTest, SimpleBlockMovement) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
-  // 300 * (100 + 60) / (default viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
-  // ScoreWithMoveDistance should be scaled by the amount that the content moved
-  // (60px) relative to the max viewport dimension (width=800px).
-  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0),
-                  GetLayoutShiftTracker().ScoreWithMoveDistance());
+  // 300 * (100 + 60) * (60 / 800) / (default viewport size 800 * 600)
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0), GetLayoutShiftTracker().Score());
   EXPECT_FLOAT_EQ(60.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
@@ -93,8 +89,8 @@ TEST_F(LayoutShiftTrackerTest, Transform) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
-  // (600 - 300) * (140 - 40 + 60) / (default viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
+  // (600 - 300) * (140 - 40 + 60) * (60 / 800) / (800 * 600)
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 TEST_F(LayoutShiftTrackerTest, RtlDistance) {
@@ -187,8 +183,8 @@ TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {
 
   // #jank is 400x200 after viewport intersection with correct application of
   // composited #container offset, and 100px lower after janking, so jank score
-  // is (400 * 300) / (viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.25, GetLayoutShiftTracker().Score());
+  // is (400 * 300) * (100 / 800) / (viewport size 800 * 600)
+  EXPECT_FLOAT_EQ(0.25 * (100.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 TEST_F(LayoutShiftTrackerTest, CompositedJankBeforeFirstPaint) {
@@ -278,8 +274,8 @@ TEST_F(LayoutShiftTrackerTest, JankWhileScrolled) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
-  // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
+  // 300 * (height 200 - scrollY 100 + movement 60) * (60 / 800) / (800 * 600)
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 TEST_F(LayoutShiftTrackerTest, FullyClippedVisualRect) {
@@ -311,8 +307,9 @@ TEST_F(LayoutShiftTrackerTest, PartiallyClippedVisualRect) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 200px"));
   UpdateAllLifecyclePhases();
-  // (clipped width 150px) * (height 200 + movement 200) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.125, GetLayoutShiftTracker().Score());
+  // (clipped width 150px) * (height 200 + movement 200) * (200 / 800) /
+  // (800 * 600)
+  EXPECT_FLOAT_EQ(0.125 * (200.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 TEST_F(LayoutShiftTrackerTest, MultiClipVisualRect) {
@@ -332,8 +329,8 @@ TEST_F(LayoutShiftTrackerTest, MultiClipVisualRect) {
   // Note that, while the element moves up 200px, its visibility is
   // clipped at 0px,150px height, so the additional 200px of vertical
   // move distance is not included in the score.
-  // (clip width 200) * (clip height 150) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.0625, GetLayoutShiftTracker().Score());
+  // (clip width 200) * (clip height 150) * (200 / 800) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.0625 * (200.0 / 800.0), GetLayoutShiftTracker().Score());
   EXPECT_FLOAT_EQ(200.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
@@ -368,8 +365,8 @@ TEST_F(LayoutShiftTrackerTest, ShiftInToViewport) {
   UpdateAllLifecyclePhases();
   // The element moves from outside the viewport to within the viewport, which
   // should generate jank.
-  // (width 600) * (height 0 + move 200) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.25, GetLayoutShiftTracker().Score());
+  // (width 600) * (height 0 + move 200) * (200 / 800) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.25 * (200.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 TEST_F(LayoutShiftTrackerTest, ClipWithoutPaintLayer) {
@@ -456,11 +453,11 @@ TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  // 300 * (100 + 60) / (default viewport size 800 * 600)
+  // 300 * (100 + 60) * (60 / 400) / (default viewport size 800 * 600)
   LayoutShiftTracker& layout_shift_tracker =
       child_frame.GetFrameView()->GetLayoutShiftTracker();
-  EXPECT_FLOAT_EQ(0.4, layout_shift_tracker.Score());
-  EXPECT_FLOAT_EQ(0.1, layout_shift_tracker.WeightedScore());
+  EXPECT_FLOAT_EQ(0.4 * (60.0 / 400.0), layout_shift_tracker.Score());
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 400.0), layout_shift_tracker.WeightedScore());
 
   // Move subframe halfway outside the viewport.
   GetDocument().getElementById("i")->setAttribute(html_names::kStyleAttr,
@@ -471,8 +468,8 @@ TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  EXPECT_FLOAT_EQ(0.8, layout_shift_tracker.Score());
-  EXPECT_FLOAT_EQ(0.15, layout_shift_tracker.WeightedScore());
+  EXPECT_FLOAT_EQ(0.8 * (60.0 / 400.0), layout_shift_tracker.Score());
+  EXPECT_FLOAT_EQ(0.15 * (60.0 / 400.0), layout_shift_tracker.WeightedScore());
 }
 
 TEST_F(LayoutShiftTrackerSimTest, ViewportSizeChange) {
@@ -621,8 +618,8 @@ TEST_F(LayoutShiftTrackerTest, CompositedOverflowExpansion) {
 
   // old rect (240 * 120) / (800 * 600) = 0.06
   // new rect, 50% clipped by viewport (240 * 60) / (800 * 600) = 0.03
-  // final score 0.06 + 0.03 = 0.09
-  EXPECT_FLOAT_EQ(0.09, GetLayoutShiftTracker().Score());
+  // final score 0.06 + 0.03 = 0.09 * (490 move distance / 800)
+  EXPECT_FLOAT_EQ(0.09 * (490.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
 }  // namespace blink

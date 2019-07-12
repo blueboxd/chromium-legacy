@@ -43,6 +43,14 @@ void ShowWritePermissionPromptOnUIThread(
     return;
   }
 
+  url::Origin embedding_origin =
+      url::Origin::Create(web_contents->GetLastCommittedURL());
+  if (embedding_origin != origin) {
+    // Third party iframes are not allowed to request more permissions.
+    std::move(callback).Run(PermissionAction::DISMISSED);
+    return;
+  }
+
   auto* request_manager =
       NativeFileSystemPermissionRequestManager::FromWebContents(web_contents);
   if (!request_manager) {

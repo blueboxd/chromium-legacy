@@ -76,8 +76,7 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
     : profile_(Profile::FromWebUI(webui)),
       sync_service_(ProfileSyncServiceFactory::GetForProfile(profile_)),
       sync_service_observer_(this),
-      show_history_deletion_dialog_(false),
-      weak_ptr_factory_(this) {}
+      show_history_deletion_dialog_(false) {}
 
 ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 }

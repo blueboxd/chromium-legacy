@@ -54,13 +54,13 @@ id<GREYMatcher> TabTitleMatcher(web::WebState* web_state) {
     GREYAssertTrue([ChromeEarlGrey mainTabCount] > 1,
                    [ChromeEarlGrey mainTabCount] ? @"Only one tab open."
                                                  : @"No more tabs.");
-    Tab* nextTab = chrome_test_util::GetNextTab();
+    web::WebState* nextWebState = chrome_test_util::GetNextWebState();
 
-    [[EarlGrey selectElementWithMatcher:TabTitleMatcher(nextTab.webState)]
+    [[EarlGrey selectElementWithMatcher:TabTitleMatcher(nextWebState)]
         performAction:grey_tap()];
 
-    Tab* newCurrentTab = chrome_test_util::GetCurrentTab();
-    GREYAssertTrue(newCurrentTab == nextTab,
+    web::WebState* newCurrentWebState = chrome_test_util::GetCurrentWebState();
+    GREYAssertTrue(newCurrentWebState == nextWebState,
                    @"The selected tab did not change to the next tab.");
   }
 }

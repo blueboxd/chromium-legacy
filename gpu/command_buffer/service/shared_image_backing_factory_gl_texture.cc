@@ -27,6 +27,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -947,7 +948,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   }
 
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
-    LOG(ERROR) << "Invalid image size for format.";
+    LOG(ERROR) << "Invalid image size " << size.ToString() << " for "
+               << gfx::BufferFormatToString(buffer_format);
     return nullptr;
   }
 

@@ -127,6 +127,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
                            int minimum_size_px,
                            int desired_size_px,
                            GetMediaImageBitmapCallback callback) override;
+  void SeekTo(base::TimeDelta seek_time) override;
+  void ScrubTo(base::TimeDelta scrub_to) override;
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }
@@ -162,7 +164,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   int next_track_count() const { return next_track_count_; }
   int add_observer_count() const { return add_observer_count_; }
   int seek_count() const { return seek_count_; }
+  int seek_to_count() const { return seek_to_count_; }
 
+  bool is_scrubbing() const { return is_scrubbing_; }
   const GURL& last_image_src() const { return last_image_src_; }
 
   const base::UnguessableToken& request_id() const { return request_id_; }
@@ -182,12 +186,14 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   const bool force_duck_ = false;
   bool is_ducking_ = false;
   bool is_controllable_ = false;
+  bool is_scrubbing_ = false;
   bool prefer_stop_ = false;
 
   int prev_track_count_ = 0;
   int next_track_count_ = 0;
   int add_observer_count_ = 0;
   int seek_count_ = 0;
+  int seek_to_count_ = 0;
 
   std::set<mojom::MediaSessionAction> actions_;
 

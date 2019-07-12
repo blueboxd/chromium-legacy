@@ -95,14 +95,14 @@ class GalleryWatchManager::FileWatchManager {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<FileWatchManager> weak_factory_;
+  base::WeakPtrFactory<FileWatchManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileWatchManager);
 };
 
 GalleryWatchManager::FileWatchManager::FileWatchManager(
     const base::FilePathWatcher::Callback& callback)
-    : callback_(callback), weak_factory_(this) {
+    : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Bind to the sequenced task runner, not the UI thread.
@@ -189,8 +189,7 @@ GalleryWatchManager::NotificationInfo::~NotificationInfo() {
 GalleryWatchManager::GalleryWatchManager()
     : storage_monitor_observed_(false),
       watch_manager_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      weak_factory_(this) {
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   watch_manager_.reset(new FileWatchManager(base::Bind(
       &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr())));

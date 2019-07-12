@@ -53,7 +53,7 @@ class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<ExtensionWebUIOverrideRegistrar> weak_factory_;
+  base::WeakPtrFactory<ExtensionWebUIOverrideRegistrar> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebUIOverrideRegistrar);
 };

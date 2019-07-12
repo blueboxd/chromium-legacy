@@ -19,13 +19,6 @@ class WebContents;
 
 namespace search {
 
-// For reporting Cacheable NTP navigations.
-enum CacheableNTPLoad {
-  CACHEABLE_NTP_LOAD_FAILED = 0,
-  CACHEABLE_NTP_LOAD_SUCCEEDED = 1,
-  CACHEABLE_NTP_LOAD_MAX = 2
-};
-
 // Returns whether Google is selected as the default search engine.
 bool DefaultSearchProviderIsGoogle(Profile* profile);
 bool DefaultSearchProviderIsGoogle(

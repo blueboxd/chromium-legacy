@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,6 +15,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"

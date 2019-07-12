@@ -181,7 +181,7 @@ class PermissionContextBase : public KeyedService {
 
   // Must be the last member, to ensure that it will be
   // destroyed first, which will invalidate weak pointers
-  base::WeakPtrFactory<PermissionContextBase> weak_factory_;
+  base::WeakPtrFactory<PermissionContextBase> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_

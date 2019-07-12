@@ -103,7 +103,7 @@ class CvcUnmaskViewController
   autofill::payments::FullCardRequest full_card_request_;
   base::WeakPtr<autofill::CardUnmaskDelegate> unmask_delegate_;
 
-  base::WeakPtrFactory<CvcUnmaskViewController> weak_ptr_factory_;
+  base::WeakPtrFactory<CvcUnmaskViewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CvcUnmaskViewController);
 };

@@ -586,8 +586,7 @@ DevToolsDeviceDiscovery::DevToolsDeviceDiscovery(
     const DeviceListCallback& callback)
     : device_manager_(device_manager),
       callback_(callback),
-      task_scheduler_(base::Bind(&ScheduleTaskDefault)),
-      weak_factory_(this) {
+      task_scheduler_(base::Bind(&ScheduleTaskDefault)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestDeviceList();
 }

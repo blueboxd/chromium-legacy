@@ -242,7 +242,7 @@ class SearchBox : public content::RenderFrameObserver,
   bool has_received_most_visited_;
   ThemeBackgroundInfo theme_info_;
 
-  base::WeakPtrFactory<SearchBox> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchBox> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

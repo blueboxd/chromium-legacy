@@ -65,6 +65,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAutoZoomFocusedNodeToLegibleScale(bool) override;
   void SetClobberUserAgentInitialScaleQuirk(bool) override;
   void SetCookieEnabled(bool) override;
+  void SetCaretBrowsingEnabled(bool) override;
   void SetNavigateOnDragDrop(bool) override;
   void SetCursiveFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;

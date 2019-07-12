@@ -151,7 +151,7 @@ void UsbDeviceManagerHelper::SetUsbManagerForTesting(
   GetInstance()->SetUsbManagerForTestingInternal(std::move(fake_usb_manager));
 }
 
-UsbDeviceManagerHelper::UsbDeviceManagerHelper() : weak_factory_(this) {}
+UsbDeviceManagerHelper::UsbDeviceManagerHelper() {}
 
 UsbDeviceManagerHelper::~UsbDeviceManagerHelper() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

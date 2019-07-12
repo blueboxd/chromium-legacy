@@ -12,8 +12,7 @@
 
 namespace metrics {
 
-NetworkQualityEstimatorProviderImpl::NetworkQualityEstimatorProviderImpl()
-    : weak_ptr_factory_(this) {
+NetworkQualityEstimatorProviderImpl::NetworkQualityEstimatorProviderImpl() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 

@@ -280,7 +280,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SiteDataImpl> weak_factory_;
+  base::WeakPtrFactory<SiteDataImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataImpl);
 };

@@ -34,11 +34,10 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   // Create our input source and immediately toggle the primary input so that
   // it appears as already needing to send a click event when it appears.
-  let input_source = new MockXRInputSource();
+  let input_source = fakeDeviceController.simulateInputSourceConnection(RIGHT_CONTROLLER);
   input_source.connectGamepad();
   input_source.setGamepadButtonCount(1);
   input_source.setGamepadAxesCount(2);
-  fakeDeviceController.addInputSource(input_source);
 
   let cached_input_source = null;
   let cached_gamepad = null;

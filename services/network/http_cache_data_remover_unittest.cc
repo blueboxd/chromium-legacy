@@ -170,7 +170,7 @@ class HttpCacheDataRemoverSplitCacheTest : public HttpCacheDataRemoverTest {
  protected:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByTopFrameOrigin);
+        net::features::kSplitCacheByNetworkIsolationKey);
     HttpCacheDataRemoverTest::SetUp();
   }
 

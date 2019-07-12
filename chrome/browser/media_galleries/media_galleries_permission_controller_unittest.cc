@@ -47,9 +47,7 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
       : dialog_(NULL),
         dialog_update_count_at_destruction_(0),
         controller_(NULL),
-        profile_(new TestingProfile()),
-        weak_factory_(this) {
-  }
+        profile_(new TestingProfile()) {}
 
   ~MediaGalleriesPermissionControllerTest() override {
     EXPECT_FALSE(controller_);
@@ -162,8 +160,8 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<MediaGalleriesPreferences> gallery_prefs_;
 
-  base::WeakPtrFactory<MediaGalleriesPermissionControllerTest>
-      weak_factory_;
+  base::WeakPtrFactory<MediaGalleriesPermissionControllerTest> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPermissionControllerTest);
 };

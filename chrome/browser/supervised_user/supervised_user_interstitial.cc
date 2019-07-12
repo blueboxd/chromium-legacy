@@ -78,8 +78,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
  private:
   friend class content::WebContentsUserData<TabCloser>;
 
-  explicit TabCloser(WebContents* web_contents)
-      : web_contents_(web_contents), weak_ptr_factory_(this) {
+  explicit TabCloser(WebContents* web_contents) : web_contents_(web_contents) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(&TabCloser::CloseTabImpl,
                                             weak_ptr_factory_.GetWeakPtr()));
@@ -103,7 +102,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
   }
 
   WebContents* web_contents_;
-  base::WeakPtrFactory<TabCloser> weak_ptr_factory_;
+  base::WeakPtrFactory<TabCloser> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
@@ -146,8 +145,7 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
       url_(url),
       reason_(reason),
       callback_(std::move(callback)),
-      scoped_observer_(this),
-      weak_ptr_factory_(this) {}
+      scoped_observer_(this) {}
 
 SupervisedUserInterstitial::~SupervisedUserInterstitial() {}
 

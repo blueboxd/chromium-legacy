@@ -309,7 +309,7 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
 
 AudioParam::AudioParam(BaseAudioContext& context,
                        const String& parent_uuid,
-                       AudioParamType param_type,
+                       AudioParamHandler::AudioParamType param_type,
                        double default_value,
                        AudioParamHandler::AutomationRate rate,
                        AudioParamHandler::AutomationRateMode rate_mode,
@@ -328,7 +328,7 @@ AudioParam::AudioParam(BaseAudioContext& context,
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
                                const String& parent_uuid,
-                               AudioParamType param_type,
+                               AudioParamHandler::AudioParamType param_type,
                                double default_value,
                                AudioParamHandler::AutomationRate rate,
                                AudioParamHandler::AutomationRateMode rate_mode,
@@ -399,7 +399,7 @@ float AudioParam::maxValue() const {
   return Handler().MaxValue();
 }
 
-void AudioParam::SetParamType(AudioParamType param_type) {
+void AudioParam::SetParamType(AudioParamHandler::AudioParamType param_type) {
   Handler().SetParamType(param_type);
 }
 

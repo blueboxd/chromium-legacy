@@ -51,9 +51,7 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
 
 BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
     storage::QuotaManager* quota_manager)
-    : BrowsingDataQuotaHelper(),
-      quota_manager_(quota_manager),
-      weak_factory_(this) {
+    : BrowsingDataQuotaHelper(), quota_manager_(quota_manager) {
   DCHECK(quota_manager);
 }
 

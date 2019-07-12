@@ -365,7 +365,7 @@ class ToolbarActionsBar : public ExtensionsContainer,
 
   base::ObserverList<ToolbarActionsBarObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_;
+  base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBar);
 };

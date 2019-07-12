@@ -144,7 +144,7 @@ StereoPannerNode::StereoPannerNode(BaseAudioContext& context)
     : AudioNode(context),
       pan_(AudioParam::Create(context,
                               Uuid(),
-                              kParamTypeStereoPannerPan,
+                              AudioParamHandler::kParamTypeStereoPannerPan,
                               0,
                               AudioParamHandler::AutomationRate::kAudio,
                               AudioParamHandler::AutomationRateMode::kVariable,

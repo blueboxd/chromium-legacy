@@ -249,7 +249,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // Produces weak pointers that are only valid for the current remoting
   // session. This is used to cancel any outstanding callbacks when a remoting
   // session is stopped.
-  base::WeakPtrFactory<CastRemotingConnector> weak_factory_;
+  base::WeakPtrFactory<CastRemotingConnector> weak_factory_{this};
 
   // Key used with the base::SupportsUserData interface to search for an
   // instance of CastRemotingConnector owned by a WebContents.

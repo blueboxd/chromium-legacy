@@ -19,7 +19,9 @@
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
@@ -63,11 +65,13 @@ class AutofillAgent : public content::RenderFrameObserver,
                 blink::AssociatedInterfaceRegistry* registry);
   ~AutofillAgent() override;
 
-  void BindRequest(mojom::AutofillAgentAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::AutofillAgent> pending_receiver);
 
-  const mojom::AutofillDriverAssociatedPtr& GetAutofillDriver();
+  const mojo::AssociatedRemote<mojom::AutofillDriver>& GetAutofillDriver();
 
-  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
+  const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
+  GetPasswordManagerDriver();
 
   // mojom::AutofillAgent:
   void FillForm(int32_t id, const FormData& form) override;
@@ -380,9 +384,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Whether or not we delay focus handling until scrolling occurs.
   bool focus_requires_scroll_ = true;
 
-  mojo::AssociatedBinding<mojom::AutofillAgent> binding_;
+  mojo::AssociatedReceiver<mojom::AutofillAgent> receiver_{this};
 
-  mojom::AutofillDriverAssociatedPtr autofill_driver_;
+  mojo::AssociatedRemote<mojom::AutofillDriver> autofill_driver_;
 
   bool was_last_action_fill_ = false;
 

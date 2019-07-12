@@ -141,7 +141,7 @@ class PrivetURLLoader {
   std::string upload_content_type_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
-  base::WeakPtrFactory<PrivetURLLoader> weak_factory_;
+  base::WeakPtrFactory<PrivetURLLoader> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PrivetURLLoader);
 };
 

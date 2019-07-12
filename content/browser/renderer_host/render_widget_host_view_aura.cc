@@ -1473,10 +1473,11 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
-  RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (!rfh)
+  RenderFrameHostImpl* render_frame_host =
+      host()->delegate()->GetFocusedFrameFromFocusedDelegate();
+  if (!render_frame_host)
     return;
-  auto* input_handler = rfh->GetFrameInputHandler();
+  auto* input_handler = render_frame_host->GetFrameInputHandler();
   if (!input_handler)
     return;
   input_handler->ExtendSelectionAndDelete(before, after);

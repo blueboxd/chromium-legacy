@@ -9,6 +9,7 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 group("fuzzers") {
 }
@@ -46,6 +47,7 @@ group("pdf_fuzzers") {
         ":pdf_formcalc_context_fuzzer",
         ":pdf_formcalc_fuzzer",
         ":pdfium_xfa_fuzzer",
+        ":pdfium_xfa_lpm_fuzzer",
       ]
       if (pdf_enable_xfa_bmp) {
         deps += [ ":pdf_codec_bmp_fuzzer" ]
@@ -306,5 +308,58 @@ if (pdf_enable_v8) {
       dict = "dicts/pdf.dict"
       seed_corpus = "corpora/xfa"
     }
+
+    static_library("proto_to_xfa") {
+      sources = [
+        "pdfium_xfa_lpm_fuzzer/proto_to_xfa.cc",
+        "pdfium_xfa_lpm_fuzzer/proto_to_xfa.h",
+        "pdfium_xfa_lpm_fuzzer/simple_xfa_pdf.cc",
+        "pdfium_xfa_lpm_fuzzer/simple_xfa_pdf.h",
+      ]
+      deps = [
+        ":xfa_proto",
+        "//base",
+      ]
+    }
+
+    fuzzer_test("pdfium_xfa_lpm_fuzzer") {
+      sources = [
+        "pdfium_xfa_lpm_fuzzer/fuzzer.cc",
+      ]
+      deps = [
+        ":proto_to_xfa",
+        "//base",
+        "//third_party/libprotobuf-mutator",
+        "//third_party/pdfium",
+        "//third_party/pdfium/testing/fuzzers:fuzzer_init_public",
+      ]
+      if (!is_component_build) {
+        deps +=
+            [ "//third_party/pdfium/testing/fuzzers:pdfium_xfa_lpm_fuzzer_src" ]
+      }
+      include_dirs = [ "//third_party/pdfium" ]
+
+      # Don't build the fuzzer while it isn't actually producing XFA.
+      # TODO(metzman): Remove this once the fuzzer actually fuzzes XFA.
+      additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+    }
+
+    test("pdfium_xfa_lpm_unittest") {
+      sources = [
+        "pdfium_xfa_lpm_fuzzer/simple_xfa_pdf_unittest.cc",
+      ]
+
+      deps = [
+        ":proto_to_xfa",
+        "//base/test:run_all_unittests",
+        "//testing/gtest",
+      ]
+    }
   }
+}
+
+proto_library("xfa_proto") {
+  sources = [
+    "pdfium_xfa_lpm_fuzzer/xfa.proto",
+  ]
 }

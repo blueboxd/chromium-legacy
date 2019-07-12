@@ -217,10 +217,10 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
         // Verify the number of Tasks in |registered_task_source|.
         auto transaction(registered_task_source->BeginTransaction());
         for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
-          EXPECT_TRUE(
-              transaction.TakeTask(registered_task_source->WillRunTask()));
+          auto run_intent = registered_task_source->WillRunTask();
+          EXPECT_TRUE(transaction.TakeTask(&run_intent));
           EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
-                    !transaction.DidProcessTask(true));
+                    !transaction.DidProcessTask(std::move(run_intent)));
         }
 
         scoped_refptr<TaskSource> task_source =

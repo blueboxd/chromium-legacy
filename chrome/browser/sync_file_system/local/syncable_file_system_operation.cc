@@ -359,7 +359,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     const FileSystemURL& url,
     storage::FileSystemContext* file_system_context,
     std::unique_ptr<storage::FileSystemOperationContext> operation_context)
-    : url_(url), weak_factory_(this) {
+    : url_(url) {
   DCHECK(file_system_context);
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);

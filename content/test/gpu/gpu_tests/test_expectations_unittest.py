@@ -60,21 +60,23 @@ def _ConflictLeaksRegression(possible_collision, exp):
   return ''
 
 
-def _IsCollision(s1, s2):
-  # s1 collides with s2 when s1 is a subset of s2
-  # A tag is in both sets if its a generic tag
-  # and its in one set while a specifc tag covered by the generic tag is in
-  # the other set.
-  for tag in s1:
-    if (not tag in s2 and not (
-        tag in GENERIC_CONDITIONS and
-        any(_map_specific_to_generic.get(t, t) == tag for t in s2)) and
-        not _map_specific_to_generic.get(tag, tag) in s2):
-      return False
+def _IsCollision(s1, s2, tag_sets):
+  # s1 and s2 do not collide when there exists a tag in s1 and tag in s2 that
+  # are from the same tag declaration set and are not equal to each other
+  # and one tag is not a generic tag that covers the other.
+  _generic_and_specific_tags_collide = lambda t1, t2: (
+      t1 in GENERIC_CONDITIONS and t2 in _map_specific_to_generic and
+      _map_specific_to_generic[t2] == t1)
+  for tag_set in tag_sets:
+    for t1, t2 in itertools.product(s1, s2):
+      if (t1 in tag_set and t2 in tag_set and t1 != t2 and
+          not _generic_and_specific_tags_collide(t1, t2) and
+          not _generic_and_specific_tags_collide(t2, t1)):
+        return False
   return True
 
 
-def _IsDriverTagDuplicated(s1, s2, test_class):
+def _IsDriverTagDuplicated(s1, s2, test_class, tag_sets):
   if not test_class:
     return False
 
@@ -93,7 +95,7 @@ def _IsDriverTagDuplicated(s1, s2, test_class):
   driver_tag2, other_tags2 = classify_tags(s2)
   if not driver_tag1 and not driver_tag2:
     return False
-  if not _IsCollision(other_tags1, other_tags2):
+  if not _IsCollision(other_tags1, other_tags2, tag_sets):
     return False
   if driver_tag1 == driver_tag2 or (not driver_tag1 or not driver_tag2):
     return True
@@ -173,7 +175,7 @@ def _MapGpuDevicesToVendors(tag_sets):
     if any(gpu in tag_set for gpu in GPU_CONDITIONS):
       _map_specific_to_generic.update(
           {t[0]: t[1] for t in
-           itertools.permutations(tag_set, 2) if (t[0] + '-').startswith(t[1])})
+           itertools.permutations(tag_set, 2) if t[0].startswith(t[1] + '-')})
       break
 
 
@@ -259,9 +261,10 @@ def CheckTestExpectationGlobsForCollision(
       for possible_collision in globs_to_match:
         reason = _ConflictLeaksRegression(possible_collision, match)
         if (reason and
-            (_IsCollision(possible_collision.tags, match.tags)
+            (_IsCollision(possible_collision.tags, match.tags, parser.tag_sets)
                 or _IsDriverTagDuplicated(
-                    possible_collision.tags, match.tags, test_class))):
+                    possible_collision.tags, match.tags, test_class,
+                    parser.tag_sets))):
           if not conflicts_found:
             error_msg += ('\n\nFound conflicts for pattern %s in %s:\n' %
                           (glob, file_name))
@@ -288,14 +291,15 @@ def CheckTestExpectationPatternsForCollision(
   master_conflicts_found = False
   error_msg = ''
   _MapGpuDevicesToVendors(parser.tag_sets)
-
   for exp in parser.expectations:
     tests_to_exps[exp.test].append(exp)
   for pattern, exps in tests_to_exps.items():
     conflicts_found = False
     for e1, e2 in itertools.combinations(exps, 2):
-      if (_IsCollision(e1.tags, e2.tags) or _IsCollision(e2.tags, e1.tags)
-          or _IsDriverTagDuplicated(e1.tags, e2.tags, test_class)):
+      if (_IsCollision(e1.tags, e2.tags, parser.tag_sets) or
+          _IsCollision(e2.tags, e1.tags, parser.tag_sets) or
+          _IsDriverTagDuplicated(
+              e1.tags, e2.tags, test_class, parser.tag_sets)):
         if not conflicts_found:
           error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
                         (pattern, file_name))
@@ -468,6 +472,30 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
           'abc.html [ RetryOnFailure ]', 'a/b/c/abc.html [ RetryOnFailure ]')
       CheckTestExpectationGlobsForCollision(
           test_expectations, 'test.txt', webgl_conformance_test_class)
+
+  def testCollisionsBetweenAngleAndNonAngleConfiguration(self):
+    test_expectations = '''
+    # tags: [ android ]
+    # tags: [ qualcomm-adreno-(tm)-418 ]
+    # tags: [ opengles ]
+    # results: [ RetryOnFailure Skip ]
+    [ android qualcomm-adreno-(tm)-418 ] a/b/c/d [ RetryOnFailure ]
+    [ android opengles ] a/b/c/d [ Skip ]
+    '''
+    with self.assertRaises(AssertionError):
+      CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+
+  def testCollisionsBetweenAngleAndNonAngleConfigurationUsingGlobs(self):
+    test_expectations = '''
+    # tags: [ android ]
+    # tags: [ qualcomm-adreno-(tm)-418 ]
+    # tags: [ opengles ]
+    # results: [ RetryOnFailure Skip ]
+    [ android qualcomm-adreno-(tm)-418 ] a/b/c* [ Skip ]
+    [ android opengles ] a/b/c/d [ RetryOnFailure ]
+    '''
+    with self.assertRaises(AssertionError):
+      CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithSpecifcAndGenericOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]

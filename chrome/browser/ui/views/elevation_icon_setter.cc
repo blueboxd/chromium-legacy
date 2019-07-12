@@ -59,7 +59,7 @@ SkBitmap GetElevationIcon() {
 
 ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
                                          base::OnceClosure callback)
-    : button_(button), weak_factory_(this) {
+    : button_(button) {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunnerWithTraits(

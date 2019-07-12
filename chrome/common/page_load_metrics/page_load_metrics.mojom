@@ -229,11 +229,11 @@ struct ResourceDataUpdate {
 struct FrameRenderDataUpdate {
   // How much visible elements in the frame shifted (bit.ly/lsm-explainer) since
   // the last timing update.
-  float layout_jank_delta;
+  float layout_shift_delta;
 
   // How much visible elements in the frame shifted (bit.ly/lsm-explainer),
   // before a user input or document scroll, since the last timing update.
-  float layout_jank_delta_before_input_or_scroll;
+  float layout_shift_delta_before_input_or_scroll;
 };
 
 // Metrics about the time spent in tasks (cpu time) by a frame.

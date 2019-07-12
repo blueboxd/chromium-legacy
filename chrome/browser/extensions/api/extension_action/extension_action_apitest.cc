@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
@@ -37,9 +38,23 @@
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/color_utils.h"
 
 namespace extensions {
 namespace {
+
+// Runs |script| in the background page of the extension with the given
+// |extension_id|, and waits for it to send a test-passed result. This will
+// fail if the test in |script| fails.
+void RunTestAndWaitForSuccess(Profile* profile,
+                              const ExtensionId& extension_id,
+                              const std::string& script) {
+  SCOPED_TRACE(script);
+  ResultCatcher result_catcher;
+  browsertest_util::ExecuteScriptInBackgroundPageNoWait(profile, extension_id,
+                                                        script);
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+}
 
 // A helper class to track StateStore changes.
 class TestStateStoreObserver : public StateStore::TestObserver {
@@ -69,6 +84,94 @@ class TestStateStoreObserver : public StateStore::TestObserver {
   ScopedObserver<StateStore, StateStore::TestObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStateStoreObserver);
+};
+
+// A helper class to handle setting or getting the values for an action from JS.
+class ActionTestHelper {
+ public:
+  ActionTestHelper(const char* api_name,
+                   const char* set_method_name,
+                   const char* get_method_name,
+                   const char* js_property_key,
+                   Profile* profile,
+                   const ExtensionId& extension_id)
+      : api_name_(api_name),
+        set_method_name_(set_method_name),
+        get_method_name_(get_method_name),
+        js_property_key_(js_property_key),
+        profile_(profile),
+        extension_id_(extension_id) {}
+  ~ActionTestHelper() = default;
+
+  // Checks the value for the given |tab_id|.
+  void CheckValueForTab(const char* expected_js_value, int tab_id) const {
+    constexpr char kScriptTemplate[] =
+        R"(chrome.%s.%s({tabId: %d}, (res) => {
+             chrome.test.assertNoLastError();
+             chrome.test.assertEq(%s, res);
+             chrome.test.notifyPass();
+           });)";
+    RunTestAndWaitForSuccess(
+        profile_, extension_id_,
+        base::StringPrintf(kScriptTemplate, api_name_, get_method_name_, tab_id,
+                           expected_js_value));
+  }
+
+  // Checks the default value.
+  void CheckDefaultValue(const char* expected_js_value) const {
+    constexpr char kScriptTemplate[] =
+        R"(chrome.%s.%s({}, (res) => {
+             chrome.test.assertNoLastError();
+             chrome.test.assertEq(%s, res);
+             chrome.test.notifyPass();
+           });)";
+    RunTestAndWaitForSuccess(
+        profile_, extension_id_,
+        base::StringPrintf(kScriptTemplate, api_name_, get_method_name_,
+                           expected_js_value));
+  }
+
+  // Sets the value for a given |tab_id|.
+  void SetValueForTab(const char* new_js_value, int tab_id) const {
+    constexpr char kScriptTemplate[] =
+        R"(chrome.%s.%s({tabId: %d, %s: %s}, () => {
+             chrome.test.assertNoLastError();
+             chrome.test.notifyPass();
+           });)";
+    RunTestAndWaitForSuccess(
+        profile_, extension_id_,
+        base::StringPrintf(kScriptTemplate, api_name_, set_method_name_, tab_id,
+                           js_property_key_, new_js_value));
+  }
+
+  // Sets the default value.
+  void SetDefaultValue(const char* new_js_value) const {
+    constexpr char kScriptTemplate[] =
+        R"(chrome.%s.%s({%s: %s}, () => {
+             chrome.test.assertNoLastError();
+             chrome.test.notifyPass();
+           });)";
+    RunTestAndWaitForSuccess(
+        profile_, extension_id_,
+        base::StringPrintf(kScriptTemplate, api_name_, set_method_name_,
+                           js_property_key_, new_js_value));
+  }
+
+ private:
+  // The name of the api (e.g., "action").
+  const char* const api_name_;
+  // The name of the method to call to set the value (e.g., "setPopup").
+  const char* const set_method_name_;
+  // The name of the method to call to get the value (e.g., "getPopup").
+  const char* const get_method_name_;
+  // The name of the property in the set method details (e.g., "popup").
+  const char* const js_property_key_;
+  // The associated profile.
+  Profile* const profile_;
+  // The id of the extension.
+  const ExtensionId extension_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActionTestHelper);
 };
 
 }  // namespace
@@ -565,39 +668,31 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, DynamicSetIcon) {
   EXPECT_EQ(SK_ColorRED, default_icon.AsBitmap().getColor(mid_x, mid_y));
 
   // Set the icon for the new tab to a different icon in the extension package.
-  {
-    ResultCatcher result_catcher;
-    browsertest_util::ExecuteScriptInBackgroundPageNoWait(
-        profile(), extension->id(),
-        base::StringPrintf("setIcon({tabId: %d, path: 'blue_icon.png'});",
-                           new_tab_id));
-    EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
-  }
+  RunTestAndWaitForSuccess(
+      profile(), extension->id(),
+      base::StringPrintf("setIcon({tabId: %d, path: 'blue_icon.png'});",
+                         new_tab_id));
 
   new_tab_icon = toolbar_helper->GetIcon(0);
   EXPECT_FALSE(new_tab_icon.IsEmpty());
   EXPECT_EQ(SK_ColorBLUE, new_tab_icon.AsBitmap().getColor(mid_x, mid_y));
 
   // Next, set the icon to a dynamically-generated one (from canvas image data).
-  {
-    ResultCatcher result_catcher;
-    constexpr char kSetIconFromImageData[] =
-        R"({
-             let canvas = document.createElement('canvas');
-             canvas.width = 32;
-             canvas.height = 32;
-             let context = canvas.getContext('2d');
-             context.clearRect(0, 0, 32, 32);
-             context.fillStyle = '#00FF00';  // Green
-             context.fillRect(0, 0, 32, 32);
-             let imageData = context.getImageData(0, 0, 32, 32);
-             setIcon({tabId: %d, imageData: imageData});
-           })";
-    browsertest_util::ExecuteScriptInBackgroundPageNoWait(
-        profile(), extension->id(),
-        base::StringPrintf(kSetIconFromImageData, new_tab_id));
-    EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
-  }
+  constexpr char kSetIconFromImageData[] =
+      R"({
+           let canvas = document.createElement('canvas');
+           canvas.width = 32;
+           canvas.height = 32;
+           let context = canvas.getContext('2d');
+           context.clearRect(0, 0, 32, 32);
+           context.fillStyle = '#00FF00';  // Green
+           context.fillRect(0, 0, 32, 32);
+           let imageData = context.getImageData(0, 0, 32, 32);
+           setIcon({tabId: %d, imageData: imageData});
+         })";
+  RunTestAndWaitForSuccess(
+      profile(), extension->id(),
+      base::StringPrintf(kSetIconFromImageData, new_tab_id));
 
   new_tab_icon = toolbar_helper->GetIcon(0);
   EXPECT_FALSE(new_tab_icon.IsEmpty());
@@ -612,6 +707,199 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, DynamicSetIcon) {
 
   // TODO(devlin): Add tests for setting icons as a dictionary of
   // { size -> image_data }.
+}
+
+// Tests various getter and setter methods.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
+  // Load up an extension with default values.
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test Getters and Setters",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {
+             "default_title": "default title",
+             "default_popup": "default_popup.html"
+           },
+           "background": { "scripts": ["background.js"] }
+         })";
+  constexpr char kBackgroundJs[] = "// Intentionally blank.";
+  constexpr char kPopupHtml[] =
+      "<!doctype html><html><body>Blank</body></html>";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  test_dir.WriteFile(FILE_PATH_LITERAL("default_popup.html"), kPopupHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("custom_popup1.html"), kPopupHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("custom_popup2.html"), kPopupHtml);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  int first_tab_id = GetActiveTabId();
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://newtab"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  int second_tab_id = GetActiveTabId();
+
+  // A simple structure to hold different representations of values (one JS,
+  // one C++).
+  struct ValuePair {
+    std::string cpp;
+    std::string js;
+
+    bool operator!=(const ValuePair& rhs) const {
+      return rhs.cpp != this->cpp || rhs.js != this->js;
+    }
+  };
+
+  // A function that returns the the C++ result for the given ExtensionAction
+  // and tab id.
+  using CPPValueGetter =
+      base::RepeatingCallback<std::string(ExtensionAction*, int)>;
+
+  auto run_test =
+      [action, first_tab_id, second_tab_id](
+          ActionTestHelper& test_helper, const ValuePair& default_value,
+          const ValuePair& custom_value1, const ValuePair& custom_value2,
+          CPPValueGetter value_getter) {
+        // Ensure all values are mutually exclusive.
+        EXPECT_NE(default_value, custom_value1);
+        EXPECT_NE(default_value, custom_value2);
+        EXPECT_NE(custom_value1, custom_value2);
+
+        SCOPED_TRACE(base::StringPrintf(
+            "default: '%s', custom1: '%s', custom2: '%s'",
+            default_value.cpp.c_str(), custom_value1.cpp.c_str(),
+            custom_value2.cpp.c_str()));
+
+        // A helper to check the value of a property of the action in both
+        // C++ (from the ExtensionAction object) and in JS (through the API
+        // method).
+        auto check_value = [action, &value_getter, &test_helper](
+                               const ValuePair& expected_value, int tab_id) {
+          EXPECT_EQ(expected_value.cpp, value_getter.Run(action, tab_id));
+          if (tab_id == ExtensionAction::kDefaultTabId)
+            test_helper.CheckDefaultValue(expected_value.js.c_str());
+          else
+            test_helper.CheckValueForTab(expected_value.js.c_str(), tab_id);
+        };
+
+        // Page actions don't support setting a default value (because they are
+        // inherently tab-specific).
+        bool supports_default = GetParam() != ActionInfo::TYPE_PAGE;
+
+        // Check the initial state. These should start at the defaults.
+        if (supports_default)
+          check_value(default_value, ExtensionAction::kDefaultTabId);
+        check_value(default_value, first_tab_id);
+        check_value(default_value, second_tab_id);
+
+        // Set the value for the first tab to be the first custom value.
+        test_helper.SetValueForTab(custom_value1.js.c_str(), first_tab_id);
+
+        // The first tab should have the custom value, while the second tab
+        // (and the default tab, if supported) should still have the default
+        // value.
+        if (supports_default)
+          check_value(default_value, ExtensionAction::kDefaultTabId);
+        check_value(custom_value1, first_tab_id);
+        check_value(default_value, second_tab_id);
+
+        if (supports_default) {
+          // Change the default value to the second custom value.
+          test_helper.SetDefaultValue(custom_value2.js.c_str());
+
+          // Now, the default and second tab should each have the second custom
+          // value. Since the first tab had its own value set, it should still
+          // be set to the first custom value.
+          check_value(custom_value2, ExtensionAction::kDefaultTabId);
+          check_value(custom_value1, first_tab_id);
+          check_value(custom_value2, second_tab_id);
+        }
+      };
+
+  const char* kApiName = GetAPIName(GetParam());
+
+  {
+    // setPopup/getPopup.
+    GURL default_popup_url = extension->GetResourceURL("default_popup.html");
+    GURL custom_popup_url1 = extension->GetResourceURL("custom_popup1.html");
+    GURL custom_popup_url2 = extension->GetResourceURL("custom_popup2.html");
+    ValuePair default_popup{default_popup_url.spec(),
+                            base::StrCat({"'", default_popup_url.spec(), "'"})};
+    ValuePair custom_popup1{custom_popup_url1.spec(),
+                            base::StrCat({"'", custom_popup_url1.spec(), "'"})};
+    ValuePair custom_popup2{custom_popup_url2.spec(),
+                            base::StrCat({"'", custom_popup_url2.spec(), "'"})};
+
+    auto get_popup = [](ExtensionAction* action, int tab_id) {
+      return action->GetPopupUrl(tab_id).spec();
+    };
+
+    ActionTestHelper popup_helper(kApiName, "setPopup", "getPopup", "popup",
+                                  profile(), extension->id());
+    run_test(popup_helper, default_popup, custom_popup1, custom_popup2,
+             base::BindRepeating(get_popup));
+  }
+  {
+    // setTitle/getTitle.
+    ValuePair default_title{"default title", "'default title'"};
+    ValuePair custom_title1{"custom title1", "'custom title1'"};
+    ValuePair custom_title2{"custom title2", "'custom title2'"};
+
+    auto get_title = [](ExtensionAction* action, int tab_id) {
+      return action->GetTitle(tab_id);
+    };
+
+    ActionTestHelper title_helper(kApiName, "setTitle", "getTitle", "title",
+                                  profile(), extension->id());
+    run_test(title_helper, default_title, custom_title1, custom_title2,
+             base::BindRepeating(get_title));
+  }
+
+  // Page actions don't have badges; for them, the test is done.
+  if (GetParam() == ActionInfo::TYPE_PAGE)
+    return;
+
+  {
+    // setBadgeText/getBadgeText.
+    ValuePair default_badge_text{"", "''"};
+    ValuePair custom_badge_text1{"custom badge1", "'custom badge1'"};
+    ValuePair custom_badge_text2{"custom badge2", "'custom badge2'"};
+
+    auto get_badge_text = [](ExtensionAction* action, int tab_id) {
+      return action->GetBadgeText(tab_id);
+    };
+
+    ActionTestHelper badge_text_helper(kApiName, "setBadgeText", "getBadgeText",
+                                       "text", profile(), extension->id());
+    run_test(badge_text_helper, default_badge_text, custom_badge_text1,
+             custom_badge_text2, base::BindRepeating(get_badge_text));
+  }
+  {
+    // setBadgeColor/getBadgeColor.
+    ValuePair default_badge_color{"0,0,0", "[0, 0, 0, 0]"};
+    ValuePair custom_badge_color1{"255,0,0", "[255, 0, 0, 255]"};
+    ValuePair custom_badge_color2{"0,255,0", "[0, 255, 0, 255]"};
+
+    auto get_badge_color = [](ExtensionAction* action, int tab_id) {
+      return color_utils::SkColorToRgbString(
+          action->GetBadgeBackgroundColor(tab_id));
+    };
+
+    ActionTestHelper badge_color_helper(kApiName, "setBadgeBackgroundColor",
+                                        "getBadgeBackgroundColor", "color",
+                                        profile(), extension->id());
+    run_test(badge_color_helper, default_badge_color, custom_badge_color1,
+             custom_badge_color2, base::BindRepeating(get_badge_color));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(,

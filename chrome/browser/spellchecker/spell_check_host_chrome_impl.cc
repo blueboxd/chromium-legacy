@@ -21,7 +21,7 @@
 
 SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
     const service_manager::Identity& renderer_identity)
-    : renderer_identity_(renderer_identity), weak_factory_(this) {}
+    : renderer_identity_(renderer_identity) {}
 
 SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
 

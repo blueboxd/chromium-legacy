@@ -27,7 +27,7 @@ def _RepackMain(args):
 def _ExtractMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
 
-  for resource_id, payload in pak.resources.iteritems():
+  for resource_id, payload in pak.resources.items():
     path = os.path.join(args.output_dir, str(resource_id))
     with open(path, 'w') as f:
       f.write(payload)

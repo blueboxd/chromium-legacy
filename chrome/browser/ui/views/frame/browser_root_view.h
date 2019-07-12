@@ -127,7 +127,7 @@ class BrowserRootView : public views::internal::RootView {
 
   std::unique_ptr<DropInfo> drop_info_;
 
-  base::WeakPtrFactory<BrowserRootView> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserRootView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRootView);
 };

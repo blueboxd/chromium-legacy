@@ -484,6 +484,12 @@
       initial: false,
     },
 
+    // The current state of caret browsing mode.
+    {
+      name: "caretBrowsingEnabled",
+      initial: false,
+    },
+
     // Font scale factor for accessibility, applied as part of text autosizing.
     {
       name: "accessibilityFontScaleFactor",

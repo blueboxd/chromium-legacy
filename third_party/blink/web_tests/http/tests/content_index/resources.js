@@ -7,18 +7,6 @@
 const swUrl = '/resources/empty-worker.js';
 const scope = '/resources/';
 
-// Verifies that |func|, when invoked, throws a TypeError exception.
-async function expectTypeError(func) {
-  try {
-    await func();
-  } catch (e) {
-    assert_equals(e.name, 'TypeError');
-    return;
-  }
-
-  assert_unreached('expected a TypeError, but none was thrown');
-}
-
 async function expectTypeErrorWithMessage(promise, message) {
   try {
     await promise;
@@ -33,7 +21,7 @@ async function expectTypeErrorWithMessage(promise, message) {
 
 function createDescription({id = 'id', title = 'title', description = 'description',
                             category = 'homepage', iconUrl = '/resources/square.png',
-                            launchUrl = '/'}) {
+                            launchUrl = scope}) {
   return {id, title, description, category, iconUrl, launchUrl};
 }
 

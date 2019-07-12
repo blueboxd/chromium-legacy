@@ -5,7 +5,7 @@ include_rules = [
   "+components/payments/content",
   "+components/search_engines/keyword_table.h",
   "+components/search_engines/keyword_web_data_service.h",
-  "+components/signin/core/browser/webdata",
+  "+components/signin/public/webdata",
   "+components/sync",
   "+components/webdata/common",
   "+sql",

@@ -22,10 +22,10 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 
 namespace content {
 

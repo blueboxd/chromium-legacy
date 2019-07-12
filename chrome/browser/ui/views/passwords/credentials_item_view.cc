@@ -68,8 +68,7 @@ CredentialsItemView::CredentialsItemView(
       upper_label_(nullptr),
       lower_label_(nullptr),
       info_icon_(nullptr),
-      hover_color_(hover_color),
-      weak_ptr_factory_(this) {
+      hover_color_(hover_color) {
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.

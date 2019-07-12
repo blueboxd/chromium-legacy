@@ -35,8 +35,7 @@ BrowserRenderer::BrowserRenderer(
       browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size),
-      ui_(std::move(ui)),
-      weak_ptr_factory_(this) {
+      ui_(std::move(ui)) {
   scheduler_delegate_->SetBrowserRenderer(this);
 }
 

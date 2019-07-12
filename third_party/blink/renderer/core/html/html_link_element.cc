@@ -299,10 +299,16 @@ bool HTMLLinkElement::StyleSheetIsLoading() const {
 }
 
 void HTMLLinkElement::LinkLoaded() {
+  if (rel_attribute_.IsLinkPrefetch()) {
+    UseCounter::Count(GetDocument(), WebFeature::kLinkPrefetchLoadEvent);
+  }
   DispatchEvent(*Event::Create(event_type_names::kLoad));
 }
 
 void HTMLLinkElement::LinkLoadingErrored() {
+  if (rel_attribute_.IsLinkPrefetch()) {
+    UseCounter::Count(GetDocument(), WebFeature::kLinkPrefetchErrorEvent);
+  }
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 

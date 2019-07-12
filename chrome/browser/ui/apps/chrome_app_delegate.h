@@ -93,7 +93,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   std::unique_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
   base::Closure terminating_callback_;
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<ChromeAppDelegate> weak_factory_;
+  base::WeakPtrFactory<ChromeAppDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppDelegate);
 };

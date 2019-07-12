@@ -124,7 +124,7 @@ class UserManagerScreenHandler
   // The CancelableTaskTracker is currently used by GetProfileStatistics
   base::CancelableTaskTracker tracker_;
 
-  base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<UserManagerScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };

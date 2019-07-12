@@ -181,7 +181,7 @@ class BrowserFeatureExtractor {
   content::WebContents* tab_;
   ClientSideDetectionHost* host_;
   base::CancelableTaskTracker cancelable_task_tracker_;
-  base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_;
+  base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFeatureExtractor);
 };

@@ -335,8 +335,7 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
       profiles_menu_(nullptr),
       top_sites_(nullptr),
       tab_restore_service_(nullptr),
-      scoped_observer_(this),
-      weak_ptr_factory_(this) {
+      scoped_observer_(this) {
   EnsureMethodsLoaded();
 
   if (server_new)

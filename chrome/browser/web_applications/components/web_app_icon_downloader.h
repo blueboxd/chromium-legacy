@@ -113,7 +113,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // The histogram name to log individual fetch results under.
   std::string https_status_code_class_histogram_name_;
 
-  base::WeakPtrFactory<WebAppIconDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<WebAppIconDownloader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppIconDownloader);
 };

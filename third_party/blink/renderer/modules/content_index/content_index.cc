@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -24,13 +25,12 @@ namespace {
 
 constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
 
-// TODO(crbug.com/973844): Find the ideal icon dimensions.
-constexpr int kMaxIconDimension = 256;
-
 // Validates |description|. If there is an error, an error message to be passed
 // to a TypeError is passed. Otherwise a null string is returned.
 WTF::String ValidateDescription(const ContentDescription& description,
-                                ExecutionContext* execution_context) {
+                                ServiceWorkerRegistration* registration) {
+  // TODO(crbug.com/973844): Should field sizes be capped?
+
   if (description.id().IsEmpty())
     return "ID cannot be empty";
 
@@ -46,7 +46,20 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.launchUrl().IsEmpty())
     return "Invalid launch URL provided";
 
-  // TODO(crbug.com/973844): Add origin checks.
+  KURL icon_url =
+      registration->GetExecutionContext()->CompleteURL(description.iconUrl());
+  if (!icon_url.ProtocolIsInHTTPFamily())
+    return "Invalid icon URL protocol";
+
+  KURL launch_url =
+      registration->GetExecutionContext()->CompleteURL(description.launchUrl());
+  auto* security_origin =
+      registration->GetExecutionContext()->GetSecurityOrigin();
+  if (!security_origin->CanRequest(launch_url))
+    return "Service Worker cannot request provided launch URL";
+
+  if (!launch_url.GetString().StartsWith(registration->scope()))
+    return "Launch URL must belong to the Service Worker's scope";
 
   return WTF::String();
 }
@@ -72,7 +85,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   }
 
   WTF::String description_error =
-      ValidateDescription(*description, registration_->GetExecutionContext());
+      ValidateDescription(*description, registration_.Get());
   if (!description_error.IsNull()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
@@ -90,9 +103,12 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   resource_request.SetTimeoutInterval(kIconFetchTimeout);
 
   auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
+  // TODO(crbug.com/973844): Use ideal icon dimensions instead of the max.
   threaded_icon_loader->Start(
       registration_->GetExecutionContext(), resource_request,
-      /* resize_dimensions= */ WebSize(kMaxIconDimension, kMaxIconDimension),
+      /* resize_dimensions= */
+      WebSize(mojom::blink::ContentIndexService::kMaxIconDimension,
+              mojom::blink::ContentIndexService::kMaxIconDimension),
       WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
                 mojom::blink::ContentDescription::From(description)));
@@ -114,8 +130,11 @@ void ContentIndex::DidGetIcon(ScriptPromiseResolver* resolver,
     return;
   }
 
+  KURL launch_url = registration_->GetExecutionContext()->CompleteURL(
+      description->launch_url);
+
   GetService()->Add(registration_->RegistrationId(), std::move(description),
-                    icon,
+                    icon, launch_url,
                     WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
                               WrapPersistent(resolver)));
 }
@@ -134,7 +153,8 @@ void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kAbortError,
           "Failed to add description due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }
@@ -175,7 +195,8 @@ void ContentIndex::DidDeleteDescription(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kAbortError,
           "Failed to delete description due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }
@@ -222,7 +243,8 @@ void ContentIndex::DidGetDescriptions(
           DOMExceptionCode::kAbortError,
           "Failed to get descriptions due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }

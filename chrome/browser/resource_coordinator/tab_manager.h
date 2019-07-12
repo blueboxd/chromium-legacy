@@ -495,7 +495,7 @@ class TabManager : public LifecycleUnitObserver,
   TabLoadTracker* const tab_load_tracker_;
 
   // Weak pointer factory used for posting delayed tasks.
-  base::WeakPtrFactory<TabManager> weak_ptr_factory_;
+  base::WeakPtrFactory<TabManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabManager);
 };

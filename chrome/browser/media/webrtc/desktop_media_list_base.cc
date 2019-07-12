@@ -17,7 +17,7 @@ using content::BrowserThread;
 using content::DesktopMediaID;
 
 DesktopMediaListBase::DesktopMediaListBase(base::TimeDelta update_period)
-    : update_period_(update_period), weak_factory_(this) {}
+    : update_period_(update_period) {}
 
 DesktopMediaListBase::~DesktopMediaListBase() {}
 

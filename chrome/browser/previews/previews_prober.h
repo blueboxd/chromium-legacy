@@ -259,7 +259,7 @@ class PreviewsProber
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<PreviewsProber> weak_factory_;
+  base::WeakPtrFactory<PreviewsProber> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsProber);
 };

@@ -107,7 +107,7 @@ class PdfPrinterHandler : public PrinterHandler,
   // The callback to call when complete.
   PrintCallback print_callback_;
 
-  base::WeakPtrFactory<PdfPrinterHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PdfPrinterHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PdfPrinterHandler);
 };

@@ -158,12 +158,9 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
   }
 }
 
-BrowserFeatureExtractor::BrowserFeatureExtractor(
-    WebContents* tab,
-    ClientSideDetectionHost* host)
-    : tab_(tab),
-      host_(host),
-      weak_factory_(this) {
+BrowserFeatureExtractor::BrowserFeatureExtractor(WebContents* tab,
+                                                 ClientSideDetectionHost* host)
+    : tab_(tab), host_(host) {
   DCHECK(tab);
 }
 

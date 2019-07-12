@@ -33,8 +33,7 @@ void PerformanceManagerTabHelper::DetachAndDestroyAll() {
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManager::GetInstance()),
-      weak_factory_(this) {
+      performance_manager_(PerformanceManager::GetInstance()) {
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,

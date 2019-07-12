@@ -116,7 +116,7 @@ class FullscreenControllerTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  base::WeakPtrFactory<FullscreenControllerTest> weak_ptr_factory_;
+  base::WeakPtrFactory<FullscreenControllerTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerTest);
 };

@@ -148,7 +148,7 @@ class CastDeviceProvider::DeviceListerDelegate
   std::unique_ptr<ServiceDiscoveryDeviceLister> device_lister_;
 };
 
-CastDeviceProvider::CastDeviceProvider() : weak_factory_(this) {}
+CastDeviceProvider::CastDeviceProvider() {}
 
 CastDeviceProvider::~CastDeviceProvider() {}
 

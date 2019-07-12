@@ -104,7 +104,7 @@ class BookmarkContextMenuController
   bookmarks::BookmarkModel* model_;
   std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   // Used to detect deletion of |this| executing a command.
-  base::WeakPtrFactory<BookmarkContextMenuController> weak_factory_;
+  base::WeakPtrFactory<BookmarkContextMenuController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuController);
 };

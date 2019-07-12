@@ -116,8 +116,7 @@ MockMediaStatusObserver::MockMediaStatusObserver(
 
 MockMediaStatusObserver::~MockMediaStatusObserver() {}
 
-MockMediaController::MockMediaController()
-    : binding_(this), hangouts_binding_(this) {}
+MockMediaController::MockMediaController() : binding_(this) {}
 
 MockMediaController::~MockMediaController() {}
 
@@ -443,46 +442,6 @@ void MediaRouterMojoTest::TestCreateMediaRouteController() {
   // as a MediaStatusObserver, and should also notify its own observers.
   EXPECT_CALL(controller_observer, OnMediaStatusUpdated(media_status));
   route_controller_as_observer->OnMediaStatusUpdated(media_status);
-
-  base::RunLoop().RunUntilIdle();
-}
-
-void MediaRouterMojoTest::TestCreateHangoutsMediaRouteController() {
-  MockMediaController mock_media_controller;
-  mojom::MediaStatusObserverPtr route_controller_as_observer;
-
-  MediaRoute route = CreateMediaRoute();
-  route.set_controller_type(RouteControllerType::kHangouts);
-  router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, {route},
-                            std::string(), std::vector<std::string>());
-
-  EXPECT_CALL(mock_extension_provider_,
-              CreateMediaRouteControllerInternal(kRouteId, _, _, _))
-      .WillOnce(Invoke(
-          [&mock_media_controller, &route_controller_as_observer](
-              const std::string& route_id,
-              mojom::MediaControllerRequest& request,
-              mojom::MediaStatusObserverPtr& observer,
-              mojom::MediaRouteProvider::CreateMediaRouteControllerCallback&
-                  cb) {
-            mock_media_controller.Bind(std::move(request));
-            route_controller_as_observer = std::move(observer);
-            std::move(cb).Run(true);
-          }));
-  EXPECT_CALL(mock_media_controller, ConnectHangoutsMediaRouteController());
-
-  // Since the route is a Hangouts route, the Hangouts-specific Mojo ptr should
-  // also be initialized.
-  scoped_refptr<MediaRouteController> route_controller =
-      router()->GetRouteController(kRouteId);
-  HangoutsMediaRouteController* hangouts_controller =
-      HangoutsMediaRouteController::From(route_controller.get());
-  ASSERT_TRUE(hangouts_controller);
-
-  // Media commands sent to the MediaRouteController should be forwarded to the
-  // MediaController created by the MediaRouteProvider.
-  EXPECT_CALL(mock_media_controller, SetLocalPresent(true));
-  hangouts_controller->SetLocalPresent(true);
 
   base::RunLoop().RunUntilIdle();
 }

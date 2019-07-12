@@ -75,7 +75,7 @@ class DesktopMediaListBase : public DesktopMediaList {
   // The observer passed to StartUpdating().
   DesktopMediaListObserver* observer_ = nullptr;
 
-  base::WeakPtrFactory<DesktopMediaListBase> weak_factory_;
+  base::WeakPtrFactory<DesktopMediaListBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListBase);
 };

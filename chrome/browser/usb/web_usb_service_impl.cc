@@ -23,8 +23,7 @@ WebUsbServiceImpl::WebUsbServiceImpl(
     : render_frame_host_(render_frame_host),
       usb_chooser_(std::move(usb_chooser)),
       device_observer_(this),
-      permission_observer_(this),
-      weak_factory_(this) {
+      permission_observer_(this) {
   DCHECK(render_frame_host_);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);

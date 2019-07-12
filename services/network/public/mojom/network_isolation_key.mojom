@@ -11,5 +11,5 @@ struct NetworkIsolationKey {
   // Keeping optional to allow clients that do not populate top frame origin.
   // TODO(crbug.com/910721): This will eventually always be populated.
   url.mojom.Origin? top_frame_origin;
-  url.mojom.Origin? initiating_frame_origin;
+  url.mojom.Origin? frame_origin;
 };

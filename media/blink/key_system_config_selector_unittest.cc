@@ -57,8 +57,8 @@ const char kInvalidContainer[] = "video/invalid";
 // that the test can perform EmeMediaType check.
 // TODO(sandersd): Extended codec variants (requires proprietary codec support).
 // TODO(xhwang): Platform Opus is not available on all Android versions, where
-// some encrypted Opus related tests may fail. See PlatformHasOpusSupport()
-// for more details.
+// some encrypted Opus related tests may fail. See
+// MediaCodecUtil::IsOpusDecoderAvailable() for more details.
 const char kSupportedAudioCodec[] = "audio_codec";
 const char kSupportedVideoCodec[] = "video_codec";
 const char kUnsupportedCodec[] = "unsupported_codec";

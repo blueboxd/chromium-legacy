@@ -333,9 +333,7 @@ IncidentReportingService::IncidentReportingService(
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(
           base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
-          GetBackgroundTaskRunner()),
-      receiver_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+          GetBackgroundTaskRunner()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_ADDED,
@@ -415,9 +413,7 @@ IncidentReportingService::IncidentReportingService(
                        base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs),
                        this,
                        &IncidentReportingService::OnCollationTimeout),
-      delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner),
-      receiver_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+      delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_ADDED,
                               content::NotificationService::AllSources());

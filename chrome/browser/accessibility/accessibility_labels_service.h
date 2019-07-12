@@ -51,7 +51,7 @@ class AccessibilityLabelsService : public KeyedService {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  base::WeakPtrFactory<AccessibilityLabelsService> weak_factory_;
+  base::WeakPtrFactory<AccessibilityLabelsService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityLabelsService);
 };

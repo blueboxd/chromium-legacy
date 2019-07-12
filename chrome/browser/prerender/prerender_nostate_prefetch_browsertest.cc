@@ -53,6 +53,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 using prerender::test_utils::DestructionWaiter;
@@ -84,6 +85,8 @@ const char kPrefetchNostorePage[] = "/prerender/prefetch_nostore_page.html";
 const char kPrefetchPage[] = "/prerender/prefetch_page.html";
 const char kPrefetchPage2[] = "/prerender/prefetch_page2.html";
 const char kPrefetchPageBigger[] = "/prerender/prefetch_page_bigger.html";
+const char kPrefetchPageMultipleResourceTypes[] =
+    "/prerender/prefetch_page_multiple_resource_types.html";
 const char kPrefetchPng[] = "/prerender/image.png";
 const char kPrefetchPng2[] = "/prerender/image2.png";
 const char kPrefetchPngRedirect[] = "/prerender/image-redirect.png";
@@ -92,6 +95,8 @@ const char kPrefetchResponseHeaderCSP[] =
     "/prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "/prerender/prefetch.js";
 const char kPrefetchScript2[] = "/prerender/prefetch2.js";
+const char kPrefetchCss[] = "/prerender/style.css";
+const char kPrefetchFont[] = "/prerender/font.woff";
 const char kPrefetchDownloadFile[] = "/download-test1.lib";
 const char kPrefetchSubresourceRedirectPage[] =
     "/prerender/prefetch_subresource_redirect.html";
@@ -219,7 +224,7 @@ class NoStatePrefetchBrowserTestHttpCache
   void SetUp() override {
     if (GetParam()) {
       feature_list_.InitAndEnableFeature(
-          net::features::kSplitCacheByTopFrameOrigin);
+          net::features::kSplitCacheByNetworkIsolationKey);
     }
     NoStatePrefetchBrowserTest::SetUp();
   }
@@ -301,6 +306,120 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache,
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
+}
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchAllResourceTypes) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 1);
+}
+
+// Test and Test Class for lightweight prefetch under the HTML configuration.
+class HTMLOnlyNoStatePrefetchBrowserTest : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> parameters;
+    parameters["html_only"] = "true";
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(HTMLOnlyNoStatePrefetchBrowserTest, PrefetchHTMLOnly) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
+}
+
+// Test and Test Class for lightweight prefetch under the HTML+CSS
+// configuration.
+class HTMLCSSNoStatePrefetchBrowserTest : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> parameters;
+    parameters["skip_script"] = "true";
+    parameters["skip_other"] = "true";
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(HTMLCSSNoStatePrefetchBrowserTest, PrefetchHTMLCSS) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
+}
+
+// Test and Test Class for lightweight prefetch under the HTML+CSS+Script
+// configuration.
+class HTMLCSSScriptNoStatePrefetchBrowserTest
+    : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> parameters;
+    parameters["skip_other"] = "true";
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(HTMLCSSScriptNoStatePrefetchBrowserTest,
+                       PrefetchHTMLCSSScript) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
 }
 
 void GetCookieCallback(base::RepeatingClosure callback,

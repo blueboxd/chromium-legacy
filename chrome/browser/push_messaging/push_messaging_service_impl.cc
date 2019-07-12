@@ -176,8 +176,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
     : profile_(profile),
       push_subscription_count_(0),
       pending_push_subscription_count_(0),
-      notification_manager_(profile),
-      weak_factory_(this) {
+      notification_manager_(profile) {
   DCHECK(profile);
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 

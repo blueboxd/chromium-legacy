@@ -353,8 +353,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       should_extract_malware_features_(true),
       should_classify_for_malware_(false),
       pageload_complete_(false),
-      unsafe_unique_page_id_(-1),
-      weak_factory_(this) {
+      unsafe_unique_page_id_(-1) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
   csd_service_ = g_browser_process->safe_browsing_detection_service();

@@ -71,8 +71,7 @@ ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
       was_used_on_page_(false),
       ignore_active_tab_granted_(false),
       test_observer_(nullptr),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+      extension_registry_observer_(this) {
   CHECK(web_contents);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }

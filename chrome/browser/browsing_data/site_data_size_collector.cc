@@ -47,8 +47,7 @@ SiteDataSizeCollector::SiteDataSizeCollector(
       cache_storage_helper_(cache_storage_helper),
       flash_lso_helper_(flash_lso_helper),
       in_flight_operations_(0),
-      total_bytes_(0),
-      weak_ptr_factory_(this) {}
+      total_bytes_(0) {}
 
 SiteDataSizeCollector::~SiteDataSizeCollector() {
 }

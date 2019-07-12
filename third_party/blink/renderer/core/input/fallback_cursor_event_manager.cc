@@ -291,8 +291,23 @@ void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
 
   DCHECK(scrollable);
 
+  DCHECK(root_frame_->GetDocument());
+  DCHECK(root_frame_->GetDocument()->View());
+  // TODO(bokan): Overly-defensive since we'll be merging, remove from ToT.
+  if (!root_frame_->GetDocument() || !root_frame_->GetDocument()->View())
+    return;
+
   IntPoint location_in_root_frame{e.PositionInRootFrame().x,
                                   e.PositionInRootFrame().y};
+
+  // Make sure we unlock all movement if the cursor is outside our bounds. This
+  // can happen when the cursor is enabled/disabled (e.g. position: -1,-1).
+  IntRect root_frame_rect = root_frame_->GetDocument()->View()->FrameRect();
+  if (!root_frame_rect.Contains(location_in_root_frame)) {
+    ResetCurrentScrollable();
+    LockCursor(false, false, false, false);
+    return;
+  }
 
   IntSize scrollable_clip_size_in_root_frame =
       ScrollableAreaClipSizeInRootFrame(*scrollable);

@@ -262,6 +262,74 @@ class ActionSetIconFunction : public ExtensionActionSetIconFunction {
   ~ActionSetIconFunction() override {}
 };
 
+class ActionGetPopupFunction : public ExtensionActionGetPopupFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.getPopup", ACTION_GETPOPUP)
+
+ protected:
+  ~ActionGetPopupFunction() override {}
+};
+
+class ActionSetPopupFunction : public ExtensionActionSetPopupFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.setPopup", ACTION_SETPOPUP)
+
+ protected:
+  ~ActionSetPopupFunction() override {}
+};
+
+class ActionGetTitleFunction : public ExtensionActionGetTitleFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.getTitle", ACTION_GETTITLE)
+
+ protected:
+  ~ActionGetTitleFunction() override {}
+};
+
+class ActionSetTitleFunction : public ExtensionActionSetTitleFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.setTitle", ACTION_SETTITLE)
+
+ protected:
+  ~ActionSetTitleFunction() override {}
+};
+
+class ActionGetBadgeTextFunction : public ExtensionActionGetBadgeTextFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.getBadgeText", ACTION_GETBADGETEXT)
+
+ protected:
+  ~ActionGetBadgeTextFunction() override {}
+};
+
+class ActionSetBadgeTextFunction : public ExtensionActionSetBadgeTextFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.setBadgeText", ACTION_SETBADGETEXT)
+
+ protected:
+  ~ActionSetBadgeTextFunction() override {}
+};
+
+class ActionGetBadgeBackgroundColorFunction
+    : public ExtensionActionGetBadgeBackgroundColorFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.getBadgeBackgroundColor",
+                             ACTION_GETBADGEBACKGROUNDCOLOR)
+
+ protected:
+  ~ActionGetBadgeBackgroundColorFunction() override {}
+};
+
+class ActionSetBadgeBackgroundColorFunction
+    : public ExtensionActionSetBadgeBackgroundColorFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.setBadgeBackgroundColor",
+                             ACTION_SETBADGEBACKGROUNDCOLOR)
+
+ protected:
+  ~ActionSetBadgeBackgroundColorFunction() override {}
+};
+
 // TODO(devlin): Add the rest of the action APIs here.
 
 //

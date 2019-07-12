@@ -17,7 +17,7 @@
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
 #else
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
-#include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #endif
 
 #if defined(OS_CHROMEOS)

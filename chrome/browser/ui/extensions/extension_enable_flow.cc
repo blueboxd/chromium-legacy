@@ -33,8 +33,7 @@ ExtensionEnableFlow::ExtensionEnableFlow(Profile* profile,
       delegate_(delegate),
       parent_contents_(NULL),
       parent_window_(NULL),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {}
+      extension_registry_observer_(this) {}
 
 ExtensionEnableFlow::~ExtensionEnableFlow() {
 }

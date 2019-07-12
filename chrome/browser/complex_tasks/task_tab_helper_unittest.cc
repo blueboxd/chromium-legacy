@@ -8,7 +8,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/sessions/content/content_record_task_id.h"
+#include "components/sessions/content/navigation_task_id.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -183,7 +183,7 @@ TEST_F(TaskTabHelperUnitTest, ComplexRecordHubAndSpokeUsage) {
               testing::ElementsAre(base::Bucket(2, 1)));
 }
 
-TEST_F(TaskTabHelperUnitTest, TestGetContextRecordTaskId) {
+TEST_F(TaskTabHelperUnitTest, TestGetCurrentTaskId) {
   std::unique_ptr<content::WebContents> test_parent_web_contents(
       content::WebContentsTester::CreateTestWebContents(
           web_contents()->GetBrowserContext(), nullptr));
@@ -193,77 +193,72 @@ TEST_F(TaskTabHelperUnitTest, TestGetContextRecordTaskId) {
 
   content::NavigationEntry* navigation_entry =
       test_parent_web_contents->GetController().GetLastCommittedEntry();
-  sessions::ContextRecordTaskId* context_record_task_id =
-      sessions::ContextRecordTaskId::Get(navigation_entry);
-  context_record_task_id->set_task_id(3);
-  context_record_task_id->set_root_task_id(4);
-  EXPECT_EQ(tasks::TaskTabHelper::GetContextRecordTaskId(
-                test_parent_web_contents.get())
-                ->task_id(),
-            3);
-  EXPECT_EQ(tasks::TaskTabHelper::GetContextRecordTaskId(
-                test_parent_web_contents.get())
-                ->root_task_id(),
-            4);
+  sessions::NavigationTaskId* navigation_task_id =
+      sessions::NavigationTaskId::Get(navigation_entry);
+  navigation_task_id->set_id(3);
+  navigation_task_id->set_root_id(4);
+  EXPECT_EQ(
+      tasks::TaskTabHelper::GetCurrentTaskId(test_parent_web_contents.get())
+          ->id(),
+      3);
+  EXPECT_EQ(
+      tasks::TaskTabHelper::GetCurrentTaskId(test_parent_web_contents.get())
+          ->root_id(),
+      4);
 }
 
 TEST_F(TaskTabHelperUnitTest, TestTaskIdExistingChain) {
   NavigateAndCommit(GURL("http://a.com"));
-  sessions::ContextRecordTaskId a_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId a_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
   NavigateAndCommit(GURL("http://b.com"));
-  sessions::ContextRecordTaskId b_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId b_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
 
-  EXPECT_EQ(b_context_record_task_id.parent_task_id(),
-            a_context_record_task_id.task_id());
-  EXPECT_EQ(a_context_record_task_id.root_task_id(),
-            b_context_record_task_id.root_task_id());
+  EXPECT_EQ(b_navigation_task_id.parent_id(), a_navigation_task_id.id());
+  EXPECT_EQ(a_navigation_task_id.root_id(), b_navigation_task_id.root_id());
 }
 
 TEST_F(TaskTabHelperUnitTest, TestTaskIdNewChain) {
   NavigateAndCommit(GURL("http://a.com"));
-  sessions::ContextRecordTaskId a_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId a_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
 
   NavigateAndCommit(GURL("http://b.com"), ui::PAGE_TRANSITION_TYPED);
-  sessions::ContextRecordTaskId b_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId b_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
 
-  EXPECT_EQ(b_context_record_task_id.parent_task_id(), -1);
-  EXPECT_NE(a_context_record_task_id.root_task_id(),
-            b_context_record_task_id.root_task_id());
+  EXPECT_EQ(b_navigation_task_id.parent_id(), -1);
+  EXPECT_NE(a_navigation_task_id.root_id(), b_navigation_task_id.root_id());
 }
 
 TEST_F(TaskTabHelperUnitTest, TestTaskIdBackButton) {
   NavigateAndCommit(GURL("http://a.com"), ui::PAGE_TRANSITION_TYPED);
   NavigateAndCommit(GURL("http://b.com"));
-  sessions::ContextRecordTaskId b_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId b_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
   GoBack();
-  sessions::ContextRecordTaskId a_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId a_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
 
   // A should still have no parent after a back navigation and
   // shouldn't link to B (like it would if we navigated a.com -> b.com -> a.com
   // via clicking links)
-  EXPECT_EQ(a_context_record_task_id.parent_task_id(), -1);
-  EXPECT_NE(a_context_record_task_id.parent_task_id(),
-            b_context_record_task_id.task_id());
+  EXPECT_EQ(a_navigation_task_id.parent_id(), -1);
+  EXPECT_NE(a_navigation_task_id.parent_id(), b_navigation_task_id.id());
 }
 
 TEST_F(TaskTabHelperUnitTest, TestTaskIdBackViaLink) {
   NavigateAndCommit(GURL("http://a.com"), ui::PAGE_TRANSITION_TYPED);
   NavigateAndCommit(GURL("http://b.com"));
-  sessions::ContextRecordTaskId b_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId b_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
   NavigateAndCommit(GURL("http://a.com"));
-  sessions::ContextRecordTaskId a_context_record_task_id =
-      *sessions::ContextRecordTaskId::Get(GetLastCommittedEntry());
+  sessions::NavigationTaskId a_navigation_task_id =
+      *sessions::NavigationTaskId::Get(GetLastCommittedEntry());
 
   // We got back to a.com via a link (not back button) so it should now point to
   // B.
-  EXPECT_NE(a_context_record_task_id.parent_task_id(), -1);
-  EXPECT_EQ(a_context_record_task_id.parent_task_id(),
-            b_context_record_task_id.task_id());
+  EXPECT_NE(a_navigation_task_id.parent_id(), -1);
+  EXPECT_EQ(a_navigation_task_id.parent_id(), b_navigation_task_id.id());
 }

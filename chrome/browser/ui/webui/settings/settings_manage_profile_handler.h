@@ -91,7 +91,7 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   ScopedObserver<ProfileAttributesStorage, ManageProfileHandler> observer_;
 
   // For generating weak pointers to itself for callbacks.
-  base::WeakPtrFactory<ManageProfileHandler> weak_factory_;
+  base::WeakPtrFactory<ManageProfileHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManageProfileHandler);
 };

@@ -110,7 +110,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // The time when the popup was shown.
   base::Time show_time_;
 
-  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseView);
 };

@@ -8,7 +8,8 @@ import sys
 
 def _CommonChecks(input_api, output_api):
   results = []
-  # TODO(tkent): {kv-storage,toast,virtual-scroller}/.eslintrc.js specify babel-eslint parser, which
+  # We don't apply eslint to virtual-scroller/, which is not developed here.
+  # TODO(tkent): kv-storage/.eslintrc.js and toast/.eslintrc.js specify babel-eslint parser, which
   # is not in third_party/node/node_modules/.
   mjs_files = input_api.AffectedFiles(
       file_filter=lambda f: (f.LocalPath().endswith('.mjs') and

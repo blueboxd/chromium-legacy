@@ -108,7 +108,7 @@ class SpeechRecognizer::EventListener
   int session_;
   base::string16 last_result_str_;
 
-  base::WeakPtrFactory<EventListener> weak_factory_;
+  base::WeakPtrFactory<EventListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventListener);
 };
@@ -124,8 +124,7 @@ SpeechRecognizer::EventListener::EventListener(
           std::move(shared_url_loader_factory_info)),
       accept_language_(accept_language),
       locale_(locale),
-      session_(kInvalidSessionId),
-      weak_factory_(this) {
+      session_(kInvalidSessionId) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

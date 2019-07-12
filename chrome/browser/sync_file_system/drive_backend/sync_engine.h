@@ -229,7 +229,7 @@ class SyncEngine
 
   CallbackTracker callback_tracker_;
 
-  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
 };
 

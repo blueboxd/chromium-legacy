@@ -237,8 +237,7 @@ PreviewsProber::PreviewsProber(
       clock_(clock),
       is_active_(false),
       network_connection_tracker_(nullptr),
-      url_loader_factory_(url_loader_factory),
-      weak_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(delegate_);
 
   // The NetworkConnectionTracker can only be used directly on the UI thread.

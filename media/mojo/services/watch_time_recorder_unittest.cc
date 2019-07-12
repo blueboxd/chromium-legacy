@@ -5,6 +5,9 @@
 #include "media/mojo/services/watch_time_recorder.h"
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -54,7 +57,8 @@ class WatchTimeRecorderTest : public testing::Test {
     source_id_ = test_recorder_->GetNewSourceID();
     ResetMetricRecorders();
     MediaMetricsProvider::Create(
-        true /* is_top_frame */,
+        MediaMetricsProvider::BrowsingMode::kIncognito,
+        MediaMetricsProvider::FrameStatus::kTopFrame,
         base::BindRepeating(&WatchTimeRecorderTest::GetSourceId,
                             base::Unretained(this)),
         base::BindRepeating(

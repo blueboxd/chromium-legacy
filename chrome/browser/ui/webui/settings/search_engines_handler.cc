@@ -46,7 +46,7 @@ const int kNewSearchEngineIndex = -1;
 namespace settings {
 
 SearchEnginesHandler::SearchEnginesHandler(Profile* profile)
-    : profile_(profile), list_controller_(profile), weak_ptr_factory_(this) {
+    : profile_(profile), list_controller_(profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
 }
 

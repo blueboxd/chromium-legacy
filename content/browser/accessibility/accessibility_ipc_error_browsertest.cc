@@ -9,11 +9,11 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 

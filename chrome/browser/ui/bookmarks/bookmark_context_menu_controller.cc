@@ -105,8 +105,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       opened_from_(opened_from),
       parent_(parent),
       selection_(selection),
-      model_(BookmarkModelFactory::GetForBrowserContext(profile)),
-      weak_factory_(this) {
+      model_(BookmarkModelFactory::GetForBrowserContext(profile)) {
   DCHECK(profile_);
   DCHECK(model_->loaded());
   menu_model_.reset(new ui::SimpleMenuModel(this));

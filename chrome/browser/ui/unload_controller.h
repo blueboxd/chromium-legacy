@@ -150,7 +150,7 @@ class UnloadController : public content::NotificationObserver,
   // are currently confirming that the browser is closable.
   base::Callback<void(bool)> on_close_confirmed_;
 
-  base::WeakPtrFactory<UnloadController> weak_factory_;
+  base::WeakPtrFactory<UnloadController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UnloadController);
 };

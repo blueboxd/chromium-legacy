@@ -59,7 +59,7 @@ constexpr double kDefaultProcessSamplingProbability = 0.2;
 constexpr int kDefaultProcessSamplingBoost2 = 5;
 
 const base::Feature kGwpAsanMalloc{"GwpAsanMalloc",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kGwpAsanPartitionAlloc{"GwpAsanPartitionAlloc",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 

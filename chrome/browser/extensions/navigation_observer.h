@@ -78,7 +78,7 @@ class NavigationObserver : public content::NotificationObserver,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<NavigationObserver> weak_factory_;
+  base::WeakPtrFactory<NavigationObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };

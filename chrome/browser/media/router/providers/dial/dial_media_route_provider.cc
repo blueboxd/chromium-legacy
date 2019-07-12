@@ -46,8 +46,7 @@ DialMediaRouteProvider::DialMediaRouteProvider(
     : binding_(this),
       media_sink_service_(media_sink_service),
       data_decoder_(std::make_unique<DataDecoder>(connector)),
-      internal_message_util_(hash_token),
-      weak_ptr_factory_(this) {
+      internal_message_util_(hash_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(media_sink_service_);
 

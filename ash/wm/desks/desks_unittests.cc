@@ -1702,7 +1702,7 @@ namespace {
 TEST_F(DesksAcceleratorsTest, NewDesk) {
   auto* controller = DesksController::Get();
   // It's possible to add up to `kMaxNumberOfDesks` desks using the shortcut.
-  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   for (size_t num_desks = 1; num_desks < desks_util::kMaxNumberOfDesks;
        ++num_desks) {
     DeskSwitchAnimationWaiter waiter;
@@ -1723,7 +1723,7 @@ TEST_F(DesksAcceleratorsTest, CannotRemoveLastDesk) {
   auto* controller = DesksController::Get();
   // Removing the last desk is not possible.
   ASSERT_EQ(1u, controller->desks().size());
-  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   SendAccelerator(ui::VKEY_OEM_MINUS, flags);
   ASSERT_EQ(1u, controller->desks().size());
 }
@@ -1739,7 +1739,7 @@ TEST_F(DesksAcceleratorsTest, RemoveDesk) {
   Desk* desk_2 = controller->desks()[1].get();
   Desk* desk_3 = controller->desks()[2].get();
   EXPECT_TRUE(desk_1->is_active());
-  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   SendAccelerator(ui::VKEY_OEM_MINUS, flags);
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_TRUE(desk_2->is_active());
@@ -1762,7 +1762,7 @@ TEST_F(DesksAcceleratorsTest, LeftRightDeskActivation) {
   Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(desk_1->is_active());
   // No desk on left, nothing should happen.
-  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN;
   SendAccelerator(ui::VKEY_OEM_4, flags);
   EXPECT_TRUE(desk_1->is_active());
 
@@ -1800,8 +1800,7 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 
   // Moving window left when this is the left-most desk. Nothing happens.
-  const int flags =
-      ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   SendAccelerator(ui::VKEY_OEM_4, flags);
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
@@ -1847,8 +1846,7 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  const int flags =
-      ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   // In overview, while no window is highlighted, nothing should happen.
   const size_t num_windows_before = desk_1->windows().size();
   EXPECT_TRUE(desk_2->windows().empty());

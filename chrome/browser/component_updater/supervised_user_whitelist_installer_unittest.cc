@@ -165,8 +165,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
 class WhitelistLoadObserver {
  public:
-  explicit WhitelistLoadObserver(SupervisedUserWhitelistInstaller* installer)
-      : weak_ptr_factory_(this) {
+  explicit WhitelistLoadObserver(SupervisedUserWhitelistInstaller* installer) {
     installer->Subscribe(base::Bind(&WhitelistLoadObserver::OnWhitelistReady,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
@@ -193,7 +192,7 @@ class WhitelistLoadObserver {
   base::FilePath whitelist_path_;
 
   base::RunLoop run_loop_;
-  base::WeakPtrFactory<WhitelistLoadObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<WhitelistLoadObserver> weak_ptr_factory_{this};
 };
 
 }  // namespace

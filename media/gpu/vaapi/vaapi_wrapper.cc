@@ -2028,7 +2028,7 @@ std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
       << "Invalid VA surface id after vaCreateSurfaces";
 
   auto scoped_va_surface = std::make_unique<ScopedVASurface>(
-      va_lock_, va_display_, va_surface_id, size, va_rt_format);
+      this, va_surface_id, size, va_rt_format);
 
   DCHECK(scoped_va_surface);
   DCHECK(scoped_va_surface->IsValid());

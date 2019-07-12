@@ -105,23 +105,6 @@ std::string FormatToString(media::AudioParameters::Format format) {
   return "unknown";
 }
 
-// Whether the player is in incognito mode or ChromeOS guest mode.
-bool IsIncognito(int render_process_id) {
-  content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  if (!render_process_host) {
-    // This could happen in tests.
-    LOG(ERROR) << "Cannot get RenderProcessHost";
-    return false;
-  }
-
-  content::BrowserContext* browser_context =
-      render_process_host->GetBrowserContext();
-  DCHECK(browser_context);
-
-  return browser_context->IsOffTheRecord();
-}
-
 const char kAudioLogStatusKey[] = "status";
 const char kAudioLogUpdateFunction[] = "media.updateAudioComponent";
 
@@ -318,272 +301,12 @@ void MediaInternals::AudioLogImpl::StoreComponentMetadata(
   dict->SetInteger("component_type", component_);
 }
 
-// This class lives on the browser UI thread.
-class MediaInternals::MediaInternalsUMAHandler {
- public:
-  MediaInternalsUMAHandler();
-
-  // Called when a render process is terminated. Reports the pipeline status to
-  // UMA for every player associated with the renderer process and then deletes
-  // the player state.
-  void OnProcessTerminated(int render_process_id);
-
-  // Helper function to save the event payload to RendererPlayerMap.
-  void SavePlayerState(int render_process_id,
-                       const media::MediaLogEvent& event);
-
- private:
-  struct PipelineInfo {
-    explicit PipelineInfo(bool is_incognito) : is_incognito(is_incognito) {}
-
-    bool has_pipeline = false;
-    bool has_ever_played = false;
-    bool has_reached_have_enough = false;
-    media::PipelineStatus last_pipeline_status = media::PIPELINE_OK;
-    bool has_audio = false;
-    bool has_video = false;
-    bool video_dds = false;
-    bool video_decoder_changed = false;
-    bool has_cdm = false;
-    bool is_incognito = false;
-    std::string video_codec_name;
-    std::string video_decoder;
-    bool is_platform_video_decoder = false;
-  };
-
-  // Helper function to report PipelineStatus associated with a player to UMA.
-  void ReportUMAForPipelineStatus(const PipelineInfo& player_info);
-
-  // Helper to generate PipelineStatus UMA name for AudioVideo streams.
-  std::string GetUMANameForAVStream(const PipelineInfo& player_info);
-
-  // Key is player id.
-  typedef std::map<int, PipelineInfo> PlayerInfoMap;
-
-  // Key is renderer id.
-  typedef std::map<int, PlayerInfoMap> RendererPlayerMap;
-
-  // Stores player information per renderer.
-  RendererPlayerMap renderer_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaInternalsUMAHandler);
-};
-
-MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler() {}
-
-void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
-    int render_process_id,
-    const media::MediaLogEvent& event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  PlayerInfoMap& player_info_map = renderer_info_[render_process_id];
-
-  auto it = player_info_map.find(event.id);
-  if (it == player_info_map.end()) {
-    if (event.type != media::MediaLogEvent::WEBMEDIAPLAYER_CREATED) {
-      // Due to the asynchronous cleanup order of PipelineImpl and WMPI,
-      // sometimes a kStopped / kStopping event can sneak in after
-      // WEBMEDIAPLAYER_DESTROYED. This causes a new memory leak because the
-      // newly created PipelineImpl would never get cleaned up.
-      // As a result, we should be dropping any event that would target a
-      // player that hasn't already been created.
-      return;
-    }
-    bool success = false;
-    std::tie(it, success) = player_info_map.emplace(
-        std::make_pair(event.id, PipelineInfo(IsIncognito(render_process_id))));
-    if (!success) {
-      LOG(ERROR) << "Failed to insert a new PipelineInfo.";
-      return;
-    }
-  }
-
-  PipelineInfo& player_info = it->second;
-
-  switch (event.type) {
-    case media::MediaLogEvent::PLAY: {
-      player_info.has_ever_played = true;
-      break;
-    }
-    case media::MediaLogEvent::PIPELINE_STATE_CHANGED: {
-      player_info.has_pipeline = true;
-      break;
-    }
-    case media::MediaLogEvent::PIPELINE_ERROR: {
-      int status = static_cast<media::PipelineStatus>(media::PIPELINE_OK);
-      event.params.GetInteger("pipeline_error", &status);
-      player_info.last_pipeline_status =
-          static_cast<media::PipelineStatus>(status);
-      break;
-    }
-    case media::MediaLogEvent::PROPERTY_CHANGE:
-      if (event.params.HasKey("found_audio_stream")) {
-        event.params.GetBoolean("found_audio_stream", &player_info.has_audio);
-      }
-      if (event.params.HasKey("found_video_stream")) {
-        event.params.GetBoolean("found_video_stream", &player_info.has_video);
-      }
-      if (event.params.HasKey("video_codec_name")) {
-        event.params.GetString("video_codec_name",
-                               &player_info.video_codec_name);
-      }
-      if (event.params.HasKey("video_decoder")) {
-        std::string previous_video_decoder(player_info.video_decoder);
-        event.params.GetString("video_decoder", &player_info.video_decoder);
-        if (!previous_video_decoder.empty() &&
-            previous_video_decoder != player_info.video_decoder) {
-          player_info.video_decoder_changed = true;
-        }
-      }
-      if (event.params.HasKey("is_platform_video_decoder")) {
-        event.params.GetBoolean("is_platform_video_decoder",
-                                &player_info.is_platform_video_decoder);
-      }
-      if (event.params.HasKey("video_dds")) {
-        event.params.GetBoolean("video_dds", &player_info.video_dds);
-      }
-      if (event.params.HasKey("has_cdm")) {
-        event.params.GetBoolean("has_cdm", &player_info.has_cdm);
-      }
-      if (event.params.HasKey("pipeline_buffering_state")) {
-        std::string buffering_state;
-        event.params.GetString("pipeline_buffering_state", &buffering_state);
-
-        bool for_suspended_start;
-        event.params.GetBoolean("for_suspended_start", &for_suspended_start);
-
-        // Ignore the BUFFERING_HAVE_ENOUGH event if it was for a suspended
-        // start. Otherwise we won't reflect reductions to the HasEverPlayed
-        // statistic.
-        if (buffering_state == "BUFFERING_HAVE_ENOUGH" && !for_suspended_start)
-          player_info.has_reached_have_enough = true;
-      }
-      break;
-    case media::MediaLogEvent::Type::WEBMEDIAPLAYER_DESTROYED: {
-      // Upon player destruction report UMA data; if the player is not torn down
-      // before process exit, it will be logged during OnProcessTerminated().
-      ReportUMAForPipelineStatus(player_info);
-      player_info_map.erase(it);
-      break;
-    }
-    default:
-      break;
-  }
-  return;
-}
-
-std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
-    const PipelineInfo& player_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  static const char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
-  std::string uma_name = kPipelineUmaPrefix;
-  if (player_info.video_codec_name == "vp8") {
-    uma_name += "VP8.";
-  } else if (player_info.video_codec_name == "vp9") {
-    uma_name += "VP9.";
-  } else if (player_info.video_codec_name == "h264") {
-    uma_name += "H264.";
-  } else if (player_info.video_codec_name == "av1") {
-    uma_name += "AV1.";
-  } else {
-    return uma_name + "Other";
-  }
-
-#if !defined(OS_ANDROID)
-  if (player_info.video_decoder ==
-      media::DecryptingVideoDecoder::kDecoderName) {
-    return uma_name + "DVD";
-  }
-#endif
-
-  if (player_info.video_dds) {
-    uma_name += "DDS.";
-  }
-
-  // Note that HW essentailly means 'platform' anyway. MediaCodec has been
-  // reported as HW forever, regardless of the underlying platform
-  // implementation.
-  if (player_info.is_platform_video_decoder) {
-    uma_name += "HW";
-  } else {
-    uma_name += "SW";
-  }
-  return uma_name;
-}
-
-// TODO(xhwang): This function reports more metrics than just pipeline status
-// and should be renamed. Similarly, PipelineInfo should be PlayerInfo.
-void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
-    const PipelineInfo& player_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Don't log pipeline status for players which don't actually have a pipeline;
-  // e.g., the Android MediaSourcePlayer implementation.
-  if (!player_info.has_pipeline)
-    return;
-
-  if (player_info.has_video && player_info.has_audio) {
-    base::UmaHistogramExactLinear(GetUMANameForAVStream(player_info),
-                                  player_info.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX);
-  } else if (player_info.has_audio) {
-    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioOnly",
-                              player_info.last_pipeline_status,
-                              media::PIPELINE_STATUS_MAX + 1);
-  } else if (player_info.has_video) {
-    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.VideoOnly",
-                              player_info.last_pipeline_status,
-                              media::PIPELINE_STATUS_MAX + 1);
-  } else {
-    // Note: This metric can be recorded as a result of normal operation with
-    // Media Source Extensions. If a site creates a MediaSource object but never
-    // creates a source buffer or appends data, PIPELINE_OK will be recorded.
-    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Unsupported",
-                              player_info.last_pipeline_status,
-                              media::PIPELINE_STATUS_MAX + 1);
-  }
-  // Report whether video decoder fallback happened, but only if a video decoder
-  // was reported.
-  if (!player_info.video_decoder.empty()) {
-    UMA_HISTOGRAM_BOOLEAN("Media.VideoDecoderFallback",
-                          player_info.video_decoder_changed);
-  }
-
-  // Report whether this player ever saw a playback event. Used to measure the
-  // effectiveness of efforts to reduce loaded-but-never-used players.
-  if (player_info.has_reached_have_enough)
-    UMA_HISTOGRAM_BOOLEAN("Media.HasEverPlayed", player_info.has_ever_played);
-
-  // Report whether an encrypted playback is in incognito window, excluding
-  // never-used players.
-  if (player_info.has_cdm && player_info.has_ever_played)
-    UMA_HISTOGRAM_BOOLEAN("Media.EME.IsIncognito", player_info.is_incognito);
-}
-
-void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto players_it = renderer_info_.find(render_process_id);
-  if (players_it == renderer_info_.end())
-    return;
-  auto it = players_it->second.begin();
-  while (it != players_it->second.end()) {
-    ReportUMAForPipelineStatus(it->second);
-    players_it->second.erase(it++);
-  }
-  renderer_info_.erase(players_it);
-}
-
 MediaInternals* MediaInternals::GetInstance() {
   static content::MediaInternals* internals = new content::MediaInternals();
   return internals;
 }
 
-MediaInternals::MediaInternals()
-    : can_update_(false),
-      owner_ids_(),
-      uma_handler_(new MediaInternalsUMAHandler()) {
+MediaInternals::MediaInternals() : can_update_(false), owner_ids_() {
   // TODO(sandersd): Is there ever a relevant case where TERMINATED is sent
   // without CLOSED also being sent?
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -599,7 +322,6 @@ void MediaInternals::Observe(int type,
                              const NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
-  uma_handler_->OnProcessTerminated(process->GetID());
   // TODO(sandersd): Send a termination event before clearing the log.
   saved_events_by_process_.erase(process->GetID());
 }
@@ -652,7 +374,6 @@ void MediaInternals::OnMediaEvents(
         SendUpdate(update);
     }
     SaveEvent(render_process_id, event);
-    uma_handler_->SavePlayerState(render_process_id, event);
   }
 }
 
@@ -833,10 +554,6 @@ MediaInternals::CreateAudioLogImpl(
   return std::make_unique<AudioLogImpl>(owner_ids_[component]++, component,
                                         this, component_id, render_process_id,
                                         render_frame_id);
-}
-
-void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
-  uma_handler_->OnProcessTerminated(process_id);
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {

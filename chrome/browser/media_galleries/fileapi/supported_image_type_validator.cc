@@ -116,9 +116,7 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
 
 SupportedImageTypeValidator::SupportedImageTypeValidator(
     const base::FilePath& path)
-    : path_(path),
-      weak_factory_(this) {
-}
+    : path_(path) {}
 
 void SupportedImageTypeValidator::OnFileOpen(
     std::unique_ptr<std::string> data) {

@@ -3735,7 +3735,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -4300,7 +4299,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -4849,7 +4847,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -5441,7 +5438,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -6078,7 +6074,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -6672,7 +6667,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -6873,7 +6867,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -8063,7 +8056,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -8673,7 +8665,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -9463,7 +9454,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -10354,7 +10344,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -10953,7 +10942,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -11603,7 +11591,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -13020,7 +13007,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -13896,7 +13882,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -14772,7 +14757,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -15414,7 +15398,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -15976,7 +15959,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -16595,7 +16577,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -17220,7 +17201,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -17873,7 +17853,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -18493,7 +18472,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -19099,7 +19077,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -19664,7 +19641,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -20224,7 +20200,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -20870,7 +20845,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -21610,7 +21584,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -21959,7 +21932,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -22253,7 +22225,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -22552,7 +22523,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -22811,7 +22781,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -23411,7 +23380,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -24167,7 +24135,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -25125,7 +25092,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -26056,7 +26022,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -27096,7 +27061,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -28016,7 +27980,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -29104,7 +29067,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -30366,7 +30328,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -32229,7 +32190,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -33083,7 +33043,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -34168,7 +34127,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -35470,7 +35428,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],

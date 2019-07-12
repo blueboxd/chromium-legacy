@@ -42,9 +42,9 @@ const char kHistogramAMPSubframeFirstInputDelay[] =
     "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
     "InteractiveTiming.FirstInputDelay4.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLayoutStabilityJankScore[] =
+const char kHistogramAMPSubframeLayoutStabilityShiftScore[] =
     "Experimental.LayoutStability.JankScore.Subframe";
-const char kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation[] =
+const char kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation[] =
     "Experimental.LayoutStability.JankScore.Subframe.FullNavigation";
 
 GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
@@ -191,7 +191,7 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
   if (it == amp_subframe_info_.end())
     return;
 
-  it->second.render_data.layout_jank_score += render_data.layout_jank_delta;
+  it->second.render_data.layout_shift_score += render_data.layout_shift_delta;
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
@@ -416,26 +416,26 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   }
 
   // Clamp the score to a max of 10, which is equivalent to a frame with 10
-  // full-frame janks.
-  float clamped_jank_score =
-      std::min(subframe_info.render_data.layout_jank_score, 10.0f);
+  // full-frame layout shifts.
+  float clamped_shift_score =
+      std::min(subframe_info.render_data.layout_shift_score, 10.0f);
 
-  // For UKM, report (jank_score * 100) as an int in the range [0, 1000].
+  // For UKM, report (shift_score * 100) as an int in the range [0, 1000].
   builder.SetSubFrame_LayoutStability_JankScore(
-      static_cast<int>(roundf(clamped_jank_score * 100.0f)));
+      static_cast<int>(roundf(clamped_shift_score * 100.0f)));
 
-  // For UMA, report (jank_score * 10) an an int in the range [0,100].
-  int32_t uma_value = static_cast<int>(roundf(clamped_jank_score * 10.0f));
+  // For UMA, report (shift_score * 10) an an int in the range [0,100].
+  int32_t uma_value = static_cast<int>(roundf(clamped_shift_score * 10.0f));
   if (current_main_frame_nav_info_->is_same_document_navigation) {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
-            .append(kHistogramAMPSubframeLayoutStabilityJankScore),
+            .append(kHistogramAMPSubframeLayoutStabilityShiftScore),
         uma_value);
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
-                kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation),
+                kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation),
         uma_value);
   }
 

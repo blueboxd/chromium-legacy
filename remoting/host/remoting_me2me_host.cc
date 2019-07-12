@@ -64,7 +64,6 @@
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/host/gcd_state_updater.h"
 #include "remoting/host/heartbeat_sender.h"
-#include "remoting/host/host_change_notification_listener.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
@@ -212,7 +211,6 @@ namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
                     public FtlHostChangeNotificationListener::Listener,
-                    public HostChangeNotificationListener::Listener,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
  public:
@@ -231,7 +229,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
-  // HostChangeNotificationListener::Listener overrides.
+  // FtlHostChangeNotificationListener::Listener overrides.
   void OnHostDeleted() override;
 
   // Handler of the ChromotingDaemonNetworkMsg_InitializePairingRegistry IPC
@@ -439,8 +437,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
 #endif  // defined(USE_GCD)
 
-  std::unique_ptr<HostChangeNotificationListener>
-      host_change_notification_listener_;
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<HostEventLogger> host_event_logger_;
   std::unique_ptr<HostPowerSaveBlocker> power_save_blocker_;
@@ -1505,12 +1501,6 @@ void HostProcess::InitializeSignaling() {
           this, muxing_signal_strategy->ftl_signal_strategy());
   signal_strategy_ = std::move(muxing_signal_strategy);
 
-  // XMPP based HostChangeNotificationListener is still needed by double
-  // signaling hosts so that they can handle host deletion triggered by an old
-  // client talking to the legacy directory backend.
-  host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, unowned_xmpp_signal_strategy, directory_bot_jid_));
-
 #if defined(USE_GCD)
   // Create objects to manage GCD state.
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
@@ -1577,7 +1567,6 @@ void HostProcess::StartHost() {
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signal_strategy_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
               context_->url_loader_factory()),
@@ -1698,7 +1687,6 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   host_status_logger_.reset();
   power_save_blocker_.reset();
   ftl_host_change_notification_listener_.reset();
-  host_change_notification_listener_.reset();
 
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
   // if possible (i.e. if we have the config).

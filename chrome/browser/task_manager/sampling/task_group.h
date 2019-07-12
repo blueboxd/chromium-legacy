@@ -216,7 +216,7 @@ class TaskGroup {
 
   // Always keep this the last member of this class so that it's the first to be
   // destroyed.
-  base::WeakPtrFactory<TaskGroup> weak_ptr_factory_;
+  base::WeakPtrFactory<TaskGroup> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TaskGroup);
 };

@@ -144,21 +144,21 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_user_gesture_required_(true),
       is_secure_context_required_(false),
       form_tracker_(render_frame),
-      binding_(this),
       weak_ptr_factory_(this) {
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
   AddFormObserver(this);
   registry->AddInterface(
-      base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
+      base::Bind(&AutofillAgent::BindPendingReceiver, base::Unretained(this)));
 }
 
 AutofillAgent::~AutofillAgent() {
   RemoveFormObserver(this);
 }
 
-void AutofillAgent::BindRequest(mojom::AutofillAgentAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void AutofillAgent::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::AutofillAgent> pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
@@ -302,7 +302,7 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
 }
 
 void AutofillAgent::Shutdown() {
-  binding_.Close();
+  receiver_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -1244,16 +1244,17 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   }
 }
 
-const mojom::AutofillDriverAssociatedPtr& AutofillAgent::GetAutofillDriver() {
+const mojo::AssociatedRemote<mojom::AutofillDriver>&
+AutofillAgent::GetAutofillDriver() {
   if (!autofill_driver_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&autofill_driver_));
+        &autofill_driver_);
   }
 
   return autofill_driver_;
 }
 
-const mojom::PasswordManagerDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
 AutofillAgent::GetPasswordManagerDriver() {
   DCHECK(password_autofill_agent_);
   return password_autofill_agent_->GetPasswordManagerDriver();

@@ -66,7 +66,7 @@ class InitAwareNotificationScheduler : public NotificationScheduler {
   // Actual implementation.
   std::unique_ptr<NotificationScheduler> impl_;
 
-  base::WeakPtrFactory<InitAwareNotificationScheduler> weak_ptr_factory_;
+  base::WeakPtrFactory<InitAwareNotificationScheduler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InitAwareNotificationScheduler);
 };
 

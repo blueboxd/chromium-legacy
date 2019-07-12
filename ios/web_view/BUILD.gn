@@ -284,7 +284,7 @@ ios_web_view_deps = [
   "//components/prefs",
   "//components/proxy_config",
   "//components/signin/core/browser",
-  "//components/signin/core/browser/webdata",
+  "//components/signin/public/webdata",
   "//components/signin/internal/identity_manager",  # TODO(crbug.com/974198): remove once closed
   "//components/signin/ios/browser",
   "//components/signin/ios/browser:active_state_manager",

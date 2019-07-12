@@ -1314,20 +1314,15 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // (because the check_enrollment VPD key was set to "1", making FRE
     // explicitly required).
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
-    EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
-               ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, FakeSessionManagerClient::Get()
-                     ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
     EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
-    EXPECT_EQ(
-        1, FakeCryptohomeClient::Get()
-               ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(1, FakeSessionManagerClient::Get()
-                     ->clear_forced_re_enrollment_vpd_call_count());
   }
+  EXPECT_EQ(0,
+            FakeCryptohomeClient::Get()
+                ->remove_firmware_management_parameters_from_tpm_call_count());
+  EXPECT_EQ(0, FakeSessionManagerClient::Get()
+                   ->clear_forced_re_enrollment_vpd_call_count());
 
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,

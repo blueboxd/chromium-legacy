@@ -1,9 +1,12 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
 #define MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
+
+#include <memory>
+#include <string>
 
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
@@ -46,6 +49,8 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   DecoderStreamTraits(MediaLog* media_log, ChannelLayout initial_hw_layout);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
+  void SetIsPlatformDecoder(bool is_platform_decoder);
+  void SetIsDecryptingDemuxerStream(bool is_dds);
   void InitializeDecoder(DecoderType* decoder,
                          const DecoderConfigType& config,
                          bool low_delay,
@@ -90,6 +95,8 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
 
   DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
+  void SetIsPlatformDecoder(bool is_platform_decoder);
+  void SetIsDecryptingDemuxerStream(bool is_dds);
   void InitializeDecoder(DecoderType* decoder,
                          const DecoderConfigType& config,
                          bool low_delay,

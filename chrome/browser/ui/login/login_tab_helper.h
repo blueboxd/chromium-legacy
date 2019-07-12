@@ -55,7 +55,7 @@ class LoginTabHelper : public content::WebContentsObserver,
 
   net::AuthChallengeInfo challenge_;
 
-  base::WeakPtrFactory<LoginTabHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<LoginTabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

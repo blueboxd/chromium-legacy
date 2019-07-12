@@ -9,10 +9,8 @@
 
 #include <memory>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -32,8 +30,6 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   ~VaapiJpegDecoder() override;
 
   // VaapiImageDecoder implementation.
-  scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
-                                  VaapiImageDecodeStatus* status) override;
   gpu::ImageDecodeAcceleratorType GetType() const override;
 
   // Get the decoded data from the last Decode() call as a ScopedVAImage. The
@@ -45,17 +41,9 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
                                           VaapiImageDecodeStatus* status);
 
  protected:
-  scoped_refptr<VASurface> ReleaseVASurface() override;
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(VaapiJpegDecoderTest, ReleaseVASurface);
-
-  // The current VA surface for decoding.
-  VASurfaceID va_surface_id_;
-  // The coded size associated with |va_surface_id_|.
-  gfx::Size coded_size_;
-  // The VA RT format associated with |va_surface_id_|.
-  unsigned int va_rt_format_;
+  // VaapiImageDecoder implementation.
+  VaapiImageDecodeStatus AllocateVASurfaceAndSubmitVABuffers(
+      base::span<const uint8_t> encoded_image) override;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecoder);
 };

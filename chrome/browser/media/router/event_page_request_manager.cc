@@ -92,8 +92,7 @@ content::WebContents* EventPageRequestManager::GetEventPageWebContents() {
 
 EventPageRequestManager::EventPageRequestManager(
     content::BrowserContext* context)
-    : extension_process_manager_(extensions::ProcessManager::Get(context)),
-      weak_factory_(this) {}
+    : extension_process_manager_(extensions::ProcessManager::Get(context)) {}
 
 void EventPageRequestManager::EnqueueRequest(base::OnceClosure request) {
   pending_requests_.push_back(std::move(request));

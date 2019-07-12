@@ -109,7 +109,8 @@ class ChromeWebViewPermissionHelperDelegate
 
   std::map<int, int> bridge_id_to_request_id_map_;
 
-  base::WeakPtrFactory<ChromeWebViewPermissionHelperDelegate> weak_factory_;
+  base::WeakPtrFactory<ChromeWebViewPermissionHelperDelegate> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewPermissionHelperDelegate);
 };

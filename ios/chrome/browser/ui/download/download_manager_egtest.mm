@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"

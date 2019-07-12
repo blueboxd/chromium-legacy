@@ -184,6 +184,17 @@ public class JourneyLogger {
         }
     }
 
+    /**
+     * Records amount of completed/triggered transactions separated by currency.
+     *
+     * @param curreny A string indicating the curreny of the transaction.
+     * @param value A string indicating the value of the transaction.
+     * @param completed A boolean indicating whether the transaction has completed or not.
+     */
+    public void recordTransactionAmount(String currency, String value, boolean completed) {
+        nativeRecordTransactionAmount(mJourneyLoggerAndroid, currency, value, completed);
+    }
+
     private native long nativeInitJourneyLoggerAndroid(
             boolean isIncognito, WebContents webContents);
     private native void nativeDestroy(long nativeJourneyLoggerAndroid);
@@ -207,4 +218,6 @@ public class JourneyLogger {
     private native void nativeSetCompleted(long nativeJourneyLoggerAndroid);
     private native void nativeSetAborted(long nativeJourneyLoggerAndroid, int reason);
     private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);
+    private native void nativeRecordTransactionAmount(
+            long nativeJourneyLoggerAndroid, String currency, String value, boolean completed);
 }

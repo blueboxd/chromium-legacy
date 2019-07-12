@@ -35,8 +35,7 @@ CastActivityManager::CastActivityManager(
       message_handler_(message_handler),
       media_router_(media_router),
       data_decoder_(std::move(data_decoder)),
-      hash_token_(hash_token),
-      weak_ptr_factory_(this) {
+      hash_token_(hash_token) {
   DCHECK(media_sink_service_);
   DCHECK(message_handler_);
   DCHECK(media_router_);

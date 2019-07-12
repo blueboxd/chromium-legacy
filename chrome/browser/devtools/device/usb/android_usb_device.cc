@@ -208,8 +208,7 @@ AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
       android_device_info_(android_device_info),
       is_connected_(false),
       signature_sent_(false),
-      last_socket_id_(256),
-      weak_factory_(this) {
+      last_socket_id_(256) {
   DCHECK(device_ptr_);
   device_ptr_.set_connection_error_handler(
       base::BindOnce(&AndroidUsbDevice::Terminate, weak_factory_.GetWeakPtr()));

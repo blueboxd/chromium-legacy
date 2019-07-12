@@ -800,12 +800,6 @@
       status: "experimental",
     },
     {
-      // Modifies LayoutInstabilityAPI to include the maximum move distance in the
-      // layout shift score computation.
-      name: "LayoutInstabilityMoveDistance",
-      status: "stable",
-    },
-    {
       name: "LayoutNG",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
       status: "stable",

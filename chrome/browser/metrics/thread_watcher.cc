@@ -50,8 +50,7 @@ ThreadWatcher::ThreadWatcher(const WatchingParams& params)
       unresponsive_count_(0),
       hung_processing_complete_(false),
       unresponsive_threshold_(params.unresponsive_threshold),
-      crash_on_hang_(params.crash_on_hang),
-      weak_ptr_factory_(this) {
+      crash_on_hang_(params.crash_on_hang) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   Initialize();
 }

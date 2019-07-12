@@ -14,8 +14,6 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
-#include "media/base/supported_types.h"
-#include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
 #include "ui/display/display_switches.h"
 
@@ -1539,15 +1537,20 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2TsAudio) {
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_NewVp9Variants) {
   const std::string kSupportedMimeTypes[] = {"video/webm", "video/mp4"};
   for (const auto& mime_type : kSupportedMimeTypes) {
-    // Profile 2 and 3 support isn't always available.
-    const char* kVP9Profile2 =
-        media::IsVp9ProfileSupportedForTesting(media::VP9PROFILE_PROFILE2)
+// Profile 2 and 3 support is currently disabled on ARM and MIPS.
+#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+#if defined(OS_ANDROID)
+    const char* kVP9Profile2And3Probably =
+        base::android::BuildInfo::GetInstance()->sdk_int() >=
+                base::android::SDK_VERSION_P
             ? kProbably
             : kNot;
-    const char* kVP9Profile3 =
-        media::IsVp9ProfileSupportedForTesting(media::VP9PROFILE_PROFILE3)
-            ? kProbably
-            : kNot;
+#else
+    const char* kVP9Profile2And3Probably = kNot;
+#endif
+#else
+    const char* kVP9Profile2And3Probably = kProbably;
+#endif
 
     // E.g. "'video/webm; "
     std::string prefix = "'" + mime_type + "; ";
@@ -1565,8 +1568,10 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_NewVp9Variants) {
     // Profiles 0 and 1 are always supported supported. Profiles 2 and 3 are
     // only supported on certain architectures.
     EXPECT_EQ(kProbably, CanPlay(prefix + "codecs=\"vp09.01.10.08\"'"));
-    EXPECT_EQ(kVP9Profile2, CanPlay(prefix + "codecs=\"vp09.02.10.08\"'"));
-    EXPECT_EQ(kVP9Profile3, CanPlay(prefix + "codecs=\"vp09.03.10.08\"'"));
+    EXPECT_EQ(kVP9Profile2And3Probably,
+              CanPlay(prefix + "codecs=\"vp09.02.10.08\"'"));
+    EXPECT_EQ(kVP9Profile2And3Probably,
+              CanPlay(prefix + "codecs=\"vp09.03.10.08\"'"));
   }
 }
 

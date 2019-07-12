@@ -52,6 +52,8 @@ class MockMediaSession : public content::MediaSession {
                     int minimum_size_px,
                     int desired_size_px,
                     GetMediaImageBitmapCallback callback));
+  MOCK_METHOD1(SeekTo, void(base::TimeDelta));
+  MOCK_METHOD1(ScrubTo, void(base::TimeDelta));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);

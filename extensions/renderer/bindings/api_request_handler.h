@@ -67,6 +67,14 @@ class APIRequestHandler {
                    v8::Local<v8::Function> custom_callback,
                    binding::RequestThread thread);
 
+  // Starts a request and returns a promise, which will be resolved or rejected
+  // when the request is completed.
+  std::pair<int, v8::Local<v8::Promise>> StartPromiseBasedRequest(
+      v8::Local<v8::Context> context,
+      const std::string& method,
+      std::unique_ptr<base::ListValue> arguments,
+      binding::RequestThread thread);
+
   // Adds a pending request for the request handler to manage (and complete via
   // CompleteRequest). This is used by renderer-side implementations that
   // shouldn't be dispatched to the browser in the normal flow, but means other
@@ -102,15 +110,16 @@ class APIRequestHandler {
 
  private:
   class ArgumentAdapter;
+  class AsyncResultHandler;
 
   struct PendingRequest {
     PendingRequest(
         v8::Isolate* isolate,
         v8::Local<v8::Context> context,
         const std::string& method_name,
-        v8::Local<v8::Function> callback,
-        const base::Optional<std::vector<v8::Local<v8::Value>>>& callback_args,
+        std::unique_ptr<AsyncResultHandler> async_handler,
         std::unique_ptr<InteractionProvider::Token> user_gesture_token);
+
     ~PendingRequest();
     PendingRequest(PendingRequest&&);
     PendingRequest& operator=(PendingRequest&&);
@@ -119,13 +128,24 @@ class APIRequestHandler {
     v8::Global<v8::Context> context;
     std::string method_name;
 
-    // The following are only populated for requests with a callback.
-    base::Optional<v8::Global<v8::Function>> callback;
-    base::Optional<std::vector<v8::Global<v8::Value>>> callback_arguments;
+    std::unique_ptr<AsyncResultHandler> async_handler;
+
     // Note: We can't use base::Optional here for derived Token instances.
     std::unique_ptr<InteractionProvider::Token> user_gesture_token;
   };
 
+  // Returns the next request ID to be used.
+  int GetNextRequestId();
+
+  // Common implementation for starting a request.
+  void StartRequestImpl(v8::Local<v8::Context> context,
+                        int request_id,
+                        const std::string& method,
+                        std::unique_ptr<base::ListValue> arguments,
+                        binding::RequestThread thread,
+                        std::unique_ptr<AsyncResultHandler> async_handler);
+
+  // Common implementation for completing a request.
   void CompleteRequestImpl(int request_id,
                            const ArgumentAdapter& arguments,
                            const std::string& error);

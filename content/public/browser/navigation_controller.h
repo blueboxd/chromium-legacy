@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -27,6 +28,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 
@@ -100,6 +102,7 @@ class NavigationController {
   CONTENT_EXPORT static std::unique_ptr<NavigationEntry> CreateNavigationEntry(
       const GURL& url,
       const Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       ui::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,
@@ -111,7 +114,15 @@ class NavigationController {
     // The url to load. This field is required.
     GURL url;
 
-    // The origin of the initiator of the navigation.
+    // The origin of the initiator of the navigation or base::nullopt if the
+    // navigation was initiated through through trusted, non-web-influenced UI
+    // (e.g. via omnibox, the bookmarks bar, local NTP, etc.).
+    //
+    // All renderer-initiated navigations must have a non-null
+    // |initiator_origin|, but it is theoretically possible that some
+    // browser-initiated navigations may also use a non-null |initiator_origin|
+    // (if these navigations can be somehow triggered or influenced by web
+    // content).
     base::Optional<url::Origin> initiator_origin;
 
     // SiteInstance of the frame that initiated the navigation or null if we

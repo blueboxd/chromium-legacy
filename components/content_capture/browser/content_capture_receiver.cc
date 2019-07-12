@@ -15,7 +15,7 @@
 namespace content_capture {
 
 ContentCaptureReceiver::ContentCaptureReceiver(content::RenderFrameHost* rfh)
-    : bindings_(this), rfh_(rfh), id_(GetIdFrom(rfh)) {}
+    : rfh_(rfh), id_(GetIdFrom(rfh)) {}
 
 ContentCaptureReceiver::~ContentCaptureReceiver() {
   auto* manager = ContentCaptureReceiverManager::FromWebContents(
@@ -29,9 +29,10 @@ int64_t ContentCaptureReceiver::GetIdFrom(content::RenderFrameHost* rfh) {
          (rfh->GetRoutingID() & 0xFFFFFFFF);
 }
 
-void ContentCaptureReceiver::BindRequest(
-    mojom::ContentCaptureReceiverAssociatedRequest request) {
-  bindings_.Bind(std::move(request));
+void ContentCaptureReceiver::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+        pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
@@ -101,11 +102,11 @@ void ContentCaptureReceiver::StopCapture() {
   }
 }
 
-const mojom::ContentCaptureSenderAssociatedPtr&
+const mojo::AssociatedRemote<mojom::ContentCaptureSender>&
 ContentCaptureReceiver::GetContentCaptureSender() {
   if (!content_capture_sender_) {
     rfh_->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&content_capture_sender_));
+        &content_capture_sender_);
   }
   return content_capture_sender_;
 }

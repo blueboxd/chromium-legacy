@@ -8,21 +8,18 @@
 
 #include <iostream>
 #include <type_traits>
-#include <vector>
 
 #include <va/va.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/parsers/jpeg_parser.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -214,33 +211,20 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
 }
 
 VaapiJpegDecoder::VaapiJpegDecoder()
-    : VaapiImageDecoder(VAProfileJPEGBaseline),
-      va_surface_id_(VA_INVALID_SURFACE),
-      va_rt_format_(kInvalidVaRtFormat) {}
+    : VaapiImageDecoder(VAProfileJPEGBaseline) {}
 
-VaapiJpegDecoder::~VaapiJpegDecoder() {
-  if (vaapi_wrapper_) {
-    vaapi_wrapper_->DestroyContextAndSurfaces(
-        std::vector<VASurfaceID>({va_surface_id_}));
-  }
-}
+VaapiJpegDecoder::~VaapiJpegDecoder() = default;
 
-scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
-    base::span<const uint8_t> encoded_image,
-    VaapiImageDecodeStatus* status) {
-  if (!vaapi_wrapper_) {
-    VLOGF(1) << "VaapiJpegDecoder has not been initialized";
-    *status = VaapiImageDecodeStatus::kInvalidState;
-    return nullptr;
-  }
+VaapiImageDecodeStatus VaapiJpegDecoder::AllocateVASurfaceAndSubmitVABuffers(
+    base::span<const uint8_t> encoded_image) {
+  DCHECK(vaapi_wrapper_);
 
   // Parse the JPEG encoded data.
   JpegParseResult parse_result;
   if (!ParseJpegPicture(encoded_image.data(), encoded_image.size(),
                         &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
-    *status = VaapiImageDecodeStatus::kParseFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kParseFailed;
   }
 
   // Figure out the right format for the VaSurface.
@@ -248,37 +232,35 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
       VaSurfaceFormatForJpeg(parse_result.frame_header);
   if (picture_va_rt_format == kInvalidVaRtFormat) {
     VLOGF(1) << "Unsupported subsampling";
-    *status = VaapiImageDecodeStatus::kUnsupportedSubsampling;
-    return nullptr;
+    return VaapiImageDecodeStatus::kUnsupportedSubsampling;
   }
 
   // Make sure this JPEG can be decoded.
   if (!IsVaapiSupportedJpeg(parse_result)) {
     VLOGF(1) << "The supplied JPEG is unsupported";
-    *status = VaapiImageDecodeStatus::kUnsupportedImage;
-    return nullptr;
+    return VaapiImageDecodeStatus::kUnsupportedImage;
   }
 
   // Prepare the VaSurface for decoding.
   const gfx::Size new_coded_size(
       base::strict_cast<int>(parse_result.frame_header.coded_width),
       base::strict_cast<int>(parse_result.frame_header.coded_height));
-  if (new_coded_size != coded_size_ || va_surface_id_ == VA_INVALID_SURFACE ||
-      picture_va_rt_format != va_rt_format_) {
-    vaapi_wrapper_->DestroyContextAndSurfaces(
-        std::vector<VASurfaceID>({va_surface_id_}));
-    va_surface_id_ = VA_INVALID_SURFACE;
-    va_rt_format_ = picture_va_rt_format;
-
-    std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_rt_format_, new_coded_size,
-                                                  1, &va_surfaces)) {
-      VLOGF(1) << "Could not create the context or the surface";
-      *status = VaapiImageDecodeStatus::kSurfaceCreationFailed;
-      return nullptr;
+  DCHECK(!scoped_va_context_and_surface_ ||
+         scoped_va_context_and_surface_->IsValid());
+  if (!scoped_va_context_and_surface_ ||
+      new_coded_size != scoped_va_context_and_surface_->size() ||
+      picture_va_rt_format != scoped_va_context_and_surface_->format()) {
+    scoped_va_context_and_surface_.reset();
+    scoped_va_context_and_surface_ =
+        ScopedVAContextAndSurface(vaapi_wrapper_
+                                      ->CreateContextAndScopedVASurface(
+                                          picture_va_rt_format, new_coded_size)
+                                      .release());
+    if (!scoped_va_context_and_surface_) {
+      VLOGF(1) << "CreateContextAndScopedVASurface() failed";
+      return VaapiImageDecodeStatus::kSurfaceCreationFailed;
     }
-    va_surface_id_ = va_surfaces[0];
-    coded_size_ = new_coded_size;
+    DCHECK(scoped_va_context_and_surface_->IsValid());
   }
 
   // Set picture parameters.
@@ -286,8 +268,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillPictureParameters(parse_result.frame_header, &pic_param);
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
     VLOGF(1) << "Could not submit VAPictureParameterBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kSubmitVABuffersFailed;
   }
 
   // Set quantization table.
@@ -295,8 +276,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillIQMatrix(parse_result.q_table, &iq_matrix);
   if (!vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
     VLOGF(1) << "Could not submit VAIQMatrixBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kSubmitVABuffersFailed;
   }
 
   // Set huffman table.
@@ -305,8 +285,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                    &huffman_table);
   if (!vaapi_wrapper_->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
     VLOGF(1) << "Could not submit VAHuffmanTableBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kSubmitVABuffersFailed;
   }
 
   // Set slice parameters.
@@ -314,8 +293,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillSliceParameters(parse_result, &slice_param);
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
     VLOGF(1) << "Could not submit VASliceParameterBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kSubmitVABuffersFailed;
   }
 
   // Set scan data.
@@ -323,21 +301,10 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                                     parse_result.data_size,
                                     const_cast<char*>(parse_result.data))) {
     VLOGF(1) << "Could not submit VASliceDataBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
-    return nullptr;
+    return VaapiImageDecodeStatus::kSubmitVABuffersFailed;
   }
 
-  // Execute the decode.
-  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id_)) {
-    VLOGF(1) << "Executing the decode failed";
-    *status = VaapiImageDecodeStatus::kExecuteDecodeFailed;
-    return nullptr;
-  }
-
-  *status = VaapiImageDecodeStatus::kSuccess;
-  return base::MakeRefCounted<VASurface>(va_surface_id_, coded_size_,
-                                         va_rt_format_,
-                                         base::DoNothing() /* release_cb */);
+  return VaapiImageDecodeStatus::kSuccess;
 }
 
 gpu::ImageDecodeAcceleratorType VaapiJpegDecoder::GetType() const {
@@ -347,23 +314,26 @@ gpu::ImageDecodeAcceleratorType VaapiJpegDecoder::GetType() const {
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     uint32_t preferred_image_fourcc,
     VaapiImageDecodeStatus* status) {
-  if (va_surface_id_ == VA_INVALID_ID) {
+  if (!scoped_va_context_and_surface_) {
     VLOGF(1) << "No decoded JPEG available";
     *status = VaapiImageDecodeStatus::kInvalidState;
     return nullptr;
   }
 
+  DCHECK(scoped_va_context_and_surface_->IsValid());
   DCHECK(vaapi_wrapper_);
   uint32_t image_fourcc;
   if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
-          va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
+          scoped_va_context_and_surface_->format(), preferred_image_fourcc,
+          &image_fourcc)) {
     VLOGF(1) << "Cannot determine the output FOURCC";
     *status = VaapiImageDecodeStatus::kCannotGetImage;
     return nullptr;
   }
   VAImageFormat image_format{.fourcc = image_fourcc};
-  auto scoped_image =
-      vaapi_wrapper_->CreateVaImage(va_surface_id_, &image_format, coded_size_);
+  auto scoped_image = vaapi_wrapper_->CreateVaImage(
+      scoped_va_context_and_surface_->id(), &image_format,
+      scoped_va_context_and_surface_->size());
   if (!scoped_image) {
     VLOGF(1) << "Cannot get VAImage, FOURCC = "
              << FourccToString(image_format.fourcc);
@@ -373,30 +343,6 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
 
   *status = VaapiImageDecodeStatus::kSuccess;
   return scoped_image;
-}
-
-scoped_refptr<VASurface> VaapiJpegDecoder::ReleaseVASurface() {
-  if (va_surface_id_ == VA_INVALID_ID)
-    return nullptr;
-
-  DCHECK(vaapi_wrapper_);
-
-  // Prepare a new VASurface object. Note this VASurface will self-destruct.
-  auto va_surface = base::MakeRefCounted<VASurface>(
-      va_surface_id_, coded_size_, va_rt_format_,
-      base::BindOnce(&VaapiWrapper::DestroySurface, vaapi_wrapper_));
-
-  // Destroy the context. It is no longer needed since the only surface is going
-  // to be given away. A new surface and context will be created the next time
-  // Decode() is called
-  vaapi_wrapper_->DestroyContext();
-
-  // Invalidate the decoder's internal state.
-  va_surface_id_ = VA_INVALID_ID;
-  coded_size_.SetSize(0, 0);
-  va_rt_format_ = kInvalidVaRtFormat;
-
-  return va_surface;
 }
 
 }  // namespace media

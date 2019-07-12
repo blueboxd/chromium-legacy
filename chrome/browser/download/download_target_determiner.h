@@ -351,7 +351,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   CompletionCallback completion_callback_;
   base::CancelableTaskTracker history_tracker_;
 
-  base::WeakPtrFactory<DownloadTargetDeterminer> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadTargetDeterminer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTargetDeterminer);
 };

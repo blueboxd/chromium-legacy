@@ -60,8 +60,7 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
       loading_data_collector_(std::make_unique<LoadingDataCollector>(
           resource_prefetch_predictor_.get(),
           stats_collector_.get(),
-          config)),
-      weak_factory_(this) {}
+          config)) {}
 
 LoadingPredictor::~LoadingPredictor() {
   DCHECK(shutdown_);

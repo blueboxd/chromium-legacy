@@ -158,7 +158,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<DownloadHistory> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadHistory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistory);
 };

@@ -11,10 +11,11 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace payments {
 
@@ -71,6 +72,13 @@ bool ValidateExclusiveBitVector(const std::vector<bool>& bit_vector) {
   }
   return seen_true_bit;
 }
+
+enum class TransactionSize {
+  kZeroTransaction = 0,
+  kMicroTransaction = 1,
+  kRegularTransaction = 2,
+  kMaxValue = kRegularTransaction,
+};
 
 }  // namespace
 
@@ -204,6 +212,46 @@ void JourneyLogger::SetNotShown(NotShownReason reason) {
   RecordJourneyStatsHistograms(COMPLETION_STATUS_COULD_NOT_SHOW);
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.NoShow", reason,
                                 NOT_SHOWN_REASON_MAX);
+}
+
+void JourneyLogger::RecordTransactionAmount(std::string currency,
+                                            const std::string& value,
+                                            bool completed) {
+  DCHECK(!has_recorded_transaction_amount_[completed]);
+  has_recorded_transaction_amount_[completed] = true;
+  double amount = -1;
+  if (!base::StringToDouble(value, &amount) || amount < 0)
+    return;
+
+  std::string completion_suffix = completed ? ".Completed" : ".Triggered";
+  // The currency should be three upper-case characters between A and Z.
+  DCHECK(re2::RE2::FullMatch(currency, "^[A-Z]{3}$"));
+  // A dictionary of 3-letter recorded currency codes and their approximated USD
+  // conversion rates. Transaction currencies in currency_conversion_rates are
+  // recorded after conversion.
+  const std::unordered_map<std::string, float> currency_conversion_rates = {
+      {"USD", 1.0},   {"EUR", 1.14},  {"GBP", 1.27}, {"JPY", 0.0093},
+      {"INR", 0.014}, {"CNY", 0.15},  {"CAD", 0.77}, {"RUB", 0.016},
+      {"PLN", 0.27},  {"AUD", 0.70},  {"BRL", 0.26}, {"UAH", 0.038},
+      {"TWD", 0.032}, {"CZK", 0.045}, {"MXN", 0.052}};
+  std::unordered_map<std::string, float>::const_iterator it =
+      currency_conversion_rates.find(currency);
+  // transactions with currencies not included in the conversion dictionary are
+  // not recorded at this point.
+  if (it == currency_conversion_rates.end())
+    return;
+
+  // Approximately convert the transaction amount to USD and map it to one of
+  // the following categories: 1-zero transactions 2- micro transactions (<= $1)
+  // 3- regular transactions.
+  double converted_amount = amount * it->second;
+  TransactionSize transaction_size = TransactionSize::kRegularTransaction;
+  if (converted_amount == 0)
+    transaction_size = TransactionSize::kZeroTransaction;
+  else if (converted_amount <= 1)
+    transaction_size = TransactionSize::kMicroTransaction;
+  base::UmaHistogramEnumeration(
+      "PaymentRequest.TransactionAmount" + completion_suffix, transaction_size);
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(

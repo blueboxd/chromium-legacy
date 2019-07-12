@@ -26,6 +26,7 @@
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -387,11 +388,7 @@ void DownloadManagerService::UpdateLastAccessTime(
     const JavaParamRef<jstring>& jdownload_guid,
     bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return;
-
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item)
     item->SetLastAccessTime(base::Time::Now());
 }
@@ -652,6 +649,8 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
           ProfileKeyStartupAccessor::GetInstance()->profile_key());
   in_progress_manager->set_download_start_observer(
       DownloadControllerBase::Get());
+  in_progress_manager->set_intermediate_path_cb(
+      base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(
           ProfileKeyStartupAccessor::GetInstance()->profile_key());

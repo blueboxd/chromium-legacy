@@ -231,8 +231,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
     std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
           kDefaultNativeDesktopMediaListUpdatePeriod)),
-      thread_("DesktopMediaListCaptureThread"),
-      weak_factory_(this) {
+      thread_("DesktopMediaListCaptureThread") {
   type_ = type;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

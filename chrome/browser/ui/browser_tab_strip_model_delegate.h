@@ -47,7 +47,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   Browser* const browser_;
 
   // The following factory is used to close the frame at a later time.
-  base::WeakPtrFactory<BrowserTabStripModelDelegate> weak_factory_;
+  base::WeakPtrFactory<BrowserTabStripModelDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripModelDelegate);
 };

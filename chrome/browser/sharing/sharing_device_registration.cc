@@ -38,8 +38,7 @@ SharingDeviceRegistration::SharingDeviceRegistration(
       instance_id_driver_(instance_id_driver),
       vapid_key_manager_(vapid_key_manager),
       gcm_driver_(gcm_driver),
-      local_device_info_provider_(local_device_info_provider),
-      weak_ptr_factory_(this) {}
+      local_device_info_provider_(local_device_info_provider) {}
 
 SharingDeviceRegistration::~SharingDeviceRegistration() = default;
 

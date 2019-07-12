@@ -9,10 +9,10 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -37,6 +37,14 @@ public class ChromeBasePreferenceCompat extends Preference {
     private ManagedPreferenceDelegateCompat mManagedPrefDelegate;
 
     /**
+     * When null, the default Preferences Support Library logic will be used to determine dividers.
+     */
+    @Nullable
+    private Boolean mDividerAllowedAbove;
+    @Nullable
+    private Boolean mDividerAllowedBelow;
+
+    /**
      * Constructor for use in Java.
      */
     public ChromeBasePreferenceCompat(Context context) {
@@ -48,7 +56,9 @@ public class ChromeBasePreferenceCompat extends Preference {
      */
     public ChromeBasePreferenceCompat(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         setLayoutResource(R.layout.preference_compat);
+        setSingleLineTitle(false);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeBasePreference);
         mIconTint = a.getColorStateList(R.styleable.ChromeBasePreference_iconTint);
@@ -66,12 +76,26 @@ public class ChromeBasePreferenceCompat extends Preference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
-        ((TextView) holder.findViewById(android.R.id.title)).setSingleLine(false);
         Drawable icon = getIcon();
         if (icon != null && mIconTint != null) {
             icon.setColorFilter(mIconTint.getDefaultColor(), PorterDuff.Mode.SRC_IN);
         }
         ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, holder.itemView);
+
+        if (mDividerAllowedAbove != null) {
+            holder.setDividerAllowedAbove(mDividerAllowedAbove);
+        }
+        if (mDividerAllowedBelow != null) {
+            holder.setDividerAllowedBelow(mDividerAllowedBelow);
+        }
+    }
+
+    public void setDividerAllowedAbove(boolean allowed) {
+        mDividerAllowedAbove = allowed;
+    }
+
+    public void setDividerAllowedBelow(boolean allowed) {
+        mDividerAllowedBelow = allowed;
     }
 
     @Override

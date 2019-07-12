@@ -16,7 +16,7 @@ FakeIceConnection::FakeIceConnection(
     scoped_refptr<protocol::TransportContext> transport_context,
     base::OnceClosure on_closed) {
   transport_ =
-      std::make_unique<protocol::IceTransport>(transport_context, this, true);
+      std::make_unique<protocol::IceTransport>(transport_context, this);
   on_closed_ = std::move(on_closed);
   if (transport_context->role() == protocol::TransportRole::CLIENT) {
     control_dispatcher_ = std::make_unique<protocol::ClientControlDispatcher>();

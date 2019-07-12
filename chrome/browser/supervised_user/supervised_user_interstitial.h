@@ -107,7 +107,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   ScopedObserver<SupervisedUserService, SupervisedUserInterstitial>
       scoped_observer_;
 
-  base::WeakPtrFactory<SupervisedUserInterstitial> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserInterstitial> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserInterstitial);
 };

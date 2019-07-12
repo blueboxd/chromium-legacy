@@ -30,7 +30,7 @@ bool DefaultBrowserIsDisabledByPolicy() {
 
 }  // namespace
 
-DefaultBrowserHandler::DefaultBrowserHandler() : weak_ptr_factory_(this) {}
+DefaultBrowserHandler::DefaultBrowserHandler() {}
 
 DefaultBrowserHandler::~DefaultBrowserHandler() {}
 

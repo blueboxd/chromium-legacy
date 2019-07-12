@@ -362,7 +362,7 @@ class ExtensionInstallPrompt {
   // Whether or not the |show_dialog_callback_| was called.
   bool did_call_show_dialog_;
 
-  base::WeakPtrFactory<ExtensionInstallPrompt> weak_factory_;
+  base::WeakPtrFactory<ExtensionInstallPrompt> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPrompt);
 };

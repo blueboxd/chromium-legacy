@@ -88,6 +88,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kScrollbarInjectScrollGestures;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 
+BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
+
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 

@@ -242,7 +242,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // When this is set to true, the dialog does not close on blur.
   bool keep_shown_for_testing_ = false;
 
-  base::WeakPtrFactory<CastDialogView> weak_factory_;
+  base::WeakPtrFactory<CastDialogView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogView);
 };

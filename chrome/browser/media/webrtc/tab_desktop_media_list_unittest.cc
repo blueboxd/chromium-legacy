@@ -130,7 +130,7 @@ class TabDesktopMediaListTest : public testing::Test {
     if (!entry) {
       std::unique_ptr<content::NavigationEntry> entry_new =
           content::NavigationController::CreateNavigationEntry(
-              GURL("chrome://blank"), content::Referrer(),
+              GURL("chrome://blank"), content::Referrer(), base::nullopt,
               ui::PAGE_TRANSITION_LINK, false, std::string(), profile_,
               nullptr /* blob_url_loader_factory */);
 

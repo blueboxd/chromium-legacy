@@ -76,8 +76,7 @@ const char SystemWebAppManager::kInstallResultHistogramName[];
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
-      pref_service_(profile->GetPrefs()),
-      weak_ptr_factory_(this) {
+      pref_service_(profile->GetPrefs()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
     // Always update in tests, and return early to avoid populating with real

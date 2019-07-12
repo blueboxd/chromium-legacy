@@ -210,8 +210,7 @@ LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
       interstitials_enabled_(base::FeatureList::IsEnabled(
           features::kLookalikeUrlNavigationSuggestionsUI)),
       profile_(Profile::FromBrowserContext(
-          navigation_handle->GetWebContents()->GetBrowserContext())),
-      weak_factory_(this) {}
+          navigation_handle->GetWebContents()->GetBrowserContext())) {}
 
 LookalikeUrlNavigationThrottle::~LookalikeUrlNavigationThrottle() {}
 

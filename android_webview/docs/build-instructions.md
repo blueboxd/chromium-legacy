@@ -73,15 +73,30 @@ WebView can be compiled with a variety of build targets.
 
 _TODO(https://crbug.com/956315): document the differences between each target._
 
-_TODO(ntfschr): document how to determine API level._
+First, you should figure out your device's integer API level, which determines
+which build targets will be compatible with the version of the OS on your
+device:
 
 ```shell
-# For L-M devices (also works for N+, see "Important Notes for N-P")
+adb shell getprop ro.build.version.sdk
+```
+
+Then you can build one of the following targets:
+
+```shell
+# For L-M (21-23) devices (also works for N+, see "Important Notes for N-P")
 autoninja -C out/Default system_webview_apk
 
-# For N-P devices (not including TV/car devices)
+# For N-P (24-28) devices (not including TV/car devices)
 autoninja -C out/Default monochrome_public_apk
 ```
+
+*** promo
+**Tip:** you can convert the API level integer to the release's dessert
+codename with [this
+table](https://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels).
+This developer guide uses API integers and release letters interchangeably.
+***
 
 ### Changing package name
 

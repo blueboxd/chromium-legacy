@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -60,23 +59,6 @@ const char kPrivetNotificationID[] = "privet_notification";
 const char kPrivetNotificationOriginUrl[] = "chrome://devices";
 const int kStartDelaySeconds = 5;
 
-enum PrivetNotificationsEvent {
-  PRIVET_SERVICE_STARTED,
-  PRIVET_LISTER_STARTED,
-  PRIVET_DEVICE_CHANGED,
-  PRIVET_INFO_DONE,
-  PRIVET_NOTIFICATION_SHOWN,
-  PRIVET_NOTIFICATION_CANCELED,
-  PRIVET_NOTIFICATION_CLICKED,
-  PRIVET_DISABLE_NOTIFICATIONS_CLICKED,
-  PRIVET_EVENT_MAX,
-};
-
-void ReportPrivetUmaEvent(PrivetNotificationsEvent privet_event) {
-  UMA_HISTOGRAM_ENUMERATION("LocalDiscovery.PrivetNotificationsEvent",
-                            privet_event, PRIVET_EVENT_MAX);
-}
-
 }  // namespace
 
 PrivetNotificationsListener::PrivetNotificationsListener(
@@ -92,7 +74,6 @@ PrivetNotificationsListener::~PrivetNotificationsListener() {
 void PrivetNotificationsListener::DeviceChanged(
     const std::string& name,
     const DeviceDescription& description) {
-  ReportPrivetUmaEvent(PRIVET_DEVICE_CHANGED);
   auto it = devices_seen_.find(name);
   if (it != devices_seen_.end()) {
     if (!description.id.empty() &&  // Device is registered
@@ -289,9 +270,6 @@ void PrivetNotificationService::AddNotification(
                                  kPrivetNotificationID),
       rich_notification_data, CreateNotificationDelegate(profile));
 
-  if (add_new_notification)
-    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
-
   NotificationDisplayService::GetForProfile(
       Profile::FromBrowserContext(profile_))
       ->Display(NotificationHandler::Type::TRANSIENT, notification,
@@ -299,7 +277,6 @@ void PrivetNotificationService::AddNotification(
 }
 
 void PrivetNotificationService::PrivetRemoveNotification() {
-  ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CANCELED);
   NotificationDisplayService::GetForProfile(
       Profile::FromBrowserContext(profile_))
       ->Close(NotificationHandler::Type::TRANSIENT, kPrivetNotificationID);
@@ -330,7 +307,6 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
   if (IsForced()) {
     StartLister();
   } else if (*enable_privet_notification_member_) {
-    ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
     traffic_detector_ = std::make_unique<PrivetTrafficDetector>(
         profile_, base::BindRepeating(&PrivetNotificationService::StartLister,
                                       AsWeakPtr()));
@@ -351,7 +327,6 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 }
 
 void PrivetNotificationService::StartLister() {
-  ReportPrivetUmaEvent(PRIVET_LISTER_STARTED);
   service_discovery_client_ =
       local_discovery::ServiceDiscoverySharedClient::GetInstance();
   device_lister_.reset(
@@ -386,11 +361,9 @@ void PrivetNotificationDelegate::Click(
     return;
 
   if (*button_index == 0) {
-    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);
     OpenTab(GURL(kPrivetNotificationOriginUrl));
   } else {
     DCHECK_EQ(1, *button_index);
-    ReportPrivetUmaEvent(PRIVET_DISABLE_NOTIFICATIONS_CLICKED);
     DisableNotifications();
   }
   CloseNotification();

@@ -49,7 +49,7 @@ const char kSimpleFormFileName[] = "autocomplete_simple_form.html";
 class MockSuggestionsHandler
     : public AutocompleteHistoryManager::SuggestionsHandler {
  public:
-  MockSuggestionsHandler() : weak_ptr_factory_(this) {}
+  MockSuggestionsHandler() {}
 
   void OnSuggestionsReturned(
       int query_id,
@@ -68,7 +68,7 @@ class MockSuggestionsHandler
 
  private:
   std::vector<Suggestion> last_suggestions_;
-  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_{this};
 };
 
 class AutofillAutocompleteTest : public InProcessBrowserTest {

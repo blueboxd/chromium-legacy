@@ -38,8 +38,7 @@ void CallbackWrapper(base::OnceCallback<void(bool)> callback,
 ChromeWebViewPermissionHelperDelegate::ChromeWebViewPermissionHelperDelegate(
     WebViewPermissionHelper* web_view_permission_helper)
     : WebViewPermissionHelperDelegate(web_view_permission_helper),
-      plugin_auth_host_bindings_(web_contents(), this),
-      weak_factory_(this) {}
+      plugin_auth_host_bindings_(web_contents(), this) {}
 
 ChromeWebViewPermissionHelperDelegate::~ChromeWebViewPermissionHelperDelegate()
 {}

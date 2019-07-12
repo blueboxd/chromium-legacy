@@ -82,9 +82,7 @@ class BASE_EXPORT MachPortRendezvousServer {
  public:
   // Returns the instance of the server. Upon the first call to this method,
   // the server is created, which registers an endpoint in the Mach bootstrap
-  // namespace. If the rendezvous fails, which can happen if the server is not
-  // available, this returns null. Acquiring zero ports from the exchange is
-  // not considered a failure.
+  // namespace.
   static MachPortRendezvousServer* GetInstance();
 
   // Registers a collection of Mach ports |ports| to be acquirable by the
@@ -164,7 +162,9 @@ class BASE_EXPORT MachPortRendezvousClient {
  public:
   // Connects to the MachPortRendezvousServer and requests any registered Mach
   // ports. This only performs the rendezvous once. Subsequent calls to this
-  // method return the same instance.
+  // method return the same instance. If the rendezvous fails, which can happen
+  // if the server is not available, this returns null. Acquiring zero ports
+  // from the exchange is not considered a failure.
   static MachPortRendezvousClient* GetInstance();
 
   // Returns the Mach send right that was registered with |key|. If no such

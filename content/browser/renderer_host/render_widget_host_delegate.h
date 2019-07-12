@@ -41,6 +41,7 @@ class Sample;
 namespace content {
 
 class BrowserAccessibilityManager;
+class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
@@ -328,6 +329,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // viewport.
   virtual void NotifyVisibleViewportSizeChanged(
       const gfx::Size& visible_viewport_size) {}
+
+  // Returns the focused frame across all delegates, or nullptr if none.
+  virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

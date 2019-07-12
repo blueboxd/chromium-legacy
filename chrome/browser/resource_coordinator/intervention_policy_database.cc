@@ -18,8 +18,7 @@ InterventionPolicyDatabase::OriginInterventionPolicies::
                                InterventionPolicy freezing_policy)
     : discarding_policy(discarding_policy), freezing_policy(freezing_policy) {}
 
-InterventionPolicyDatabase::InterventionPolicyDatabase()
-    : weak_factory_(this) {}
+InterventionPolicyDatabase::InterventionPolicyDatabase() {}
 InterventionPolicyDatabase::~InterventionPolicyDatabase() = default;
 
 InterventionPolicyDatabase::InterventionPolicy

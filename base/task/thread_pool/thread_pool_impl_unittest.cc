@@ -176,6 +176,8 @@ scoped_refptr<TaskRunner> CreateTaskRunnerAndExecutionMode(
       return thread_pool->CreateSingleThreadTaskRunner(
           traits, default_single_thread_task_runner_mode);
     }
+    case TaskSourceExecutionMode::kJob:
+      break;
   }
   ADD_FAILURE() << "Unknown ExecutionMode";
   return nullptr;

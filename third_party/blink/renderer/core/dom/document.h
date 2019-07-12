@@ -772,7 +772,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HasFinishedParsing() const { return parsing_state_ == kFinishedParsing; }
 
   bool ShouldScheduleLayout() const;
-  int ElapsedTime() const;
 
   TextLinkColors& GetTextLinkColors() { return text_link_colors_; }
   const TextLinkColors& GetTextLinkColors() const { return text_link_colors_; }
@@ -1572,12 +1571,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearUseCounterForTesting(mojom::WebFeature);
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
 
-  // This method should be used sparingly because it does not adjust the
-  // window agent or agent cluster. If you are using this in a unit test
-  // you should likely navigate the document to adjust the security origin
-  // instead.
-  void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
-
   // Bind Content Security Policy to this document. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
@@ -1878,7 +1871,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool is_freezing_in_progress_;
 
-  double start_time_;
+  base::ElapsedTimer start_time_;
 
   Member<ScriptRunner> script_runner_;
 

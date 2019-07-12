@@ -127,7 +127,7 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
 // chrome infrastructure to be up and running before they can be attempted.
 class FirstRunDelayedTasks : public content::NotificationObserver {
  public:
-  FirstRunDelayedTasks() : weak_ptr_factory_(this) {
+  FirstRunDelayedTasks() {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -174,7 +174,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   }
 
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<FirstRunDelayedTasks> weak_ptr_factory_;
+  base::WeakPtrFactory<FirstRunDelayedTasks> weak_ptr_factory_{this};
 };
 
 // Installs a task to do an extensions update check once the extensions system

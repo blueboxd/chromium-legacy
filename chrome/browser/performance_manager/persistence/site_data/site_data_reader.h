@@ -67,7 +67,7 @@ class SiteDataReader {
   const scoped_refptr<internal::SiteDataImpl> impl_;
 
   // Used for invalidating callbacks.
-  base::WeakPtrFactory<SiteDataReader> weak_factory_;
+  base::WeakPtrFactory<SiteDataReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataReader);
 };

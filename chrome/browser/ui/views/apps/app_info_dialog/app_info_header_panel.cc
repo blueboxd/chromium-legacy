@@ -48,8 +48,7 @@ const int kAppIconSize = 64;
 
 AppInfoHeaderPanel::AppInfoHeaderPanel(Profile* profile,
                                        const extensions::Extension* app)
-    : AppInfoPanel(profile, app),
-      weak_ptr_factory_(this) {
+    : AppInfoPanel(profile, app) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(

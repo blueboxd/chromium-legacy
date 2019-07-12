@@ -141,8 +141,7 @@ auto MakeDbusToolTip(const std::string& text) {
 
 }  // namespace
 
-StatusIconLinuxDbus::StatusIconLinuxDbus()
-    : bus_(CreateBus()), weak_factory_(this) {
+StatusIconLinuxDbus::StatusIconLinuxDbus() : bus_(CreateBus()) {
   CheckStatusNotifierWatcherHasOwner();
 }
 

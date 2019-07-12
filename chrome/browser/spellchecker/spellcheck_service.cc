@@ -52,8 +52,7 @@ SpellcheckService::EventType g_status_type =
     SpellcheckService::BDICT_NOTINITIALIZED;
 
 SpellcheckService::SpellcheckService(content::BrowserContext* context)
-    : context_(context),
-      weak_ptr_factory_(this) {
+    : context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);

@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_REQUIREMENTS_ACTIVITY_SERVICE_PRESENTATION_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_REQUIREMENTS_ACTIVITY_SERVICE_PRESENTATION_H_
 
-@class ContextMenuItem;
-
 // ActivityServicePresentation contains methods that control how the activity
 // services menu is presented and dismissed on screen.
 @protocol ActivityServicePresentation
@@ -24,11 +22,6 @@
 // |message|.
 - (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
                                              message:(NSString*)message;
-
-// Asks the implementor to show a context menu with the given |title| and
-// with the items in |items|. There must be at least one item in |items|.
-- (void)showActivityServiceContextMenu:(NSString*)title
-                                 items:(NSArray<ContextMenuItem*>*)items;
 
 @end
 

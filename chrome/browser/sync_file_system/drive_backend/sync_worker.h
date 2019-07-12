@@ -180,7 +180,7 @@ class SyncWorker : public SyncWorkerInterface,
 
   base::SequenceChecker sequence_checker_;
 
-  base::WeakPtrFactory<SyncWorker> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncWorker> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SyncWorker);
 };
 

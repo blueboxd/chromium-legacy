@@ -448,7 +448,8 @@ class LocalNTPBackgroundsAndDarkModeTest
   void SetUpOnMainThread() override {
     LocalNTPCustomBackgroundsThemeTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
 
     // Enable dark mode.
     instant_service =

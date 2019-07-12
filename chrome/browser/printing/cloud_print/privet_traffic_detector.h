@@ -79,14 +79,13 @@ class PrivetTrafficDetector
     // Only accessed on the IO thread.
     net::NetworkInterfaceList networks_;
     net::IPEndPoint recv_addr_;
-    base::Time start_time_;
     network::mojom::UDPSocketPtr socket_;
 
     // Implementation of socket receiver callback.
     // Initialized on the UI thread, but only accessed on the IO thread.
     mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
 
-    base::WeakPtrFactory<Helper> weak_ptr_factory_;
+    base::WeakPtrFactory<Helper> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Helper);
   };

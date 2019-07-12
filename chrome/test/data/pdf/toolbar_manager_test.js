@@ -101,7 +101,8 @@ var tests = [
   function testToolbarManagerResizeDropdown() {
     var mockWindow = new MockWindow(1920, 1080);
     var mockZoomToolbar = {
-      clientHeight: 400
+      clientHeight: 400,
+      isPrintPreview: function() { return false; }
     };
     var toolbar = document.getElementById('toolbar');
     var bookmarksDropdown = toolbar.$.bookmarks;
@@ -168,6 +169,7 @@ var tests = [
     var mockWindow = new MockWindow(1920, 1080);
 
     var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    zoomToolbar.setIsPrintPreview(true);
     document.body.appendChild(zoomToolbar);
     var toolbarManager = new ToolbarManager(mockWindow, null, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
@@ -179,20 +181,32 @@ var tests = [
     mockWindow.runTimeout();
     chrome.test.assertFalse(zoomToolbar.isVisible());
 
-    // Simulate focusing the fit to page button.
+    // Simulate focusing the fit to page button using the tab key.
     zoomToolbar.$$('#fit-button').dispatchEvent(
         new CustomEvent('focus', {bubbles: true, composed: true}));
     chrome.test.assertTrue(zoomToolbar.isVisible());
-
-    // Hit tab key.
-    toolbarManager.showToolbarsForKeyboardNavigation();
 
     // Call resetKeyboardNavigationAndHideToolbars(). This happens when focus
     // leaves the PDF viewer in Print Preview, and returns to the main Print
     // Preview sidebar UI.
     toolbarManager.resetKeyboardNavigationAndHideToolbars();
+
+    chrome.test.assertTrue(zoomToolbar.isVisible());
+
+    // Simulate re-focusing the zoom toolbar with the tab key. See
+    // https://crbug.com/982694.
+    zoomToolbar.$$('#fit-button').dispatchEvent(
+        new CustomEvent('keyup', {bubbles: true, composed: true}));
+    mockWindow.runTimeout();
+    chrome.test.assertTrue(zoomToolbar.isVisible());
+
+    // Simulate focus leaving the PDF viewer again, but this time don't
+    // refocus the button afterward.
+    toolbarManager.resetKeyboardNavigationAndHideToolbars();
     chrome.test.assertTrue(zoomToolbar.isVisible());
     mockWindow.runTimeout();
+
+    // Toolbar should be hidden.
     chrome.test.assertFalse(zoomToolbar.isVisible());
 
     chrome.test.succeed();

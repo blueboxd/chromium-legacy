@@ -90,10 +90,6 @@ const char kGoogleServicesUsernamePattern[] =
 const char kReverseAutologinRejectedEmailList[] =
     "reverse_autologin.rejected_email_list";
 
-// Int64 which tracks, as time from epoch, when last time the user signed in
-// to the browser.
-const char kSignedInTime[] = "signin.signedin_time";
-
 // Boolean indicating if this profile was signed in with information from a
 // credential provider.
 const char kSignedInWithCredentialProvider[] =

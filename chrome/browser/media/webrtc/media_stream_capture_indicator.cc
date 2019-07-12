@@ -90,9 +90,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
  public:
   WebContentsDeviceUsage(scoped_refptr<MediaStreamCaptureIndicator> indicator,
                          WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        indicator_(std::move(indicator)),
-        weak_factory_(this) {}
+      : WebContentsObserver(web_contents), indicator_(std::move(indicator)) {}
 
   bool IsCapturingAudio() const { return audio_stream_count_ > 0; }
   bool IsCapturingVideo() const { return video_stream_count_ > 0; }
@@ -128,7 +126,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   int desktop_stream_count_ = 0;
 
   base::OnceClosure stop_callback_;
-  base::WeakPtrFactory<WebContentsDeviceUsage> weak_factory_;
+  base::WeakPtrFactory<WebContentsDeviceUsage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDeviceUsage);
 };

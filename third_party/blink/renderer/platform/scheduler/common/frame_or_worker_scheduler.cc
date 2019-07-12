@@ -72,7 +72,7 @@ FrameOrWorkerScheduler::AddLifecycleObserver(ObserverType type,
                                              Observer* observer) {
   DCHECK(observer);
   observer->OnLifecycleStateChanged(CalculateLifecycleState(type));
-  lifecycle_observers_[observer] = type;
+  lifecycle_observers_.Set(observer, type);
   return std::make_unique<LifecycleObserverHandle>(this, observer);
 }
 
@@ -85,8 +85,8 @@ void FrameOrWorkerScheduler::RemoveLifecycleObserver(Observer* observer) {
 
 void FrameOrWorkerScheduler::NotifyLifecycleObservers() {
   for (const auto& observer : lifecycle_observers_) {
-    observer.first->OnLifecycleStateChanged(
-        CalculateLifecycleState(observer.second));
+    observer.key->OnLifecycleStateChanged(
+        CalculateLifecycleState(observer.value));
   }
 }
 

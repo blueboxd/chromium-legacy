@@ -63,8 +63,10 @@ public class TouchlessDialogPresenter extends Presenter {
             return;
         }
 
+        boolean fullscreen = isFullscreen(model);
+
         // If not fullscreen don't use a predefined style.
-        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+        if (!fullscreen) {
             mDialog = new Dialog(mActivity);
             mDialog.getWindow().setGravity(Gravity.BOTTOM);
             mDialog.getWindow().setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
@@ -103,13 +105,23 @@ public class TouchlessDialogPresenter extends Presenter {
 
         // If the modal dialog is not specified to be fullscreen, wrap content and place at the
         // bottom of the screen. This needs to be done after content is added to the dialog.
-        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+        if (!fullscreen) {
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
         mDialog.show();
         dialogView.announceForAccessibility(getContentDescription(model));
+    }
+
+    private boolean isFullscreen(PropertyModel model) {
+        if (!model.getAllSetProperties().contains(TouchlessDialogProperties.IS_FULLSCREEN)) {
+            // We should have this property set. This code is meant to guard against cases
+            // where we've forgotten to add this property.
+            assert false;
+            return false;
+        }
+        return model.get(TouchlessDialogProperties.IS_FULLSCREEN);
     }
 
     @Override

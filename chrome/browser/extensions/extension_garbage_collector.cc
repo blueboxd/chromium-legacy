@@ -111,8 +111,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
 
 ExtensionGarbageCollector::ExtensionGarbageCollector(
     content::BrowserContext* context)
-    : context_(context), crx_installs_in_progress_(0), weak_factory_(this) {
-
+    : context_(context), crx_installs_in_progress_(0) {
   ExtensionSystem* extension_system = ExtensionSystem::Get(context_);
   DCHECK(extension_system);
 

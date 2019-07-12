@@ -74,7 +74,7 @@ class UsbDeviceManagerHelper {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<UsbDeviceManagerHelper> weak_factory_;
+  base::WeakPtrFactory<UsbDeviceManagerHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceManagerHelper);
 };

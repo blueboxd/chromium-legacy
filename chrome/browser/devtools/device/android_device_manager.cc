@@ -491,8 +491,7 @@ AndroidDeviceManager::Device::Device(
     : RefCountedDeleteOnSequence<Device>(base::ThreadTaskRunnerHandle::Get()),
       task_runner_(device_task_runner),
       provider_(provider),
-      serial_(serial),
-      weak_factory_(this) {}
+      serial_(serial) {}
 
 AndroidDeviceManager::Device::~Device() {
   task_runner_->PostTask(
@@ -584,7 +583,7 @@ void AndroidDeviceManager::set_usb_device_manager_for_test(
 }
 
 AndroidDeviceManager::AndroidDeviceManager()
-    : handler_thread_(HandlerThread::GetInstance()), weak_factory_(this) {}
+    : handler_thread_(HandlerThread::GetInstance()) {}
 
 AndroidDeviceManager::~AndroidDeviceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

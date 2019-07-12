@@ -655,7 +655,7 @@ class LocalNtpSource::SearchConfigurationProvider
 
 class LocalNtpSource::DesktopLogoObserver {
  public:
-  DesktopLogoObserver() : weak_ptr_factory_(this) {}
+  DesktopLogoObserver() {}
 
   // Get the cached logo.
   void GetCachedLogo(LogoService* service,
@@ -763,7 +763,7 @@ class LocalNtpSource::DesktopLogoObserver {
   int version_started_ = 0;
   int version_finished_ = 0;
 
-  base::WeakPtrFactory<DesktopLogoObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<DesktopLogoObserver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLogoObserver);
 };
@@ -781,8 +781,7 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
       search_suggest_service_(
           SearchSuggestServiceFactory::GetForProfile(profile_)),
       search_suggest_service_observer_(this),
-      logo_service_(nullptr),
-      weak_ptr_factory_(this) {
+      logo_service_(nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |ntp_background_service_| is null in incognito, or when the feature is
@@ -979,7 +978,7 @@ void LocalNtpSource::StartDataRequest(
     // URLDataSource::GetContentSecurityPolicy*() methods?
     replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
 
-    replacements["customizeMenuTitle"] =
+    replacements["customizeMenu"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
     replacements["cancelButton"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CANCEL);

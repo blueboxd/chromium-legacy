@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -586,8 +587,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   RegisterProperty(GetDocument(), "--foo", "<number>", "0", false);
   RegisterProperty(GetDocument(), "--bar", "<length>", "10px", false);
+  RegisterProperty(GetDocument(), "--loo", "<color>", "rgb(0, 0, 0)", false);
   SetCustomProperty("--foo", "10");
   SetCustomProperty("--bar", "10px");
+  SetCustomProperty("--loo", "rgb(0, 255, 0)");
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
   EXPECT_TRUE(style->NonInheritedVariables());
@@ -597,9 +600,18 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(style->NonInheritedVariables()
                   ->GetData(AtomicString("--bar"))
                   .value_or(nullptr));
+  EXPECT_TRUE(style->NonInheritedVariables()
+                  ->GetData(AtomicString("--loo"))
+                  .value_or(nullptr));
 
   StringKeyframe* keyframe = CreateReplaceOpKeyframe("--foo", "10");
   EXPECT_EQ(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe),
+            CompositorAnimations::kNoFailure);
+
+  // Color-valued properties are supported
+  StringKeyframe* color_keyframe =
+      CreateReplaceOpKeyframe("--loo", "rgb(0, 255, 0)");
+  EXPECT_EQ(DuplicateSingleKeyframeAndTestIsCandidateOnResult(color_keyframe),
             CompositorAnimations::kNoFailure);
 
   // Length-valued properties are not compositable.

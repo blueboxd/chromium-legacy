@@ -48,8 +48,7 @@ ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
       registered_clients_(std::move(registered_clients)),
       initialized_(false),
       delegate_(nullptr),
-      clock_(clock),
-      weak_ptr_factory_(this) {}
+      clock_(clock) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
 

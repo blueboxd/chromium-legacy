@@ -51,9 +51,7 @@ BudgetDatabase::BudgetInfo::BudgetInfo(const BudgetInfo&& other)
 BudgetDatabase::BudgetInfo::~BudgetInfo() = default;
 
 BudgetDatabase::BudgetDatabase(Profile* profile)
-    : profile_(profile),
-      clock_(base::WrapUnique(new base::DefaultClock)),
-      weak_ptr_factory_(this) {
+    : profile_(profile), clock_(base::WrapUnique(new base::DefaultClock)) {
   auto* protodb_provider =
       leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
           profile->GetProfileKey());

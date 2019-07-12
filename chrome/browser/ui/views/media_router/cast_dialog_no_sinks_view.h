@@ -51,7 +51,7 @@ class CastDialogNoSinksView : public views::View, public views::ButtonListener {
 
   Profile* const profile_;
 
-  base::WeakPtrFactory<CastDialogNoSinksView> weak_factory_;
+  base::WeakPtrFactory<CastDialogNoSinksView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogNoSinksView);
 };

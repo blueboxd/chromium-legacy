@@ -14,6 +14,7 @@
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -29,6 +30,49 @@ namespace content {
 
 using blink::mojom::NativeFileSystemError;
 using PermissionStatus = NativeFileSystemPermissionGrant::PermissionStatus;
+
+namespace {
+
+void ShowFilePickerOnUIThread(
+    const url::Origin& requesting_origin,
+    int render_process_id,
+    int frame_id,
+    blink::mojom::ChooseFileSystemEntryType type,
+    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
+    bool include_accepts_all,
+    FileSystemChooser::ResultCallback callback,
+    scoped_refptr<base::TaskRunner> callback_runner) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
+
+  if (!web_contents) {
+    callback_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::NativeFileSystemError::New(
+                                      base::File::FILE_ERROR_ABORT),
+                                  std::vector<base::FilePath>()));
+    return;
+  }
+
+  url::Origin embedding_origin =
+      url::Origin::Create(web_contents->GetLastCommittedURL());
+  if (embedding_origin != requesting_origin) {
+    // Third party iframes are not allowed to show a file picker.
+    callback_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::NativeFileSystemError::New(
+                                      base::File::FILE_ERROR_ACCESS_DENIED),
+                                  std::vector<base::FilePath>()));
+    return;
+  }
+
+  FileSystemChooser::CreateAndShow(web_contents, type, std::move(accepts),
+                                   include_accepts_all, std::move(callback),
+                                   std::move(callback_runner));
+}
+
+}  // namespace
 
 NativeFileSystemManagerImpl::SharedHandleState::SharedHandleState(
     scoped_refptr<NativeFileSystemPermissionGrant> read_grant,
@@ -95,7 +139,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          &FileSystemChooser::CreateAndShow, context.process_id,
+          &ShowFilePickerOnUIThread, context.origin, context.process_id,
           context.frame_id, type, std::move(accepts), include_accepts_all,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                          weak_factory_.GetWeakPtr(), context, type,

@@ -14,7 +14,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
  public:
   explicit FakeDesktopMediaPicker(
       FakeDesktopMediaPickerFactory::TestFlags* expectation)
-      : expectation_(expectation), weak_factory_(this) {
+      : expectation_(expectation) {
     expectation_->picker_created = true;
   }
   ~FakeDesktopMediaPicker() override { expectation_->picker_deleted = true; }
@@ -68,7 +68,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
   FakeDesktopMediaPickerFactory::TestFlags* expectation_;
   DoneCallback done_callback_;
 
-  base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_;
+  base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPicker);
 };

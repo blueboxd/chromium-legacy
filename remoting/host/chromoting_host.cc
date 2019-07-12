@@ -28,7 +28,6 @@
 #include "remoting/protocol/native_ip_synthesizer.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
-#include "remoting/signaling/signaling_address.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -244,11 +243,9 @@ void ChromotingHost::OnIncomingSession(
         base::WrapUnique(session), transport_context_,
         video_encode_task_runner_, audio_task_runner_));
   } else {
-    SignalingAddress address(session->jid());
-    bool use_turn_api = address.channel() == SignalingAddress::Channel::FTL;
     connection.reset(new protocol::IceConnectionToClient(
         base::WrapUnique(session), transport_context_,
-        video_encode_task_runner_, audio_task_runner_, use_turn_api));
+        video_encode_task_runner_, audio_task_runner_));
   }
 
   // Create a ClientSession object.

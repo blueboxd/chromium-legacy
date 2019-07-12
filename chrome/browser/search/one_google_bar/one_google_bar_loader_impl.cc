@@ -268,8 +268,8 @@ OneGoogleBarLoaderImpl::OneGoogleBarLoaderImpl(
     : url_loader_factory_(url_loader_factory),
       google_url_tracker_(google_url_tracker),
       application_locale_(application_locale),
-      account_consistency_mirror_required_(account_consistency_mirror_required),
-      weak_ptr_factory_(this) {}
+      account_consistency_mirror_required_(
+          account_consistency_mirror_required) {}
 
 OneGoogleBarLoaderImpl::~OneGoogleBarLoaderImpl() = default;
 

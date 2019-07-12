@@ -70,9 +70,7 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
 CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents)
-    : controller_(controller),
-      web_contents_(web_contents),
-      weak_ptr_factory_(this) {
+    : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
 }
 

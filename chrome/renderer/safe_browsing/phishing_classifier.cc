@@ -60,10 +60,7 @@ void RecordReasonForSkippingClassificationToUMA(
 
 PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame,
                                        FeatureExtractorClock* clock)
-    : render_frame_(render_frame),
-      scorer_(NULL),
-      clock_(clock),
-      weak_factory_(this) {
+    : render_frame_(render_frame), scorer_(nullptr), clock_(clock) {
   Clear();
 }
 

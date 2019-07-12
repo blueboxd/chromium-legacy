@@ -378,7 +378,6 @@ def AbsolutePath(path, filename, root):
 
 def ParseDir(path, root, require_license_file=True, optional_keys=None):
     """Examine a third_party/foo component and extract its metadata."""
-
     # Parse metadata fields out of README.chromium.
     # We examine "LICENSE" for the license file by default.
     metadata = {
@@ -757,7 +756,6 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
     else:
         print content_text
 
-    return True
 
 
 def main():
@@ -787,9 +785,12 @@ def main():
                                args.gn_out_dir, args.gn_target, args.depfile):
             return 1
     elif args.command == 'license_file':
-        if not GenerateLicenseFile(
+        try:
+            GenerateLicenseFile(
                 args.output_file, args.gn_out_dir, args.gn_target,
-                args.target_os):
+                args.target_os)
+        except LicenseError as e:
+            print("Failed to parse README.chromium: {}".format(e))
             return 1
     else:
         print __doc__

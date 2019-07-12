@@ -512,7 +512,6 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signaling_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
               runtime_->url_loader_factory()),

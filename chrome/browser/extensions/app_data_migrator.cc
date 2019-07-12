@@ -138,8 +138,7 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
 namespace extensions {
 
 AppDataMigrator::AppDataMigrator(Profile* profile, ExtensionRegistry* registry)
-    : profile_(profile), registry_(registry), weak_factory_(this) {
-}
+    : profile_(profile), registry_(registry) {}
 
 AppDataMigrator::~AppDataMigrator() {
 }

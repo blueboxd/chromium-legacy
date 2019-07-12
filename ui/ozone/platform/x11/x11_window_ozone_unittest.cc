@@ -17,6 +17,7 @@
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -59,8 +60,9 @@ class X11WindowOzoneTest : public testing::Test {
       gfx::AcceleratedWidget* widget) {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
-    auto window = std::make_unique<X11WindowOzone>(window_manager_.get(),
-                                                   delegate, bounds);
+    PlatformWindowInitProperties init_params(bounds);
+    auto window = std::make_unique<X11WindowOzone>(delegate, init_params,
+                                                   window_manager_.get());
     return std::move(window);
   }
 

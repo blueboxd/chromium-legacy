@@ -157,8 +157,7 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       loading_slots_(kNumOfLoadingSlots),
-      tab_load_tracker_(tab_load_tracker),
-      weak_ptr_factory_(this) {
+      tab_load_tracker_(tab_load_tracker) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif

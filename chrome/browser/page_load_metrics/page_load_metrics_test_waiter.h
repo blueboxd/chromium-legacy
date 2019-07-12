@@ -256,7 +256,7 @@ class PageLoadMetricsTestWaiter
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
 
-  base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_;
+  base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_{this};
 };
 
 }  // namespace page_load_metrics

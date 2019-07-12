@@ -153,7 +153,7 @@ class PermissionsUpdater::NetworkPermissionsUpdateHelper {
   base::OnceClosure dispatch_event_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
-  base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_;
+  base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPermissionsUpdateHelper);
 };
@@ -236,8 +236,7 @@ PermissionsUpdater::NetworkPermissionsUpdateHelper::
               ->Get(browser_context)
               ->Subscribe(
                   base::Bind(&NetworkPermissionsUpdateHelper::OnShutdown,
-                             base::Unretained(this)))),
-      weak_factory_(this) {}
+                             base::Unretained(this)))) {}
 
 PermissionsUpdater::NetworkPermissionsUpdateHelper::
     ~NetworkPermissionsUpdateHelper() {}

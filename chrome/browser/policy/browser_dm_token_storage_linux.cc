@@ -81,8 +81,7 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
   return storage.get();
 }
 
-BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux()
-    : weak_factory_(this) {}
+BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux() {}
 
 BrowserDMTokenStorageLinux::~BrowserDMTokenStorageLinux() {}
 

@@ -140,8 +140,7 @@ PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
                                      StickySettings* sticky_settings)
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
-      sticky_settings_(sticky_settings),
-      weak_ptr_factory_(this) {}
+      sticky_settings_(sticky_settings) {}
 
 PdfPrinterHandler::~PdfPrinterHandler() {
   if (select_file_dialog_.get())

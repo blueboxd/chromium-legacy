@@ -182,8 +182,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
   CertsSourcePlatformNSS(base::RepeatingClosure certs_source_updated_callback,
                          net::NSSCertDatabase* nss_cert_database)
       : CertsSource(certs_source_updated_callback),
-        cert_db_(nss_cert_database),
-        weak_ptr_factory_(this) {}
+        cert_db_(nss_cert_database) {}
   ~CertsSourcePlatformNSS() override = default;
 
   void Refresh() override {
@@ -265,7 +264,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
   // The source NSSCertDatabase used for listing certificates.
   net::NSSCertDatabase* cert_db_;
 
-  base::WeakPtrFactory<CertsSourcePlatformNSS> weak_ptr_factory_;
+  base::WeakPtrFactory<CertsSourcePlatformNSS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertsSourcePlatformNSS);
 };

@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "components/arc/arc_prefs.h"
@@ -26,33 +25,12 @@ namespace chromeos {
 namespace settings {
 
 GoogleAssistantHandler::GoogleAssistantHandler(Profile* profile)
-    : profile_(profile), weak_factory_(this) {
-  chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
-}
+    : profile_(profile), weak_factory_(this) {}
 
-GoogleAssistantHandler::~GoogleAssistantHandler() {
-  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
-}
+GoogleAssistantHandler::~GoogleAssistantHandler() {}
 
-void GoogleAssistantHandler::OnJavascriptAllowed() {
-  if (pending_hotword_update_) {
-    OnAudioNodesChanged();
-  }
-}
-
+void GoogleAssistantHandler::OnJavascriptAllowed() {}
 void GoogleAssistantHandler::OnJavascriptDisallowed() {}
-
-void GoogleAssistantHandler::OnAudioNodesChanged() {
-  if (!IsJavascriptAllowed()) {
-    pending_hotword_update_ = true;
-    return;
-  }
-
-  pending_hotword_update_ = false;
-  FireWebUIListener(
-      "hotwordDeviceUpdated",
-      base::Value(chromeos::CrasAudioHandler::Get()->HasHotwordDevice()));
-}
 
 void GoogleAssistantHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -67,10 +45,6 @@ void GoogleAssistantHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "syncVoiceModelStatus",
       base::BindRepeating(&GoogleAssistantHandler::HandleSyncVoiceModelStatus,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "initializeGoogleAssistantPage",
-      base::BindRepeating(&GoogleAssistantHandler::HandleInitialized,
                           base::Unretained(this)));
 }
 
@@ -95,11 +69,6 @@ void GoogleAssistantHandler::HandleSyncVoiceModelStatus(
     BindAssistantSettingsManager();
 
   settings_manager_->SyncSpeakerIdEnrollmentStatus();
-}
-
-void GoogleAssistantHandler::HandleInitialized(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
-  AllowJavascript();
 }
 
 void GoogleAssistantHandler::BindAssistantSettingsManager() {

@@ -100,7 +100,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<WebUIGraphDumpImpl> weak_factory_;
+  base::WeakPtrFactory<WebUIGraphDumpImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebUIGraphDumpImpl);
 };

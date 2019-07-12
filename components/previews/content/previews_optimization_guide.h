@@ -18,8 +18,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
-#include "components/previews/content/hint_cache.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
@@ -189,7 +189,7 @@ class PreviewsOptimizationGuide
   // PreviewsOptimizationGuide so that the existing hint cache can be reused on
   // component updates. Otherwise, a new cache and store would need to be
   // created during each component update.
-  std::unique_ptr<HintCache> hint_cache_;
+  std::unique_ptr<optimization_guide::HintCache> hint_cache_;
 
   // The current hints used for this optimization guide.
   std::unique_ptr<PreviewsHints> hints_;

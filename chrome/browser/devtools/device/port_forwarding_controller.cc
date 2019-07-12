@@ -13,13 +13,13 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -228,7 +228,7 @@ class SocketTunnel {
       : remote_socket_(std::move(socket)),
         pending_writes_(0),
         pending_destruction_(false),
-        adb_thread_runner_(base::MessageLoopCurrent::Get()->task_runner()) {
+        adb_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
     ResolveHostCallback resolve_host_callback = base::BindOnce(
         &SocketTunnel::OnResolveHostComplete, base::Unretained(this));
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},

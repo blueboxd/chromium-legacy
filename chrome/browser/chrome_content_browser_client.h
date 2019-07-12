@@ -733,7 +733,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
 #endif
 
-  base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
+  base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };

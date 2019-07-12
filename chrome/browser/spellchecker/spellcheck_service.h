@@ -180,7 +180,7 @@ class SpellcheckService : public KeyedService,
   std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>
       hunspell_dictionaries_;
 
-  base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_;
+  base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckService);
 };

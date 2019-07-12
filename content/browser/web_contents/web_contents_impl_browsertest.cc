@@ -1095,19 +1095,20 @@ class WebContentsSplitCacheBrowserTestEnabled
   WebContentsSplitCacheBrowserTestEnabled() {
     if (GetParam()) {
       feature_list.InitWithFeatures(
-          {/*Enabled features*/
+          {/* Enabled features */
            // To enable kPlzDedicatedWorker, we also need to enable
            // kOffMainThreadDedicatedWorkerScriptFetch and
            // kNetworkService.
-           net::features::kSplitCacheByTopFrameOrigin,
+           net::features::kSplitCacheByNetworkIsolationKey,
            blink::features::kPlzDedicatedWorker,
            blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
            network::features::kNetworkService},
-          {/*Disabled features*/});
+          {/* Disabled features */});
     } else {
       feature_list.InitWithFeatures(
-          {/*Enabled feature*/ net::features::kSplitCacheByTopFrameOrigin},
-          {/*Disabled feature*/ blink::features::kPlzDedicatedWorker});
+          {/* Enabled feature */ net::features::
+               kSplitCacheByNetworkIsolationKey},
+          {/* Disabled feature */ blink::features::kPlzDedicatedWorker});
     }
   }
 
@@ -1120,7 +1121,7 @@ class WebContentsSplitCacheBrowserTestDisabled
  public:
   WebContentsSplitCacheBrowserTestDisabled() {
     feature_list.InitAndDisableFeature(
-        net::features::kSplitCacheByTopFrameOrigin);
+        net::features::kSplitCacheByNetworkIsolationKey);
   }
 
  private:

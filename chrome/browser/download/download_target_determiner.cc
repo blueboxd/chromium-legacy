@@ -112,8 +112,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
                      !initial_virtual_path.empty()),
       download_prefs_(download_prefs),
       delegate_(delegate),
-      completion_callback_(callback),
-      weak_ptr_factory_(this) {
+      completion_callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(download_);
   DCHECK(delegate);

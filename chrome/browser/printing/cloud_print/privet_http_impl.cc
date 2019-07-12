@@ -398,10 +398,7 @@ PrivetLocalPrintOperationImpl::RunTasksImmediatelyForTesting::
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClient* privet_client,
     PrivetLocalPrintOperation::Delegate* delegate)
-    : privet_client_(privet_client),
-      delegate_(delegate),
-      weak_factory_(this) {
-}
+    : privet_client_(privet_client), delegate_(delegate) {}
 
 PrivetLocalPrintOperationImpl::~PrivetLocalPrintOperationImpl() {
 }

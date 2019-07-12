@@ -16,7 +16,7 @@
 
 DomainReliabilityInternalsUI::DomainReliabilityInternalsUI(
     content::WebUI* web_ui)
-    : content::WebUIController(web_ui), weak_factory_(this) {
+    : content::WebUIController(web_ui) {
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIDomainReliabilityInternalsHost);
   html_source->OverrideContentSecurityPolicyScriptSrc(

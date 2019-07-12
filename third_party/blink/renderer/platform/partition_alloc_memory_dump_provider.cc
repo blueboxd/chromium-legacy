@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 
-#include <unordered_map>
-
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"

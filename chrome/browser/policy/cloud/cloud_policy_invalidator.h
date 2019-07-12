@@ -243,7 +243,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   base::ThreadChecker thread_checker_;
 
   // WeakPtrFactory used to create callbacks to this object.
-  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_;
+  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidator);
 };

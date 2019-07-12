@@ -11,8 +11,8 @@
     <style include="settings-shared">
     </style>
     <template is="dom-if" if="[[maySetDefaultBrowser_]]">
-      <div class="settings-box first two-line">
-        <div class="start">
+      <div class="settings-box first">
+        <div class="start settings-box-text">
           <div id="canBeDefaultBrowser">$i18n{defaultBrowser}</div>
           <div class="secondary">$i18n{defaultBrowserMakeDefault}</div>
         </div>
@@ -24,14 +24,16 @@
     </template>
     <template is="dom-if" if="[[!maySetDefaultBrowser_]]">
       <div class="settings-box first">
-        <div class="start" hidden$="[[!isDefault_]]" id="isDefault">
+        <div class="start settings-box-text" hidden$="[[!isDefault_]]"
+            id="isDefault">
           $i18n{defaultBrowserDefault}
         </div>
-        <div class="start" hidden$="[[!isSecondaryInstall_]]"
+        <div class="start settings-box-text" hidden$="[[!isSecondaryInstall_]]"
             id="isSecondaryInstall">
           $i18n{defaultBrowserSecondary}
         </div>
-        <div class="start" hidden$="[[!isUnknownError_]]" id="isUnknownError">
+        <div class="start settings-box-text" hidden$="[[!isUnknownError_]]"
+            id="isUnknownError">
           $i18n{defaultBrowserError}
         </div>
       </div>

@@ -118,7 +118,7 @@ std::string FilteringBehaviorReasonToString(
 }  // namespace
 
 SupervisedUserInternalsMessageHandler::SupervisedUserInternalsMessageHandler()
-    : scoped_observer_(this), weak_factory_(this) {}
+    : scoped_observer_(this) {}
 
 SupervisedUserInternalsMessageHandler::
     ~SupervisedUserInternalsMessageHandler() {

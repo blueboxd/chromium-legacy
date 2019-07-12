@@ -76,6 +76,12 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
 
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
   this.resizeDropdowns_();
+
+  if (zoomToolbar.isPrintPreview()) {
+    this.zoomToolbar_.addEventListener('keyboard-navigation-active', e => {
+      this.keyboardNavigationActive = e.detail;
+    });
+  }
 }
 
 ToolbarManager.prototype = {

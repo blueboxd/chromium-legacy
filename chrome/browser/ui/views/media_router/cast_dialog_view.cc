@@ -267,8 +267,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       selected_source_(SourceType::kTab),
       controller_(controller),
       profile_(profile),
-      metrics_(start_time),
-      weak_factory_(this) {
+      metrics_(start_time) {
   ShowNoSinksView();
 }
 

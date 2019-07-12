@@ -33,8 +33,7 @@ OutputProtectionImpl::OutputProtectionImpl(
     media::mojom::OutputProtectionRequest request)
     : FrameServiceBase(render_frame_host, std::move(request)),
       render_process_id_(render_frame_host->GetProcess()->GetID()),
-      render_frame_id_(render_frame_host->GetRoutingID()),
-      weak_factory_(this) {}
+      render_frame_id_(render_frame_host->GetRoutingID()) {}
 
 OutputProtectionImpl::~OutputProtectionImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

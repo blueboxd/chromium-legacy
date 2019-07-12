@@ -29,19 +29,18 @@ TEST(NetworkIsolationKeyMojomTraitsTest, SerializeAndDeserialize) {
   }
 }
 
-class NetworkIsolationKeyMojomTraitsWithInitiatingFrameOriginTest
-    : public testing::Test {
+class NetworkIsolationKeyMojomTraitsWithFrameOriginTest : public testing::Test {
  public:
-  NetworkIsolationKeyMojomTraitsWithInitiatingFrameOriginTest() {
+  NetworkIsolationKeyMojomTraitsWithFrameOriginTest() {
     feature_list_.InitAndEnableFeature(
-        net::features::kAppendInitiatingFrameOriginToNetworkIsolationKey);
+        net::features::kAppendFrameOriginToNetworkIsolationKey);
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(NetworkIsolationKeyMojomTraitsWithInitiatingFrameOriginTest,
+TEST_F(NetworkIsolationKeyMojomTraitsWithFrameOriginTest,
        SerializeAndDeserialize) {
   std::vector<net::NetworkIsolationKey> keys = {
       net::NetworkIsolationKey(),

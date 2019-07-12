@@ -397,7 +397,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // tab's index hasn't changed.
   std::map<SessionID, int> last_selected_tab_in_window_;
 
-  base::WeakPtrFactory<SessionService> weak_factory_;
+  base::WeakPtrFactory<SessionService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);
 };

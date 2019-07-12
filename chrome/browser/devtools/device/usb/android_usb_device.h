@@ -152,7 +152,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   using PendingMessages = std::vector<std::unique_ptr<AdbMessage>>;
   PendingMessages pending_messages_;
 
-  base::WeakPtrFactory<AndroidUsbDevice> weak_factory_;
+  base::WeakPtrFactory<AndroidUsbDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidUsbDevice);
 };

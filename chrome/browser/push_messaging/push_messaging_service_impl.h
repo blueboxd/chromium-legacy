@@ -307,7 +307,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // messages when this is true.
   bool shutdown_started_ = false;
 
-  base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
+  base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingServiceImpl);
 };

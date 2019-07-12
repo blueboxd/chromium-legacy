@@ -60,8 +60,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
       database_manager_(database_manager),
       start_time_(base::TimeTicks::Now()),
       supported_path_(
-          GetSupportedFilePath(default_file_path, alternate_extensions)),
-      weakptr_factory_(this) {
+          GetSupportedFilePath(default_file_path, alternate_extensions)) {
   DCHECK(profile);
   is_extended_reporting_ = IsExtendedReportingEnabled(*profile->GetPrefs());
 

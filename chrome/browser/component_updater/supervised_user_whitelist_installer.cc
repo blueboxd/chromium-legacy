@@ -405,7 +405,8 @@ class SupervisedUserWhitelistInstallerImpl
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(kTaskTraits);
 
-  base::WeakPtrFactory<SupervisedUserWhitelistInstallerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserWhitelistInstallerImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserWhitelistInstallerImpl);
 };
@@ -414,10 +415,7 @@ SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
     ComponentUpdateService* cus,
     ProfileAttributesStorage* profile_attributes_storage,
     PrefService* local_state)
-    : cus_(cus),
-      local_state_(local_state),
-      observer_(this),
-      weak_ptr_factory_(this) {
+    : cus_(cus), local_state_(local_state), observer_(this) {
   DCHECK(cus);
   DCHECK(local_state);
   observer_.Add(profile_attributes_storage);

@@ -149,8 +149,7 @@ PasswordStoreX::PasswordStoreX(
       login_db_file_(std::move(login_db_file)),
       encrypted_login_db_file_(std::move(encrypted_login_db_file)),
       migration_checked_(false),
-      allow_fallback_(false),
-      weak_ptr_factory_(this) {
+      allow_fallback_(false) {
   migration_step_pref_.Init(password_manager::prefs::kMigrationToLoginDBStep,
                             prefs);
   migration_to_login_db_step_ =

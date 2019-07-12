@@ -1935,6 +1935,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
   EXPECT_EQ(main_origin, root_entry->committed_origin());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // Verify subframe entries.  The entry should now have one blank subframe
   // FrameNavigationEntry, but this does not count as committing a real load.
@@ -1943,6 +1944,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       entry->root_node()->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
 
   // 1a. A nested iframe with no URL should also create a subframe entry but not
@@ -1963,6 +1966,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
 
   // 2. Create another iframe with an explicit about:blank URL.
@@ -1987,6 +1992,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
 
   // 3. A real same-site navigation in the nested iframe should be AUTO.
@@ -2014,6 +2021,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
   EXPECT_EQ(url::Origin::Create(frame_url), frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
@@ -2042,6 +2051,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
   EXPECT_EQ(url::Origin::Create(foo_url), frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
@@ -2072,6 +2083,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       entry2->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
@@ -2411,6 +2424,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // The entry should now have a subframe FrameNavigationEntry.
@@ -2418,6 +2432,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* frame_entry =
       entry->root_node()->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
   EXPECT_TRUE(root->child_at(0)->has_committed_real_load());
 
   // 2. Create a second, initially cross-site iframe.
@@ -2440,12 +2457,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // The entry should now have 2 subframe FrameNavigationEntries.
   ASSERT_EQ(2U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
 
   // 3. Create a nested iframe in the second subframe.
@@ -2466,12 +2487,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // The entry should now have 2 subframe FrameNavigationEntries.
   ASSERT_EQ(2U, entry->root_node()->children.size());
   ASSERT_EQ(1U, entry->root_node()->children[1]->children.size());
   frame_entry = entry->root_node()->children[1]->children[0]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(foo_url),
+            frame_entry->initiator_origin().value());
 
   // 4. Create a third iframe on the same site as the second.  This ensures that
   // the commit type is correct even when the subframe process already exists.
@@ -2492,11 +2517,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // The entry should now have 3 subframe FrameNavigationEntries.
   ASSERT_EQ(3U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[2]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
 
   // 5. Create a nested iframe on the original site (A-B-A).
   {
@@ -2517,11 +2546,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // There should be a corresponding FrameNavigationEntry.
   ASSERT_EQ(1U, entry->root_node()->children[2]->children.size());
   frame_entry = entry->root_node()->children[2]->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(foo_url),
+            frame_entry->initiator_origin().value());
 
   // Check the end result of the frame tree.
   if (AreAllSitesIsolatedForTesting()) {
@@ -2586,6 +2619,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry2->GetURL());
   FrameNavigationEntry* root_entry2 = entry2->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry2->url());
+  EXPECT_FALSE(root_entry2->initiator_origin().has_value());
 
   // The entry should have a new FrameNavigationEntries for the subframe.
   ASSERT_EQ(1U, entry2->root_node()->children.size());
@@ -2918,6 +2952,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                 ->children[0]
                 ->frame_entry->committed_origin()
                 ->GetTupleOrPrecursorTupleIfOpaque());
+  ASSERT_TRUE(entry2->root_node()
+                  ->children[0]
+                  ->frame_entry->initiator_origin()
+                  .has_value());
+  EXPECT_EQ(url::Origin::Create(main_url_a),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->initiator_origin()
+                .value());
 
   // 3. Navigate the iframe cross-site to a page with a nested iframe.
   GURL frame_url_b(embedded_test_server()->GetURL(
@@ -3097,6 +3140,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                 ->children[0]
                 ->frame_entry->committed_origin()
                 ->GetTupleOrPrecursorTupleIfOpaque());
+  ASSERT_TRUE(entry2->root_node()
+                  ->children[0]
+                  ->frame_entry->initiator_origin()
+                  .has_value());
+  EXPECT_EQ(url::Origin::Create(main_url_a),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->initiator_origin()
+                .value());
 
   // 9. Go back again, to the initial main frame page.
   {
@@ -4059,8 +4111,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());
@@ -4130,8 +4182,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   restored_entry->SetPageState(PageState::CreateFromURL(main_url));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
@@ -5078,8 +5130,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());

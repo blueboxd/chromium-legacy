@@ -234,7 +234,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // With fast tab unloading enabled, shutting down can cause BookmarkAppHelper
   // to be destroyed before the bookmark creation bubble. Use weak pointers to
   // prevent a heap-use-after free in this instance (https://crbug.com/534994).
-  base::WeakPtrFactory<BookmarkAppHelper> weak_factory_;
+  base::WeakPtrFactory<BookmarkAppHelper> weak_factory_{this};
 };
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will

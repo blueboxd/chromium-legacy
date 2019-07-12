@@ -44,6 +44,7 @@ class SimpleMenuModel;
 namespace views {
 class BoundsAnimator;
 class MenuRunner;
+class Separator;
 }  // namespace views
 
 namespace ash {
@@ -124,8 +125,7 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfModel* model() const { return model_; }
 
   // Initializes shelf view elements.
-  // When overriding subclasses should call parent implementation.
-  virtual void Init();
+  void Init();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know. If the item is in an overflow shelf, the overflow icon location
@@ -319,38 +319,6 @@ class ASH_EXPORT ShelfView : public views::View,
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
 
- protected:
-  // Common setup done for all children views.
-  static void ConfigureChildView(views::View* view);
-
-  // Calculates the ideal bounds of shelf elements.
-  // The bounds of each button corresponding to an item in the model is set in
-  // |view_model_|.
-  virtual void CalculateIdealBounds() = 0;
-
-  // Creates the view used to represent given shelf |item|.
-  // Returns unowned pointer (view is owned by the view hierarchy).
-  virtual views::View* CreateViewForItem(const ShelfItem& item);
-
-  virtual std::unique_ptr<BackButton> CreateBackButton() = 0;
-  virtual std::unique_ptr<HomeButton> CreateHomeButton() = 0;
-
-  // Lays out control buttons background.
-  // Child classes should implement this method if control buttons background
-  // requires adjustment when shelf view layout changes.
-  virtual void LayoutAppListAndBackButtonHighlight() {}
-
-  // Updates the visible range of overflow items in |overflow_view|.
-  void UpdateOverflowRange(ShelfView* overflow_view) const;
-
-  OverflowButton* overflow_button() { return overflow_button_; }
-
-  void set_first_visible_index(int index) { first_visible_index_ = index; }
-  void set_last_visible_index(int index) { last_visible_index_ = index; }
-
-  bool dragged_off_shelf() const { return dragged_off_shelf_; }
-  bool dragged_to_another_shelf() const { return dragged_to_another_shelf_; }
-
  private:
   friend class ShelfViewTestAPI;
 
@@ -363,10 +331,52 @@ class ASH_EXPORT ShelfView : public views::View,
     NOT_REMOVABLE,  // Item is fixed and can never be removed.
   };
 
+  struct AppCenteringStrategy {
+    bool center_on_screen = false;
+    bool overflow = false;
+  };
+
   // Minimum distance before drag starts.
   static const int kMinimumDragDistance;
 
+  // Common setup done for all children views.
+  static void ConfigureChildView(views::View* view);
+
   bool dragging() const { return drag_pointer_ != NONE; }
+
+  // Calculates the ideal bounds of shelf elements.
+  // The bounds of each button corresponding to an item in the model is set in
+  // |view_model_|.
+  void CalculateIdealBounds();
+
+  // Creates the view used to represent given shelf |item|.
+  // Returns unowned pointer (view is owned by the view hierarchy).
+  views::View* CreateViewForItem(const ShelfItem& item);
+
+  // Lays out control buttons background.
+  void LayoutAppListAndBackButtonHighlight();
+
+  // Updates the visible range of overflow items in |overflow_view|.
+  void UpdateOverflowRange(ShelfView* overflow_view) const;
+
+  // Returns the size that's actually available for app icons. Size occupied
+  // by the home button and back button plus all appropriate margins is
+  // not available for app icons.
+  int GetAvailableSpaceForAppIcons() const;
+
+  // Returns the index of the item after which the separator should be shown,
+  // or -1 if no separator is required.
+  int GetSeparatorIndex() const;
+
+  void CalculateBackAndHomeButtonsIdealBounds();
+
+  // This method determines which centering strategy is adequate, returns that,
+  // and sets the |first_visible_index_| and |last_visible_index_| fields
+  // appropriately.
+  AppCenteringStrategy CalculateAppCenteringStrategy();
+
+  // Update all buttons' visibility in overflow.
+  void UpdateAllButtonsVisibilityInOverflowMode();
 
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
@@ -579,6 +589,14 @@ class ASH_EXPORT ShelfView : public views::View,
   // The view showing a context menu. This can be either a ShelfView or
   // ShelfAppButton.
   views::View* menu_owner_ = nullptr;
+
+  // A reference to the view used as a separator between pinned and unpinned
+  // items.
+  views::Separator* separator_ = nullptr;
+
+  // A view to draw a background behind the app list and back buttons.
+  // Owned by the view hierarchy.
+  views::View* back_and_app_list_background_ = nullptr;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
   gfx::Point drag_origin_;

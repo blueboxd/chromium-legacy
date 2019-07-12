@@ -101,7 +101,7 @@ class ManagedValueStoreCache::ExtensionTracker
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
   policy::SchemaRegistry* schema_registry_;
-  base::WeakPtrFactory<ExtensionTracker> weak_factory_;
+  base::WeakPtrFactory<ExtensionTracker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTracker);
 };
@@ -112,8 +112,7 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
     : profile_(profile),
       policy_domain_(policy_domain),
       extension_registry_observer_(this),
-      schema_registry_(profile->GetPolicySchemaRegistryService()->registry()),
-      weak_factory_(this) {
+      schema_registry_(profile->GetPolicySchemaRegistryService()->registry()) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
   ExtensionSystem::Get(profile_)->ready().Post(

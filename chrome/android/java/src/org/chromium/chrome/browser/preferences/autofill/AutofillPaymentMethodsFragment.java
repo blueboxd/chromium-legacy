@@ -65,8 +65,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         ChromeSwitchPreferenceCompat autofillSwitch =
                 new ChromeSwitchPreferenceCompat(getStyledContext(), null);
         autofillSwitch.setTitle(R.string.autofill_enable_credit_cards_toggle_label);
-        autofillSwitch.setSummary(
-                getActivity().getString(R.string.autofill_enable_credit_cards_toggle_sublabel));
+        autofillSwitch.setSummary(R.string.autofill_enable_credit_cards_toggle_sublabel);
         autofillSwitch.setChecked(PersonalDataManager.isAutofillCreditCardEnabled());
         autofillSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
             PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
@@ -124,8 +123,8 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         // Add the link to payment apps only after the credit card list is rebuilt.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            Preference payment_apps_pref = new Preference(getActivity());
-            payment_apps_pref.setTitle(getActivity().getString(R.string.payment_apps_title));
+            Preference payment_apps_pref = new Preference(getStyledContext());
+            payment_apps_pref.setTitle(R.string.payment_apps_title);
             payment_apps_pref.setFragment(AndroidPaymentAppsFragment.class.getCanonicalName());
             payment_apps_pref.setShouldDisableView(true);
             payment_apps_pref.setKey(PREF_PAYMENT_APPS);
@@ -161,7 +160,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             pref.setSummary(null);
             pref.setEnabled(true);
         } else {
-            pref.setSummary(getActivity().getString(R.string.payment_no_apps_summary));
+            pref.setSummary(R.string.payment_no_apps_summary);
             pref.setEnabled(false);
         }
     }

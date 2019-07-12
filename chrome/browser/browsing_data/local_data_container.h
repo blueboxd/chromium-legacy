@@ -160,7 +160,7 @@ class LocalDataContainer {
   // Keeps track of how many batches are expected to start.
   int batches_started_ = 0;
 
-  base::WeakPtrFactory<LocalDataContainer> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalDataContainer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalDataContainer);
 };

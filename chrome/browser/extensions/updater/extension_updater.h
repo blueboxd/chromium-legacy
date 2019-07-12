@@ -286,7 +286,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   ExtensionCache* extension_cache_;
 
-  base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

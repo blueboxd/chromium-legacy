@@ -28,7 +28,7 @@ class FlagsUI : public content::WebUIController {
       ui::ScaleFactor scale_factor);
 
  private:
-  base::WeakPtrFactory<FlagsUI> weak_factory_;
+  base::WeakPtrFactory<FlagsUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);
 };

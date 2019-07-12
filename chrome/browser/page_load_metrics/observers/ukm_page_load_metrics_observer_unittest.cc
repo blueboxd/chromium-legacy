@@ -1075,11 +1075,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
-  // Simulate hiding the tab (the report should include jank after hide).
+  // Simulate hiding the tab (the report should include shifts after hide).
   web_contents()->WasHidden();
 
-  render_data.layout_jank_delta = 1.5;
-  render_data.layout_jank_delta_before_input_or_scroll = 0.0;
+  render_data.layout_shift_delta = 1.5;
+  render_data.layout_shift_delta_before_input_or_scroll = 0.0;
   SimulateRenderDataUpdate(render_data);
 
   // Simulate closing the tab.
@@ -1121,7 +1121,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, MHTMLNotTracked) {
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
   NavigateAndCommit(GURL(kTestUrl1));
 
-  // Simulate jank in the main frame.
+  // Simulate layout instability in the main frame.
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
@@ -1131,19 +1131,19 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
           RenderFrameHostTester::For(web_contents()->GetMainFrame())
               ->AppendChild("subframe"));
 
-  // Simulate jank in the subframe.
-  render_data.layout_jank_delta = 1.5;
+  // Simulate layout instability in the subframe.
+  render_data.layout_shift_delta = 1.5;
   SimulateRenderDataUpdate(render_data, subframe);
 
   // Simulate closing the tab.
   DeleteContents();
 
-  // Total jank should be the sum of jank from all frames.
+  // CLS score should be the sum of LS scores from all frames.
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "PageLoad.Experimental.LayoutStability.JankScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
 
-  // Main-frame jank includes only the jank in the main frame.
+  // Main-frame (DCLS) score includes only the LS scores in the main frame.
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "PageLoad.Experimental.LayoutStability.JankScore.MainFrame"),
               testing::ElementsAre(base::Bucket(10, 1)));
@@ -1157,11 +1157,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
     const ukm::mojom::UkmEntry* ukm_entry = kv.second.get();
     ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, GURL(kTestUrl1));
 
-    // Check total jank in UKM.
+    // Check CLS score in UKM.
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
 
-    // Check main-frame-only jank in UKM.
+    // Check DCLS score in UKM.
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScore_MainFrameName, 100);
   }

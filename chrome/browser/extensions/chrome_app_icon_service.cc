@@ -20,7 +20,7 @@ ChromeAppIconService* ChromeAppIconService::Get(
 }
 
 ChromeAppIconService::ChromeAppIconService(content::BrowserContext* context)
-    : context_(context), observer_(this), weak_ptr_factory_(this) {
+    : context_(context), observer_(this) {
 #if defined(OS_CHROMEOS)
   app_updater_ = std::make_unique<LauncherExtensionAppUpdater>(this, context);
 #endif

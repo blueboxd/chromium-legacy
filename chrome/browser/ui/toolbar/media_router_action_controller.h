@@ -125,7 +125,7 @@ class MediaRouterActionController : public media_router::IssuesObserver,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<MediaRouterActionController> weak_factory_;
+  base::WeakPtrFactory<MediaRouterActionController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterActionController);
 };

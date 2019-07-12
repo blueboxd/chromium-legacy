@@ -73,6 +73,14 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
+  if (!window.GetFrame() || window.GetFrame()->IsCrossOriginSubframe()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kSecurityError,
+            "Cross origin sub frames aren't allowed to show a file picker."));
+  }
+
   if (!LocalFrame::HasTransientUserActivation(window.GetFrame())) {
     return ScriptPromise::RejectWithDOMException(
         script_state,

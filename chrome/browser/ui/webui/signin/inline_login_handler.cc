@@ -36,7 +36,7 @@
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
 
-InlineLoginHandler::InlineLoginHandler() : weak_ptr_factory_(this) {}
+InlineLoginHandler::InlineLoginHandler() {}
 
 InlineLoginHandler::~InlineLoginHandler() {}
 

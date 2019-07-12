@@ -253,7 +253,6 @@ void FtlSignalingPlayground::InitializeTransport() {
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
   auto transport_context = base::MakeRefCounted<protocol::TransportContext>(
-      signal_strategy_.get(),
       std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
       std::make_unique<ChromiumUrlRequestFactory>(
           url_loader_factory_owner_->GetURLLoaderFactory()),

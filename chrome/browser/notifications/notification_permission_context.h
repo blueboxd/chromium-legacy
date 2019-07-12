@@ -125,7 +125,8 @@ class NotificationPermissionContext : public PermissionContextBase {
                             ContentSetting content_setting) override;
   bool IsRestrictedToSecureOrigins() const override;
 
-  base::WeakPtrFactory<NotificationPermissionContext> weak_factory_ui_thread_;
+  base::WeakPtrFactory<NotificationPermissionContext> weak_factory_ui_thread_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_CONTEXT_H_

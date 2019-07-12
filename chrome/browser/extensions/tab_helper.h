@@ -201,10 +201,10 @@ class TabHelper : public content::WebContentsObserver,
       registry_observer_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
-  base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
+  base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_{this};
 
   // Generic weak ptr factory for posting callbacks.
-  base::WeakPtrFactory<TabHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<TabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

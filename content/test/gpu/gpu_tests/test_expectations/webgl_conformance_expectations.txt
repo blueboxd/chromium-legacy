@@ -1,5 +1,6 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
-# tags: [ android-chromium android-webview-instrumentation debug release ]
+# tags: [ android-chromium android-webview-instrumentation ]
+# tags: [ debug release ]
 # tags: [ amd amd-0x6613 amd-0x699f intel intel-0xa011 intel-0xa2e nvidia
 #         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
 #         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
@@ -69,10 +70,6 @@ crbug.com/979444 conformance/textures/misc/texture-corner-case-videos.html [ Ret
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 
-# Recent regression of invariance rules
-# TODO(kbr): re-add suppressions below once this is removed.
-crbug.com/980675 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
-
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
 crbug.com/772651 [ linux nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html [ Failure ]
@@ -94,9 +91,6 @@ crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # as Flaky after 953120 is fixed.
 # And restore ['linux', 'intel'], bug=928530 as Fail
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
-
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/1007 [ linux amd opengl passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
 
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytexsubimage2d-subrects.html [ RetryOnFailure ]
@@ -203,8 +197,7 @@ crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
 # Win / OpenGL / AMD failures
 crbug.com/649824 [ win amd opengl ] conformance/attribs/gl-bindAttribLocation-aliasing.html [ Skip ]
 crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/1007 [ win amd opengl no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
+crbug.com/angleproject/1007 [ win amd opengl no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
 crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/struct-nesting-of-variable-names.html [ Failure ]
 crbug.com/angleproject/1506 [ win amd opengl ] conformance/rendering/clipping-wide-points.html [ Failure ]
 
@@ -390,13 +383,13 @@ crbug.com/642822 [ linux amd ] conformance/rendering/clipping-wide-points.html [
 
 # AMD Radeon 6450 and/or R7 240
 crbug.com/479260 [ linux amd no-angle ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/479952 [ linux amd no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/479952 [ linux amd no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Linux passthrough AMD
 crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Linux passthrough AMD OpenGL
+crbug.com/angleproject/1007 [ linux amd opengl passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/webGLArrays.html [ RetryOnFailure ]
 
@@ -434,7 +427,7 @@ crbug.com/907512 [ android android-chromium ] conformance/textures/video/tex-2d-
 crbug.com/733599 [ android ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/834933 [ android no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/834933 [ android android-chromium no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 # This crashes in Android WebView on the Nexus 6, preventing the
@@ -455,8 +448,7 @@ crbug.com/559342 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/bugs/stru
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/matrices/glsl-mat4-to-mat3.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-with-vec4-vec3-vec4-conditional.html [ Failure ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/611943 [ android qualcomm-adreno-(tm)-330 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/611943 [ android qualcomm-adreno-(tm)-330 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/struct-equals.html [ Failure ]
 crbug.com/478572 [ android qualcomm-adreno-(tm)-330 ] deqp/data/gles2/shaders/linkage.html [ Failure ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
@@ -503,7 +495,7 @@ crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/li
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
-crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-size-change.html [ Failure ]
+crbug.com/611945 [ android no-angle qualcomm-adreno-(tm)-420 ] conformance/context/context-size-change.html [ Failure ]
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/premultiplyalpha-test.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/qualcomm-crash.html [ Failure ]
@@ -514,8 +506,7 @@ crbug.com/611945 [ qualcomm-adreno-(tm)-430 android ] conformance/glsl/bugs/samp
 # The list of tests which may be that future test is very long. It is
 # almost (but not quite) every webgl conformance test.
 crbug.com/614550 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/611945 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/611945 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # bindBufferBadArgs is causing the GPU thread to crash, taking
 # down the WebView shell, causing the next test to fail and
@@ -555,13 +546,12 @@ crbug.com/845411 [ android ] conformance/glsl/constructors/glsl-construct-mat3.h
 crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ RetryOnFailure ]
 
 # Android ANGLE GLES
-crbug.com/981579 [ android opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/981579 [ android android-chromium opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android opengles ] conformance/context/context-size-change.html [ Failure ]
-crbug.com/angleproject/1552 [ android opengles ] WebglExtension_WEBGL_compressed_texture_etc1 [ Failure ]
 
 ############
 # ChromeOS #

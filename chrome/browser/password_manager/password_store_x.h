@@ -231,7 +231,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   IntegerPrefMember migration_step_pref_;
   MigrationToLoginDBStep migration_to_login_db_step_ = NOT_ATTEMPTED;
 
-  base::WeakPtrFactory<PasswordStoreX> weak_ptr_factory_;
+  base::WeakPtrFactory<PasswordStoreX> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreX);
 };

@@ -42,7 +42,7 @@ class BatteryMetrics {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<BatteryMetrics> weak_factory_;
+  base::WeakPtrFactory<BatteryMetrics> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BatteryMetrics);
 };

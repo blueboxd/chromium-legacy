@@ -156,8 +156,7 @@ PreviewsLitePageServingURLLoader::PreviewsLitePageServingURLLoader(
     ResultCallback result_callback)
     : url_loader_binding_(this),
       result_callback_(std::move(result_callback)),
-      binding_(this),
-      weak_ptr_factory_(this) {}
+      binding_(this) {}
 
 void PreviewsLitePageServingURLLoader::StartNetworkRequest(
     const network::ResourceRequest& request,

@@ -533,8 +533,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       infobar_visible_(false),
       size_animation_(this),
       throbbing_view_(nullptr),
-      bookmark_bar_state_(BookmarkBar::SHOW),
-      show_folder_method_factory_(this) {
+      bookmark_bar_state_(BookmarkBar::SHOW) {
   SetID(VIEW_ID_BOOKMARK_BAR);
   Init();
 

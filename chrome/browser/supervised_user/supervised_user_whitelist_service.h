@@ -137,7 +137,7 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
   std::map<std::string, scoped_refptr<SupervisedUserSiteList> >
       loaded_whitelists_;
 
-  base::WeakPtrFactory<SupervisedUserWhitelistService> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserWhitelistService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserWhitelistService);
 };

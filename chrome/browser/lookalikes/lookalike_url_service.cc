@@ -125,9 +125,7 @@ DomainInfo GetDomainInfo(const GURL& url) {
 }
 
 LookalikeUrlService::LookalikeUrlService(Profile* profile)
-    : profile_(profile),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_factory_(this) {}
+    : profile_(profile), clock_(base::DefaultClock::GetInstance()) {}
 
 LookalikeUrlService::~LookalikeUrlService() {}
 

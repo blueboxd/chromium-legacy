@@ -130,7 +130,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     blink::mojom::ContentIndexError error;
     database_->AddEntry(
         service_worker_registration_id_, origin_, std::move(description),
-        CreateTestIcon(),
+        CreateTestIcon(), launch_url(),
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
 
@@ -183,6 +183,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   ContentIndexDatabase* database() { return database_.get(); }
 
   TestBrowserThreadBundle& thread_bundle() { return thread_bundle_; }
+
+  GURL launch_url() { return origin_.GetURL(); }
 
  private:
   int64_t RegisterServiceWorker() {
@@ -312,6 +314,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
     EXPECT_EQ(out_entry->service_worker_registration_id,
               service_worker_registration_id());
     EXPECT_EQ(out_entry->description->id, "id");
+    EXPECT_EQ(out_entry->launch_url, launch_url());
     EXPECT_FALSE(out_entry->registration_time.is_null());
     EXPECT_EQ(client_ptr, database());
   }

@@ -581,7 +581,7 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
 
   // Background color will not update if no background is set.
   instant_service_->UpdateCustomBackgroundColorAsync(
-      GURL(), image, image_fetcher::RequestMetadata());
+      base::TimeTicks::Now(), image, image_fetcher::RequestMetadata());
   thread_bundle()->RunUntilIdle();
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
@@ -597,9 +597,9 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
   instant_service_->SetCustomBackgroundURLWithAttributions(
       kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
 
-  // Background color will not update if current background url changed.
+  // Background color will not update if background timestamp has changed.
   instant_service_->UpdateCustomBackgroundColorAsync(
-      GURL("different_url"), image, image_fetcher::RequestMetadata());
+      base::TimeTicks::Now(), image, image_fetcher::RequestMetadata());
   thread_bundle()->RunUntilIdle();
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
@@ -607,9 +607,51 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
 
   // Background color should update.
   instant_service_->UpdateCustomBackgroundColorAsync(
-      kUrl, image, image_fetcher::RequestMetadata());
+      instant_service_->GetBackgroundUpdatedTimestampForTesting(), image,
+      image_fetcher::RequestMetadata());
   thread_bundle()->RunUntilIdle();
   EXPECT_TRUE(CheckBackgroundColor(
+      SK_ColorRED,
+      pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
+}
+
+TEST_F(InstantServiceTest, LocalImageDoesNotUpdateCustomBackgroundColor) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(32, 32);
+  bitmap.eraseColor(SK_ColorRED);
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII("test_file"));
+  base::FilePath copy_path(profile_path.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::WriteFile(path, "background_image", 16);
+
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+
+  const GURL kUrl("https://www.foo.com");
+  const std::string kAttributionLine1 = "foo";
+  const std::string kAttributionLine2 = "bar";
+  const GURL kActionUrl("https://www.bar.com");
+
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  base::TimeTicks time_set =
+      instant_service_->GetBackgroundUpdatedTimestampForTesting();
+
+  instant_service_->SelectLocalBackgroundImage(path);
+  thread_bundle()->RunUntilIdle();
+
+  // Background color will not update if a local image was uploaded in the
+  // meantime.
+  instant_service_->UpdateCustomBackgroundColorAsync(
+      time_set, image, image_fetcher::RequestMetadata());
+  thread_bundle()->RunUntilIdle();
+  EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
 }

@@ -403,8 +403,7 @@ TabDragController::TabDragController()
       move_loop_widget_(NULL),
       is_mutating_(false),
       attach_x_(-1),
-      attach_index_(-1),
-      weak_factory_(this) {
+      attach_index_(-1) {
   g_tab_drag_controller = this;
 }
 

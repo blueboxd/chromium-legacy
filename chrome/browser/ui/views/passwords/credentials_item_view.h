@@ -68,7 +68,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
 
   SkColor hover_color_;
 
-  base::WeakPtrFactory<CredentialsItemView> weak_ptr_factory_;
+  base::WeakPtrFactory<CredentialsItemView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CredentialsItemView);
 };

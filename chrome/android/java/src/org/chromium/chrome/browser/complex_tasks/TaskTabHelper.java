@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * Used for maintaining Task ID (see ContextRecordTaskId) data about a Tab
+ * Used for maintaining Task ID (see NavigationTaskId) data about a Tab
  */
 @JNINamespace("tasks")
 public class TaskTabHelper {

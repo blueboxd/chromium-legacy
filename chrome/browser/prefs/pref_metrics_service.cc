@@ -46,9 +46,7 @@ void SampleNewTabPageURL(Profile* profile) {
 }  // namespace
 
 PrefMetricsService::PrefMetricsService(Profile* profile)
-    : profile_(profile),
-      prefs_(profile_->GetPrefs()),
-      weak_factory_(this) {
+    : profile_(profile), prefs_(profile_->GetPrefs()) {
   RecordLaunchPrefs();
 }
 

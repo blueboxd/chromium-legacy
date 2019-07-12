@@ -91,7 +91,7 @@ class TestURLLoaderInterceptor {
 class PendingTaskWaiter : public content::WebContentsObserver {
  public:
   explicit PendingTaskWaiter(content::WebContents* web_contents)
-      : WebContentsObserver(web_contents), weak_factory_(this) {}
+      : WebContentsObserver(web_contents) {}
   ~PendingTaskWaiter() override {}
 
   void AlsoRequireUrl(const GURL& url) { required_url_ = url; }
@@ -153,7 +153,7 @@ class PendingTaskWaiter : public content::WebContentsObserver {
   base::Closure quit_closure_;
   GURL required_url_;
   base::Optional<base::string16> required_title_;
-  base::WeakPtrFactory<PendingTaskWaiter> weak_factory_;
+  base::WeakPtrFactory<PendingTaskWaiter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PendingTaskWaiter);
 };

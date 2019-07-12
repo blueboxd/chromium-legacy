@@ -28,8 +28,9 @@ class FileSystemChooserTest : public testing::Test {
       bool include_accepts_all) {
     base::RunLoop loop;
     FileSystemChooser::CreateAndShow(
-        0, 0, blink::mojom::ChooseFileSystemEntryType::kOpenFile,
-        std::move(accepts), include_accepts_all,
+        /*web_contents=*/nullptr,
+        blink::mojom::ChooseFileSystemEntryType::kOpenFile, std::move(accepts),
+        include_accepts_all,
         base::BindLambdaForTesting(
             [&](blink::mojom::NativeFileSystemErrorPtr,
                 std::vector<base::FilePath>) { loop.Quit(); }),

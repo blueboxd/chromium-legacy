@@ -32,8 +32,7 @@ MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
       mouse_lock_state_(MOUSELOCK_UNLOCKED),
       fake_mouse_lock_for_test_(false),
-      bubble_hide_callback_for_test_(),
-      weak_ptr_factory_(this) {}
+      bubble_hide_callback_for_test_() {}
 
 MouseLockController::~MouseLockController() {
 }

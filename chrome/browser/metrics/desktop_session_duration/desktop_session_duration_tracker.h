@@ -110,7 +110,7 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   ChromeVisibilityObserver visibility_observer_;
   AudibleContentsTracker audio_tracker_;
 
-  base::WeakPtrFactory<DesktopSessionDurationTracker> weak_factory_;
+  base::WeakPtrFactory<DesktopSessionDurationTracker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionDurationTracker);
 };

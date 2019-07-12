@@ -16,4 +16,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, GetDisplayLanguageTest) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("accessibility_private/", "display_language.html"))
+      << message_;
+}
+
 }  // namespace extensions

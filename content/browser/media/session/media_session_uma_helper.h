@@ -43,7 +43,9 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     SeekForward = 8,
     SkipAd = 9,
     Stop = 10,
-    kMaxValue = Stop,
+    SeekTo = 11,
+    ScrubTo = 12,
+    kMaxValue = ScrubTo,
   };
 
   MediaSessionUmaHelper();

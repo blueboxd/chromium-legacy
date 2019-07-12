@@ -150,9 +150,7 @@ void CastHandler::OnResultsUpdated(
 }
 
 CastHandler::CastHandler(content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      router_(GetMediaRouter(web_contents)),
-      weak_factory_(this) {}
+    : web_contents_(web_contents), router_(GetMediaRouter(web_contents)) {}
 
 void CastHandler::EnsureInitialized() {
   if (query_result_manager_)

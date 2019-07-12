@@ -128,7 +128,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Called when a navigation has started in a main frame, to update the pending
   // NavigationEntry if the controller does not currently have a
   // browser-initiated one.
-  void DidStartMainFrameNavigation(const GURL& url,
+  void DidStartMainFrameNavigation(const CommonNavigationParams& common_params,
                                    SiteInstanceImpl* site_instance,
                                    NavigationHandleImpl* navigation_handle);
 

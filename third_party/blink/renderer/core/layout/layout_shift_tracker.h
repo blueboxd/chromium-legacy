@@ -45,7 +45,6 @@ class CORE_EXPORT LayoutShiftTracker {
   bool HadRecentInput();
   bool IsActive();
   double Score() const { return score_; }
-  double ScoreWithMoveDistance() const { return score_with_move_distance_; }
   double WeightedScore() const { return weighted_score_; }
   float OverallMaxDistance() const { return overall_max_distance_; }
   bool ObservedInputOrScroll() const { return observed_input_or_scroll_; }
@@ -77,14 +76,9 @@ class CORE_EXPORT LayoutShiftTracker {
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
 
-  // The cumulative jank score for this LocalFrame, unweighted.
-  double score_;
-
   // The cumulative jank score for this LocalFrame, unweighted, with move
-  // distance applied. This is a temporary member needed to understand the
-  // impact of move distance on scores, and will be removed once analysis is
-  // complete.
-  double score_with_move_distance_;
+  // distance applied.
+  double score_;
 
   // The cumulative jank score for this LocalFrame, with each increase weighted
   // by the extent to which the LocalFrame visibly occupied the main frame at

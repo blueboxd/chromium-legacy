@@ -81,7 +81,7 @@ class SafeDialDeviceDescriptionParser {
   // Used for parsing XML. Not owned by |this|.
   DataDecoder* const data_decoder_;
 
-  base::WeakPtrFactory<SafeDialDeviceDescriptionParser> weak_factory_;
+  base::WeakPtrFactory<SafeDialDeviceDescriptionParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SafeDialDeviceDescriptionParser);
 };

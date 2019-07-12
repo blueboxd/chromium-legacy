@@ -343,6 +343,7 @@ jumbo_source_set("unit_tests") {
     "commands/insert_list_command_test.cc",
     "commands/insert_paragraph_separator_command_test.cc",
     "commands/insert_text_command_test.cc",
+    "commands/move_commands_test.cc",
     "commands/replace_selection_command_test.cc",
     "commands/set_character_data_command_test.cc",
     "commands/split_text_node_command_test.cc",

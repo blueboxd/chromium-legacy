@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -35,9 +34,13 @@ let testFunction = function(session, t, fakeDeviceController) {
   // from event watchers, we just need to trigger the add/click to make the
   // event listeners callback.
   function sendClick(session) {
-    let input_source = new MockXRInputSource();
-    input_source.primaryInputClicked = true;
-    fakeDeviceController.addInputSource(input_source);
+    let input_source = fakeDeviceController.simulateInputSourceConnection({
+      handedness: "right",
+      targetRayMode: "tracked-pointer",
+      pointerOrigin: VALID_POINTER_TRANSFORM,
+      profiles: [],
+      selectionClicked: true
+    });
     session.requestAnimationFrame(() => {});
   }
 

@@ -739,8 +739,7 @@ SyncEngine::SyncEngine(
       has_refresh_token_(false),
       network_available_(false),
       sync_enabled_(false),
-      env_override_(env_override),
-      weak_ptr_factory_(this) {
+      env_override_(env_override) {
   DCHECK(sync_file_system_dir_.IsAbsolute());
   if (notification_manager_)
     notification_manager_->AddObserver(this);

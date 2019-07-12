@@ -65,8 +65,7 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
 
 EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
-    : callback_(std::move(callback)),
-      weak_factory_(this) {
+    : callback_(std::move(callback)) {
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
 #if defined(OS_MACOSX)

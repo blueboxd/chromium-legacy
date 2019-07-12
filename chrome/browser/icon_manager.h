@@ -106,7 +106,7 @@ class IconManager {
   std::map<base::FilePath, IconLoader::IconGroup> group_cache_;
   std::map<CacheKey, gfx::Image> icon_cache_;
 
-  base::WeakPtrFactory<IconManager> weak_factory_;
+  base::WeakPtrFactory<IconManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IconManager);
 };

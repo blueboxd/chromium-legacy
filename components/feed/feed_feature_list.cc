@@ -16,4 +16,7 @@ const base::FeatureParam<int> kSuppressRefreshDurationMinutes{
 const base::FeatureParam<int> kTimeoutDurationSeconds{
     &kInterestFeedContentSuggestions, "timeout_duration_seconds", 30};
 
+const base::Feature kInterestFeedNotifications{
+    "InterestFeedNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace feed

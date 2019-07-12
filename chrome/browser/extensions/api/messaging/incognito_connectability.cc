@@ -47,8 +47,7 @@ int IncognitoConnectability::ScopedAlertTracker::GetAndResetAlertCount() {
 }
 
 IncognitoConnectability::IncognitoConnectability(
-    content::BrowserContext* context)
-    : weak_factory_(this) {
+    content::BrowserContext* context) {
   CHECK(context->IsOffTheRecord());
 }
 

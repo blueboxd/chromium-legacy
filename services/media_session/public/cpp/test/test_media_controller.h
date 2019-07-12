@@ -138,6 +138,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
                      int desired_size_px,
                      mojo::PendingRemote<mojom::MediaControllerImageObserver>
                          observer) override {}
+  void SeekTo(base::TimeDelta seek_time) override {}
+  void ScrubTo(base::TimeDelta seek_time) override {}
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

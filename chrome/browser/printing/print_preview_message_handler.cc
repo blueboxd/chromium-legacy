@@ -69,7 +69,7 @@ bool IsValidPageNumber(int page_number, int page_count) {
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
     WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(web_contents);
 }
 

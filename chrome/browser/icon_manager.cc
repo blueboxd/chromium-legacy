@@ -25,7 +25,7 @@ void RunCallbackIfNotCanceled(
 
 }  // namespace
 
-IconManager::IconManager() : weak_factory_(this) {}
+IconManager::IconManager() {}
 
 IconManager::~IconManager() {
 }

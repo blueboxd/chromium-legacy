@@ -19,8 +19,7 @@ ExtensionMediaRouteProviderProxy::ExtensionMediaRouteProviderProxy(
     content::BrowserContext* context)
     : binding_(this),
       request_manager_(
-          EventPageRequestManagerFactory::GetApiForBrowserContext(context)),
-      weak_factory_(this) {}
+          EventPageRequestManagerFactory::GetApiForBrowserContext(context)) {}
 
 ExtensionMediaRouteProviderProxy::~ExtensionMediaRouteProviderProxy() = default;
 

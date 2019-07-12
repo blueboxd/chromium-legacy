@@ -414,7 +414,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationHandleImpl* handle);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      NavigationHandleImpl* handle);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.

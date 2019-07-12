@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -57,9 +58,11 @@ class SecFetchBrowserTest : public ContentBrowserTest {
                                          ui::PAGE_TRANSITION_TYPED));
   }
 
-  GURL GetSecFetchUrl() {
-    return https_test_server_.GetURL("/echoheader?sec-fetch-site");
+  GURL GetUrl(const std::string& path_and_query) {
+    return https_test_server_.GetURL(path_and_query);
   }
+
+  GURL GetSecFetchUrl() { return GetUrl("/echoheader?sec-fetch-site"); }
 
   std::string GetContent() {
     return EvalJs(shell(), "document.body.innerText").ExtractString();
@@ -126,6 +129,85 @@ IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, CrossPortNavigation) {
   // Verify that https://foo.com:port1 is treated as same-site wrt
   // https://foo.com:port2.
   EXPECT_EQ("same-site", GetContent());
+}
+
+// This test verifies presence of a correct ("replayed") Sec-Fetch-Site HTTP
+// request header in a history/back navigation.
+//
+// This is a regression test for https://crbug.com/946503.
+//
+// This test is slightly redundant with
+// wpt/fetch/sec-metadata/history.tentative.https.sub.html
+// but it tests history navigations that are browser-initiated
+// (e.g. as-if they were initiated by Chrome UI, not by javascript).
+IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, BackNavigation) {
+  // Start the test at |initial_url|.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL initial_url(GetUrl("/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Renderer-initiated navigation to same-origin |main_url|.
+  GURL main_url(GetSecFetchUrl());
+  EXPECT_EQ(url::Origin::Create(initial_url), url::Origin::Create(main_url));
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(ExecJs(shell(), JsReplace("window.location = $1", main_url)));
+    nav_observer.Wait();
+    EXPECT_EQ("same-origin", GetContent());
+  }
+
+  // Renderer-initiated navigation to |cross_origin_url|.
+  {
+    GURL cross_origin_url(embedded_test_server()->GetURL("/title1.html"));
+    EXPECT_NE(url::Origin::Create(main_url),
+              url::Origin::Create(cross_origin_url));
+    TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(
+        ExecJs(shell(), JsReplace("window.location = $1", cross_origin_url)));
+    nav_observer.Wait();
+  }
+
+  // Go back and verify that `Sec-Fetch-Site: same-origin` is again sent to the
+  // server.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+    shell()->web_contents()->GetController().GoBack();
+    nav_observer.Wait();
+    EXPECT_EQ(main_url, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ("same-origin", GetContent());
+  }
+}
+
+// This test verifies presence of a correct ("replayed") Sec-Fetch-Site HTTP
+// request header in a history/reload navigation.
+//
+// This is a regression test for https://crbug.com/946503.
+IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, ReloadNavigation) {
+  // Start the test at |initial_url|.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL initial_url(GetUrl("/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Renderer-initiated navigation to same-origin |main_url|.
+  GURL main_url(GetSecFetchUrl());
+  EXPECT_EQ(url::Origin::Create(initial_url), url::Origin::Create(main_url));
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(ExecJs(shell(), JsReplace("window.location = $1", main_url)));
+    nav_observer.Wait();
+    EXPECT_EQ("same-origin", GetContent());
+  }
+
+  // Reload and verify that `Sec-Fetch-Site: same-origin` is again sent to the
+  // server.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+    shell()->web_contents()->GetController().Reload(ReloadType::BYPASSING_CACHE,
+                                                    true);
+    nav_observer.Wait();
+    EXPECT_EQ(main_url, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ("same-origin", GetContent());
+  }
 }
 
 }  // namespace content

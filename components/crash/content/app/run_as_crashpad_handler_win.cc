@@ -23,7 +23,7 @@
 #include "third_party/crashpad/crashpad/handler/user_stream_data_source.h"
 
 #if BUILDFLAG(ENABLE_GWP_ASAN)
-#include "components/gwp_asan/crash_handler/crash_handler.h"
+#include "components/gwp_asan/crash_handler/crash_handler.h"  // nogncheck
 #endif
 
 namespace crash_reporter {

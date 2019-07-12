@@ -455,9 +455,7 @@ MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : initialized_(false),
       profile_(profile),
-      extension_prefs_for_testing_(NULL),
-      weak_factory_(this) {
-}
+      extension_prefs_for_testing_(nullptr) {}
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {
   if (StorageMonitor::GetInstance())

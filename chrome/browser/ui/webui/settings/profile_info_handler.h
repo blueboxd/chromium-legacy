@@ -82,7 +82,7 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
       profile_observer_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
-  base::WeakPtrFactory<ProfileInfoHandler> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<ProfileInfoHandler> callback_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };

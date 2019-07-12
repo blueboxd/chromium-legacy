@@ -119,7 +119,7 @@ class XRDeviceImpl : public device::mojom::XRDevice {
 
   InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
 
-  base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(XRDeviceImpl);
 };

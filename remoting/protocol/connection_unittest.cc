@@ -300,8 +300,8 @@ class ConnectionTest : public testing::Test,
           base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
           scoped_task_environment_.GetMainThreadTaskRunner(),
-          scoped_task_environment_.GetMainThreadTaskRunner(), false));
-      client_connection_.reset(new IceConnectionToHost(false));
+          scoped_task_environment_.GetMainThreadTaskRunner()));
+      client_connection_.reset(new IceConnectionToHost());
     }
 
     // Setup host side.

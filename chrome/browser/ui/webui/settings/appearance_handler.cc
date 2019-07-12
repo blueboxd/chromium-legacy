@@ -19,7 +19,7 @@
 namespace settings {
 
 AppearanceHandler::AppearanceHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)), weak_ptr_factory_(this) {}
+    : profile_(Profile::FromWebUI(webui)) {}
 
 AppearanceHandler::~AppearanceHandler() {}
 

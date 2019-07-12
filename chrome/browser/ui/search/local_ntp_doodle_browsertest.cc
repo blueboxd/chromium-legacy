@@ -1458,7 +1458,8 @@ class LocalNTPDarkModeDoodleTest : public LocalNTPDoodleTest,
   void SetUpOnMainThread() override {
     LocalNTPDoodleTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
   }
 };
 

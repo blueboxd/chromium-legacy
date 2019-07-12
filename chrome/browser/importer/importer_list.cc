@@ -170,9 +170,7 @@ std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
 
 }  // namespace
 
-ImporterList::ImporterList()
-    : weak_ptr_factory_(this) {
-}
+ImporterList::ImporterList() {}
 
 ImporterList::~ImporterList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

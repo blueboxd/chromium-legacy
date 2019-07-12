@@ -171,7 +171,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   int unsafe_unique_page_id_;
   std::unique_ptr<security_interstitials::UnsafeResource> unsafe_resource_;
 
-  base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
+  base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };

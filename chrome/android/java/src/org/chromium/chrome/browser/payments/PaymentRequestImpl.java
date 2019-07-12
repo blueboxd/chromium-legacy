@@ -789,6 +789,12 @@ public class PaymentRequestImpl
                 mDidRecordShowEvent = true;
                 mShouldRecordAbortReason = true;
                 mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
+                assert mRawTotal != null;
+                // The total amount in details should be finalized at this point. So it is safe to
+                // record the triggered transaction amount.
+                assert !mWaitForUpdatedDetails;
+                mJourneyLogger.recordTransactionAmount(
+                        mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
 
                 onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
                         selectedInstrument);
@@ -1053,6 +1059,18 @@ public class PaymentRequestImpl
         }
 
         mWaitForUpdatedDetails = false;
+        // Triggered tansaction amount gets recorded when both of the following conditions are met:
+        // 1- Either Event.Shown or Event.SKIPPED_SHOW bits are set showing that transaction is
+        // triggered (mDidRecordShowEvent == true). 2- The total amount in details won't change
+        // (mWaitForUpdatedDetails == false). Record the transaction amount only when the triggered
+        // condition is already met. Otherwise it will get recorded when triggered condition becomes
+        // true.
+        if (mDidRecordShowEvent) {
+            assert mRawTotal != null;
+            mJourneyLogger.recordTransactionAmount(
+                    mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
+        }
+
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
     }
 
@@ -1338,6 +1356,14 @@ public class PaymentRequestImpl
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
+            // Record the triggered transaction amount only when the total amount in details is
+            // finalized (i.e. mWaitForUpdatedDetails == false). Otherwise it will get recorded when
+            // the updated details become available.
+            if (!mWaitForUpdatedDetails) {
+                assert mRawTotal != null;
+                mJourneyLogger.recordTransactionAmount(
+                        mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
+            }
         }
     }
 
@@ -1718,6 +1744,9 @@ public class PaymentRequestImpl
         if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
             PaymentPreferencesUtil.setPaymentCompleteOnce();
         }
+        assert mRawTotal != null;
+        mJourneyLogger.recordTransactionAmount(
+                mRawTotal.amount.currency, mRawTotal.amount.value, true /*completed*/);
 
         /**
          * Update records of the used payment instrument for sorting payment apps and instruments

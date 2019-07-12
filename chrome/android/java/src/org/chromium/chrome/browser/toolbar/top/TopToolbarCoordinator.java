@@ -50,7 +50,7 @@ public class TopToolbarCoordinator implements Toolbar {
         void onUrlExpansionPercentageChanged(float percentage);
     }
 
-    private ToolbarLayout mToolbarLayout;
+    private final ToolbarLayout mToolbarLayout;
 
     /**
      * The coordinator for the tab switcher mode toolbar (phones only). This will be lazily created
@@ -164,10 +164,8 @@ public class TopToolbarCoordinator implements Toolbar {
      * Cleans up any code as necessary.
      */
     public void destroy() {
-        if (mToolbarLayout != null) {
-            HomepageManager.getInstance().removeListener(mHomepageStateListener);
-            mToolbarLayout.destroy();
-        }
+        HomepageManager.getInstance().removeListener(mHomepageStateListener);
+        mToolbarLayout.destroy();
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.destroy();
         }
@@ -187,7 +185,6 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The wrapper for the browsing mode toolbar's menu button.
      */
     public MenuButton getMenuButtonWrapper() {
-        if (mToolbarLayout == null) return null;
         View menuButtonWrapper = mToolbarLayout.getMenuButtonWrapper();
         if (menuButtonWrapper instanceof MenuButton) return (MenuButton) menuButtonWrapper;
         return null;
@@ -197,7 +194,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The {@link ImageButton} containing the menu button.
      */
     public @Nullable ImageButton getMenuButton() {
-        return mToolbarLayout == null ? null : mToolbarLayout.getMenuButton();
+        return mToolbarLayout.getMenuButton();
     }
 
     @Override
@@ -246,7 +243,7 @@ public class TopToolbarCoordinator implements Toolbar {
      *         otherwise.
      */
     public String getContentPublisher() {
-        return mToolbarLayout == null ? null : mToolbarLayout.getContentPublisher();
+        return mToolbarLayout.getContentPublisher();
     }
 
     /**
@@ -575,7 +572,7 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public boolean isShowingAppMenuUpdateBadge() {
-        return mToolbarLayout == null ? false : mToolbarLayout.isShowingAppMenuUpdateBadge();
+        return mToolbarLayout.isShowingAppMenuUpdateBadge();
     }
 
     @Override
@@ -606,9 +603,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The experimental toolbar button if it exists.
      */
     public void updateExperimentalButtonImage(Drawable image) {
-        if (mToolbarLayout != null) {
-            mToolbarLayout.updateExperimentalButtonImage(image);
-        }
+        mToolbarLayout.updateExperimentalButtonImage(image);
     }
 
     /**

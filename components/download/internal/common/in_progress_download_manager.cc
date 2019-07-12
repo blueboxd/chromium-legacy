@@ -318,17 +318,26 @@ void InProgressDownloadManager::ShutDown() {
 void InProgressDownloadManager::DetermineDownloadTarget(
     DownloadItemImpl* download,
     const DownloadTargetCallback& callback) {
-  // TODO(http://crbug.com/851581): handle the case that |target_path| and
-  // |intermediate_path| are empty.
   base::FilePath target_path = download->GetTargetFilePath().empty()
                                    ? download->GetForcedFilePath()
                                    : download->GetTargetFilePath();
   base::FilePath intermediate_path = download->GetFullPath().empty()
                                          ? download->GetForcedFilePath()
                                          : download->GetFullPath();
+#if defined(OS_ANDROID)
+  // If final target is a content URI, the intermediate path should
+  // be identical to it.
+  if (target_path.IsContentUri())
+    intermediate_path = target_path;
+#endif
+  if (!target_path.empty() && intermediate_path.empty()) {
+    if (intermediate_path_cb_)
+      intermediate_path = intermediate_path_cb_.Run(target_path);
+  }
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download->GetDangerType(), intermediate_path,
-               DOWNLOAD_INTERRUPT_REASON_NONE);
+               intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
+                                         : DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void InProgressDownloadManager::ResumeInterruptedDownload(

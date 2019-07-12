@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
@@ -78,6 +79,9 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_ETHERNET);
 
     host_resolver()->AddRule("*", "127.0.0.1");
 
@@ -325,17 +329,9 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
-#if defined(OS_CHROMEOS)
-// See https://crbug.com/964338
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
-  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
-#else
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
-  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
-#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -356,6 +352,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait for the response to complete.
   loader_helper.WaitForCallback();
+  EXPECT_EQ(net::OK, loader->NetError());
   EXPECT_TRUE(loader_helper.response_body());
 
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
@@ -364,17 +361,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
-#if defined(OS_CHROMEOS)
-// See https://crbug.com/964338
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
-  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
-#else
-#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
-  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
-#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -395,6 +384,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait for the response to complete.
   loader_helper.WaitForCallback();
+  EXPECT_EQ(net::OK, loader->NetError());
   EXPECT_TRUE(loader_helper.response_body());
 
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));

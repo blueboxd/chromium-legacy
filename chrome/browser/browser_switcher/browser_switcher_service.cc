@@ -92,9 +92,7 @@ XmlDownloader::XmlDownloader(Profile* profile,
                              BrowserSwitcherService* service,
                              base::TimeDelta first_fetch_delay,
                              base::RepeatingCallback<void()> all_done_callback)
-    : service_(service),
-      all_done_callback_(std::move(all_done_callback)),
-      weak_ptr_factory_(this) {
+    : service_(service), all_done_callback_(std::move(all_done_callback)) {
   file_url_factory_ =
       content::CreateFileURLLoaderFactory(base::FilePath(), nullptr);
   other_url_factory_ =
@@ -218,8 +216,7 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
     : profile_(profile),
       prefs_(profile),
       driver_(new AlternativeBrowserDriverImpl(&prefs_)),
-      sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)),
-      weak_ptr_factory_(this) {
+      sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserSwitcherService::Init,
                                 weak_ptr_factory_.GetWeakPtr()));

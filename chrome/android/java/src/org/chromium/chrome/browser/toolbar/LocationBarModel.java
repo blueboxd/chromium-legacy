@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -315,18 +314,16 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     private void updateUsingBrandColor() {
-        Context context = ContextUtils.getApplicationContext();
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
-                        != ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
+                        != ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 && hasTab() && !mTab.isNativePage();
     }
 
     @Override
     public int getPrimaryColor() {
-        Context context = ContextUtils.getApplicationContext();
         return isInOverviewAndShowingOmnibox()
-                ? ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
+                ? ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 : mPrimaryColor;
     }
 

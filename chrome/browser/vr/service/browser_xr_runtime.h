@@ -121,7 +121,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
 
   base::ObserverList<BrowserXRRuntimeObserver> observers_;
 
-  base::WeakPtrFactory<BrowserXRRuntime> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserXRRuntime> weak_ptr_factory_{this};
 };
 
 }  // namespace vr

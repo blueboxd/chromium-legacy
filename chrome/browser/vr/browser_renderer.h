@@ -135,7 +135,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   // it must be destroyed before graphics_delegate_.
   std::unique_ptr<UiInterface> ui_;
 
-  base::WeakPtrFactory<BrowserRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderer);
 };

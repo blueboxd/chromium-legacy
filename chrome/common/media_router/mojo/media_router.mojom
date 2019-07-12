@@ -90,7 +90,6 @@ struct CastMediaSink {
 enum RouteControllerType {
   kNone,
   kGeneric,
-  kHangouts,
   kMirroring
 };
 

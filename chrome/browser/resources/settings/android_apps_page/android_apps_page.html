@@ -21,10 +21,10 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <template is="dom-if" if="[[havePlayStoreApp]]" restamp>
-          <div id="android-apps" class="settings-box two-line first"
+          <div id="android-apps" class="settings-box first"
               actionable$="[[androidAppsInfo.playStoreEnabled]]"
               on-click="onSubpageTap_">
-            <div class="start">
+            <div class="start settings-box-text">
               $i18n{androidAppsPageLabel}
               <div class="secondary" id="secondaryText"
                   inner-h-t-m-l="[[i18nAdvanced('androidAppsSubtext')]]">

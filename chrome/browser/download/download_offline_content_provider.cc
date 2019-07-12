@@ -128,8 +128,7 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
     : aggregator_(aggregator),
       name_space_(name_space),
       manager_(nullptr),
-      checked_for_externally_removed_downloads_(false),
-      weak_ptr_factory_(this) {
+      checked_for_externally_removed_downloads_(false) {
   aggregator_->RegisterProvider(name_space_, this);
 
 #if defined(OS_ANDROID)

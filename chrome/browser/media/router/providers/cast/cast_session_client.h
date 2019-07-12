@@ -186,7 +186,7 @@ class CastSessionClientImpl : public CastSessionClient,
   // initiate state changes.
   blink::mojom::PresentationConnectionPtr connection_;
 
-  base::WeakPtrFactory<CastSessionClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CastSessionClientImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace media_router

@@ -160,7 +160,7 @@ class WebRtcLogsDOMHandler final : public WebUIMessageHandler {
   std::vector<UploadList::UploadInfo> event_logs_;
 
   // Factory for creating weak references to instances of this class.
-  base::WeakPtrFactory<WebRtcLogsDOMHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<WebRtcLogsDOMHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogsDOMHandler);
 };
@@ -174,8 +174,7 @@ WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
       original_browser_context_id_(webrtc_event_logging::GetBrowserContextId(
           profile->GetOriginalProfile())),
       text_log_upload_list_(
-          webrtc_logging::TextLogList::CreateWebRtcLogList(profile)),
-      weak_ptr_factory_(this) {
+          webrtc_logging::TextLogList::CreateWebRtcLogList(profile)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

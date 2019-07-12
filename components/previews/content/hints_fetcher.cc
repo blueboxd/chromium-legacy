@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"

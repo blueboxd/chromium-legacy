@@ -62,7 +62,7 @@ class AppShortcutManager : public KeyedService,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };

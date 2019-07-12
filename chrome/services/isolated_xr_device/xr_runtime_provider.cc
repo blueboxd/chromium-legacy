@@ -223,7 +223,7 @@ void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {
 
 IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
-    : service_ref_(std::move(service_ref)), weak_ptr_factory_(this) {}
+    : service_ref_(std::move(service_ref)) {}
 
 IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)

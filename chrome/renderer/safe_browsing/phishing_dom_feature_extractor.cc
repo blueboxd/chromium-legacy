@@ -104,7 +104,7 @@ struct PhishingDOMFeatureExtractor::FrameData {
 
 PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor(
     FeatureExtractorClock* clock)
-    : clock_(clock), weak_factory_(this) {
+    : clock_(clock) {
   Clear();
 }
 

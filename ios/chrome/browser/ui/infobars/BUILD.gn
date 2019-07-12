@@ -149,6 +149,7 @@ source_set("eg_tests") {
     "//ios/chrome/app:app_internal",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/web_state_list",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",

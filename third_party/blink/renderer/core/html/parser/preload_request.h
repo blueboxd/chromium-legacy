@@ -72,6 +72,8 @@ class CORE_EXPORT PreloadRequest {
   Resource* Start(Document*);
 
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
+  FetchParameters::DeferOption DeferOption() const { return defer_; }
+
   void SetCharset(const String& charset) { charset_ = charset; }
   void SetCrossOrigin(CrossOriginAttributeValue cross_origin) {
     cross_origin_ = cross_origin;

@@ -27,7 +27,9 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_input_element.h"
 
@@ -113,13 +115,16 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                         blink::AssociatedInterfaceRegistry* registry);
   ~PasswordAutofillAgent() override;
 
-  void BindRequest(mojom::PasswordAutofillAgentAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordAutofillAgent>
+          pending_receiver);
 
   void SetAutofillAgent(AutofillAgent* autofill_agent);
 
   void SetPasswordGenerationAgent(PasswordGenerationAgent* generation_agent);
 
-  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
+  const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
+  GetPasswordManagerDriver();
 
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(const PasswordFormFillData& form_data) override;
@@ -526,9 +531,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   PagePasswordsAnalyser page_passwords_analyser_;
 #endif
 
-  mojom::PasswordManagerDriverAssociatedPtr password_manager_driver_;
+  mojo::AssociatedRemote<mojom::PasswordManagerDriver> password_manager_driver_;
 
-  mojo::AssociatedBinding<mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedReceiver<mojom::PasswordAutofillAgent> receiver_{this};
 
   bool prefilled_username_metrics_logged_ = false;
 

@@ -13,7 +13,7 @@ namespace notifications {
 
 InitAwareNotificationScheduler::InitAwareNotificationScheduler(
     std::unique_ptr<NotificationScheduler> impl)
-    : impl_(std::move(impl)), weak_ptr_factory_(this) {}
+    : impl_(std::move(impl)) {}
 
 InitAwareNotificationScheduler::~InitAwareNotificationScheduler() = default;
 

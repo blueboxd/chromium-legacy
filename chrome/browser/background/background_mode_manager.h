@@ -402,7 +402,7 @@ class BackgroundModeManager : public content::NotificationObserver,
   // require file system or registry access.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<BackgroundModeManager> weak_factory_;
+  base::WeakPtrFactory<BackgroundModeManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManager);
 };

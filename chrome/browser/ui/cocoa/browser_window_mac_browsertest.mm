@@ -14,9 +14,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/notification_service.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_utils.h"
 #include "ui/base/test/ns_ax_tree_validator.h"
 
 // Test harness for Mac-specific behaviors of BrowserWindow.
@@ -49,11 +48,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowMacTest, MenuCommandsAfterDestroy) {
   EXPECT_TRUE(window.get());
   EXPECT_TRUE(bookmark_menu_item.get());
 
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
   chrome::CloseAllBrowsersAndQuit();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose();
 
   EXPECT_EQ([bookmark_menu_item action], @selector(commandDispatch:));
 

@@ -320,6 +320,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -1151,8 +1152,7 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
     : data_reduction_proxy_throttle_manager_(
           nullptr,
           base::OnTaskRunnerDeleter(nullptr)),
-      startup_data_(startup_data),
-      weak_factory_(this) {
+      startup_data_(startup_data) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
@@ -3461,12 +3461,24 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
+#if !defined(OS_MACOSX)
+  // Mac has a concept of high contrast that does not relate to forced colors.
   web_prefs->forced_colors = native_theme->UsesHighContrastColors()
                                  ? blink::ForcedColors::kActive
                                  : blink::ForcedColors::kNone;
-  web_prefs->preferred_color_scheme = native_theme->SystemDarkModeEnabled()
-                                          ? blink::PreferredColorScheme::kDark
-                                          : blink::PreferredColorScheme::kLight;
+#endif  // !defined(OS_MACOSX)
+
+  switch (native_theme->GetPreferredColorScheme()) {
+    case ui::NativeTheme::PreferredColorScheme::kDark:
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+      break;
+    case ui::NativeTheme::PreferredColorScheme::kLight:
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+      break;
+    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
+      web_prefs->preferred_color_scheme =
+          blink::PreferredColorScheme::kNoPreference;
+  }
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
@@ -3925,21 +3937,23 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     mojo::ScopedInterfaceEndpointHandle* handle) {
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
-        autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }
   if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
-    password_manager::ContentPasswordManagerDriverFactory::BindAutofillDriver(
-        autofill::mojom::PasswordManagerDriverAssociatedRequest(
-            std::move(*handle)),
-        render_frame_host);
+    password_manager::ContentPasswordManagerDriverFactory::
+        BindPasswordManagerDriver(
+            autofill::mojom::PasswordManagerDriverAssociatedRequest(
+                std::move(*handle)),
+            render_frame_host);
     return true;
   }
   if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
-            std::move(*handle)),
+        mojo::PendingAssociatedReceiver<
+            content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
         render_frame_host);
     return true;
   }

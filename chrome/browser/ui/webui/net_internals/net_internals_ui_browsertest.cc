@@ -138,14 +138,14 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
 
   NetInternalsTest* net_internals_test_;
 
-  base::WeakPtrFactory<MessageHandler> weak_factory_;
+  base::WeakPtrFactory<MessageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
 };
 
 NetInternalsTest::MessageHandler::MessageHandler(
     NetInternalsTest* net_internals_test)
-    : net_internals_test_(net_internals_test), weak_factory_(this) {}
+    : net_internals_test_(net_internals_test) {}
 
 void NetInternalsTest::MessageHandler::RegisterMessages() {
   RegisterMessage(

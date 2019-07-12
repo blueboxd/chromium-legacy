@@ -46,7 +46,7 @@ RequestCoordinator* GetRequestCoordinator() {
   return RequestCoordinatorFactory::GetForBrowserContext(GetProfile());
 }
 OfflinePageModel* GetOfflinePageModel() {
-  return OfflinePageModelFactory::GetForBrowserContext(GetProfile());
+  return OfflinePageModelFactory::GetForKey(::android::GetLastUsedProfileKey());
 }
 
 void OnGetAllRequestsDone(
@@ -65,6 +65,15 @@ void OnGetAllPagesDone(
   JNIEnv* env = base::android::AttachCurrentThread();
   OfflinePageBridge::AddOfflinePageItemsToJavaList(env, j_result_obj, result);
   base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);
+}
+
+void OnGetVisualsDoneExtractThumbnail(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    std::unique_ptr<OfflinePageVisuals> visuals) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_bytes =
+      base::android::ToJavaByteArray(env, visuals->thumbnail);
+  base::android::RunObjectCallbackAndroid(j_callback_obj, j_bytes);
 }
 
 void OnDeletePageDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
@@ -189,6 +198,18 @@ void JNI_OfflineTestUtil_GetAllPages(
   ScopedJavaGlobalRef<jobject> j_callback_ref(env, j_callback_obj);
   GetOfflinePageModel()->GetAllPages(base::BindOnce(
       &OnGetAllPagesDone, std::move(j_result_ref), std::move(j_callback_ref)));
+}
+
+void JNI_OfflineTestUtil_GetRawThumbnail(
+    JNIEnv* env,
+    jlong j_offline_id,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  DCHECK(j_offline_id);
+
+  GetOfflinePageModel()->GetVisualsByOfflineId(
+      j_offline_id,
+      base::BindOnce(&OnGetVisualsDoneExtractThumbnail,
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 void JNI_OfflineTestUtil_DeletePagesByOfflineId(

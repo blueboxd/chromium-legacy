@@ -92,7 +92,7 @@ void TaskTabHelper::NavigationListPruned(
       entry_index_to_spoke_count_map_[current_entry_index]);
 }
 
-sessions::ContextRecordTaskId* TaskTabHelper::GetContextRecordTaskId(
+sessions::NavigationTaskId* TaskTabHelper::GetCurrentTaskId(
     content::WebContents* web_contents) {
   if (!web_contents)
     return nullptr;
@@ -100,22 +100,22 @@ sessions::ContextRecordTaskId* TaskTabHelper::GetContextRecordTaskId(
       web_contents->GetController().GetLastCommittedEntry();
   if (!navigation_entry)
     return nullptr;
-  sessions::ContextRecordTaskId* context_record_task_id =
-      sessions::ContextRecordTaskId::Get(navigation_entry);
-  if (!context_record_task_id)
+  sessions::NavigationTaskId* navigation_task_id =
+      sessions::NavigationTaskId::Get(navigation_entry);
+  if (!navigation_task_id)
     return nullptr;
-  return context_record_task_id;
+  return navigation_task_id;
 }
 
 void TaskTabHelper::UpdateAndRecordTaskIds(
     const content::LoadCommittedDetails& load_details) {
-  sessions::ContextRecordTaskId* context_record_task_id =
-      sessions::ContextRecordTaskId::Get(load_details.entry);
+  sessions::NavigationTaskId* navigation_task_id =
+      sessions::NavigationTaskId::Get(load_details.entry);
 
   // The Task ID is the Global ID of the first navigation. The first
   // navigation is detected if the Task ID hasn't been set yet.
-  if (context_record_task_id->task_id() == -1) {
-    context_record_task_id->set_task_id(
+  if (navigation_task_id->id() == -1) {
+    navigation_task_id->set_id(
         load_details.entry->GetTimestamp().since_origin().InMicroseconds());
   }
 
@@ -126,29 +126,27 @@ void TaskTabHelper::UpdateAndRecordTaskIds(
               load_details.previous_entry_index);
 
       if (prev_nav_entry != nullptr) {
-        sessions::ContextRecordTaskId* prev_context_record_task_id =
-            sessions::ContextRecordTaskId::Get(prev_nav_entry);
-        context_record_task_id->set_parent_task_id(
-            prev_context_record_task_id->task_id());
-        context_record_task_id->set_root_task_id(
-            prev_context_record_task_id->root_task_id());
+        sessions::NavigationTaskId* prev_navigation_task_id =
+            sessions::NavigationTaskId::Get(prev_nav_entry);
+        navigation_task_id->set_parent_id(prev_navigation_task_id->id());
+        navigation_task_id->set_root_id(prev_navigation_task_id->root_id());
       }
 #if defined(OS_ANDROID)
       else {
         // Cross-tab navigation - only supported in Android. In this case
         // the parent and parent root Task IDs are passed from the Java layer
         if (this->GetParentTaskId() != -1) {
-          context_record_task_id->set_parent_task_id(this->GetParentTaskId());
-          context_record_task_id->set_root_task_id(this->GetParentRootTaskId());
+          navigation_task_id->set_parent_id(this->GetParentTaskId());
+          navigation_task_id->set_root_id(this->GetParentRootTaskId());
         }
       }
 #endif  // defined(OS_ANDROID)
     }
   } else {
-    context_record_task_id->set_root_task_id(context_record_task_id->task_id());
+    navigation_task_id->set_root_id(navigation_task_id->id());
   }
-  local_context_record_task_id_map_.emplace(load_details.entry->GetUniqueID(),
-                                            *context_record_task_id);
+  local_navigation_task_id_map_.emplace(load_details.entry->GetUniqueID(),
+                                        *navigation_task_id);
 }
 
 void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {
@@ -192,11 +190,11 @@ int64_t TaskTabHelper::GetParentRootTaskId() {
 
 jlong JNI_TaskTabHelper_GetTaskId(JNIEnv* env,
                                   const JavaParamRef<jobject>& jweb_contents) {
-  sessions::ContextRecordTaskId* context_record_task_id =
-      TaskTabHelper::GetContextRecordTaskId(
+  sessions::NavigationTaskId* navigation_task_id =
+      TaskTabHelper::GetCurrentTaskId(
           content::WebContents::FromJavaWebContents(jweb_contents));
-  if (context_record_task_id) {
-    return context_record_task_id->task_id();
+  if (navigation_task_id) {
+    return navigation_task_id->id();
   }
   return -1;
 }
@@ -204,11 +202,11 @@ jlong JNI_TaskTabHelper_GetTaskId(JNIEnv* env,
 jlong JNI_TaskTabHelper_GetRootTaskId(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents) {
-  sessions::ContextRecordTaskId* context_record_task_id =
-      TaskTabHelper::GetContextRecordTaskId(
+  sessions::NavigationTaskId* navigation_task_id =
+      TaskTabHelper::GetCurrentTaskId(
           content::WebContents::FromJavaWebContents(jweb_contents));
-  if (context_record_task_id) {
-    return context_record_task_id->root_task_id();
+  if (navigation_task_id) {
+    return navigation_task_id->root_id();
   }
   return -1;
 }

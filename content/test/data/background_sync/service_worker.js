@@ -12,8 +12,8 @@
 
 'use strict';
 
-var resolveCallback = null;
-var rejectCallback = null;
+let resolveCallback = null;
+let rejectCallback = null;
 
 this.onmessage = function(event) {
   if (event.data['action'] === 'completeDelayedSyncEvent') {
@@ -38,7 +38,7 @@ this.onmessage = function(event) {
   }
 
   if (event.data['action'] === 'register') {
-    var tag = event.data['tag'];
+    const tag = event.data['tag'];
     registration.sync.register(tag)
       .then(function () {
         sendMessageToClients('register', 'ok - ' + tag + ' registered in SW');
@@ -47,7 +47,7 @@ this.onmessage = function(event) {
   }
 
   if (event.data['action'] === 'hasTag') {
-    var tag = event.data['tag'];
+    const tag = event.data['tag'];
     registration.sync.getTags()
       .then(function(tags) {
         if (tags.indexOf(tag) >= 0) {
@@ -70,7 +70,7 @@ this.onmessage = function(event) {
 }
 
 this.onsync = function(event) {
-  var eventProperties = [
+  const eventProperties = [
     // Extract name from toString result: "[object <Class>]"
     Object.prototype.toString.call(event).match(/\s([a-zA-Z]+)/)[1],
     (typeof event.waitUntil)
@@ -90,10 +90,10 @@ this.onsync = function(event) {
     return;
   }
 
-  var tag = event.tag;
+  const tag = event.tag;
 
   if (tag === 'delay') {
-    var syncPromise = new Promise(function(resolve, reject) {
+    const syncPromise = new Promise(function(resolve, reject) {
       resolveCallback = resolve;
       rejectCallback = reject;
     });

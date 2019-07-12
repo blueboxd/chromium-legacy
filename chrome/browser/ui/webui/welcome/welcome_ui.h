@@ -35,7 +35,7 @@ class WelcomeUI : public content::WebUIController {
  private:
   void StorePageSeen(Profile* profile);
   std::unique_ptr<nux::NtpBackgroundFetcher> background_fetcher_;
-  base::WeakPtrFactory<WelcomeUI> weak_ptr_factory_;
+  base::WeakPtrFactory<WelcomeUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeUI);
 };

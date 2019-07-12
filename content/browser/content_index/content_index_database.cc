@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 // TODO(crbug.com/973844): Move image utility functions to common library.
@@ -36,6 +37,7 @@ std::string IconKey(const std::string& id) {
 
 std::string CreateSerializedContentEntry(
     const blink::mojom::ContentDescription& description,
+    const GURL& launch_url,
     base::Time entry_time) {
   // Convert description.
   proto::ContentDescription description_proto;
@@ -49,6 +51,7 @@ std::string CreateSerializedContentEntry(
   // Create entry.
   proto::ContentEntry entry;
   *entry.mutable_description() = std::move(description_proto);
+  entry.set_launch_url(launch_url.spec());
   entry.set_timestamp(entry_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
   return entry.SerializeAsString();
@@ -93,29 +96,31 @@ void ContentIndexDatabase::AddEntry(
     const url::Origin& origin,
     blink::mojom::ContentDescriptionPtr description,
     const SkBitmap& icon,
+    const GURL& launch_url,
     blink::mojom::ContentIndexService::AddCallback callback) {
-  SerializeIcon(icon,
-                base::BindOnce(&ContentIndexDatabase::DidSerializeIcon,
-                               weak_ptr_factory_io_.GetWeakPtr(),
-                               service_worker_registration_id, origin,
-                               std::move(description), std::move(callback)));
+  SerializeIcon(icon, base::BindOnce(&ContentIndexDatabase::DidSerializeIcon,
+                                     weak_ptr_factory_io_.GetWeakPtr(),
+                                     service_worker_registration_id, origin,
+                                     std::move(description), launch_url,
+                                     std::move(callback)));
 }
 
 void ContentIndexDatabase::DidSerializeIcon(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::ContentDescriptionPtr description,
+    const GURL& launch_url,
     blink::mojom::ContentIndexService::AddCallback callback,
     std::string serialized_icon) {
   base::Time entry_time = base::Time::Now();
   std::string entry_key = EntryKey(description->id);
   std::string icon_key = IconKey(description->id);
   std::string entry_value =
-      CreateSerializedContentEntry(*description, entry_time);
+      CreateSerializedContentEntry(*description, launch_url, entry_time);
 
   // Entry to pass over to the provider.
   ContentIndexEntry entry(service_worker_registration_id,
-                          std::move(description), entry_time);
+                          std::move(description), launch_url, entry_time);
 
   service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id, origin.GetURL(),
@@ -258,7 +263,7 @@ void ContentIndexDatabase::DidGetAllEntries(
         base::TimeDelta::FromMicroseconds(entry_proto.timestamp()));
 
     entries.emplace_back(service_worker_registration_id, std::move(description),
-                         registration_time);
+                         GURL(entry_proto.launch_url()), registration_time);
   }
 
   base::PostTaskWithTraits(

@@ -100,7 +100,7 @@ namespace {
 class BinaryBasedOnSharedBuffer : public Binary::Impl {
  public:
   explicit BinaryBasedOnSharedBuffer(scoped_refptr<SharedBuffer> buffer)
-      : buffer_(buffer) {}
+      : buffer_(std::move(buffer)) {}
 
   const uint8_t* data() const override {
     return reinterpret_cast<const uint8_t*>(buffer_->Data());
@@ -153,7 +153,8 @@ Binary Binary::fromBase64(const String& base64, bool* success) {
 
 // static
 Binary Binary::fromSharedBuffer(scoped_refptr<SharedBuffer> buffer) {
-  return Binary(base::AdoptRef(new BinaryBasedOnSharedBuffer(buffer)));
+  return Binary(
+      base::AdoptRef(new BinaryBasedOnSharedBuffer(std::move(buffer))));
 }
 
 // static

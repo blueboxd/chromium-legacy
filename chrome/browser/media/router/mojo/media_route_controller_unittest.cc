@@ -87,22 +87,6 @@ class MediaRouteControllerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaRouteControllerTest);
 };
 
-class HangoutsMediaRouteControllerTest : public MediaRouteControllerTest {
- public:
-  ~HangoutsMediaRouteControllerTest() override {}
-
-  void SetUp() override {
-    MediaRouteControllerTest::SetUp();
-    EXPECT_CALL(mock_media_controller_, ConnectHangoutsMediaRouteController());
-    base::RunLoop().RunUntilIdle();
-  }
-
-  scoped_refptr<MediaRouteController> CreateMediaRouteController() override {
-    return base::MakeRefCounted<HangoutsMediaRouteController>(
-        kRouteId, &profile_, &router_);
-  }
-};
-
 class MirroringMediaRouteControllerTest : public MediaRouteControllerTest {
  public:
   ~MirroringMediaRouteControllerTest() override {}
@@ -214,18 +198,6 @@ TEST_F(MediaRouteControllerTest, DestroyControllerOnNoObservers) {
   EXPECT_CALL(router_, DetachRouteController(kRouteId, controller)).Times(1);
   observer2.reset();
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&router_));
-}
-
-TEST_F(HangoutsMediaRouteControllerTest, HangoutsCommands) {
-  auto controller = GetController();
-  auto* hangouts_controller =
-      HangoutsMediaRouteController::From(controller.get());
-  ASSERT_TRUE(hangouts_controller);
-
-  EXPECT_CALL(mock_media_controller_, SetLocalPresent(true));
-  hangouts_controller->SetLocalPresent(true);
-
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MirroringMediaRouteControllerTest, MirroringCommands) {

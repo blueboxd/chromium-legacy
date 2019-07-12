@@ -1,11 +1,11 @@
-# tags: [ android chromeos highsierra linux mac mojave win win7 ]
+# tags: [ android chromeos highsierra linux mac mojave win ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
-#         nvidia nvidia-0xfe9 nvidia-0x1cb3 qualcomm-adreno-(tm)-330
-#         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
-#         qualcomm-adreno-(tm)-430 qualcomm-adreno-(tm)-540
+#         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
+#         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
+#         qualcomm-adreno-(tm)-540
 # ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -49,11 +49,11 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 # Skip tests on Android WebView that requires embedding viz clients. This
 # includes offscreen canvas and other features. crbug.com/805739 tracks
 # making this work.
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
+crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
+crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
@@ -120,20 +120,20 @@ crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ Skip ]
 crbug.com/872423 [ mac ] Pixel_WebGLSadCanvas [ Skip ]
 crbug.com/575305 [ android ] Pixel_WebGLSadCanvas [ Skip ]
 
-crbug.com/868596 [ android nvidia ] Pixel_CanvasLowLatencyWebGL [ Failure ]
+crbug.com/868596 [ android android-chromium nvidia ] Pixel_CanvasLowLatencyWebGL [ Failure ]
 
-crbug.com/868596 [ android nvidia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
+crbug.com/868596 [ android android-chromium nvidia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # float16 is not yet supported for accelerated canvases
 crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 # Fails on Nexus 5, 6 and 6P
-crbug.com/883500 [ android qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
 
 # Flakes on Nexus 5X.
-crbug.com/883500 [ android-chromium qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
+crbug.com/883500 [ android-chromium no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
 
 # We do not have software H.264 decoding on Android, so it can't survive a
 # context loss which results in hardware decoder loss.
@@ -148,7 +148,7 @@ crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
 crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 
 # Fails on multiple Android devices.
-crbug.com/927107 [ android ] Pixel_CSS3DBlueBox [ Failure ]
+crbug.com/927107 [ android no-skia-renderer ] Pixel_CSS3DBlueBox [ Failure ]
 
 # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
 crbug.com/925744 [ android ] Pixel_Video_MP4 [ Skip ]
@@ -176,7 +176,7 @@ crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryO
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
 
 # Failing on Nexus 5
-crbug.com/957714 [ android qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
+crbug.com/957714 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
 crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [ Failure ]
 
 # Failing on Pixel 2 FYI.
@@ -201,16 +201,16 @@ crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_BackgroundImage [ Sk
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_Canvas2DRedBox [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_Canvas2DUntagged [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_AA_Alpha [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Skip ]
@@ -219,14 +219,3 @@ crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLTransparentGree
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
-
-# For whatever reason, these configurations are more prone to running into the
-# issue of producing valid images that haven't been seen for a long time, which
-# hits a known issue with Gold.
-crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha [ RetryOnFailure ]
-crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha [ RetryOnFailure ]
-crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ RetryOnFailure ]
-crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha [ RetryOnFailure ]
-crbug.com/983212 [ mac amd-0x679e ] Pixel_CSSFilterEffects_NoOverlays [ RetryOnFailure ]
-crbug.com/983212 [ win7 amd-0x6613 ] Pixel_CSS3DBlueBox [ RetryOnFailure ]
-crbug.com/983212 [ win7 nvidia-0x1cb3 ] Pixel_CSS3DBlueBox [ RetryOnFailure ]

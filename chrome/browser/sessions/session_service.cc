@@ -79,8 +79,7 @@ SessionService::SessionService(Profile* profile)
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
-      rebuild_on_next_save_(false),
-      weak_factory_(this) {
+      rebuild_on_next_save_(false) {
   // We should never be created when incognito.
   DCHECK(!profile->IsOffTheRecord());
   Init();
@@ -96,8 +95,7 @@ SessionService::SessionService(const base::FilePath& save_path)
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
-      rebuild_on_next_save_(false),
-      weak_factory_(this) {
+      rebuild_on_next_save_(false) {
   Init();
 }
 

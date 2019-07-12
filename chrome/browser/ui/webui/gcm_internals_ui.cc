@@ -55,13 +55,12 @@ class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
       const gcm::GCMClient::GCMStatistics& args) const;
 
   // Factory for creating references in callbacks.
-  base::WeakPtrFactory<GcmInternalsUIMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<GcmInternalsUIMessageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GcmInternalsUIMessageHandler);
 };
 
-GcmInternalsUIMessageHandler::GcmInternalsUIMessageHandler()
-    : weak_ptr_factory_(this) {}
+GcmInternalsUIMessageHandler::GcmInternalsUIMessageHandler() {}
 
 GcmInternalsUIMessageHandler::~GcmInternalsUIMessageHandler() {}
 

@@ -10,9 +10,9 @@
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -37,7 +37,9 @@ infobars::InfoBarManager* GetCurrentInfoBarManager() {
   MainController* main_controller = chrome_test_util::GetMainController();
   id<BrowserInterface> interface =
       main_controller.interfaceProvider.mainInterface;
-  web::WebState* web_state = interface.tabModel.currentTab.webState;
+  web::WebState* web_state =
+      interface.tabModel ? interface.tabModel.webStateList->GetActiveWebState()
+                         : nullptr;
   if (web_state) {
     return InfoBarManagerImpl::FromWebState(web_state);
   }

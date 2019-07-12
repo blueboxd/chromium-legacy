@@ -148,6 +148,23 @@
     ],
     "functions": [
       {
+        "name": "getDisplayLanguage",
+        "type": "function",
+        "nocompile": true,
+        "description": "Called to translate language code into human-readable string in the language of the provided language code.",
+        "parameters": [
+          {
+            "name": "languageCode",
+            "type": "string"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "The human-readable language string in the provided language."
+        },
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "getBatteryDescription",
         "type": "function",
         "description": "Called to request battery status from Chrome OS system.",

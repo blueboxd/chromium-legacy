@@ -67,7 +67,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
                                WorkerSchedulerProxy* proxy)
       : WorkerThreadScheduler(thread_type, manager, proxy) {}
 
-  const std::unordered_set<WorkerScheduler*>& worker_schedulers() {
+  const HashSet<WorkerScheduler*>& worker_schedulers() {
     return GetWorkerSchedulersForTesting();
   }
 

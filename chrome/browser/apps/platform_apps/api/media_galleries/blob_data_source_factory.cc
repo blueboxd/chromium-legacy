@@ -22,8 +22,7 @@ class BlobMediaDataSource : public chrome::mojom::MediaDataSource {
       : binding_(this, mojo::MakeRequest(interface_ptr)),
         browser_context_(browser_context),
         blob_uuid_(blob_uuid),
-        callback_(callback),
-        weak_factory_(this) {}
+        callback_(callback) {}
 
   ~BlobMediaDataSource() override = default;
 
@@ -60,7 +59,7 @@ class BlobMediaDataSource : public chrome::mojom::MediaDataSource {
 
   BlobDataSourceFactory::MediaDataCallback callback_;
 
-  base::WeakPtrFactory<BlobMediaDataSource> weak_factory_;
+  base::WeakPtrFactory<BlobMediaDataSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobMediaDataSource);
 };

@@ -118,7 +118,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Label* overlay_label_ = nullptr;
   views::Throbber* progress_throbber_ = nullptr;
 
-  base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_;
+  base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };

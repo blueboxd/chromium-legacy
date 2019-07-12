@@ -432,7 +432,7 @@ TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
   }));
   // Scroll offset should either be 1035.333 for most iPhone and 1035.5 for iPad
   // and 5S.
-  EXPECT_NEAR(top_scroll_after_select, 1035, 0.5);
+  EXPECT_NEAR(top_scroll_after_select, 1035, 1.0);
 }
 
 // Tests that FindInPage is able to clear CSS and match highlighting.

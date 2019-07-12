@@ -59,8 +59,6 @@ void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
-  registry->RegisterInt64Pref(prefs::kSignedInTime,
-                              base::Time().ToInternalValue());
   registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
 
   // Deprecated prefs: will be removed in a future release.
@@ -282,10 +280,6 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
 
   bool reauth_in_progress = IsAuthenticated();
 
-  client_->GetPrefs()->SetInt64(
-      prefs::kSignedInTime,
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
   SetAuthenticatedAccountInfo(info.gaia, info.email);
 
   if (!reauth_in_progress && on_google_signin_succeeded_callback_)
@@ -355,21 +349,10 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   const CoreAccountId account_id = GetAuthenticatedAccountId();
   const std::string username = account_info.email;
-  const base::Time signin_time =
-      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
-          client_->GetPrefs()->GetInt64(prefs::kSignedInTime)));
   ClearAuthenticatedAccountId();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
-  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
-
-  // Determine the duration the user was logged in and log that to UMA.
-  if (!signin_time.is_null()) {
-    base::TimeDelta signed_in_duration = base::Time::Now() - signin_time;
-    UMA_HISTOGRAM_COUNTS_1M("Signin.SignedInDurationBeforeSignout",
-                            signed_in_duration.InMinutes());
-  }
 
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the

@@ -125,7 +125,7 @@ class UsbChooserContext : public ChooserContextBase,
       client_binding_;
   base::ObserverList<DeviceObserver> device_observer_list_;
 
-  base::WeakPtrFactory<UsbChooserContext> weak_factory_;
+  base::WeakPtrFactory<UsbChooserContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserContext);
 };

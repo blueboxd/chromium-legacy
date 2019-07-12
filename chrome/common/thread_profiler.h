@@ -147,7 +147,7 @@ class ThreadProfiler {
   std::unique_ptr<PeriodicSamplingScheduler> periodic_sampling_scheduler_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<ThreadProfiler> weak_factory_;
+  base::WeakPtrFactory<ThreadProfiler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThreadProfiler);
 };

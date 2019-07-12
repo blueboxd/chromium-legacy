@@ -189,7 +189,7 @@ class PermissionRequestManager
   // origin requesting the permission.
   bool is_notification_prompt_cooldown_active_ = false;
 
-  base::WeakPtrFactory<PermissionRequestManager> weak_factory_;
+  base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

@@ -36,7 +36,8 @@ void NativeTheme::NotifyObservers() {
 
 NativeTheme::NativeTheme()
     : is_dark_mode_(IsForcedDarkMode()),
-      is_high_contrast_(IsForcedHighContrast()) {}
+      is_high_contrast_(IsForcedHighContrast()),
+      preferred_color_scheme_(CalculatePreferredColorScheme()) {}
 
 NativeTheme::~NativeTheme() {
   if (dark_mode_parent_observer_)
@@ -55,6 +56,10 @@ bool NativeTheme::UsesHighContrastColors() const {
   return is_high_contrast_;
 }
 
+NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
+  return preferred_color_scheme_;
+}
+
 bool NativeTheme::IsForcedDarkMode() const {
   static bool kIsForcedDarkMode =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -67,6 +72,12 @@ bool NativeTheme::IsForcedHighContrast() const {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceHighContrast);
   return kIsForcedHighContrast;
+}
+
+NativeTheme::PreferredColorScheme NativeTheme::CalculatePreferredColorScheme()
+    const {
+  return SystemDarkModeEnabled() ? NativeTheme::PreferredColorScheme::kDark
+                                 : NativeTheme::PreferredColorScheme::kLight;
 }
 
 base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
@@ -97,6 +108,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
   bool is_dark_mode = observed_theme->SystemDarkModeEnabled();
   bool is_high_contrast = observed_theme->UsesHighContrastColors();
+  PreferredColorScheme preferred_color_scheme =
+      observed_theme->GetPreferredColorScheme();
   bool notify_observers = false;
 
   if (theme_to_update_->SystemDarkModeEnabled() != is_dark_mode) {
@@ -105,6 +118,10 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
   }
   if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
     theme_to_update_->set_high_contrast(is_high_contrast);
+    notify_observers = true;
+  }
+  if (theme_to_update_->GetPreferredColorScheme() != preferred_color_scheme) {
+    theme_to_update_->set_preferred_color_scheme(preferred_color_scheme);
     notify_observers = true;
   }
 

@@ -47,8 +47,7 @@ SystemMonitor::SystemMonitor(
       metric_evaluators_helper_(
           metric_evaluators_helper.release(),
           base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      metric_evaluators_metadata_(CreateMetricMetadataArray()),
-      weak_factory_(this) {
+      metric_evaluators_metadata_(CreateMetricMetadataArray()) {
   DCHECK(!g_system_metrics_monitor);
   g_system_metrics_monitor = this;
 

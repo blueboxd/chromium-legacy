@@ -17,9 +17,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #include "content/public/browser/network_service_instance.h"
 
 #if !defined(OS_ANDROID)

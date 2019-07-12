@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -98,17 +97,22 @@ let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-  // Create our input source and immediately toggle the primary input so that
-  // it appears as already needing to send a click event when it appears.
-  let input_source = new MockXRInputSource();
-  fakeDeviceController.addInputSource(input_source);
+  // Create a gaze based input source with no handedness that we can change
+  // to validate SameObject properties.
+  let input_source = fakeDeviceController.simulateInputSourceConnection({
+    handedness: "none",
+    targetRayMode: "gaze",
+    pointerOrigin: VALID_POINTER_TRANSFORM,
+    profiles: []
+  });
 
   // Make our input source change after one frame, and wait an additional
   // frame for that change to propogate.
+  // Two changes made in total.
   session.requestAnimationFrame((time, xrFrame) => {
-    input_source.targetRayMode = "tracked-pointer";
+    input_source.setTargetRayMode("tracked-pointer");
     session.requestAnimationFrame((time, xrFrame) => {
-      input_source.handedness = "left";
+      input_source.setHandedness("left");
       session.requestAnimationFrame((time, xrFrame) => {});
     });
   });

@@ -1,4 +1,4 @@
-# tags: [ d3d11 no-angle vulkan opengl ]
+# tags: [ d3d11 no-angle vulkan opengl opengles ]
 # tags: [ win win7 highsierra mac linux sierra android mojave ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
@@ -48,10 +48,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # ========================
 # Conformance expectations
 # ========================
-
-# Recent regression of invariance rules
-# TODO(kbr): re-add suppressions below once this is removed.
-crbug.com/980675 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
@@ -226,9 +222,6 @@ crbug.com/844349 [ passthrough ] conformance/misc/webgl-specific-stencil-setting
 crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
-# Passthrough command decoder / OpenGL
-crbug.com/angleproject/2994 [ opengl passthrough ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
-
 # Passthrough command decoder / OpenGL / Windows
 crbug.com/835364 [ opengl win passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
@@ -246,6 +239,7 @@ crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gle
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
+crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
@@ -560,17 +554,16 @@ crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-base-level-bug.h
 crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/905011 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
-crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
-crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/905011 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
 
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.
 crbug.com/844311 [ linux amd ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 crbug.com/981070 [ linux amd ] conformance2/glsl3/matrix-row-major.html [ Failure ]
 crbug.com/709351 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/617290 [ linux amd ] deqp/functional/gles3/multisample.html [ Failure ]
@@ -733,7 +726,7 @@ crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/defa
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
 crbug.com/945903 [ android qualcomm ] conformance2/rendering/vertex-id.html [ Failure ]
-crbug.com/695742 [ android qualcomm ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
+crbug.com/695742 [ android qualcomm no-angle ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
 
 # This test is flaky but can fail three times in a row so it must be
 # marked as Fail instead of Flaky.
@@ -743,6 +736,20 @@ crbug.com/946177 [ android qualcomm ] deqp/functional/gles3/shaderbuiltinvar.htm
 crbug.com/906752 [ android nvidia ] conformance2/glsl3/array-complex-indexing.html [ Failure ]
 crbug.com/874620 [ android nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/905006 [ android nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
+
+# Android ANGLE GLES
+crbug.com/979444 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+
+crbug.com/angleproject/3684 [ android opengles ] conformance2/renderbuffers/multisample-with-full-sample-counts.html [ Failure ]
+crbug.com/983142 [ android opengles ] conformance2/textures/misc/tex-storage-compressed-formats.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb16f-rgb-half_float.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8-rgb-unsigned_byte.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/3685 [ android opengles ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
+crbug.com/angleproject/3686 [ android opengles ] deqp/functional/gles3/multisample.html [ Failure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

@@ -63,7 +63,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_generation_helper_(client, this),
       password_autofill_manager_(this, autofill_client, client),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
-      password_manager_binding_(this),
+      password_manager_receiver_(this),
       weak_factory_(this) {
   // For some frames |this| may be instantiated before log manager creation, so
   // here we can not send logging state to renderer process for them. For such
@@ -92,9 +92,10 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
   return factory ? factory->GetDriverForFrame(render_frame_host) : nullptr;
 }
 
-void ContentPasswordManagerDriver::BindRequest(
-    autofill::mojom::PasswordManagerDriverAssociatedRequest request) {
-  password_manager_binding_.Bind(std::move(request));
+void ContentPasswordManagerDriver::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+        pending_receiver) {
+  password_manager_receiver_.Bind(std::move(pending_receiver));
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(
@@ -310,7 +311,7 @@ void ContentPasswordManagerDriver::LogFirstFillingResult(
   GetPasswordManager()->LogFirstFillingResult(this, form_renderer_id, result);
 }
 
-const autofill::mojom::AutofillAgentAssociatedPtr&
+const mojo::AssociatedRemote<autofill::mojom::AutofillAgent>&
 ContentPasswordManagerDriver::GetAutofillAgent() {
   autofill::ContentAutofillDriver* autofill_driver =
       autofill::ContentAutofillDriver::GetForRenderFrameHost(
@@ -319,25 +320,24 @@ ContentPasswordManagerDriver::GetAutofillAgent() {
   return autofill_driver->GetAutofillAgent();
 }
 
-const autofill::mojom::PasswordAutofillAgentAssociatedPtr&
+const mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>&
 ContentPasswordManagerDriver::GetPasswordAutofillAgent() {
   if (!password_autofill_agent_) {
-    auto request = mojo::MakeRequest(&password_autofill_agent_);
     // Some test environments may have no remote interface support.
     if (render_frame_host_->GetRemoteAssociatedInterfaces()) {
       render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
-          std::move(request));
+          &password_autofill_agent_);
     }
   }
 
   return password_autofill_agent_;
 }
 
-const autofill::mojom::PasswordGenerationAgentAssociatedPtr&
+const mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>&
 ContentPasswordManagerDriver::GetPasswordGenerationAgent() {
   if (!password_gen_agent_) {
     render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&password_gen_agent_));
+        &password_gen_agent_);
   }
 
   return password_gen_agent_;

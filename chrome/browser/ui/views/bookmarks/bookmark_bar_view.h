@@ -438,7 +438,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   base::ObserverList<BookmarkBarViewObserver>::Unchecked observers_;
 
   // Factory used to delay showing of the drop menu.
-  base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;
+  base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };

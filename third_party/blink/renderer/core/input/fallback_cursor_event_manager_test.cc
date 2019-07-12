@@ -122,6 +122,38 @@ TEST_F(FallbackCursorEventManagerTest, RootFrameNotScrollable) {
   ExpectLock(false, false, false, false);
 }
 
+TEST_F(FallbackCursorEventManagerTest, ResetOnOutOfFrame) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    .big {
+      height: 10000px;
+      width: 10000px;
+    }
+    </style>
+    <div class='big'></div>
+  )HTML");
+  TurnOnFallbackCursorMode();
+
+  // Move below the scroll down line.
+  MouseMove(100, 500);
+  ExpectLock(false, false, false, true);
+
+  // Ensure an invalid or out-of-bounds mouse move will reset the lock.
+  MouseMove(-1, -1);
+  ExpectLock(false, false, false, false);
+
+  // Ensure an invalid or out-of-bounds mouse move will reset the lock.
+  MouseMove(790, 590);
+  ExpectLock(false, true, false, true);
+
+  // Ensure an invalid or out-of-bounds mouse move will reset the lock.
+  MouseMove(800, 600);
+  ExpectLock(false, false, false, false);
+}
+
 TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnRootFrame) {
   SetBodyInnerHTML(R"HTML(
     <style>

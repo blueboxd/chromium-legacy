@@ -184,7 +184,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   // For callbacks may be run after destruction.
-  base::WeakPtrFactory<GlobalMenuBarX11> weak_ptr_factory_;
+  base::WeakPtrFactory<GlobalMenuBarX11> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GlobalMenuBarX11);
 };

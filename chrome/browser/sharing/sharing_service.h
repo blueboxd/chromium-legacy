@@ -101,7 +101,7 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   ClickToCallMessageHandler click_to_call_message_handler_;
 #endif  // defined(OS_ANDROID)
 
-  base::WeakPtrFactory<SharingService> weak_ptr_factory_;
+  base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharingService);
 };

@@ -318,8 +318,6 @@ struct EnumTraits<media_router::mojom::RouteControllerType,
         return media_router::mojom::RouteControllerType::kNone;
       case media_router::RouteControllerType::kGeneric:
         return media_router::mojom::RouteControllerType::kGeneric;
-      case media_router::RouteControllerType::kHangouts:
-        return media_router::mojom::RouteControllerType::kHangouts;
       case media_router::RouteControllerType::kMirroring:
         return media_router::mojom::RouteControllerType::kMirroring;
     }
@@ -336,9 +334,6 @@ struct EnumTraits<media_router::mojom::RouteControllerType,
         return true;
       case media_router::mojom::RouteControllerType::kGeneric:
         *output = media_router::RouteControllerType::kGeneric;
-        return true;
-      case media_router::mojom::RouteControllerType::kHangouts:
-        *output = media_router::RouteControllerType::kHangouts;
         return true;
       case media_router::mojom::RouteControllerType::kMirroring:
         *output = media_router::RouteControllerType::kMirroring;

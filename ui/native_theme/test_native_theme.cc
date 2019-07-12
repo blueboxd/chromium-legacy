@@ -45,4 +45,17 @@ bool TestNativeTheme::SystemDarkModeEnabled() const {
   return dark_mode_;
 }
 
+NativeTheme::PreferredColorScheme TestNativeTheme::GetPreferredColorScheme()
+    const {
+  return CalculatePreferredColorScheme();
+}
+
+void TestNativeTheme::AddColorSchemeNativeThemeObserver(
+    NativeTheme* theme_to_update) {
+  color_scheme_observer_ =
+      std::make_unique<ui::NativeTheme::ColorSchemeNativeThemeObserver>(
+          theme_to_update);
+  AddObserver(color_scheme_observer_.get());
+}
+
 }  // namespace ui

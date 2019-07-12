@@ -10,13 +10,13 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "components/sessions/content/content_record_task_id.h"
+#include "components/sessions/content/navigation_task_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace sessions {
-class ContextRecordTaskId;
+class NavigationTaskId;
 }
 
 namespace tasks {
@@ -33,13 +33,13 @@ class TaskTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& load_details) override;
   void NavigationListPruned(
       const content::PrunedDetails& pruned_details) override;
-  static sessions::ContextRecordTaskId* GetContextRecordTaskId(
+  static sessions::NavigationTaskId* GetCurrentTaskId(
       content::WebContents* web_contents);
-  const sessions::ContextRecordTaskId* get_context_record_task_id(
+  const sessions::NavigationTaskId* get_task_id_for_navigation(
       int nav_id) const {
-    if (!base::Contains(local_context_record_task_id_map_, nav_id))
+    if (!base::Contains(local_navigation_task_id_map_, nav_id))
       return nullptr;
-    return &local_context_record_task_id_map_.find(nav_id)->second;
+    return &local_navigation_task_id_map_.find(nav_id)->second;
   }
 
  protected:
@@ -68,8 +68,8 @@ class TaskTabHelper : public content::WebContentsObserver,
 
   int last_pruned_navigation_entry_index_;
   std::map<int, int> entry_index_to_spoke_count_map_;
-  std::unordered_map<int, sessions::ContextRecordTaskId>
-      local_context_record_task_id_map_;
+  std::unordered_map<int, sessions::NavigationTaskId>
+      local_navigation_task_id_map_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

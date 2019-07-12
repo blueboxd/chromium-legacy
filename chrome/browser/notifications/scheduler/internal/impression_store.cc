@@ -25,7 +25,7 @@ namespace notifications {
 ImpressionStore::ImpressionStore(
     std::unique_ptr<
         leveldb_proto::ProtoDatabase<proto::ClientState, ClientState>> db)
-    : db_(std::move(db)), weak_ptr_factory_(this) {}
+    : db_(std::move(db)) {}
 
 ImpressionStore::~ImpressionStore() = default;
 

@@ -23,7 +23,7 @@ class PolicyJsonUnittest(unittest.TestCase):
 
   def GetExpectedOutput(self, original):
     expected = eval(original)
-    for key, message in expected['messages'].iteritems():
+    for key, message in expected['messages'].items():
       del message['desc']
     return expected
 

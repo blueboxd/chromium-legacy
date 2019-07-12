@@ -2335,10 +2335,6 @@ jumbo_split_static_library("ui") {
       "webui/version_handler_win.h",
       "webui/version_util_win.cc",
       "webui/version_util_win.h",
-      "webui/welcome/welcome_win10_handler.cc",
-      "webui/welcome/welcome_win10_handler.h",
-      "webui/welcome/welcome_win10_ui.cc",
-      "webui/welcome/welcome_win10_ui.h",
     ]
     public_deps += [
       "//ui/views",

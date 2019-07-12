@@ -498,22 +498,27 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
 }
 
 ScopedJavaLocalRef<jobject>
-    WebContentsState::CreateSingleNavigationStateAsByteBuffer(
-        JNIEnv* env,
-        jstring url,
-        jstring referrer_url,
-        jint referrer_policy,
-        jboolean is_off_the_record) {
+WebContentsState::CreateSingleNavigationStateAsByteBuffer(
+    JNIEnv* env,
+    jstring url,
+    jstring referrer_url,
+    jint referrer_policy,
+    jstring initiator_origin_string,
+    jboolean is_off_the_record) {
   content::Referrer referrer;
   if (referrer_url) {
     referrer = content::Referrer(
         GURL(base::android::ConvertJavaStringToUTF8(env, referrer_url)),
         static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
   }
+  // TODO(nasko,tedchoc): https://crbug.com/980641: Don't use String to store
+  // initiator origin, as it is a lossy format.
+  url::Origin initiator_origin = url::Origin::Create(GURL(
+      base::android::ConvertJavaStringToUTF8(env, initiator_origin_string)));
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
           GURL(base::android::ConvertJavaStringToUTF8(env, url)), referrer,
-          ui::PAGE_TRANSITION_LINK,
+          initiator_origin, ui::PAGE_TRANSITION_LINK,
           true,  // is_renderer_initiated
           "",    // extra_headers
           ProfileManager::GetActiveUserProfile(),
@@ -566,9 +571,11 @@ JNI_TabState_CreateSingleNavigationStateAsByteBuffer(
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& referrer_url,
     jint referrer_policy,
+    const JavaParamRef<jstring>& initiator_origin,
     jboolean is_off_the_record) {
   return WebContentsState::CreateSingleNavigationStateAsByteBuffer(
-      env, url, referrer_url, referrer_policy, is_off_the_record);
+      env, url, referrer_url, referrer_policy, initiator_origin,
+      is_off_the_record);
 }
 
 static ScopedJavaLocalRef<jstring> JNI_TabState_GetDisplayTitleFromByteBuffer(

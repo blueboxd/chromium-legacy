@@ -7,8 +7,6 @@ source_set("context_menu") {
   sources = [
     "context_menu_coordinator.h",
     "context_menu_coordinator.mm",
-    "context_menu_item.h",
-    "context_menu_item.mm",
   ]
   deps = [
     "//base",

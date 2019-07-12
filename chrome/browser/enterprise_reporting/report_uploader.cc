@@ -31,8 +31,7 @@ ReportUploader::ReportUploader(policy::CloudPolicyClient* client,
                                int maximum_number_of_retries)
     : client_(client),
       backoff_entry_(&kDefaultReportUploadBackoffPolicy),
-      maximum_number_of_retries_(maximum_number_of_retries),
-      weak_ptr_factory_(this) {}
+      maximum_number_of_retries_(maximum_number_of_retries) {}
 ReportUploader::~ReportUploader() = default;
 
 void ReportUploader::SetRequestAndUpload(

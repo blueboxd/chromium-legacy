@@ -72,7 +72,8 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
   // Target shortcut and file handler info.
   std::unique_ptr<web_app::ShortcutInfo> shortcut_info_;
 
-  base::WeakPtrFactory<CreateChromeApplicationShortcutView> weak_ptr_factory_;
+  base::WeakPtrFactory<CreateChromeApplicationShortcutView> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutView);
 };

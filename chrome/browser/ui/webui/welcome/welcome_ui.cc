@@ -132,7 +132,7 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
 }  // namespace
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
-    : content::WebUIController(web_ui), weak_ptr_factory_(this) {
+    : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
   // This page is not shown to incognito or guest profiles. If one should end up

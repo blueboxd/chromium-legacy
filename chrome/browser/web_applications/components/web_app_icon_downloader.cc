@@ -27,8 +27,7 @@ WebAppIconDownloader::WebAppIconDownloader(
       extra_favicon_urls_(extra_favicon_urls),
       callback_(std::move(callback)),
       https_status_code_class_histogram_name_(
-          https_status_code_class_histogram_name),
-      weak_ptr_factory_(this) {}
+          https_status_code_class_histogram_name) {}
 
 WebAppIconDownloader::~WebAppIconDownloader() {}
 

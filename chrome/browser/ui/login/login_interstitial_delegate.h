@@ -45,7 +45,7 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
  private:
   base::OnceClosure callback_;
   content::InterstitialPage* interstitial_page_;
-  base::WeakPtrFactory<LoginInterstitialDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<LoginInterstitialDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginInterstitialDelegate);
 };

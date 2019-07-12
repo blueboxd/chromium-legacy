@@ -178,7 +178,7 @@ class SpellcheckHunspellDictionary
   // Dictionary file path and descriptor.
   DictionaryFile dictionary_file_;
 
-  base::WeakPtrFactory<SpellcheckHunspellDictionary> weak_ptr_factory_;
+  base::WeakPtrFactory<SpellcheckHunspellDictionary> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckHunspellDictionary);
 };

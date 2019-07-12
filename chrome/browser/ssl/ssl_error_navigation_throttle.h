@@ -70,7 +70,7 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
 
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
   HandleSSLErrorCallback handle_ssl_error_callback_;
-  base::WeakPtrFactory<SSLErrorNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<SSLErrorNavigationThrottle> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_ERROR_NAVIGATION_THROTTLE_H_

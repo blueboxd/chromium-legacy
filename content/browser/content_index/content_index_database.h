@@ -12,6 +12,8 @@
 #include "content/public/browser/content_index_provider.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 
+class GURL;
+
 namespace url {
 class Origin;
 }  // namespace url
@@ -36,6 +38,7 @@ class CONTENT_EXPORT ContentIndexDatabase
                 const url::Origin& origin,
                 blink::mojom::ContentDescriptionPtr description,
                 const SkBitmap& icon,
+                const GURL& launch_url,
                 blink::mojom::ContentIndexService::AddCallback callback);
 
   void DeleteEntry(int64_t service_worker_registration_id,
@@ -58,6 +61,7 @@ class CONTENT_EXPORT ContentIndexDatabase
   void DidSerializeIcon(int64_t service_worker_registration_id,
                         const url::Origin& origin,
                         blink::mojom::ContentDescriptionPtr description,
+                        const GURL& launch_url,
                         blink::mojom::ContentIndexService::AddCallback callback,
                         std::string serialized_icon);
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,

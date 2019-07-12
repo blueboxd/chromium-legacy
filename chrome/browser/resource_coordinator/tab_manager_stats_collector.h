@@ -268,7 +268,7 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // The start time of an ongoing periodic sample.
   base::TimeTicks sample_start_time_;
 
-  base::WeakPtrFactory<TabManagerStatsCollector> weak_factory_;
+  base::WeakPtrFactory<TabManagerStatsCollector> weak_factory_{this};
 };
 
 }  // namespace resource_coordinator

@@ -20,16 +20,17 @@ namespace content_capture {
 ContentCaptureSender::ContentCaptureSender(
     content::RenderFrame* render_frame,
     blink::AssociatedInterfaceRegistry* registry)
-    : content::RenderFrameObserver(render_frame), binding_(this) {
-  registry->AddInterface(base::BindRepeating(&ContentCaptureSender::BindRequest,
-                                             base::Unretained(this)));
+    : content::RenderFrameObserver(render_frame) {
+  registry->AddInterface(base::BindRepeating(
+      &ContentCaptureSender::BindPendingReceiver, base::Unretained(this)));
 }
 
 ContentCaptureSender::~ContentCaptureSender() {}
 
-void ContentCaptureSender::BindRequest(
-    mojom::ContentCaptureSenderAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void ContentCaptureSender::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::ContentCaptureSender>
+        pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 cc::NodeHolder::Type ContentCaptureSender::GetNodeHolderType() const {
@@ -104,11 +105,11 @@ void ContentCaptureSender::FillContentCaptureData(
       base::TimeDelta::FromMilliseconds(10), 50);
 }
 
-const mojom::ContentCaptureReceiverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::ContentCaptureReceiver>&
 ContentCaptureSender::GetContentCaptureReceiver() {
   if (!content_capture_receiver_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&content_capture_receiver_));
+        &content_capture_receiver_);
   }
   return content_capture_receiver_;
 }

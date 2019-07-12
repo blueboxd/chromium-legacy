@@ -59,7 +59,7 @@ const char FullscreenControllerTest::kFullscreenKeyboardLockHTML[] =
 const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
     "/fullscreen_mouselock/fullscreen_mouselock.html";
 
-FullscreenControllerTest::FullscreenControllerTest() : weak_ptr_factory_(this) {
+FullscreenControllerTest::FullscreenControllerTest() {
   // It is important to disable system keyboard lock as low-level test utilities
   // may install a keyboard hook to listen for keyboard events and having an
   // active system hook may cause issues with that mechanism.

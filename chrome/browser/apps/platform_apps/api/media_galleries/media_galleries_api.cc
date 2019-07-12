@@ -292,7 +292,7 @@ content::WebContents* GetWebContentsForPrompt(
 
 MediaGalleriesEventRouter::MediaGalleriesEventRouter(
     content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 

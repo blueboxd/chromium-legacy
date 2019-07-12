@@ -517,13 +517,14 @@ class BBJSONGenerator(object):
 
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])
-    args.append('--gs-results-bucket=chromium-result-details')
+    bucket = tester_config.get('results_bucket', 'chromium-result-details')
+    args.append('--gs-results-bucket=%s' % bucket)
     if (result['swarming']['can_use_on_swarming_builders'] and not
         tester_config.get('skip_merge_script', False)):
       result['merge'] = {
         'args': [
           '--bucket',
-          'chromium-result-details',
+          bucket,
           '--test-name',
           test_name
         ],

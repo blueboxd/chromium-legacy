@@ -20,7 +20,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"

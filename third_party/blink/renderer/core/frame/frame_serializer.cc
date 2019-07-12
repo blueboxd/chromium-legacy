@@ -56,6 +56,8 @@
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
@@ -105,6 +107,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
                                 const String& attribute_name,
                                 const String& attribute_value);
   void AppendExtraForHeadElement(const Element&);
+  void AppendStylesheets(Document* document, bool style_element_only);
 
   FrameSerializer::Delegate& delegate_;
   FrameSerializerResourceDelegate& resource_delegate_;
@@ -190,13 +193,29 @@ void SerializerMarkupAccumulator::AppendExtraForHeadElement(
   // the CSS text included in the style element. So we can't use the inline
   // CSS text defined in the style element. To solve this, we serialize the
   // working CSS rules in document.stylesheets and wrap them in link elements.
-  StyleSheetList& sheets = document_->StyleSheets();
+  AppendStylesheets(document_, true /*style_element_only*/);
+
+  // The stylesheets defined in imported documents are not incorporated into
+  // master document. So we need to scan all of them.
+  if (HTMLImportsController* controller = document_->ImportsController()) {
+    for (wtf_size_t i = 0; i < controller->LoaderCount(); ++i) {
+      if (Document* imported_document =
+              controller->LoaderAt(i)->GetDocument()) {
+        AppendStylesheets(imported_document, false /*style_element_only*/);
+      }
+    }
+  }
+}
+
+void SerializerMarkupAccumulator::AppendStylesheets(Document* document,
+                                                    bool style_element_only) {
+  StyleSheetList& sheets = document->StyleSheets();
   for (unsigned i = 0; i < sheets.length(); ++i) {
     StyleSheet* sheet = sheets.item(i);
-    if (!sheet->IsCSSStyleSheet() || sheet->disabled() ||
-        !IsHTMLStyleElement(sheet->ownerNode())) {
+    if (!sheet->IsCSSStyleSheet() || sheet->disabled())
       continue;
-    }
+    if (style_element_only && !IsHTMLStyleElement(sheet->ownerNode()))
+      continue;
 
     StringBuilder pseudo_sheet_url_builder;
     pseudo_sheet_url_builder.Append("cid:css-");

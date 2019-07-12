@@ -98,8 +98,11 @@ public class GridTabSwitcherLayout
     @Override
     public void finishedShowing() {
         doneShowing();
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+        // When animation is off, the thumbnail is already updated when showing the GTS.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+            Tab currentTab = mTabModelSelector.getCurrentTab();
+            if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+        }
     }
 
     @Override

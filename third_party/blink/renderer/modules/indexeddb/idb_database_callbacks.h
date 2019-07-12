@@ -30,8 +30,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-#include <unordered_map>
-
 namespace blink {
 
 class DOMException;

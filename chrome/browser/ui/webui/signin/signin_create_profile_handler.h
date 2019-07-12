@@ -132,7 +132,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SigninCreateProfileHandler);

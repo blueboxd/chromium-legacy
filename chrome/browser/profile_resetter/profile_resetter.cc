@@ -84,8 +84,7 @@ ProfileResetter::ProfileResetter(Profile* profile)
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
       cookies_remover_(nullptr),
-      ntp_service_(InstantServiceFactory::GetForProfile(profile)),
-      weak_ptr_factory_(this) {
+      ntp_service_(InstantServiceFactory::GetForProfile(profile)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(profile_);
 }

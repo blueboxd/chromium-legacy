@@ -125,11 +125,8 @@ class TaskManagerClient
 
 class MultihopSyncTask : public ExclusiveTask {
  public:
-  MultihopSyncTask(bool* task_started,
-                   bool* task_completed)
-      : task_started_(task_started),
-        task_completed_(task_completed),
-        weak_ptr_factory_(this) {
+  MultihopSyncTask(bool* task_started, bool* task_completed)
+      : task_started_(task_started), task_completed_(task_completed) {
     DCHECK(task_started_);
     DCHECK(task_completed_);
   }
@@ -154,7 +151,7 @@ class MultihopSyncTask : public ExclusiveTask {
 
   bool* task_started_;
   bool* task_completed_;
-  base::WeakPtrFactory<MultihopSyncTask> weak_ptr_factory_;
+  base::WeakPtrFactory<MultihopSyncTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultihopSyncTask);
 };
@@ -175,11 +172,7 @@ class BackgroundTask : public SyncTask {
   BackgroundTask(const std::string& app_id,
                  const base::FilePath& path,
                  Stats* stats)
-      : app_id_(app_id),
-        path_(path),
-        stats_(stats),
-        weak_ptr_factory_(this) {
-  }
+      : app_id_(app_id), path_(path), stats_(stats) {}
 
   ~BackgroundTask() override {}
 
@@ -216,7 +209,7 @@ class BackgroundTask : public SyncTask {
   base::FilePath path_;
   Stats* stats_;
 
-  base::WeakPtrFactory<BackgroundTask> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTask);
 };
@@ -232,9 +225,7 @@ class BlockerUpdateTestHelper : public SyncTask {
       : name_(name),
         app_id_(app_id),
         paths_(paths.begin(), paths.end()),
-        log_(log),
-        weak_ptr_factory_(this) {
-  }
+        log_(log) {}
 
   ~BlockerUpdateTestHelper() override {}
 
@@ -281,7 +272,7 @@ class BlockerUpdateTestHelper : public SyncTask {
   base::circular_deque<std::string> paths_;
   Log* log_;
 
-  base::WeakPtrFactory<BlockerUpdateTestHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<BlockerUpdateTestHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlockerUpdateTestHelper);
 };

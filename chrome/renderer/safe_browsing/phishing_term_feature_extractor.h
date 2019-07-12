@@ -162,7 +162,7 @@ class PhishingTermFeatureExtractor {
 
   // Used in scheduling ExtractFeaturesWithTimeout tasks.
   // These pointers are invalidated if extraction is cancelled.
-  base::WeakPtrFactory<PhishingTermFeatureExtractor> weak_factory_;
+  base::WeakPtrFactory<PhishingTermFeatureExtractor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PhishingTermFeatureExtractor);
 };

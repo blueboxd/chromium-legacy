@@ -101,9 +101,8 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   // Create our input source and immediately toggle the primary input so that
   // it appears as already needing to send a click event when it appears.
-  let input_source = new MockXRInputSource();
+  let input_source = fakeDeviceController.simulateInputSourceConnection(RIGHT_CONTROLLER);
   input_source.connectGamepad();
-  fakeDeviceController.addInputSource(input_source);
 
   // Input events need one frame to propagate, so this does (in order and running
   // a rAF after each step:
@@ -119,9 +118,9 @@ let testFunction = function(session, t, fakeDeviceController) {
       session.requestAnimationFrame(() => {
         input_source.connectGamepad();
         session.requestAnimationFrame(() => {
-          fakeDeviceController.removeInputSource(input_source);
+          input_source.disconnect();
           session.requestAnimationFrame(() => {
-            fakeDeviceController.addInputSource(input_source);
+            input_source.reconnect();
             session.requestAnimationFrame(() => {
               eventPromise.then(() => {
                 session.end().then(() => {

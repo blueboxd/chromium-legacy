@@ -240,8 +240,7 @@ BookmarkAppHelper::BookmarkAppHelper(
       crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())),
       for_installable_site_(web_app::ForInstallableSite::kUnknown),
-      install_source_(install_source),
-      weak_factory_(this) {
+      install_source_(install_source) {
   if (contents)
     installable_manager_ = InstallableManager::FromWebContents(contents);
 

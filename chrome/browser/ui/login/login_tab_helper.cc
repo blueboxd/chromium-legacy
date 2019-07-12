@@ -136,7 +136,7 @@ bool LoginTabHelper::IsShowingPrompt() const {
 }
 
 LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
+    : content::WebContentsObserver(web_contents) {}
 
 void LoginTabHelper::HandleCredentials(
     const base::Optional<net::AuthCredentials>& credentials) {

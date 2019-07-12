@@ -413,6 +413,19 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Whether OS-level dark mode is available in the current OS.
   virtual bool SystemDarkModeSupported() const;
 
+  // OS-level preferred color scheme. (Ex. high contrast or dark mode color
+  // preference.)
+  enum PreferredColorScheme {
+    kNoPreference,
+    kDark,
+    kLight,
+  };
+
+  // Returns the OS-level user preferred color scheme. See the comment for
+  // CalculatePreferredColorScheme() for details on how preferred color scheme
+  // is calculated.
+  virtual PreferredColorScheme GetPreferredColorScheme() const;
+
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
 
@@ -429,14 +442,33 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Whether dark mode is forced via command-line flag.
   bool IsForcedDarkMode() const;
 
+  // Calculates and returns the current user preferred color scheme. The
+  // base behavior is to set preferred color scheme to light or dark depending
+  // on the state of dark mode.
+  //
+  // Some platforms override this behavior. On Windows, for example, we also
+  // look at the high contrast setting. If high contrast is enabled, the
+  // preferred color scheme calculation will ignore the state of dark mode.
+  // Instead, preferred color scheme will be light, dark, or no-preference
+  // depending on the OS high contrast theme. If high contrast is off, the
+  // preferred color scheme calculation will follow the default behavior.
+  //
+  // Note, if the preferred color scheme is based on dark mode, it will never
+  // be set to no-preference.
+  virtual PreferredColorScheme CalculatePreferredColorScheme() const;
+
   void set_dark_mode(bool is_dark_mode) { is_dark_mode_ = is_dark_mode; }
   void set_high_contrast(bool is_high_contrast) {
     is_high_contrast_ = is_high_contrast;
   }
+  void set_preferred_color_scheme(PreferredColorScheme preferred_color_scheme) {
+    preferred_color_scheme_ = preferred_color_scheme;
+  }
 
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in
-  // order to receive changes regarding the state of dark mode/high contrast.
+  // order to receive changes regarding the state of dark mode, high contrast,
+  // and preferred color scheme.
   class NATIVE_THEME_EXPORT ColorSchemeNativeThemeObserver
       : public NativeThemeObserver {
    public:
@@ -463,6 +495,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   bool is_dark_mode_ = false;
   bool is_high_contrast_ = false;
+  PreferredColorScheme preferred_color_scheme_ =
+      PreferredColorScheme::kNoPreference;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

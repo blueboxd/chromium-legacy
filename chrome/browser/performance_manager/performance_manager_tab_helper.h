@@ -109,7 +109,7 @@ class PerformanceManagerTabHelper
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_;
+  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTabHelper);
 };

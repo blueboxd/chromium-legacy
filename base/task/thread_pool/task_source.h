@@ -29,7 +29,8 @@ enum class TaskSourceExecutionMode {
   kParallel,
   kSequenced,
   kSingleThread,
-  kMax = kSingleThread,
+  kJob,
+  kMax = kJob,
 };
 
 struct BASE_EXPORT ExecutionEnvironment {
@@ -41,32 +42,39 @@ struct BASE_EXPORT ExecutionEnvironment {
 // executed.
 //
 // In order to execute a task from this TaskSource, a worker should first make
-// sure that a task can run with WillRunTask(). TakeTask() can then be called to
-// access the next Task, and DidProcessTask() must be called after the task
-// executed. Many overlapping chains of WillRunTask(), TakeTask(), run and
-// DidProcessTask() can run concurrently, as permitted by WillRunTask(). This
-// ensure that the number of workers concurrently running tasks never go over
-// the intended concurrency.
+// sure that a task can run with WillRunTask() which returns a RunIntent.
+// TakeTask() can then be called to access the next Task, and DidProcessTask()
+// must be called after the task was processed. Many overlapping chains of
+// WillRunTask(), TakeTask(), run and DidProcessTask() can run concurrently, as
+// permitted by WillRunTask(). This ensure that the number of workers
+// concurrently running tasks never go over the intended concurrency.
 //
 // In comments below, an "empty TaskSource" is a TaskSource with no Task.
 //
 // Note: there is a known refcounted-ownership cycle in the Scheduler
-// architecture: TaskSource -> TaskRunner -> TaskSource -> ... This is
-// okay so long as the other owners of TaskSource (PriorityQueue and
-// WorkerThread in alternation and
-// ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork() temporarily) keep
-// running it (and taking Tasks from it as a result). A dangling reference cycle
-// would only occur should they release their reference to it while it's not
-// empty. In other words, it is only correct for them to release it when
-// DidProcessTask() returns false.
+// architecture: TaskSource -> TaskRunner -> TaskSource -> ... This is okay so
+// long as the other owners of TaskSource (PriorityQueue and WorkerThread in
+// alternation and ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork()
+// temporarily) keep running it (and taking Tasks from it as a result). A
+// dangling reference cycle would only occur should they release their reference
+// to it while it's not empty. In other words, it is only correct for them to
+// release it when DidProcessTask() returns false.
 //
 // This class is thread-safe.
 class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
+ protected:
+  // Indicates whether a TaskSource has reached its maximum intended concurrency
+  // and may not run any additional tasks.
+  enum class Saturated {
+    kYes,
+    kNo,
+  };
+
  public:
-  // Indicates whether a TaskSource may run any additional tasks.
-  enum class ConcurrencyStatus {
-    kSaturated,  // The maximum intended concurrency was reached.
-    kPartial,    // Additional tasks may concurrently run.
+  // Indicates if a task was run or skipped as a result of shutdown.
+  enum class RunResult {
+    kDidRun,
+    kSkippedAtShutdown,
   };
 
   // Result of WillRunTask(). A single task associated with a RunIntent may be
@@ -85,25 +93,36 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     // may not run any additional tasks beyond this RunIntent as it has reached
     // its maximum concurrency. This indicates that the TaskSource no longer
     // needs to be queued.
-    bool IsSaturated() const {
-      return concurrency_status_ == ConcurrencyStatus::kSaturated;
-    }
+    bool IsSaturated() const { return is_saturated_ == Saturated::kYes; }
 
     const TaskSource* task_source() const { return task_source_; }
+
+    void ReleaseForTesting() {
+      DCHECK(task_source_);
+      task_source_ = nullptr;
+    }
 
    private:
     friend class TaskSource;
 
-    RunIntent(const TaskSource* task_source,
-              ConcurrencyStatus concurrency_status);
+    // Indicates the step of a run intent chain.
+    enum class State {
+      kInitial,       // After WillRunTask().
+      kTaskAcquired,  // After TakeTask().
+      kCompleted,     // After DidProcessTask().
+    };
+
+    RunIntent(const TaskSource* task_source, Saturated is_saturated);
 
     void Release() {
+      DCHECK_EQ(run_step_, State::kCompleted);
       DCHECK(task_source_);
       task_source_ = nullptr;
     }
 
     const TaskSource* task_source_ = nullptr;
-    ConcurrencyStatus concurrency_status_ = ConcurrencyStatus::kSaturated;
+    State run_step_ = State::kInitial;
+    Saturated is_saturated_ = Saturated::kYes;
   };
 
   // A Transaction can perform multiple operations atomically on a
@@ -118,19 +137,19 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     operator bool() const { return !!task_source_; }
 
     // Returns the next task to run from this TaskSource. This should be called
-    // only if NeedsWorker returns true. Cannot be called on an empty
-    // TaskSource.
+    // only with a valid |intent|. Cannot be called on an empty TaskSource.
     //
     // Because this method cannot be called on an empty TaskSource, the returned
     // Optional<Task> is never nullptr. An Optional is used in preparation for
     // the merge between ThreadPool and TaskQueueManager (in Blink).
     // https://crbug.com/783309
-    Optional<Task> TakeTask(RunIntent intent);
+    Optional<Task> TakeTask(RunIntent* intent) WARN_UNUSED_RESULT;
 
-    // Must be called once the task was run or skipped. |was_run| should be true
+    // Must be called once the task was run or skipped. |run_result| indicates
     // if the task executed. Cannot be called on an empty TaskSource. Returns
     // true if the TaskSource should be queued after this operation.
-    bool DidProcessTask(bool was_run);
+    bool DidProcessTask(RunIntent intent,
+                        RunResult run_result = RunResult::kDidRun);
 
     // Returns a SequenceSortKey representing the priority of the TaskSource.
     // Cannot be called on an empty TaskSource.
@@ -180,11 +199,10 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // holding the TaskSource).
   virtual RunIntent WillRunTask() = 0;
 
-  // Returns the maximum number of tasks from this TaskSource that can run
-  // concurrently. The concurrency is generally controlled through
-  // WillRunTask(), but calling this directly is useful to determine the right
-  // number of workers beforehand.
-  virtual size_t GetMaxConcurrency() const = 0;
+  // Thread-safe but the returned value may immediately be obsolete. As such
+  // this should only be used as a best-effort guess of how many more workers
+  // are needed.
+  virtual size_t GetRemainingConcurrency() const = 0;
 
   // Support for IntrusiveHeap.
   void SetHeapHandle(const HeapHandle& handle);
@@ -211,9 +229,9 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   virtual Optional<Task> TakeTask() = 0;
 
   // Informs this TaskSource that a task was processed. |was_run| indicates
-  // whether the task was allowed to run or not. Returns true if the TaskSource
+  // whether the task executed or not. Returns true if the TaskSource
   // should be queued after this operation.
-  virtual bool DidProcessTask(bool was_run) = 0;
+  virtual bool DidProcessTask(RunResult run_result) = 0;
 
   virtual SequenceSortKey GetSortKey() const = 0;
 
@@ -224,7 +242,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Constructs and returns a RunIntent, where |is_saturated| indicates that the
   // TaskSource has reached its maximum concurrency.
-  RunIntent MakeRunIntent(ConcurrencyStatus concurrency_status) const;
+  RunIntent MakeRunIntent(Saturated is_saturated) const;
 
   // The TaskTraits of all Tasks in the TaskSource.
   TaskTraits traits_;

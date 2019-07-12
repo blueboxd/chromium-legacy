@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 
+#include <memory>
+
 #include "cc/animation/timing_function.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <memory>
 
 using blink::CompositorAnimationCurve;
 using blink::CompositorFloatAnimationCurve;

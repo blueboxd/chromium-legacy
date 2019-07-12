@@ -162,7 +162,7 @@ class LoadingPredictor : public KeyedService,
                            TestDontTrackNonPrefetchableUrls);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest, TestDontPredictOmniboxHints);
 
-  base::WeakPtrFactory<LoadingPredictor> weak_factory_;
+  base::WeakPtrFactory<LoadingPredictor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictor);
 };

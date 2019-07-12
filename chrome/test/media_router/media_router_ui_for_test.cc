@@ -265,8 +265,7 @@ MediaRouterUiForTest::MediaRouterUiForTest(content::WebContents* web_contents)
     : web_contents_(web_contents),
       dialog_controller_(static_cast<MediaRouterDialogControllerViews*>(
           MediaRouterDialogController::GetOrCreateForWebContents(
-              web_contents))),
-      weak_factory_(this) {
+              web_contents))) {
   dialog_controller_->SetDialogCreationCallbackForTesting(base::BindRepeating(
       &MediaRouterUiForTest::OnDialogCreated, weak_factory_.GetWeakPtr()));
 }

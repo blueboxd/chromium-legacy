@@ -37,16 +37,15 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -390,7 +389,8 @@ class TestOptOutStore : public blacklist::OptOutStore {
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {}
 };
 
-class PreviewsDeciderImplTest : public ProtoDatabaseProviderTestBase {
+class PreviewsDeciderImplTest
+    : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsDeciderImplTest()
       : field_trial_list_(nullptr),
@@ -441,7 +441,7 @@ class PreviewsDeciderImplTest : public ProtoDatabaseProviderTestBase {
             scoped_task_environment_.GetMainThreadTaskRunner(),
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-            temp_dir_.GetPath(), pref_service_.get(), db_provider_,
+            temp_dir_.GetPath(), pref_service_.get(), db_provider_.get(),
             &previews_top_host_provider_, url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),

@@ -114,6 +114,16 @@ using payments::JourneyLogger;
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
+
+  FailureBlock failureBlock = ^(NSString* error) {
+    GREYFail(error);
+  };
+  // Make sure transaction amount is logged correctly considering the completion
+  // status.
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Triggered",
+                                   1, failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Completed",
+                                   1, failureBlock);
 }
 
 - (void)testOnlyBobpaySupported {
@@ -139,6 +149,13 @@ using payments::JourneyLogger;
       "PaymentRequest.CheckoutFunnel.NoShow",
       JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD, 1,
       failureBlock);
+
+  // Make sure transaction amount metrics are not logged since we could not
+  // trigger the payment sheet.
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Triggered",
+                                   0, failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Completed",
+                                   0, failureBlock);
 
   // Make sure the correct events were logged.
   std::vector<chrome_test_util::Bucket> buckets =
@@ -676,6 +693,13 @@ using payments::JourneyLogger;
       "PaymentRequest.NumberOfSuggestionsShown.ContactInfo.UserAborted", 0,
       failureBlock);
 
+  // Make sure transaction amount is logged correctly considering the completion
+  // status.
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Triggered",
+                                   1, failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Completed",
+                                   0, failureBlock);
+
   // Make sure the correct events were logged.
   std::vector<chrome_test_util::Bucket> buckets =
       histogramTester.GetAllSamples("PaymentRequest.Events");
@@ -766,6 +790,13 @@ using payments::JourneyLogger;
                                    failureBlock);
   histogramTester.ExpectTotalCount("PaymentRequest.NumberOfSuggestionsShown", 0,
                                    failureBlock);
+
+  // Make sure transaction amount metrics are not logged since the user
+  // navigated away before triggering .show().
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Triggered",
+                                   0, failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.TransactionAmount.Completed",
+                                   0, failureBlock);
 }
 
 - (void)testUserHadCompleteSuggestionsForEverything {

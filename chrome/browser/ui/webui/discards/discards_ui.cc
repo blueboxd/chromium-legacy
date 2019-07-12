@@ -230,6 +230,8 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       if (info->has_reactivation_score)
         info->reactivation_score = reactivation_score.value();
       info->site_engagement_score = GetSiteEngagementScore(contents);
+      info->state_change_time =
+          lifecycle_unit->GetStateChangeTime() - base::TimeTicks::UnixEpoch();
       // TODO(crbug.com/876340): The focus is used to compute the page lifecycle
       // state. This should be replaced with the actual page lifecycle state
       // information from Blink, but this depends on implementing the passive

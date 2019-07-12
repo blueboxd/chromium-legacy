@@ -51,7 +51,7 @@ BrowserSwitcherPrefs::BrowserSwitcherPrefs(Profile* profile)
 BrowserSwitcherPrefs::BrowserSwitcherPrefs(
     PrefService* prefs,
     policy::PolicyService* policy_service)
-    : policy_service_(policy_service), prefs_(prefs), weak_ptr_factory_(this) {
+    : policy_service_(policy_service), prefs_(prefs) {
   filtering_change_registrar_.Init(prefs_);
 
   const struct {

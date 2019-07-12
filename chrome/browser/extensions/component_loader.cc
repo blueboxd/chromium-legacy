@@ -153,8 +153,7 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  Profile* profile)
     : profile_(profile),
       extension_service_(extension_service),
-      ignore_whitelist_for_testing_(false),
-      weak_factory_(this) {}
+      ignore_whitelist_for_testing_(false) {}
 
 ComponentLoader::~ComponentLoader() {
 }

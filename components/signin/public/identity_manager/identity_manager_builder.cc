@@ -26,7 +26,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 #if !defined(OS_ANDROID)
-#include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #endif
 
 #if defined(OS_IOS)

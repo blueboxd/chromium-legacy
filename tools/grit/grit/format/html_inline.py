@@ -303,8 +303,8 @@ def DoInline(
         filename_expansion_function=filename_expansion_function)
 
   def GetFilepath(src_match, base_path = input_filepath):
-    matches = src_match.groupdict().iteritems()
-    filename = [v for k, v in matches if k.startswith('file') and v][0]
+    filename = [v for k, v in src_match.groupdict().items()
+                if k.startswith('file') and v][0]
 
     if filename.find(':') != -1:
       # filename is probably a URL, which we don't want to bother inlining

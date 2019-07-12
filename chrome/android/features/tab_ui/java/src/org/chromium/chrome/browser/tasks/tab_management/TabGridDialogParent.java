@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -55,10 +56,13 @@ public class TabGridDialogParent {
     private final int mToolbarHeight;
     private final float mTabGridCardPadding;
     private PopupWindow mPopupWindow;
+    private FrameLayout mTabGridDialogParentView;
     private RelativeLayout mDialogContainerView;
     private ScrimView mScrimView;
     private ScrimView.ScrimParams mScrimParams;
     private View mBlockView;
+    private View mContentView;
+    private TextView mUngroupBar;
     private Animator mCurrentAnimator;
     private ObjectAnimator mBasicFadeIn;
     private ObjectAnimator mBasicFadeOut;
@@ -70,8 +74,6 @@ public class TabGridDialogParent {
     private int mDialogHeight;
     private int mSideMargin;
     private int mTopMargin;
-    private View mContentView;
-    private TextView mUngroupBar;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
@@ -95,22 +97,20 @@ public class TabGridDialogParent {
             public void onLowMemory() {}
         };
         ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
-        setupDialogContent(context, parent);
+        setupDialogContent(context);
         prepareAnimation();
     }
 
-    private void setupDialogContent(Context context, ViewGroup parent) {
-        FrameLayout backgroundView = new FrameLayout(context);
-        mDialogContainerView = (RelativeLayout) LayoutInflater.from(context).inflate(
-                R.layout.tab_grid_dialog_layout, parent, false);
+    private void setupDialogContent(Context context) {
+        mTabGridDialogParentView = (FrameLayout) LayoutInflater.from(context).inflate(
+                R.layout.tab_grid_dialog_layout, mParent, false);
+        mDialogContainerView = mTabGridDialogParentView.findViewById(R.id.dialog_container_view);
         mDialogContainerView.setLayoutParams(mContainerParams);
-        mUngroupBar = mDialogContainerView.findViewById(R.id.dialog_ungroup_bar);
-        backgroundView.addView(mDialogContainerView);
+        mUngroupBar = mTabGridDialogParentView.findViewById(R.id.dialog_ungroup_bar);
+        mBlockView = mTabGridDialogParentView.findViewById(R.id.dialog_block_view);
 
-        mScrimView = new ScrimView(context, null, backgroundView);
-        mPopupWindow = new PopupWindow(backgroundView, 0, 0);
-        mBlockView = new View(context);
-        mBlockView.setOnClickListener(null);
+        mScrimView = new ScrimView(context, null, mTabGridDialogParentView);
+        mPopupWindow = new PopupWindow(mTabGridDialogParentView, 0, 0);
         updateDialogWithOrientation(context, context.getResources().getConfiguration().orientation);
     }
 
@@ -126,16 +126,17 @@ public class TabGridDialogParent {
         mShowDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                mBlockView.setClickable(false);
                 mCurrentAnimator = null;
             }
         };
         mHideDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                mBlockView.setClickable(false);
                 mPopupWindow.dismiss();
                 mCurrentAnimator = null;
                 mDialogContainerView.setAlpha(1f);
-                mDialogContainerView.removeView(mBlockView);
             }
         };
     }
@@ -215,7 +216,8 @@ public class TabGridDialogParent {
         mHideDialogAnimation.addListener(mHideDialogAnimationListener);
     }
 
-    private void updateDialogWithOrientation(Context context, int orientation) {
+    @VisibleForTesting
+    void updateDialogWithOrientation(Context context, int orientation) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay()
@@ -282,8 +284,11 @@ public class TabGridDialogParent {
             mCurrentAnimator.end();
         }
         mCurrentAnimator = mShowDialogAnimation;
-        mScrimView.showScrim(mScrimParams);
+        if (mScrimParams != null) {
+            mScrimView.showScrim(mScrimParams);
+        }
         mPopupWindow.showAtLocation(mParent, Gravity.CENTER, 0, 0);
+        mBlockView.setClickable(true);
         mShowDialogAnimation.start();
     }
 
@@ -296,12 +301,7 @@ public class TabGridDialogParent {
         }
         mCurrentAnimator = mHideDialogAnimation;
         mScrimView.hideScrim(true);
-        // Use mBlockView to disable all click behaviors on dialog when the hide animation is
-        // playing.
-        if (mBlockView.getParent() == null) {
-            mDialogContainerView.addView(mBlockView);
-        }
-        mDialogContainerView.bringChildToFront(mBlockView);
+        mBlockView.setClickable(true);
         mHideDialogAnimation.start();
     }
 
@@ -318,7 +318,7 @@ public class TabGridDialogParent {
      * @param status The status in {@link TabGridDialogParent.UngroupBarStatus} that the ungroup bar
      *         should be updated to.
      */
-    public void updateUngroupBar(int status) {
+    void updateUngroupBar(int status) {
         if (status == UngroupBarStatus.SHOW) {
             mUngroupBar.setVisibility(View.VISIBLE);
             mUngroupBar.setAlpha(1f);
@@ -329,5 +329,20 @@ public class TabGridDialogParent {
             mUngroupBar.setAlpha(0.7f);
             mContentView.bringToFront();
         }
+    }
+
+    @VisibleForTesting
+    PopupWindow getPopupWindowForTesting() {
+        return mPopupWindow;
+    }
+
+    @VisibleForTesting
+    FrameLayout getTabGridDialogParentViewForTesting() {
+        return mTabGridDialogParentView;
+    }
+
+    @VisibleForTesting
+    Animator getCurrentAnimatorForTesting() {
+        return mCurrentAnimator;
     }
 }

@@ -29,8 +29,8 @@ public class LoadUrlParams {
     // native code. Should not be accessed directly anywhere else outside of
     // this class.
     String mUrl;
-    // TODO(nasko,tedchoc): Don't use String to store initiator origin, as it
-    // is lossy format.
+    // TODO(nasko,tedchoc): https://crbug.com/980641: Don't use String to store
+    // initiator origin, as it is a lossy format.
     String mInitiatorOrigin;
     int mLoadUrlType;
     int mTransitionType;

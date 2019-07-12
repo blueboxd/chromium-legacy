@@ -39,7 +39,7 @@ SyncValueStoreCache::SyncValueStoreCache(
     scoped_refptr<ValueStoreFactory> factory,
     scoped_refptr<SettingsObserverList> observers,
     const base::FilePath& profile_path)
-    : initialized_(false), weak_ptr_factory_(this) {
+    : initialized_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This post is safe since the destructor can only be invoked from the

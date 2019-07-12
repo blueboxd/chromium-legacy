@@ -21,6 +21,8 @@ jumbo_component("x") {
     "x11_util.cc",
     "x11_util.h",
     "x11_util_internal.h",
+    "x11_window.cc",
+    "x11_window.h",
     "x11_window_event_manager.cc",
     "x11_window_event_manager.h",
   ]
@@ -40,6 +42,7 @@ jumbo_component("x") {
     "//ui/events",
     "//ui/events/devices/x11",
     "//ui/events/keycodes:x11",
+    "//ui/events/x:x",
     "//ui/gfx",
     "//ui/gfx/x",
   ]

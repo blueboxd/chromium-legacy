@@ -255,7 +255,7 @@ class CastActivityManager : public CastActivityManagerBase,
   const std::string hash_token_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_{this};
   FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
 };
 

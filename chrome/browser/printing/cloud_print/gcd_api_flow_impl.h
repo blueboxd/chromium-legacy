@@ -45,7 +45,7 @@ class GCDApiFlowImpl : public GCDApiFlow {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<Request> request_;
-  base::WeakPtrFactory<GCDApiFlowImpl> weak_factory_;
+  base::WeakPtrFactory<GCDApiFlowImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowImpl);
 };

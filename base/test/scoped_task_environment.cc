@@ -237,8 +237,6 @@ class ScopedTaskEnvironment::MockTimeDomain
   bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override {
     if (quit_when_idle_requested)
       return false;
-    if (!auto_advance_on_idle_)
-      return false;
 
     return FastForwardToNextTaskOrCap(TimeTicks::Max()) ==
            NextTaskSource::kMainThread;
@@ -328,21 +326,8 @@ class ScopedTaskEnvironment::MockTimeDomain
     return NextTaskSource::kNone;
   }
 
-  // Sets |auto_advance_on_idle_| to |auto_advance_on_idle| and returns its
-  // previous value.
-  bool SetAutoAdvanceOnIdle(bool auto_advance_on_idle) {
-    const auto previous = auto_advance_on_idle_;
-    auto_advance_on_idle_ = auto_advance_on_idle;
-    return previous;
-  }
-
  private:
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // Whether MaybeFastForwardToNextTask() should auto advance time. Set to true
-  // by default so RunLoop::Run() auto-advances time. Set to false when
-  // ScopedTaskEnvironment controls mock time (i.e. in FastForwardBy()).
-  bool auto_advance_on_idle_ = true;
 
   sequence_manager::SequenceManager* const sequence_manager_;
 
@@ -642,7 +627,6 @@ void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   DCHECK(mock_time_domain_);
   DCHECK_GE(delta, TimeDelta());
 
-  const bool was_auto_advancing = mock_time_domain_->SetAutoAdvanceOnIdle(false);
   const bool could_run_tasks = task_tracker_->AllowRunTasks();
 
   const TimeTicks fast_forward_until = mock_time_domain_->NowTicks() + delta;
@@ -651,8 +635,6 @@ void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until) !=
            MockTimeDomain::NextTaskSource::kNone);
 
-  if (was_auto_advancing)
-    mock_time_domain_->SetAutoAdvanceOnIdle(true);
   if (!could_run_tasks)
     task_tracker_->DisallowRunTasks();
 }

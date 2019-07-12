@@ -122,7 +122,7 @@ class DialAppDiscoveryService {
     DialAppDiscoveryService* const service_;
 
     SEQUENCE_CHECKER(sequence_checker_);
-    base::WeakPtrFactory<PendingRequest> weak_ptr_factory_;
+    base::WeakPtrFactory<PendingRequest> weak_ptr_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(PendingRequest);
   };
 

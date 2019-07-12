@@ -662,6 +662,7 @@ NavigationRequest::NavigationRequest(
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(nullptr),
       commit_navigation_client_(nullptr) {
+  DCHECK(browser_initiated || common_params.initiator_origin.has_value());
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   DCHECK(!IsRendererDebugURL(common_params_.url));
   DCHECK(common_params_.method == "POST" || !common_params_.post_data);

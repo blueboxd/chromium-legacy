@@ -332,9 +332,13 @@ void XRFrameProvider::ProcessScheduledFrame(
   }
 
   if (immersive_session_) {
-    if (frame_pose_ && frame_pose_->input_state.has_value()) {
-      immersive_session_->OnInputStateChange(frame_id_,
-                                             frame_pose_->input_state.value());
+    if (frame_pose_) {
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states;
+      if (frame_pose_->input_state.has_value())
+        input_states = frame_pose_->input_state.value();
+
+      immersive_session_->OnInputStateChange(frame_id_, input_states);
     }
 
     // Check if immersive session is still set as OnInputStateChange may have
@@ -395,9 +399,13 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      if (frame_pose_ && frame_pose_->input_state.has_value()) {
-        session->OnInputStateChange(frame_id_,
-                                    frame_pose_->input_state.value());
+      if (frame_pose_) {
+        base::span<const device::mojom::blink::XRInputSourceStatePtr>
+            input_states;
+        if (frame_pose_->input_state.has_value())
+          input_states = frame_pose_->input_state.value();
+
+        session->OnInputStateChange(frame_id_, input_states);
       }
 
       // If the input state change caused this session to end, we should stop

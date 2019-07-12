@@ -359,7 +359,7 @@ class MediaRouterUIBase
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.
-  base::WeakPtrFactory<MediaRouterUIBase> weak_factory_;
+  base::WeakPtrFactory<MediaRouterUIBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUIBase);
 };

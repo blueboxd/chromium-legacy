@@ -58,7 +58,8 @@ class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
   bool deferred_;
   supervised_user_error_page::FilteringBehaviorReason reason_;
   SupervisedUserURLFilter::FilteringBehavior behavior_;
-  base::WeakPtrFactory<SupervisedUserNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserNavigationThrottle> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserNavigationThrottle);
 };

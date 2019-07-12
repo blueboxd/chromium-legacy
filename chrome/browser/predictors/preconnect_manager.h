@@ -194,7 +194,7 @@ class PreconnectManager {
   network::mojom::NetworkContext* network_context_ = nullptr;
   Observer* observer_ = nullptr;
 
-  base::WeakPtrFactory<PreconnectManager> weak_factory_;
+  base::WeakPtrFactory<PreconnectManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreconnectManager);
 };

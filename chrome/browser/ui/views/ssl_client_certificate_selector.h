@@ -52,7 +52,7 @@ class SSLClientCertificateSelector : public chrome::CertificateSelector {
 
   std::unique_ptr<SSLClientAuthObserverImpl> auth_observer_impl_;
 
-  base::WeakPtrFactory<SSLClientCertificateSelector> weak_factory_;
+  base::WeakPtrFactory<SSLClientCertificateSelector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };

@@ -82,8 +82,7 @@ XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
           render_frame_host ? render_frame_host->GetView()->HasFocus() : false),
       runtime_manager_(std::move(runtime_manager)),
       render_frame_host_(render_frame_host),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   binding_.Bind(std::move(request));
   magic_window_controllers_.set_connection_error_handler(base::BindRepeating(
       &XRDeviceImpl::OnInlineSessionDisconnected,

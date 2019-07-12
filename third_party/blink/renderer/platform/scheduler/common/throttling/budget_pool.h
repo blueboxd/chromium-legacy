@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_BUDGET_POOL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_BUDGET_POOL_H_
 
-#include <unordered_set>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -14,6 +12,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
 namespace sequence_manager {
@@ -114,8 +113,7 @@ class PLATFORM_EXPORT BudgetPool {
 
   BudgetPoolController* budget_pool_controller_;
 
-  std::unordered_set<base::sequence_manager::TaskQueue*>
-      associated_task_queues_;
+  HashSet<base::sequence_manager::TaskQueue*> associated_task_queues_;
   bool is_enabled_;
 
  private:

@@ -80,7 +80,7 @@ class TabUIHelper : public content::WebContentsObserver,
   // navigation when the tab is opened in background.
   std::unique_ptr<TabUIData> tab_ui_data_;
   base::CancelableTaskTracker favicon_tracker_;
-  base::WeakPtrFactory<TabUIHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<TabUIHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

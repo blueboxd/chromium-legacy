@@ -40,8 +40,7 @@ invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
 
 }  // namespace
 
-InvalidationsMessageHandler::InvalidationsMessageHandler()
-    : logger_(NULL), weak_ptr_factory_(this) {}
+InvalidationsMessageHandler::InvalidationsMessageHandler() : logger_(nullptr) {}
 
 InvalidationsMessageHandler::~InvalidationsMessageHandler() {
   if (logger_)

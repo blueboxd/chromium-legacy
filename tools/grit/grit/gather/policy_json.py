@@ -98,9 +98,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     '''
     att_text = []
     if node.attributes:
-      items = node.attributes.items()
-      items.sort()
-      for key, value in items:
+      for key, value in sorted(node.attributes.items()):
         att_text.append(' %s=\"%s\"' % (key, value))
     self._AddNontranslateableChunk("<%s%s>" %
                                    (node.tagName, ''.join(att_text)))
@@ -257,7 +255,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
   def _AddMessages(self):
     '''Processed and adds the 'messages' section to the output.'''
     self._AddNontranslateableChunk("  \"messages\": {\n")
-    messages = self.data['messages'].iteritems()
+    messages = self.data['messages'].items()
     for count, (name, message) in enumerate(messages, 1):
       self._AddNontranslateableChunk("    %s: {\n" % json.dumps(name))
       self._AddNontranslateableChunk("      \"text\": \"")

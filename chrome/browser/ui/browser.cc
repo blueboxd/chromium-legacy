@@ -451,13 +451,13 @@ Browser::Browser(const CreateParams& params)
       app_controller_(MaybeCreateWebAppController(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
-      window_has_shown_(false),
+      window_has_shown_(false)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+      ,
       extension_browser_window_helper_(
-          std::make_unique<extensions::ExtensionBrowserWindowHelper>(this)),
+          std::make_unique<extensions::ExtensionBrowserWindowHelper>(this))
 #endif
-      chrome_updater_factory_(this),
-      weak_factory_(this) {
+{
   // If this causes a crash then a window is being opened using a profile type
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.

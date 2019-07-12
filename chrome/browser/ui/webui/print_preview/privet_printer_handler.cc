@@ -42,7 +42,7 @@ void FillPrinterDescription(const std::string& name,
 }  //  namespace
 
 PrivetPrinterHandler::PrivetPrinterHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 PrivetPrinterHandler::~PrivetPrinterHandler() {}
 

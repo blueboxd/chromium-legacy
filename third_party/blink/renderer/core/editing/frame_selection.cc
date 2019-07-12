@@ -521,7 +521,8 @@ bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {
   bool result = frame_caret_->ShouldPaintCaret(block);
   DCHECK(!result ||
          (ComputeVisibleSelectionInDOMTree().IsCaret() &&
-          IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start())));
+          (IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start()) ||
+           frame_->GetSettings()->GetCaretBrowsingEnabled())));
   return result;
 }
 

@@ -38,10 +38,7 @@ SupervisedUserWhitelistService::SupervisedUserWhitelistService(
     PrefService* prefs,
     component_updater::SupervisedUserWhitelistInstaller* installer,
     const std::string& client_id)
-    : prefs_(prefs),
-      installer_(installer),
-      client_id_(client_id),
-      weak_ptr_factory_(this) {
+    : prefs_(prefs), installer_(installer), client_id_(client_id) {
   DCHECK(prefs);
 }
 

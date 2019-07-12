@@ -491,7 +491,7 @@ class AuthenticatorRequestDialogModel {
 
   bool incognito_mode_ = false;
 
-  base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
+  base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };

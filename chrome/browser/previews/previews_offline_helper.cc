@@ -133,8 +133,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     content::BrowserContext* browser_context)
     : pref_service_(nullptr),
       available_pages_(std::make_unique<base::DictionaryValue>()),
-      offline_page_model_(nullptr),
-      weak_factory_(this) {
+      offline_page_model_(nullptr) {
   if (!browser_context || browser_context->IsOffTheRecord())
     return;
 

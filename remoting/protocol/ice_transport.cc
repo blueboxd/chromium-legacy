@@ -26,14 +26,10 @@ const int kTransportInfoSendDelayMs = 20;
 static const char kMuxChannelName[] = "mux";
 
 IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context,
-                           EventHandler* event_handler,
-                           bool use_turn_api)
+                           EventHandler* event_handler)
     : transport_context_(transport_context),
       event_handler_(event_handler),
       weak_factory_(this) {
-  transport_context_->set_relay_mode(use_turn_api
-                                         ? TransportContext::RelayMode::TURN
-                                         : TransportContext::RelayMode::GTURN);
   transport_context->Prepare();
 }
 

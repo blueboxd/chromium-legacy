@@ -512,6 +512,65 @@ TEST_F(MediaControllerTest, ActiveController_Seek) {
   EXPECT_EQ(1, media_session.seek_count());
 }
 
+TEST_F(MediaControllerTest, ActiveController_SeekTo) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  EXPECT_EQ(0, media_session.seek_to_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+
+    EXPECT_EQ(0, media_session.seek_to_count());
+  }
+
+  controller()->SeekTo(
+      base::TimeDelta::FromSeconds(mojom::kDefaultSeekTimeSeconds));
+  controller().FlushForTesting();
+
+  EXPECT_EQ(1, media_session.seek_to_count());
+}
+
+TEST_F(MediaControllerTest, ActiveController_ScrubTo) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  EXPECT_FALSE(media_session.is_scrubbing());
+  EXPECT_EQ(0, media_session.seek_to_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+
+    EXPECT_FALSE(media_session.is_scrubbing());
+    EXPECT_EQ(0, media_session.seek_to_count());
+  }
+
+  controller()->ScrubTo(
+      base::TimeDelta::FromSeconds(mojom::kDefaultSeekTimeSeconds));
+  controller().FlushForTesting();
+
+  EXPECT_TRUE(media_session.is_scrubbing());
+  EXPECT_EQ(0, media_session.seek_to_count());
+
+  controller()->ScrubTo(
+      base::TimeDelta::FromSeconds(mojom::kDefaultSeekTimeSeconds));
+  controller().FlushForTesting();
+
+  EXPECT_TRUE(media_session.is_scrubbing());
+  EXPECT_EQ(0, media_session.seek_to_count());
+
+  controller()->SeekTo(
+      base::TimeDelta::FromSeconds(mojom::kDefaultSeekTimeSeconds));
+  controller().FlushForTesting();
+
+  EXPECT_FALSE(media_session.is_scrubbing());
+  EXPECT_EQ(1, media_session.seek_to_count());
+}
+
 TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Abandoned) {
   MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title");

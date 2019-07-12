@@ -253,7 +253,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<ExtensionActionRunner> weak_factory_;
+  base::WeakPtrFactory<ExtensionActionRunner> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunner);
 };

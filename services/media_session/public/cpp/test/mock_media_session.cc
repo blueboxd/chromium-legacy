@@ -241,6 +241,15 @@ void MockMediaSession::GetMediaImageBitmap(
   std::move(callback).Run(bitmap);
 }
 
+void MockMediaSession::SeekTo(base::TimeDelta seek_time) {
+  seek_to_count_++;
+  is_scrubbing_ = false;
+}
+
+void MockMediaSession::ScrubTo(base::TimeDelta seek_time) {
+  is_scrubbing_ = true;
+}
+
 void MockMediaSession::SetIsControllable(bool value) {
   is_controllable_ = value;
   NotifyObservers();

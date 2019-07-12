@@ -65,7 +65,8 @@ class SupervisedUserInternalsMessageHandler
   ScopedObserver<SupervisedUserURLFilter, SupervisedUserURLFilter::Observer>
       scoped_observer_;
 
-  base::WeakPtrFactory<SupervisedUserInternalsMessageHandler> weak_factory_;
+  base::WeakPtrFactory<SupervisedUserInternalsMessageHandler> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserInternalsMessageHandler);
 };

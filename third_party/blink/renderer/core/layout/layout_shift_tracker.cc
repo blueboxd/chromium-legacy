@@ -112,7 +112,6 @@ static bool ShouldLog(const LocalFrame& frame) {
 LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
-      score_with_move_distance_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
@@ -292,9 +291,6 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   double jank_fraction = region_area / viewport_area;
   DCHECK_GT(jank_fraction, 0);
 
-  if (!HadRecentInput())
-    score_ += jank_fraction;
-
   DCHECK_GT(frame_max_distance_, 0.0);
   double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
   double move_distance_factor =
@@ -305,7 +301,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       jank_fraction * move_distance_factor;
 
   if (!HadRecentInput())
-    score_with_move_distance_ += jank_fraction_with_move_distance;
+    score_ += jank_fraction_with_move_distance;
 
   overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
@@ -315,8 +311,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
              << (jank_fraction * 100) << "% janked with distance fraction "
-             << move_distance_factor << "; raising score to "
-             << score_with_move_distance_;
+             << move_distance_factor << "; raising score to " << score_;
   }
 #endif
 
@@ -327,13 +322,12 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       "frame", ToTraceValue(&frame));
 
   if (!HadRecentInput()) {
-    double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
-    if (weighted_jank_fraction > 0) {
-      weighted_score_ += weighted_jank_fraction;
-      if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
-        weighted_jank_fraction *= move_distance_factor;
-      frame.Client()->DidObserveLayoutShift(weighted_jank_fraction,
-                                            observed_input_or_scroll_);
+    double weighted_jank_fraction_with_move_distance =
+        jank_fraction_with_move_distance * SubframeWeightingFactor();
+    if (weighted_jank_fraction_with_move_distance > 0) {
+      weighted_score_ += weighted_jank_fraction_with_move_distance;
+      frame.Client()->DidObserveLayoutShift(
+          weighted_jank_fraction_with_move_distance, observed_input_or_scroll_);
     }
   }
 
@@ -343,11 +337,9 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {
-      performance->AddLayoutJankFraction(
-          RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled()
-              ? jank_fraction_with_move_distance
-              : jank_fraction,
-          HadRecentInput(), most_recent_input_timestamp_);
+      performance->AddLayoutJankFraction(jank_fraction_with_move_distance,
+                                         HadRecentInput(),
+                                         most_recent_input_timestamp_);
     }
   }
 
@@ -432,8 +424,6 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   value->SetDouble("score_with_move_distance",
                    jank_fraction_with_move_distance);
   value->SetDouble("cumulative_score", score_);
-  value->SetDouble("cumulative_score_with_move_distance",
-                   score_with_move_distance_);
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())

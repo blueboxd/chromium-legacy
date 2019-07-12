@@ -73,8 +73,7 @@ SyncInternalsMessageHandler::SyncInternalsMessageHandler()
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     AboutSyncDataDelegate about_sync_data_delegate)
     : include_specifics_(GetIncludeSpecificsInitialState()),
-      about_sync_data_delegate_(std::move(about_sync_data_delegate)),
-      weak_ptr_factory_(this) {}
+      about_sync_data_delegate_(std::move(about_sync_data_delegate)) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
   UnregisterModelNotifications();

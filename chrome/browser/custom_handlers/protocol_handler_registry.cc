@@ -188,8 +188,7 @@ ProtocolHandlerRegistry::ProtocolHandlerRegistry(
       enabled_(true),
       is_loading_(false),
       is_loaded_(false),
-      io_thread_delegate_(new IOThreadDelegate(enabled_)),
-      weak_ptr_factory_(this) {}
+      io_thread_delegate_(new IOThreadDelegate(enabled_)) {}
 
 bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
     const ProtocolHandler& handler) {

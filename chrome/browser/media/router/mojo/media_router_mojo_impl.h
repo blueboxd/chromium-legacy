@@ -436,7 +436,7 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
 
   content::BrowserContext* const context_;
 
-  base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
+  base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoImpl);
 };

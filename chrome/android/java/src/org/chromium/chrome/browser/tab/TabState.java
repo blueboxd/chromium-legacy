@@ -394,7 +394,8 @@ public class TabState {
             return createSingleNavigationStateAsByteBuffer(pendingLoadParams.getUrl(),
                     referrer != null ? referrer.getUrl() : null,
                     // Policy will be ignored for null referrer url, 0 is just a placeholder.
-                    referrer != null ? referrer.getPolicy() : 0, tab.isIncognito());
+                    referrer != null ? referrer.getPolicy() : 0,
+                    pendingLoadParams.getInitiatorOrigin(), tab.isIncognito());
         }
     }
 
@@ -535,13 +536,14 @@ public class TabState {
      * @param url URL that is pending.
      * @param referrerUrl URL for the referrer.
      * @param referrerPolicy Policy for the referrer.
+     * @param initiatorOrigin Initiator of the navigation.
      * @param isIncognito Whether or not the state is meant to be incognito (e.g. encrypted).
      * @return ByteBuffer that represents a state representing a single pending URL.
      */
-    public static ByteBuffer createSingleNavigationStateAsByteBuffer(
-            String url, String referrerUrl, int referrerPolicy, boolean isIncognito) {
+    public static ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
+            int referrerPolicy, String initiatorOrigin, boolean isIncognito) {
         return nativeCreateSingleNavigationStateAsByteBuffer(
-                url, referrerUrl, referrerPolicy, isIncognito);
+                url, referrerUrl, referrerPolicy, initiatorOrigin, isIncognito);
     }
 
     /**
@@ -603,8 +605,8 @@ public class TabState {
     private static native ByteBuffer nativeDeleteNavigationEntries(
             ByteBuffer state, int saveStateVersion, long predicate);
 
-    private static native ByteBuffer nativeCreateSingleNavigationStateAsByteBuffer(
-            String url, String referrerUrl, int referrerPolicy, boolean isIncognito);
+    private static native ByteBuffer nativeCreateSingleNavigationStateAsByteBuffer(String url,
+            String referrerUrl, int referrerPolicy, String initiatorOrigin, boolean isIncognito);
 
     private static native String nativeGetDisplayTitleFromByteBuffer(
             ByteBuffer state, int savedStateVersion);

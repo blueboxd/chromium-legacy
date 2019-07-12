@@ -5,7 +5,6 @@
 #include "storage/browser/blob/mojo_blob_reader.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -13,17 +12,6 @@
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
-
-namespace {
-
-// This feature will eagerly complete reading when there are no more remaining
-// bytes to be read.  The default behavior is to trigger another read cycle to
-// detect the condition which may be delayed depending on the capacity of the
-// target mojo data pipe.
-const base::Feature kBlobReaderEagerCompletion{
-    "BlobReaderEagerCompletion", base::FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace
 
 // static
 void MojoBlobReader::Create(
@@ -251,9 +239,7 @@ void MojoBlobReader::DidRead(bool completed_synchronously, int num_bytes) {
   response_body_stream_ = pending_write_->Complete(num_bytes);
   total_written_bytes_ += num_bytes;
   pending_write_ = nullptr;
-  if (num_bytes == 0 ||
-      (base::FeatureList::IsEnabled(kBlobReaderEagerCompletion) &&
-       blob_reader_->remaining_bytes() == 0)) {
+  if (num_bytes == 0 || blob_reader_->remaining_bytes() == 0) {
     response_body_stream_.reset();  // This closes the data pipe.
     NotifyCompletedAndDeleteIfNeeded(net::OK);
     return;

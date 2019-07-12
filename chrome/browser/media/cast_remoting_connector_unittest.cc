@@ -63,7 +63,7 @@ RemotingSinkMetadataPtr GetDefaultSinkMetadata() {
 // if any methods were called that should not have been called.
 class FakeMediaRouter : public media_router::MockMediaRouter {
  public:
-  FakeMediaRouter() : weak_factory_(this) {}
+  FakeMediaRouter() {}
   ~FakeMediaRouter() final {}
 
   void RegisterRemotingSource(SessionID tab_id,
@@ -98,7 +98,7 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   SessionID tab_id_ = SessionID::InvalidValue();
   CastRemotingConnector* connector_ = nullptr;
 
-  base::WeakPtrFactory<FakeMediaRouter> weak_factory_;
+  base::WeakPtrFactory<FakeMediaRouter> weak_factory_{this};
 };
 
 class MockRemotingSource : public media::mojom::RemotingSource {

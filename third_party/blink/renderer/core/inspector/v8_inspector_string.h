@@ -134,7 +134,7 @@ class CORE_EXPORT Binary {
       std::unique_ptr<v8::ScriptCompiler::CachedData> data);
 
  private:
-  explicit Binary(scoped_refptr<Impl> impl) : impl_(impl) {}
+  explicit Binary(scoped_refptr<Impl> impl) : impl_(std::move(impl)) {}
   scoped_refptr<Impl> impl_;
 };
 }  // namespace protocol

@@ -58,7 +58,7 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   int pending_aura_capture_requests_ = 0;
   bool pending_native_thumbnail_capture_ = false;
 #endif
-  base::WeakPtrFactory<NativeDesktopMediaList> weak_factory_;
+  base::WeakPtrFactory<NativeDesktopMediaList> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NativeDesktopMediaList);
 };

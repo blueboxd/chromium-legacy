@@ -202,8 +202,7 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
       is_input_in_progress_(false),
       is_key_capture_enabled_(false),
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
-      has_received_most_visited_(false),
-      weak_ptr_factory_(this) {
+      has_received_most_visited_(false) {
   // Connect to the embedded search interface in the browser.
   chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);

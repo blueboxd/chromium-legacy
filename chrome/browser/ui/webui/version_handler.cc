@@ -56,7 +56,7 @@ void GetFilePaths(const base::FilePath& profile_path,
 
 }  // namespace
 
-VersionHandler::VersionHandler() : weak_ptr_factory_(this) {}
+VersionHandler::VersionHandler() {}
 
 VersionHandler::~VersionHandler() {
 }

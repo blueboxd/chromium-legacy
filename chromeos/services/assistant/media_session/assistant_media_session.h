@@ -61,6 +61,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
                            int minimum_size_px,
                            int desired_size_px,
                            GetMediaImageBitmapCallback callback) override {}
+  void SeekTo(base::TimeDelta seek_time) override {}
+  void ScrubTo(base::TimeDelta seek_time) override {}
 
   // Requests/abandons audio focus to the AudioFocusManager.
   void RequestAudioFocus(media_session::mojom::AudioFocusType audio_focus_type);

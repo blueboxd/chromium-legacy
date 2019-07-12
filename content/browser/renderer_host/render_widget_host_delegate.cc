@@ -157,4 +157,9 @@ InputEventShim* RenderWidgetHostDelegate::GetInputEventShim() const {
   return nullptr;
 }
 
+RenderFrameHostImpl*
+RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
+  return nullptr;
+}
+
 }  // namespace content

@@ -312,8 +312,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      is_file_picker_showing_(false),
-      weak_ptr_factory_(this) {
+      is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
   location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
 #endif

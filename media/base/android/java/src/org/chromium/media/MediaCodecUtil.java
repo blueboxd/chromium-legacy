@@ -54,9 +54,11 @@ class MediaCodecUtil {
         public static final String VIDEO_MP4 = "video/mp4";
         public static final String VIDEO_WEBM = "video/webm";
         public static final String VIDEO_H264 = "video/avc";
-        public static final String VIDEO_H265 = "video/hevc";
+        public static final String VIDEO_HEVC = "video/hevc";
         public static final String VIDEO_VP8 = "video/x-vnd.on2.vp8";
         public static final String VIDEO_VP9 = "video/x-vnd.on2.vp9";
+        public static final String VIDEO_AV1 = "video/av01";
+        public static final String AUDIO_OPUS = "audio/opus";
     }
 
     /**
@@ -351,6 +353,10 @@ class MediaCodecUtil {
     /**
      * This is a way to blacklist misbehaving devices.
      * Some devices cannot decode certain codecs, while other codecs work fine.
+     *
+     * Do not access MediaCodec or MediaCodecList in this function since it's
+     * used from the renderer process.
+     *
      * @param mime MIME type as passed to mediaCodec.createDecoderByType(mime).
      * @return true if this codec is supported for decoder on this device.
      */
@@ -359,7 +365,7 @@ class MediaCodecUtil {
         // *************************************************************
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
         // *************************************************************
-        if (mime.equals("video/x-vnd.on2.vp8")) {
+        if (mime.equals(MimeTypes.VIDEO_VP8)) {
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
                 // Some Samsung devices cannot render VP8 video directly to the surface.
 
@@ -408,7 +414,7 @@ class MediaCodecUtil {
                     && Build.MODEL.startsWith("Lenovo A6000")) {
                 return false;
             }
-        } else if (mime.equals("video/x-vnd.on2.vp9")) {
+        } else if (mime.equals(MimeTypes.VIDEO_VP9)) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
 
             // MediaTek decoders do not work properly on vp9 before Lollipop. See
@@ -422,9 +428,12 @@ class MediaCodecUtil {
             if (Build.MODEL.equals("Nexus Player")) {
                 return false;
             }
-        } else if (mime.equals("video/av01")) {
+        } else if (mime.equals(MimeTypes.VIDEO_AV1)) {
             if (!BuildInfo.isAtLeastQ()) return false;
-        } else if (mime.equals("audio/opus")
+        } else if (mime.equals(MimeTypes.AUDIO_OPUS)
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return false;
+        } else if (mime.equals(MimeTypes.VIDEO_HEVC)
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return false;
         }

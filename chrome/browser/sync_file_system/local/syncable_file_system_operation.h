@@ -129,7 +129,7 @@ class SyncableFileSystemOperation : public storage::FileSystemOperation {
 
   StatusCallback completion_callback_;
 
-  base::WeakPtrFactory<SyncableFileSystemOperation> weak_factory_;
+  base::WeakPtrFactory<SyncableFileSystemOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileSystemOperation);
 };

@@ -46,8 +46,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
     : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
-      trigger_menu_on_long_press_(trigger_menu_on_long_press),
-      show_menu_factory_(this) {
+      trigger_menu_on_long_press_(trigger_menu_on_long_press) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
 

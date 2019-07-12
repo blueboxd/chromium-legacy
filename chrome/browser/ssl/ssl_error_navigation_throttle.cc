@@ -28,8 +28,7 @@ SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
         handle_ssl_error_callback)
     : content::NavigationThrottle(navigation_handle),
       ssl_cert_reporter_(std::move(ssl_cert_reporter)),
-      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)),
-      weak_ptr_factory_(this) {}
+      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)) {}
 
 SSLErrorNavigationThrottle::~SSLErrorNavigationThrottle() {}
 

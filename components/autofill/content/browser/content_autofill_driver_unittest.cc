@@ -28,7 +28,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,9 +52,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   ~FakeAutofillAgent() override {}
 
-  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
-    bindings_.AddBinding(
-        this, mojom::AutofillAgentAssociatedRequest(std::move(handle)));
+  void BindPendingReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receivers_.Add(this, mojo::PendingAssociatedReceiver<mojom::AutofillAgent>(
+                             std::move(handle)));
   }
 
   void SetQuitLoopClosure(base::Closure closure) { quit_closure_ = closure; }
@@ -219,7 +219,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
       const std::vector<std::string>& selectors,
       GetElementFormAndFieldDataCallback callback) override {}
 
-  mojo::AssociatedBindingSet<mojom::AutofillAgent> bindings_;
+  mojo::AssociatedReceiverSet<mojom::AutofillAgent> receivers_;
 
   base::Closure quit_closure_;
 
@@ -299,7 +299,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         mojom::AutofillAgent::Name_,
-        base::BindRepeating(&FakeAutofillAgent::BindRequest,
+        base::BindRepeating(&FakeAutofillAgent::BindPendingReceiver,
                             base::Unretained(&fake_agent_)));
   }
 

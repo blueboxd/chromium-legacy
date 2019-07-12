@@ -68,7 +68,7 @@ class SecurityEventSyncBridgeImpl : public SecurityEventSyncBridge,
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
 
-  base::WeakPtrFactory<SecurityEventSyncBridgeImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SecurityEventSyncBridgeImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SecurityEventSyncBridgeImpl);
 };

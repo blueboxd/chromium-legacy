@@ -225,7 +225,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   // memory_instrumentation.
   bool waiting_for_memory_dump_;
 
-  base::WeakPtrFactory<TaskManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<TaskManagerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(TaskManagerImpl);
 };
 

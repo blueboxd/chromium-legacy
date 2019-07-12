@@ -150,8 +150,9 @@ void FrameCaret::UpdateStyleAndLayoutIfNeeded() {
   bool should_paint_caret =
       should_paint_caret_ && IsActive() &&
       caret_visibility_ == CaretVisibility::kVisible &&
-      IsEditablePosition(
-          selection_editor_->ComputeVisibleSelectionInDOMTree().Start());
+      (IsEditablePosition(
+           selection_editor_->ComputeVisibleSelectionInDOMTree().Start()) ||
+       frame_->GetSettings()->GetCaretBrowsingEnabled());
 
   display_item_client_->UpdateStyleAndLayoutIfNeeded(
       should_paint_caret ? CaretPosition() : PositionWithAffinity());
@@ -187,17 +188,25 @@ void FrameCaret::PaintCaret(GraphicsContext& context,
 }
 
 bool FrameCaret::ShouldBlinkCaret() const {
+  // Don't blink the caret if it isn't visible or positioned.
   if (caret_visibility_ != CaretVisibility::kVisible || !IsActive())
     return false;
 
   Element* root = RootEditableElementOf(CaretPosition().GetPosition());
-  if (!root)
-    return false;
+  if (root) {
+    // Caret is contained in editable content. If there is no focused element,
+    // don't blink the caret.
+    Element* focused_element = root->GetDocument().FocusedElement();
+    if (!focused_element)
+      return false;
+  } else {
+    // Caret is not contained in editable content--see if caret browsing is
+    // enabled. If it isn't, don't blink the caret.
+    if (!frame_->GetSettings()->GetCaretBrowsingEnabled())
+      return false;
+  }
 
-  Element* focused_element = root->GetDocument().FocusedElement();
-  if (!focused_element)
-    return false;
-
+  // Only blink the caret if the selection has focus.
   return frame_->Selection().SelectionHasFocus();
 }
 

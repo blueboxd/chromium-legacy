@@ -78,8 +78,7 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
       token_key_(/*extension_id=*/std::string(),
                  /*account_id=*/std::string(),
                  /*scopes=*/std::set<std::string>()),
-      scoped_identity_manager_observer_(this),
-      weak_ptr_factory_(this) {
+      scoped_identity_manager_observer_(this) {
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {

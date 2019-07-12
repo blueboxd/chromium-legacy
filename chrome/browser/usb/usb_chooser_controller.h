@@ -71,7 +71,7 @@ class UsbChooserController : public ChooserController,
   std::vector<std::pair<std::string, base::string16>> devices_;
   // Maps from device name to number of devices.
   std::unordered_map<base::string16, int> device_name_map_;
-  base::WeakPtrFactory<UsbChooserController> weak_factory_;
+  base::WeakPtrFactory<UsbChooserController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserController);
 };

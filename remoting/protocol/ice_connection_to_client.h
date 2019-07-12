@@ -39,8 +39,7 @@ class IceConnectionToClient : public ConnectionToClient,
       std::unique_ptr<Session> session,
       scoped_refptr<TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-      bool use_turn_api);
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
   ~IceConnectionToClient() override;
 
   // ConnectionToClient interface.

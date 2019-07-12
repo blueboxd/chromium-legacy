@@ -133,7 +133,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   std::string pnacl_version_string_;
 
   // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<NaClDomHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NaClDomHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NaClDomHandler);
 };
@@ -141,8 +141,7 @@ class NaClDomHandler : public WebUIMessageHandler {
 NaClDomHandler::NaClDomHandler()
     : has_plugin_info_(false),
       pnacl_path_validated_(false),
-      pnacl_path_exists_(false),
-      weak_ptr_factory_(this) {
+      pnacl_path_exists_(false) {
   PluginService::GetInstance()->GetPlugins(base::Bind(
       &NaClDomHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 }

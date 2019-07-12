@@ -227,10 +227,8 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
 
-  VaapiImageDecodeStatus status;
-  decoder_.Decode(
-      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()),
-      &status);
+  VaapiImageDecodeStatus status = decoder_.Decode(
+      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()));
   if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;

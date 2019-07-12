@@ -174,13 +174,13 @@
   // Load the test page.
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForWebStateContainingText:testPageContents];
-  web::WebState* firstWebState = chrome_test_util::GetCurrentTab().webState;
+  web::WebState* firstWebState = chrome_test_util::GetCurrentWebState();
 
   // And do the same in a second tab.
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForWebStateContainingText:testPageContents];
-  web::WebState* secondWebState = chrome_test_util::GetCurrentTab().webState;
+  web::WebState* secondWebState = chrome_test_util::GetCurrentWebState();
 
   // Check visibility before and after switching tabs.
   GREYAssert(secondWebState->IsVisible(), @"secondWebState not visible");

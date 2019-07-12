@@ -32,7 +32,7 @@ namespace {
 // Controls whether we use ThreadPriority::DISPLAY for compositor thread.
 const base::Feature kBlinkCompositorUseDisplayThreadPriority {
   "BlinkCompositorUseDisplayThreadPriority",
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -119,8 +119,14 @@ void Thread::CreateAndSetCompositorThread() {
       std::make_unique<scheduler::CompositorThread>(params);
   compositor_thread->Init();
   GetCompositorThread() = std::move(compositor_thread);
-  Platform::Current()->SetDisplayThreadPriority(
-      GetCompositorThread()->ThreadId());
+
+  if (base::FeatureList::IsEnabled(kBlinkCompositorUseDisplayThreadPriority)) {
+    // Chrome OS moves tasks between control groups on thread priority changes.
+    // This is not possible inside the sandbox, so ask the browser to do it.
+    // TODO(spang): Check if we can remove this on non-Chrome OS builds.
+    Platform::Current()->SetDisplayThreadPriority(
+        GetCompositorThread()->ThreadId());
+  }
 }
 
 Thread* Thread::Current() {

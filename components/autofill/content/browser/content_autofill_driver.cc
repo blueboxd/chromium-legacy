@@ -41,8 +41,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       autofill_manager_(nullptr),
-      key_press_handler_manager_(this),
-      binding_(this) {
+      key_press_handler_manager_(this) {
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
@@ -68,9 +67,9 @@ ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
   return factory ? factory->DriverForFrame(render_frame_host) : nullptr;
 }
 
-void ContentAutofillDriver::BindRequest(
-    mojom::AutofillDriverAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void ContentAutofillDriver::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::AutofillDriver> pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 bool ContentAutofillDriver::IsIncognito() const {
@@ -298,12 +297,12 @@ void ContentAutofillDriver::SetAutofillManager(
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
 
-const mojom::AutofillAgentAssociatedPtr&
+const mojo::AssociatedRemote<mojom::AutofillAgent>&
 ContentAutofillDriver::GetAutofillAgent() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!autofill_agent_) {
     render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&autofill_agent_));
+        &autofill_agent_);
   }
 
   return autofill_agent_;

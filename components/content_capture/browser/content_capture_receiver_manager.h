@@ -37,7 +37,8 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // Binds the |request| with the |render_frame_host| associated
   // ContentCaptureReceiver.
   static void BindContentCaptureReceiver(
-      mojom::ContentCaptureReceiverAssociatedRequest request,
+      mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+          pending_receiver,
       content::RenderFrameHost* render_frame_host);
 
   // The methods called by ContentCaptureReceiver.

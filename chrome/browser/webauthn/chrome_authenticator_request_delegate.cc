@@ -88,8 +88,7 @@ ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
       relying_party_id_(relying_party_id),
       transient_dialog_model_holder_(
           std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id)),
-      weak_dialog_model_(transient_dialog_model_holder_.get()),
-      weak_ptr_factory_(this) {}
+      weak_dialog_model_(transient_dialog_model_holder_.get()) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying

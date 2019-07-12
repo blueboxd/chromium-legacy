@@ -85,8 +85,7 @@ ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       bubble_status_(NOT_SHOWN),
-      are_passwords_revealed_when_next_bubble_is_opened_(false),
-      weak_ptr_factory_(this) {
+      are_passwords_revealed_when_next_bubble_is_opened_(false) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStore* password_store =

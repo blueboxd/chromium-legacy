@@ -564,8 +564,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       active_consumers_(0),
       cached_consumer_count_(0),
       has_listeners_(false),
-      is_active_(false),
-      weak_factory_(this) {
+      is_active_(false) {
   SetActivityHandlers();
 
   // This controls whether logging statements are printed & which policy is set.

@@ -527,8 +527,6 @@ component("ash") {
     "shelf/assistant_overlay.h",
     "shelf/back_button.cc",
     "shelf/back_button.h",
-    "shelf/default_shelf_view.cc",
-    "shelf/default_shelf_view.h",
     "shelf/home_button.cc",
     "shelf/home_button.h",
     "shelf/home_button_controller.cc",

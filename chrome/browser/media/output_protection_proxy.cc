@@ -24,13 +24,14 @@ gfx::NativeView GetRenderFrameView(int render_process_id, int render_frame_id) {
 OutputProtectionProxy::OutputProtectionProxy(int render_process_id,
                                              int render_frame_id)
     : render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
+      render_frame_id_(render_frame_id)
 #if defined(OS_CHROMEOS)
+      ,
       output_protection_delegate_(
           // On OS_CHROMEOS, NativeView and NativeWindow are both aura::Window*.
-          GetRenderFrameView(render_process_id, render_frame_id)),
+          GetRenderFrameView(render_process_id, render_frame_id))
 #endif  // defined(OS_CHROMEOS)
-      weak_ptr_factory_(this) {
+{
 }
 
 OutputProtectionProxy::~OutputProtectionProxy() {

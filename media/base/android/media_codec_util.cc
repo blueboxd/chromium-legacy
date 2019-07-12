@@ -98,6 +98,26 @@ static bool IsEncoderSupportedByDevice(const std::string& android_mime_type) {
   return Java_MediaCodecUtil_isEncoderSupportedByDevice(env, j_mime);
 }
 
+static bool CanDecodeInternal(const std::string& mime, bool is_secure) {
+  if (!MediaCodecUtil::IsMediaCodecAvailable())
+    return false;
+  if (mime.empty())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
+  return Java_MediaCodecUtil_canDecode(env, j_mime, is_secure);
+}
+
+static bool HasVp9Profile23Decoder() {
+  // Support for VP9.2, VP9.3 was added in Nougat but it requires hardware
+  // support which we can't check from the renderer process. Since Android P+
+  // has a software decoder available for VP9.2, VP9.3 content and usage is nil
+  // on Android, just gate support on P+.
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_P;
+}
+
 // static
 std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
   if (IsPassthroughAudioFormat(codec))
@@ -219,6 +239,105 @@ std::set<int> MediaCodecUtil::GetEncoderColorFormats(
 }
 
 // static
+bool MediaCodecUtil::IsHLSPath(const GURL& url) {
+  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
+         base::EndsWith(url.path(), ".m3u8",
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
+// static
+bool MediaCodecUtil::IsHLSURL(const GURL& url) {
+  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
+         url.spec().find("m3u8") != std::string::npos;
+}
+
+// static
+bool MediaCodecUtil::IsVp8DecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp8MimeType);
+}
+
+// static
+bool MediaCodecUtil::IsVp8EncoderAvailable() {
+  // Currently the vp8 encoder and decoder blacklists cover the same devices,
+  // but we have a second method for clarity in future issues.
+  return IsVp8DecoderAvailable();
+}
+
+// static
+bool MediaCodecUtil::IsVp9DecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp9MimeType);
+}
+
+// static
+bool MediaCodecUtil::IsVp9Profile2DecoderAvailable() {
+  return IsVp9DecoderAvailable() && HasVp9Profile23Decoder();
+}
+
+// static
+bool MediaCodecUtil::IsVp9Profile3DecoderAvailable() {
+  return IsVp9DecoderAvailable() && HasVp9Profile23Decoder();
+}
+
+// static
+bool MediaCodecUtil::IsOpusDecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kOpusMimeType);
+}
+
+// static
+bool MediaCodecUtil::IsAv1DecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kAv1MimeType);
+}
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+// static
+bool MediaCodecUtil::IsHEVCDecoderAvailable() {
+  return IsMediaCodecAvailable() && IsEncoderSupportedByDevice(kHevcMimeType);
+}
+#endif
+
+// static
+bool MediaCodecUtil::IsH264EncoderAvailable() {
+  return IsMediaCodecAvailable() && IsEncoderSupportedByDevice(kAvcMimeType);
+}
+
+// static
+bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
+  // Disable SurfaceView output for the Samsung Galaxy S3; it does not work
+  // well enough for even 360p24 H264 playback.  http://crbug.com/602870.
+  //
+  // Notably this is codec agnostic at present, so any devices added to
+  // the blacklist will avoid trying to play any codecs on SurfaceView.  If
+  // needed in the future this can be expanded to be codec specific.
+  const char* model_prefixes[] = {// Exynos 4 (Mali-400)
+                                  "GT-I9300", "GT-I9305", "SHV-E210",
+                                  // Snapdragon S4 (Adreno-225)
+                                  "SCH-I535", "SCH-J201", "SCH-R530",
+                                  "SCH-I960", "SCH-S968", "SGH-T999",
+                                  "SGH-I747", "SGH-N064", 0};
+
+  std::string model(base::android::BuildInfo::GetInstance()->model());
+  for (int i = 0; model_prefixes[i]; ++i) {
+    if (base::StartsWith(model, model_prefixes[i],
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// static
+bool MediaCodecUtil::IsSetOutputSurfaceSupported() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecUtil_isSetOutputSurfaceSupported(env);
+}
+
+// static
+bool MediaCodecUtil::IsPassthroughAudioFormat(AudioCodec codec) {
+  return codec == kCodecAC3 || codec == kCodecEAC3;
+}
+
+// static
 bool MediaCodecUtil::CanDecode(VideoCodec codec, bool is_secure) {
   return CanDecodeInternal(CodecToAndroidMimeType(codec), is_secure);
 }
@@ -226,19 +345,6 @@ bool MediaCodecUtil::CanDecode(VideoCodec codec, bool is_secure) {
 // static
 bool MediaCodecUtil::CanDecode(AudioCodec codec) {
   return CanDecodeInternal(CodecToAndroidMimeType(codec), false);
-}
-
-// static
-bool MediaCodecUtil::CanDecodeInternal(const std::string& mime,
-                                       bool is_secure) {
-  if (!IsMediaCodecAvailable())
-    return false;
-  if (mime.empty())
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-  return Java_MediaCodecUtil_canDecode(env, j_mime, is_secure);
 }
 
 // static
@@ -293,83 +399,6 @@ bool MediaCodecUtil::IsKnownUnaccelerated(VideoCodec codec,
   return base::StartsWith(codec_name, "OMX.google.",
                           base::CompareCase::SENSITIVE) ||
          base::StartsWith(codec_name, "OMX.SEC.", base::CompareCase::SENSITIVE);
-}
-
-// static
-bool MediaCodecUtil::IsHLSPath(const GURL& url) {
-  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
-         base::EndsWith(url.path(), ".m3u8",
-                        base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// static
-bool MediaCodecUtil::IsHLSURL(const GURL& url) {
-  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
-         url.spec().find("m3u8") != std::string::npos;
-}
-
-// static
-bool MediaCodecUtil::IsVp8DecoderAvailable() {
-  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp8MimeType);
-}
-
-// static
-bool MediaCodecUtil::IsVp8EncoderAvailable() {
-  // Currently the vp8 encoder and decoder blacklists cover the same devices,
-  // but we have a second method for clarity in future issues.
-  return IsVp8DecoderAvailable();
-}
-
-// static
-bool MediaCodecUtil::IsVp9DecoderAvailable() {
-  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp9MimeType);
-}
-
-// static
-bool MediaCodecUtil::IsAv1DecoderAvailable() {
-  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kAv1MimeType);
-}
-
-// static
-bool MediaCodecUtil::IsH264EncoderAvailable() {
-  return IsMediaCodecAvailable() && IsEncoderSupportedByDevice(kAvcMimeType);
-}
-
-// static
-bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
-  // Disable SurfaceView output for the Samsung Galaxy S3; it does not work
-  // well enough for even 360p24 H264 playback.  http://crbug.com/602870.
-  //
-  // Notably this is codec agnostic at present, so any devices added to
-  // the blacklist will avoid trying to play any codecs on SurfaceView.  If
-  // needed in the future this can be expanded to be codec specific.
-  const char* model_prefixes[] = {// Exynos 4 (Mali-400)
-                                  "GT-I9300", "GT-I9305", "SHV-E210",
-                                  // Snapdragon S4 (Adreno-225)
-                                  "SCH-I535", "SCH-J201", "SCH-R530",
-                                  "SCH-I960", "SCH-S968", "SGH-T999",
-                                  "SGH-I747", "SGH-N064", 0};
-
-  std::string model(base::android::BuildInfo::GetInstance()->model());
-  for (int i = 0; model_prefixes[i]; ++i) {
-    if (base::StartsWith(model, model_prefixes[i],
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// static
-bool MediaCodecUtil::IsSetOutputSurfaceSupported() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecUtil_isSetOutputSurfaceSupported(env);
-}
-
-// static
-bool MediaCodecUtil::IsPassthroughAudioFormat(AudioCodec codec) {
-  return codec == kCodecAC3 || codec == kCodecEAC3;
 }
 
 // static

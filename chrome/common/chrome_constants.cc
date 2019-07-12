@@ -133,7 +133,6 @@ const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
 
 // filenames
 const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
-const base::FilePath::CharType kChannelIDFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const base::FilePath::CharType kCRLSetFilename[] =
     FPL("Certificate Revocation Lists");

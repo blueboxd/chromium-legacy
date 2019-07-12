@@ -24,6 +24,7 @@ FrameNavigationEntry::FrameNavigationEntry(
     const GURL& url,
     const url::Origin* origin,
     const Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
@@ -36,6 +37,7 @@ FrameNavigationEntry::FrameNavigationEntry(
       source_site_instance_(std::move(source_site_instance)),
       url_(url),
       referrer_(referrer),
+      initiator_origin_(initiator_origin),
       redirect_chain_(redirect_chain),
       page_state_(page_state),
       method_(method),
@@ -54,8 +56,8 @@ scoped_refptr<FrameNavigationEntry> FrameNavigationEntry::Clone() const {
   // Omit any fields cleared at commit time.
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
                     document_sequence_number_, site_instance_.get(), nullptr,
-                    url_, committed_origin_, referrer_, redirect_chain_,
-                    page_state_, method_, post_id_,
+                    url_, committed_origin_, referrer_, initiator_origin_,
+                    redirect_chain_, page_state_, method_, post_id_,
                     nullptr /* blob_url_loader_factory */);
   return copy;
 }
@@ -69,6 +71,7 @@ void FrameNavigationEntry::UpdateEntry(
     const GURL& url,
     const base::Optional<url::Origin>& origin,
     const Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
@@ -83,6 +86,7 @@ void FrameNavigationEntry::UpdateEntry(
   url_ = url;
   committed_origin_ = origin;
   referrer_ = referrer;
+  initiator_origin_ = initiator_origin;
   page_state_ = page_state;
   method_ = method;
   post_id_ = post_id;

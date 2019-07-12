@@ -248,8 +248,7 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
       history_(std::move(history)),
       loading_id_(download::DownloadItem::kInvalidId),
       history_size_(0),
-      initial_history_query_complete_(false),
-      weak_ptr_factory_(this) {
+      initial_history_query_complete_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   download::SimpleDownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);

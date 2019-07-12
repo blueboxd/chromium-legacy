@@ -636,6 +636,10 @@ void WebSettingsImpl::SetSyncXHRInDocumentsEnabled(bool enabled) {
   settings_->SetSyncXHRInDocumentsEnabled(enabled);
 }
 
+void WebSettingsImpl::SetCaretBrowsingEnabled(bool enabled) {
+  settings_->SetCaretBrowsingEnabled(enabled);
+}
+
 void WebSettingsImpl::SetCookieEnabled(bool enabled) {
   dev_tools_emulator_->SetCookieEnabled(enabled);
 }

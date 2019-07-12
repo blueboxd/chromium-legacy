@@ -590,10 +590,9 @@ PasswordAutofillAgent::PasswordAutofillAgent(
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
       focus_state_notifier_(this),
-      password_generation_agent_(nullptr),
-      binding_(this) {
-  registry->AddInterface(
-      base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
+      password_generation_agent_(nullptr) {
+  registry->AddInterface(base::Bind(&PasswordAutofillAgent::BindPendingReceiver,
+                                    base::Unretained(this)));
 }
 
 PasswordAutofillAgent::~PasswordAutofillAgent() {
@@ -602,9 +601,10 @@ PasswordAutofillAgent::~PasswordAutofillAgent() {
     agent->RemoveFormObserver(this);
 }
 
-void PasswordAutofillAgent::BindRequest(
-    mojom::PasswordAutofillAgentAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void PasswordAutofillAgent::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::PasswordAutofillAgent>
+        pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void PasswordAutofillAgent::SetAutofillAgent(AutofillAgent* autofill_agent) {
@@ -1325,7 +1325,7 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
 }
 
 void PasswordAutofillAgent::OnDestruct() {
-  binding_.Close();
+  receiver_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -1968,7 +1968,7 @@ void PasswordAutofillAgent::HidePopup() {
   }
 }
 
-const mojom::PasswordManagerDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
 PasswordAutofillAgent::GetPasswordManagerDriver() {
   if (!password_manager_driver_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(

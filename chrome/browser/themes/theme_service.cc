@@ -323,8 +323,7 @@ ThemeService::ThemeService()
       number_of_infobars_(0),
       original_theme_provider_(*this, false, false),
       incognito_theme_provider_(*this, true, false),
-      default_theme_provider_(*this, false, true),
-      weak_ptr_factory_(this) {}
+      default_theme_provider_(*this, false, true) {}
 
 ThemeService::~ThemeService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

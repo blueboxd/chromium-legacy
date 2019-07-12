@@ -39,8 +39,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
         icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
-        config_(config),
-        weak_ptr_factory_(this) {}
+        config_(config) {}
 
  private:
   void Init(Delegate* delegate, InitCallback callback) override {
@@ -210,7 +209,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
   const SchedulerConfig& config_;
-  base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
 };
 }  // namespace

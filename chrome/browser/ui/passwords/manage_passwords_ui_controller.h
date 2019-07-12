@@ -256,7 +256,7 @@ class ManagePasswordsUIController
   // time the internal state of ManagePasswordsUIController has nothing to do
   // with the old bubble.
   // Invalidating all the weak pointers will detach the current bubble.
-  base::WeakPtrFactory<ManagePasswordsUIController> weak_ptr_factory_;
+  base::WeakPtrFactory<ManagePasswordsUIController> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

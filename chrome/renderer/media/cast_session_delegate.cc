@@ -38,8 +38,7 @@ static base::LazyInstance<CastThreads>::DestructorAtExit g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
 CastSessionDelegateBase::CastSessionDelegateBase()
-    : io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()),
-      weak_factory_(this) {
+    : io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()) {
   DCHECK(io_task_runner_.get());
 #if defined(OS_WIN)
   // Note that this also increases the accuracy of PostDelayTask,
@@ -104,8 +103,7 @@ void CastSessionDelegateBase::StatusNotificationCB(
   }
 }
 
-CastSessionDelegate::CastSessionDelegate()
-    : weak_factory_(this) {
+CastSessionDelegate::CastSessionDelegate() {
   DCHECK(io_task_runner_.get());
 }
 

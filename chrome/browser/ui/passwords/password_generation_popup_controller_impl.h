@@ -197,7 +197,8 @@ class PasswordGenerationPopupControllerImpl
 
   std::unique_ptr<KeyPressRegistrator> key_press_handler_manager_;
 
-  base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupControllerImpl);
 };

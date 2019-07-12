@@ -20,8 +20,7 @@ namespace ukm {
 UkmBackgroundRecorderService::UkmBackgroundRecorderService(Profile* profile)
     : history_service_(HistoryServiceFactory::GetForProfile(
           profile,
-          ServiceAccessType::EXPLICIT_ACCESS)),
-      weak_ptr_factory_(this) {
+          ServiceAccessType::EXPLICIT_ACCESS)) {
   DCHECK(history_service_);
 }
 

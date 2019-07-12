@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -28,11 +27,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
       assert_equals(input_sources.length, 0);
     });
 
-    let input_source_1 = new MockXRInputSource();
-    input_source_1.targetRayMode = "tracked-pointer";
-    input_source_1.handedness = "right";
-
-    fakeDeviceController.addInputSource(input_source_1);
+    let input_source_1 = fakeDeviceController.simulateInputSourceConnection(RIGHT_CONTROLLER);
 
     session.requestAnimationFrame((time, xrFrame) => {
       let input_sources = session.inputSources;
@@ -43,10 +38,12 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
         assert_equals(input_sources[0].handedness, "right");
       });
 
-      let input_source_2 = new MockXRInputSource();
-      input_source_2.targetRayMode = "gaze";
-      input_source_2.emulatedPosition = "true";
-      fakeDeviceController.addInputSource(input_source_2);
+      let input_source_2 = fakeDeviceController.simulateInputSourceConnection({
+        handedness: "none",
+        targetRayMode: "gaze",
+        pointerOrigin: VALID_POINTER_TRANSFORM,
+        profiles: []
+      });
 
       session.requestAnimationFrame((time, xrFrame) => {
         let input_sources = session.inputSources;

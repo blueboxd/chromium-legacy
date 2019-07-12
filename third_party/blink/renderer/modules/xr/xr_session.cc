@@ -1007,6 +1007,10 @@ void XRSession::SetXRDisplayInfo(
         !display_info_->stage_parameters->Equals(
             *(display_info->stage_parameters)))
       stage_parameters_id_++;
+  } else {
+    if (display_info && display_info->stage_parameters) {
+      stage_parameters_id_++;
+    }
   }
 
   display_info_id_++;

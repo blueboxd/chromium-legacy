@@ -37,7 +37,7 @@ class ImageThumbnailRequest : public ImageDecoder::ImageRequest {
 
   const int icon_size_;
   base::OnceCallback<void(const SkBitmap&)> callback_;
-  base::WeakPtrFactory<ImageThumbnailRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageThumbnailRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageThumbnailRequest);
 };

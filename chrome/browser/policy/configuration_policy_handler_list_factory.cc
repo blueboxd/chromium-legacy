@@ -533,8 +533,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-  { key::kClientCertificateManagementAllowed,
-    prefs::kClientCertificateManagementAllowed,
+  { key::kCertificateManagementAllowed,
+    prefs::kCertificateManagementAllowed,
     base::Value::Type::INTEGER },
   { key::kChromeOsLockOnIdleSuspend,
     ash::prefs::kEnableAutoScreenLock,

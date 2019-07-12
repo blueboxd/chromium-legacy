@@ -144,7 +144,7 @@ class PhishingDOMFeatureExtractor {
 
   // Used in scheduling ExtractFeaturesWithTimeout tasks.
   // These pointers are invalidated if extraction is cancelled.
-  base::WeakPtrFactory<PhishingDOMFeatureExtractor> weak_factory_;
+  base::WeakPtrFactory<PhishingDOMFeatureExtractor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PhishingDOMFeatureExtractor);
 };

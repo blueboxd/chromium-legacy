@@ -70,8 +70,7 @@ ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile),
       active_(false),
       family_fetch_backoff_(&kFamilyFetchBackoffPolicy),
-      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
-      weak_ptr_factory_(this) {}
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)) {}
 
 ChildAccountService::~ChildAccountService() {}
 

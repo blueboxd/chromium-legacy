@@ -474,12 +474,11 @@ CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
     : track_(track),
       cast_session_(session),
       is_audio_(track_.Source().GetType() ==
-                blink::WebMediaStreamSource::kTypeAudio),
-      weak_factory_(this) {}
+                blink::WebMediaStreamSource::kTypeAudio) {}
 
 CastRtpStream::CastRtpStream(bool is_audio,
                              const scoped_refptr<CastSession>& session)
-    : cast_session_(session), is_audio_(is_audio), weak_factory_(this) {}
+    : cast_session_(session), is_audio_(is_audio) {}
 
 CastRtpStream::~CastRtpStream() {
   Stop();

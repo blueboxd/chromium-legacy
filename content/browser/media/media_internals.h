@@ -113,8 +113,6 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                           int render_process_id = -1,
                           int render_frame_id = MSG_ROUTING_NONE);
 
-  void OnProcessTerminatedForTesting(int process_id);
-
  private:
   // Needs access to SendUpdate.
   friend class MediaInternalsAudioFocusHelper;
@@ -169,7 +167,6 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   bool can_update_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[media::AudioLogFactory::AUDIO_COMPONENT_MAX];
-  std::unique_ptr<MediaInternalsUMAHandler> uma_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };

@@ -30,8 +30,7 @@ class ServiceDiscoveryDeviceListerImpl : public ServiceDiscoveryDeviceLister {
       const std::string& service_type)
       : delegate_(delegate),
         service_discovery_client_(service_discovery_client),
-        service_type_(service_type),
-        weak_factory_(this) {}
+        service_type_(service_type) {}
 
   ~ServiceDiscoveryDeviceListerImpl() override = default;
 
@@ -131,7 +130,7 @@ class ServiceDiscoveryDeviceListerImpl : public ServiceDiscoveryDeviceLister {
   std::unique_ptr<ServiceWatcher> service_watcher_;
   ServiceResolverMap resolvers_;
 
-  base::WeakPtrFactory<ServiceDiscoveryDeviceListerImpl> weak_factory_;
+  base::WeakPtrFactory<ServiceDiscoveryDeviceListerImpl> weak_factory_{this};
 };
 }  // namespace
 

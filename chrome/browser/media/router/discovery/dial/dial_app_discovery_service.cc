@@ -85,8 +85,7 @@ DialAppDiscoveryService::PendingRequest::PendingRequest(
               &DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchError,
               base::Unretained(this))),
       app_info_cb_(std::move(app_info_cb)),
-      service_(service),
-      weak_ptr_factory_(this) {}
+      service_(service) {}
 
 DialAppDiscoveryService::PendingRequest::~PendingRequest() {
   DCHECK(app_info_cb_.is_null());

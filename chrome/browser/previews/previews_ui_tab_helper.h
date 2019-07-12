@@ -169,7 +169,7 @@ class PreviewsUITabHelper
   // finished.
   std::unique_ptr<previews::PreviewsUserData> previews_user_data_;
 
-  base::WeakPtrFactory<PreviewsUITabHelper> weak_factory_;
+  base::WeakPtrFactory<PreviewsUITabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

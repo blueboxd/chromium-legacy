@@ -45,8 +45,7 @@ std::unique_ptr<syncer::EntityData> ToEntityData(
 SecurityEventSyncBridgeImpl::SecurityEventSyncBridgeImpl(
     syncer::OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : syncer::ModelTypeSyncBridge(std::move(change_processor)),
-      weak_ptr_factory_(this) {
+    : syncer::ModelTypeSyncBridge(std::move(change_processor)) {
   std::move(store_factory)
       .Run(syncer::SECURITY_EVENTS,
            base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreCreated,

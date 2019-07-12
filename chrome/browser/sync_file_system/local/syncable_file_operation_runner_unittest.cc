@@ -65,8 +65,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
         callback_count_(0),
         write_status_(File::FILE_ERROR_FAILED),
         write_bytes_(0),
-        write_complete_(false),
-        weak_factory_(this) {}
+        write_complete_(false) {}
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -160,7 +159,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   MockBlobURLRequestContext url_request_context_;
 
  private:
-  base::WeakPtrFactory<SyncableFileOperationRunnerTest> weak_factory_;
+  base::WeakPtrFactory<SyncableFileOperationRunnerTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileOperationRunnerTest);
 };

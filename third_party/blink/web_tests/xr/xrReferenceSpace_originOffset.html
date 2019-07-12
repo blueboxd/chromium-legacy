@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -45,26 +44,22 @@ let testFunction =
     // Session must have a baseLayer or frame requests will be ignored.
     session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-    const GRIP_MATRIX_WITH_ROTATION = [
-      0, 0, -1, 0, // 1st col
-      0, 1, 0, 0, // 2nd col
-      1, 0, 0, 0, // 3rd col
-      1, 2, 3, 1 // 4th col
-    ];
+    const GRIP_TRANSFORM_WITH_ROTATION = {
+      position: [1, 2, 3],
+      orientation: [0, 0.7071, 0, 0.7071]
+    };
 
-    const POINTER_OFFSET_WITH_ROTATION = [
-      0, 1, 0, 0, // 1st col
-      -1, 0, 0, 0, // 2nd col
-      0, 0, 1, 0, // 3rd col
-      2, 0, 1, 1 // 4th col
-    ];
+    const POINTER_TRANSFORM_WITH_ROTATION = {
+      position: [2, 0, 1],
+      orientation: [0, 0, 0.7071, 0.7071]
+    };
 
-    let input_source = new MockXRInputSource();
-    input_source.targetRayMode = "tracked-pointer";
-    input_source.handedness = "right";
-    input_source.grip = GRIP_MATRIX_WITH_ROTATION;
-    input_source.pointerOffset = POINTER_OFFSET_WITH_ROTATION;
-    fakeDeviceController.addInputSource(input_source);
+    let input_source = fakeDeviceController.simulateInputSourceConnection({
+      handedness: "right",
+      targetRayMode: "tracked-pointer",
+      pointerOrigin: POINTER_TRANSFORM_WITH_ROTATION,
+      gripOrigin: GRIP_TRANSFORM_WITH_ROTATION
+    });
 
     const RADIANS_90D = Math.PI / 2;
 

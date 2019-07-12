@@ -268,6 +268,8 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
     case media_session::mojom::MediaSessionAction::kSeekForward:
     case media_session::mojom::MediaSessionAction::kSkipAd:
     case media_session::mojom::MediaSessionAction::kStop:
+    case media_session::mojom::MediaSessionAction::kSeekTo:
+    case media_session::mojom::MediaSessionAction::kScrubTo:
       NOTIMPLEMENTED();
       break;
   }

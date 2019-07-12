@@ -96,8 +96,7 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
       murmurhash3_seed_(murmurhash3_seed),
       max_shingles_per_page_(max_shingles_per_page),
       shingle_size_(shingle_size),
-      clock_(clock),
-      weak_factory_(this) {
+      clock_(clock) {
   Clear();
 }
 

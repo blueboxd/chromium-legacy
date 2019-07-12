@@ -71,9 +71,10 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(BrowserPpapiHost* host,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      delay_timer_(FROM_HERE, base::TimeDelta::FromSeconds(45), this,
-                   &PepperFlashBrowserHost::OnDelayTimerFired),
-      weak_factory_(this) {
+      delay_timer_(FROM_HERE,
+                   base::TimeDelta::FromSeconds(45),
+                   this,
+                   &PepperFlashBrowserHost::OnDelayTimerFired) {
   int unused;
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }

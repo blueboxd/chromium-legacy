@@ -17,7 +17,8 @@ namespace internal {
 
 TaskSource::RunIntent::RunIntent(RunIntent&& other) noexcept
     : task_source_(other.task_source_),
-      concurrency_status_(other.concurrency_status_) {
+      run_step_(other.run_step_),
+      is_saturated_(other.is_saturated_) {
   other.task_source_ = nullptr;
 }
 
@@ -29,13 +30,14 @@ TaskSource::RunIntent& TaskSource::RunIntent::operator=(RunIntent&& other) {
   DCHECK_EQ(task_source_, nullptr);
   task_source_ = other.task_source_;
   other.task_source_ = nullptr;
-  concurrency_status_ = other.concurrency_status_;
+  run_step_ = other.run_step_;
+  is_saturated_ = other.is_saturated_;
   return *this;
 }
 
 TaskSource::RunIntent::RunIntent(const TaskSource* task_source,
-                                 ConcurrencyStatus concurrency_status)
-    : task_source_(task_source), concurrency_status_(concurrency_status) {}
+                                 Saturated is_saturated)
+    : task_source_(task_source), is_saturated_(is_saturated) {}
 
 TaskSource::Transaction::Transaction(TaskSource* task_source)
     : task_source_(task_source) {
@@ -54,14 +56,20 @@ TaskSource::Transaction::~Transaction() {
   }
 }
 
-Optional<Task> TaskSource::Transaction::TakeTask(RunIntent intent) {
-  DCHECK_EQ(intent.task_source_, task_source());
-  intent.Release();
+Optional<Task> TaskSource::Transaction::TakeTask(RunIntent* intent) {
+  DCHECK_EQ(intent->task_source_, task_source());
+  DCHECK_EQ(intent->run_step_, RunIntent::State::kInitial);
+  intent->run_step_ = RunIntent::State::kTaskAcquired;
   return task_source_->TakeTask();
 }
 
-bool TaskSource::Transaction::DidProcessTask(bool was_run) {
-  return task_source_->DidProcessTask(was_run);
+bool TaskSource::Transaction::DidProcessTask(RunIntent intent,
+                                             RunResult run_result) {
+  DCHECK_EQ(intent.task_source_, task_source());
+  DCHECK_EQ(intent.run_step_, RunIntent::State::kTaskAcquired);
+  intent.run_step_ = RunIntent::State::kCompleted;
+  intent.Release();
+  return task_source_->DidProcessTask(run_result);
 }
 
 SequenceSortKey TaskSource::Transaction::GetSortKey() const {
@@ -78,9 +86,8 @@ void TaskSource::Transaction::UpdatePriority(TaskPriority priority) {
   task_source_->traits_.UpdatePriority(priority);
 }
 
-TaskSource::RunIntent TaskSource::MakeRunIntent(
-    ConcurrencyStatus concurrency_status) const {
-  return RunIntent(this, concurrency_status);
+TaskSource::RunIntent TaskSource::MakeRunIntent(Saturated is_saturated) const {
+  return RunIntent(this, is_saturated);
 }
 
 void TaskSource::SetHeapHandle(const HeapHandle& handle) {
@@ -97,7 +104,9 @@ TaskSource::TaskSource(const TaskTraits& traits,
     : traits_(traits),
       task_runner_(task_runner),
       execution_mode_(execution_mode) {
-  DCHECK(task_runner_ || execution_mode_ == TaskSourceExecutionMode::kParallel);
+  DCHECK(task_runner_ ||
+         execution_mode_ == TaskSourceExecutionMode::kParallel ||
+         execution_mode_ == TaskSourceExecutionMode::kJob);
 }
 
 TaskSource::~TaskSource() = default;

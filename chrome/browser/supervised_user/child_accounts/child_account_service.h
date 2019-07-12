@@ -121,7 +121,7 @@ class ChildAccountService : public KeyedService,
   // Callbacks to run when the user status becomes known.
   std::vector<base::OnceClosure> status_received_callback_list_;
 
-  base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_;
+  base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildAccountService);
 };

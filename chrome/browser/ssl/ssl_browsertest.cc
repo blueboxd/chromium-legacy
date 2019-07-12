@@ -5477,8 +5477,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
   std::unique_ptr<NavigationEntry> restored_entry =
       content::NavigationController::CreateNavigationEntry(
-          url, content::Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-          std::string(), tab->GetBrowserContext(),
+          url, content::Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+          false, std::string(), tab->GetBrowserContext(),
           nullptr /* blob_url_loader_factory */);
   restored_entry->SetPageState(entry->GetPageState());
 

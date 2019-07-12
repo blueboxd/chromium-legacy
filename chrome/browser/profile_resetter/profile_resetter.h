@@ -121,7 +121,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   // Used for resetting NTP customizations.
   InstantService* ntp_service_;
 
-  base::WeakPtrFactory<ProfileResetter> weak_ptr_factory_;
+  base::WeakPtrFactory<ProfileResetter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileResetter);
 };

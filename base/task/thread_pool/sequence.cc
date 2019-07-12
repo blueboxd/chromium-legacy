@@ -66,10 +66,10 @@ TaskSource::RunIntent Sequence::WillRunTask() {
   // TakeTask() and DidProcessTask() and only called if |!queue_.empty()|, which
   // means it won't race with WillPushTask()/PushTask().
   has_worker_ = true;
-  return MakeRunIntent(ConcurrencyStatus::kSaturated);
+  return MakeRunIntent(Saturated::kYes);
 }
 
-size_t Sequence::GetMaxConcurrency() const {
+size_t Sequence::GetRemainingConcurrency() const {
   return 1;
 }
 
@@ -83,7 +83,7 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(next_task);
 }
 
-bool Sequence::DidProcessTask(bool /* was_run */) {
+bool Sequence::DidProcessTask(RunResult run_result) {
   // There should never be a call to DidProcessTask without an associated
   // WillRunTask().
   DCHECK(has_worker_);
@@ -92,6 +92,9 @@ bool Sequence::DidProcessTask(bool /* was_run */) {
     ReleaseTaskRunner();
     return false;
   }
+  // Let the caller re-enqueue this non-empty Sequence regardless of
+  // |run_result| so it can continue churning through this Sequence's tasks and
+  // skip/delete them in the proper scope.
   return true;
 }
 

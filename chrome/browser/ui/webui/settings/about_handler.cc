@@ -277,8 +277,7 @@ std::string UpdateStatusToString(VersionUpdater::Status status) {
 
 namespace settings {
 
-AboutHandler::AboutHandler()
-    : apply_changes_from_upgrade_observer_(false), weak_factory_(this) {
+AboutHandler::AboutHandler() : apply_changes_from_upgrade_observer_(false) {
   UpgradeDetector::GetInstance()->AddObserver(this);
 }
 

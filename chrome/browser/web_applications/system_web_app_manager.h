@@ -126,7 +126,7 @@ class SystemWebAppManager {
 
   WebAppUiDelegate* ui_delegate_ = nullptr;
 
-  base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManager);
 };

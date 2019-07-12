@@ -174,7 +174,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   bool apply_changes_from_upgrade_observer_;
 
   // Used for callbacks.
-  base::WeakPtrFactory<AboutHandler> weak_factory_;
+  base::WeakPtrFactory<AboutHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AboutHandler);
 };

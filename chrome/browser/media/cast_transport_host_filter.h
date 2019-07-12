@@ -112,7 +112,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // channel ID as the key.
   std::multimap<int32_t, int32_t> stream_id_map_;
 
-  base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
+  base::WeakPtrFactory<CastTransportHostFilter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportHostFilter);
 };

@@ -175,7 +175,7 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
 
   content::NotificationRegistrar notification_registrar_;
 
-  base::WeakPtrFactory<DeveloperPrivateEventRouter> weak_factory_;
+  base::WeakPtrFactory<DeveloperPrivateEventRouter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateEventRouter);
 };
@@ -283,7 +283,7 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
   // Created lazily upon OnListenerAdded.
   std::unique_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
 
-  base::WeakPtrFactory<DeveloperPrivateAPI> weak_factory_;
+  base::WeakPtrFactory<DeveloperPrivateAPI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateAPI);
 };

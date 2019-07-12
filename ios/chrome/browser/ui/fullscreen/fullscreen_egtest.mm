@@ -14,6 +14,7 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"

@@ -13,10 +13,10 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_mode.h"
 

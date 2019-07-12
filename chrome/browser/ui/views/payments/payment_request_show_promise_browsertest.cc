@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -116,6 +117,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, DigitalGoods) {
+  base::HistogramTester histogram_tester;
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
@@ -131,6 +133,16 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, DigitalGoods) {
   Pay();
 
   ExpectBodyContains({R"({"currency":"USD","value":"1.00"})"});
+
+  // The initial total in digital_goods.js is 99.99 while the final total
+  // is 1.00. Verify that transaction amount metrics are recorded only once and
+  // with final total rather than the initial one. The final total falls into
+  // micro transaction category.
+  const uint32_t kMicroTransaction = 1;
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.TransactionAmount.Triggered", kMicroTransaction, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.TransactionAmount.Completed", kMicroTransaction, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SingleOptionShipping) {

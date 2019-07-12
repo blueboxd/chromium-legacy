@@ -9,9 +9,11 @@ namespace content {
 ContentIndexEntry::ContentIndexEntry(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,
+    const GURL& launch_url,
     base::Time registration_time)
     : service_worker_registration_id(service_worker_registration_id),
       description(std::move(description)),
+      launch_url(launch_url),
       registration_time(registration_time) {}
 
 ContentIndexEntry::ContentIndexEntry(ContentIndexEntry&& other) = default;

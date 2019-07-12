@@ -62,8 +62,7 @@ struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   RepeatingMediaResponseCallback callback;
 };
 
-PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler()
-    : weak_factory_(this) {
+PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
   // PermissionBubbleMediaAccessHandler should be created on UI thread.
   // Otherwise, it will not receive
   // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in

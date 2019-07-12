@@ -671,8 +671,8 @@ void NavigatorImpl::OnBeginNavigation(
     // DidStartMainFrameNavigation with the SiteInstance from the current
     // RenderFrameHost.
     DidStartMainFrameNavigation(
-        common_params.url,
-        frame_tree_node->current_frame_host()->GetSiteInstance(), nullptr);
+        common_params, frame_tree_node->current_frame_host()->GetSiteInstance(),
+        nullptr);
     navigation_data_.reset();
   }
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
@@ -876,7 +876,7 @@ void NavigatorImpl::RecordNavigationMetrics(
 }
 
 void NavigatorImpl::DidStartMainFrameNavigation(
-    const GURL& url,
+    const CommonNavigationParams& common_params,
     SiteInstanceImpl* site_instance,
     NavigationHandleImpl* navigation_handle) {
   // If there is no browser-initiated pending entry for this navigation and it
@@ -894,7 +894,7 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   // a duplicate navigation entry here.
   bool renderer_provisional_load_to_pending_url =
       pending_entry && pending_entry->is_renderer_initiated() &&
-      (pending_entry->GetURL() == url);
+      (pending_entry->GetURL() == common_params.url);
 
   // If there is a transient entry, creating a new pending entry will result
   // in deleting it, which leads to inconsistent state.
@@ -905,7 +905,8 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
             NavigationController::CreateNavigationEntry(
-                url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+                common_params.url, content::Referrer(),
+                common_params.initiator_origin, ui::PAGE_TRANSITION_LINK,
                 true /* is_renderer_initiated */, std::string(),
                 controller_->GetBrowserContext(),
                 nullptr /* blob_url_loader_factory */));

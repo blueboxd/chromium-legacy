@@ -36,7 +36,7 @@ void NotifyParsingError(SafeDialDeviceDescriptionParser::ParseCallback callback,
 
 SafeDialDeviceDescriptionParser::SafeDialDeviceDescriptionParser(
     DataDecoder* data_decoder)
-    : data_decoder_(data_decoder), weak_factory_(this) {}
+    : data_decoder_(data_decoder) {}
 
 SafeDialDeviceDescriptionParser::~SafeDialDeviceDescriptionParser() {}
 

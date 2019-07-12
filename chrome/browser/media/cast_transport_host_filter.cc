@@ -118,7 +118,7 @@ void CastBindConnectorRequest(
 namespace cast {
 
 CastTransportHostFilter::CastTransportHostFilter()
-    : BrowserMessageFilter(CastMsgStart), weak_factory_(this) {}
+    : BrowserMessageFilter(CastMsgStart) {}
 
 CastTransportHostFilter::~CastTransportHostFilter() {}
 

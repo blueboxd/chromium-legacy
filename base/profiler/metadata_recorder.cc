@@ -4,6 +4,8 @@
 
 #include "base/profiler/metadata_recorder.h"
 
+#include "base/metrics/histogram_macros.h"
+
 namespace base {
 
 MetadataRecorder::ItemInternal::ItemInternal() = default;
@@ -38,21 +40,24 @@ void MetadataRecorder::Set(uint64_t name_hash, int64_t value) {
       if (!was_active)
         inactive_item_count_--;
 
+      UMA_HISTOGRAM_COUNTS_10000("StackSamplingProfiler.MetadataSlotsUsed",
+                                 item_slots_used);
+
       return;
     }
   }
 
   item_slots_used = TryReclaimInactiveSlots(item_slots_used);
 
-  // TODO(charliea): Add an UMA histogram to track the number of occupied
-  // metadata slots.
-  // See: https://crbug.com/980308
+  UMA_HISTOGRAM_COUNTS_10000("StackSamplingProfiler.MetadataSlotsUsed",
+                             item_slots_used + 1);
 
-  // There should always be room in this data structure because there are more
-  // reserved slots than there are unique metadata names in Chromium.
-  DCHECK_NE(item_slots_used, items_.size())
-      << "Cannot add a new sampling profiler metadata item to an already full "
-         "map.";
+  if (item_slots_used == items_.size()) {
+    // The metadata recorder is full, forcing us to drop this metadata. The
+    // above UMA histogram counting occupied metadata slots should help us set a
+    // max size that avoids this condition during normal Chrome use.
+    return;
+  }
 
   // Wait until the item is fully created before setting |is_active| to true and
   // incrementing |item_slots_used_|, which will signal to readers that the item

@@ -256,6 +256,22 @@ IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenSearchTest, Run) {
                          ash::AppListViewState::kClosed);
 }
 
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenSearchTest,
+                       SearchAfterFullscreen) {
+  // Hit shift+search key; it should switch to kPeeking state.
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kFullscreenAllApps);
+
+  // Type some query; it should show the search results in fullscreen (i.e.
+  // switching to kFullscreenSearch state).
+  SendKeyAndWaitForState(ui::VKEY_A, false,
+                         ash::AppListViewState::kFullscreenSearch);
+
+  // Search key to close the launcher.
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kClosed);
+}
+
 INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
                          LauncherAnimationsFullscreenSearchTest,
                          /*reuse_widget=*/::testing::Bool());

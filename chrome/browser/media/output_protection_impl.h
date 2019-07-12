@@ -55,7 +55,7 @@ class OutputProtectionImpl final
 
   std::unique_ptr<OutputProtectionProxy> proxy_;
 
-  base::WeakPtrFactory<OutputProtectionImpl> weak_factory_;
+  base::WeakPtrFactory<OutputProtectionImpl> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_OUTPUT_PROTECTION_IMPL_H_

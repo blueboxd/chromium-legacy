@@ -34,7 +34,7 @@ TabUIHelper::TabUIData::TabUIData(const GURL& url)
     : title(FormatUrlToSubdomain(url)), favicon(favicon::GetDefaultFavicon()) {}
 
 TabUIHelper::TabUIHelper(content::WebContents* contents)
-    : WebContentsObserver(contents), weak_ptr_factory_(this) {}
+    : WebContentsObserver(contents) {}
 TabUIHelper::~TabUIHelper() {}
 
 base::string16 TabUIHelper::GetTitle() const {

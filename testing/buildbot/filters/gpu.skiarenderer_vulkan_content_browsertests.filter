@@ -3,6 +3,7 @@
 -BrowserSideFlingBrowserTest.InertialGSEGetsBubbledFromOOPIF
 -BrowserSideFlingBrowserTest.InertialGSUBubblingStopsWhenParentCannotScroll
 -*CompositorImplLowEndBrowserTest.CompositorImplDropsResourcesOnBackground*
+-DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
 -DumpAccessibilityTreeTest.*
 -File/MediaTest.VideoBearMp4/0
 -File/MediaTest.VideoTulipWebm/0

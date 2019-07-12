@@ -244,6 +244,20 @@ void MediaController::ObserveImages(
       it == session_images_.end() ? std::vector<MediaImage>() : it->second));
 }
 
+void MediaController::SeekTo(base::TimeDelta seek_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->ipc()->SeekTo(seek_time);
+}
+
+void MediaController::ScrubTo(base::TimeDelta seek_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->ipc()->ScrubTo(seek_time);
+}
+
 void MediaController::SetMediaSession(AudioFocusRequest* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

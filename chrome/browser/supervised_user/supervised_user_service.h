@@ -364,7 +364,7 @@ class SupervisedUserService : public KeyedService,
   bool signout_required_after_supervision_enabled_ = false;
 #endif
 
-  base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
+  base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserService);
 };

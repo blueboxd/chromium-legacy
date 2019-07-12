@@ -59,7 +59,7 @@ class ExtensionActionStorageManager : public ExtensionActionAPI::Observer,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<ExtensionActionStorageManager> weak_factory_;
+  base::WeakPtrFactory<ExtensionActionStorageManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionStorageManager);
 };

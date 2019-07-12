@@ -69,9 +69,7 @@ std::string LoadImageData(const base::FilePath& path) {
 ImageThumbnailRequest::ImageThumbnailRequest(
     int icon_size,
     base::OnceCallback<void(const SkBitmap&)> callback)
-    : icon_size_(icon_size),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+    : icon_size_(icon_size), callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

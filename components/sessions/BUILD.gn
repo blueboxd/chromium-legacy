@@ -19,13 +19,13 @@ if (!is_ios) {
       "content/content_platform_specific_tab_data.h",
       "content/content_record_password_state.cc",
       "content/content_record_password_state.h",
-      "content/content_record_task_id.cc",
-      "content/content_record_task_id.h",
       "content/content_serialized_navigation_builder.cc",
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",
       "content/content_serialized_navigation_driver.h",
       "content/extended_info_handler.h",
+      "content/navigation_task_id.cc",
+      "content/navigation_task_id.h",
     ]
 
     configs += [ ":implementation" ]
@@ -167,9 +167,9 @@ source_set("unit_tests") {
 
   if (!is_ios) {
     sources += [
-      "content/content_record_task_id_unittest.cc",
       "content/content_serialized_navigation_builder_unittest.cc",
       "content/content_serialized_navigation_driver_unittest.cc",
+      "content/navigation_task_id_unittest.cc",
     ]
   }
 

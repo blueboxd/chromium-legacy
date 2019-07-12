@@ -98,7 +98,7 @@ TEST_F(CompositorFrameReporterTest, SubmittedFrameReportingTest) {
 
   AdvanceNowByMs(2);
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kSubmittedFrame, Now());
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   EXPECT_EQ(2, pipeline_reporter_->StageHistorySizeForTesting());
 
   pipeline_reporter_ = nullptr;
@@ -133,10 +133,9 @@ TEST_F(CompositorFrameReporterTest, SubmittedMissedFrameReportingTest) {
   EXPECT_EQ(1, pipeline_reporter_->StageHistorySizeForTesting());
 
   AdvanceNowByMs(2);
+  pipeline_reporter_->MissedSubmittedFrame();
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::
-          kSubmittedFrameMissedDeadline,
-      Now());
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   EXPECT_EQ(2, pipeline_reporter_->StageHistorySizeForTesting());
 
   pipeline_reporter_ = nullptr;
@@ -178,7 +177,7 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
         CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
         &time_delta_history2);
     pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kSubmittedFrame,
+        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
         Now());
   }
   pipeline_reporter_ = nullptr;
@@ -198,9 +197,9 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
     pipeline_reporter_->StartStage(
         CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
         &time_delta_history2);
+    pipeline_reporter_->MissedSubmittedFrame();
     pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::
-            kSubmittedFrameMissedDeadline,
+        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
         Now());
   }
   pipeline_reporter_ = nullptr;
@@ -225,7 +224,7 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
         CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
         &time_delta_history2);
     pipeline_reporter_->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kSubmittedFrame,
+        CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
         Now());
   }
   pipeline_reporter_ = nullptr;
@@ -245,10 +244,9 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
       &time_delta_history2);
+  pipeline_reporter_->MissedSubmittedFrame();
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::
-          kSubmittedFrameMissedDeadline,
-      Now());
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   pipeline_reporter_ = nullptr;
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrameLatencyIncrease.Commit", 0);
@@ -268,10 +266,9 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
   pipeline_reporter_->StartStage(
       CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
       &time_delta_history2);
+  pipeline_reporter_->MissedSubmittedFrame();
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::
-          kSubmittedFrameMissedDeadline,
-      Now());
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   pipeline_reporter_ = nullptr;
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrameLatencyIncrease.Commit", 1);
@@ -288,7 +285,7 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
       CompositorFrameReporter::StageType::kEndCommitToActivation, Now(),
       &time_delta_history2);
   pipeline_reporter_->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kSubmittedFrame, Now());
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame, Now());
   pipeline_reporter_ = nullptr;
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrameLatencyIncrease.Commit", 1);

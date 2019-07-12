@@ -1412,7 +1412,7 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusRestored) {
 
 // ui::TextInputClient is NULL for mac and android.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
   content::WebContents* embedder_web_contents = NULL;
   std::unique_ptr<ExtensionTestMessageListener> done_listener(
       RunAppHelper("testInputMethod", "web_view/focus", NO_TEST_SERVER,
@@ -1468,6 +1468,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
   // <webview>, not the second one.
 
   // Tests ExtendSelectionAndDelete message works in <webview>.
+  // https://crbug.com/971985
   {
     next_step_listener.Reset();
 

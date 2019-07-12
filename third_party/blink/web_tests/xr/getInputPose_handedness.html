@@ -5,7 +5,6 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -22,10 +21,12 @@ let testFunction =
     // Session must have a baseLayer or frame requests will be ignored.
     session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-    let input_source = new MockXRInputSource();
-    input_source.targetRayMode = "tracked-pointer";
-
-    fakeDeviceController.addInputSource(input_source);
+    let input_source = fakeDeviceController.simulateInputSourceConnection({
+      handedness: "none",
+      targetRayMode: "tracked-pointer",
+      pointerOrigin: VALID_POINTER_TRANSFORM,
+      profiles: []
+    });
 
     function CheckNone(time, xrFrame) {
       let source = session.inputSources[0];
@@ -36,7 +37,7 @@ let testFunction =
         assert_equals(source.handedness, "none");
       });
 
-      input_source.handedness = "right"
+      input_source.setHandedness("right");
 
       session.requestAnimationFrame(CheckRight);
     }
@@ -50,7 +51,7 @@ let testFunction =
         assert_equals(source.handedness, "right");
       });
 
-      input_source.handedness = "left";
+      input_source.setHandedness("left");
 
       session.requestAnimationFrame(CheckLeft);
     }
@@ -64,7 +65,7 @@ let testFunction =
         assert_equals(source.handedness, "left");
       });
 
-      input_source.handedness = "none";
+      input_source.setHandedness("none");
 
       session.requestAnimationFrame(CheckNoneAgain);
     }

@@ -94,7 +94,7 @@ class LookalikeUrlService : public KeyedService {
   base::Clock* clock_;
   base::Time last_engagement_fetch_time_;
   std::vector<DomainInfo> engaged_sites_;
-  base::WeakPtrFactory<LookalikeUrlService> weak_factory_;
+  base::WeakPtrFactory<LookalikeUrlService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);
 };

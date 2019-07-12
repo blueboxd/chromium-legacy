@@ -123,4 +123,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     public @ColorRes int getSecurityIconColorStateList() {
         return 0;
     }
+
+    @Override
+    public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {}
 }

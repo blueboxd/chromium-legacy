@@ -126,6 +126,48 @@ bool CSSPrimitiveValue::IsFlex() const {
   return IsNumericLiteralValue() && To<CSSNumericLiteralValue>(this)->IsFlex();
 }
 
+bool CSSPrimitiveValue::IsAngle() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsAngle();
+  return To<CSSMathFunctionValue>(this)->IsAngle();
+}
+
+bool CSSPrimitiveValue::IsLength() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsLength();
+  return To<CSSMathFunctionValue>(this)->IsLength();
+}
+
+bool CSSPrimitiveValue::IsPx() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsPx();
+  return To<CSSMathFunctionValue>(this)->IsPx();
+}
+
+bool CSSPrimitiveValue::IsNumber() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsNumber();
+  return To<CSSMathFunctionValue>(this)->IsNumber();
+}
+
+bool CSSPrimitiveValue::IsInteger() const {
+  // TODO(style-dev): Support integer math functions properly.
+  return IsNumericLiteralValue() &&
+         To<CSSNumericLiteralValue>(this)->IsInteger();
+}
+
+bool CSSPrimitiveValue::IsPercentage() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsPercentage();
+  return To<CSSMathFunctionValue>(this)->IsPercentage();
+}
+
+bool CSSPrimitiveValue::IsTime() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsTime();
+  return To<CSSMathFunctionValue>(this)->IsTime();
+}
+
 CSSPrimitiveValue::CSSPrimitiveValue(ClassType class_type)
     : CSSValue(class_type) {}
 
@@ -174,9 +216,10 @@ double CSSPrimitiveValue::ComputeDegrees() const {
 }
 
 double CSSPrimitiveValue::ComputeDotsPerPixel() const {
-  UnitType current_type = TypeWithCalcResolved();
-  DCHECK(IsResolution(current_type));
-  return GetDoubleValue() * ConversionToCanonicalUnitsScaleFactor(current_type);
+  // TODO(style-dev): Either support math functions on resolutions; or provide a
+  // justification for not supporting it.
+  DCHECK(IsNumericLiteralValue());
+  return To<CSSNumericLiteralValue>(this)->ComputeDotsPerPixel();
 }
 
 template <>

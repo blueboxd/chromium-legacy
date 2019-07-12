@@ -14,19 +14,23 @@ namespace content {
 class NativeFileSystemHandleBase::UsageIndicatorTracker
     : public WebContentsObserver {
  public:
-  UsageIndicatorTracker(int process_id, int frame_id, bool is_directory)
+  UsageIndicatorTracker(int process_id,
+                        int frame_id,
+                        bool is_directory,
+                        const base::FilePath& directory_path)
       : WebContentsObserver(
             WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)),
-        is_directory_(is_directory) {
+        is_directory_(is_directory),
+        directory_path_(directory_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (web_contents() && is_directory_)
-      web_contents()->IncrementNativeFileSystemDirectoryHandleCount();
+      web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
   }
 
   ~UsageIndicatorTracker() override {
     if (web_contents()) {
       if (is_directory_)
-        web_contents()->DecrementNativeFileSystemDirectoryHandleCount();
+        web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
       if (is_writable_)
         web_contents()->DecrementWritableNativeFileSystemHandleCount();
     }
@@ -49,6 +53,7 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
 
  private:
   const bool is_directory_;
+  const base::FilePath directory_path_;
   bool is_writable_ = false;
 };
 
@@ -74,9 +79,23 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
       << url_.type();
   if (url_.type() == storage::kFileSystemTypeNativeLocal) {
     DCHECK_EQ(url_.mount_type(), storage::kFileSystemTypeIsolated);
+    base::FilePath directory_path;
+    if (is_directory) {
+      // For usage reporting purposes try to get the root path of the isolated
+      // file system, i.e. the path the user picked in a directory picker.
+      auto* isolated_context = storage::IsolatedContext::GetInstance();
+      if (!isolated_context->GetRegisteredPath(handle_state_.file_system.id(),
+                                               &directory_path)) {
+        // If for some reason the isolated file system no longer exists, fall
+        // back to the path of the handle itself, which could be a child of the
+        // originally picked path.
+        directory_path = url.path();
+      }
+    }
     usage_indicator_tracker_ = base::SequenceBound<UsageIndicatorTracker>(
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-        context_.process_id, context_.frame_id, bool{is_directory});
+        context_.process_id, context_.frame_id, bool{is_directory},
+        base::FilePath(directory_path));
     UpdateWritableUsage();
   }
 }

@@ -814,6 +814,7 @@
     },
 
     'tryserver.chromium.win': {
+      'gpu-fyi-try-win-xr-builder': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-amd-dbg': 'gpu_fyi_tests_debug_trybot_x86',
       'gpu-fyi-try-win7-amd-dqp': 'deqp_release_trybot_x86',
       'gpu-fyi-try-win7-amd-rel': 'gpu_fyi_tests_release_trybot_x86',
@@ -1181,11 +1182,11 @@
     # Cast Linux takes very long in linking, possibly due to being on GCE
     # (crbug/794423).
     'cast_release_bot': [
-      'cast', 'release_bot', 'minimal_symbols',
+      'cast', 'cast_exo', 'release_bot', 'minimal_symbols',
     ],
 
     'cast_release_trybot': [
-      'cast', 'release_trybot',
+      'cast', 'cast_exo', 'release_trybot',
     ],
 
     'cast_audio_release_bot': [
@@ -1953,6 +1954,10 @@
 
     'cast_audio': {
       'gn_args': 'is_cast_audio_only=true'
+    },
+
+    'cast_exo': {
+      'gn_args': 'enable_cast_wayland_server=true',
     },
 
     'cfi': {

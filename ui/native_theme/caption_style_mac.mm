@@ -121,6 +121,33 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
     *font_variant = base::SysCFStringRefToUTF8(ct_font_face_name);
 }
 
+std::string GetMAWindowColorAsCSSColor() {
+  base::ScopedCFTypeRef<CGColorRef> cg_color(
+      MACaptionAppearanceCopyWindowColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
+
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
+}
+
+// If the window is visible (its opacity is greater than 0), give it padding so
+// it surrounds the text track cue. If it is not visible, its padding should be
+// 0. Webkit uses 0.4em padding so we match that here.
+std::string GetMAWindowPaddingAsCSSNumberInEm() {
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
+  if (opacity > 0)
+    return "0.4em";
+
+  return "";
+}
+
+std::string GetMAWindowRadiusAsCSSNumberInPixels() {
+  float radius =
+      MACaptionAppearanceGetWindowRoundedCornerRadius(kUserDomain, nullptr);
+  return base::StringPrintf("%fpx", radius);
+}
+
 }  // namespace
 #endif
 // static
@@ -134,6 +161,9 @@ base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
 //  style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
 //  style.text_size = GetMATextScaleAsCSSPercent();
 //  style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
+//  style.window_color = GetMAWindowColorAsCSSColor();
+//  style.window_padding = GetMAWindowPaddingAsCSSNumberInEm();
+//  style.window_radius = GetMAWindowRadiusAsCSSNumberInPixels();
 //
 //  GetMAFontAsCSSFontSpecifiers(&style.font_family, &style.font_variant);
 

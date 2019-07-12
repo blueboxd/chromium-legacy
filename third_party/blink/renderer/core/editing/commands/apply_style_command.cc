@@ -2050,7 +2050,7 @@ float ApplyStyleCommand::ComputedFontSize(Node* node) {
     return 0;
 
   // TODO(yosin): We should have printer for |CSSPrimitiveValue::UnitType|.
-  DCHECK(value->TypeWithCalcResolved() == CSSPrimitiveValue::UnitType::kPixels);
+  DCHECK(value->IsPx());
   return value->GetFloatValue();
 }
 

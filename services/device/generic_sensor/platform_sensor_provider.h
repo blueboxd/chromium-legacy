@@ -25,6 +25,10 @@ class PlatformSensorProvider : public PlatformSensorProviderBase {
  protected:
   PlatformSensorProvider() = default;
 
+  // Determines if the ISensor or Windows.Devices.Sensors implementation
+  // should be used on Windows.
+  static bool UseWindowsWinrt();
+
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProvider);
 };
 

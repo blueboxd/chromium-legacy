@@ -18,6 +18,8 @@ class NativeFileSystemPermissionContextFactory
  public:
   static scoped_refptr<ChromeNativeFileSystemPermissionContext> GetForProfile(
       content::BrowserContext* profile);
+  static scoped_refptr<ChromeNativeFileSystemPermissionContext>
+  GetForProfileIfExists(content::BrowserContext* profile);
   static NativeFileSystemPermissionContextFactory* GetInstance();
 
  private:

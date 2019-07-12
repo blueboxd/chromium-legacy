@@ -118,14 +118,6 @@ enum NotificationType {
   // the WebContents containing the NavigationController is destroyed.
   NOTIFICATION_TAB_CLOSING,
 
-  // Stuff inside the tabs ---------------------------------------------------
-
-  // This notification is sent when the result of a find-in-page search is
-  // available with the browser process. The source is a Source<WebContents>.
-  // Details encompass a FindNotificationDetail object that tells whether the
-  // match was found or not found.
-  NOTIFICATION_FIND_RESULT_AVAILABLE,
-
   // Authentication ----------------------------------------------------------
 
   // This is sent when a login prompt is shown.  The source is the

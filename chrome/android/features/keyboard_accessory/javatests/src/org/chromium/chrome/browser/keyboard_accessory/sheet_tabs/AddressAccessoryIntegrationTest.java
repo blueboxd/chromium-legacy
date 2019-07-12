@@ -114,7 +114,7 @@ public class AddressAccessoryIntegrationTest {
 
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
-        mHelper.waitForKeyboardAccessoryToBeShown(true);
+        mHelper.waitForKeyboardAccessoryToBeShown();
 
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(allOf(withContentDescription(R.string.address_accessory_sheet_toggle),
@@ -142,9 +142,10 @@ public class AddressAccessoryIntegrationTest {
         whenDisplayed(withId(R.id.addresses_sheet));
 
         // Click a suggestion.
-        whenDisplayed(withText("McSpartangregor")).perform(click());
+        whenDisplayed(withText("Marcus McSpartangregor")).perform(click());
 
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return mHelper.getFieldText("NAME_FIRST").equals("McSpartangregor"); });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return mHelper.getFieldText("NAME_FIRST").equals("Marcus McSpartangregor");
+        });
     }
 }

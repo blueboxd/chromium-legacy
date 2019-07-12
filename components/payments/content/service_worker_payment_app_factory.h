@@ -42,7 +42,8 @@ class ServiceWorkerPaymentAppFactory {
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>;
   using GetAllPaymentAppsCallback =
       base::OnceCallback<void(content::PaymentAppProvider::PaymentApps,
-                              InstallablePaymentApps)>;
+                              InstallablePaymentApps,
+                              const std::string& error_message)>;
 
   static ServiceWorkerPaymentAppFactory* GetInstance();
 

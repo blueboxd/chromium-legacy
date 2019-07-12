@@ -51,6 +51,7 @@ extern const base::Feature kDedupeGoogleDriveURLs;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;
+extern const base::Feature kOmniboxSearchEngineLogo;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

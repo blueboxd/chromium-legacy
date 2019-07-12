@@ -266,14 +266,13 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
   ClearExcludedSecondaryAccounts();
 }
 
-void ProfileOAuth2TokenServiceIOSDelegate::AddAccountFromSystem(
-    const CoreAccountId& account_id) {
-  AddOrUpdateAccount(account_id);
+void ProfileOAuth2TokenServiceIOSDelegate::ReloadAllAccountsFromSystem() {
+  ReloadCredentials();
 }
 
-void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
-    const CoreAccountId& /* ignored */) {
-  ReloadCredentials();
+void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountFromSystem(
+    const CoreAccountId& account_id) {
+  AddOrUpdateAccount(account_id);
 }
 
 std::unique_ptr<OAuth2AccessTokenFetcher>

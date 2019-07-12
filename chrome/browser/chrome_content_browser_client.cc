@@ -3515,6 +3515,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->text_track_text_shadow = style->text_shadow;
     web_prefs->text_track_font_family = style->font_family;
     web_prefs->text_track_font_variant = style->font_variant;
+    web_prefs->text_track_window_color = style->window_color;
+    web_prefs->text_track_window_padding = style->window_padding;
+    web_prefs->text_track_window_radius = style->window_radius;
   }
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)

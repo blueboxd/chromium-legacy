@@ -33,6 +33,7 @@ class DummyFrameScheduler : public FrameScheduler {
   bool IsFrameVisible() const override { return true; }
   bool IsPageVisible() const override { return true; }
   void SetPaused(bool) override {}
+  void SetShouldReportPostedTasksWhenDisabled(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
   void SetIsAdFrame() override {}

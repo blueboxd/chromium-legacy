@@ -29,7 +29,7 @@ const base::Feature kDontSendKeyEventsToJavascript{
     "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSkipTouchEventFilter{"SkipTouchEventFilter",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 const char kSkipTouchEventFilterTypeParamName[] = "type";
 const char kSkipTouchEventFilterTypeParamValueDiscrete[] = "discrete";
 const char kSkipTouchEventFilterTypeParamValueAll[] = "all";
@@ -38,4 +38,4 @@ const char kSkipTouchEventFilterFilteringProcessParamName[] =
 const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[] = "browser";
 const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
     "browser_and_renderer";
-}
+}  // namespace features

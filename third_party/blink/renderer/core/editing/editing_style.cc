@@ -1877,25 +1877,32 @@ int LegacyFontSizeFromCSSValue(Document* document,
                                bool is_monospace_font,
                                LegacyFontSizeMode mode) {
   if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
-    CSSPrimitiveValue::LengthUnitType length_type;
-    if (CSSPrimitiveValue::UnitTypeToLengthUnitType(
-            primitive_value->TypeWithCalcResolved(), length_type) &&
-        length_type == CSSPrimitiveValue::kUnitTypePixels) {
-      double conversion =
-          CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
-              primitive_value->TypeWithCalcResolved());
-      int pixel_font_size =
-          clampTo<int>(primitive_value->GetDoubleValue() * conversion);
-      int legacy_font_size = FontSizeFunctions::LegacyFontSize(
-          document, pixel_font_size, is_monospace_font);
-      // Use legacy font size only if pixel value matches exactly to that of
-      // legacy font size.
-      if (mode == kAlwaysUseLegacyFontSize ||
-          FontSizeFunctions::FontSizeForKeyword(
-              document, legacy_font_size, is_monospace_font) == pixel_font_size)
-        return legacy_font_size;
+    if (primitive_value->IsLength()) {
+      // TODO(crbug.com/979895): This doesn't seem to be handle math functions
+      // correctly. This is the result of a refactoring, and may have revealed
+      // an existing bug. Fix it if necessary.
+      CSSPrimitiveValue::UnitType length_unit =
+          primitive_value->IsNumericLiteralValue()
+              ? To<CSSNumericLiteralValue>(primitive_value)->GetType()
+              : CSSPrimitiveValue::UnitType::kPixels;
+      if (!CSSPrimitiveValue::IsRelativeUnit(length_unit)) {
+        double conversion =
+            CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
+                length_unit);
+        int pixel_font_size =
+            clampTo<int>(primitive_value->GetDoubleValue() * conversion);
+        int legacy_font_size = FontSizeFunctions::LegacyFontSize(
+            document, pixel_font_size, is_monospace_font);
+        // Use legacy font size only if pixel value matches exactly to that of
+        // legacy font size.
+        if (mode == kAlwaysUseLegacyFontSize ||
+            FontSizeFunctions::FontSizeForKeyword(document, legacy_font_size,
+                                                  is_monospace_font) ==
+                pixel_font_size)
+          return legacy_font_size;
 
-      return 0;
+        return 0;
+      }
     }
   }
 

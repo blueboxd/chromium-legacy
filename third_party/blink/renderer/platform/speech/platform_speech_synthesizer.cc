@@ -113,4 +113,8 @@ void PlatformSpeechSynthesizer::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_speech_synthesizer_client_);
 }
 
+void PlatformSpeechSynthesizer::Dispose() {
+  web_speech_synthesizer_.reset();
+}
+
 }  // namespace blink

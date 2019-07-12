@@ -66,19 +66,40 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
 
 }  // namespace
 
-TextTrackContainer::TextTrackContainer(Document& document)
-    : HTMLDivElement(document), default_font_size_(0) {}
-
 TextTrackContainer::TextTrackContainer(HTMLMediaElement& media_element)
-    : TextTrackContainer(media_element.GetDocument()) {
+    : HTMLDivElement(media_element.GetDocument()),
+      media_element_(&media_element),
+      default_font_size_(0) {
   SetShadowPseudoId(AtomicString("-webkit-media-text-track-container"));
-  if (IsHTMLVideoElement(media_element))
-    ObserveSizeChanges(media_element);
+  if (IsHTMLVideoElement(*media_element_))
+    ObserveSizeChanges(*media_element_);
 }
 
 void TextTrackContainer::Trace(Visitor* visitor) {
+  visitor->Trace(media_element_);
   visitor->Trace(video_size_observer_);
   HTMLDivElement::Trace(visitor);
+}
+
+Node::InsertionNotificationRequest TextTrackContainer::InsertedInto(
+    ContainerNode& root) {
+  if (!video_size_observer_ && media_element_->isConnected() &&
+      IsHTMLVideoElement(*media_element_)) {
+    ObserveSizeChanges(*media_element_);
+  }
+
+  return HTMLDivElement::InsertedInto(root);
+}
+
+void TextTrackContainer::RemovedFrom(ContainerNode& insertion_point) {
+  DCHECK(!media_element_->isConnected());
+
+  HTMLDivElement::RemovedFrom(insertion_point);
+
+  if (video_size_observer_) {
+    video_size_observer_->disconnect();
+    video_size_observer_.Clear();
+  }
 }
 
 LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,

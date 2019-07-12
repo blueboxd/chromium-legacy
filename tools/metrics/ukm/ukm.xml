@@ -269,6 +269,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.InteractiveTiming.FirstInputDelay3">
+    <obsolete>
+      Removed July 2019 in favor of FirstInputDelay4.
+    </obsolete>
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation, in the AMP subframe. See
+      https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
+    </summary>
+  </metric>
+  <metric name="SubFrame.InteractiveTiming.FirstInputDelay4">
     <summary>
       Measures First Input Delay, the duration between the hardware timestamp
       and the start of event processing on the main thread for the first

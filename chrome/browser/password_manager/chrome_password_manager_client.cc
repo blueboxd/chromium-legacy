@@ -489,8 +489,8 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
       GetPasswordProtectionService();
   if (pps) {
     pps->MaybeStartPasswordFieldOnFocusRequest(
-        web_contents(), GetMainFrameURL(), form_action, frame_url,
-        pps->GetAccountInfo().hosted_domain);
+        web_contents(), web_contents()->GetLastCommittedURL(), form_action,
+        frame_url, pps->GetAccountInfo().hosted_domain);
   }
 }
 
@@ -516,9 +516,9 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
       (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD) &&
       (sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled());
   pps->MaybeStartProtectedPasswordEntryRequest(
-      web_contents(), GetMainFrameURL(), username, password_type,
-      pps->GetAccountInfo().hosted_domain, is_account_syncing, matching_domains,
-      password_field_exists);
+      web_contents(), web_contents()->GetLastCommittedURL(), username,
+      password_type, pps->GetAccountInfo().hosted_domain, is_account_syncing,
+      matching_domains, password_field_exists);
 }
 
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {

@@ -121,12 +121,12 @@ public class ChromeApplication extends Application {
 
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
-            ModuleInstaller.recordModuleAvailability();
+            ModuleInstaller.getInstance().recordModuleAvailability();
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
         // these values are set before any crashes are reported.
-        ModuleInstaller.updateCrashKeys();
+        ModuleInstaller.getInstance().updateCrashKeys();
 
         BuildInfo.setFirebaseAppId(FirebaseConfig.getFirebaseAppId());
 

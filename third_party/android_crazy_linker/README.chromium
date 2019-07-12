@@ -101,3 +101,5 @@ Local Modifications:
 - Improve FileDescriptor class.
 
 - Safer zip parsing code (avoid integer overflows and add range checks).
+
+- Add a document about testing the crazy linker in a Chromium checkout

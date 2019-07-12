@@ -13,10 +13,13 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -78,15 +81,10 @@ class FindInPageTest : public InProcessBrowserTest {
   }
 
   FindNotificationDetails WaitForFindResult() {
-    content::Source<WebContents> source(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    ui_test_utils::WindowedNotificationObserverWithDetails
-        <FindNotificationDetails> observer(
-            chrome::NOTIFICATION_FIND_RESULT_AVAILABLE, source);
-    observer.Wait();
-    FindNotificationDetails details;
-    EXPECT_TRUE(observer.GetDetailsFor(source.map_key(), &details));
-    return details;
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ui_test_utils::FindResultWaiter(web_contents).Wait();
+    return FindTabHelper::FromWebContents(web_contents)->find_result();
   }
 
   FindNotificationDetails WaitForFinalFindResult() {
@@ -263,8 +261,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   // Focus the location bar, find something on the page, close the find box,
@@ -276,8 +273,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       ASCIIToUTF16("a"), true, false, NULL, NULL);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Focus the location bar, open and close the find box, focus should return to
@@ -288,8 +284,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 

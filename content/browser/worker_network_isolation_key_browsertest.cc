@@ -1,0 +1,208 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/path_service.h"
+#include "base/strings/strcat.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "content/public/common/content_paths.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "content/shell/browser/shell.h"
+#include "net/base/features.h"
+
+namespace content {
+
+namespace {
+
+bool SupportsSharedWorker() {
+#if defined(OS_ANDROID)
+  // SharedWorkers are not enabled on Android. https://crbug.com/154571
+  return false;
+#else
+  return true;
+#endif
+}
+
+}  // namespace
+
+enum class WorkerType {
+  kServiceWorker,
+  kSharedWorker,
+};
+
+class WorkerNetworkIsolationKeyBrowserTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool /* test_same_network_isolation_key */, WorkerType>> {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByTopFrameOrigin);
+    ContentBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  // Does a cross-process navigation to clear the in-memory cache.
+  // We are relying on this navigation to discard the old process.
+  void CrossProcessNavigation() {
+    RenderProcessHost* process =
+        shell()->web_contents()->GetMainFrame()->GetProcess();
+    RenderProcessHostWatcher process_watcher(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    NavigateToURL(shell(), GetWebUIURL("version"));
+    process_watcher.Wait();
+  }
+
+  // Register a service/shared worker |main_script_file| in the scope of
+  // |embedded_test_server|'s origin, that does
+  // importScripts(|import_script_url|) and fetch(|fetch_url|).
+  void RegisterWorkerThatDoesImportScriptsAndFetch(
+      const net::EmbeddedTestServer* embedded_test_server,
+      WorkerType worker_type,
+      const std::string& main_script_file,
+      const GURL& import_script_url,
+      const GURL& fetch_url) {
+    content::TestNavigationObserver navigation_observer(
+        shell()->web_contents(), /*number_of_navigations*/ 1,
+        content::MessageLoopRunner::QuitMode::DEFERRED);
+    std::string subframe_url =
+        embedded_test_server->GetURL("/workers/service_worker_setup.html")
+            .spec();
+
+    std::string subframe_name = GetUniqueSubframeName();
+    EvalJsResult result =
+        EvalJs(shell()->web_contents()->GetMainFrame(),
+               JsReplace("createFrame($1, $2)", subframe_url, subframe_name));
+    ASSERT_TRUE(result.error.empty());
+    navigation_observer.Wait();
+
+    RenderFrameHost* subframe_rfh = FrameMatchingPredicate(
+        shell()->web_contents(),
+        base::BindRepeating(&FrameMatchesName, subframe_name));
+    DCHECK(subframe_rfh);
+
+    std::string main_script_file_with_param = base::StrCat(
+        {main_script_file, "?import_script_url=", import_script_url.spec(),
+         "&fetch_url=", fetch_url.spec()});
+
+    switch (worker_type) {
+      case WorkerType::kServiceWorker:
+        EXPECT_EQ("ok",
+                  EvalJs(subframe_rfh,
+                         JsReplace("setup($1)", main_script_file_with_param)));
+        break;
+      case WorkerType::kSharedWorker:
+        EXPECT_EQ(nullptr, EvalJs(subframe_rfh,
+                                  JsReplace("let worker = new SharedWorker($1)",
+                                            main_script_file_with_param)));
+        break;
+    }
+  }
+
+ private:
+  std::string GetUniqueSubframeName() {
+    subframe_id_ += 1;
+    return "subframe_name_" + base::NumberToString(subframe_id_);
+  }
+
+  size_t subframe_id_ = 0;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that network isolation key is filled in correctly for service/shared
+// workers. The test navigates to "a.com" and creates two cross-origin iframes
+// that each start a worker. The frames/workers may have the same origin, so
+// worker1 is on "b.com" and worker2 is on either "b.com" or "c.com". The test
+// checks the cache status of importScripts() and a fetch() request from the
+// workers to another origin "d.com". When the workers had the same origin (the
+// same network isolation key), we expect the second importScripts() and fetch()
+// request to exist in the cache. When the origins are different, we expect the
+// second requests to not exist in the cache.
+IN_PROC_BROWSER_TEST_P(WorkerNetworkIsolationKeyBrowserTest,
+                       ImportScriptsAndFetchRequest) {
+  bool test_same_network_isolation_key;
+  WorkerType worker_type;
+  std::tie(test_same_network_isolation_key, worker_type) = GetParam();
+
+  if (worker_type == WorkerType::kSharedWorker && !SupportsSharedWorker())
+    return;
+
+  // Discard the old process to clear the in-memory cache.
+  CrossProcessNavigation();
+
+  net::EmbeddedTestServer cross_origin_server_1;
+  cross_origin_server_1.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(cross_origin_server_1.Start());
+
+  net::EmbeddedTestServer cross_origin_server_tmp;
+  cross_origin_server_tmp.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(cross_origin_server_tmp.Start());
+
+  auto& cross_origin_server_2 = test_same_network_isolation_key
+                                    ? cross_origin_server_1
+                                    : cross_origin_server_tmp;
+
+  net::EmbeddedTestServer resource_request_server;
+  resource_request_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(resource_request_server.Start());
+  GURL import_script_url = resource_request_server.GetURL("/workers/empty.js");
+  GURL fetch_url = resource_request_server.GetURL("/workers/empty.html");
+
+  std::map<GURL, size_t> request_completed_count;
+
+  base::RunLoop cache_status_waiter;
+  URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [&](URLLoaderInterceptor::RequestParams* params) { return false; }),
+      base::BindLambdaForTesting(
+          [&](const GURL& request_url,
+              const network::URLLoaderCompletionStatus& status) {
+            if (request_url == import_script_url || request_url == fetch_url) {
+              size_t& num_completed = request_completed_count[request_url];
+              num_completed += 1;
+              if (num_completed == 1) {
+                EXPECT_FALSE(status.exists_in_cache);
+              } else if (num_completed == 2) {
+                EXPECT_EQ(status.exists_in_cache,
+                          test_same_network_isolation_key);
+              } else {
+                NOTREACHED();
+              }
+            }
+            if (request_completed_count[import_script_url] == 2 &&
+                request_completed_count[fetch_url] == 2) {
+              cache_status_waiter.Quit();
+            }
+          }),
+      {});
+
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/workers/frame_factory.html"),
+      1);
+
+  RegisterWorkerThatDoesImportScriptsAndFetch(
+      &cross_origin_server_1, worker_type, "worker_with_import_and_fetch.js",
+      import_script_url, fetch_url);
+  RegisterWorkerThatDoesImportScriptsAndFetch(
+      &cross_origin_server_2, worker_type, "worker_with_import_and_fetch_2.js",
+      import_script_url, fetch_url);
+
+  cache_status_waiter.Run();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    WorkerNetworkIsolationKeyBrowserTest,
+    ::testing::Combine(testing::Bool(),
+                       ::testing::Values(WorkerType::kServiceWorker,
+                                         WorkerType::kSharedWorker)));
+
+}  // namespace content

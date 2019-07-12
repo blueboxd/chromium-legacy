@@ -307,6 +307,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
       << mailbox_holder.texture_target;
 
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+  GLuint frame_texture =
+      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
   unsigned source_texture = 0;
   gfx::ColorSpace color_space_for_skia;
   *wrapped_video_frame_texture =
@@ -314,9 +317,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
   if (*wrapped_video_frame_texture) {
     // Fast path where we can avoid a copy, by having last_image_ directly wrap
     // the VideoFrame texture.
-    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_texture =
-        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+    source_texture = frame_texture;
     color_space_for_skia = video_frame->ColorSpace();
   } else {
     // TODO(dcastagna): At the moment Skia doesn't support targets different
@@ -326,9 +327,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
     gl->GenTextures(1, &source_texture);
     DCHECK(source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
-    PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-        gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
-        GL_UNSIGNED_BYTE, 0, false, false);
+    gl->CopyTextureCHROMIUM(frame_texture, 0, GL_TEXTURE_2D, source_texture, 0,
+                            GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
+    gl->DeleteTextures(1, &frame_texture);
   }
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;

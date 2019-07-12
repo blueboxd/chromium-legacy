@@ -25,7 +25,6 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/service/sequence_id.h"
@@ -258,11 +257,7 @@ SurfacesInstance::SurfacesInstance()
                                                  nullptr /* gr_shader_cache */);
     }
     if (settings.use_skia_renderer_non_ddl) {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
-          gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
-          task_executor->shared_image_manager(),
-          task_executor->sync_point_manager(),
-          false /* need_swapbuffers_ack */);
+      NOTIMPLEMENTED();
     } else {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
           std::make_unique<SkiaOutputSurfaceDependencyWebView>(

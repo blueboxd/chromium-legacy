@@ -23,6 +23,7 @@ struct WebApkInfo {
   WebApkInfo(std::string name,
              std::string short_name,
              std::string package_name,
+             std::string id,
              int shell_apk_version,
              int version_code,
              std::string uri,
@@ -34,7 +35,8 @@ struct WebApkInfo {
              base::Optional<SkColor> theme_color,
              base::Optional<SkColor> background_color,
              base::Time last_update_check_time,
-             bool relax_updates);
+             bool relax_updates,
+             std::string update_status);
   ~WebApkInfo();
 
   WebApkInfo& operator=(WebApkInfo&& other) noexcept;
@@ -48,6 +50,9 @@ struct WebApkInfo {
 
   // Package name of the WebAPK.
   std::string package_name;
+
+  // Internal ID of the WebAPK.
+  std::string id;
 
   // Shell APK version of the WebAPK.
   int shell_apk_version;
@@ -65,6 +70,9 @@ struct WebApkInfo {
   base::Optional<SkColor> background_color;
   base::Time last_update_check_time;
   bool relax_updates;
+
+  // Update Status of the WebAPK.
+  std::string update_status;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebApkInfo);

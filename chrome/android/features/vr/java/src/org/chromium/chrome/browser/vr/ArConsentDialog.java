@@ -142,6 +142,6 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
 
     @NativeMethods
     /* package */ interface Natives {
-        void onUserConsentResult(long nativeArcoreConsentPrompt, boolean allowed);
+        void onUserConsentResult(long nativeArCoreConsentPrompt, boolean allowed);
     }
 }

@@ -1483,35 +1483,6 @@ TEST_F(TabletModeControllerTest,
   EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
 }
 
-// Test that when OnKioskNextEnabled() is called the UI mode changes into
-// TabletMode. Ensure that UI mode keeps staying in Tablet Mode.
-TEST_F(TabletModeControllerTest, TestKioskNextModeUI) {
-  ui::DeviceDataManagerTestApi().SetMouseDevices({});
-  ui::DeviceDataManagerTestApi().SetTouchpadDevices({});
-  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
-
-  tablet_mode_controller()->OnKioskNextEnabled();
-  EXPECT_TRUE(IsTabletModeStarted());
-
-  // Attach a mouse. Check that we are still in Tablet Mode.
-  ui::DeviceDataManagerTestApi().SetMouseDevices(
-      {ui::InputDevice(0, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  EXPECT_TRUE(IsTabletModeStarted());
-  ui::DeviceDataManagerTestApi().SetMouseDevices({});
-
-  // Attach Touchpad
-  ui::DeviceDataManagerTestApi().SetTouchpadDevices(
-      {ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
-  EXPECT_TRUE(IsTabletModeStarted());
-  ui::DeviceDataManagerTestApi().SetTouchpadDevices({});
-
-  // Attach Keyboard
-  ui::DeviceDataManagerTestApi().SetKeyboardDevices(
-      {ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")});
-  EXPECT_TRUE(IsTabletModeStarted());
-  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
-}
-
 // Test that tablet mode controller does not respond to the input device changes
 // during its suspend.
 TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {

@@ -4,6 +4,7 @@
 
 '''The 'grit rc2grd' tool.'''
 
+from __future__ import print_function
 
 import os.path
 import getopt
@@ -189,8 +190,8 @@ C preprocessor on the .rc file or manually edit it before using this tool.
   def Run(self, opts, args):
     args = self.ParseOptions(args)
     if len(args) != 1:
-      print ('This tool takes a single tool-specific argument, the path to the\n'
-             '.rc file to process.')
+      print('This tool takes a single tool-specific argument, the path to the\n'
+            '.rc file to process.')
       return 2
     self.SetOptions(opts)
 
@@ -203,7 +204,8 @@ C preprocessor on the .rc file or manually edit it before using this tool.
     with util.WrapOutputStream(file(out_path, 'w'), 'utf-8') as outfile:
       outfile.write(grd_text)
 
-    print 'Wrote output file %s.\nPlease check for TODO items in the file.' % out_path
+    print('Wrote output file %s.\nPlease check for TODO items in the file.' %
+          (out_path,))
 
 
   def Process(self, rctext, rc_path):
@@ -411,5 +413,5 @@ C preprocessor on the .rc file or manually edit it before using this tool.
 
       return msg
     except:
-      print 'Exception processing message with text "%s"' % text
+      print('Exception processing message with text "%s"' % text)
       raise

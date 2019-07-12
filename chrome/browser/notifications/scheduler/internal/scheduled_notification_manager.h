@@ -19,6 +19,7 @@ namespace notifications {
 struct NotificationEntry;
 struct NotificationParams;
 struct SchedulerConfig;
+class IconStore;
 
 // Class to manage in-memory scheduled notifications loaded from the storage.
 class ScheduledNotificationManager {
@@ -43,7 +44,8 @@ class ScheduledNotificationManager {
 
   // Creates the instance.
   static std::unique_ptr<ScheduledNotificationManager> Create(
-      std::unique_ptr<CollectionStore<NotificationEntry>> store,
+      std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
+      std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
       const SchedulerConfig& config);
 

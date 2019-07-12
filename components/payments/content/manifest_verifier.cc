@@ -144,7 +144,8 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
       manifests_to_download.size();
   if (number_of_manifests_to_verify_ == 0) {
     RemoveInvalidPaymentApps();
-    std::move(finished_verification_callback_).Run(std::move(apps_));
+    std::move(finished_verification_callback_)
+        .Run(std::move(apps_), first_error_message_);
     std::move(finished_using_resources_callback_).Run();
     return;
   }
@@ -199,7 +200,8 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
     cached_manifest_urls_.insert(method_manifest_url);
     if (--number_of_manifests_to_verify_ == 0) {
       RemoveInvalidPaymentApps();
-      std::move(finished_verification_callback_).Run(std::move(apps_));
+      std::move(finished_verification_callback_)
+          .Run(std::move(apps_), first_error_message_);
     }
   }
 
@@ -212,15 +214,19 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
 void ManifestVerifier::OnPaymentMethodManifestDownloaded(
     const GURL& method_manifest_url,
     const GURL& unused_method_manifest_url_after_redirects,
-    const std::string& content) {
+    const std::string& content,
+    const std::string& error_message) {
   DCHECK_LT(0U, number_of_manifests_to_download_);
 
   if (content.empty()) {
+    if (first_error_message_.empty())
+      first_error_message_ = error_message;
     if (cached_manifest_urls_.find(method_manifest_url) ==
             cached_manifest_urls_.end() &&
         --number_of_manifests_to_verify_ == 0) {
       RemoveInvalidPaymentApps();
-      std::move(finished_verification_callback_).Run(std::move(apps_));
+      std::move(finished_verification_callback_)
+          .Run(std::move(apps_), first_error_message_);
     }
 
     if (--number_of_manifests_to_download_ == 0)
@@ -256,7 +262,8 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
 
     if (--number_of_manifests_to_verify_ == 0) {
       RemoveInvalidPaymentApps();
-      std::move(finished_verification_callback_).Run(std::move(apps_));
+      std::move(finished_verification_callback_)
+          .Run(std::move(apps_), first_error_message_);
     }
   }
 

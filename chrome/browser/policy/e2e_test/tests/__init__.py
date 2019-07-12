@@ -4,8 +4,7 @@
 
 from force_google_safe_search.force_google_safe_search import *
 from homepage.homepage import *
-# TODO(feiling): Fix RestoreOnStartupTest on LUCI bots.
-# from restore_on_startup.restore_on_startup import *
+from restore_on_startup.restore_on_startup import *
 from popups_allowed.popups_allowed import *
 from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *

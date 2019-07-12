@@ -5,6 +5,7 @@
 
 '''Unit tests for misc.GritNode'''
 
+from __future__ import print_function
 
 import StringIO
 import contextlib

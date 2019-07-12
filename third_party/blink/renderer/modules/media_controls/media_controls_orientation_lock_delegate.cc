@@ -50,29 +50,12 @@ enum class MetadataAvailabilityMetrics {
   kMax = 3
 };
 
-// These values are used for histograms. Do not reorder.
-enum class LockResultMetrics {
-  kAlreadyLocked = 0,  // Frame already has a lock.
-  kPortrait = 1,       // Locked to portrait.
-  kLandscape = 2,      // Locked to landscape.
-
-  // Keep at the end.
-  kMax = 3
-};
-
 void RecordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, metadata_histogram,
       ("Media.Video.FullscreenOrientationLock.MetadataAvailability",
        static_cast<int>(MetadataAvailabilityMetrics::kMax)));
   metadata_histogram.Count(static_cast<int>(metrics));
-}
-
-void RecordLockResult(LockResultMetrics metrics) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, lock_result_histogram,
-                      ("Media.Video.FullscreenOrientationLock.LockResult",
-                       static_cast<int>(LockResultMetrics::kMax)));
-  lock_result_histogram.Count(static_cast<int>(metrics));
 }
 
 void RecordAutoRotateEnabled(bool enabled) {
@@ -144,20 +127,13 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
 
   auto* controller =
       ScreenOrientationController::From(*GetDocument().GetFrame());
-  if (controller->MaybeHasActiveLock()) {
-    RecordLockResult(LockResultMetrics::kAlreadyLocked);
+  if (controller->MaybeHasActiveLock())
     return;
-  }
 
   locked_orientation_ = ComputeOrientationLock();
   DCHECK_NE(locked_orientation_, kWebScreenOrientationLockDefault);
   controller->lock(locked_orientation_,
                    std::make_unique<DummyScreenOrientationCallback>());
-
-  if (locked_orientation_ == kWebScreenOrientationLockLandscape)
-    RecordLockResult(LockResultMetrics::kLandscape);
-  else
-    RecordLockResult(LockResultMetrics::kPortrait);
 
   MaybeListenToDeviceOrientation();
 }

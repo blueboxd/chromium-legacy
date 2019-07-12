@@ -5,6 +5,7 @@
 
 '''Unit tests for base.Node functionality (as used in various subclasses)'''
 
+from __future__ import print_function
 
 import os
 import sys

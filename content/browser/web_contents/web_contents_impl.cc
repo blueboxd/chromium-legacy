@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -1575,7 +1576,16 @@ bool WebContentsImpl::IsConnectedToSerialPort() {
 }
 
 bool WebContentsImpl::HasNativeFileSystemDirectoryHandles() {
-  return native_file_system_directory_handle_count_ > 0;
+  return !native_file_system_directory_handles_.empty();
+}
+
+std::vector<base::FilePath>
+WebContentsImpl::GetNativeFileSystemDirectoryHandles() {
+  std::vector<base::FilePath> result;
+  result.reserve(native_file_system_directory_handles_.size());
+  for (auto const& entry : native_file_system_directory_handles_)
+    result.push_back(entry.first);
+  return result;
 }
 
 bool WebContentsImpl::HasWritableNativeFileSystemHandles() {
@@ -6882,7 +6892,8 @@ void WebContentsImpl::DecrementSerialActiveFrameCount() {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
-void WebContentsImpl::IncrementNativeFileSystemDirectoryHandleCount() {
+void WebContentsImpl::AddNativeFileSystemDirectoryHandle(
+    const base::FilePath& path) {
   // Trying to invalidate the tab state while being destroyed could result in a
   // use after free.
   if (IsBeingDestroyed())
@@ -6891,14 +6902,16 @@ void WebContentsImpl::IncrementNativeFileSystemDirectoryHandleCount() {
   // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
   // to update both the tab-level usage indicator and the usage indicator in the
   // omnibox.
-  native_file_system_directory_handle_count_++;
-  if (native_file_system_directory_handle_count_ == 1) {
+  const bool was_empty = native_file_system_directory_handles_.empty();
+  native_file_system_directory_handles_[path]++;
+  if (was_empty) {
     NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
   }
 }
 
-void WebContentsImpl::DecrementNativeFileSystemDirectoryHandleCount() {
+void WebContentsImpl::RemoveNativeFileSystemDirectoryHandle(
+    const base::FilePath& path) {
   // Trying to invalidate the tab state while being destroyed could result in a
   // use after free.
   if (IsBeingDestroyed())
@@ -6907,9 +6920,13 @@ void WebContentsImpl::DecrementNativeFileSystemDirectoryHandleCount() {
   // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
   // to update both the tab-level usage indicator and the usage indicator in the
   // omnibox.
-  DCHECK_NE(0u, native_file_system_directory_handle_count_);
-  native_file_system_directory_handle_count_--;
-  if (native_file_system_directory_handle_count_ == 0) {
+  auto it = native_file_system_directory_handles_.find(path);
+  DCHECK(it != native_file_system_directory_handles_.end());
+  DCHECK_NE(0u, it->second);
+  it->second--;
+  if (it->second == 0)
+    native_file_system_directory_handles_.erase(it);
+  if (native_file_system_directory_handles_.empty()) {
     NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
   }

@@ -120,22 +120,17 @@ Only seen for the
 [`android_app_bundle_module`](#target_android_app_bundle_module)
 type. Whether or not this module is the base module for some bundle.
 
-# Top-level `resources` dictionary:
-
-This dictionary only appears for a few target types that can contain or
-relate to Android resources (e.g. `android_resources` or `android_apk`):
-
-* `resources['dependency_zips']`:
+* `deps_info['dependency_zips']`:
 List of `deps_info['resources_zip']` entries for all `android_resources`
 dependencies for the current target.
 
-* `resource['extra_package_names']`:
+* `deps_info['extra_package_names']`:
 Always empty for `android_resources` types. Otherwise,
 the list of `deps_info['package_name']` entries for all `android_resources`
 dependencies for the current target. Computed automatically by
 `write_build_config.py`.
 
-* `resources['extra_r_text_files']`:
+* `deps_info['extra_r_text_files']`:
 Always empty for `android_resources` types. Otherwise, the list of
 `deps_info['r_text']` entries for all `android_resources` dependencies for
 the current target. Computed automatically.
@@ -840,7 +835,6 @@ def main(argv):
   # android_resources options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
   parser.add_option('--resources-zip', help='Path to target\'s resources zip.')
-  parser.add_option('--r-text', help='Path to target\'s R.txt file.')
   parser.add_option('--package-name',
       help='Java package name for these resources.')
   parser.add_option('--android-manifest', help='Path to android manifest.')
@@ -929,6 +923,19 @@ def main(argv):
   parser.add_option('--incremental-install-json-path',
                     help="Path to the target's generated incremental install "
                     "json.")
+  parser.add_option(
+      '--tested-apk-config',
+      help='Path to the build config of the tested apk (for an instrumentation '
+      'test apk).')
+  parser.add_option(
+      '--proguard-enabled',
+      action='store_true',
+      help='Whether proguard is enabled for this apk or bundle module.')
+  parser.add_option(
+      '--proguard-configs',
+      help='GN-list of proguard flag files to use in final apk.')
+  parser.add_option(
+      '--proguard-mapping-path', help='Path to jar created by ProGuard step')
 
   # apk options that are static library specific
   parser.add_option(
@@ -936,22 +943,13 @@ def main(argv):
       help='GN list of .build_configs of targets that use this target as a '
       'static library.')
   parser.add_option(
-      '--static-library-jar-path',
-      help='Equivalent to what normally would be the jar_path for the APK.')
-  parser.add_option(
       '--resource-ids-provider',
       help='Path to the .build_config for the APK that this static library '
       'target uses to generate stable resource IDs.')
 
-  parser.add_option('--tested-apk-config',
-      help='Path to the build config of the tested apk (for an instrumentation '
-      'test apk).')
-  parser.add_option('--proguard-enabled', action='store_true',
-      help='Whether proguard is enabled for this apk or bundle module.')
-  parser.add_option('--proguard-configs',
-      help='GN-list of proguard flag files to use in final apk.')
-  parser.add_option('--proguard-mapping-path',
-      help='Path to jar created by ProGuard step')
+  # options shared between android_resources and apk targets
+  parser.add_option('--r-text-path', help='Path to target\'s R.txt file.')
+
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
 
@@ -965,9 +963,6 @@ def main(argv):
   parser.add_option(
       '--module-pathmap-path',
       help='Path to pathmap file for resource paths in a bundle module.')
-  parser.add_option(
-      '--module-rtxt-path',
-      help='Path to R.txt file for resources in a bundle module.')
   parser.add_option(
       '--base-whitelist-rtxt-path',
       help='Path to R.txt file for the base resources whitelist.')
@@ -1033,9 +1028,6 @@ def main(argv):
     if options.apk_proto_resources:
       raise Exception('--apk-proto-resources can only be used with '
                       '--type=android_app_bundle_module')
-    if options.module_rtxt_path:
-      raise Exception('--module-rxt-path can only be used with '
-                      '--type=android_app_bundle_module')
     if options.module_pathmap_path:
       raise Exception('--module-pathmap-path can only be used with '
                       '--type=android_app_bundle_module')
@@ -1077,9 +1069,6 @@ def main(argv):
     if options.type != 'android_apk':
       raise Exception(
           '--static-library-dependent-configs only supports --type=android_apk')
-    if not options.static_library_jar_path:
-      raise Exception('Can\'t have --static-library-dependent-configs without '
-                      '--static-library-jar-path')
   options.static_library_dependent_configs = build_utils.ParseGnList(
       options.static_library_dependent_configs)
   static_library_dependent_configs_by_path = {
@@ -1163,6 +1152,9 @@ def main(argv):
       else:
         gradle['dependent_java_projects'].append(c['path'])
 
+  if options.r_text_path:
+    deps_info['r_text_path'] = options.r_text_path
+
   # TODO(tiborg): Remove creation of JNI info for type group and java_library
   # once we can generate the JNI registration based on APK / module targets as
   # opposed to groups and libraries.
@@ -1176,9 +1168,6 @@ def main(argv):
 
     if options.apk_proto_resources:
       deps_info['proto_resources_path'] = options.apk_proto_resources
-
-    if options.module_rtxt_path:
-      deps_info['module_rtxt_path'] = options.module_rtxt_path
 
     if options.module_pathmap_path:
       deps_info['module_pathmap_path'] = options.module_pathmap_path
@@ -1256,8 +1245,6 @@ def main(argv):
       deps_info['package_name'] = manifest.GetPackageName()
     if options.package_name:
       deps_info['package_name'] = options.package_name
-    if options.r_text:
-      deps_info['r_text'] = options.r_text
 
     deps_info['resources_dirs'] = []
     if options.resource_dirs:
@@ -1304,7 +1291,6 @@ def main(argv):
   if options.type in (
       'android_resources', 'android_apk', 'junit_binary', 'resource_rewriter',
       'dist_aar', 'android_app_bundle_module'):
-    config['resources'] = {}
 
     dependency_zips = [
         c['resources_zip'] for c in all_resources_deps if c['resources_zip']
@@ -1316,32 +1302,33 @@ def main(argv):
       extra_package_names = [
           c['package_name'] for c in all_resources_deps if 'package_name' in c]
       extra_r_text_files = [
-          c['r_text'] for c in all_resources_deps if 'r_text' in c]
+          c['r_text_path'] for c in all_resources_deps if 'r_text_path' in c
+      ]
 
     # For feature modules, remove any resources that already exist in the base
     # module.
     if base_module_build_config:
       dependency_zips = [
           c for c in dependency_zips
-          if c not in base_module_build_config['resources']['dependency_zips']
+          if c not in base_module_build_config['deps_info']['dependency_zips']
       ]
       extra_package_names = [
           c for c in extra_package_names if c not in
-          base_module_build_config['resources']['extra_package_names']
+          base_module_build_config['deps_info']['extra_package_names']
       ]
       extra_r_text_files = [
           c for c in extra_r_text_files if c not in
-          base_module_build_config['resources']['extra_r_text_files']
+          base_module_build_config['deps_info']['extra_r_text_files']
       ]
 
-    config['resources']['dependency_zips'] = dependency_zips
-    config['resources']['extra_package_names'] = extra_package_names
-    config['resources']['extra_r_text_files'] = extra_r_text_files
+    config['deps_info']['dependency_zips'] = dependency_zips
+    config['deps_info']['extra_package_names'] = extra_package_names
+    config['deps_info']['extra_r_text_files'] = extra_r_text_files
     if options.type == 'android_apk' and options.tested_apk_config:
-      config['resources']['arsc_package_name'] = (
+      config['deps_info']['arsc_package_name'] = (
           tested_apk_config['package_name'])
     if options.res_size_info:
-      config['resources']['size_info'] = options.res_size_info
+      config['deps_info']['res_size_info'] = options.res_size_info
 
   if is_apk_or_module_target:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
@@ -1446,38 +1433,43 @@ def main(argv):
     assert len(base_module_configs) == 1, 'Must have exactly 1 base module!'
     deps_info['base_module_config'] = base_module_configs[0]['path']
 
+  # Map configs to classpath entries that should be included in their final dex.
+  classpath_entries_by_owning_config = collections.defaultdict(list)
+  extra_main_r_text_files = []
   if is_static_library_dex_provider_target:
     # Map classpath entries to configs that include them in their classpath.
     configs_by_classpath_entry = collections.defaultdict(list)
     static_lib_jar_paths = {}
-    for config_path, dep_config in (
-        static_library_dependent_configs_by_path.iteritems()):
+    for config_path, dep_config in (sorted(
+        static_library_dependent_configs_by_path.iteritems())):
       # For bundles, only the jar path and jni sources of the base module
       # are relevant for proguard. Should be updated when bundle feature
       # modules support JNI.
       base_config = dep_config
       if dep_config['type'] == 'android_app_bundle':
         base_config = GetDepConfig(dep_config['base_module_config'])
+      extra_main_r_text_files.append(base_config['r_text_path'])
       static_lib_jar_paths[config_path] = base_config['jar_path']
       all_configs.extend(dep_config['proguard_all_configs'])
       extra_proguard_classpath_jars.extend(
           dep_config['proguard_classpath_jars'])
       all_java_sources.extend(base_config['jni']['all_source'])
+
+      # The srcjars containing the generated R.java files are excluded for APK
+      # targets the use static libraries, so we add them here to ensure the
+      # union of resource IDs are available in the static library APK.
+      for r_text in base_config['extra_r_text_files']:
+        if r_text not in extra_r_text_files:
+          extra_r_text_files.append(r_text)
+      for package in base_config['extra_package_names']:
+        if package not in extra_package_names:
+          extra_package_names.append(package)
       for cp_entry in dep_config['java_runtime_classpath']:
-        # The APK Java targets for the static library dependent targets will
-        # have some of the same classes (R.java) due to shared resource
-        # dependencies. To avoid Proguard failures due to duplicate classes, we
-        # merge the APK jars into the static library's jar_path as a
-        # preprocessing build step.
-        if cp_entry != base_config['jar_path']:
-          configs_by_classpath_entry[cp_entry].append(config_path)
+        configs_by_classpath_entry[cp_entry].append(config_path)
 
     for cp_entry in java_full_classpath:
       configs_by_classpath_entry[cp_entry].append(options.build_config)
 
-    # Map configs to classpath entries that should be included in their final
-    # dex.
-    classpath_entries_by_owning_config = collections.defaultdict(list)
     for cp_entry, candidate_configs in configs_by_classpath_entry.iteritems():
       config_path = (candidate_configs[0]
                      if len(candidate_configs) == 1 else options.build_config)
@@ -1485,32 +1477,16 @@ def main(argv):
       java_full_classpath.append(cp_entry)
 
     java_full_classpath = sorted(set(java_full_classpath))
-    deps_info['static_library_dependent_classpath_configs'] = {
-        path: sorted(set(classpath))
-        for path, classpath in classpath_entries_by_owning_config.iteritems()
-    }
 
-    # resource_ids_provider's jar must go first to ensure the correct R.java
-    # IDs are used.
-    ordered_static_lib_jar_paths = []
-    if options.resource_ids_provider:
-      assert (options.resource_ids_provider in options.
-              static_library_dependent_configs), (
-                  '--resource-ids-provider must be in '
-                  '--static-library-dependent-configs')
-      ordered_static_lib_jar_paths.append(
-          static_lib_jar_paths[options.resource_ids_provider])
-
-    ordered_static_lib_jar_paths.extend(
-        x for x in static_lib_jar_paths.itervalues()
-        if x not in ordered_static_lib_jar_paths)
-    ordered_static_lib_jar_paths.append(options.static_library_jar_path)
-    deps_info[
-        'static_library_dependent_apk_jars'] = ordered_static_lib_jar_paths
-    deps_info['static_library_proguard_mapping_output_paths'] = [
-        d['proguard_mapping_path']
-        for d in static_library_dependent_configs_by_path.itervalues()
-    ]
+  deps_info['static_library_proguard_mapping_output_paths'] = sorted([
+      d['proguard_mapping_path']
+      for d in static_library_dependent_configs_by_path.itervalues()
+  ])
+  deps_info['static_library_dependent_classpath_configs'] = {
+      path: sorted(set(classpath))
+      for path, classpath in classpath_entries_by_owning_config.iteritems()
+  }
+  deps_info['extra_main_r_text_files'] = sorted(extra_main_r_text_files)
 
   if is_apk_or_module_target or options.type in ('group', 'java_library',
                                                  'junit_binary'):

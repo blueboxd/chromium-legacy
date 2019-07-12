@@ -153,7 +153,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
         requested_method_data_, &apps);
     if (apps.empty()) {
-      OnPaymentAppsVerified(std::move(apps));
+      OnPaymentAppsVerified(std::move(apps), first_error_message_);
       OnPaymentAppsVerifierFinishedUsingResources();
       return;
     }
@@ -172,7 +172,10 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
                        base::Unretained(this)));
   }
 
-  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps) {
+  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps,
+                             const std::string& error_message) {
+    if (first_error_message_.empty())
+      first_error_message_ = error_message;
     if (apps.empty() && crawler_ != nullptr) {
       // Crawls installable web payment apps if no web payment apps have been
       // installed.
@@ -193,13 +196,17 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
 
     std::move(callback_).Run(
         std::move(apps),
-        ServiceWorkerPaymentAppFactory::InstallablePaymentApps());
+        ServiceWorkerPaymentAppFactory::InstallablePaymentApps(),
+        first_error_message_);
   }
 
   void OnPaymentAppsCrawled(
-      std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info) {
+      std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info,
+      const std::string& error_message) {
+    if (first_error_message_.empty())
+      first_error_message_ = error_message;
     std::move(callback_).Run(content::PaymentAppProvider::PaymentApps(),
-                             std::move(apps_info));
+                             std::move(apps_info), first_error_message_);
   }
 
   void OnPaymentAppsCrawlerFinishedUsingResources() {
@@ -234,6 +241,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
   std::vector<mojom::PaymentMethodDataPtr> requested_method_data_;
   ServiceWorkerPaymentAppFactory::GetAllPaymentAppsCallback callback_;
   base::OnceClosure finished_using_resources_callback_;
+  std::string first_error_message_;
 
   std::unique_ptr<ManifestVerifier> verifier_;
   bool is_payment_verifier_finished_using_resources_ = true;

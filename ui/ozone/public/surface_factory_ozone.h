@@ -121,6 +121,16 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
       gfx::BufferFormat format,
       gfx::BufferUsage usage);
 
+  // Similar to CreateNativePixmap, but returns the result asynchronously.
+  using NativePixmapCallback =
+      base::OnceCallback<void(scoped_refptr<gfx::NativePixmap>)>;
+  virtual void CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
+                                       VkDevice vk_device,
+                                       gfx::Size size,
+                                       gfx::BufferFormat format,
+                                       gfx::BufferUsage usage,
+                                       NativePixmapCallback callback);
+
   // Create a single native buffer from an existing handle. Takes ownership of
   // |handle| and can be called on any thread.
   virtual scoped_refptr<gfx::NativePixmap> CreateNativePixmapFromHandle(

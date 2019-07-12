@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -30,9 +32,11 @@ class IsolatedWorldCSPDelegate final
  public:
   IsolatedWorldCSPDelegate(Document& document,
                            scoped_refptr<SecurityOrigin> security_origin,
+                           int world_id,
                            bool apply_policy)
       : document_(&document),
         security_origin_(std::move(security_origin)),
+        world_id_(world_id),
         apply_policy_(apply_policy) {
     DCHECK(security_origin_);
   }
@@ -95,14 +99,17 @@ class IsolatedWorldCSPDelegate final
   }
 
   void DisableEval(const String& error_message) override {
-    // TODO(crbug.com/896041): Implement this.
-    NOTIMPLEMENTED();
+    if (!document_->GetFrame())
+      return;
+    document_->GetFrame()->GetScriptController().DisableEvalForIsolatedWorld(
+        world_id_, error_message);
   }
 
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) override {
-    // TODO(crbug.com/896041): Figure out if this needs to be implemented.
-    NOTIMPLEMENTED();
+    // This allows users to set breakpoints in the Devtools for the case when
+    // script execution is blocked by CSP.
+    probe::ScriptExecutionBlockedByCSP(document_, directive_text);
   }
 
   void DidAddContentSecurityPolicies(
@@ -111,6 +118,7 @@ class IsolatedWorldCSPDelegate final
  private:
   const Member<Document> document_;
   const scoped_refptr<SecurityOrigin> security_origin_;
+  const int world_id_;
 
   // Whether the 'IsolatedWorldCSP' feature is enabled, and we are applying the
   // CSP provided by the isolated world.
@@ -172,7 +180,7 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
 
   IsolatedWorldCSPDelegate* delegate =
       MakeGarbageCollected<IsolatedWorldCSPDelegate>(
-          document, std::move(self_origin), apply_policy);
+          document, std::move(self_origin), world_id, apply_policy);
   csp->BindToDelegate(*delegate);
 
   if (apply_policy) {

@@ -104,6 +104,11 @@ source_set("generic_sensor") {
   }
 
   if (is_win) {
+    sources += [
+      "platform_sensor_provider_winrt.cc",
+      "platform_sensor_provider_winrt.h",
+    ]
+
     libs = [
       "portabledeviceguids.lib",
       "sensorsapi.lib",

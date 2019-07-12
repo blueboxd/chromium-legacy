@@ -6,6 +6,8 @@
 '''Unit test that checks some of util functions.
 '''
 
+from __future__ import print_function
+
 import os
 import sys
 if __name__ == '__main__':
@@ -82,7 +84,7 @@ class UtilUnittest(unittest.TestCase):
       with open('testfile', 'wb') as f:
         f.write(data)
       if util.ReadFile('testfile', encoding) != expected_result:
-        print (util.ReadFile('testfile', encoding), expected_result)
+        print(util.ReadFile('testfile', encoding), expected_result)
       self.failUnless(util.ReadFile('testfile', encoding) == expected_result)
 
     test_std_newline = '\xEF\xBB\xBFabc\ndef'  # EF BB BF is UTF-8 BOM

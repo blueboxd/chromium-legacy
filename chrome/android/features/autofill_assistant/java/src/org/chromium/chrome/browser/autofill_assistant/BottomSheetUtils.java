@@ -13,8 +13,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
 class BottomSheetUtils {
     /** Request {@code controller} to show {@code content} and expand the sheet when it is shown. */
-    static void showContentAndExpand(
-            BottomSheetController controller, AssistantBottomSheetContent content) {
+    static void showContentAndExpand(BottomSheetController controller,
+            AssistantBottomSheetContent content, boolean animate) {
         // Add an observer that makes sure the bottom sheet content is always shown, even in the
         // peek state.
         BottomSheet bottomSheet = controller.getBottomSheet();
@@ -62,7 +62,7 @@ class BottomSheetUtils {
         });
 
         // Show the content.
-        if (controller.requestShowContent(content, /* animate= */ true)) {
+        if (controller.requestShowContent(content, animate)) {
             controller.expandSheet();
         } else {
             // If the content is not directly shown, add an observer that will expand the sheet when

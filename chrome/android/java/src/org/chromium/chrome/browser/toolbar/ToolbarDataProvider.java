@@ -153,4 +153,9 @@ public interface ToolbarDataProvider {
     default public String getDisplaySearchTerms() {
         return null;
     }
+
+    /**
+     * Turn on/off the google logo in the omnibox
+     */
+    void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo);
 }

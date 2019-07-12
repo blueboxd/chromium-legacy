@@ -1129,6 +1129,13 @@ void VTTCue::ApplyUserOverrideCSSProperties() {
   SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
                                    CSSPropertyID::kFontSize,
                                    settings->GetTextTrackTextSize());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_,
+                                   CSSPropertyID::kBackgroundColor,
+                                   settings->GetTextTrackWindowColor());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kPadding,
+                                   settings->GetTextTrackWindowPadding());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kBorderRadius,
+                                   settings->GetTextTrackWindowRadius());
 }
 
 ExecutionContext* VTTCue::GetExecutionContext() const {

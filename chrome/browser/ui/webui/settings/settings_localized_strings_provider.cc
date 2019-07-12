@@ -1037,48 +1037,53 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("naturalScrollLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kNaturalScrollHelpURL));
 }
-#endif
 
-void AddDownloadsStrings(content::WebUIDataSource* html_source) {
+void AddFilesStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
-    {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
-    {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
-    {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
-    {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
-    {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
-    {"openFileTypesAutomatically", IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
-#if defined(OS_CHROMEOS)
-    {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
-    {"smbSharesLearnMoreLabel",
-     IDS_SETTINGS_DOWNLOADS_SMB_SHARES_LEARN_MORE_LABEL},
-    {"addSmbShare", IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE},
-    {"smbShareAddedSuccessfulMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE},
-    {"smbShareAddedErrorMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE},
-    {"smbShareAddedAuthFailedMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE},
-    {"smbShareAddedNotFoundMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE},
-    {"smbShareAddedUnsupportedDeviceMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE},
-    {"smbShareAddedMountExistsMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
-    {"smbShareAddedInvalidURLMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
-    {"smbShareAddedInvalidSSOURLMessage",
-     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
-#endif
+      {"filesPageTitle", IDS_OS_SETTINGS_FILES},
+      {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
+      {"smbSharesLearnMoreLabel",
+       IDS_SETTINGS_DOWNLOADS_SMB_SHARES_LEARN_MORE_LABEL},
+      {"addSmbShare", IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE},
+      {"smbShareAddedSuccessfulMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE},
+      {"smbShareAddedErrorMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE},
+      {"smbShareAddedAuthFailedMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE},
+      {"smbShareAddedNotFoundMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE},
+      {"smbShareAddedUnsupportedDeviceMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE},
+      {"smbShareAddedMountExistsMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
+      {"smbShareAddedInvalidURLMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
+      {"smbShareAddedInvalidSSOURLMessage",
+       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-#if defined(OS_CHROMEOS)
   chromeos::smb_dialog::AddLocalizedStrings(html_source);
 
   html_source->AddString("smbSharesLearnMoreURL",
                          GetHelpUrlWithBoard(chrome::kSmbSharesLearnMoreURL));
-#endif
+}
+#endif  // defined(OS_CHROMEOS)
+
+void AddDownloadsStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
+      {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
+      {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
+      {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
+      {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
+      {"openFileTypesAutomatically",
+       IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
 }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -3221,6 +3226,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
+  AddFilesStrings(html_source);
   AddInternetStrings(html_source);
   AddMultideviceStrings(html_source);
   AddParentalControlStrings(html_source);

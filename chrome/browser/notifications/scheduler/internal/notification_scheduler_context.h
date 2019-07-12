@@ -16,7 +16,6 @@ namespace notifications {
 class BackgroundTaskCoordinator;
 class DisplayAgent;
 class DisplayDecider;
-class IconStore;
 class ImpressionHistoryTracker;
 class NotificationBackgroundTaskScheduler;
 class NotificationSchedulerClientRegistrar;
@@ -30,7 +29,6 @@ class NotificationSchedulerContext {
   NotificationSchedulerContext(
       std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
       std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
-      std::unique_ptr<IconStore> icon_store,
       std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
       std::unique_ptr<ScheduledNotificationManager> notification_manager,
       std::unique_ptr<DisplayAgent> display_agent,
@@ -45,8 +43,6 @@ class NotificationSchedulerContext {
   BackgroundTaskCoordinator* background_task_coordinator() {
     return background_task_coordinator_.get();
   }
-
-  IconStore* icon_store() { return icon_store_.get(); }
 
   ImpressionHistoryTracker* impression_tracker() {
     return impression_tracker_.get();
@@ -65,9 +61,6 @@ class NotificationSchedulerContext {
  private:
   // Holds a list of clients using the notification scheduler system.
   std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar_;
-
-  // Stores notification icons.
-  std::unique_ptr<IconStore> icon_store_;
 
   // Tracks user impressions towards specific notification type.
   std::unique_ptr<ImpressionHistoryTracker> impression_tracker_;

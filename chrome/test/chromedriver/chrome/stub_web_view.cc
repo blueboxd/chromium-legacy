@@ -222,14 +222,6 @@ Status StubWebView::SynthesizePinchGesture(int x, int y, double scale_factor) {
   return Status(kOk);
 }
 
-Status StubWebView::GetScreenOrientation(std::string* orientation) {
-  return Status(kOk);
-}
-
-Status StubWebView::SetScreenOrientation(std::string orientation) {
-  return Status(kOk);
-}
-
 bool StubWebView::IsOOPIF(const std::string& frame_id) {
   return false;
 }

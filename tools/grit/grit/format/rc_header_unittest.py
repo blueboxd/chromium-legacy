@@ -8,6 +8,8 @@
 # GRD samples exceed the 80 character limit.
 # pylint: disable-msg=C6310
 
+from __future__ import print_function
+
 import os
 import sys
 import unittest

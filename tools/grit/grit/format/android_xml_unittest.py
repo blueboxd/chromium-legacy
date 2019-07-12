@@ -5,6 +5,8 @@
 
 """Unittest for android_xml.py."""
 
+from __future__ import print_function
+
 import os
 import StringIO
 import sys

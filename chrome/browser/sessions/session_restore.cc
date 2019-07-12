@@ -27,7 +27,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -38,6 +37,8 @@
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
@@ -53,8 +54,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -95,7 +94,7 @@ std::set<SessionRestoreImpl*>* active_session_restorers = nullptr;
 // SessionRestoreImpl is responsible for fetching the set of tabs to create
 // from SessionService. SessionRestoreImpl deletes itself when done.
 
-class SessionRestoreImpl : public content::NotificationObserver {
+class SessionRestoreImpl : public BrowserListObserver {
  public:
   SessionRestoreImpl(Profile* profile,
                      Browser* browser,
@@ -155,10 +154,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
       return browser;
     }
 
-    if (browser_) {
-      registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                     content::Source<Browser>(browser_));
-    }
+    if (browser_)
+      BrowserList::AddObserver(this);
 
     return browser_;
   }
@@ -252,6 +249,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   ~SessionRestoreImpl() override {
+    BrowserList::RemoveObserver(this);
     active_session_restorers->erase(this);
     if (active_session_restorers->empty()) {
       delete active_session_restorers;
@@ -259,18 +257,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_BROWSER_CLOSED:
-        delete this;
-        return;
-
-      default:
-        NOTREACHED();
-        break;
-    }
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override {
+    if (browser == browser_)
+      delete this;
   }
 
   Profile* profile() { return profile_; }
@@ -318,7 +308,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // if the browser is deleted. Don't listen to anything. This avoid a
       // possible double delete too (if browser is closed before DeleteSoon() is
       // processed).
-      registrar_.RemoveAll();
+      BrowserList::RemoveObserver(this);
     }
 
 #if defined(OS_CHROMEOS)
@@ -705,8 +695,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // windows when the nested run loop exits.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_;
   SessionID active_window_id_;
-
-  content::NotificationRegistrar registrar_;
 
   // When asynchronous it's possible for there to be no windows. To make sure
   // Chrome doesn't prematurely exit we register a KeepAlive for the lifetime

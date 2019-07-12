@@ -143,6 +143,7 @@ NewPasswordFormManager::NewPasswordFormManager(
   observed_form_ = observed_form;
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
   form_fetcher_->AddConsumer(this);
+  votes_uploader_.StoreInitialFieldValues(observed_form);
 }
 
 NewPasswordFormManager::NewPasswordFormManager(

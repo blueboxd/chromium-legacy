@@ -186,7 +186,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 40
+// Next available id: 41
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -305,6 +305,11 @@ message AutofillUploadContents {
     // A list of possible types for the field with their corresponding validity
     // states based on the user's data.
     repeated AutofillTypeValiditiesPair autofill_type_validities = 35;
+
+    // A low-entropy hash of the field's initial value before user-interactions
+    // or automatic fillings. This field is used to detect static
+    // placeholders.
+    optional uint32 initial_value_hash = 40;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;
@@ -320,7 +325,7 @@ message AutofillUploadContents {
   // The form name.
   optional string form_name = 16;
 
-  // True iff the the non-obfuscated password values were shown to the user.
+  // True if the non-obfuscated password values were shown to the user.
   optional bool passwords_revealed = 24;
 
   // The section of noisified data about password.
@@ -341,10 +346,10 @@ message AutofillUploadContents {
   // Whether the password has any special symbol.
   optional bool password_has_special_symbol = 28;
 
-  // Noisifed password length.
+  // Noisified password length.
   optional uint32 password_length = 29;
 
-  // If |password_has_special_symbol| is true, this field contains nosified
+  // If |password_has_special_symbol| is true, this field contains noisified
   // information about a special symbol used in a user-created password stored
   // in ASCII code.
   // Otherwise, this field is unset.

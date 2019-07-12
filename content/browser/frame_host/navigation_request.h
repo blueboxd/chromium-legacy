@@ -450,6 +450,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return is_same_process_;
   }
 
+  void set_complete_callback_for_testing(
+      ThrottleChecksFinishedCallback callback) {
+    complete_callback_for_testing_ = std::move(callback);
+  }
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -726,6 +731,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // navigation or an error page.
   bool IsWaitingToCommit();
 
+  // Helper function to run and reset the |complete_callback_|. This marks the
+  // end of a round of NavigationThrottleChecks.
+  // TODO(zetamoo): This can be removed once the navigation states are merged.
+  void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -920,6 +930,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // Set in ReadyToCommitNavigation.
   bool is_same_process_ = true;
+
+  // This callback will be run when all throttle checks have been performed.
+  // TODO(zetamoo): This can be removed once the navigation states are merged.
+  ThrottleChecksFinishedCallback complete_callback_;
+
+  // This test-only callback will be run when all throttle checks have been
+  // performed.
+  // TODO(clamy): Revisit the unit test architecture.
+  ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

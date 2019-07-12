@@ -1167,13 +1167,6 @@ void Dispatcher::OnUpdatePermissions(
                                                 std::move(withheld));
   UpdateOriginPermissions(*extension);
 
-  if (params.uses_default_policy_host_restrictions) {
-    extension->permissions_data()->SetUsesDefaultHostRestrictions();
-  } else {
-    extension->permissions_data()->SetPolicyHostRestrictions(
-        params.policy_blocked_hosts, params.policy_allowed_hosts);
-  }
-
   bindings_system_->OnExtensionPermissionsUpdated(params.extension_id);
   UpdateBindings(extension->id());
 }

@@ -28,7 +28,12 @@ class WebApksHandler : public content::WebUIMessageHandler {
   // Handler for the "requestWebApksInfo" message. This requests
   // information for the installed WebAPKs and returns it to JS using
   // OnWebApkInfoReceived().
-  virtual void HandleRequestWebApksInfo(const base::ListValue* args);
+  void HandleRequestWebApksInfo(const base::ListValue* args);
+
+  // Handler for the "requestWebApkUpdate" message. This sets the
+  // update flag for a set of WebAPKs. |args| should contain the
+  // webapp IDs of the WebAPKs to update.
+  void HandleRequestWebApkUpdate(const base::ListValue* args);
 
  private:
   // Sends information for the installed WebAPKs to JS.

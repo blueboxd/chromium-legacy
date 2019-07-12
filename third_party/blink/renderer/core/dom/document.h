@@ -729,8 +729,16 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // FinishingPrinting denotes that the non-printing layout state is being
   // restored.
-  enum PrintingState { kNotPrinting, kPrinting, kFinishingPrinting };
+  enum PrintingState {
+    kNotPrinting,
+    kBeforePrinting,
+    kPrinting,
+    kFinishingPrinting
+  };
   bool Printing() const { return printing_ == kPrinting; }
+  bool BeforePrintingOrPrinting() const {
+    return printing_ == kPrinting || printing_ == kBeforePrinting;
+  }
   bool FinishingOrIsPrinting() {
     return printing_ == kPrinting || printing_ == kFinishingPrinting;
   }

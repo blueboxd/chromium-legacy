@@ -15,7 +15,7 @@
 namespace base {
 namespace internal {
 
-TaskSource::RunIntent::RunIntent(RunIntent&& other)
+TaskSource::RunIntent::RunIntent(RunIntent&& other) noexcept
     : task_source_(other.task_source_),
       concurrency_status_(other.concurrency_status_) {
   other.task_source_ = nullptr;
@@ -111,8 +111,8 @@ RegisteredTaskSource::RegisteredTaskSource() = default;
 RegisteredTaskSource::RegisteredTaskSource(std::nullptr_t)
     : RegisteredTaskSource() {}
 
-RegisteredTaskSource::RegisteredTaskSource(RegisteredTaskSource&& other) =
-    default;
+RegisteredTaskSource::RegisteredTaskSource(
+    RegisteredTaskSource&& other) noexcept = default;
 
 RegisteredTaskSource::~RegisteredTaskSource() {
   Unregister();

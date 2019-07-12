@@ -247,13 +247,15 @@
                 </os-settings-languages-page>
               </settings-section>
             </template>
+            <!-- TODO(jordynass): Change from downloads to files once
+              pageVisibility is forked for OS Settings.-->
             <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"
                 restamp>
-              <settings-section page-title="$i18n{downloadsPageTitle}"
-                  section="downloads">
-                <os-settings-downloads-page prefs="{{prefs}}"
+              <settings-section page-title="$i18n{filesPageTitle}"
+                  section="files">
+                <os-settings-files-page prefs="{{prefs}}"
                     page-visibility="[[pageVisibility.downloads]]">
-                </os-settings-downloads-page>
+                </os-settings-files-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.printing)]]"

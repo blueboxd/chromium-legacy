@@ -98,9 +98,6 @@ class BASE_EXPORT SharedMemory {
   // Closes a shared memory handle.
   static void CloseHandle(const SharedMemoryHandle& handle);
 
-  // Returns the maximum number of handles that can be open at once per process.
-  static size_t GetHandleLimit();
-
   // Duplicates The underlying OS primitive. Returns an invalid handle on
   // failure. The caller is responsible for destroying the duplicated OS
   // primitive.

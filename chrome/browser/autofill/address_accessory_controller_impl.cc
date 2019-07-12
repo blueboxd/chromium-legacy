@@ -27,10 +27,7 @@ namespace {
 // Defines which types to load from the Personal data manager and add as field
 // to the address sheet. Order matters.
 constexpr ServerFieldType kTypesToInclude[] = {
-    // TODO(crbug.com/965494): Possibly, the names should be in a single chip.
-    ServerFieldType::NAME_FIRST,
-    ServerFieldType::NAME_MIDDLE,
-    ServerFieldType::NAME_LAST,
+    ServerFieldType::NAME_FULL,
     ServerFieldType::COMPANY_NAME,
     ServerFieldType::ADDRESS_HOME_LINE1,
     ServerFieldType::ADDRESS_HOME_LINE2,

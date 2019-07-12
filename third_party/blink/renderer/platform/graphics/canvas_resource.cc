@@ -685,14 +685,13 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
       is_overlay_candidate_(is_overlay_candidate),
       size_(size),
       is_origin_top_left_(is_origin_top_left),
-      texture_target_(
-          is_overlay_candidate_
-              ? gpu::GetBufferTextureTarget(
-                    gfx::BufferUsage::SCANOUT,
-                    BufferFormat(ColorParams().TransferableResourceFormat()),
-                    context_provider_wrapper_->ContextProvider()
-                        ->GetCapabilities())
-              : GL_TEXTURE_2D),
+      texture_target_(is_overlay_candidate_
+                          ? gpu::GetBufferTextureTarget(
+                                gfx::BufferUsage::SCANOUT,
+                                ColorParams().GetBufferFormat(),
+                                context_provider_wrapper_->ContextProvider()
+                                    ->GetCapabilities())
+                          : GL_TEXTURE_2D),
       owning_thread_id_(Thread::Current()->ThreadId()),
       owning_thread_task_runner_(Thread::Current()->GetTaskRunner()) {
   if (!context_provider_wrapper_)
@@ -709,7 +708,7 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto shared_image_mailbox = shared_image_interface->CreateSharedImage(
-      ColorParams().TransferableResourceFormat(), gfx::Size(size),
+      viz::GetResourceFormat(ColorParams().GetBufferFormat()), gfx::Size(size),
       ColorParams().GetStorageGfxColorSpace(), flags);
 
   // Wait for the mailbox to be ready to be used.

@@ -209,8 +209,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   // Helper method to set the OnThrottleChecksComplete callback on the
-  // NavigationHandle.
-  void PrepareCompleteCallbackOnHandle(NavigationHandleImpl* handle);
+  // NavigationRequest.
+  void PrepareCompleteCallbackOnRequest();
 
   // Check if the navigation corresponds to a same-document navigation.
   // Only use on renderer-initiated navigations.

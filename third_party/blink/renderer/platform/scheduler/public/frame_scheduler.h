@@ -77,6 +77,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // allowed to run on a suspended frame.
   virtual void SetPaused(bool) = 0;
 
+  // Sets whether or not this frame should report (via tracing) tasks that are
+  // posted to it.
+  virtual void SetShouldReportPostedTasksWhenDisabled(bool) = 0;
+
   // Set whether this frame is cross origin w.r.t. the top level frame. Cross
   // origin frames may use a different scheduling policy from same origin
   // frames.

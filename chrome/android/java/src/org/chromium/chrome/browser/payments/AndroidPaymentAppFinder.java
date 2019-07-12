@@ -391,6 +391,11 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     }
 
     @Override
+    public void onVerificationError(String errorMessage) {
+        mCallback.onGetPaymentAppsError(errorMessage);
+    }
+
+    @Override
     public void onFinishedVerification() {
         mPendingVerifiersCount--;
         if (mPendingVerifiersCount != 0) return;

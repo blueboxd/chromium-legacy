@@ -117,7 +117,8 @@ bool CompositorFilterOperations::operator==(
 }
 
 String CompositorFilterOperations::ToString() const {
-  return filter_operations_.ToString().c_str();
+  return String(filter_operations_.ToString().c_str()) + " at " +
+         reference_box_.ToString();
 }
 
 }  // namespace blink

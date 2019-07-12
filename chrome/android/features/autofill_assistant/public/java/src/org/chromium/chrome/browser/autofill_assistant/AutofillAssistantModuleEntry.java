@@ -5,19 +5,28 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.Map;
 
 /**
- * Interface for base module to start the autofill assistant
- * experience in dynamic feature module.
+ * Interface between base module and assistant DFM.
  */
+@ModuleInterface(module = "autofill_assistant",
+        impl = "org.chromium.chrome.browser.autofill_assistant.AutofillAssistantModuleEntryImpl")
 interface AutofillAssistantModuleEntry {
     /**
-     * Launches Autofill Assistant on the current web contents, expecting autostart. If {@code
-     * skipOnboarding} is false, the onboarding will first be shown and the Autofill Assistant will
-     * start only if the user accepts to proceed.
+     * Starts Autofill Assistant on the current tab of the given chrome activity.
+     *
+     * <p>When started this way, Autofill Assistant appears immediately in the bottom sheet, expects
+     * a single autostartable script for the tab's current URL, runs that script until the end and
+     * disappears.
      */
-    void start(boolean skipOnboarding, String initialUrl, Map<String, String> parameters,
-            String experimentIds, Bundle intentExtras);
+    void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
+            String initialUrl, Map<String, String> parameters, String experimentIds,
+            Bundle intentExtras);
 }

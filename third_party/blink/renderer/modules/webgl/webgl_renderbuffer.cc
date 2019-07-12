@@ -45,9 +45,7 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
   SetObject(rbo);
 }
 
-WebGLRenderbuffer::~WebGLRenderbuffer() {
-  RunDestructor();
-}
+WebGLRenderbuffer::~WebGLRenderbuffer() = default;
 
 void WebGLRenderbuffer::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
   gl->DeleteRenderbuffers(1, &object_);

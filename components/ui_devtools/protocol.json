@@ -261,10 +261,13 @@
                     ],
                     "returns": [
                         {
-                            "name": "inlineStyle",
-                            "$ref": "CSSStyle",
+                            "name": "matchedCSSRules",
+                            "type": "array",
+                            "items": {
+                                "$ref": "RuleMatch"
+                            },
                             "optional": true,
-                            "description": "Inline style for the specified DOM node."
+                            "description": "CSS rules matching this node, from all applicable stylesheets."
                         }
                     ]
                 },

@@ -573,7 +573,8 @@
     <dimen name="revamped_context_menu_divider_padding">8dp</dimen>
     <dimen name="revamped_context_menu_header_image_max_size">60dp</dimen>
     <dimen name="revamped_context_menu_header_circle_bg_diameter">48dp</dimen>
-    <dimen name="revamped_context_menu_header_circle_bg_margin">6dp</dimen>
+    <dimen name="revamped_context_menu_header_circle_bg_lateral_margin">6dp</dimen>
+    <dimen name="revamped_context_menu_header_circle_bg_vertical_margin">22dp</dimen>
     <dimen name="revamped_context_menu_header_monogram_text_size">16dp</dimen>
     <dimen name="revamped_context_menu_header_monogram_size">26dp</dimen>
     <!-- Reader Mode dimensions -->

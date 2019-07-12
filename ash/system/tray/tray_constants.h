@@ -34,7 +34,6 @@ extern const int kTrayMenuWidth;
 
 extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
-extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupButtonEndMargin;
 
 // The padding used on the left and right of labels. This applies to all labels
@@ -71,8 +70,6 @@ extern const SkColor kPublicAccountUserCardTextColor;
 extern const SkColor kPublicAccountUserCardNameColor;
 
 extern const SkColor kHeaderBackgroundColor;
-
-extern const SkColor kHeaderTextColorNormal;
 
 // Constants for the title row.
 constexpr int kTitleRowVerticalPadding = 4;

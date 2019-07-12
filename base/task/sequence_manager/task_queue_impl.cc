@@ -136,6 +136,9 @@ TaskQueueImpl::AnyThread::AnyThread(TimeDomain* time_domain)
 
 TaskQueueImpl::AnyThread::~AnyThread() = default;
 
+TaskQueueImpl::AnyThread::TracingOnly::TracingOnly() = default;
+TaskQueueImpl::AnyThread::TracingOnly::~TracingOnly() = default;
+
 TaskQueueImpl::MainThreadOnly::MainThreadOnly(TaskQueueImpl* task_queue,
                                               TimeDomain* time_domain)
     : time_domain(time_domain),
@@ -143,10 +146,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(TaskQueueImpl* task_queue,
           new WorkQueue(task_queue, "delayed", WorkQueue::QueueType::kDelayed)),
       immediate_work_queue(new WorkQueue(task_queue,
                                          "immediate",
-                                         WorkQueue::QueueType::kImmediate)),
-      is_enabled(true),
-      blame_context(nullptr),
-      is_enabled_for_test(true) {}
+                                         WorkQueue::QueueType::kImmediate)) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -290,6 +290,8 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
 
     sequence_manager_->WillQueueTask(
         &any_thread_.immediate_incoming_queue.back(), name_);
+    MaybeReportIpcTaskQueuedFromAnyThreadLocked(
+        &any_thread_.immediate_incoming_queue.back(), name_);
 
     // If this queue was completely empty, then the SequenceManager needs to be
     // informed so it can reload the work queue and add us to the
@@ -386,8 +388,10 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   pending_task.cross_thread_ = false;
 #endif
 
-  if (notify_task_annotator)
+  if (notify_task_annotator) {
     sequence_manager_->WillQueueTask(&pending_task, name_);
+    MaybeReportIpcTaskQueuedFromMainThread(&pending_task, name_);
+  }
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
   LazyNow lazy_now(now);
@@ -398,6 +402,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
   sequence_manager_->WillQueueTask(&pending_task, name_);
+  MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(&pending_task, name_);
 
 #if DCHECK_IS_ON()
   pending_task.cross_thread_ = true;
@@ -880,29 +885,45 @@ bool TaskQueueImpl::IsQueueEnabled() const {
 }
 
 void TaskQueueImpl::SetQueueEnabled(bool enabled) {
-  if (main_thread_only().is_enabled != enabled) {
-    main_thread_only().is_enabled = enabled;
-    EnableOrDisableWithSelector(enabled);
-  }
-}
-
-void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
-  // |sequence_manager_| can be null in tests.
-  if (!sequence_manager_)
+  if (main_thread_only().is_enabled == enabled)
     return;
+
+  // Update the |main_thread_only_| struct.
+  main_thread_only().is_enabled = enabled;
+  main_thread_only().disabled_time = nullopt;
+  if (!enabled) {
+    bool tracing_enabled = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                                       &tracing_enabled);
+    main_thread_only().disabled_time = main_thread_only().time_domain->Now();
+  } else {
+    // Override reporting if the queue is becoming enabled again.
+    main_thread_only().should_report_posted_tasks_when_disabled = false;
+  }
 
   LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
   UpdateDelayedWakeUp(&lazy_now);
 
-  bool has_pending_immediate_work;
+  bool has_pending_immediate_work = false;
 
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     UpdateCrossThreadQueueStateLocked();
     has_pending_immediate_work = HasPendingImmediateWorkLocked();
+
+    // Copy over the task-reporting related state.
+    any_thread_.tracing_only.is_enabled = enabled;
+    any_thread_.tracing_only.disabled_time = main_thread_only().disabled_time;
+    any_thread_.tracing_only.should_report_posted_tasks_when_disabled =
+        main_thread_only().should_report_posted_tasks_when_disabled;
   }
 
-  if (enable) {
+  // |sequence_manager_| can be null in tests.
+  if (!sequence_manager_)
+    return;
+
+  // Finally, enable or disable the queue with the selector.
+  if (enabled) {
     if (has_pending_immediate_work && main_thread_only().task_queue_observer) {
       // Delayed work notification will be issued via time domain.
       main_thread_only().task_queue_observer->OnQueueNextWakeUpChanged(
@@ -914,6 +935,30 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
     sequence_manager_->main_thread_only().selector.EnableQueue(this);
   } else {
     sequence_manager_->main_thread_only().selector.DisableQueue(this);
+  }
+}
+
+void TaskQueueImpl::SetShouldReportPostedTasksWhenDisabled(bool should_report) {
+  if (main_thread_only().should_report_posted_tasks_when_disabled ==
+      should_report)
+    return;
+
+  // Only observe transitions turning the reporting on if tracing is enabled.
+  if (should_report) {
+    bool tracing_enabled = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                                       &tracing_enabled);
+    if (!tracing_enabled)
+      return;
+  }
+
+  main_thread_only().should_report_posted_tasks_when_disabled = should_report;
+
+  // Mirror the state to the AnyThread struct as well.
+  {
+    base::internal::CheckedAutoLock lock(any_thread_lock_);
+    any_thread_.tracing_only.should_report_posted_tasks_when_disabled =
+        should_report;
   }
 }
 
@@ -1137,6 +1182,107 @@ bool TaskQueueImpl::HasTasks() const {
     return true;
 
   return false;
+}
+
+void TaskQueueImpl::MaybeReportIpcTaskQueuedFromMainThread(
+    Task* pending_task,
+    const char* task_queue_name) {
+  if (!pending_task->ipc_hash)
+    return;
+
+  // It's possible that tracing was just enabled and no disabled time has been
+  // stored. In that case, skip emitting the event.
+  if (!main_thread_only().disabled_time)
+    return;
+
+  bool tracing_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                                     &tracing_enabled);
+  if (!tracing_enabled)
+    return;
+
+  if (main_thread_only().is_enabled ||
+      !main_thread_only().should_report_posted_tasks_when_disabled) {
+    return;
+  }
+
+  base::TimeDelta time_since_disabled =
+      main_thread_only().time_domain->Now() -
+      main_thread_only().disabled_time.value();
+
+  ReportIpcTaskQueued(pending_task, task_queue_name, time_since_disabled);
+}
+
+bool TaskQueueImpl::ShouldReportIpcTaskQueuedFromAnyThreadLocked(
+    base::TimeDelta* time_since_disabled) {
+  // It's possible that tracing was just enabled and no disabled time has been
+  // stored. In that case, skip emitting the event.
+  if (!any_thread_.tracing_only.disabled_time)
+    return false;
+
+  if (any_thread_.tracing_only.is_enabled ||
+      any_thread_.tracing_only.should_report_posted_tasks_when_disabled) {
+    return false;
+  }
+
+  *time_since_disabled = any_thread_.time_domain->Now() -
+                         any_thread_.tracing_only.disabled_time.value();
+  return true;
+}
+
+void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadLocked(
+    Task* pending_task,
+    const char* task_queue_name) {
+  if (!pending_task->ipc_hash)
+    return;
+
+  bool tracing_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                                     &tracing_enabled);
+  if (!tracing_enabled)
+    return;
+
+  base::TimeDelta time_since_disabled;
+  if (ShouldReportIpcTaskQueuedFromAnyThreadLocked(&time_since_disabled))
+    ReportIpcTaskQueued(pending_task, task_queue_name, time_since_disabled);
+}
+
+void TaskQueueImpl::MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(
+    Task* pending_task,
+    const char* task_queue_name) {
+  if (!pending_task->ipc_hash)
+    return;
+
+  bool tracing_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                                     &tracing_enabled);
+  if (!tracing_enabled)
+    return;
+
+  base::TimeDelta time_since_disabled;
+  bool should_report = false;
+  {
+    base::internal::CheckedAutoLock lock(any_thread_lock_);
+    should_report =
+        ShouldReportIpcTaskQueuedFromAnyThreadLocked(&time_since_disabled);
+  }
+
+  ReportIpcTaskQueued(pending_task, task_queue_name, time_since_disabled);
+}
+
+void TaskQueueImpl::ReportIpcTaskQueued(
+    Task* pending_task,
+    const char* task_queue_name,
+    const base::TimeDelta& time_since_disabled) {
+  // Use a begin/end event pair so we can get 4 fields in the event.
+  TRACE_EVENT_BEGIN2(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                     "task_posted_to_disabled_queue", "task_queue_name",
+                     task_queue_name, "time_since_disabled_ms",
+                     time_since_disabled.InMilliseconds());
+  TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("lifecycles"),
+                   "task_posted_to_disabled_queue", "ipc_hash",
+                   pending_task->ipc_hash, "location",
+                   pending_task->posted_from.program_counter());
 }
 
 TaskQueueImpl::DelayedIncomingQueue::DelayedIncomingQueue() = default;

@@ -339,14 +339,10 @@ Polymer({
                     site.setting == this.categorySubtype)
             .map(site => this.expandSiteException(site));
 
-    // <if expr="not chromeos">
-    this.updateList('sites', (x) => x.origin, sites);
-    // </if>
-
     // <if expr="chromeos">
     sites = this.processExceptionsForAndroidSmsInfo_(sites);
-    this.updateList('sites', (x) => x.origin + x.showAndroidSmsNote, sites);
     // </if>
+    this.updateList('sites', x => x.origin, sites);
   },
 
   /**

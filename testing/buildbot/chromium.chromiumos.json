@@ -632,6 +632,36 @@
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=cros-chrome",
+          "--remote=variable_chromeos_device_hostname",
+          "--xvfb"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
+            }
+          ],
+          "idempotent": false,
+          "shards": 2
+        },
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      }
     ]
   },
   "linux-chromeos-dbg": {

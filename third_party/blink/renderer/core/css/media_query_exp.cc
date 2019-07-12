@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -117,13 +119,7 @@ static inline bool FeatureWithValidPositiveLength(
 
 static inline bool FeatureWithValidDensity(const String& media_feature,
                                            const CSSPrimitiveValue* value) {
-  if ((value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerPixel &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerInch &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerCentimeter) ||
-      value->GetDoubleValue() <= 0)
+  if (!value->IsResolution() || value->GetDoubleValue() <= 0)
     return false;
 
   return media_feature == kResolutionMediaFeature ||
@@ -147,7 +143,7 @@ static inline bool FeatureExpectingPositiveInteger(
 
 static inline bool FeatureWithPositiveInteger(const String& media_feature,
                                               const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger)
+  if (!value->IsInteger())
     return false;
   return FeatureExpectingPositiveInteger(media_feature);
 }
@@ -165,7 +161,7 @@ static inline bool FeatureWithPositiveNumber(const String& media_feature,
 
 static inline bool FeatureWithZeroOrOne(const String& media_feature,
                                         const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger ||
+  if (!value->IsInteger() ||
       !(value->GetDoubleValue() == 1 || !value->GetDoubleValue()))
     return false;
 
@@ -272,9 +268,7 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   // Create value for media query expression that must have 1 or more values.
   if (value) {
     if (FeatureWithAspectRatio(lower_media_feature)) {
-      if (value->TypeWithCalcResolved() !=
-              CSSPrimitiveValue::UnitType::kInteger ||
-          value->GetDoubleValue() == 0)
+      if (!value->IsInteger() || value->GetDoubleValue() == 0)
         return Invalid();
       if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return Invalid();
@@ -291,11 +285,25 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
                FeatureWithPositiveInteger(lower_media_feature, value) ||
                FeatureWithPositiveNumber(lower_media_feature, value) ||
                FeatureWithZeroOrOne(lower_media_feature, value)) {
-      exp_value.value = value->GetDoubleValue();
-      if (value->IsNumber())
-        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-      else
-        exp_value.unit = value->TypeWithCalcResolved();
+      if (!value->IsLength() || !value->IsMathFunctionValue()) {
+        exp_value.value = value->GetDoubleValue();
+        if (value->IsNumber())
+          exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+        else
+          exp_value.unit = value->TypeWithCalcResolved();
+      } else {
+        const auto* math_value = To<CSSMathFunctionValue>(value);
+        CSSPrimitiveValue::UnitType expression_unit =
+            math_value->ExpressionNode()->ResolvedUnitType();
+        if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
+          // TODO(crbug.com/982542): Support math expressions involving type
+          // conversions properly. For example, calc(10px + 1em).
+          return Invalid();
+        } else {
+          exp_value.value = math_value->DoubleValue();
+          exp_value.unit = expression_unit;
+        }
+      }
       exp_value.is_value = true;
     } else {
       return Invalid();

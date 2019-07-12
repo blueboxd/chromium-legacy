@@ -100,6 +100,9 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   AutofillPopupController* controller_;  // weak.
   std::unique_ptr<AutofillKeyboardAccessoryAdapter::AccessoryView> view_;
 
+  // The labels to be used for the input chips.
+  std::vector<base::string16> labels_;
+
   // If 0, don't animate suggestion view.
   const unsigned int animation_duration_millis_;
 

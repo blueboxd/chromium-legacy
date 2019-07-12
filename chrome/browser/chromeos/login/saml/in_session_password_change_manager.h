@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/session/session_activation_observer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
@@ -22,9 +23,42 @@ namespace chromeos {
 class CryptohomeAuthenticator;
 class UserContext;
 
+// There is at most one instance of this task, which is part of the
+// InSessionPasswordChangeManager singleton. Having a separate class means that
+// pointers to this class can be invalidated without affecting the manager.
+// Calling Recheck or RecheckAfter invalidates the existing pointers before
+// rerunning the task or posting the task to be re-run, which means that there
+// is only ever one of task that is scheduled to be run.
+class RecheckPasswordExpiryTask {
+ private:
+  RecheckPasswordExpiryTask();
+  ~RecheckPasswordExpiryTask();
+
+  // Delegates to InSessionPasswordChangeManager::MaybeShowExpiryNotification.
+  void Recheck();
+
+  // Calls Recheck after the given |delay|.
+  void RecheckAfter(base::TimeDelta delay);
+
+  // Cancels any pending calls to Recheck that are scheduled..
+  void CancelPendingRecheck();
+
+  base::WeakPtrFactory<RecheckPasswordExpiryTask> weak_ptr_factory_{this};
+
+  // Only InSessionPasswordChangeManager can use this class.
+  friend class InSessionPasswordChangeManager;
+
+  DISALLOW_COPY_AND_ASSIGN(RecheckPasswordExpiryTask);
+};
+
 // Manages the flow of changing a password in-session - handles user
 // response from dialogs, and callbacks from subsystems.
-class InSessionPasswordChangeManager : public AuthStatusConsumer {
+// This singleton is scoped to the primary user session - it will exist for as
+// long as the primary user session exists  (but only if the primary user's
+// InSessionPasswordChange policy is enabled and the kInSessionPasswordChange
+// feature is enabled).
+class InSessionPasswordChangeManager : public AuthStatusConsumer,
+                                       public ash::SessionActivationObserver {
  public:
   // Events in the in-session SAML password change flow.
   enum Event {
@@ -42,8 +76,39 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer {
   static std::unique_ptr<InSessionPasswordChangeManager> CreateIfEnabled(
       Profile* primary_profile);
 
+  // Returns true if the InSessionPasswordChangeManager is both enabled and
+  // ready, so Get() can safely be called.
+  static bool IsInitialized();
+
+  // Checks that the InSessionPasswordChangeManager is both enabled and ready,
+  // then returns it.
+  static InSessionPasswordChangeManager* Get();
+
   explicit InSessionPasswordChangeManager(Profile* primary_profile);
   ~InSessionPasswordChangeManager() override;
+
+  // Checks if the primary user's password has expired or will soon expire, and
+  // shows a notification if needed. If the password will expire in the distant
+  // future, posts a task to check again in the distant future.
+  void MaybeShowExpiryNotification();
+
+  // Shows a password expiry notification. |less_than_n_days| should be 1 if the
+  // password expires in less than 1 day, 0 if it has already expired, etc.
+  // Negative numbers are treated the same as zero.
+  void ShowExpiryNotification(int less_than_n_days);
+
+  // Dismiss password expiry notification and dismiss urgent password expiry
+  // notification, if either are shown.
+  void DismissExpiryNotification();
+
+  // User dismissed a notification - make sure not to show it again immediately,
+  // even if the password is still scheduled to expire soon.
+  void OnExpiryNotificationDismissedByUser();
+
+  // When the screen is unlocked, password expiry notifications are reshown (if
+  // they are not already dismissed). On each unlock, the notification pops
+  // out of the system tray and is visible on screen again for a few seconds.
+  void OnScreenUnlocked();
 
   // Start the in-session password change flow by showing a dialog that embeds
   // the user's SAML IdP change-password page:
@@ -70,14 +135,28 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer {
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
 
+  // ash::SessionActivationObserver:
+  void OnSessionActivated(bool activated) override;
+  void OnLockStateChanged(bool locked) override;
+
  private:
+  static InSessionPasswordChangeManager* GetNullable();
+
+  // Sets the given instance as the singleton for testing.
+  static void SetForTesting(InSessionPasswordChangeManager* instance);
+  static void ResetForTesting();
+
   void NotifyObservers(Event event);
 
   Profile* primary_profile_;
   const user_manager::User* primary_user_;
   base::ObserverList<Observer> observer_list_;
-
+  RecheckPasswordExpiryTask recheck_task_;
   scoped_refptr<CryptohomeAuthenticator> authenticator_;
+  int urgent_warning_days_;
+  bool renotify_on_unlock_ = false;
+
+  friend class InSessionPasswordChangeManagerTest;
 
   DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeManager);
 };

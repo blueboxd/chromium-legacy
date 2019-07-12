@@ -460,9 +460,10 @@ public class TabState {
      * thread.
      * @param bundle Bundle to write the tab's state to.
      * @param state State object obtained from from {@link Tab#getState()}.
+     * @return Whether the tab state was successfully saved.
      */
-    public static void saveState(Bundle bundle, TabState state) {
-        if (state == null || state.contentsState == null) return;
+    public static boolean saveState(Bundle bundle, TabState state) {
+        if (state == null || state.contentsState == null) return false;
 
         byte[] contentsStateBytes = getContentStateByteArray(state.contentsState.buffer());
 
@@ -479,6 +480,7 @@ public class TabState {
         bundle.putInt(VERSION, state.contentsState.version());
         bundle.putInt(THEME_COLOR, state.themeColor);
         bundle.putBoolean(IS_INCOGNITO, state.isIncognito());
+        return true;
     }
 
     /**

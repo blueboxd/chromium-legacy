@@ -125,9 +125,6 @@ class TrayPopupUtils {
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);
 
-  // Configures a |view| to have a visible separator below.
-  static void ShowStickyHeaderSeparator(views::View* view, bool show_separator);
-
   // Configures |container_view| just like CreateDefaultRowView() would
   // configure |container| on its returned TriView. To be used when mutliple
   // targetable areas are required within a single row.
@@ -187,11 +184,6 @@ class TrayPopupUtils {
   // the left by the width normally occupied by an icon. Caller assumes
   // ownership of the returned separator.
   static views::Separator* CreateListItemSeparator(bool left_inset);
-
-  // Creates and returns a horizontal separator line to be drawn between rows
-  // in a detailed view above the sub-header rows. Caller assumes ownership of
-  // the returned separator.
-  static views::Separator* CreateListSubHeaderSeparator();
 
   // Returns true if it is possible to open WebUI settings in a browser window,
   // i.e. the user is logged in, not on the lock screen, not adding a secondary

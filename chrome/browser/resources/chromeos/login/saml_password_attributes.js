@@ -64,19 +64,36 @@ cr.define('samlPasswordAttributes', function() {
    * be empty if some or all of the attributes could not be extracted.
    */
   function readPasswordAttributes(xmlStr) {
-    if (xmlStr.length < MIN_SANE_XML_LENGTH ||
-        xmlStr.length > MAX_SANE_XML_LENGTH) {
-      return PasswordAttributes.EMPTY;
-    }
-    const xmlDom = new DOMParser().parseFromString(xmlStr, 'text/xml');
-    if (!xmlDom) {
-      return PasswordAttributes.EMPTY;
-    }
+    // Don't throw any exception that could cause login to fail - extracting
+    // these attributes can fail, but login should not be interrupted.
+    try {
+      if (!xmlStr || typeof xmlStr != 'string') {
+        return PasswordAttributes.EMPTY;
+      }
+      if (xmlStr.length < MIN_SANE_XML_LENGTH ||
+          xmlStr.length > MAX_SANE_XML_LENGTH) {
+        return PasswordAttributes.EMPTY;
+      }
+      if (!xmlStr.includes(SCHEMA_NAME_PREFIX)) {
+        // No need to bother parsing the XML if it doesn't contain this string.
+        return PasswordAttributes.EMPTY;
+      }
 
-    return new PasswordAttributes(
-        extractTimestampFromXml(xmlDom, PASSWORD_MODIFIED_TIMESTAMP_SELECTOR),
-        extractTimestampFromXml(xmlDom, PASSWORD_EXPIRATION_TIMESTAMP_SELECTOR),
-        extractStringFromXml(xmlDom, PASSWORD_CHANGE_URL_SELECTOR));
+      const xmlDom = new DOMParser().parseFromString(xmlStr, 'text/xml');
+      if (!xmlDom) {
+        return PasswordAttributes.EMPTY;
+      }
+
+      return new PasswordAttributes(
+          extractTimestampFromXml(xmlDom, PASSWORD_MODIFIED_TIMESTAMP_SELECTOR),
+          extractTimestampFromXml(
+              xmlDom, PASSWORD_EXPIRATION_TIMESTAMP_SELECTOR),
+          extractStringFromXml(xmlDom, PASSWORD_CHANGE_URL_SELECTOR));
+
+    } catch (error) {
+      console.error('Error reading password attributes: ' + error);
+      return PasswordAttributes.EMPTY;
+    }
   }
 
   /**

@@ -44,7 +44,7 @@ static_assert(std::is_trivially_destructible<InnerPageDecoder>::value,
               "Move the destructor to the .cc file if it's non-trival");
 #endif  // !DCHECK_IS_ON()
 
-InnerPageDecoder::InnerPageDecoder(DatabasePageReader* db_reader)
+InnerPageDecoder::InnerPageDecoder(DatabasePageReader* db_reader) noexcept
     : page_id_(db_reader->page_id()),
       db_reader_(db_reader),
       cell_count_(ComputeCellCount(db_reader)),
@@ -135,7 +135,7 @@ static_assert(std::is_trivially_destructible<LeafPageDecoder>::value,
               "Move the destructor to the .cc file if it's non-trival");
 #endif  // !DCHECK_IS_ON()
 
-LeafPageDecoder::LeafPageDecoder(DatabasePageReader* db_reader)
+LeafPageDecoder::LeafPageDecoder(DatabasePageReader* db_reader) noexcept
     : page_id_(db_reader->page_id()),
       db_reader_(db_reader),
       cell_count_(ComputeCellCount(db_reader)),

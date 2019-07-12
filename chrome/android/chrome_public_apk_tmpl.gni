@@ -226,9 +226,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     if (_target_type == "android_app_bundle_module") {
       deps +=
           [ "//components/module_installer/android:module_installer_impl_java" ]
-    } else if (_target_type == "instrumentation_test_apk") {
-      deps +=
-          [ "//components/module_installer/android:module_installer_test_java" ]
     } else {
       deps +=
           [ "//components/module_installer/android:module_installer_stub_java" ]

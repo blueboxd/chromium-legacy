@@ -21,16 +21,14 @@ const ListPropertyUpdateBehavior = {
    * @param {string} propertyPath
    * @param {function(!Object): string} itemUidGetter
    * @param {!Array<!Object>} updatedList
+   * @param {boolean} uidBasedUpdate
    * @returns {boolean} True if notifySplices was called.
    */
-  updateList: function(propertyPath, itemUidGetter, updatedList) {
+  updateList: function(
+      propertyPath, itemUidGetter, updatedList, uidBasedUpdate = false) {
     const list = this.get(propertyPath);
     const splices = Polymer.ArraySplice.calculateSplices(
         updatedList.map(itemUidGetter), list.map(itemUidGetter));
-
-    if (splices.length == 0) {
-      return false;
-    }
 
     splices.forEach(splice => {
       const index = splice.index;
@@ -45,7 +43,21 @@ const ListPropertyUpdateBehavior = {
       const spliceParams = [index, deleteCount].concat(added);
       list.splice.apply(list, spliceParams);
     });
-    this.notifySplices(propertyPath, splices);
-    return true;
+
+    let updated = splices.length > 0;
+    if (!uidBasedUpdate) {
+      list.forEach((item, index) => {
+        const updatedItem = updatedList[index];
+        if (JSON.stringify(item) != JSON.stringify(updatedItem)) {
+          this.set([propertyPath, index], updatedItem);
+          updated = true;
+        }
+      });
+    }
+
+    if (splices.length > 0) {
+      this.notifySplices(propertyPath, splices);
+    }
+    return updated;
   },
 };

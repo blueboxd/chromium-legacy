@@ -304,8 +304,6 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   std::set<int> actions_allowed_in_app_mode_;
   // Actions allowed in pinned mode.
   std::set<int> actions_allowed_in_pinned_mode_;
-  // Actions allowed when Kiosk Next Shell is enabled.
-  std::set<int> actions_allowed_for_kiosk_next_shell_;
   // Actions disallowed if there are no windows.
   std::set<int> actions_needing_window_;
   // Actions that can be performed without closing the menu (if one is present).

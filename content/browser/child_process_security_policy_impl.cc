@@ -1152,10 +1152,8 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   // API either.
   // TODO(lukasza): Audit whether CanAccessDataForOrigin can be used directly
   // here.
-  if (!CanCommitURL(child_id, filesystem_url.origin().GetURL())) {
-    UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
+  if (!CanCommitURL(child_id, filesystem_url.origin().GetURL()))
     return false;
-  }
 
   int found_permissions = 0;
   {

@@ -240,6 +240,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncompatibleApplicationsWarning;
 #endif
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kInSessionPasswordChange;
+#endif
+
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kInstallableAmbientBadgeInfoBar;

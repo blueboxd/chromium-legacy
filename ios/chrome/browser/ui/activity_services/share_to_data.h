@@ -21,7 +21,8 @@
        isPagePrintable:(BOOL)isPagePrintable
       isPageSearchable:(BOOL)isPageSearchable
              userAgent:(web::UserAgentType)userAgent
-    thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
+    thumbnailGenerator:
+        (ChromeActivityItemThumbnailGenerator*)thumbnailGenerator;
 
 // The URL to be shared with share extensions. This URL is the canonical URL of
 // the page.
@@ -44,7 +45,8 @@
 // Whether FindInPage can be enabled for this page.
 @property(nonatomic, readonly, assign) BOOL isPageSearchable;
 @property(nonatomic, readonly, assign) web::UserAgentType userAgent;
-@property(nonatomic, copy) ThumbnailGeneratorBlock thumbnailGenerator;
+@property(nonatomic, readonly)
+    ChromeActivityItemThumbnailGenerator* thumbnailGenerator;
 
 @end
 

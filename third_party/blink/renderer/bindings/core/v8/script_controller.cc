@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -153,23 +154,41 @@ TextPosition ScriptController::EventHandlerPosition() const {
 }
 
 void ScriptController::EnableEval() {
-  v8::HandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Context> v8_context =
-      window_proxy_manager_->MainWorldProxyMaybeUninitialized()
-          ->ContextIfInitialized();
-  if (v8_context.IsEmpty())
-    return;
-  v8_context->AllowCodeGenerationFromStrings(true);
+  SetEvalForWorld(DOMWrapperWorld::MainWorld(), true /* allow_eval */,
+                  g_empty_string /* error_message */);
 }
 
 void ScriptController::DisableEval(const String& error_message) {
+  SetEvalForWorld(DOMWrapperWorld::MainWorld(), false /* allow_eval */,
+                  error_message);
+}
+
+void ScriptController::DisableEvalForIsolatedWorld(
+    int world_id,
+    const String& error_message) {
+  DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
+  scoped_refptr<DOMWrapperWorld> world =
+      DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), world_id);
+  SetEvalForWorld(*world, false /* allow_eval */, error_message);
+}
+
+void ScriptController::SetEvalForWorld(DOMWrapperWorld& world,
+                                       bool allow_eval,
+                                       const String& error_message) {
   v8::HandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Context> v8_context =
-      window_proxy_manager_->MainWorldProxyMaybeUninitialized()
-          ->ContextIfInitialized();
+  LocalWindowProxy* proxy =
+      world.IsMainWorld()
+          ? window_proxy_manager_->MainWorldProxyMaybeUninitialized()
+          : WindowProxy(world);
+
+  v8::Local<v8::Context> v8_context = proxy->ContextIfInitialized();
   if (v8_context.IsEmpty())
     return;
-  v8_context->AllowCodeGenerationFromStrings(false);
+
+  v8_context->AllowCodeGenerationFromStrings(allow_eval);
+  if (allow_eval)
+    return;
+
   v8_context->SetErrorMessageForCodeGenerationFromStrings(
       V8String(GetIsolate(), error_message));
 }

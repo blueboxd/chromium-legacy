@@ -2471,6 +2471,8 @@ void PaintLayer::UpdateFilterReferenceBox() {
   float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
   if (zoom != 1)
     reference_box.Scale(1 / zoom);
+  if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
   EnsureResourceInfo().SetFilterReferenceBox(reference_box);
 }
 

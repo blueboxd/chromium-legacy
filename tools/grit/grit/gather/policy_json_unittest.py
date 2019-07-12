@@ -5,6 +5,8 @@
 
 '''Unit tests for grit.gather.policy_json'''
 
+from __future__ import print_function
+
 import json
 import os
 import re

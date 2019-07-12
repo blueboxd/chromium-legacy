@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -192,17 +193,15 @@ bool FindBarHost::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyboardCode key = accelerator.key_code();
   if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
-    find_bar_controller_->EndFindSession(
-        FindBarController::kActivateSelectionOnPage,
-        FindBarController::kClearResultsInFindBox);
+    find_bar_controller_->EndFindSession(FindOnPageSelectionAction::kActivate,
+                                         FindBoxResultAction::kClear);
     return true;
   } else if (key == ui::VKEY_ESCAPE) {
     // This will end the Find session and hide the window, causing it to loose
     // focus and in the process unregister us as the handler for the Escape
     // accelerator through the OnWillChangeFocus event.
-    find_bar_controller_->EndFindSession(
-        FindBarController::kKeepSelectionOnPage,
-        FindBarController::kKeepResultsInFindBox);
+    find_bar_controller_->EndFindSession(FindOnPageSelectionAction::kKeep,
+                                         FindBoxResultAction::kKeep);
     return true;
   } else {
     NOTREACHED() << "Unknown accelerator";

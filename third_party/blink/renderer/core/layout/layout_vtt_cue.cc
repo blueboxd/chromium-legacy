@@ -137,7 +137,7 @@ IntRect PaddingBoxRelativeToAncestor(const LayoutBox& box,
 }
 
 IntRect CueBoundingBox(const LayoutBox& cue_box) {
-  return ContentBoxRelativeToAncestor(cue_box, *cue_box.ContainingBlock());
+  return PaddingBoxRelativeToAncestor(cue_box, *cue_box.ContainingBlock());
 }
 
 bool SnapToLinesLayouter::IsOutside(const IntRect& title_area) const {

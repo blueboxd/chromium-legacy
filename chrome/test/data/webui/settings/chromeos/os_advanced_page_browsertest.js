@@ -71,7 +71,7 @@ suite('OSSettingsPage', function() {
     const page = settingsMain.$$('os-settings-page');
     assertTrue(!!page);
     let sections =
-        ['privacy', 'languages', 'downloads', 'reset', 'dateTime', 'a11y'];
+        ['privacy', 'languages', 'files', 'reset', 'dateTime', 'a11y'];
 
     for (let i = 0; i < sections.length; i++) {
       const section = getSection(page, sections[i]);

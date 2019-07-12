@@ -108,7 +108,8 @@ int WMHelperCastShell::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 void WMHelperCastShell::OnDragExited() {}
 
-int WMHelperCastShell::OnPerformDrop(const ui::DropTargetEvent& event) {
+int WMHelperCastShell::OnPerformDrop(const ui::DropTargetEvent& event,
+                                     std::unique_ptr<ui::OSExchangeData> data) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_MOVE;
 }

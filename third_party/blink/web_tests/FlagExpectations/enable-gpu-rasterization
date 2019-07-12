@@ -88,6 +88,7 @@ crbug.com/978605 compositing/masks/mask-with-removed-filters.html [ Skip ]
 # Tests fail even with a fuzzy pixel diff. They require a re-baseline.
 crbug.com/954328 compositing/fixed-background-after-style-recalc.html [ Failure ]
 crbug.com/954328 compositing/overflow/mask-with-filter.html [ Failure ]
+crbug.com/954328 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/954328 css3/blending/background-blend-mode-crossfade-image-gradient.html [ Failure ]
 crbug.com/954328 css3/blending/background-blend-mode-default-value.html [ Failure ]
 crbug.com/954328 css3/blending/background-blend-mode-gradient-gradient.html [ Failure ]

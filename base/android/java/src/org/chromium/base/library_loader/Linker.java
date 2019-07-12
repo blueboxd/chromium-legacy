@@ -269,7 +269,7 @@ public abstract class Linker {
         assertLinkerTestsAreEnabled();
 
         synchronized (sLock) {
-            sSingleton.mTestRunnerClassName = testRunnerClassName;
+            Linker.getInstance().mTestRunnerClassName = testRunnerClassName;
         }
     }
 

@@ -348,6 +348,10 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
   uia_->ElementFromHandle(hwnd, &root);
   CHECK(root.Get());
 
+  // Get the bounds of the root element, to pass into tree building later.
+  RECT root_bounds = {0};
+  root->get_CurrentBoundingRectangle(&root_bounds);
+
   // The root element is provided by AXFragmentRootWin, whose RuntimeId is not
   // in the same form as elements provided by BrowserAccessibility.
   // Find the root element's first child, which should be provided by
@@ -393,7 +397,8 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
   // Build an accessibility tree starting from that element.
   std::unique_ptr<base::DictionaryValue> tree =
       std::make_unique<base::DictionaryValue>();
-  RecursiveBuildAccessibilityTree(start_element.Get(), tree.get());
+  RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
+                                  root_bounds.top, tree.get());
   return tree;
 }
 
@@ -415,9 +420,13 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTreeForWindow(
   uia_->ElementFromHandle(hwnd, &root);
   CHECK(root.Get());
 
+  RECT root_bounds = {0};
+  root->get_CurrentBoundingRectangle(&root_bounds);
+
   std::unique_ptr<base::DictionaryValue> tree =
       std::make_unique<base::DictionaryValue>();
-  RecursiveBuildAccessibilityTree(root.Get(), tree.get());
+  RecursiveBuildAccessibilityTree(root.Get(), root_bounds.left, root_bounds.top,
+                                  tree.get());
   return tree;
 }
 
@@ -431,9 +440,11 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTreeForPattern(
 
 void AccessibilityTreeFormatterUia::RecursiveBuildAccessibilityTree(
     IUIAutomationElement* uncached_node,
+    int root_x,
+    int root_y,
     base::DictionaryValue* dict) {
   // Process this node.
-  AddProperties(uncached_node, dict);
+  AddProperties(uncached_node, root_x, root_y, dict);
 
   // Update the cache to get children
   Microsoft::WRL::ComPtr<IUIAutomationElement> parent;
@@ -451,7 +462,8 @@ void AccessibilityTreeFormatterUia::RecursiveBuildAccessibilityTree(
     std::unique_ptr<base::DictionaryValue> child_dict =
         std::make_unique<base::DictionaryValue>();
     if (SUCCEEDED(children->GetElement(i, &child))) {
-      RecursiveBuildAccessibilityTree(child.Get(), child_dict.get());
+      RecursiveBuildAccessibilityTree(child.Get(), root_x, root_y,
+                                      child_dict.get());
     } else {
       child_dict->SetString("error", L"[Error retrieving child]");
     }
@@ -462,6 +474,8 @@ void AccessibilityTreeFormatterUia::RecursiveBuildAccessibilityTree(
 
 void AccessibilityTreeFormatterUia::AddProperties(
     IUIAutomationElement* uncached_node,
+    int root_x,
+    int root_y,
     base::DictionaryValue* dict) {
   // Update the cache for this node's information.
   Microsoft::WRL::ComPtr<IUIAutomationElement> node;
@@ -471,7 +485,7 @@ void AccessibilityTreeFormatterUia::AddProperties(
   for (long i : properties_) {
     base::win::ScopedVariant variant;
     if (SUCCEEDED(node->GetCachedPropertyValue(i, variant.Receive()))) {
-      WriteProperty(i, variant, dict);
+      WriteProperty(i, variant, root_x, root_y, dict);
     }
   }
   // Add control pattern specific properties
@@ -772,6 +786,8 @@ void AccessibilityTreeFormatterUia::AddWindowProperties(
 void AccessibilityTreeFormatterUia::WriteProperty(
     long propertyId,
     const base::win::ScopedVariant& var,
+    int root_x,
+    int root_y,
     base::DictionaryValue* dict) {
   switch (var.type()) {
     case VT_EMPTY:
@@ -820,17 +836,14 @@ void AccessibilityTreeFormatterUia::WriteProperty(
     case VT_UNKNOWN:
       WriteUnknownProperty(propertyId, var.ptr()->punkVal, dict);
       break;
-    case VT_DISPATCH:
-    case VT_ERROR:
-    case VT_CY:
-    case VT_DATE:
-    case VT_VARIANT:
-    case VT_DECIMAL:
-    case VT_INT:
-    case VT_UINT:
-    case VT_ARRAY:
-    case VT_BYREF:
     default:
+      switch (propertyId) {
+        case UIA_BoundingRectanglePropertyId:
+          WriteRectangleProperty(propertyId, var, root_x, root_y, dict);
+          break;
+        default:
+          break;
+      }
       break;
   }
 }
@@ -883,6 +896,27 @@ void AccessibilityTreeFormatterUia::WriteUnknownProperty(
     default:
       break;
   }
+}
+
+void AccessibilityTreeFormatterUia::WriteRectangleProperty(
+    long propertyId,
+    const VARIANT& value,
+    int root_x,
+    int root_y,
+    base::DictionaryValue* dict) {
+  CHECK(value.vt == (VT_ARRAY | VT_R8));
+
+  double* data = nullptr;
+  SafeArrayAccessData(value.parray, reinterpret_cast<void**>(&data));
+
+  auto rectangle = std::make_unique<base::DictionaryValue>();
+  rectangle->SetInteger("left", data[0] - root_x);
+  rectangle->SetInteger("top", data[1] - root_y);
+  rectangle->SetInteger("width", data[2]);
+  rectangle->SetInteger("height", data[3]);
+  dict->Set(UiaIdentifierToCondensedString(propertyId), std::move(rectangle));
+
+  SafeArrayUnaccessData(value.parray);
 }
 
 void AccessibilityTreeFormatterUia::WriteElementArray(
@@ -1082,6 +1116,21 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
           &line);
       if (filtered_result && did_pass_filters)
         filtered_result->SetDouble(name, double_value);
+      break;
+    }
+    case base::Value::Type::DICTIONARY: {
+      const base::DictionaryValue* dict_value = nullptr;
+      value->GetAsDictionary(&dict_value);
+      bool did_pass_filters = false;
+      if (name == "BoundingRectangle") {
+        did_pass_filters =
+            WriteAttribute(false,
+                           FormatRectangle(*dict_value, "BoundingRectangle",
+                                           "left", "top", "width", "height"),
+                           &line);
+      }
+      if (filtered_result && did_pass_filters)
+        filtered_result->SetKey(name, dict_value->Clone());
       break;
     }
     default:

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/webapks_handler.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -25,6 +27,10 @@ void WebApksHandler::RegisterMessages() {
       "requestWebApksInfo",
       base::BindRepeating(&WebApksHandler::HandleRequestWebApksInfo,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestWebApkUpdate",
+      base::BindRepeating(&WebApksHandler::HandleRequestWebApkUpdate,
+                          base::Unretained(this)));
 }
 
 void WebApksHandler::HandleRequestWebApksInfo(const base::ListValue* args) {
@@ -33,13 +39,21 @@ void WebApksHandler::HandleRequestWebApksInfo(const base::ListValue* args) {
       &WebApksHandler::OnWebApkInfoRetrieved, weak_ptr_factory_.GetWeakPtr()));
 }
 
+void WebApksHandler::HandleRequestWebApkUpdate(const base::ListValue* args) {
+  AllowJavascript();
+  for (const auto& val : args->GetList()) {
+    if (val.is_string())
+      ShortcutHelper::SetForceWebApkUpdate(val.GetString());
+  }
+}
+
 void WebApksHandler::OnWebApkInfoRetrieved(
     const std::vector<WebApkInfo>& webapks_list) {
   if (!IsJavascriptAllowed())
     return;
   base::ListValue list;
   for (const auto& webapk_info : webapks_list) {
-    std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+    auto result = std::make_unique<base::DictionaryValue>();
     result->SetString("name", webapk_info.name);
     result->SetString("shortName", webapk_info.short_name);
     result->SetString("packageName", webapk_info.package_name);
@@ -61,6 +75,7 @@ void WebApksHandler::OnWebApkInfoRetrieved(
     result->SetDouble("lastUpdateCheckTimeMs",
                       webapk_info.last_update_check_time.ToJsTime());
     result->SetBoolean("relaxUpdates", webapk_info.relax_updates);
+    result->SetString("updateStatus", webapk_info.update_status);
     list.Append(std::move(result));
   }
 

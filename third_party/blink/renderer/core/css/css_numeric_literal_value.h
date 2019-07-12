@@ -22,6 +22,7 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
     return static_cast<UnitType>(numeric_literal_unit_type_);
   }
 
+  bool IsAngle() const { return CSSPrimitiveValue::IsAngle(GetType()); }
   bool IsFontRelativeLength() const {
     return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
            GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
@@ -31,6 +32,14 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
   bool IsViewportPercentageLength() const {
     return CSSPrimitiveValue::IsViewportPercentageLength(GetType());
   }
+  bool IsLength() const { return CSSPrimitiveValue::IsLength(GetType()); }
+  bool IsPx() const { return GetType() == UnitType::kPixels; }
+  bool IsNumber() const {
+    return GetType() == UnitType::kNumber || GetType() == UnitType::kInteger;
+  }
+  bool IsInteger() const { return GetType() == UnitType::kInteger; }
+  bool IsPercentage() const { return GetType() == UnitType::kPercentage; }
+  bool IsTime() const { return CSSPrimitiveValue::IsTime(GetType()); }
   bool IsResolution() const {
     return CSSPrimitiveValue::IsResolution(GetType());
   }
@@ -41,6 +50,7 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
   double DoubleValue() const { return num_; }
   double ComputeSeconds() const;
   double ComputeDegrees() const;
+  double ComputeDotsPerPixel() const;
 
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const;

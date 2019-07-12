@@ -1217,6 +1217,8 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
   win::ScopedHandle scoped_handle(handle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   auto* rendezvous = MachPortRendezvousClient::GetInstance();
+  if (!rendezvous)
+    return ReadOnlySharedMemoryRegion();
   mac::ScopedMachSendRight scoped_handle =
       rendezvous->TakeSendRight(field_trial_handle);
   if (!scoped_handle.is_valid())

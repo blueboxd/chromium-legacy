@@ -104,6 +104,10 @@ class ShortcutHelper {
   // the info to the |callback|.
   static void RetrieveWebApks(const WebApkInfoCallback& callback);
 
+  // Sets a flag to force an update for the WebAPK corresponding to |id| on next
+  // launch.
+  static void SetForceWebApkUpdate(const std::string& id);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);
 };

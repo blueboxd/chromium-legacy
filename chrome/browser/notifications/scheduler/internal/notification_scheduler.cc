@@ -16,7 +16,6 @@
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
-#include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
@@ -62,23 +61,13 @@ class InitHelper {
     impression_tracker_delegate_ = impression_tracker_delegate;
     callback_ = std::move(callback);
 
-    context->icon_store()->Init(base::BindOnce(
-        &InitHelper::OnIconStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
-  }
-
- private:
-  void OnIconStoreInitialized(bool success) {
-    if (!success) {
-      std::move(callback_).Run(false /*success*/);
-      return;
-    }
-
     context_->impression_tracker()->Init(
         impression_tracker_delegate_,
         base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+ private:
   void OnImpressionTrackerInitialized(bool success) {
     if (!success) {
       std::move(callback_).Run(false /*success*/);

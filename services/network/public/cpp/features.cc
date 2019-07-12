@@ -66,6 +66,16 @@ const base::Feature kFetchMetadataDestination{
 const base::Feature kRequestInitiatorSiteLock{"RequestInitiatorSiteLock",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kPauseBrowserInitiatedHeavyTrafficForP2P is enabled, then a subset of
+// the browser initiated traffic may be paused if there is at least one active
+// P2P connection and the network is estimated to be congested. This feature is
+// intended to throttle only the browser initiated traffic that is expected to
+// be heavy (has large request/response sizes) when real time content might be
+// streaming over an active P2P connection.
+const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P{
+    "PauseBrowserInitiatedHeavyTrafficForP2P",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
@@ -29,13 +31,8 @@
 namespace {
 
 // Default width/height of the dialog in screen size.
-const int kDefaultWidth = 400;
-const int kDefaultHeight = 420;
-
-// Site ID of HaTS survey for Chrome Desktop.
-// TODO(weili): Replace this with the pilot survey site ID retrieved from finch
-// config.
-constexpr char kSiteID[] = "z4cctguzopq5x2ftal6vdgjrui";
+const int kDefaultHatsDialogWidth = 400;
+const int kDefaultHatsDialogHeight = 420;
 
 // Placeholder strings in html file to be replaced when the file is loaded.
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
@@ -80,16 +77,19 @@ void HatsWebDialog::Show(const Browser* browser) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(browser);
 
+  Profile* profile = browser->profile();
+
   // Self deleting upon close.
-  auto* hats_dialog = new HatsWebDialog();
+  auto* hats_dialog = new HatsWebDialog(
+      HatsServiceFactory::GetForProfile(profile, true)->en_site_id());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
-  chrome::ShowWebDialog(browser_view->GetWidget()->GetNativeView(),
-                        browser->profile(), hats_dialog);
+  chrome::ShowWebDialog(browser_view->GetWidget()->GetNativeView(), profile,
+                        hats_dialog);
 }
 
-HatsWebDialog::HatsWebDialog() {
+HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -108,7 +108,7 @@ base::string16 HatsWebDialog::GetDialogTitle() const {
 GURL HatsWebDialog::GetDialogContentURL() const {
   // Load the html data and use it in a data URL to be displayed in the dialog.
   std::string url_str =
-      LoadLocalHtmlAsString(kSiteID, version_info::GetVersionNumber());
+      LoadLocalHtmlAsString(site_id_, version_info::GetVersionNumber());
   url::RawCanonOutputT<char> url;
   url::EncodeURIComponent(url_str.c_str(), url_str.length(), &url);
   return GURL("data:text/html;charset=utf-8," +
@@ -119,7 +119,7 @@ void HatsWebDialog::GetWebUIMessageHandlers(
     std::vector<content::WebUIMessageHandler*>* handlers) const {}
 
 void HatsWebDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kDefaultWidth, kDefaultHeight);
+  size->SetSize(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
 }
 
 bool HatsWebDialog::CanResizeDialog() const {

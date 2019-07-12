@@ -37,6 +37,9 @@ const char* const kRendererHostAllowedArgs[] = {
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 const char* const kTopLevelFlowAllowedArgs[] = {"task_queue_name", nullptr};
 const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
+const char* const kLifecyclesTaskPostedAllowedArgs[] = {
+    "task_queue_name", "time_since_disabled_ms", "ipc_hash", "location",
+    nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -72,6 +75,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ui", "UserEvent", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "SequenceManager::PostTask",
      kTopLevelFlowAllowedArgs},
+    {TRACE_DISABLED_BY_DEFAULT("lifecycles"), "task_posted_to_disabled_queue",
+     kLifecyclesTaskPostedAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {"chrome-bitness",

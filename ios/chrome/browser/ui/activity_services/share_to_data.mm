@@ -38,7 +38,8 @@
        isPagePrintable:(BOOL)isPagePrintable
       isPageSearchable:(BOOL)isPageSearchable
              userAgent:(web::UserAgentType)userAgent
-    thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
+    thumbnailGenerator:
+        (ChromeActivityItemThumbnailGenerator*)thumbnailGenerator {
   DCHECK(shareURL.is_valid());
   DCHECK(visibleURL.is_valid());
   DCHECK(title);

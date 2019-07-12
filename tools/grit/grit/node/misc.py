@@ -5,6 +5,8 @@
 """Miscellaneous node types.
 """
 
+from __future__ import print_function
+
 import os.path
 import re
 import sys
@@ -191,8 +193,8 @@ def _ComputeIds(root, predetermined_tids):
                                        % (id, id_reasons[id], reason))
 
       if id < 101:
-        print ('WARNING: Numeric resource IDs should be greater than 100 to\n'
-               'avoid conflicts with system-defined resource IDs.')
+        print('WARNING: Numeric resource IDs should be greater than 100 to\n'
+              'avoid conflicts with system-defined resource IDs.')
 
       if tid not in predetermined_tids and id in predetermined_ids:
         raise exception.IdRangeOverlap('ID %d overlaps between %s and %s'
@@ -600,12 +602,12 @@ class GritNode(base.Node):
         try:
           id_list = first_ids[filename][node.name]
         except KeyError, e:
-          print '-' * 78
-          print 'Resource id not set for %s (%s)!' % (filename, node.name)
-          print ('Please update %s to include an entry for %s.  See the '
-                 'comments in resource_ids for information on why you need to '
-                 'update that file.' % (first_ids_filename, filename))
-          print '-' * 78
+          print('-' * 78)
+          print('Resource id not set for %s (%s)!' % (filename, node.name))
+          print('Please update %s to include an entry for %s.  See the '
+                'comments in resource_ids for information on why you need to '
+                'update that file.' % (first_ids_filename, filename))
+          print('-' * 78)
           raise e
 
         try:

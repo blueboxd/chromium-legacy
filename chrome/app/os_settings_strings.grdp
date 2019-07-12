@@ -15,7 +15,7 @@
     Languages and input
   </message>
 
-  <!-- Personalizaton Page (OS settings) -->
+  <!-- Personalization Page (OS settings) -->
   <message name="IDS_OS_SETTINGS_PERSONALIZATION" desc="Name of the OS settings page which displays personalization preferences.">
     Personalization
   </message>
@@ -31,6 +31,11 @@
   <!-- Assistant section. -->
   <message name="IDS_OS_SETTINGS_ASSISTANT" desc="Name of the settings section for the Google Assistant.">
     Assistant
+  </message>
+
+  <!-- Files Page (OS settings) -->
+  <message name="IDS_OS_SETTINGS_FILES" desc="Name of the settings page which displays file preferences.">
+    Files
   </message>
 </if>
 </grit-part>

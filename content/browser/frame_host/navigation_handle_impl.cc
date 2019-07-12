@@ -405,23 +405,6 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
       new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
-void NavigationHandleImpl::RunCompleteCallback(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result.action() != NavigationThrottle::DEFER);
-
-  ThrottleChecksFinishedCallback callback = std::move(complete_callback_);
-  complete_callback_.Reset();
-
-  if (!complete_callback_for_testing_.is_null())
-    std::move(complete_callback_for_testing_).Run(result);
-
-  if (!callback.is_null())
-    std::move(callback).Run(result);
-
-  // No code after running the callback, as it might have resulted in our
-  // destruction.
-}
-
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
   if (blocked)
     StopCommitTimeout();

@@ -555,6 +555,10 @@ int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {
     return (work_area_bounds_in_screen.height() - divider_size.height()) * 0.5f;
 }
 
+bool SplitViewController::IsDividerAnimating() {
+  return divider_snap_animation_ && divider_snap_animation_->is_animating();
+}
+
 void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   DCHECK(InSplitViewMode());
 
@@ -1440,10 +1444,6 @@ int SplitViewController::GetClosestFixedDividerPosition() {
   if (divider_closest_ratio_ > 0.f && divider_closest_ratio_ < 1.f)
     fix_position -= std::floor(divider_thickness / 2.f);
   return fix_position;
-}
-
-bool SplitViewController::IsDividerAnimating() {
-  return divider_snap_animation_ && divider_snap_animation_->is_animating();
 }
 
 void SplitViewController::StopAndShoveAnimatedDivider() {

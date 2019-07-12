@@ -217,6 +217,15 @@ struct CONTENT_EXPORT WebPreferences {
   // Specifies the value for CSS font-variant property.
   std::string text_track_font_variant;
 
+  // These fields specify values for CSS properties used to style the window
+  // around WebVTT text tracks.
+  // Window color can be any legal CSS color descriptor.
+  std::string text_track_window_color;
+  // Window padding is in em.
+  std::string text_track_window_padding;
+  // Window radius is in pixels.
+  std::string text_track_window_radius;
+
   // Specifies the margin for WebVTT text tracks as a percentage of media
   // element height/width (for horizontal/vertical text respectively).
   // Cues will not be placed in this margin area.

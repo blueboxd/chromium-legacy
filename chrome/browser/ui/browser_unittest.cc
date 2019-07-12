@@ -12,6 +12,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_names.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
@@ -22,6 +27,7 @@
 using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsTester;
+using session_manager::SessionState;
 
 class BrowserUnitTest : public BrowserWithTestWindowTest {
  public:
@@ -267,6 +273,39 @@ TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeEnabled) {
       Browser::Create(off_the_record_create_params));
   EXPECT_TRUE(otr_browser);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(BrowserUnitTest, CreateBrowserDuringKioskSplashScreen) {
+  session_manager::SessionManager session_manager;
+
+  // Setting up user manager state to be in kiosk mode:
+  // Creating a new user manager.
+  chromeos::FakeChromeUserManager* user_manager =
+      new chromeos::FakeChromeUserManager();
+  user_manager::ScopedUserManager manager{
+      std::unique_ptr<user_manager::UserManager>(user_manager)};
+  const user_manager::User* user =
+      user_manager->AddKioskAppUser(AccountId::FromUserEmail("fake_user@test"));
+  user_manager->LoginUser(user->GetAccountId());
+
+  TestingProfile profile;
+  Browser::CreateParams create_params(&profile, false);
+
+  std::unique_ptr<BrowserWindow> window1(CreateBrowserWindow());
+  create_params.window = window1.get();
+  session_manager.SetSessionState(SessionState::LOGIN_PRIMARY);
+  std::unique_ptr<Browser> test_browser(Browser::Create(create_params));
+  // Browser should not be created during login session state.
+  EXPECT_FALSE(test_browser);
+
+  std::unique_ptr<BrowserWindow> window2(CreateBrowserWindow());
+  create_params.window = window2.get();
+  session_manager.SetSessionState(SessionState::ACTIVE);
+  std::unique_ptr<Browser> test_browser2(Browser::Create(create_params));
+  // Normal flow, creation succeeds.
+  EXPECT_TRUE(test_browser2);
+}
+#endif
 
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
  public:

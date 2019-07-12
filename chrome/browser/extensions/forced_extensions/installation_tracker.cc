@@ -89,6 +89,8 @@ void InstallationTracker::ReportResults(bool succeeded) {
   DCHECK(!reported_);
   // Report only if there was non-empty list of force-installed extensions.
   if (!forced_extensions_.empty()) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.ForceInstalledTotalCandidateCount",
+                             forced_extensions_.size());
     if (succeeded) {
       UMA_HISTOGRAM_LONG_TIMES("Extensions.ForceInstalledLoadTime",
                                base::Time::Now() - start_time_);

@@ -10,6 +10,8 @@
 # for creating Windows .rc and .h files.  These are the only parts needed by
 # the Chrome build process.
 
+from __future__ import print_function
+
 from grit.extern import FP
 
 # This module assumes that within a bundle no two messages can have the

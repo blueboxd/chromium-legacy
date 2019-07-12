@@ -329,6 +329,10 @@ void TaskQueue::SetObserver(Observer* observer) {
   impl_->SetObserver(observer);
 }
 
+void TaskQueue::SetShouldReportPostedTasksWhenDisabled(bool should_report) {
+  impl_->SetShouldReportPostedTasksWhenDisabled(should_report);
+}
+
 bool TaskQueue::IsOnMainThread() const {
   return associated_thread_->IsBoundToCurrentThread();
 }

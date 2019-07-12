@@ -5,6 +5,7 @@
 '''Adaptation of the extern.tclib classes for our needs.
 '''
 
+from __future__ import print_function
 
 import re
 import types

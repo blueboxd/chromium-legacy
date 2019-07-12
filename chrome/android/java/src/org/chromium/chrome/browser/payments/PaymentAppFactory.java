@@ -38,6 +38,12 @@ public class PaymentAppFactory {
         void onPaymentAppCreated(PaymentApp paymentApp);
 
         /**
+         * Called when an error has occurred.
+         * @param errorMessage Developer facing error message.
+         */
+        void onGetPaymentAppsError(String errorMessage);
+
+        /**
          * Called when the factory is finished creating payment apps.
          */
         void onAllPaymentAppsCreated();
@@ -116,6 +122,11 @@ public class PaymentAppFactory {
                 @Override
                 public void onPaymentAppCreated(PaymentApp paymentApp) {
                     callback.onPaymentAppCreated(paymentApp);
+                }
+
+                @Override
+                public void onGetPaymentAppsError(String errorMessage) {
+                    callback.onGetPaymentAppsError(errorMessage);
                 }
 
                 @Override

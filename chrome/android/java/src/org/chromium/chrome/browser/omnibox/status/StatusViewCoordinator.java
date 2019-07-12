@@ -194,4 +194,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
     public void setFirstSuggestionIsSearchType(boolean firstSuggestionIsSearchQuery) {
         mMediator.setFirstSuggestionIsSearchType(firstSuggestionIsSearchQuery);
     }
+
+    /**
+     * Turn on/off the google logo in the omnibox.
+     */
+    public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {
+        mMediator.setShouldShowGoogleLogo(shouldShowGoogleLogo);
+    }
 }

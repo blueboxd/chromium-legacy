@@ -10,6 +10,8 @@ and inlines the specified file, producing one HTML file with no external
 dependencies. It recursively inlines the included files.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -587,8 +589,8 @@ def GetResourceFilenames(filename,
 
 def main():
   if len(sys.argv) <= 2:
-    print "Flattens a HTML file by inlining its external resources.\n"
-    print "html_inline.py inputfile outputfile"
+    print("Flattens a HTML file by inlining its external resources.\n")
+    print("html_inline.py inputfile outputfile")
   else:
     InlineToFile(sys.argv[1], sys.argv[2], None)
 

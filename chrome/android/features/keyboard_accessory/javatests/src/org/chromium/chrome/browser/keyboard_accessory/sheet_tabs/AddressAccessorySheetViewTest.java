@@ -115,9 +115,7 @@ public class AddressAccessorySheetViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(
                     createInfo(
-                            /*nameFirst=*/"Maya",
-                            /*nameMiddle=*/"J.",
-                            /*nameLast=*/"Park",
+                            /*nameFull=*/"Maya J. Park",
                             /*companyName=*/"",
                             /*addressHomeLine1=*/"100 Test Str.",
                             /*addressHomeLine2=*/"",
@@ -138,9 +136,7 @@ public class AddressAccessorySheetViewTest {
         CriteriaHelper.pollUiThread(() -> mView.get().getChildCount() > 0);
 
         // Check that the titles are correct:
-        assertThat(getChipText(R.id.name_first), is("Maya"));
-        assertThat(getChipText(R.id.name_middle), is("J."));
-        assertThat(getChipText(R.id.name_last), is("Park"));
+        assertThat(getChipText(R.id.name_full), is("Maya J. Park"));
         assertThat(getChipText(R.id.company_name), is(""));
         assertThat(getChipText(R.id.address_home_line_1), is("100 Test Str."));
         assertThat(getChipText(R.id.address_home_line_2), is(""));
@@ -155,25 +151,20 @@ public class AddressAccessorySheetViewTest {
         assertThat(findChipView(R.id.company_name).isShown(), is(false));
 
         // Chips are clickable:
-        TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.name_first)::performClick);
+        TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.name_full)::performClick);
         assertThat(clicked.get(), is(true));
         clicked.set(false);
         TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.email_address)::performClick);
         assertThat(clicked.get(), is(true));
     }
 
-    private UserInfo createInfo(String nameFirst, String nameMiddle, String nameLast,
-            String companyName, String addressHomeLine1, String addressHomeLine2,
-            String addressHomeZip, String addressHomeCity, String addressHomeState,
-            String addressHomeCountry, String phoneHomeWholeNumber, String emailAddress,
-            AtomicBoolean clickRecorder) {
+    private UserInfo createInfo(String nameFull, String companyName, String addressHomeLine1,
+            String addressHomeLine2, String addressHomeZip, String addressHomeCity,
+            String addressHomeState, String addressHomeCountry, String phoneHomeWholeNumber,
+            String emailAddress, AtomicBoolean clickRecorder) {
         UserInfo info = new UserInfo("", null);
-        info.addField(new UserInfoField(
-                nameFirst, nameFirst, "", false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(
-                nameMiddle, nameMiddle, "", false, item -> clickRecorder.set(true)));
         info.addField(
-                new UserInfoField(nameLast, nameLast, "", false, item -> clickRecorder.set(true)));
+                new UserInfoField(nameFull, nameFull, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
                 companyName, companyName, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(

@@ -129,6 +129,12 @@ size_t GetMaxFds() {
   return std::numeric_limits<size_t>::max();
 }
 
+size_t GetHandleLimit() {
+  // Rounded down from value reported here:
+  // http://blogs.technet.com/b/markrussinovich/archive/2009/09/29/3283844.aspx
+  return static_cast<size_t>(1 << 23);
+}
+
 // static
 std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
     ProcessHandle process) {

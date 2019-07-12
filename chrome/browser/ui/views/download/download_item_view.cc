@@ -88,7 +88,7 @@ constexpr int kTopBottomPadding = 6;
 constexpr int kMinimumVerticalPadding = 2 + kTopBottomPadding;
 
 // The normal height of the item which may be exceeded if text is large.
-constexpr int kDefaultHeight = 48;
+constexpr int kDefaultDownloadItemHeight = 48;
 
 // Amount of time between accessible alert events.
 constexpr base::TimeDelta kAccessibleAlertInterval =
@@ -444,7 +444,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
   if (mode_ != DANGEROUS_MODE)
     width += dropdown_button_->GetPreferredSize().width();
 
-  return gfx::Size(width, std::max(kDefaultHeight,
+  return gfx::Size(width, std::max(kDefaultDownloadItemHeight,
                                    2 * kMinimumVerticalPadding + child_height));
 }
 

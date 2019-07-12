@@ -23,7 +23,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
@@ -85,15 +85,15 @@ public class AutofillAssistantPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences.getMainFragment();
-            ChromeSwitchPreference onOffSwitch =
-                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
+                    (AutofillAssistantPreferences) preferences.getMainFragmentCompat();
+            ChromeSwitchPreferenceCompat onOffSwitch =
+                    (ChromeSwitchPreferenceCompat) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
             Assert.assertTrue(onOffSwitch.isChecked());
 
-            PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
+            onOffSwitch.performClick();
             Assert.assertFalse(getAutofillAssistantSwitch(true));
-            PreferencesTest.clickPreference(autofillAssistantPrefs, onOffSwitch);
+            onOffSwitch.performClick();
             Assert.assertTrue(getAutofillAssistantSwitch(false));
 
             preferences.finish();
@@ -105,9 +105,9 @@ public class AutofillAssistantPreferencesTest {
                         AutofillAssistantPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences2.getMainFragment();
-            ChromeSwitchPreference onOffSwitch =
-                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
+                    (AutofillAssistantPreferences) preferences2.getMainFragmentCompat();
+            ChromeSwitchPreferenceCompat onOffSwitch =
+                    (ChromeSwitchPreferenceCompat) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
             Assert.assertFalse(onOffSwitch.isChecked());
         });

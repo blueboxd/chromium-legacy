@@ -176,7 +176,9 @@ Polymer({
       return Object.assign(exception, {sites});
     });
 
-    if (!this.updateList('chooserExceptions', x => x.displayName, exceptions)) {
+    if (!this.updateList(
+            'chooserExceptions', x => x.displayName, exceptions,
+            true /* uidBasedUpdate */)) {
       // The chooser objects have not been changed, so check if their site
       // permissions have changed. The |exceptions| and |this.chooserExceptions|
       // arrays should be the same length.

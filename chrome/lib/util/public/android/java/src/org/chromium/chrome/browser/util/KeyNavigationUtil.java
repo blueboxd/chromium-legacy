@@ -52,6 +52,18 @@ public class KeyNavigationUtil {
     }
 
     /**
+     * Checks whether the given event is any of DPAD left or NUMPAD left.
+     * @param event Event to be checked.
+     * @return Whether the event should be processed as a navigation left.
+     */
+    public static boolean isGoLeft(KeyEvent event) {
+        return isActionDown(event)
+                && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT
+                        || (!event.isNumLockOn()
+                                && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_4));
+    }
+
+    /**
      * Checks whether the given event is any of DPAD down, DPAD up, NUMPAD down or NUMPAD up.
      * @param event Event to be checked.
      * @return Whether the event should be processed as any of navigation up or navigation down.

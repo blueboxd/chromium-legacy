@@ -216,17 +216,19 @@ class ResourceSchedulerTest : public testing::Test {
   std::unique_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
       const char* url,
       net::RequestPriority priority,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int child_id,
       int route_id) {
     std::unique_ptr<net::URLRequest> url_request(context_.CreateRequest(
-        GURL(url), priority, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
+        GURL(url), priority, nullptr, traffic_annotation));
     return url_request;
   }
 
   std::unique_ptr<net::URLRequest> NewURLRequest(
       const char* url,
       net::RequestPriority priority) {
-    return NewURLRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
+    return NewURLRequestWithChildAndRoute(
+        url, priority, TRAFFIC_ANNOTATION_FOR_TESTS, kChildId, kRouteId);
   }
 
   std::unique_ptr<TestRequest> NewRequestWithRoute(
@@ -241,7 +243,8 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority,
       int child_id,
       int route_id) {
-    return GetNewTestRequest(url, priority, child_id, route_id, true);
+    return GetNewTestRequest(url, priority, TRAFFIC_ANNOTATION_FOR_TESTS,
+                             child_id, route_id, true);
   }
 
   std::unique_ptr<TestRequest> NewRequest(const char* url,
@@ -263,6 +266,14 @@ class ResourceSchedulerTest : public testing::Test {
                                        kBrowserRouteId);
   }
 
+  std::unique_ptr<TestRequest> NewBrowserRequestWithAnnotationTag(
+      const char* url,
+      net::RequestPriority priority,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    return GetNewTestRequest(url, priority, traffic_annotation, kBrowserChildId,
+                             kBrowserRouteId, true);
+  }
+
   std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
                                               net::RequestPriority priority) {
     return NewSyncRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
@@ -280,16 +291,19 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority,
       int child_id,
       int route_id) {
-    return GetNewTestRequest(url, priority, child_id, route_id, false);
+    return GetNewTestRequest(url, priority, TRAFFIC_ANNOTATION_FOR_TESTS,
+                             child_id, route_id, false);
   }
 
-  std::unique_ptr<TestRequest> GetNewTestRequest(const char* url,
-                                                 net::RequestPriority priority,
-                                                 int child_id,
-                                                 int route_id,
-                                                 bool is_async) {
-    std::unique_ptr<net::URLRequest> url_request(
-        NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
+  std::unique_ptr<TestRequest> GetNewTestRequest(
+      const char* url,
+      net::RequestPriority priority,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      int child_id,
+      int route_id,
+      bool is_async) {
+    std::unique_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
+        url, priority, traffic_annotation, child_id, route_id));
     auto scheduled_request = scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get());
     auto request = std::make_unique<TestRequest>(
@@ -729,6 +743,173 @@ TEST_F(ResourceSchedulerTest, LowerPriorityBrowserRequestsNotThrottled) {
     lows.push_back(NewBrowserRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows.back()->started());
   }
+}
+
+// Verify that browser requests are throttled by the resource scheduler only
+// when all the conditions are met.
+TEST_F(ResourceSchedulerTest,
+       LowerPriorityBrowserRequestsThrottleP2PConnections) {
+  const struct {
+    std::string test_case;
+    size_t p2p_active_connections;
+    net::EffectiveConnectionType effective_connection_type;
+    bool enable_pausing_behavior;
+    bool set_field_trial_param;
+    bool expected_browser_initiated_traffic_started;
+  } tests[] = {
+      {
+          "Field trial set",
+          1u,
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+          true,
+          true,
+          false,
+      },
+      {
+          "Field trial not set",
+          1u,
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+          false,
+          true,
+          true,
+      },
+      {
+          "Network fast",
+          1u,
+          net::EFFECTIVE_CONNECTION_TYPE_4G,
+          true,
+          true,
+          true,
+      },
+      {
+          "No active p2p connections",
+          0u,
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+          true,
+          true,
+          true,
+      },
+      {
+          "Field trial param not set",
+          1u,
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+          true,
+          false,
+          true,
+      },
+  };
+
+  for (const auto& test : tests) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (test.enable_pausing_behavior) {
+      base::FieldTrialParams field_trial_params;
+      if (test.set_field_trial_param) {
+        field_trial_params["throttled_traffic_annotation_tags"] = "727528";
+      }
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P,
+          field_trial_params);
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P);
+    }
+    InitializeScheduler();
+
+    network_quality_estimator_
+        .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(
+            test.p2p_active_connections);
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+        test.effective_connection_type);
+
+    std::string url = "http://host/browser-initiatited";
+
+    net::NetworkTrafficAnnotationTag tag = net::DefineNetworkTrafficAnnotation(
+        "metrics_report_uma",
+        "Traffic annotation for unit, browser and other tests");
+    // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
+    std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
+        url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
+    EXPECT_EQ(test.expected_browser_initiated_traffic_started, lows->started());
+  }
+}
+
+// Verify that browser requests that are currently queued are dispatched to the
+// network as soon as the active P2P connections count drops to 0.
+TEST_F(ResourceSchedulerTest, P2PConnectionWentAway) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::HistogramTester histogram_tester;
+  base::FieldTrialParams field_trial_params;
+  field_trial_params["throttled_traffic_annotation_tags"] = "727528";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPauseBrowserInitiatedHeavyTrafficForP2P, field_trial_params);
+  InitializeScheduler();
+
+  network_quality_estimator_
+      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(1u);
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  std::string url = "http://host/browser-initiatited";
+
+  net::NetworkTrafficAnnotationTag tag = net::DefineNetworkTrafficAnnotation(
+      "metrics_report_uma",
+      "Traffic annotation for unit, browser and other tests");
+  // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
+  std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
+      url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
+  EXPECT_FALSE(lows->started());
+
+  network_quality_estimator_
+      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(2u);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(lows->started());
+
+  network_quality_estimator_
+      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(0u);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(lows->started());
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.BrowserInitiatedHeavyRequest.QueuingDuration", 1u);
+}
+
+// Verify that the previously queued browser requests are dispatched to the
+// network when the network quality becomes faster.
+TEST_F(ResourceSchedulerTest,
+       RequestThrottleOnlyOnSlowConnectionsWithP2PRequests) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::FieldTrialParams field_trial_params;
+  field_trial_params["throttled_traffic_annotation_tags"] = "727528";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPauseBrowserInitiatedHeavyTrafficForP2P, field_trial_params);
+  InitializeScheduler();
+
+  network_quality_estimator_
+      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(1u);
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  std::string url = "http://host/browser-initiatited";
+
+  net::NetworkTrafficAnnotationTag tag = net::DefineNetworkTrafficAnnotation(
+      "metrics_report_uma",
+      "Traffic annotation for unit, browser and other tests");
+  // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
+  std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
+      url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
+  EXPECT_FALSE(lows->started());
+
+  network_quality_estimator_
+      .SetAndNotifyObserversOfP2PActiveConnectionsCountChange(2u);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(lows->started());
+
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(lows->started());
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.BrowserInitiatedHeavyRequest.QueuingDuration", 1u);
 }
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
@@ -1432,7 +1613,8 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
     another_scheduler.SetResourceSchedulerParamsManagerForTests(
         FixedParamsManager(1));
     std::unique_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
-        "http://host/another", net::LOWEST, kChildId, kRouteId));
+        "http://host/another", net::LOWEST, TRAFFIC_ANNOTATION_FOR_TESTS,
+        kChildId, kRouteId));
     auto scheduled_request = another_scheduler.ScheduleRequest(
         kChildId, kRouteId, true, url_request.get());
     auto another_request = std::make_unique<TestRequest>(
@@ -1787,7 +1969,8 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerNotFired) {
 
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     EXPECT_EQ(i < max_low_priority_requests_allowed,
-              lows_singlehost[i]->started());
+              lows_singlehost[i]->started())
+        << " i=" << i;
   }
 }
 

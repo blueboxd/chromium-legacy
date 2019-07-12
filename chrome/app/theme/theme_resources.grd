@@ -262,7 +262,7 @@
         <structure type="chrome_scaled_image" name="IDR_LOGO_AVATAR_CIRCLE_BLUE_COLOR" file="cros/logo_avatar_circle_blue_color.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGO_GOOGLE_COLOR_90" file="cros/logo_google_color_90.png" />
       </if>
-      <if expr="not_is_android">
+      <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME" file="common/supervised_user_theme/theme_frame_supervised.png" />
         <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE" file="common/supervised_user_theme/theme_frame_supervised_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND" file="common/supervised_user_theme/theme_tab_background_supervised.png" />

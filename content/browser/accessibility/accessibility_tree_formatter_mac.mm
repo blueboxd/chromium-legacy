@@ -349,14 +349,14 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
   const base::DictionaryValue* d_value = NULL;
   if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
     WriteAttribute(false,
-                   FormatCoordinates(kPositionDictAttr, kXCoordDictAttr,
-                                     kYCoordDictAttr, *d_value),
+                   FormatCoordinates(*d_value, kPositionDictAttr,
+                                     kXCoordDictAttr, kYCoordDictAttr),
                    &line);
   }
   if (dict.GetDictionary(kSizeDictAttr, &d_value)) {
     WriteAttribute(false,
-                   FormatCoordinates(kSizeDictAttr, kWidthDictAttr,
-                                     kHeightDictAttr, *d_value),
+                   FormatCoordinates(*d_value, kSizeDictAttr, kWidthDictAttr,
+                                     kHeightDictAttr),
                    &line);
   }
 

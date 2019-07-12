@@ -812,6 +812,12 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetTextTrackFontVariant(
       WebString::FromASCII(prefs.text_track_font_variant));
   settings->SetTextTrackMarginPercentage(prefs.text_track_margin_percentage);
+  settings->SetTextTrackWindowColor(
+      WebString::FromASCII(prefs.text_track_window_color));
+  settings->SetTextTrackWindowPadding(
+      WebString::FromASCII(prefs.text_track_window_padding));
+  settings->SetTextTrackWindowRadius(
+      WebString::FromASCII(prefs.text_track_window_radius));
 
   // Needs to happen before SetDefaultPageScaleLimits below since that'll
   // recalculate the final page scale limits and that depends on this setting.

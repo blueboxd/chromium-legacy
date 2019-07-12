@@ -7760,56 +7760,42 @@ IN_PROC_BROWSER_TEST_F(RecurrentInterstitialBrowserTest,
   mock_cert_verifier()->set_default_result(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
 
-  // When |show_error_message| is false, the test checks the field trial
-  // configuration in which recurrent errors are tracked and histograms are
-  // recorded but the interstitial UI isn't actually modified. This
-  // configuration allows comparison of clickthrough rates for the exact same
-  // error conditions with and without the modified error UI.
-  for (const auto& show_error_message : {false, true}) {
-    ChromeSSLHostStateDelegate* state =
-        reinterpret_cast<ChromeSSLHostStateDelegate*>(
-            browser()->profile()->GetSSLHostStateDelegate());
-    state->ResetRecurrentErrorCountForTesting();
+  ChromeSSLHostStateDelegate* state =
+      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+          browser()->profile()->GetSSLHostStateDelegate());
+  state->ResetRecurrentErrorCountForTesting();
 
-    base::HistogramTester histograms;
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        kRecurrentInterstitialFeature,
-        {{"threshold", "2"},
-         {"show_error_ui", show_error_message ? "true" : "false"}});
+  base::HistogramTester histograms;
+  state->SetRecurrentInterstitialThresholdForTesting(2);
 
-    // Use different hostnames for the two test cases to avoid the clickthrough
-    // from one interfering with the other.
-    GURL url =
-        https_server.GetURL(show_error_message ? "show_error_message.test"
-                                               : "no_error_message.test",
-                            "/");
-    ui_test_utils::NavigateToURL(browser(), url);
-    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    WaitForInterstitial(tab);
-    ExpectInterstitialElementHidden(tab, "recurrent-error-message",
-                                    true /* expect_hidden */);
-    histograms.ExpectUniqueSample(kRecurrentInterstitialHistogram, false, 1);
+  // Use different hostnames for the two test cases to avoid the clickthrough
+  // from one interfering with the other.
+  GURL url = https_server.GetURL("show_error_message.test", "/");
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  ExpectInterstitialElementHidden(tab, "recurrent-error-message",
+                                  true /* expect_hidden */);
+  histograms.ExpectUniqueSample(kRecurrentInterstitialHistogram, false, 1);
 
-    ui_test_utils::NavigateToURL(browser(), url);
-    WaitForInterstitial(tab);
-    ExpectInterstitialElementHidden(tab, "recurrent-error-message",
-                                    !show_error_message /* expect_hidden */);
-    histograms.ExpectBucketCount(kRecurrentInterstitialHistogram, true, 1);
-    histograms.ExpectUniqueSample(
-        kRecurrentInterstitialActionHistogram,
-        SSLErrorControllerClient::RecurrentErrorAction::kShow, 1);
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForInterstitial(tab);
+  ExpectInterstitialElementHidden(tab, "recurrent-error-message",
+                                  false /* expect_hidden */);
+  histograms.ExpectBucketCount(kRecurrentInterstitialHistogram, true, 1);
+  histograms.ExpectUniqueSample(
+      kRecurrentInterstitialActionHistogram,
+      SSLErrorControllerClient::RecurrentErrorAction::kShow, 1);
 
-    // Proceed through the interstitial and observe that the histogram is
-    // recorded correctly.
-    content::TestNavigationObserver nav_observer(tab, 1);
-    ASSERT_TRUE(content::ExecuteScript(
-        tab, "window.certificateErrorPageController.proceed();"));
-    nav_observer.Wait();
-    histograms.ExpectBucketCount(
-        kRecurrentInterstitialActionHistogram,
-        SSLErrorControllerClient::RecurrentErrorAction::kProceed, 1);
-  }
+  // Proceed through the interstitial and observe that the histogram is
+  // recorded correctly.
+  content::TestNavigationObserver nav_observer(tab, 1);
+  ASSERT_TRUE(content::ExecuteScript(
+      tab, "window.certificateErrorPageController.proceed();"));
+  nav_observer.Wait();
+  histograms.ExpectBucketCount(
+      kRecurrentInterstitialActionHistogram,
+      SSLErrorControllerClient::RecurrentErrorAction::kProceed, 1);
 }
 
 // TODO(jcampan): more tests to do below.

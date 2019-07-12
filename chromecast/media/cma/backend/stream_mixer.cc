@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/serializers.h"
+#include "chromecast/base/thread_health_checker.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/audio_output_redirector.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
@@ -55,6 +56,11 @@
 
 namespace chromecast {
 namespace media {
+
+constexpr base::TimeDelta kMixerThreadCheckTimeout =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kHealthCheckInterval =
+    base::TimeDelta::FromSeconds(5);
 
 class StreamMixer::ExternalLoopbackAudioObserver
     : public CastMediaShlib::LoopbackAudioObserver {
@@ -221,6 +227,13 @@ StreamMixer::StreamMixer(
     loopback_options.priority = base::ThreadPriority::REALTIME_AUDIO;
     loopback_thread_->StartWithOptions(loopback_options);
     loopback_task_runner_ = loopback_thread_->task_runner();
+
+    health_checker_ = std::make_unique<ThreadHealthChecker>(
+        mixer_task_runner_, loopback_task_runner_, kHealthCheckInterval,
+        kMixerThreadCheckTimeout,
+        base::BindRepeating(&StreamMixer::OnHealthCheckFailed,
+                            base::Unretained(this)));
+    LOG(INFO) << "Mixer health checker started";
   } else {
     loopback_task_runner_ = mixer_task_runner_;
   }
@@ -247,6 +260,10 @@ StreamMixer::StreamMixer(
     ExternalAudioPipelineShlib::AddExternalLoopbackAudioObserver(
         external_loopback_audio_observer_.get());
   }
+}
+
+void StreamMixer::OnHealthCheckFailed() {
+  LOG(FATAL) << "Crash on mixer thread health check failure!";
 }
 
 void StreamMixer::ResetPostProcessors(CastMediaShlib::ResultCallback callback) {

@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/ui/find_bar/find_result_observer.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "content/public/browser/bluetooth_chooser.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
-
-class FindNotificationDetails;
 
 namespace content {
 struct FileChooserParams;
@@ -32,7 +32,7 @@ namespace android {
 // the Chromium Android port but not to be shared with WebView.
 class TabWebContentsDelegateAndroid
     : public web_contents_delegate_android::WebContentsDelegateAndroid,
-      public content::NotificationObserver {
+      public FindResultObserver {
  public:
   TabWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   ~TabWebContentsDelegateAndroid() override;
@@ -112,21 +112,18 @@ class TabWebContentsDelegateAndroid
       content::RenderFrameHost* subframe_host) const override;
 #endif
 
+  // FindResultObserver:
+  void OnFindResultAvailable(content::WebContents* web_contents) override;
+
   bool ShouldEnableEmbeddedMediaExperience() const;
   bool IsPictureInPictureEnabled() const;
   bool IsNightModeEnabled() const;
   const GURL GetManifestScope() const;
 
  private:
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  ScopedObserver<FindTabHelper, FindResultObserver> find_result_observer_{this};
 
-  void OnFindResultAvailable(content::WebContents* web_contents,
-                             const FindNotificationDetails* find_result);
-
-  content::NotificationRegistrar notification_registrar_;
+  DISALLOW_COPY_AND_ASSIGN(TabWebContentsDelegateAndroid);
 };
 
 }  // namespace android

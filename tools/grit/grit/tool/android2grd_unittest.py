@@ -5,6 +5,8 @@
 
 '''Unit tests for grit.tool.android2grd'''
 
+from __future__ import print_function
+
 import os
 import sys
 if __name__ == '__main__':

@@ -20,8 +20,7 @@ InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
     const StyleResolverState*,
     ConversionCheckers&) const {
   auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  if (!primitive_value ||
-      !CSSPrimitiveValue::IsResolution(primitive_value->TypeWithCalcResolved()))
+  if (!primitive_value || !primitive_value->IsResolution())
     return nullptr;
   return InterpolationValue(std::make_unique<InterpolableNumber>(
       primitive_value->ComputeDotsPerPixel()));

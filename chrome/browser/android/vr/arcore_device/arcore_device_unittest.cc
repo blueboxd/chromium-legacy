@@ -11,9 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/arcore_device/fake_arcore.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -82,18 +81,10 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
   base::OnceClosure callback_;
 };
 
-class StubArCoreInstallUtils : public vr::ArCoreInstallUtils {
+class StubArCoreSessionUtils : public vr::ArCoreSessionUtils {
  public:
-  StubArCoreInstallUtils() = default;
+  StubArCoreSessionUtils() = default;
 
-  bool CanRequestInstallArModule() override { return false; }
-  bool ShouldRequestInstallArModule() override { return false; }
-
-  void RequestInstallArModule(int render_process_id,
-                              int render_frame_id) override {}
-  bool ShouldRequestInstallSupportedArCore() override { return false; }
-  void RequestInstallSupportedArCore(int render_process_id,
-                                     int render_frame_id) override {}
   void RequestArSession(
       int render_process_id,
       int render_frame_id,
@@ -148,7 +139,7 @@ class ArCoreDeviceTest : public testing::Test {
   }
 
   StubMailboxToSurfaceBridge* bridge;
-  StubArCoreInstallUtils* install_utils;
+  StubArCoreSessionUtils* session_utils;
   mojom::XRFrameDataProviderPtr frame_provider;
   mojom::XREnvironmentIntegrationProviderAssociatedPtr environment_provider;
   std::unique_ptr<base::RunLoop> run_loop;
@@ -159,13 +150,13 @@ class ArCoreDeviceTest : public testing::Test {
     std::unique_ptr<StubMailboxToSurfaceBridge> bridge_ptr =
         std::make_unique<StubMailboxToSurfaceBridge>();
     bridge = bridge_ptr.get();
-    std::unique_ptr<StubArCoreInstallUtils> install_utils_ptr =
-        std::make_unique<StubArCoreInstallUtils>();
-    install_utils = install_utils_ptr.get();
+    std::unique_ptr<StubArCoreSessionUtils> session_utils_ptr =
+        std::make_unique<StubArCoreSessionUtils>();
+    session_utils = session_utils_ptr.get();
     device_ = std::make_unique<ArCoreDevice>(
         std::make_unique<FakeArCoreFactory>(),
         std::make_unique<StubArImageTransportFactory>(), std::move(bridge_ptr),
-        std::move(install_utils_ptr));
+        std::move(session_utils_ptr));
   }
 
   void CreateSession() {
@@ -245,7 +236,7 @@ TEST_F(ArCoreDeviceTest, RequestHitTest) {
                                        base::BindOnce(callback, &hit_results));
   // Have to get frame data to trigger the hit-test calculation.
   GetFrameData();
-  EXPECT_TRUE(hit_results.size() > 0);
+  EXPECT_FALSE(hit_results.empty());
 }
 
 }  // namespace device

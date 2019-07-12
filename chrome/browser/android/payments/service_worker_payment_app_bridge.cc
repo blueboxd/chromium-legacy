@@ -59,8 +59,14 @@ void OnGotAllPaymentApps(
     const JavaRef<jobject>& jcallback,
     content::PaymentAppProvider::PaymentApps apps,
     payments::ServiceWorkerPaymentAppFactory::InstallablePaymentApps
-        installable_apps) {
+        installable_apps,
+    const std::string& error_message) {
   JNIEnv* env = AttachCurrentThread();
+
+  if (!error_message.empty()) {
+    Java_ServiceWorkerPaymentAppBridge_onGetPaymentAppsError(
+        env, jcallback, ConvertUTF8ToJavaString(env, error_message));
+  }
 
   for (const auto& app_info : apps) {
     // Sends related application Ids to java side if the app prefers related

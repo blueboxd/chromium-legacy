@@ -72,7 +72,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTagsForTesting.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryImpl.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/BottomSheetUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/EditDistance.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",
@@ -162,6 +162,7 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinatorTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/EditDistanceTest.java",
   ]
 

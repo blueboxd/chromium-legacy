@@ -166,7 +166,7 @@ TEST_F(AuthenticationFlowTest, TestAlreadySignedIn) {
                        toBrowserState:browser_state_.get()];
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(identity1_, kNoHostedDomainFound);
+      ->SignIn(identity1_);
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 
   CheckSignInCompletion(true);
@@ -211,7 +211,7 @@ TEST_F(AuthenticationFlowTest, TestSignOutUserChoice) {
   [[performer_ expect] commitSyncForBrowserState:browser_state_.get()];
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(identity2_, kNoHostedDomainFound);
+      ->SignIn(identity2_);
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 
   CheckSignInCompletion(true);

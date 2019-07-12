@@ -346,6 +346,21 @@
       'cros_browser_sanity_test': {},
     },
 
+    'chromeos_experimental_remote_device_isolated_tests': {
+      'telemetry_unittests': {
+        'args': [
+          '--browser=cros-chrome',
+          # The magic hostname that resolves to a CrOS device in the test lab.
+          '--remote=variable_chromeos_device_hostname',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 12,
+        },
+      },
+    },
+
     'chromeos_isolated_scripts': {
       'telemetry_perf_unittests': {
         'args': [
@@ -385,21 +400,7 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 6,
-        },
-      },
-      'telemetry_unittests': {
-        'args': [
-          '--browser=cros-chrome',
-          # The magic hostname that resolves to a CrOS device in the test lab.
-          '--remote=variable_chromeos_device_hostname',
-          '--jobs=1',
-          # TODO(crbug.com/866062): Use the default retry limit.
-          '--retry-limit=1',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
+          'shards': 2,
         },
       },
     },
@@ -2429,6 +2430,13 @@
           ],
         },
       },
+    },
+
+    # On some bots we don't have capacity to run all standard tests (for example
+    # Android Pie), however there are tracing integration tests we want to
+    # ensure are still working.
+    'chromium_tracing_gtests': {
+      'services_unittests': {},
     },
 
     'chromium_web_tests_and_wpt_webdriver_isolated_scripts': {
@@ -4486,6 +4494,7 @@
       'skia_renderer_browser_tests': {
         'args': [
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter',
         ],
         'swarming': {
           'shards': 10,
@@ -4786,6 +4795,7 @@
     'android_pie_gtests': [
       'android_ddready_vr_gtests',
       'android_ar_gtests',
+      'chromium_tracing_gtests',
       # No standard tests due to capacity, no Vega tests since it's currently
       # O only.
     ],

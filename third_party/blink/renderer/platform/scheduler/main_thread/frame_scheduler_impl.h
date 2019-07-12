@@ -86,6 +86,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   bool IsAudioPlaying() const;
 
   void SetPaused(bool frame_paused) override;
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report) override;
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;

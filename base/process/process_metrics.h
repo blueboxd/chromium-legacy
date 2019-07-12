@@ -254,6 +254,9 @@ BASE_EXPORT size_t GetPageSize();
 // at once. If the number is unavailable, a conservative best guess is returned.
 BASE_EXPORT size_t GetMaxFds();
 
+// Returns the maximum number of handles that can be open at once per process.
+BASE_EXPORT size_t GetHandleLimit();
+
 #if defined(OS_POSIX)
 // Increases the file descriptor soft limit to |max_descriptors| or the OS hard
 // limit, whichever is lower. If the limit is already higher than

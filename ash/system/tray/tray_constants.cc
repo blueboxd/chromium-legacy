@@ -27,7 +27,6 @@ const int kTrayMenuWidth = 360;
 
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupPaddingHorizontal = 18;
-const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupButtonEndMargin = 10;
 const int kTrayPopupLabelHorizontalPadding = 4;
 const int kTrayPopupSliderHorizontalPadding = 16;
@@ -48,8 +47,6 @@ const SkColor kPublicAccountUserCardTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
 
 const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
-
-const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
 
 const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
 

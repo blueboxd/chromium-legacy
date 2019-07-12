@@ -95,6 +95,11 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
       network::mojom::ReferrerPolicy referrer_policy =
           network::mojom::ReferrerPolicy::kDefault) const;
 
+  // Returns true if a the owner of this loader should consider the image being
+  // loaded as "potentially available", i.e that it may eventually become
+  // available.
+  bool ImageIsPotentiallyAvailable() const;
+
   // Cancels pending load events, and doesn't dispatch new ones.
   // Note: ClearImage/SetImage.*() are not a simple setter.
   // Check the implementation to see what they do.
@@ -113,7 +118,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   // Otherwise:
   //   Normal loading via ResourceFetcher/ResourceLoader.
   //   |image_resource_for_image_document_| is null.
-  bool IsLoadingImageDocument() { return loading_image_document_; }
   void SetLoadingImageDocument() { loading_image_document_ = true; }
   ImageResource* ImageResourceForImageDocument() const {
     return image_resource_for_image_document_;

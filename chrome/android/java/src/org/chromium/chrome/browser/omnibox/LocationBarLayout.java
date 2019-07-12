@@ -32,6 +32,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -85,8 +86,6 @@ public class LocationBarLayout extends FrameLayout
     protected ToolbarDataProvider mToolbarDataProvider;
     private ObserverList<UrlFocusChangeListener> mUrlFocusChangeListeners = new ObserverList<>();
 
-    protected boolean mNativeInitialized;
-
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
     protected StatusViewCoordinator mStatusViewCoordinator;
@@ -96,11 +95,12 @@ public class LocationBarLayout extends FrameLayout
     private WindowAndroid mWindowAndroid;
     private WindowDelegate mWindowDelegate;
 
-    private boolean mUrlHasFocus;
     protected boolean mUrlFocusChangeInProgress;
+    protected boolean mNativeInitialized;
+    protected boolean mShouldShowGoogleLogo;
+    private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
     private boolean mUrlFocusedWithoutAnimations;
-
     private boolean mVoiceSearchEnabled;
 
     private OmniboxPrerender mOmniboxPrerender;
@@ -140,6 +140,7 @@ public class LocationBarLayout extends FrameLayout
             return false;
         }
     }
+
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
     }
@@ -289,6 +290,16 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
+     * Encapsulates complicated boolean check for reuse and readability.
+     */
+    public static boolean shouldShowGoogleLogo() {
+        return !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
+                && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
+                && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO);
+    }
+
+    /**
      * Handles native dependent initialization for this class.
      */
     @Override
@@ -307,6 +318,15 @@ public class LocationBarLayout extends FrameLayout
             post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
+
+        // Show the DSE logo when the url has focus.
+        // TODO(crbug.com/982430): Check for changes to the DSE and react accordingly.
+        mShouldShowGoogleLogo = LocationBarLayout.shouldShowGoogleLogo();
+        mStatusViewCoordinator.setShouldShowGoogleLogo(mShouldShowGoogleLogo);
+        mToolbarDataProvider.setShouldShowGoogleLogo(mShouldShowGoogleLogo);
+        if (mShouldShowGoogleLogo) {
+            mStatusViewCoordinator.setShowIconsWhenUrlFocused(true);
+        }
 
         updateVisualsForState();
 

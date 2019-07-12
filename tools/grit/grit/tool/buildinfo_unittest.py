@@ -6,6 +6,8 @@
 """Unit tests for the 'grit buildinfo' tool.
 """
 
+from __future__ import print_function
+
 import os
 import StringIO
 import sys

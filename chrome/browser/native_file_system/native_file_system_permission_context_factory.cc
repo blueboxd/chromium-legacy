@@ -18,6 +18,14 @@ NativeFileSystemPermissionContextFactory::GetForProfile(
 }
 
 // static
+scoped_refptr<ChromeNativeFileSystemPermissionContext>
+NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
+    content::BrowserContext* profile) {
+  return static_cast<ChromeNativeFileSystemPermissionContext*>(
+      GetInstance()->GetServiceForBrowserContext(profile, false).get());
+}
+
+// static
 NativeFileSystemPermissionContextFactory*
 NativeFileSystemPermissionContextFactory::GetInstance() {
   static base::NoDestructor<NativeFileSystemPermissionContextFactory> instance;

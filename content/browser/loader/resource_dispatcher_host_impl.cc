@@ -26,6 +26,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -362,7 +363,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       is_shutdown_(false),
       enable_resource_scheduler_(enable_resource_scheduler),
       num_in_flight_requests_(0),
-      max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
+      max_num_in_flight_requests_(base::GetHandleLimit()),
       max_num_in_flight_requests_per_process_(static_cast<int>(
           max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
       max_outstanding_requests_cost_per_process_(

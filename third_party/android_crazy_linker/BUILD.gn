@@ -9,6 +9,9 @@ import("//testing/test.gni")
 # NOTE: This file is included in Linux builds to build the
 # crazy_linker_zip_fuzzer target (see below). However, the rest of the
 # crazy linker doesn't build or work on Linux yet.
+#
+# NOTE: Instructions for testing the crazy linker are in
+# android_linker_testing.md.
 
 config("crazy_config") {
   include_dirs = [ "src/include" ]

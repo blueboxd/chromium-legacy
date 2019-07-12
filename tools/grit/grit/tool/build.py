@@ -5,6 +5,8 @@
 '''The 'grit build' tool.
 '''
 
+from __future__ import print_function
+
 import codecs
 import filecmp
 import getopt
@@ -210,7 +212,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
         sys.exit(0)
 
     if len(args):
-      print 'This tool takes no tool-specific arguments.'
+      print('This tool takes no tool-specific arguments.')
       return 2
     self.SetOptions(opts)
     self.VerboseOut('Output directory: %s (absolute path: %s)\n' %
@@ -401,7 +403,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     warnings = shortcuts.GenerateDuplicateShortcutsWarnings(
         self.res.UberClique(), self.res.GetTcProject())
     if warnings:
-      print '\n'.join(warnings)
+      print('\n'.join(warnings))
 
     # Print out any fallback warnings, and missing translation errors, and
     # exit with an error code if there are missing translations in a non-pseudo
@@ -411,7 +413,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     if warnings:
       self.VerboseOut(warnings)
     if self.res.UberClique().HasMissingTranslations():
-      print self.res.UberClique().missing_translations_
+      print(self.res.UberClique().missing_translations_)
       sys.exit(-1)
 
 
@@ -442,8 +444,8 @@ Missing output files:
 Extra output files:
 %s
 '''
-      print error % ('\n'.join(asserted), '\n'.join(actual), '\n'.join(missing),
-          '\n'.join(extra))
+      print(error % ('\n'.join(asserted), '\n'.join(actual), '\n'.join(missing),
+                     ' \n'.join(extra)))
       return False
     return True
 

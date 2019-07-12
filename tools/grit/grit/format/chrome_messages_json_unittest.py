@@ -6,6 +6,8 @@
 """Unittest for chrome_messages_json.py.
 """
 
+from __future__ import print_function
+
 import json
 import os
 import sys

@@ -96,6 +96,7 @@ jumbo_static_library("utils") {
     "//components/payments/content/icon",
     "//components/payments/content/utility",
     "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/strings",
     "//components/webdata/common",
     "//content/public/browser",

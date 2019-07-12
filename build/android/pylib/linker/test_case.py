@@ -27,11 +27,7 @@
        Host-driven tests have also been tried, but since they're really
        sub-classes of instrumentation tests, they didn't work well either.
 
-   To build and run the linker tests, do the following:
-
-     ninja -C out/Debug chromium_linker_test_apk
-     out/Debug/bin/run_chromium_linker_test_apk
-
+   To build and run, refer to android_linker_testing.md.
 """
 # pylint: disable=R0201
 

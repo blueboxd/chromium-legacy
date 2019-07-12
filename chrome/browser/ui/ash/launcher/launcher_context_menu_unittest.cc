@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"

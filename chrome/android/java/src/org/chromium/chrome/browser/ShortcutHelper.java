@@ -773,6 +773,7 @@ public class ShortcutHelper {
         List<String> names = new ArrayList<>();
         List<String> shortNames = new ArrayList<>();
         List<String> packageNames = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
         List<Integer> shellApkVersions = new ArrayList<>();
         List<Integer> versionCodes = new ArrayList<>();
         List<String> uris = new ArrayList<>();
@@ -785,6 +786,7 @@ public class ShortcutHelper {
         List<Long> backgroundColors = new ArrayList<>();
         List<Long> lastUpdateCheckTimesMs = new ArrayList<>();
         List<Boolean> relaxUpdates = new ArrayList<>();
+        List<String> updateStatuses = new ArrayList<>();
 
         Context context = ContextUtils.getApplicationContext();
         PackageManager packageManager = context.getPackageManager();
@@ -799,6 +801,7 @@ public class ShortcutHelper {
                     names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());
                     packageNames.add(webApkInfo.webApkPackageName());
+                    ids.add(webApkInfo.id());
                     shellApkVersions.add(webApkInfo.shellApkVersion());
                     versionCodes.add(packageInfo.versionCode);
                     uris.add(webApkInfo.uri().toString());
@@ -821,12 +824,13 @@ public class ShortcutHelper {
                     }
                     lastUpdateCheckTimesMs.add(lastUpdateCheckTimeMsForStorage);
                     relaxUpdates.add(relaxUpdatesForStorage);
+                    updateStatuses.add(storage.getUpdateStatus());
                 }
             }
         }
         nativeOnWebApksRetrieved(callbackPointer, names.toArray(new String[0]),
                 shortNames.toArray(new String[0]), packageNames.toArray(new String[0]),
-                CollectionUtil.integerListToIntArray(shellApkVersions),
+                ids.toArray(new String[0]), CollectionUtil.integerListToIntArray(shellApkVersions),
                 CollectionUtil.integerListToIntArray(versionCodes), uris.toArray(new String[0]),
                 scopes.toArray(new String[0]), manifestUrls.toArray(new String[0]),
                 manifestStartUrls.toArray(new String[0]),
@@ -835,13 +839,23 @@ public class ShortcutHelper {
                 CollectionUtil.longListToLongArray(themeColors),
                 CollectionUtil.longListToLongArray(backgroundColors),
                 CollectionUtil.longListToLongArray(lastUpdateCheckTimesMs),
-                CollectionUtil.booleanListToBooleanArray(relaxUpdates));
+                CollectionUtil.booleanListToBooleanArray(relaxUpdates),
+                updateStatuses.toArray(new String[0]));
+    }
+
+    @CalledByNative
+    public static void setForceWebApkUpdate(String id) {
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
+        if (storage != null) {
+            storage.setShouldForceUpdate(true);
+        }
     }
 
     private static native void nativeOnWebappDataStored(long callbackPointer);
     private static native void nativeOnWebApksRetrieved(long callbackPointer, String[] names,
-            String[] shortNames, String[] packageName, int[] shellApkVersions, int[] versionCodes,
-            String[] uris, String[] scopes, String[] manifestUrls, String[] manifestStartUrls,
-            int[] displayModes, int[] orientations, long[] themeColors, long[] backgroundColors,
-            long[] lastUpdateCheckTimesMs, boolean[] relaxUpdates);
+            String[] shortNames, String[] packageNames, String[] ids, int[] shellApkVersions,
+            int[] versionCodes, String[] uris, String[] scopes, String[] manifestUrls,
+            String[] manifestStartUrls, int[] displayModes, int[] orientations, long[] themeColors,
+            long[] backgroundColors, long[] lastUpdateCheckTimesMs, boolean[] relaxUpdates,
+            String[] updateStatuses);
 }

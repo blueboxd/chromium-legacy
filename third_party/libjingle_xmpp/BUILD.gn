@@ -53,11 +53,6 @@ static_library("rtc_xmllite") {
 
   deps = [
     "//base",
-
-    # TODO(mbonadei): The dependency on the TQ is not directly
-    # needed but removing it causes a linker error that it is
-    # difficult to track down.
-    "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
     "//third_party/expat",
@@ -104,11 +99,6 @@ static_library("rtc_xmpp") {
     "//net",
     "//third_party/webrtc/rtc_base/third_party/base64",
     "//third_party/webrtc/rtc_base/third_party/sigslot",
-
-    # TODO(mbonadei): The dependency on the TQ is not directly
-    # needed but removing it causes a linker error that it is
-    # difficult to track down.
-    "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
     ":rtc_task_runner",
@@ -138,7 +128,6 @@ test("libjingle_xmpp_unittests") {
     "//base/test:test_support",
     "//testing/gtest",
     "//third_party/webrtc/rtc_base:rtc_base",
-    "//third_party/webrtc_overrides:task_queue_impl",
   ]
 
   sources = [

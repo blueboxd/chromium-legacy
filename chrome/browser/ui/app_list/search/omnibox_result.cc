@@ -31,8 +31,7 @@ namespace app_list {
 
 namespace {
 
-// #000 at 87% opacity.
-constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
+constexpr SkColor kListIconColor = gfx::kGoogleGrey700;
 
 int ACMatchStyleToTagStyle(int styles) {
   int tag_styles = 0;

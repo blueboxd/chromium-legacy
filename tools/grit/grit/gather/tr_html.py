@@ -6,6 +6,7 @@
 portions.  We wanted to reuse extern.tclib.api.handlers.html.TCHTMLParser
 but this proved impossible due to the fact that the TotalRecall HTML templates
 are in general quite far from parseable HTML and the TCHTMLParser derives
+
 from HTMLParser.HTMLParser which requires relatively well-formed HTML.  Some
 examples of "HTML" from the TotalRecall HTML templates that wouldn't be
 parseable include things like:
@@ -48,6 +49,7 @@ This implementation borrows some code, constants and ideas from
 extern.tclib.api.handlers.html.TCHTMLParser.
 '''
 
+from __future__ import print_function
 
 import re
 import types
@@ -208,7 +210,7 @@ _MESSAGE_NO_BREAK_COMMENT = re.compile(r'<!--\s*message-no-break\s*-->',
 _DEBUG = 0
 def _DebugPrint(text):
   if _DEBUG:
-    print text.encode('utf-8')
+    print(text.encode('utf-8'))
 
 
 class HtmlChunks(object):

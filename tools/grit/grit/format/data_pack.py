@@ -7,6 +7,8 @@
 files.
 """
 
+from __future__ import print_function
+
 import collections
 import exceptions
 import os
@@ -276,7 +278,7 @@ def RePackFromDataPackStrings(inputs, whitelist,
                       if key not in whitelist]
       if not suppress_removed_key_output:
         for key in removed_keys:
-          print 'RePackFromDataPackStrings Removed Key:', key
+          print('RePackFromDataPackStrings Removed Key:', key)
     else:
       resources.update(input_resources)
 
@@ -292,7 +294,7 @@ def main():
   WriteDataPack(data, 'datapack1.pak', UTF8)
   data2 = {1000: 'test', 5: 'five'}
   WriteDataPack(data2, 'datapack2.pak', UTF8)
-  print 'wrote datapack1 and datapack2 to current directory.'
+  print('wrote datapack1 and datapack2 to current directory.')
 
 
 if __name__ == '__main__':

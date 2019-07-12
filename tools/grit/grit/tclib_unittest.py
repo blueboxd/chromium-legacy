@@ -5,6 +5,7 @@
 
 '''Unit tests for grit.tclib'''
 
+from __future__ import print_function
 
 import sys
 import os.path

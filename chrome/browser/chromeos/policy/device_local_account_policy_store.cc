@@ -201,6 +201,9 @@ void DeviceLocalAccountPolicyStore::Validate(
   scoped_refptr<ownership::PublicKey> key =
       device_settings_service_->GetPublicKey();
   if (!key.get() || !key->is_loaded() || !device_policy_data) {
+    LOG(ERROR) << "Failed policy validation, key: " << (key.get() != nullptr)
+               << ", is_loaded: " << (key.get() ? key->is_loaded() : false)
+               << ", device_policy_data: " << (device_policy_data != nullptr);
     status_ = CloudPolicyStore::STATUS_BAD_STATE;
     NotifyStoreLoaded();
     return;

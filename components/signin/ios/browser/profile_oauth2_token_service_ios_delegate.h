@@ -49,10 +49,9 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // Subsequent calls to |RefreshTokenIsAvailable| will return |false|.
   void RevokeAllCredentials() override;
 
-  void AddAccountFromSystem(const CoreAccountId& account_id) override;
+  void ReloadAllAccountsFromSystem() override;
 
-  void ReloadAccountsFromSystem(
-      const CoreAccountId& primary_account_id) override;
+  void ReloadAccountFromSystem(const CoreAccountId& account_id) override;
 
   // Adds |account_id| to |accounts_| if it does not exist or udpates
   // the auth error state of |account_id| if it exists. Fires

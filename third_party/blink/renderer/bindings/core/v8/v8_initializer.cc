@@ -33,6 +33,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -357,8 +358,16 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     DCHECK(execution_context->IsDocument() ||
            execution_context->IsMainThreadWorkletGlobalScope());
+
+    v8::Context::Scope scope(context);
+
+    // Note this callback is only triggered for contexts which have eval
+    // disabled. Hence we don't need to handle the case of isolated world
+    // contexts with no CSP specified. (They should be exempt from the page CSP.
+    // See crbug.com/982388.)
+
     if (ContentSecurityPolicy* policy =
-            execution_context->GetContentSecurityPolicy()) {
+            execution_context->GetContentSecurityPolicyForWorld()) {
       v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,

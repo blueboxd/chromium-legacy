@@ -228,9 +228,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Night Light feature (which controls the color temperature of the screen) settings.">
         Show Night Light settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT" desc="The label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
-        Night Light: <ph name="NIGHT_LIGHT_STATUS">$1<ex>On</ex></ph>
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE" desc="The label for the Off state of the Night Light feature.">
         Off
       </message>

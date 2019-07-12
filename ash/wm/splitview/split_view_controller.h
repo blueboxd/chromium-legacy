@@ -136,6 +136,9 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // Gets the default value of |divider_position_|.
   int GetDefaultDividerPosition(aura::Window* window) const;
 
+  // Returns true during the divider snap animation.
+  bool IsDividerAnimating();
+
   void StartResize(const gfx::Point& location_in_screen);
   void Resize(const gfx::Point& location_in_screen);
   void EndResize(const gfx::Point& location_in_screen);
@@ -268,9 +271,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
 
   // Returns the closest fix location for |divider_position_|.
   int GetClosestFixedDividerPosition();
-
-  // Returns true during the divider snap animation.
-  bool IsDividerAnimating();
 
   // While the divider is animating to somewhere, stop it and shove it there.
   void StopAndShoveAnimatedDivider();

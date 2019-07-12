@@ -42,7 +42,22 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   if (size_limit == 0) {
     size_limit = 100 * 1024;
   }
-  perfetto_config.add_buffers()->set_size_kb(size_limit);
+  auto* buffer_config = perfetto_config.add_buffers();
+  buffer_config->set_size_kb(size_limit);
+  switch (chrome_config.GetTraceRecordMode()) {
+    case base::trace_event::RECORD_UNTIL_FULL:
+    case base::trace_event::RECORD_AS_MUCH_AS_POSSIBLE:
+      buffer_config->set_fill_policy(
+          perfetto::TraceConfig::BufferConfig::FillPolicy::DISCARD);
+      break;
+    case base::trace_event::RECORD_CONTINUOUSLY:
+      buffer_config->set_fill_policy(
+          perfetto::TraceConfig::BufferConfig::FillPolicy::RING_BUFFER);
+      break;
+    case base::trace_event::ECHO_TO_CONSOLE:
+      NOTREACHED();
+      break;
+  }
 
   // Perfetto uses clock_gettime for its internal snapshotting, which gets
   // blocked by the sandboxed and isn't needed for Chrome regardless.

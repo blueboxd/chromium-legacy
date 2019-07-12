@@ -29,11 +29,14 @@ class DownloadCallback {
   ~DownloadCallback() {}
 
   void OnPaymentMethodManifestDownload(const GURL& url_after_redirects,
-                                       const std::string& content) {
+                                       const std::string& content,
+                                       const std::string& error_message) {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     if (content.empty()) {
-      Java_ManifestDownloadCallback_onManifestDownloadFailure(env, jcallback_);
+      Java_ManifestDownloadCallback_onManifestDownloadFailure(
+          env, jcallback_,
+          base::android::ConvertUTF8ToJavaString(env, error_message));
     } else {
       Java_ManifestDownloadCallback_onPaymentMethodManifestDownloadSuccess(
           env, jcallback_,
@@ -42,11 +45,14 @@ class DownloadCallback {
   }
 
   void OnWebAppManifestDownload(const GURL& url_after_redirects,
-                                const std::string& content) {
+                                const std::string& content,
+                                const std::string& error_message) {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     if (content.empty()) {
-      Java_ManifestDownloadCallback_onManifestDownloadFailure(env, jcallback_);
+      Java_ManifestDownloadCallback_onManifestDownloadFailure(
+          env, jcallback_,
+          base::android::ConvertUTF8ToJavaString(env, error_message));
     } else {
       Java_ManifestDownloadCallback_onWebAppManifestDownloadSuccess(
           env, jcallback_,

@@ -3617,6 +3617,78 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(interceptor->Capturing());
 }
 
+// Verify that upon MouseUp, the coordinate transform cached from the previous
+// MouseDown event is applied.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       CacheCoordinateTransformUponMouseDown) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_perspective_transformed_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
+      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
+          child_node->current_frame_host()->GetRenderWidgetHost()));
+
+  // Target MouseDown to child frame.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.click_count = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  gfx::PointF click_point(15.0, 5.0);
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, click_point, rwhv_child,
+                                         click_point);
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  // Wait for the mouse capture message.
+  interceptor->Wait();
+  EXPECT_TRUE(interceptor->Capturing());
+
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  auto mouse_down_transform = web_contents()
+                                  ->GetInputEventRouter()
+                                  ->mouse_down_post_transformed_coordinate_;
+
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetModifiers(0);
+
+  auto* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  SetWebEventPositions(&mouse_event,
+                       rwhv_child->TransformPointToRootCoordSpaceF(click_point),
+                       root_view);
+
+  auto result = web_contents()->GetInputEventRouter()->FindTargetSynchronously(
+      root_view, mouse_event);
+  EXPECT_EQ(result.target_location.value(), mouse_down_transform);
+}
+
 // Verify that when a divider within a frameset is clicked, mouse capture is
 // initiated.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,

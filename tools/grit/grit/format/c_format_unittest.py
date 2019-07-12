@@ -6,6 +6,8 @@
 """Unittest for c_format.py.
 """
 
+from __future__ import print_function
+
 import os
 import sys
 if __name__ == '__main__':

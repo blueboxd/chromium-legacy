@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/resource/scale_factor.h"
 

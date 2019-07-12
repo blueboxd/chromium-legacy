@@ -39,9 +39,9 @@ const char kHistogramAMPSubframeLargestContentPaint[] =
 const char kHistogramAMPSubframeLargestContentPaintFullNavigation[] =
     "PaintTiming.InputToLargestContentPaint.Subframe.FullNavigation";
 const char kHistogramAMPSubframeFirstInputDelay[] =
-    "InteractiveTiming.FirstInputDelay3.Subframe";
+    "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
-    "InteractiveTiming.FirstInputDelay3.Subframe.FullNavigation";
+    "InteractiveTiming.FirstInputDelay4.Subframe.FullNavigation";
 const char kHistogramAMPSubframeLayoutStabilityJankScore[] =
     "Experimental.LayoutStability.JankScore.Subframe";
 const char kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation[] =
@@ -393,7 +393,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
 
     if (subframe_info.timing->interactive_timing->first_input_delay
             .has_value()) {
-      builder.SetSubFrame_InteractiveTiming_FirstInputDelay3(
+      builder.SetSubFrame_InteractiveTiming_FirstInputDelay4(
           subframe_info.timing->interactive_timing->first_input_delay.value()
               .InMilliseconds());
 

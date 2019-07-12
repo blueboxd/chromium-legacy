@@ -129,13 +129,13 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchScrollStartedUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchStartWithoutPageHandlersFiltered);
+                           TouchStartWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchStartWithPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveFilteredAfterTimeout);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutPageHandlersFiltered);
+                           TouchMoveWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            StationaryTouchMoveFiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
@@ -145,7 +145,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithNonTouchMoveUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutSequenceHandlerFiltered);
+                           TouchMoveWithoutSequenceHandlerUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,

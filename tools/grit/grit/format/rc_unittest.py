@@ -5,6 +5,8 @@
 
 '''Unit tests for grit.format.rc'''
 
+from __future__ import print_function
+
 import os
 import re
 import sys

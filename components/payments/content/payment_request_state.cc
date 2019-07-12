@@ -94,9 +94,11 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     const GURL& top_level_origin,
     const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps apps,
-    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
+    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
+    const std::string& error_message) {
   number_of_pending_sw_payment_instruments_ =
       apps.size() + installable_apps.size();
+  get_all_payment_apps_error_ = error_message;
   if (number_of_pending_sw_payment_instruments_ == 0U) {
     FinishedGetAllSWPaymentInstruments();
     return;
@@ -273,7 +275,7 @@ void PaymentRequestState::CheckHasEnrolledInstrument(StatusCallback callback) {
 }
 
 void PaymentRequestState::AreRequestedMethodsSupported(
-    StatusCallback callback) {
+    MethodsSupportedCallback callback) {
   if (!get_all_instruments_finished_) {
     are_requested_methods_supported_callback_ = std::move(callback);
     return;
@@ -286,10 +288,11 @@ void PaymentRequestState::AreRequestedMethodsSupported(
 }
 
 void PaymentRequestState::CheckRequestedMethodsSupported(
-    StatusCallback callback) {
+    MethodsSupportedCallback callback) {
   DCHECK(get_all_instruments_finished_);
 
-  std::move(callback).Run(are_requested_methods_supported_);
+  std::move(callback).Run(are_requested_methods_supported_,
+                          get_all_payment_apps_error_);
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {

@@ -48,9 +48,14 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
   static const long patterns_[];
   static const long pattern_properties_[];
   void RecursiveBuildAccessibilityTree(IUIAutomationElement* node,
+                                       int root_x,
+                                       int root_y,
                                        base::DictionaryValue* dict);
   void BuildCacheRequests();
-  void AddProperties(IUIAutomationElement* node, base::DictionaryValue* dict);
+  void AddProperties(IUIAutomationElement* node,
+                     int root_x,
+                     int root_y,
+                     base::DictionaryValue* dict);
   void AddExpandCollapseProperties(IUIAutomationElement* node,
                                    base::DictionaryValue* dict);
   void AddGridProperties(IUIAutomationElement* node,
@@ -75,12 +80,19 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
                            base::DictionaryValue* dict);
   void WriteProperty(long propertyId,
                      const base::win::ScopedVariant& var,
+                     int root_x,
+                     int root_y,
                      base::DictionaryValue* dict);
   // UIA enums have type I4, print formatted string for these when possible
   void WriteI4Property(long propertyId, long lval, base::DictionaryValue* dict);
   void WriteUnknownProperty(long propertyId,
                             IUnknown* unk,
                             base::DictionaryValue* dict);
+  void WriteRectangleProperty(long propertyId,
+                              const VARIANT& value,
+                              int root_x,
+                              int root_y,
+                              base::DictionaryValue* dict);
   void WriteElementArray(long propertyId,
                          IUIAutomationElementArray* array,
                          base::DictionaryValue* dict);

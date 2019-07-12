@@ -28,6 +28,8 @@
 #include "chromecast/public/volume_control.h"
 
 namespace chromecast {
+class ThreadHealthChecker;
+
 namespace media {
 
 class AudioOutputRedirector;
@@ -195,6 +197,9 @@ class StreamMixer {
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
   std::unique_ptr<base::Thread> loopback_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> loopback_task_runner_;
+  std::unique_ptr<ThreadHealthChecker> health_checker_;
+
+  void OnHealthCheckFailed();
 
   int num_output_channels_;
   const int low_sample_rate_cutoff_;

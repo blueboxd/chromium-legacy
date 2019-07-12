@@ -69,11 +69,14 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr),
       random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability) {
+      bernoulli_distribution_(kRasterMetricProbability),
+      last_recording_(nullptr) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
-  StartRecording();
+  if (is_deferral_enabled_) {
+    StartRecording();
+  }
   // Clear the background transparent or opaque. Similar code at
   // CanvasResourceProvider::Clear().
   if (IsValid()) {
@@ -546,8 +549,11 @@ void Canvas2DLayerBridge::FlushRecording() {
 
   {  // Make a new scope so that PaintRecord gets deleted and that gets timed
     cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
-    sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
-    canvas->drawPicture(recording);
+    last_recording_ = recorder_->finishRecordingAsPicture();
+    canvas->drawPicture(last_recording_);
+    if (!resource_host_ || !resource_host_->IsPrinting()) {
+      last_recording_ = nullptr;
+    }
     ResourceProvider()->FlushSkia();
   }
 

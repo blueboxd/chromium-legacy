@@ -31,6 +31,8 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kFetchMetadataDestination;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kRequestInitiatorSiteLock;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P;
 
 COMPONENT_EXPORT(NETWORK_CPP) bool ShouldEnableOutOfBlinkCors();
 

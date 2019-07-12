@@ -5,6 +5,8 @@
 
 '''Unit tests for grit.format.gzip_string'''
 
+from __future__ import print_function
+
 import gzip
 import io
 import os

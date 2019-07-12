@@ -47,7 +47,7 @@ const base::FeatureParam<std::string>
     PassthroughTouchEventQueue::kSkipTouchEventFilterType{
         &features::kSkipTouchEventFilter,
         features::kSkipTouchEventFilterTypeParamName,
-        features::kSkipTouchEventFilterTypeParamValueDiscrete};
+        features::kSkipTouchEventFilterTypeParamValueAll};
 
 PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo& event)

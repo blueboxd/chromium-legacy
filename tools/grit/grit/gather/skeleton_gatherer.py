@@ -6,6 +6,8 @@
 list.
 '''
 
+from __future__ import print_function
+
 import types
 
 from grit.gather import interface

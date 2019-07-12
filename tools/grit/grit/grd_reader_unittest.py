@@ -5,6 +5,8 @@
 
 '''Unit tests for grd_reader package'''
 
+from __future__ import print_function
+
 import os
 import sys
 if __name__ == '__main__':

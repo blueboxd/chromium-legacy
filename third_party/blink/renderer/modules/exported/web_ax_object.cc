@@ -127,6 +127,8 @@ class ScopedActionAnnotator {
 static bool IsLayoutClean(Document* document) {
   if (!document || !document->View())
     return false;
+  if (document->NeedsLayoutTreeUpdate())
+    return false;
   if (document->View()->NeedsLayout())
     return false;
   DocumentLifecycle::LifecycleState state = document->Lifecycle().GetState();

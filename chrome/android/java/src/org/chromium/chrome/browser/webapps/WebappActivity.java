@@ -127,6 +127,21 @@ public class WebappActivity extends SingleTabActivity {
         return null;
     }
 
+    /** Returns the WebappActivity with the given {@link webappId}. */
+    public static WeakReference<WebappActivity> findRunningWebappActivityWithId(String webappId) {
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (!(activity instanceof WebappActivity)) {
+                continue;
+            }
+            WebappActivity webappActivity = (WebappActivity) activity;
+            if (webappActivity != null
+                    && TextUtils.equals(webappId, webappActivity.getWebappInfo().id())) {
+                return new WeakReference<>(webappActivity);
+            }
+        }
+        return null;
+    }
+
     /**
      * Construct all the variables that shouldn't change.  We do it here both to clarify when the
      * objects are created and to ensure that they exist throughout the parallelized initialization

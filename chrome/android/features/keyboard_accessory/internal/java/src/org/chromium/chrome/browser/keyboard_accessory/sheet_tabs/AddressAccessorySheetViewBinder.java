@@ -46,18 +46,16 @@ class AddressAccessorySheetViewBinder {
 
         @Override
         protected void bind(KeyboardAccessoryData.UserInfo info, AddressAccessoryInfoView view) {
-            bindChipView(view.getNameFirst(), info.getFields().get(0));
-            bindChipView(view.getNameMiddle(), info.getFields().get(1));
-            bindChipView(view.getNameLast(), info.getFields().get(2));
-            bindChipView(view.getCompanyName(), info.getFields().get(3));
-            bindChipView(view.getAddressHomeLine1(), info.getFields().get(4));
-            bindChipView(view.getAddressHomeLine2(), info.getFields().get(5));
-            bindChipView(view.getAddressHomeZip(), info.getFields().get(6));
-            bindChipView(view.getAddressHomeCity(), info.getFields().get(7));
-            bindChipView(view.getAddressHomeState(), info.getFields().get(8));
-            bindChipView(view.getAddressHomeCountry(), info.getFields().get(9));
-            bindChipView(view.getPhoneHomeWholeNumber(), info.getFields().get(10));
-            bindChipView(view.getEmailAddress(), info.getFields().get(11));
+            bindChipView(view.getNameFull(), info.getFields().get(0));
+            bindChipView(view.getCompanyName(), info.getFields().get(1));
+            bindChipView(view.getAddressHomeLine1(), info.getFields().get(2));
+            bindChipView(view.getAddressHomeLine2(), info.getFields().get(3));
+            bindChipView(view.getAddressHomeZip(), info.getFields().get(4));
+            bindChipView(view.getAddressHomeCity(), info.getFields().get(5));
+            bindChipView(view.getAddressHomeState(), info.getFields().get(6));
+            bindChipView(view.getAddressHomeCountry(), info.getFields().get(7));
+            bindChipView(view.getPhoneHomeWholeNumber(), info.getFields().get(8));
+            bindChipView(view.getEmailAddress(), info.getFields().get(9));
         }
 
         void bindChipView(ChipView chip, UserInfoField field) {

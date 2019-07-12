@@ -403,6 +403,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
+    private static void onGetPaymentAppsError(
+            PaymentAppFactory.PaymentAppCreatedCallback callback, String errorMessage) {
+        ThreadUtils.assertOnUiThread();
+
+        callback.onGetPaymentAppsError(errorMessage);
+    }
+
+    @CalledByNative
     private static void onHasServiceWorkerPaymentApps(
             HasServiceWorkerPaymentAppsCallback callback, boolean hasPaymentApps) {
         ThreadUtils.assertOnUiThread();

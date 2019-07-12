@@ -1,11 +1,11 @@
-# tags: [ android chromeos highsierra linux mac mojave win ]
+# tags: [ android chromeos highsierra linux mac mojave win win7 ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
-#         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
-#         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
-#         qualcomm-adreno-(tm)-540
+#         nvidia nvidia-0xfe9 nvidia-0x1cb3 qualcomm-adreno-(tm)-330
+#         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
+#         qualcomm-adreno-(tm)-430 qualcomm-adreno-(tm)-540
 # ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -219,3 +219,14 @@ crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLTransparentGree
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+
+# For whatever reason, these configurations are more prone to running into the
+# issue of producing valid images that haven't been seen for a long time, which
+# hits a known issue with Gold.
+crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha [ RetryOnFailure ]
+crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha [ RetryOnFailure ]
+crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ RetryOnFailure ]
+crbug.com/983212 [ mac amd-0x679e ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha [ RetryOnFailure ]
+crbug.com/983212 [ mac amd-0x679e ] Pixel_CSSFilterEffects_NoOverlays [ RetryOnFailure ]
+crbug.com/983212 [ win7 amd-0x6613 ] Pixel_CSS3DBlueBox [ RetryOnFailure ]
+crbug.com/983212 [ win7 nvidia-0x1cb3 ] Pixel_CSS3DBlueBox [ RetryOnFailure ]

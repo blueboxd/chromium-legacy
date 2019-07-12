@@ -995,11 +995,11 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
         bool did_pass_filters = false;
         if (strcmp(attribute_name, "size") == 0) {
           did_pass_filters = WriteAttribute(
-              false, FormatCoordinates("size", "width", "height", *dict_value),
+              false, FormatCoordinates(*dict_value, "size", "width", "height"),
               &line);
         } else if (strcmp(attribute_name, "location") == 0) {
           did_pass_filters = WriteAttribute(
-              false, FormatCoordinates("location", "x", "y", *dict_value),
+              false, FormatCoordinates(*dict_value, "location", "x", "y"),
               &line);
         }
         if (filtered_dict_result && did_pass_filters)

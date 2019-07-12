@@ -48,7 +48,6 @@ void SmsProviderAndroid::OnReceive(
 void SmsProviderAndroid::OnTimeout(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  NotifyTimeout();
 }
 
 }  // namespace content

@@ -132,6 +132,9 @@ class AutofillField : public FormFieldData {
   void set_default_value(const std::string& value) { default_value_ = value; }
   const std::string& default_value() const { return default_value_; }
 
+  void set_initial_value_hash(uint32_t value) { initial_value_hash_ = value; }
+  base::Optional<uint32_t> initial_value_hash() { return initial_value_hash_; }
+
   void set_credit_card_number_offset(size_t position) {
     credit_card_number_offset_ = position;
   }
@@ -223,6 +226,10 @@ class AutofillField : public FormFieldData {
 
   // The default value returned by the Autofill server.
   std::string default_value_;
+
+  // A low-entropy hash of the field's initial value before user-interactions or
+  // automatic fillings. This field is used to detect static placeholders.
+  base::Optional<uint32_t> initial_value_hash_;
 
   // Used to hold the position of the first digit to be copied as a substring
   // from credit card number.

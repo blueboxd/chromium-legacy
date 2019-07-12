@@ -8,11 +8,11 @@
 class GURL;
 
 @class ShareToData;
-@class Tab;
 
 namespace web {
 class WebState;
 }
+
 namespace activity_services {
 
 // Returns a ShareToData object using data from |web_state|. |share_url| is the

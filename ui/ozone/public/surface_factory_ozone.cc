@@ -78,6 +78,16 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
   return nullptr;
 }
 
+void SurfaceFactoryOzone::CreateNativePixmapAsync(
+    gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    NativePixmapCallback callback) {
+  std::move(callback).Run(nullptr);
+}
+
 scoped_refptr<gfx::NativePixmap>
 SurfaceFactoryOzone::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,

@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
+#include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 
@@ -49,15 +51,23 @@ PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
                                          const AtomicString& mark_name,
                                          PerformanceMarkOptions* mark_options,
                                          ExceptionState& exception_state) {
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  if (!window)
-    return nullptr;
-  Performance* performance = DOMWindowPerformance::performance(*window);
-  if (!performance)
-    return nullptr;
+  Performance* performance = nullptr;
+  if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
+    performance = DOMWindowPerformance::performance(*window);
+    DCHECK(performance);
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(
+                 ExecutionContext::From(script_state))) {
+    performance = WorkerGlobalScopePerformance::performance(*scope);
+    DCHECK(performance);
+  }
 
-  return performance->GetUserTiming().CreatePerformanceMark(
-      script_state, mark_name, mark_options, exception_state);
+  if (performance) {
+    return performance->GetUserTiming().CreatePerformanceMark(
+        script_state, mark_name, mark_options, exception_state);
+  }
+  exception_state.ThrowTypeError(
+      "PerformanceMark: no 'worker' or 'window' in current context.");
+  return nullptr;
 }
 
 AtomicString PerformanceMark::entryType() const {

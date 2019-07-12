@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Mark entry can be created by 'new PerformanceMark(string)'.
+PASS Mark entry can be created by 'new PerformanceMark(string, {})'.
+PASS Mark entry can be created by 'new PerformanceMark(string, {startTime})'.
+FAIL Mark entry can be created by 'new PerformanceMark(string, {detail})'. assert_equals: expected (string) "{\"info\":\"abc\"}" but got (undefined) undefined
+FAIL Mark entry can be created by 'new PerformanceMark(string, {startTime, detail})'. assert_equals: expected (string) "{\"info\":\"abc\"}" but got (undefined) undefined
+PASS Using new PerformanceMark() shouldn't add the entry to performance timeline.
+Harness: the test ran to completion.
+

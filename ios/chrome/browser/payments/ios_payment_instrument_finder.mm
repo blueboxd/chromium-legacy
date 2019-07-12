@@ -126,7 +126,8 @@ IOSPaymentInstrumentFinder::CreateIOSPaymentInstrumentsForMethods(
 void IOSPaymentInstrumentFinder::OnPaymentManifestDownloaded(
     const GURL& method,
     const GURL& method_url_after_redirects,
-    const std::string& content) {
+    const std::string& content,
+    const std::string& error_message) {
   // If |content| is empty then the download failed.
   if (content.empty()) {
     OnPaymentInstrumentProcessed();
@@ -212,7 +213,8 @@ void IOSPaymentInstrumentFinder::OnWebAppManifestDownloaded(
     const GURL& method,
     const GURL& web_app_manifest_url,
     const GURL& web_app_manifest_url_after_redirects,
-    const std::string& content) {
+    const std::string& content,
+    const std::string& error_message) {
   // If |content| is empty then the download failed.
   if (content.empty()) {
     OnPaymentInstrumentProcessed();

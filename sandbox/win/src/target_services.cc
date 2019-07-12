@@ -215,37 +215,29 @@ bool TargetServicesBase::TestIPCPing(int version) {
   return true;
 }
 
-ProcessState::ProcessState() : process_state_(0), csrss_connected_(true) {}
-
-bool ProcessState::IsKernel32Loaded() const {
-  return process_state_ != 0;
-}
+ProcessState::ProcessState()
+    : process_state_(ProcessStateInternal::NONE), csrss_connected_(true) {}
 
 bool ProcessState::InitCalled() const {
-  return process_state_ > 1;
+  return process_state_ >= ProcessStateInternal::INIT_CALLED;
 }
 
 bool ProcessState::RevertedToSelf() const {
-  return process_state_ > 2;
+  return process_state_ >= ProcessStateInternal::REVERTED_TO_SELF;
 }
 
 bool ProcessState::IsCsrssConnected() const {
   return csrss_connected_;
 }
 
-void ProcessState::SetKernel32Loaded() {
-  if (!process_state_)
-    process_state_ = 1;
-}
-
 void ProcessState::SetInitCalled() {
-  if (process_state_ < 2)
-    process_state_ = 2;
+  if (process_state_ < ProcessStateInternal::INIT_CALLED)
+    process_state_ = ProcessStateInternal::INIT_CALLED;
 }
 
 void ProcessState::SetRevertedToSelf() {
-  if (process_state_ < 3)
-    process_state_ = 3;
+  if (process_state_ < ProcessStateInternal::REVERTED_TO_SELF)
+    process_state_ = ProcessStateInternal::REVERTED_TO_SELF;
 }
 
 void ProcessState::SetCsrssConnected(bool csrss_connected) {

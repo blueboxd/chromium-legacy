@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL L3: performance.measure(name) should return an entry. assert_true: expected true got false
+FAIL L3: performance.measure(name, param1) should return an entry. assert_true: expected true got false
+FAIL L3: performance.measure(name, param1, param2) should return an entry. assert_true: expected true got false
+FAIL L3: performance.mark(name) should return an entry. assert_true: expected true got false
+FAIL L3: performance.mark(name, param) should return an entry. assert_true: expected true got false
+Harness: the test ran to completion.
+

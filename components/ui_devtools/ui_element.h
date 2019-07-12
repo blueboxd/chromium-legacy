@@ -24,6 +24,22 @@ enum UIElementType { WINDOW, WIDGET, VIEW, ROOT, FRAMESINK, SURFACE };
 
 class UI_DEVTOOLS_EXPORT UIElement {
  public:
+  struct UI_DEVTOOLS_EXPORT UIProperty {
+    UIProperty(std::string name, std::string value)
+        : name_(name), value_(value) {}
+
+    std::string name_;
+    std::string value_;
+  };
+  struct UI_DEVTOOLS_EXPORT ClassProperties {
+    ClassProperties(std::string name, std::vector<UIProperty> properties);
+    ClassProperties(const ClassProperties& copy);
+    ~ClassProperties();
+
+    std::string class_name_;
+    std::vector<UIProperty> properties_;
+  };
+
   using UIElements = std::vector<UIElement*>;
 
   // resets node ids to 0 so that they are reusable
@@ -40,6 +56,8 @@ class UI_DEVTOOLS_EXPORT UIElement {
   bool is_updating() const { return is_updating_; }
   void set_is_updating(bool is_updating) { is_updating_ = is_updating; }
   void set_owns_children(bool owns_children) { owns_children_ = owns_children; }
+  int GetBaseStylesheetId() const { return base_stylesheet_id_; }
+  void SetBaseStylesheetId(int id) { base_stylesheet_id_ = id; }
 
   using ElementCompare = bool (*)(const UIElement*, const UIElement*);
 
@@ -72,6 +90,10 @@ class UI_DEVTOOLS_EXPORT UIElement {
   // Returns properties' names and values.
   virtual std::vector<std::pair<std::string, std::string>> GetCustomProperties()
       const = 0;
+
+  // Returns properties grouped by the class they are from.
+  virtual std::vector<ClassProperties> GetCustomPropertiesForMatchedStyle()
+      const;
 
   virtual void GetBounds(gfx::Rect* bounds) const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
@@ -113,6 +135,7 @@ class UI_DEVTOOLS_EXPORT UIElement {
   UIElementDelegate* delegate_;
   bool is_updating_ = false;
   bool owns_children_ = true;
+  int base_stylesheet_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UIElement);
 };

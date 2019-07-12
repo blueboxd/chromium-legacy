@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "media/base/media_switches.h"
 #include "ui/aura/window.h"
@@ -56,7 +55,6 @@ bool PreTargetAcceleratorHandler::ProcessAccelerator(
   aura::Window* target = static_cast<aura::Window*>(key_event.target());
   // Callers should never supply null.
   DCHECK(target);
-  RecordSearchKeyStats(accelerator);
   // Special hardware keys like brightness and volume are handled in
   // special way. However, some windows can override this behavior
   // (e.g. Chrome v1 apps by default and Chrome v2 apps with
@@ -71,26 +69,6 @@ bool PreTargetAcceleratorHandler::ProcessAccelerator(
   if (!ShouldProcessAcceleratorNow(target, key_event, accelerator))
     return false;
   return Shell::Get()->accelerator_controller()->Process(accelerator);
-}
-
-void PreTargetAcceleratorHandler::RecordSearchKeyStats(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.IsCmdDown()) {
-    if (search_key_state_ == RELEASED) {
-      search_key_state_ = PRESSED;
-      search_key_pressed_timestamp_ = base::TimeTicks::Now();
-    }
-
-    if (accelerator.key_code() != ui::KeyboardCode::VKEY_COMMAND &&
-        search_key_state_ == PRESSED) {
-      search_key_state_ = RECORDED;
-      UMA_HISTOGRAM_TIMES(
-          "Keyboard.Shortcuts.CrosSearchKeyDelay",
-          base::TimeTicks::Now() - search_key_pressed_timestamp_);
-    }
-  } else {
-    search_key_state_ = RELEASED;
-  }
 }
 
 bool PreTargetAcceleratorHandler::CanConsumeSystemKeys(

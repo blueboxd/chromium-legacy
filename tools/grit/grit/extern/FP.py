@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 try:
   import hashlib
   _new_md5 = hashlib.md5
@@ -14,7 +16,7 @@ except ImportError:
 
 Usage:
     from extern import FP
-    print 'Fingerprint is %ld' % FP.FingerPrint('Hello world!')
+    print('Fingerprint is %ld' % FP.FingerPrint('Hello world!'))
 """
 
 

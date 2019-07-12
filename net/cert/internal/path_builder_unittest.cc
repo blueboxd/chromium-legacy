@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/common_cert_errors.h"
@@ -30,6 +31,7 @@ namespace net {
 namespace {
 
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -450,12 +452,11 @@ TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
 }
 
 TEST_F(PathBuilderMultiRootTest, TestIterationLimit) {
-  // Both D(D) and C(D) are trusted roots.
+  // D(D) is the trust root.
   TrustStoreInMemory trust_store;
   trust_store.AddTrustAnchor(d_by_d_);
-  trust_store.AddTrustAnchor(c_by_d_);
 
-  // Certs B(C), and C(D) are all supplied.
+  // Certs B(C) and C(D) are supplied.
   CertIssuerSourceStatic sync_certs;
   sync_certs.AddCert(b_by_c_);
   sync_certs.AddCert(c_by_d_);
@@ -481,10 +482,21 @@ TEST_F(PathBuilderMultiRootTest, TestIterationLimit) {
       path_builder.SetIterationLimit(5);
     }
 
+    base::HistogramTester histogram_tester;
     path_builder.Run();
 
     EXPECT_EQ(!insufficient_limit, result.HasValidPath());
     EXPECT_EQ(insufficient_limit, result.exceeded_iteration_limit);
+
+    if (insufficient_limit) {
+      EXPECT_THAT(histogram_tester.GetAllSamples(
+                      "Net.CertVerifier.PathBuilderIterationCount"),
+                  ElementsAre(base::Bucket(/*sample=*/2, /*count=*/1)));
+    } else {
+      EXPECT_THAT(histogram_tester.GetAllSamples(
+                      "Net.CertVerifier.PathBuilderIterationCount"),
+                  ElementsAre(base::Bucket(/*sample=*/3, /*count=*/1)));
+    }
   }
 }
 

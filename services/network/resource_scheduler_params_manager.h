@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
+#include <unordered_set>
 
 #include "base/component_export.h"
 #include "base/optional.h"
@@ -80,12 +82,29 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
     Reset(other.params_for_network_quality_container_);
   }
 
+  // Returns the maximum time for which the browser initiated traffic can be
+  // paused when there are active P2P connections.
+  const base::Optional<base::TimeDelta>& max_wait_time_p2p_connections() const {
+    return max_wait_time_p2p_connections_;
+  }
+
+  // Returns true if the browser initiated traffic with traffic annotation
+  // |unique_id_hash_code| can be paused when there are active P2P connections.
+  bool CanThrottleNetworkTrafficAnnotationHash(
+      const int32_t unique_id_hash_code) const;
+
  private:
   // The number of delayable requests in-flight for different ranges of the
   // network quality.
   ParamsForNetworkQualityContainer params_for_network_quality_container_;
 
+  const base::Optional<base::TimeDelta> max_wait_time_p2p_connections_;
+
+  const std::set<int32_t> throttled_traffic_annotation_hashes_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_ASSIGN(ResourceSchedulerParamsManager);
 };
 
 }  // namespace network

@@ -533,6 +533,10 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
+const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
+const char kEnableDeferAllScriptDescription[] =
+    "Enable deferring synchronous script on slow pages.";
+
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
@@ -602,6 +606,11 @@ const char kEnableTLS13EarlyDataDescription[] =
     "This option enables TLS 1.3 Early Data, allowing GET requests to be sent "
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
+
+const char kWinrtSensorsImplementationName[] = "WinRT Sensor Implementation";
+const char kWinrtSensorsImplementationDescription[] =
+    "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
+    "sensors";
 
 const char kEnableGenericSensorName[] = "Generic Sensor";
 const char kEnableGenericSensorDescription[] =
@@ -1320,6 +1329,10 @@ const char kOmniboxRichEntitySuggestionsName[] =
 const char kOmniboxRichEntitySuggestionsDescription[] =
     "Display entity suggestions using images and an enhanced layout; showing "
     "more context and descriptive text about the entity.";
+
+const char kOmniboxSearchEngineLogoName[] = "Omnibox search engine logo";
+const char kOmniboxSearchEngineLogoDescription[] =
+    "Display the current default search engine's logo in the omnibox";
 
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";

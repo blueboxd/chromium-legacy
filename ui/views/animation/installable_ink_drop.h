@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_event_handler.h"
@@ -20,6 +21,7 @@
 class SkPath;
 
 namespace gfx {
+class AnimationContainer;
 class Size;
 }  // namespace gfx
 
@@ -87,7 +89,7 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
 
  private:
   void SchedulePaint();
-  void UpdatePainterForCurrentState();
+  void UpdateAnimatorHighlight();
 
   // The view this ink drop is showing for. |layer_| is added to the layer
   // hierarchy that |view_| belongs to. We track events on |view_| to update our
@@ -99,6 +101,11 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
 
   // Observes |view_| and updates our visual state accordingly.
   InkDropEventHandler event_handler_;
+
+  // Used to synchronize the hover and activation animations within this ink
+  // drop. Since we use |views::CompositorAnimationRunner|, this also
+  // synchronizes them with compositor frames.
+  scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   InstallableInkDropPainter painter_;
   InstallableInkDropAnimator animator_;

@@ -5169,6 +5169,10 @@ crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints-get
 crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getSettings.html [ Pass Failure ]
 crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
 
+# Cookie Store API
+crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.html [ Pass Failure ]
+crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure ]
+
 # Failing SameSite cookies tests
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.html [ Failure ]
@@ -6237,20 +6241,6 @@ crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-sourc
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
-
-# TODO (michaelludwig) - Rebaseline for Skia roll
-crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
-crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
-crbug.com/981879 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
-
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
-crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
 
 # Sheriff 2019-07-11
 crbug.com/982290 [ Win ] http/tests/devtools/elements/styles-4/styles-do-not-detach-sourcemap-on-edits.js [ Pass Timeout ]

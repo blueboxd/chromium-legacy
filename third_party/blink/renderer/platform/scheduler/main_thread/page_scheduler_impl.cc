@@ -257,8 +257,10 @@ void PageSchedulerImpl::SetPageFrozenImpl(
   if (is_frozen_ == frozen)
     return;
   is_frozen_ = frozen;
-  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->SetPageFrozenForTracing(frozen);
+    frame_scheduler->SetShouldReportPostedTasksWhenDisabled(frozen);
+  }
   if (notification_policy ==
       PageSchedulerImpl::NotificationPolicy::kNotifyFrames)
     NotifyFrames();

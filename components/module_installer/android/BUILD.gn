@@ -10,11 +10,12 @@ import("//build/config/android/rules.gni")
 # build.
 android_library("module_installer_java") {
   java_files = [
-    "java/src-stub/org/chromium/components/module_installer/ModuleInstaller.java",
+    "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java",
+    "java/src-common/org/chromium/components/module_installer/ModuleInstaller.java",
     "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
     "java/src-common/org/chromium/components/module_installer/Module.java",
   ]
-  jar_excluded_patterns = [ "*/ModuleInstaller.class" ]
+  jar_excluded_patterns = [ "*/ModuleInstallerImpl.class" ]
   deps = [
     "//base:base_java",
   ]
@@ -24,7 +25,7 @@ android_library("module_installer_java") {
 # Contains stub implementation to be used for builds not supporting modules
 # (e.g. APKs).
 android_library("module_installer_stub_java") {
-  java_files = [ "java/src-stub/org/chromium/components/module_installer/ModuleInstaller.java" ]
+  java_files = [ "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java" ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
@@ -36,7 +37,7 @@ android_library("module_installer_stub_java") {
 # bundles).
 android_library("module_installer_impl_java") {
   java_files = [
-    "java/src-impl/org/chromium/components/module_installer/ModuleInstaller.java",
+    "java/src-impl/org/chromium/components/module_installer/ModuleInstallerImpl.java",
     "java/src-impl/org/chromium/components/module_installer/ModuleInstallerBackend.java",
     "java/src-impl/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
     "java/src-impl/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
@@ -50,10 +51,12 @@ android_library("module_installer_impl_java") {
 }
 
 android_library("module_installer_test_java") {
-  java_files = [ "java/src-test/org/chromium/components/module_installer/ModuleInstaller.java" ]
+  testonly = true
+  java_files = [ "javatests/src/org/chromium/components/module_installer/ModuleInstallerRule.java" ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
+    "//third_party/junit",
   ]
   jacoco_never_instrument = true
 }

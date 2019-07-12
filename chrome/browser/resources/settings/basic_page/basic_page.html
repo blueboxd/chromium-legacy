@@ -26,7 +26,6 @@
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
-<link rel="import" href="../parental_controls_page/parental_controls_page.html">
 </if>
 
 <if expr="not chromeos">
@@ -154,15 +153,6 @@
             </settings-people-page>
           </settings-section>
         </template>
-<if expr="chromeos">
-        <template is="dom-if" if="[[showParentalControls]]" restamp>
-          <settings-section page-title="$i18n{parentalControlsPageTitle}"
-              section="parentalControls">
-            <settings-parental-controls-page>
-            </settings-parental-controls-page>
-          </settings-section>
-        </template>
-</if>
         <template is="dom-if" if="[[showPage_(pageVisibility.autofill)]]"
             restamp>
           <settings-section page-title="$i18n{autofillPageTitle}"

@@ -1226,7 +1226,6 @@ video::-webkit-media-text-track-region-container.scrolling {
     transition: top 433ms linear;
 }
 
-
 video::-webkit-media-text-track-display {
     position: absolute;
     overflow: hidden;

@@ -96,6 +96,9 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
 }
 
 TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(omnibox::kOmniboxWrapPopupPosition);
+
   ACMatches matches;
   for (size_t i = 0; i < 3; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
@@ -125,7 +128,7 @@ TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
   model()->OnUpOrDownKeyPressed(-3);
   EXPECT_EQ(0u, model()->popup_model()->selected_line());
 
-  base::test::ScopedFeatureList feature_list;
+  feature_list.Reset();
   feature_list.InitAndEnableFeature(omnibox::kOmniboxWrapPopupPosition);
   // Test wrapping.
   model()->OnUpOrDownKeyPressed(-1);

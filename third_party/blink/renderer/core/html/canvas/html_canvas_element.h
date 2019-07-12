@@ -223,6 +223,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool LowLatencyEnabled() const override { return !!frame_dispatcher_; }
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       AccelerationHint hint) override;
+  bool IsPrinting() const override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);

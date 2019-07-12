@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -22,10 +21,12 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
@@ -118,8 +119,9 @@ void FindBarController::Show() {
   find_bar_->SetFocusAndSelection();
 }
 
-void FindBarController::EndFindSession(SelectionAction selection_action,
-                                       ResultAction result_action) {
+void FindBarController::EndFindSession(
+    FindOnPageSelectionAction selection_action,
+    FindBoxResultAction result_action) {
   find_bar_->Hide(true);
 
   // |web_contents_| can be NULL for a number of reasons, for example when the
@@ -133,7 +135,7 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
     // tickmarks and highlighting.
     find_tab_helper->StopFinding(selection_action);
 
-    if (result_action == kClearResultsInFindBox)
+    if (result_action == FindBoxResultAction::kClear)
       find_bar_->ClearResults(find_tab_helper->find_result());
 
     // When we get dismissed we restore the focus to where it belongs.
@@ -152,13 +154,17 @@ void FindBarController::ChangeWebContents(WebContents* contents) {
 
     FindTabHelper* find_tab_helper =
         FindTabHelper::FromWebContents(web_contents_);
-    if (find_tab_helper)
+    if (find_tab_helper) {
       find_tab_helper->set_selected_range(find_bar_->GetSelectedRange());
+      find_tab_observer_.Remove(find_tab_helper);
+    }
   }
 
   web_contents_ = contents;
   FindTabHelper* find_tab_helper =
       web_contents_ ? FindTabHelper::FromWebContents(web_contents_) : nullptr;
+  if (find_tab_helper)
+    find_tab_observer_.Add(find_tab_helper);
 
   // Hide any visible find window from the previous tab if a NULL tab contents
   // is passed in or if the find UI is not active in the new tab.
@@ -170,9 +176,6 @@ void FindBarController::ChangeWebContents(WebContents* contents) {
   if (!web_contents_)
     return;
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 content::Source<WebContents>(web_contents_));
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -208,24 +211,21 @@ void FindBarController::OnUserChangedFindText(base::string16 text) {
 void FindBarController::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
-    DCHECK(content::Source<WebContents>(source).ptr() == web_contents_);
-    OnFindResultAvailable();
-  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NavigationController* source_controller =
-        content::Source<NavigationController>(source).ptr();
-    if (source_controller == &web_contents_->GetController()) {
-      content::LoadCommittedDetails* commit_details =
-          content::Details<content::LoadCommittedDetails>(details).ptr();
-      ui::PageTransition transition_type =
-          commit_details->entry->GetTransitionType();
-      // Hide the find bar on reload or navigation.
-      if (find_bar_->IsFindBarVisible() && commit_details->is_main_frame &&
-          (ui::PageTransitionCoreTypeIs(transition_type,
-                                        ui::PAGE_TRANSITION_RELOAD) ||
-           commit_details->is_navigation_to_different_page()))
-        EndFindSession(kKeepSelectionOnPage, kClearResultsInFindBox);
-    }
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
+  NavigationController* source_controller =
+      content::Source<NavigationController>(source).ptr();
+  if (source_controller == &web_contents_->GetController()) {
+    content::LoadCommittedDetails* commit_details =
+        content::Details<content::LoadCommittedDetails>(details).ptr();
+    ui::PageTransition transition_type =
+        commit_details->entry->GetTransitionType();
+    // Hide the find bar on reload or navigation.
+    if (find_bar_->IsFindBarVisible() && commit_details->is_main_frame &&
+        (ui::PageTransitionCoreTypeIs(transition_type,
+                                      ui::PAGE_TRANSITION_RELOAD) ||
+         commit_details->is_navigation_to_different_page()))
+      EndFindSession(FindOnPageSelectionAction::kKeep,
+                     FindBoxResultAction::kClear);
   }
 }
 
@@ -269,7 +269,9 @@ gfx::Rect FindBarController::GetLocationForFindbarView(
   return new_pos;
 }
 
-void FindBarController::OnFindResultAvailable() {
+void FindBarController::OnFindResultAvailable(
+    content::WebContents* web_contents) {
+  DCHECK_EQ(web_contents, web_contents_);
   UpdateFindBarForCurrentResult();
 
   FindTabHelper* find_tab_helper =

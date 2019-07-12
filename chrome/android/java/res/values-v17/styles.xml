@@ -1009,6 +1009,12 @@
         <item name="tint">@color/default_icon_color</item>
     </style>
 
+    <style name="OmniboxIcon" parent="LocationBarButton">
+        <item name="android:layout_width">@dimen/location_bar_start_icon_width</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginEnd">4dp</item>
+    </style>
+
     <!-- Revamped context menu -->
     <style name="RevampedContextMenuItemText">
         <item name="android:background">?attr/selectableItemBackground</item>

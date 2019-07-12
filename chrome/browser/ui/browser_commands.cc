@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -1122,8 +1123,7 @@ bool CanCloseFind(Browser* browser) {
 
 void CloseFind(Browser* browser) {
   browser->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 }
 
 void Zoom(Browser* browser, content::PageZoom zoom) {

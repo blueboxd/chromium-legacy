@@ -40,7 +40,7 @@ scoped_refptr<AbstractPromise> ConstructAbstractPromiseWithSinglePrerequisite(
     const scoped_refptr<TaskRunner>& task_runner,
     const Location& from_here,
     AbstractPromise* prerequsite,
-    internal::PromiseExecutor::Data&& executor_data) {
+    internal::PromiseExecutor::Data&& executor_data) noexcept {
   return internal::AbstractPromise::Create(
       task_runner, from_here,
       std::make_unique<AbstractPromise::AdjacencyList>(prerequsite),

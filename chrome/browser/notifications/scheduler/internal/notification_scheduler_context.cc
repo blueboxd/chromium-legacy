@@ -10,7 +10,6 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
-#include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
@@ -24,14 +23,12 @@ namespace notifications {
 NotificationSchedulerContext::NotificationSchedulerContext(
     std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
-    std::unique_ptr<IconStore> icon_store,
     std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
     std::unique_ptr<ScheduledNotificationManager> notification_manager,
     std::unique_ptr<DisplayAgent> display_agent,
     std::unique_ptr<DisplayDecider> display_decider,
     std::unique_ptr<SchedulerConfig> config)
     : client_registrar_(std::move(client_registrar)),
-      icon_store_(std::move(icon_store)),
       impression_tracker_(std::move(impression_tracker)),
       notification_manager_(std::move(notification_manager)),
       display_agent_(std::move(display_agent)),

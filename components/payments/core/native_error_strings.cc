@@ -23,13 +23,56 @@ const char kCannotCompleteWithoutInit[] =
 
 const char kCannotCompleteWithoutShow[] = "Attempted complete without show.";
 
+const char kCannotResolveServiceWorkerScope[] =
+    "Cannot resolve the \"serviceworker\".\"scope\" $1 in web app manifest $2.";
+
+const char kCannotResolveServiceWorkerUrl[] =
+    "Cannot resolve the \"serviceworker\".\"src\" $1 in web app manifest $2.";
+
 const char kCannotRetryWithoutInit[] =
     "Attempted retry without initialization.";
 
 const char kCannotRetryWithoutShow[] = "Attempted retry without show.";
 
+const char kCrossOriginPaymentMethodManifestNotAllowed[] =
+    "Cross-origin payment method manifest \"$1\" not allowed for the payment "
+    "method \"$2\".";
+
+const char kCrossOriginServiceWorkerScopeNotAllowed[] =
+    "Cross-origin \"serviceworker\".\"scope\" $1 not allowed in web app "
+    "manifest $2.";
+
+const char kCrossOriginServiceWorkerUrlNotAllowed[] =
+    "Cross-origin \"serviceworker\".\"src\" $1 not allowed in web app manifest "
+    "$2.";
+
+const char kCrossOriginWebAppManifestNotAllowed[] =
+    "Cross-origin default application $1 not allowed in payment method "
+    "manifest $2.";
+
 const char kDetailedInvalidSslCertificateMessageFormat[] =
     "SSL certificate is not valid. Security level: $.";
+
+const char kHttpHeadRequestFailed[] =
+    "Unable to make a HEAD request to \"$1\" for payment method manifest.";
+
+const char kHttpStatusCodeNotAllowed[] =
+    "HTTP status code $1 \"$2\" not allowed for payment method manifest "
+    "\"$3\".";
+
+const char kInstallingMultipleDefaultAppsNotSupported[] =
+    "Installing multiple payment handlers from a single payment method "
+    "manifest is not supported.";
+
+const char kInvalidManifestUrl[] =
+    "\"$1\" is not a valid payment manifest URL with HTTPS scheme (or HTTP "
+    "scheme for localhost).";
+
+const char kInvalidServiceWorkerScope[] =
+    "\"serviceworker\".\"scope\" must be a non-empty UTF8 string.";
+
+const char kInvalidServiceWorkerUrl[] =
+    "\"serviceworker\".\"src\" must be a non-empty UTF8 string.";
 
 const char kInvalidSslCertificate[] = "SSL certificate is not valid.";
 
@@ -46,12 +89,22 @@ const char kMissingMethodNameFromPaymentApp[] =
 const char kMultiplePaymentMethodsNotSupportedFormat[] =
     "The payment methods $ are not supported.";
 
+const char kNoLinkRelPaymentMethodManifestHttpHeader[] =
+    "No \"Link: rel=payment-method-manifest\" HTTP header found at \"$1\".";
+
 const char kNoResponseToPaymentEvent[] =
     "Payment handler did not respond to \"paymentrequest\" event.";
 
 const char kNotInitialized[] = "Not initialized.";
 
 const char kNotShown[] = "Not shown.";
+
+const char kPaymentManifestCrossSiteRedirectNotAllowed[] =
+    "Cross-site redirect from \"$1\" to \"$2\" not allowed for payment "
+    "manifests.";
+
+const char kPaymentManifestDownloadFailed[] =
+    "Unable to download payment manifest \"$1\".";
 
 const char kPaymentDetailsNotObject[] =
     "Payment app returned invalid response. \"details\" field is not a "
@@ -73,6 +126,10 @@ const char kPaymentEventRejected[] =
     "Payment handler rejected the promise passed into "
     "PaymentRequestEvent.respondWith(). This is how payment handlers close "
     "their own window programmatically.";
+
+const char kReachedMaximumNumberOfRedirects[] =
+    "Unable to download the payment manifest because reached the maximum "
+    "number of redirects.";
 
 const char kPaymentEventServiceWorkerError[] =
     "Payment handler failed to provide a response because either the "

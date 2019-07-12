@@ -164,8 +164,7 @@ int RootFrameViewport::VerticalScrollbarWidth(
 }
 
 void RootFrameViewport::UpdateScrollAnimator() {
-  GetScrollAnimator().SetCurrentOffset(
-      ToFloatSize(ScrollOffsetFromScrollAnimators()));
+  GetScrollAnimator().SetCurrentOffset(ScrollOffsetFromScrollAnimators());
 }
 
 ScrollOffset RootFrameViewport::ScrollOffsetFromScrollAnimators() const {

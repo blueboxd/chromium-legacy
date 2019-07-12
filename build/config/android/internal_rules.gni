@@ -309,7 +309,7 @@ template("write_build_config") {
     }
     if (defined(invoker.r_text)) {
       args += [
-        "--r-text",
+        "--r-text-path",
         rebase_path(invoker.r_text, root_build_dir),
       ]
     }
@@ -328,9 +328,9 @@ template("write_build_config") {
           rebase_path(invoker.proto_resources_path, root_build_dir)
       args += [ "--apk-proto-resources=$_rebased_proto_resources" ]
     }
-    if (defined(invoker.module_rtxt_path)) {
-      _rebased_rtxt_path = rebase_path(invoker.module_rtxt_path, root_build_dir)
-      args += [ "--module-rtxt-path=$_rebased_rtxt_path" ]
+    if (defined(invoker.r_text_path)) {
+      _rebased_rtxt_path = rebase_path(invoker.r_text_path, root_build_dir)
+      args += [ "--r-text-path=$_rebased_rtxt_path" ]
     }
     if (defined(invoker.module_pathmap_path)) {
       _rebased_pathmap_path =
@@ -456,11 +456,6 @@ template("write_build_config") {
       args += [ "--proguard-configs=$_rebased_proguard_configs" ]
     }
     if (defined(invoker.static_library_dependent_targets)) {
-      assert(defined(invoker.static_library_jar_path))
-      args += [
-        "--static-library-jar-path",
-        rebase_path(invoker.static_library_jar_path, root_build_dir),
-      ]
       _dependent_configs = []
       foreach(_target, invoker.static_library_dependent_targets) {
         _target_name = _target.name
@@ -1864,9 +1859,9 @@ if (enable_java_templates) {
         "--include-resources=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt-path",
         rebase_path(_android_aapt_path, root_build_dir),
-        "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
-        "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
-        "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
+        "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
+        "--extra-res-packages=@FileArg($_rebased_build_config:deps_info:extra_package_names)",
+        "--extra-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
       ]
 
       if (defined(invoker.android_manifest)) {
@@ -2112,9 +2107,10 @@ if (enable_java_templates) {
         "--include-resources=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt2-path",
         rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
-        "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
-        "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
-        "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
+        "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
+        "--extra-res-packages=@FileArg($_rebased_build_config:deps_info:extra_package_names)",
+        "--extra-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
+        "--extra-main-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_main_r_text_files)",
         "--min-sdk-version=${invoker.min_sdk_version}",
         "--target-sdk-version=${invoker.target_sdk_version}",
       ]
@@ -2341,6 +2337,7 @@ if (enable_java_templates) {
         args += [ "--use-resource-ids-path=$_rebased_ids_path" ]
         deps += [ _compile_res_dep ]
       }
+
       if (defined(invoker.max_sdk_version)) {
         _max_sdk_version = invoker.max_sdk_version
         args += [ "--max-sdk-version=$_max_sdk_version" ]
@@ -2393,7 +2390,7 @@ if (enable_java_templates) {
           args += [
             "--r-text-whitelist",
             rebase_path(invoker.shared_resources_whitelist, root_build_dir),
-            "--r-text",
+            "--r-text-path",
             rebase_path(invoker.r_text_out_path, root_build_dir),
           ]
         }
@@ -2458,7 +2455,7 @@ if (enable_java_templates) {
           args += [
             "--jar-files=@FileArg($_rebased_build_config:deps_info:unprocessed_jar_path)",
             "--jar-files=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
-            "--in-res-info-path=@FileArg($_rebased_build_config:resources:size_info)",
+            "--in-res-info-path=@FileArg($_rebased_build_config:deps_info:res_size_info)",
             "--assets=@FileArg($_rebased_build_config:assets)",
             "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
           ]
@@ -3042,8 +3039,6 @@ if (enable_java_templates) {
   #    java_files is empty. If not
   #  jar_path: Optional path to a prebuilt .jar file for this target.
   #    Mutually exclusive with java_files and srcjar_deps.
-  #  intermediate_jar_path: Optional path to the output .jar file. If used,
-  #    final_jar_path must be created by another target.
   #  final_jar_path: Optional path to the final output .jar file (after
   #    processing). If not provided, the output will go under
   #    $root_build_dir/lib.java/
@@ -3129,8 +3124,8 @@ if (enable_java_templates) {
   #  proto_resources_path: The path of an zip archive containing the APK's
   #    resources compiled to the protocol buffer format (instead of regular
   #    binary xml + resources.arsc).
-  #  module_rtxt_path: The path of the R.txt file generated when compiling the
-  #    resources for the bundle module.
+  #  r_text_path: The path of the R.txt file generated when compiling the
+  #    resources for this target.
   #  module_pathmap_path: The path of the pathmap file generated when compiling
   #    the resources for the bundle module, if path shortening is enabled.
   #  base_whitelist_rtxt_path: The path of the R.txt file containing the
@@ -3217,9 +3212,6 @@ if (enable_java_templates) {
       # for the ijar as well, but this is only used for APK targets where
       # the ijar path isn't actually used.
       _build_config_jar_path = _final_jar_path
-      if (defined(invoker.intermediate_jar_path)) {
-        _final_jar_path = invoker.intermediate_jar_path
-      }
       _final_ijar_path =
           get_path_info(_final_jar_path, "dir") + "/" +
           get_path_info(_final_jar_path, "name") + ".interface.jar"
@@ -3338,6 +3330,7 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_mapping_path",
+                               "r_text_path",
                                "secondary_abi_loadable_modules",
                                "type",
                              ])
@@ -3374,7 +3367,6 @@ if (enable_java_templates) {
                                  "base_module_target",
                                  "is_base_module",
                                  "module_pathmap_path",
-                                 "module_rtxt_path",
                                  "proto_resources_path",
                                ])
       }
@@ -3389,9 +3381,6 @@ if (enable_java_templates) {
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
                                invoker.bypass_platform_checks
 
-      if (defined(invoker.intermediate_jar_path)) {
-        static_library_jar_path = invoker.intermediate_jar_path
-      }
       if (defined(_final_jar_path)) {
         jar_path = _build_config_jar_path
         ijar_path = _final_ijar_path

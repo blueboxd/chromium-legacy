@@ -2500,9 +2500,9 @@ void NavigationRequest::OnWillStartRequestProcessed(
   else
     handle_state_ = CANCELING;
 
-  // TODO(zetamoo): Remove CompleteCallback from NavigationHandleImpl, and call
-  // the NavigationRequest methods directly.
-  navigation_handle_->RunCompleteCallback(result);
+  // TODO(zetamoo): Remove CompleteCallback, and call NavigationRequest methods
+  // directly.
+  RunCompleteCallback(result);
 }
 
 void NavigationRequest::OnWillRedirectRequestProcessed(
@@ -2518,7 +2518,7 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
   } else {
     handle_state_ = NavigationRequest::CANCELING;
   }
-  navigation_handle_->RunCompleteCallback(result);
+  RunCompleteCallback(result);
 }
 
 void NavigationRequest::OnWillFailRequestProcessed(
@@ -2532,7 +2532,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
   } else {
     handle_state_ = CANCELING;
   }
-  navigation_handle_->RunCompleteCallback(result);
+  RunCompleteCallback(result);
 }
 
 void NavigationRequest::OnWillProcessResponseProcessed(
@@ -2550,7 +2550,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
   } else {
     handle_state_ = NavigationRequest::CANCELING;
   }
-  navigation_handle_->RunCompleteCallback(result);
+  RunCompleteCallback(result);
 }
 
 NavigatorDelegate* NavigationRequest::GetDelegate() const {
@@ -2613,7 +2613,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "CancelDeferredNavigation");
   handle_state_ = NavigationRequest::CANCELING;
-  navigation_handle_->RunCompleteCallback(result);
+  RunCompleteCallback(result);
 }
 
 void NavigationRequest::WillStartRequest(
@@ -2623,16 +2623,16 @@ void NavigationRequest::WillStartRequest(
   // WillStartRequest should only be called once.
   if (handle_state_ != INITIAL) {
     handle_state_ = CANCELING;
-    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    RunCompleteCallback(NavigationThrottle::CANCEL);
     return;
   }
 
   handle_state_ = PROCESSING_WILL_START_REQUEST;
-  navigation_handle_->SetCompleteCallback(std::move(callback));
+  complete_callback_ = std::move(callback);
 
   if (IsSelfReferentialURL()) {
     handle_state_ = CANCELING;
-    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    RunCompleteCallback(NavigationThrottle::CANCEL);
     return;
   }
 
@@ -2664,7 +2664,7 @@ void NavigationRequest::WillRedirectRequest(
 
   if (IsSelfReferentialURL()) {
     handle_state_ = CANCELING;
-    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    RunCompleteCallback(NavigationThrottle::CANCEL);
     return;
   }
 
@@ -2680,7 +2680,7 @@ void NavigationRequest::WillFailRequest(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillFailRequest");
 
-  navigation_handle_->SetCompleteCallback(std::move(callback));
+  complete_callback_ = std::move(callback);
   handle_state_ = PROCESSING_WILL_FAIL_REQUEST;
 
   // Notify each throttle of the request.
@@ -2696,7 +2696,7 @@ void NavigationRequest::WillProcessResponse(
                                "WillProcessResponse");
 
   handle_state_ = PROCESSING_WILL_PROCESS_RESPONSE;
-  navigation_handle_->SetCompleteCallback(std::move(callback));
+  complete_callback_ = std::move(callback);
 
   // Notify each throttle of the response.
   throttle_runner_->ProcessNavigationEvent(
@@ -2828,7 +2828,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   navigation_handle_proxy_->DidRedirect();
 #endif
 
-  navigation_handle_->SetCompleteCallback(std::move(callback));
+  complete_callback_ = std::move(callback);
 }
 
 void NavigationRequest::SetNavigationClient(
@@ -2895,6 +2895,22 @@ NavigationRequest::TakeAppCacheHandle() {
 
 bool NavigationRequest::IsWaitingToCommit() {
   return handle_state_ == NavigationRequest::READY_TO_COMMIT;
+}
+
+void NavigationRequest::RunCompleteCallback(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(result.action() != NavigationThrottle::DEFER);
+
+  ThrottleChecksFinishedCallback callback = std::move(complete_callback_);
+
+  if (!complete_callback_for_testing_.is_null())
+    std::move(complete_callback_for_testing_).Run(result);
+
+  if (!callback.is_null())
+    std::move(callback).Run(result);
+
+  // No code after running the callback, as it might have resulted in our
+  // destruction.
 }
 
 }  // namespace content

@@ -13,8 +13,8 @@ namespace {
 // these and make colors configurable, with same defaults as existing
 // ink drops.
 constexpr SkColor kInstallableInkDropBaseColor = SK_ColorBLACK;
-constexpr SkAlpha kInstallableInkDropHighlightedOpacity = 0.08 * SK_AlphaOPAQUE;
-constexpr SkAlpha kInstallableInkDropActivatedOpacity = 0.16 * SK_AlphaOPAQUE;
+constexpr float kInstallableInkDropHighlightedOpacity = 0.08;
+constexpr float kInstallableInkDropActivatedOpacity = 0.16;
 }  // namespace
 
 namespace views {
@@ -26,13 +26,15 @@ gfx::Size InstallableInkDropPainter::GetMinimumSize() const {
 void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
                                       const gfx::Size& size) {
   if (activated_) {
+    canvas->FillRect(
+        gfx::Rect(size),
+        SkColorSetA(kInstallableInkDropBaseColor,
+                    kInstallableInkDropActivatedOpacity * SK_AlphaOPAQUE));
+  } else if (highlighted_ratio_ > 0.0f) {
     canvas->FillRect(gfx::Rect(size),
                      SkColorSetA(kInstallableInkDropBaseColor,
-                                 kInstallableInkDropActivatedOpacity));
-  } else if (highlighted_) {
-    canvas->FillRect(gfx::Rect(size),
-                     SkColorSetA(kInstallableInkDropBaseColor,
-                                 kInstallableInkDropHighlightedOpacity));
+                                 kInstallableInkDropHighlightedOpacity *
+                                     highlighted_ratio_ * SK_AlphaOPAQUE));
   }
 }
 

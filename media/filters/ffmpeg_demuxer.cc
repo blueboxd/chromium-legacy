@@ -133,16 +133,6 @@ static void UmaHistogramAspectRatio(const char* name, const T& size) {
       base::CustomHistogram::ArrayToCustomEnumRanges(kCommonAspectRatios100));
 }
 
-// Record detected track counts by type corresponding to a src= playback.
-// Counts are split into 50 buckets, capped into [0,100] range.
-static void RecordDetectedTrackTypeStats(int audio_count,
-                                         int video_count,
-                                         int text_count) {
-  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Audio", audio_count);
-  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Video", video_count);
-  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Text", text_count);
-}
-
 // Record audio decoder config UMA stats corresponding to a src= playback.
 static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
   UMA_HISTOGRAM_ENUMERATION("Media.AudioCodec", audio_config.codec(),
@@ -1300,9 +1290,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
   start_time_ = kInfiniteDuration;
 
   base::TimeDelta max_duration;
-  int detected_audio_track_count = 0;
-  int detected_video_track_count = 0;
-  int detected_text_track_count = 0;
   int supported_audio_track_count = 0;
   int supported_video_track_count = 0;
   bool has_opus_or_vorbis_audio = false;
@@ -1327,8 +1314,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
         base::UmaHistogramSparse("Media.DetectedAudioCodecHash.Local",
                                  codec_hash);
       }
-
-      detected_audio_track_count++;
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
@@ -1338,7 +1323,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
         base::UmaHistogramSparse("Media.DetectedVideoCodecHash.Local",
                                  codec_hash);
       }
-      detected_video_track_count++;
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
       if (codec_id == AV_CODEC_ID_HEVC) {
@@ -1355,7 +1339,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       }
 #endif
     } else if (codec_type == AVMEDIA_TYPE_SUBTITLE) {
-      detected_text_track_count++;
       stream->discard = AVDISCARD_ALL;
       continue;
     } else {
@@ -1473,10 +1456,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
     streams_[i]->set_start_time(start_time);
   }
-
-  RecordDetectedTrackTypeStats(detected_audio_track_count,
-                               detected_video_track_count,
-                               detected_text_track_count);
 
   if (media_tracks->tracks().empty()) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName()

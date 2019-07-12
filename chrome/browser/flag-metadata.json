@@ -1172,6 +1172,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-winrt-sensor-implementation",
+    "owners": [ "wensh@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-generic-sensor",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 72
@@ -1300,6 +1305,11 @@
     "name": "enable-backdrop-filter",
     "owners": [ "masonfreed", "paint-dev@chromium.org" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-defer-all-script",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 82
   },
   {
     "name": "enable-layout-ng",
@@ -2523,6 +2533,11 @@
     "name": "omnibox-rich-entity-suggestions",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-search-engine-logo",
+    "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-short-bookmark-suggestions",

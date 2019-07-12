@@ -50,7 +50,6 @@ void ExtensionPage::InitializeWindow() {
   window_->CreateWindowForWebContents(
       web_contents(), window_manager_, CastWindowManager::APP,
       chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
-  web_contents()->Focus();
 }
 
 void ExtensionPage::RenderViewCreated(
@@ -60,6 +59,7 @@ void ExtensionPage::RenderViewCreated(
   if (view) {
     view->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
+  web_contents()->Focus();
 }
 
 }  // namespace chromecast

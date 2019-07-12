@@ -18,9 +18,7 @@ import org.chromium.ui.widget.ChipView;
  * This view represents a section of user data in the address tab of the keyboard accessory.
  */
 class AddressAccessoryInfoView extends LinearLayout {
-    private ChipView mNameFirst;
-    private ChipView mNameMiddle;
-    private ChipView mNameLast;
+    private ChipView mNameFull;
     private ChipView mCompanyName;
     private ChipView mAddressHomeLine1;
     private ChipView mAddressHomeLine2;
@@ -61,9 +59,7 @@ class AddressAccessoryInfoView extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mNameFirst = findViewById(R.id.name_first);
-        mNameMiddle = findViewById(R.id.name_middle);
-        mNameLast = findViewById(R.id.name_last);
+        mNameFull = findViewById(R.id.name_full);
         mCompanyName = findViewById(R.id.company_name);
         mAddressHomeLine1 = findViewById(R.id.address_home_line_1);
         mAddressHomeLine2 = findViewById(R.id.address_home_line_2);
@@ -75,16 +71,8 @@ class AddressAccessoryInfoView extends LinearLayout {
         mEmailAddress = findViewById(R.id.email_address);
     }
 
-    public ChipView getNameFirst() {
-        return mNameFirst;
-    }
-
-    public ChipView getNameMiddle() {
-        return mNameMiddle;
-    }
-
-    public ChipView getNameLast() {
-        return mNameLast;
+    public ChipView getNameFull() {
+        return mNameFull;
     }
 
     public ChipView getCompanyName() {

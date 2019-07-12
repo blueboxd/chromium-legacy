@@ -184,11 +184,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     response_headers_for_testing_ = response_headers;
   }
 
-  void set_complete_callback_for_testing(
-      ThrottleChecksFinishedCallback callback) {
-    complete_callback_for_testing_ = std::move(callback);
-  }
-
   CSPDisposition should_check_main_world_csp() const {
     return navigation_request_->common_params()
         .initiator_csp_info.should_check_main_world_csp;
@@ -233,14 +228,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        int pending_nav_entry_id,
                        net::HttpRequestHeaders request_headers);
 
-  // Helper function to run and reset the |complete_callback_|. This marks the
-  // end of a round of NavigationThrottleChecks.
-  void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
-
-  void SetCompleteCallback(ThrottleChecksFinishedCallback callback) {
-    complete_callback_ = std::move(callback);
-  }
-
   NavigationRequest::NavigationHandleState state() const {
     return navigation_request_->handle_state();
   }
@@ -279,16 +266,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
-
-  // This callback will be run when all throttle checks have been performed. Be
-  // careful about relying on it as the member may be removed as part of the
-  // PlzNavigate refactoring.
-  ThrottleChecksFinishedCallback complete_callback_;
-
-  // This test-only callback will be run when all throttle checks have been
-  // performed.
-  // TODO(clamy): Revisit the unit test architecture when PlzNavigate ships.
-  ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding provider is created in the renderer.

@@ -120,12 +120,15 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
     }
-    dbus::MethodCall method_call(
-        update_engine::kUpdateEngineInterface,
-        update_engine::kAttemptUpdate);
+    // TODO(crbug.com/982438): Use newer version of kAttemptUpdate instead once
+    // it was enhanced with protobuf arguments.
+    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
+                                 update_engine::kAttemptUpdateWithFlags);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString("");  // Unused.
-    writer.AppendString("");  // Unused.
+    writer.AppendString("");  // app_version
+    writer.AppendString("");  // omaha_url
+    writer.AppendInt32(0);    // flags, default is 0 (interactive). See
+                              // org.chromium.UpdateEngineInterface.dbus-xml.
 
     VLOG(1) << "Requesting an update check";
     update_engine_proxy_->CallMethod(

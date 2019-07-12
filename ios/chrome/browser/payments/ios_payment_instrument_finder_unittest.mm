@@ -142,7 +142,8 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
     ios_payment_instrument_finder_->num_instruments_to_find_ = 1;
     GURL web_app_manifest_url("https://bobpay.xyz/bob/manifest.json");
     ios_payment_instrument_finder_->OnWebAppManifestDownloaded(
-        method, web_app_manifest_url, web_app_manifest_url, content);
+        method, web_app_manifest_url, web_app_manifest_url, content,
+        /*error_message=*/"");
   }
 
   void RunLoop() {

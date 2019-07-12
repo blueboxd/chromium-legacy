@@ -311,17 +311,17 @@ void SharedWorkerHost::CreateNetworkFactory(
   url::Origin origin = instance_->constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
-  // TODO(crbug.com/955476): network_isolation_key to be created using worker
-  // script's origin.
   if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
-    process->CreateURLLoaderFactory(
-        origin, nullptr /* preferences */, net::NetworkIsolationKey(),
-        std::move(no_header_client), std::move(request));
+    process->CreateURLLoaderFactory(origin, nullptr /* preferences */,
+                                    net::NetworkIsolationKey(origin, origin),
+                                    std::move(no_header_client),
+                                    std::move(request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    process->CreateURLLoaderFactory(
-        origin, nullptr /* preferences */, net::NetworkIsolationKey(),
-        std::move(no_header_client), mojo::MakeRequest(&original_factory));
+    process->CreateURLLoaderFactory(origin, nullptr /* preferences */,
+                                    net::NetworkIsolationKey(origin, origin),
+                                    std::move(no_header_client),
+                                    mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
         std::move(request), process_id_, original_factory.PassInterface());
   }

@@ -31,9 +31,6 @@ namespace {
 const size_t kTraceConfigFileSizeLimit = 64 * 1024;
 const int kDefaultStartupDuration = 5;
 
-// 95th percentile size of current startup traces size uploaded.
-const size_t kMaxStartupTraceSizeInKb = 300;
-
 // Trace config file path:
 // - Android: /data/local/chrome-trace-config.json
 // - Others: specified by --trace-config-file flag.
@@ -42,7 +39,8 @@ const base::FilePath::CharType kAndroidTraceConfigFile[] =
     FILE_PATH_LITERAL("/data/local/chrome-trace-config.json");
 
 const char kDefaultStartupCategories[] =
-    "startup,browser,toplevel,EarlyJava,cc,Java,navigation,loading,gpu,"
+    "startup,browser,toplevel,disabled-by-default-toplevel.flow,ipc,disabled-"
+    "by-default-ipc.flow,EarlyJava,cc,Java,navigation,loading,gpu,"
     "disabled-by-default-cpu_profiler,download_service,-*";
 #else
 const char kDefaultStartupCategories[] =
@@ -74,7 +72,6 @@ TraceStartupConfig::GetDefaultBrowserStartupConfig() {
       {base::GetCurrentProcId()});
   // First 10k events at start are sufficient to debug startup traces.
   trace_config.SetTraceBufferSizeInEvents(10000);
-  trace_config.SetTraceBufferSizeInKb(kMaxStartupTraceSizeInKb);
   trace_config.SetProcessFilterConfig(process_config);
   // Enable argument filter since we could be background tracing.
   trace_config.EnableArgumentFilter();

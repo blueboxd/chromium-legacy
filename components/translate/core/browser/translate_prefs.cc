@@ -83,13 +83,7 @@ const base::Feature kTranslateUI{"TranslateUI",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateMobileManualTrigger{
-  "TranslateAndroidManualTrigger",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "TranslateAndroidManualTrigger", base::FEATURE_ENABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,

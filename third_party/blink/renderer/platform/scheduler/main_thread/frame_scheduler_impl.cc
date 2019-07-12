@@ -780,6 +780,17 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
   UpdatePolicy();
 }
 
+void FrameSchedulerImpl::SetShouldReportPostedTasksWhenDisabled(
+    bool should_report) {
+  // Forward this to all the task queues associated with this frame.
+  for (const auto& task_queue_and_voter :
+       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
+    auto* task_queue = task_queue_and_voter.first;
+    if (task_queue->CanBeFrozen())
+      task_queue->SetShouldReportPostedTasksWhenDisabled(should_report);
+  }
+}
+
 void FrameSchedulerImpl::SetPageFrozenForTracing(bool frozen) {
   page_frozen_for_tracing_ = frozen;
 }

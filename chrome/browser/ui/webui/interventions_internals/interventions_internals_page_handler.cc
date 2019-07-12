@@ -32,6 +32,7 @@ const char kLitePageRedirectHtmlId[] = "lite-page-redirect-status";
 const char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 const char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 const char kOfflinePreviewsHtmlId[] = "offline-preview-status";
+const char kDeferAllScriptPreviewsHtmlId[] = "defer-all-script-preview-status";
 
 // Descriptions for previews.
 const char kPreviewsAllowedDescription[] = "Previews Allowed";
@@ -39,6 +40,7 @@ const char kLitePageRedirectDescription[] =
     "Lite Page Redirect / Server Previews";
 const char kNoScriptDescription[] = "NoScript Previews";
 const char kResourceLoadingHintsDescription[] = "ResourceLoadingHints Previews";
+const char kDeferAllScriptPreviewsDescription[] = "DeferAllScript Previews";
 const char kOfflineDesciption[] = "Offline Previews";
 
 // Flag feature name.
@@ -46,6 +48,7 @@ const char kPreviewsAllowedFeatureName[] = "Previews";
 const char kLitePageRedirectFeatureName[] = "LitePageServerPreviews";
 const char kNoScriptFeatureName[] = "NoScriptPreviews";
 const char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
+const char kDeferAllScriptFeatureName[] = "DeferAllScript";
 #if defined(OS_ANDROID)
 const char kOfflinePageFeatureName[] = "OfflinePreviews";
 #endif  // OS_ANDROID
@@ -56,6 +59,7 @@ const char kPreviewsAllowedFlagHtmlId[] = "previews-flag";
 const char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 const char kLitePageRedirectFlagHtmlId[] = "lite-page-redirect-flag";
 const char kResourceLoadingHintsFlagHtmlId[] = "resource-loading-hints-flag";
+const char kDeferAllScriptFlagHtmlId[] = "defer-all-script-flag";
 const char kNoScriptFlagHtmlId[] = "noscript-flag";
 const char kEctFlagHtmlId[] = "ect-flag";
 const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
@@ -70,6 +74,8 @@ const char kLitePageRedirectFlagLink[] =
     "chrome://flags/#enable-lite-page-server-previews";
 const char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
+const char kDeferAllScriptFlagLink[] =
+    "chrome://flags/#enable-defer-all-script";
 const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
 const char kIgnorePreviewsBlacklistLink[] =
@@ -241,6 +247,14 @@ void InterventionsInternalsPageHandler::GetPreviewsEnabled(
   resource_loading_hints_status->htmlId = kResourceLoadingHintsHtmlId;
   statuses.push_back(std::move(resource_loading_hints_status));
 
+  auto defer_all_script_preview_status = mojom::PreviewsStatus::New();
+  defer_all_script_preview_status->description =
+      kDeferAllScriptPreviewsDescription;
+  defer_all_script_preview_status->enabled =
+      previews::params::IsDeferAllScriptPreviewsEnabled();
+  defer_all_script_preview_status->htmlId = kDeferAllScriptPreviewsHtmlId;
+  statuses.push_back(std::move(defer_all_script_preview_status));
+
   auto noscript_status = mojom::PreviewsStatus::New();
   noscript_status->description = kNoScriptDescription;
   noscript_status->enabled = previews::params::IsNoScriptPreviewsEnabled();
@@ -293,6 +307,15 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
       GetFeatureFlagStatus(kResourceLoadingHintsFeatureName);
   resource_loading_hints_status->htmlId = kResourceLoadingHintsFlagHtmlId;
   flags.push_back(std::move(resource_loading_hints_status));
+
+  auto defer_all_script_status = mojom::PreviewsFlag::New();
+  defer_all_script_status->description =
+      flag_descriptions::kEnableDeferAllScriptName;
+  defer_all_script_status->link = kDeferAllScriptFlagLink;
+  defer_all_script_status->value =
+      GetFeatureFlagStatus(kDeferAllScriptFeatureName);
+  defer_all_script_status->htmlId = kDeferAllScriptFlagHtmlId;
+  flags.push_back(std::move(defer_all_script_status));
 
   auto noscript_status = mojom::PreviewsFlag::New();
   noscript_status->description = flag_descriptions::kEnableNoScriptPreviewsName;

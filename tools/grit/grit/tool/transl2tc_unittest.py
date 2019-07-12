@@ -5,6 +5,7 @@
 
 '''Unit tests for the 'grit transl2tc' tool.'''
 
+from __future__ import print_function
 
 import os
 import sys

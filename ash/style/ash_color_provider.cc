@@ -75,11 +75,11 @@ SkColor AshColorProvider::GetBaseLayerColor(BaseLayerType type) const {
   SkColor light_color, dark_color;
   switch (type) {
     case BaseLayerType::kTransparentWithBlur:
-      light_color = SkColorSetA(SK_ColorWHITE, 0xC7);
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0xC7);
+      light_color = SkColorSetA(SK_ColorWHITE, 0xBC);  // 74%
+      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0xBC);
       break;
     case BaseLayerType::kTransparentWithoutBlur:
-      light_color = SkColorSetA(SK_ColorWHITE, 0xE6);
+      light_color = SkColorSetA(SK_ColorWHITE, 0xE6);  // 90%
       dark_color = SkColorSetA(gfx::kGoogleGrey900, 0xE6);
       break;
     case BaseLayerType::kOpaque:
@@ -94,16 +94,16 @@ SkColor AshColorProvider::GetPlusOneLayerColor(PlusOneLayerType type) const {
   SkColor light_color, dark_color;
   switch (type) {
     case PlusOneLayerType::kHairLine:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x24);
+      light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
     case PlusOneLayerType::kSeparator:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x24);
+      light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
     case PlusOneLayerType::kInActive:
-      light_color = SkColorSetA(SK_ColorBLACK, 0x0D);
-      dark_color = SkColorSetA(SK_ColorWHITE, 0x1A);
+      light_color = SkColorSetA(SK_ColorBLACK, 0x0D);  // 5%
+      dark_color = SkColorSetA(SK_ColorWHITE, 0x1A);   // 10%
       break;
     case PlusOneLayerType::kActive:
       light_color = gfx::kGoogleBlue600;

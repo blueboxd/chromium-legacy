@@ -258,6 +258,7 @@ cast_source_set("for_mixer_audio") {
     ":volume_map",
     "//base",
     "//chromecast/base",
+    "//chromecast/base:thread_health_checker",
     "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
     "//chromecast/media/base",
     "//chromecast/media/cma/base",

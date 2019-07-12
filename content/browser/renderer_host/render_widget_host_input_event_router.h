@@ -398,11 +398,21 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   std::unique_ptr<TouchEmulator> touch_emulator_;
   std::unique_ptr<TouchEventAckQueue> touch_event_ack_queue_;
 
+  // The coordinates that are determined by the renderer process on MouseDown
+  // are cached then used by the browser process on the following MouseUp. This
+  // is a temporary fix of https://crbug.com/934434 to eliminate the mismatch
+  // between the two coordinate transforms.
+  mutable gfx::PointF mouse_down_pre_transformed_coordinate_;
+  mutable gfx::PointF mouse_down_post_transformed_coordinate_;
+  RenderWidgetHostViewBase* last_mouse_down_target_;
+
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_{
       this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   friend class RenderWidgetHostInputEventRouterTest;
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
+                           CacheCoordinateTransformUponMouseDown);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            HitTestStaleDataDeletedView);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,

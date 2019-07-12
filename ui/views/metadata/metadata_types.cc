@@ -77,6 +77,15 @@ operator++(int) {
   return tmp;
 }
 
+bool ClassMetaData::ClassMemberIterator::IsLastMember() const {
+  return current_vector_index_ == current_collection_->members().size() - 1;
+}
+
+std::string ClassMetaData::ClassMemberIterator::GetCurrentCollectionName()
+    const {
+  return current_collection_->type_name();
+}
+
 void ClassMetaData::ClassMemberIterator::IncrementHelper() {
   DCHECK_LT(current_vector_index_, SIZE_MAX);
   ++current_vector_index_;

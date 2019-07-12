@@ -81,6 +81,22 @@ export class StdToastElement extends HTMLElement {
       null;
   }
 
+  set action(val) {
+    const previousAction = this.action;
+    if (val !== null) {
+      if (!isElement(val)) {
+        throw new TypeError('Invalid argument: must be type Element');
+      }
+
+      val.setAttribute('slot', 'action');
+      this.insertBefore(val, previousAction);
+    }
+
+    if (previousAction !== null) {
+      previousAction.remove();
+    }
+  }
+
   show({duration = DEFAULT_DURATION} = {}) {
     this.setAttribute('open', '');
     clearTimeout(this.#timeoutID);
@@ -124,7 +140,9 @@ export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
   const {action, ...showOptions} = options;
-  if (action !== undefined) {
+  if (isElement(action)) {
+    toast.action = action;
+  } else if (action !== undefined) {
     const actionButton = document.createElement('button');
 
     // Unlike String(), this performs the desired JavaScript ToString operation.
@@ -139,4 +157,15 @@ export function showToast(message, options = {}) {
   toast.show(showOptions);
 
   return toast;
+}
+
+const idGetter =
+  Object.getOwnPropertyDescriptor(Element.prototype, 'id').get;
+function isElement(value) {
+  try {
+    idGetter.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }

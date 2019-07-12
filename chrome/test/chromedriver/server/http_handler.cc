@@ -514,20 +514,6 @@ HttpHandler::HttpHandler(
                                    base::BindRepeating(&ExecuteGetElementSize),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
-      CommandMapping(
-          kGet, "session/:sessionId/orientation",
-          WrapToCommand("GetScreenOrientation",
-                        base::BindRepeating(&ExecuteGetScreenOrientation),
-                        false /*w3c_standard_command*/)),
-
-      // No W3C equivalent.
-      CommandMapping(
-          kPost, "session/:sessionId/orientation",
-          WrapToCommand("SetScreenOrientation",
-                        base::BindRepeating(&ExecuteSetScreenOrientation),
-                        false /*w3c_standard_command*/)),
-
       // Similar to W3C GET /session/:sessionId/alert/text.
       CommandMapping(
           kGet, "session/:sessionId/alert_text",

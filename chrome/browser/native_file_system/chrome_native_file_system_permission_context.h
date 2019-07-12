@@ -19,8 +19,8 @@ class BrowserContext;
 // Chrome implementation of NativeFileSystemPermissionContext. Currently
 // implements a single per-origin write permission state.
 //
-// All methods (other than the constructor and destructor) should be called on
-// the same sequence.
+// All methods should be called on the same sequence, except for the
+// constructor, destructor, and GetPermissionGrantsFromUIThread method.
 //
 // TODO(mek): Reconsider if this class should just be UI-thread only, avoiding
 // the need to make this ref-counted.
@@ -45,6 +45,24 @@ class ChromeNativeFileSystemPermissionContext
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory) override;
+
+  struct Grants {
+    Grants();
+    ~Grants();
+    Grants(Grants&&);
+    Grants& operator=(Grants&&);
+
+    std::vector<base::FilePath> file_write_grants;
+    std::vector<base::FilePath> directory_write_grants;
+  };
+  Grants GetPermissionGrants(const url::Origin& origin);
+
+  // This method must be called on the UI thread, and calls the callback with a
+  // snapshot of the currently granted permissions after looking them up.
+  static void GetPermissionGrantsFromUIThread(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      base::OnceCallback<void(Grants)> callback);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;

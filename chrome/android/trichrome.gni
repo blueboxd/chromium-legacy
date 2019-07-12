@@ -49,6 +49,8 @@ template("trichrome_library_apk_tmpl") {
                              "apk_name",
                              "min_sdk_version",
                              "proguard_jar_path",
+                             "shared_resources_whitelist_target",
+                             "shared_resources_whitelist_locales",
                              "static_library_dependent_targets",
                              "target_sdk_version",
                            ])
@@ -59,8 +61,12 @@ template("trichrome_library_apk_tmpl") {
     no_build_hooks = true
 
     alternative_android_sdk_dep = webview_framework_dep
-    app_as_shared_lib = true
-    r_java_root_package_name = "trichrome_lib"
+    if (!trichrome_synchronized_proguard) {
+      # TODO(crbug.com/901465): Remove r_java_root_package_name once shared
+      # Java code is moved to the shared library even in debug.
+      r_java_root_package_name = "trichrome_lib"
+      app_as_shared_lib = true
+    }
     use_chromium_linker = false
     uncompress_shared_libraries = true
     uncompress_dex = use_uncompressed_dex

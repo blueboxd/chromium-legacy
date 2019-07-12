@@ -125,46 +125,7 @@ This section is split into two main parts:
 
 ### 4.1 Support For Adapting Between ISensor and Windows.Devices.Sensors Sensor Implementations
 
-The `PlatformSensorProvider::GetInstance()` function decides which
-PlatformSensorProvider implementation to use. A new branch will be
-added for the Windows.Devices.Sensors path:
-
-```cpp
-PlatformSensorProvider* PlatformSensorProvider::GetInstance() {
-  if (g_provider_for_testing)
-    return g_provider_for_testing;
-#if defined(OS_MACOSX)
-  return PlatformSensorProviderMac::GetInstance();
-#elif defined(OS_ANDROID)
-  return PlatformSensorProviderAndroid::GetInstance();
-#elif defined(OS_WIN)
-  if (PlatformSensorProvider::UseWindowsWinrt()) {
-    // Windows.Devices.Sensors Windows implementation
-    return PlatformSensorProviderWinrt::GetInstance(); 
-  } else {
-    // ISensor Windows implementation
-    return PlatformSensorProviderWin::GetInstance(); 
-  }
-#elif defined(OS_LINUX) && defined(USE_UDEV)
-  return PlatformSensorProviderLinux::GetInstance();
-#else
-  return nullptr;
-#endif
-}
-```
-
-With `PlatformSensorProvider::UseWindowsWinrt()` being:
-
-```cpp
-bool PlatformSensorProvider::UseWindowsWinrt() {
-  return base::FeatureList::IsEnabled(kWinrtSensorsImplementation) &&
-      (base::win::GetVersion() >= base::win::Version::WIN10);
-}
-```
-
-The Windows.Devices.Sensors path is also decided on the
-`kWinrtSensorsImplementation` feature flag, which is explained further in
-section 5 below.
+Please refer to [platform_sensor_provider.cc](platform_sensor_provider.cc ).
 
 ### 4.2 Proposed Windows.Devices.Sensors Sensor Implementation
 
@@ -453,21 +414,6 @@ thresholding.
 
 The modernization changes will be broken down into several incremental
 changes to keep change lists to a reviewable size:
-
-#### Change list 1: Define the interface for PlatformSensorProviderWinrt and consume it
-
-- Feature Work:
-  - Create the PlatformSensorProviderWinrt header as defined in
-    Section 8.1.
-  - Create the Chromium feature flag as defined in Section 5 following
-    these [steps](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/how_to_add_your_feature_flag.md).
-  - Modify `PlatformSensorProvider::GetInstance()` to conditionally
-    create PlatformSensorProviderWinrt as defined in section 4.1.
-- Testing:
-  - Add a simple test to validate that PlatformSensorProviderWinrt
-    can be instantiated without errors.
-  - Run feature flag unit test as defined
-    [here](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/how_to_add_your_feature_flag.md).
 
 #### Change list 2: Implement PlatformSensorProviderWinrt
 

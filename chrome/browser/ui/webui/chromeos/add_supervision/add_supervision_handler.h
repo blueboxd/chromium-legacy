@@ -56,14 +56,14 @@ class AddSupervisionHandler
                                   GoogleServiceAuthError error,
                                   identity::AccessTokenInfo access_token_info);
 
-  mojo::Binding<add_supervision::mojom::AddSupervisionHandler> binding_;
-
   // The AddSupervisionUI that this AddSupervisionHandler belongs to.
   content::WebUI* web_ui_;
 
   // Used to fetch OAuth2 access tokens.
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<identity::AccessTokenFetcher> oauth2_access_token_fetcher_;
+
+  mojo::Binding<add_supervision::mojom::AddSupervisionHandler> binding_;
 
   Delegate* delegate_;
 

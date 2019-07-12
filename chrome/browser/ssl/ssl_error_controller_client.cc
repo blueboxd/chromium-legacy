@@ -226,7 +226,5 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
 }
 
 bool SSLErrorControllerClient::HasSeenRecurrentError() {
-  return HasSeenRecurrentErrorInternal(web_contents_, cert_error_) &&
-         base::GetFieldTrialParamByFeatureAsBool(kRecurrentInterstitialFeature,
-                                                 "show_error_ui", true);
+  return HasSeenRecurrentErrorInternal(web_contents_, cert_error_);
 }

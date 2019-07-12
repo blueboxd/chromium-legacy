@@ -10,6 +10,7 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"

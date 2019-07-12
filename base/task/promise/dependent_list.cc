@@ -47,7 +47,7 @@ DependentList::Visitor::~Visitor() = default;
 
 DependentList::Node::Node() = default;
 
-DependentList::Node::Node(Node&& other) {
+DependentList::Node::Node(Node&& other) noexcept {
   prerequisite_ = other.prerequisite_.load(std::memory_order_relaxed);
   other.prerequisite_ = 0;
   dependent_ = std::move(other.dependent_);

@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/find_in_page_observer.h"
+#include "chrome/test/base/find_result_waiter.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -442,7 +442,7 @@ int FindInPage(WebContents* tab,
   FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case,
                                 true /* run_synchronously_for_testing */);
-  FindInPageNotificationObserver observer(tab);
+  FindResultWaiter observer(tab);
   observer.Wait();
   if (ordinal)
     *ordinal = observer.active_match_ordinal();

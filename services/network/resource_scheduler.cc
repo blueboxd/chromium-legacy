@@ -31,6 +31,7 @@
 #include "net/log/net_log.h"
 #include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/peer_to_peer_connections_count_observer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/features.h"
@@ -62,6 +63,7 @@ enum class RequestStartTrigger {
   REQUEST_REPRIORITIZED,
   LONG_QUEUED_REQUESTS_TIMER_FIRED,
   EFFECTIVE_CONNECTION_TYPE_CHANGED,
+  PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED,
 };
 
 const char* RequestStartTriggerString(RequestStartTrigger trigger) {
@@ -84,6 +86,8 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
       return "LONG_QUEUED_REQUESTS_TIMER_FIRED";
     case RequestStartTrigger::EFFECTIVE_CONNECTION_TYPE_CHANGED:
       return "EFFECTIVE_CONNECTION_TYPE_CHANGED";
+    case RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED:
+      return "PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED";
   }
 }
 
@@ -363,7 +367,9 @@ void ResourceScheduler::RequestQueue::Insert(
 }
 
 // Each client represents a tab.
-class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
+class ResourceScheduler::Client
+    : public net::EffectiveConnectionTypeObserver,
+      public net::PeerToPeerConnectionsCountObserver {
  public:
   Client(bool is_browser_client,
          net::NetworkQualityEstimator* network_quality_estimator,
@@ -383,13 +389,17 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
           network_quality_estimator_->GetEffectiveConnectionType();
       UpdateParamsForNetworkQuality();
       network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
+      network_quality_estimator_->AddPeerToPeerConnectionsCountObserver(this);
     }
   }
 
   ~Client() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (network_quality_estimator_)
+    if (network_quality_estimator_) {
       network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
+      network_quality_estimator_->RemovePeerToPeerConnectionsCountObserver(
+          this);
+    }
   }
 
   void ScheduleRequest(const net::URLRequest& url_request,
@@ -523,6 +533,29 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     // Change in network quality may allow |this| to dispatch more requests.
     LoadAnyStartablePendingRequests(
         RequestStartTrigger::EFFECTIVE_CONNECTION_TYPE_CHANGED);
+  }
+
+  // net::PeerToPeerConnectionsCountObserver:
+  void OnPeerToPeerConnectionsCountChange(uint32_t count) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    if (p2p_connections_count_ == count)
+      return;
+
+    p2p_connections_count_ = count;
+
+    if (p2p_connections_count_ > 0 &&
+        !p2p_connections_count_active_timestamp_.has_value()) {
+      p2p_connections_count_active_timestamp_ = base::TimeTicks::Now();
+    }
+
+    if (p2p_connections_count_ == 0 &&
+        p2p_connections_count_active_timestamp_.has_value()) {
+      p2p_connections_count_active_timestamp_ = base::nullopt;
+    }
+
+    LoadAnyStartablePendingRequests(
+        RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED);
   }
 
   // Records the metrics related to number of requests in flight.
@@ -800,6 +833,77 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     request->Start(start_mode);
   }
 
+  // Returns true if |request| should be throttled to avoid network contention
+  // with active P2P connections.
+  bool ShouldThrottleBrowserInitiatedRequestDueToP2PConnections(
+      const ScheduledResourceRequestImpl& request) const {
+    DCHECK(is_browser_client_);
+
+    if (!base::FeatureList::IsEnabled(
+            features::kPauseBrowserInitiatedHeavyTrafficForP2P)) {
+      return false;
+    }
+
+    if (p2p_connections_count_ == 0)
+      return false;
+
+    // Only throttle when effective connection type is between Slow2G and 3G.
+    if (effective_connection_type_ <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE ||
+        effective_connection_type_ >= net::EFFECTIVE_CONNECTION_TYPE_4G) {
+      return false;
+    }
+
+    if (request.url_request()->priority() == net::HIGHEST)
+      return false;
+
+    base::TimeDelta time_since_p2p_connections_active =
+        tick_clock_->NowTicks() -
+        p2p_connections_count_active_timestamp_.value();
+
+    base::Optional<base::TimeDelta> max_wait_time_p2p_connections =
+        resource_scheduler_->resource_scheduler_params_manager_
+            .max_wait_time_p2p_connections();
+
+    if (time_since_p2p_connections_active >
+        max_wait_time_p2p_connections.value()) {
+      return false;
+    }
+
+    // Check other request specific constraints.
+    const net::NetworkTrafficAnnotationTag& traffic_annotation =
+        request.url_request()->traffic_annotation();
+    const int32_t unique_id_hash_code = traffic_annotation.unique_id_hash_code;
+
+    if (!resource_scheduler_->resource_scheduler_params_manager_
+             .CanThrottleNetworkTrafficAnnotationHash(unique_id_hash_code)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Records metrics on browser initiated requests. Called when the request is
+  // dispatched to the network.
+  void RecordMetricsForBrowserInitiatedRequestsOnNetworkDispatch(
+      const ScheduledResourceRequestImpl& request) const {
+    const net::NetworkTrafficAnnotationTag& traffic_annotation =
+        request.url_request()->traffic_annotation();
+    const int32_t unique_id_hash_code = traffic_annotation.unique_id_hash_code;
+
+    // Metrics are recorded only for browser initiated requests that are
+    // eligible for throttling.
+    if (!resource_scheduler_->resource_scheduler_params_manager_
+             .CanThrottleNetworkTrafficAnnotationHash(unique_id_hash_code)) {
+      return;
+    }
+
+    base::TimeDelta queuing_duration =
+        tick_clock_->NowTicks() - request.url_request()->creation_time();
+    UMA_HISTOGRAM_LONG_TIMES(
+        "ResourceScheduler.BrowserInitiatedHeavyRequest.QueuingDuration",
+        queuing_duration);
+  }
+
   // ShouldStartRequest is the main scheduling algorithm.
   //
   // Requests are evaluated on five attributes:
@@ -839,8 +943,13 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     if (!resource_scheduler_->enabled())
       return START_REQUEST;
 
-    // Currently, browser initiated requests are not throttled.
+    // Browser requests are treated differently since they are not user-facing.
     if (is_browser_client_) {
+      if (ShouldThrottleBrowserInitiatedRequestDueToP2PConnections(*request)) {
+        return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
+      }
+
+      RecordMetricsForBrowserInitiatedRequestsOnNetworkDispatch(*request);
       return START_REQUEST;
     }
 
@@ -1067,6 +1176,15 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   // Current estimated value of the effective connection type.
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // Current count of active peer to peer connections.
+  uint32_t p2p_connections_count_ = 0u;
+
+  // Earliest timestamp since when there is at least one active peer to peer
+  // connection. Set to current timestamp when |p2p_connections_count_|
+  // changes from 0 to a non-zero value. Reset to null when
+  // |p2p_connections_count_| becomes 0.
+  base::Optional<base::TimeTicks> p2p_connections_count_active_timestamp_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

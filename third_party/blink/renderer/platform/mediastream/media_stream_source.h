@@ -51,6 +51,8 @@ namespace blink {
 
 class PLATFORM_EXPORT MediaStreamSource final
     : public GarbageCollectedFinalized<MediaStreamSource> {
+  USING_PRE_FINALIZER(MediaStreamSource, Dispose);
+
  public:
   class PLATFORM_EXPORT Observer : public GarbageCollectedMixin {
    public:
@@ -119,11 +121,9 @@ class PLATFORM_EXPORT MediaStreamSource final
     return audio_consumers_;
   }
 
-  // |m_extraData| may hold pointers to GC objects, and it may touch them in
-  // destruction.  So this class is eagerly finalized to finalize |m_extraData|
-  // promptly.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*);
+
+  void Dispose();
 
  private:
   String id_;

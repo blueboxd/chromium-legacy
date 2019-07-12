@@ -12,15 +12,11 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
 
-import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.IdRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -55,8 +51,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.snackbar.BottomContainer;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -111,53 +105,10 @@ public class AutofillAssistantUiTest {
         return mCustomTabActivityTestRule.getActivity();
     }
 
-    // Copied from {@link ChromeActivity#initializeBottomSheet}.
     protected BottomSheetController initializeBottomSheet() {
-        CustomTabActivity activity = getActivity();
-        ViewGroup coordinator = activity.findViewById(R.id.coordinator);
-        LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
-        BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        bottomSheet.init(coordinator, activity);
-
-        ((BottomContainer) activity.findViewById(R.id.bottom_container))
-                .setBottomSheet(bottomSheet);
-
-        return new BottomSheetController(activity, activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), activity.getScrim(), bottomSheet,
-                activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
-                /* suppressSheetForContextualSearch= */ false);
+        return AutofillAssistantUiTestUtil.createBottomSheetController(getActivity());
     }
 
-    @Test
-    @MediumTest
-    public void testAcceptOnboarding() throws Exception {
-        testOnboarding(true, R.id.button_init_ok);
-    }
-
-    @Test
-    @MediumTest
-    public void testDeclineOnboarding() throws Exception {
-        testOnboarding(false, R.id.button_init_not_ok);
-    }
-
-    private void testOnboarding(boolean expectedAccepted, @IdRes int buttonToClick)
-            throws Exception {
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
-        Context context = getActivity();
-        AssistantBottomSheetContent bottomSheetContent = new AssistantBottomSheetContent(context);
-
-        AssistantOnboardingCoordinator.setOnboardingContent(
-                /* experimentIds= */ "", context, bottomSheetContent, accepted -> {
-                    Assert.assertEquals(expectedAccepted, accepted);
-                    mRunnableMock.run();
-                });
-
-        View button = bottomSheetContent.getContentView().findViewById(buttonToClick);
-        Assert.assertNotNull(button);
-
-        TestThreadUtils.runOnUiThreadBlocking(button::performClick);
-        TestThreadUtils.runOnUiThreadBlocking(() -> verify(mRunnableMock).run());
-    }
 
     // TODO(crbug.com/806868): Add more UI details test and check, like payment request UI,
     // highlight chips and so on.

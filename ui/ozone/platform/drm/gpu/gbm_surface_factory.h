@@ -60,6 +60,12 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+  void CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
+                               VkDevice vk_device,
+                               gfx::Size size,
+                               gfx::BufferFormat format,
+                               gfx::BufferUsage usage,
+                               NativePixmapCallback callback) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmapFromHandle(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
@@ -93,6 +99,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   std::map<gfx::AcceleratedWidget, GbmSurfaceless*> widget_to_surface_map_;
 
   GetProtectedNativePixmapCallback get_protected_native_pixmap_callback_;
+
+  base::WeakPtrFactory<GbmSurfaceFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceFactory);
 };

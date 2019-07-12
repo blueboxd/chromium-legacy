@@ -237,7 +237,7 @@ TEST_F(AuthenticationServiceTest, TestDefaultGetAuthenticatedIdentity) {
 TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   EXPECT_NSEQ(identity(0),
               authentication_service()->GetAuthenticatedIdentity());
@@ -273,7 +273,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
 
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
       .WillOnce(Return(true));
@@ -293,7 +293,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
 
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
       .WillOnce(Invoke(
@@ -317,7 +317,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
 
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
       .WillOnce(Return(false));
@@ -332,7 +332,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   // Set the authentication service as "In Foreground", remove identity and run
   // the loop.
@@ -351,7 +351,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   // Set the authentication service as "In Background", remove identity and run
   // the loop.
@@ -373,7 +373,7 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
 
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   // Store the accounts and get them back from the prefs. They should be the
   // same as the token service accounts.
@@ -401,7 +401,7 @@ TEST_F(AuthenticationServiceTest,
        OnApplicationEnterForegroundReloadCredentials) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
 
@@ -463,7 +463,7 @@ TEST_F(AuthenticationServiceTest, HaveAccountsNotChangedDefault) {
 
 TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
@@ -478,7 +478,7 @@ TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
@@ -495,7 +495,7 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged) {
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChangedBackground) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
@@ -513,7 +513,7 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChangedBackground) {
 TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   EXPECT_TRUE(authentication_service()->IsAuthenticated());
 
   // Remove the signed in identity while in background, and check that
@@ -542,7 +542,7 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
 
   // Sign in user emails as account ids.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   std::vector<std::string> accounts_in_prefs = GetAccountsInPrefs();
   ASSERT_EQ(2U, accounts_in_prefs.size());
   EXPECT_EQ("foo2@foo.com", accounts_in_prefs[0]);
@@ -582,7 +582,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   TestIdentityManagerObserver observer(identity_manager());
 
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   EXPECT_EQ(2, observer.refresh_token_available_count());
 
   NSDictionary* user_info = [NSDictionary dictionary];
@@ -611,7 +611,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
   TestIdentityManagerObserver observer(identity_manager());
 
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
 
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity(0), user_info);
@@ -628,7 +628,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
 // to MDM service when necessary.
 TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -664,7 +664,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
 // the primary account is blocked.
 TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -722,7 +722,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogInvalidCachedError) {
 // corresponding error for the account.
 TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0), kNoHostedDomainFound);
+  authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(

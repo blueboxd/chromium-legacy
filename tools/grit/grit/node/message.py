@@ -5,6 +5,8 @@
 '''Handling of the <message> element.
 '''
 
+from __future__ import print_function
+
 import re
 import types
 
@@ -167,7 +169,7 @@ class MessageNode(base.ContentNode):
       if isinstance(item, types.StringTypes):
         # Not a <ph> element: fail if any <ph> formatters are detected.
         if _FORMATTERS.search(item):
-          print _BAD_PLACEHOLDER_MSG % (item, self.source)
+          print(_BAD_PLACEHOLDER_MSG % (item, self.source))
           raise exception.PlaceholderNotInsidePhNode
         text += item
       else:
@@ -198,7 +200,7 @@ class MessageNode(base.ContentNode):
         # Fail if <ph> special chars remain in cdata.
         if re.search(r'[%\$]', cdata):
           message_id = self.attrs['name'] + ' ' + original;
-          print _INVALID_PH_CHAR_MSG % (message_id, self.source)
+          print(_INVALID_PH_CHAR_MSG % (message_id, self.source))
           raise exception.InvalidCharactersInsidePhNode
 
         # Otherwise, accept this <ph> placeholder.

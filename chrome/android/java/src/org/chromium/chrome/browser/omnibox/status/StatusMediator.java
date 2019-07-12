@@ -27,6 +27,7 @@ class StatusMediator {
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
+    private boolean mShouldShowGoogleLogo;
 
     private boolean mShowStatusIconWhenUrlFocused;
 
@@ -281,6 +282,14 @@ class StatusMediator {
     }
 
     /**
+     * Turn on/off the google logo in the omnibox.
+     */
+    void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {
+        mShouldShowGoogleLogo = shouldShowGoogleLogo;
+        updateLocationBarIcon();
+    }
+
+    /**
      * Update selection of icon presented on the location bar.
      *
      * - Navigation button is:
@@ -301,10 +310,15 @@ class StatusMediator {
 
         if (mUrlHasFocus) {
             if (mShowStatusIconWhenUrlFocused) {
-                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
-                                                     : R.drawable.ic_omnibox_page;
-                tint = mNavigationIconTintRes;
-                description = R.string.accessibility_toolbar_btn_site_info;
+                if (mShouldShowGoogleLogo) {
+                    // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
+                    icon = R.drawable.ic_logo_googleg_24dp;
+                } else {
+                    icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
+                                                         : R.drawable.ic_omnibox_page;
+                    tint = mNavigationIconTintRes;
+                    description = R.string.accessibility_toolbar_btn_site_info;
+                }
             }
         } else if (mSecurityIconRes != 0) {
             mIsSecurityButtonShown = true;

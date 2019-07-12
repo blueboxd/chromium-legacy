@@ -92,7 +92,13 @@ class RestoreOnStartupTest(ChromeEnterpriseTestCase):
         ])
     output_urls = json.loads(output)
     self.assertEqual(len(output_urls), 1)
-    self.assertTrue('/_/chrome/newtab' in output_urls[0])
+
+    # The URL of the new tab can be one of the following:
+    # - https://www.google.com/_/chrome/newtab?ie=UTF-8
+    # - chrome://newtab
+    # - chrome-search://local-ntp/local-ntp.html
+    self.assertTrue('/newtab' in output_urls[0] or
+                    'local-ntp.html' in output_urls[0])
 
   @test
   def test_OpenListOfUrls(self):

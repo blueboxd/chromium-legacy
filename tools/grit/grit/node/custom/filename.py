@@ -4,6 +4,8 @@
 
 '''A CustomType for filenames.'''
 
+from __future__ import print_function
+
 from grit import clique
 from grit import lazy_re
 

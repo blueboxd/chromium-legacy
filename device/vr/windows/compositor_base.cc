@@ -491,6 +491,9 @@ void XRCompositorCommon::MaybeCompositeAndSubmit() {
       pending_frame_->frame_ready_time_ = base::TimeTicks::Now();
       if (!SubmitCompositedFrame()) {
         ExitPresent();
+        // ExitPresent() clears pending_frame_, so return here to avoid
+        // accessing it below.
+        return;
       }
     }
   }

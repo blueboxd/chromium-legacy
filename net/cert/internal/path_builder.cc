@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
@@ -53,6 +54,11 @@ std::string PathDebugString(const ParsedCertificateList& certs) {
     s += " " + CertDebugString(cert.get());
   }
   return s;
+}
+
+void RecordIterationCountHistogram(uint32_t iteration_count) {
+  base::UmaHistogramCounts10000("Net.CertVerifier.PathBuilderIterationCount",
+                                iteration_count);
 }
 
 // This structure describes a certificate and its trust level. Note that |cert|
@@ -591,6 +597,7 @@ void CertPathBuilder::Run() {
       if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
         out_result_->exceeded_deadline = true;
       }
+      RecordIterationCountHistogram(iteration_count);
       return;
     }
 
@@ -612,6 +619,7 @@ void CertPathBuilder::Run() {
     AddResultPath(std::move(result_path));
 
     if (path_is_good) {
+      RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
       // TODO(mattm): add debug/test mode that tries all possible paths.
       return;

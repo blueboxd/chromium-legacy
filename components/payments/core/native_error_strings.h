@@ -30,19 +30,70 @@ extern const char kCannotCompleteWithoutInit[];
 // Mojo call PaymentRequest::Show() must precede PaymentRequest::Complete().
 extern const char kCannotCompleteWithoutShow[];
 
+// Used when "serviceworker"."scope" string A in web app manifest B is not a
+// valid URL and cannot be resolved as a relative URL either. This format should
+// be used with base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
+extern const char kCannotResolveServiceWorkerScope[];
+
+// Used when "serviceworker"."src" string A in web app manifest B is not a valid
+// URL and cannot be resolved as a relative URL either. This format should be
+// used with base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
+extern const char kCannotResolveServiceWorkerUrl[];
+
 // Mojo call PaymentRequest::Init() must precede PaymentRequest::Retry().
 extern const char kCannotRetryWithoutInit[];
 
 // Mojo call PaymentRequest::Show() must precede PaymentRequest::Retry().
 extern const char kCannotRetryWithoutShow[];
 
-// Mojo call PaymentRequest::Show() must precede PaymentRequest::UpdateWith().
-extern const char kCannotUpdateWithoutShow[];
+// Used when a payment method A has a cross-origin "Link:
+// rel=payment-method-manifest" to the manifest B. This format should be used
+// with base::ReplaceStringPlaceholders(fmt, {B, A}, nullptr).
+extern const char kCrossOriginPaymentMethodManifestNotAllowed[];
+
+// The URL A in web app manifest B's "serviceworker"."scope" must be of the same
+// origin as the web app manifest itself. This format should be used with
+// base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
+extern const char kCrossOriginServiceWorkerScopeNotAllowed[];
+
+// The URL A in web app manifest B's "serviceworker"."src" must be of the same
+// origin as the web app manifest itself. This format should be used with
+// base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
+extern const char kCrossOriginServiceWorkerUrlNotAllowed[];
+
+// The "default_applications" list on origin A is not allowed to contain a URL
+// from origin B. This format should be used with
+// base::ReplaceStringPlaceholders(format, {B, A}, nullptr).
+extern const char kCrossOriginWebAppManifestNotAllowed[];
 
 // The format for a detailed message about invalid SSL certificate. This format
 // should be used with base::ReplaceChars() function, where "$" is the character
 // to replace.
 extern const char kDetailedInvalidSslCertificateMessageFormat[];
+
+// Used when a HEAD request for URL A fails. This format should be used with
+// base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
+extern const char kHttpHeadRequestFailed[];
+
+// Used for HTTP redirects that are prohibited for payment method manifests.
+// This format should be used with base::ReplaceStringPlaceholders(fmt,
+// {http_code, http_code_phrase, original_url}, nullptr).
+extern const char kHttpStatusCodeNotAllowed[];
+
+// The "default_applications" list should contain exactly one URL for JIT
+// install feature to work.
+extern const char kInstallingMultipleDefaultAppsNotSupported[];
+
+// Used to let the web developer know about an invalid payment manifest URL A.
+// This format should be used with base::ReplaceStringPlaceholders(fmt, {A},
+// nullptr).
+extern const char kInvalidManifestUrl[];
+
+// Web app manifest contains an empty or non-UTF8 service worker scope.
+extern const char kInvalidServiceWorkerScope[];
+
+// Web app manifest contains an empty or non-UTF8 service worker URL.
+extern const char kInvalidServiceWorkerUrl[];
 
 // Chrome refuses to provide any payment information to a website with an
 // invalid SSL certificate.
@@ -66,6 +117,11 @@ extern const char kMissingMethodNameFromPaymentApp[];
 // where "$" is the character to replace.
 extern const char kMultiplePaymentMethodsNotSupportedFormat[];
 
+// Used when the payment method URL A does not have a "Link:
+// rel=payment-method-manifest" HTTP header. This format should be used with
+// base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
+extern const char kNoLinkRelPaymentMethodManifestHttpHeader[];
+
 // Payment handler did not respond to the "paymentrequest" event.
 extern const char kNoResponseToPaymentEvent[];
 
@@ -74,6 +130,14 @@ extern const char kNotInitialized[];
 
 // Used when PaymentRequest::Show() has not been called, but should have been.
 extern const char kNotShown[];
+
+// Used for errors about cross-site redirects from A to B. This format should be
+// used with base::ReplaceStringPlaceholders(fmt, {A, B}, nullptr).
+extern const char kPaymentManifestCrossSiteRedirectNotAllowed[];
+
+// Used when downloading payment manifest URL A has failed. This format should
+// be used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
+extern const char kPaymentManifestDownloadFailed[];
 
 // Payment handler passed a non-object field "details" in response to the
 // "paymentrequest" event.
@@ -105,6 +169,9 @@ extern const char kPaymentEventInternalError[];
 // Payment handler rejected the promise passed into
 // PaymentRequestEvent.respondWith() method.
 extern const char kPaymentEventRejected[];
+
+// Used when maximum number of redirects has been reached.
+extern const char kReachedMaximumNumberOfRedirects[];
 
 // The format for the message about a single payment method that is not
 // supported. This format should be used with base::ReplaceChars() function,

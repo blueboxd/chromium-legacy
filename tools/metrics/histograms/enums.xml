@@ -34198,6 +34198,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
+  <int value="-1243694853" label="DeferAllScript:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1241002324" label="FocusMode:enabled"/>
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
@@ -34881,9 +34882,11 @@ from previous Chrome versions.
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-260355779" label="UnfilteredBluetoothDevices:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
+  <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
+  <int value="-250543540" label="DeferAllScript:enabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-243323793" label="OmniboxOnDeviceHeadProvider:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
@@ -35135,6 +35138,7 @@ from previous Chrome versions.
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="98218116" label="ContextualSearchLongpressResolve:disabled"/>
   <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
+  <int value="103347629" label="WinrtSensorsImplementation:enabled"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
   <int value="106840653" label="mus"/>
@@ -35395,6 +35399,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
   <int value="511179195" label="ShoppingAssist:disabled"/>
+  <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
@@ -36505,6 +36510,7 @@ from previous Chrome versions.
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
+  <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>
   <int value="2134480727" label="MediaSessionAccelerators:disabled"/>
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
   <int value="2137113620"

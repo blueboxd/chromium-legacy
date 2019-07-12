@@ -88,7 +88,7 @@ std::unique_ptr<VrModuleProvider> VrModuleProviderFactory::CreateModuleProvider(
 static void JNI_VrModuleProvider_Init(JNIEnv* env) {
   GvrConsentHelper::SetInstance(std::make_unique<vr::GvrConsentHelperImpl>());
 #if BUILDFLAG(ENABLE_ARCORE)
-  ArcoreConsentPromptInterface::SetInstance(new ArcoreConsentPrompt());
+  ArCoreConsentPromptInterface::SetInstance(new ArCoreConsentPrompt());
 #endif
 }
 

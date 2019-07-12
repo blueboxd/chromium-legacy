@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "components/arc/arc_features.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -106,7 +107,10 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &features::kUsbbouncer, &features::kUsbguard};
+      &features::kUsbbouncer, &features::kUsbguard,
+      &arc::kNativeBridgeExperimentFeature, &arc::kFilePickerExperimentFeature,
+      &arc::kCustomTabsExperimentFeature, &arc::kPrintSpoolerExperimentFeature,
+  };
 
   dbus::MessageReader reader(method_call);
   std::string feature_name;

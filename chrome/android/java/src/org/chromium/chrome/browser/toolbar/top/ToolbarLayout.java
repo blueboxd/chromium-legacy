@@ -315,6 +315,9 @@ public abstract class ToolbarLayout
             public @ColorRes int getSecurityIconColorStateList() {
                 return 0;
             }
+
+            @Override
+            public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {}
         };
 
         // Set menu button background in case it was previously called before inflation

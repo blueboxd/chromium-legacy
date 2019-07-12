@@ -4,6 +4,7 @@
 
 """The 'grit android2grd' tool."""
 
+from __future__ import print_function
 
 import getopt
 import os.path
@@ -161,8 +162,8 @@ OPTIONS may be any of the following:
     """
     args = self.ParseOptions(args)
     if len(args) != 1:
-      print ('Tool requires one argument, the path to the Android '
-             'strings.xml resource file to be converted.')
+      print('Tool requires one argument, the path to the Android '
+            'strings.xml resource file to be converted.')
       return 2
     self.SetOptions(opts)
 
@@ -243,12 +244,12 @@ OPTIONS may be any of the following:
         description = ' '.join(child.data.split())
       elif child.nodeType == Node.ELEMENT_NODE:
         if child.tagName != 'string':
-          print 'Warning: ignoring unknown tag <%s>' % child.tagName
+          print('Warning: ignoring unknown tag <%s>' % child.tagName)
         else:
           translatable = self.IsTranslatable(child)
           raw_name = child.getAttribute('name')
           if not _STRING_NAME.match(raw_name):
-            print 'Error: illegal string name: %s' % raw_name
+            print('Error: illegal string name: %s' % raw_name)
           grd_name = 'IDS_' + raw_name.upper()
           # Transform the <string> node contents into a tclib.Message, taking
           # care to handle whitespace transformations and escaped characters,
@@ -291,14 +292,14 @@ OPTIONS may be any of the following:
           placeholder_text = self.__FormatPlaceholderText(node)
           placeholder_example = node.getAttribute('example')
           if not placeholder_example:
-            print ('Info: placeholder does not contain an example: %s' %
-                   node.toxml())
+            print('Info: placeholder does not contain an example: %s' %
+                  node.toxml())
             placeholder_example = placeholder_id.upper()
           msg.AppendPlaceholder(tclib.Placeholder(placeholder_id,
               placeholder_text, placeholder_example))
         else:
-          print ('Warning: removing tag <%s> which must be inside a '
-                 'placeholder: %s' % (node.tagName, node.toxml()))
+          print('Warning: removing tag <%s> which must be inside a '
+                'placeholder: %s' % (node.tagName, node.toxml()))
           msg.AppendText(self.__FormatPlaceholderText(node))
 
       # Handle other nodes.
@@ -348,17 +349,17 @@ OPTIONS may be any of the following:
     output = ''.join(output)
 
     if is_quoted_section:
-      print 'Warning: unbalanced quotes in string: %s' % android_string
+      print('Warning: unbalanced quotes in string: %s' % android_string)
 
     if is_backslash_sequence:
-      print 'Warning: trailing backslash in string: %s' % android_string
+      print('Warning: trailing backslash in string: %s' % android_string)
 
     # Check for format specifiers outside of placeholder tags.
     if not inside_placeholder:
       format_specifier = _FORMAT_SPECIFIER.search(output)
       if format_specifier:
-        print ('Warning: format specifiers are not inside a placeholder '
-               '<xliff:g/> tag: %s' % output)
+        print('Warning: format specifiers are not inside a placeholder '
+              '<xliff:g/> tag: %s' % output)
 
     return output
 
@@ -380,15 +381,15 @@ OPTIONS may be any of the following:
     declare a string resource along with a programmatic id.
     """
     if not description:
-      print 'Warning: no description for %s' % grd_name
+      print('Warning: no description for %s' % grd_name)
     # Check that we actually fit within the character limit we've specified.
     match = _CHAR_LIMIT.search(description)
     if match:
       char_limit = int(match.group(1))
       msg_content = msg.GetRealContent()
       if len(msg_content) > char_limit:
-        print ('Warning: char-limit for %s is %d, but length is %d: %s' %
-               (grd_name, char_limit, len(msg_content), msg_content))
+        print('Warning: char-limit for %s is %d, but length is %d: %s' %
+              (grd_name, char_limit, len(msg_content), msg_content))
     return message.MessageNode.Construct(parent=messages_node,
                                          name=grd_name,
                                          message=msg,
@@ -476,7 +477,7 @@ OPTIONS may be any of the following:
     if android_string.hasAttribute('translatable'):
       value = android_string.getAttribute('translatable').lower()
       if value not in ('true', 'false'):
-        print 'Warning: translatable attribute has invalid value: %s' % value
+        print('Warning: translatable attribute has invalid value: %s' % value)
       return value == 'true'
     else:
       return True

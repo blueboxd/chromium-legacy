@@ -477,7 +477,7 @@
     },
     {
       name: "DiscardInputToMovingIframes",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DisplayCutoutAPI",

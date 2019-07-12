@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
+#include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -60,18 +61,37 @@ class MockNotificationStore : public CollectionStore<NotificationEntry> {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationStore);
 };
 
+class MockIconStore : public IconStore {
+ public:
+  MockIconStore() {}
+
+  MOCK_METHOD1(Init, void(IconStore::InitCallback));
+  MOCK_METHOD2(Load, void(const std::string&, IconStore::LoadCallback));
+  MOCK_METHOD3(Add,
+               void(const std::string&,
+                    std::unique_ptr<IconEntry>,
+                    IconStore::UpdateCallback));
+  MOCK_METHOD2(Delete, void(const std::string&, IconStore::UpdateCallback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockIconStore);
+};
+
 class ScheduledNotificationManagerTest : public testing::Test {
  public:
-  ScheduledNotificationManagerTest() : store_(nullptr) {}
+  ScheduledNotificationManagerTest()
+      : notification_store_(nullptr), icon_store_(nullptr) {}
   ~ScheduledNotificationManagerTest() override = default;
 
   void SetUp() override {
     delegate_ = std::make_unique<MockDelegate>();
-    auto store = std::make_unique<MockNotificationStore>();
-    store_ = store.get();
+    auto notification_store = std::make_unique<MockNotificationStore>();
+    auto icon_store = std::make_unique<MockIconStore>();
+    notification_store_ = notification_store.get();
+    icon_store_ = icon_store.get();
     config_.notification_expiration = base::TimeDelta::FromDays(1);
     manager_ = ScheduledNotificationManager::Create(
-        std::move(store),
+        std::move(notification_store), std::move(icon_store),
         {SchedulerClientType::kTest1, SchedulerClientType::kTest2,
          SchedulerClientType::kTest3},
         config_);
@@ -79,7 +99,8 @@ class ScheduledNotificationManagerTest : public testing::Test {
 
  protected:
   ScheduledNotificationManager* manager() { return manager_.get(); }
-  MockNotificationStore* store() { return store_; }
+  MockNotificationStore* notification_store() { return notification_store_; }
+  MockIconStore* icon_store() { return icon_store_; }
   MockDelegate* delegate() { return delegate_.get(); }
   const SchedulerConfig& config() const { return config_; }
   // Initializes the manager with predefined data in the store.
@@ -92,11 +113,16 @@ class ScheduledNotificationManagerTest : public testing::Test {
     }
 
     // Initialize the store and call the callback.
-    EXPECT_CALL(*store(), InitAndLoad(_))
+    EXPECT_CALL(*notification_store(), InitAndLoad(_))
         .WillOnce(
             Invoke([&entries](base::OnceCallback<void(bool, Entries)> cb) {
               std::move(cb).Run(true, std::move(entries));
             }));
+    EXPECT_CALL(*icon_store(), Init(_))
+        .WillOnce(Invoke([](base::OnceCallback<void(bool)> cb) {
+          std::move(cb).Run(true);
+        }));
+
     base::RunLoop loop;
     manager()->Init(delegate(),
                     base::BindOnce(
@@ -111,7 +137,8 @@ class ScheduledNotificationManagerTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MockDelegate> delegate_;
-  MockNotificationStore* store_;
+  MockNotificationStore* notification_store_;
+  MockIconStore* icon_store_;
   std::vector<SchedulerClientType> clients_;
   std::unique_ptr<ScheduledNotificationManager> manager_;
   SchedulerConfig config_;
@@ -121,7 +148,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
 
 // Verify that error is received when initialization failed.
 TEST_F(ScheduledNotificationManagerTest, InitFailed) {
-  EXPECT_CALL(*store(), InitAndLoad(_))
+  EXPECT_CALL(*notification_store(), InitAndLoad(_))
       .WillOnce(Invoke([](base::OnceCallback<void(bool, Entries)> cb) {
         std::move(cb).Run(false, Entries());
       }));
@@ -151,7 +178,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_FALSE(guid.empty());
 
   // Verify call contract.
-  EXPECT_CALL(*store(), Add(guid, _, _));
+  EXPECT_CALL(*notification_store(), Add(guid, _, _));
   manager()->ScheduleNotification(std::move(params));
 
   // Verify in-memory data.
@@ -174,7 +201,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
       SchedulerClientType::kTest1, NotificationData(), ScheduleParams());
 
   // Verify call contract.
-  EXPECT_CALL(*store(), Add(_, _, _));
+  EXPECT_CALL(*notification_store(), Add(_, _, _));
   manager()->ScheduleNotification(std::move(params));
 
   // Verify in-memory data.
@@ -198,7 +225,7 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotification) {
   InitWithData(std::vector<NotificationEntry>({entry}));
 
   // Verify delegate and dependency call contract.
-  EXPECT_CALL(*store(), Delete(kGuid, _));
+  EXPECT_CALL(*notification_store(), Delete(kGuid, _));
   EXPECT_CALL(*delegate(), DisplayNotification(NotificationEntryIs(entry)));
   manager()->DisplayNotification(kGuid);
 
@@ -266,24 +293,28 @@ TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 3u);
 
-  EXPECT_CALL(*store(), Delete(_, _)).Times(2).RetiresOnSaturation();
+  EXPECT_CALL(*notification_store(), Delete(_, _))
+      .Times(2)
+      .RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest2);
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 2u);
 
   // Ensure deleting non-existing key will not crash, and store will not call
   // Delete.
-  EXPECT_CALL(*store(), Delete(_, _)).Times(0).RetiresOnSaturation();
+  EXPECT_CALL(*notification_store(), Delete(_, _))
+      .Times(0)
+      .RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest2);
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 2u);
 
-  EXPECT_CALL(*store(), Delete(_, _)).RetiresOnSaturation();
+  EXPECT_CALL(*notification_store(), Delete(_, _)).RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest1);
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 1u);
 
-  EXPECT_CALL(*store(), Delete(_, _)).RetiresOnSaturation();
+  EXPECT_CALL(*notification_store(), Delete(_, _)).RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest3);
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 0u);
@@ -308,7 +339,9 @@ TEST_F(ScheduledNotificationManagerTest, PruneExpiredNotifications) {
   entry5.create_time =
       now - base::TimeDelta::FromDays(1) - base::TimeDelta::FromMicroseconds(1);
 
-  EXPECT_CALL(*store(), Delete(_, _)).Times(3).RetiresOnSaturation();
+  EXPECT_CALL(*notification_store(), Delete(_, _))
+      .Times(3)
+      .RetiresOnSaturation();
   InitWithData(std::vector<NotificationEntry>(
       {entry0, entry1, entry2, entry3, entry4, entry5}));
   ScheduledNotificationManager::Notifications notifications;

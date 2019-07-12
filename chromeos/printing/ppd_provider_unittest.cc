@@ -35,6 +35,8 @@ namespace chromeos {
 
 namespace {
 
+using PrinterDiscoveryType = PrinterSearchData::PrinterDiscoveryType;
+
 // Name of the fake server we're resolving ppds from.
 const char kPpdServer[] = "bogus.google.com";
 
@@ -402,12 +404,15 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
   auto provider = CreateProvider("en", false);
 
   PrinterSearchData unrecognized_printer;
+  unrecognized_printer.discovery_type = PrinterDiscoveryType::kManual;
   unrecognized_printer.make_and_model = {"Printer Printer"};
 
   PrinterSearchData recognized_printer;
+  recognized_printer.discovery_type = PrinterDiscoveryType::kManual;
   recognized_printer.make_and_model = {"printer_a_ref"};
 
   PrinterSearchData mixed;
+  mixed.discovery_type = PrinterDiscoveryType::kManual;
   mixed.make_and_model = {"printer_a_ref", "Printer Printer"};
 
   // Resolve the same thing repeatedly.
@@ -440,6 +445,7 @@ TEST_F(PpdProviderTest, UsbResolution) {
   auto provider = CreateProvider("en", false);
 
   PrinterSearchData search_data;
+  search_data.discovery_type = PrinterDiscoveryType::kUsb;
 
   // Should get back "Some canonical reference"
   search_data.usb_vendor_id = 0x031f;
@@ -954,6 +960,7 @@ TEST_F(PpdProviderTest, ResolveUsbManufacturer) {
   auto provider = CreateProvider("en", false);
 
   PrinterSearchData search_data;
+  search_data.discovery_type = PrinterDiscoveryType::kUsb;
 
   // Vendor id that exists, nonexistent device id, should get a NOT_FOUND.
   // Although this is an unsupported printer model, we can still expect to get

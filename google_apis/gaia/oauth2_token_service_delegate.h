@@ -132,14 +132,18 @@ class OAuth2TokenServiceDelegate {
   virtual bool FixRequestErrorIfPossible();
 
 #if defined(OS_IOS)
-  // Triggers platform specific implementation for IOS to add a given account
+  // Triggers platform specific implementation for iOS to reload all accounts
+  // from system.
+  virtual void ReloadAllAccountsFromSystem() {}
+
+  // Triggers platform specific implementation for iOS to add a given account
   // to the token service from a system account.
-  virtual void AddAccountFromSystem(const CoreAccountId& account_id) {}
+  virtual void ReloadAccountFromSystem(const CoreAccountId& account_id) {}
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Triggers platform specific implementation for Android and IOS to reload
-  // accounts from system.
+#if defined(OS_ANDROID)
+  // Triggers platform specific implementation for Android to reload accounts
+  // from system.
   virtual void ReloadAccountsFromSystem(
       const CoreAccountId& primary_account_id) {}
 #endif

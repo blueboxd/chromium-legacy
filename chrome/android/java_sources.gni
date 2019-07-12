@@ -44,6 +44,7 @@ chrome_test_java_sources += tab_management_test_java_sources
 
 if (enable_arcore) {
   chrome_java_sources += [
+    "java/src/org/chromium/chrome/browser/vr/ArCoreInstallUtils.java",
     "java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
     "java/src/org/chromium/chrome/browser/vr/ArDelegateImpl.java",
     "java/src/org/chromium/chrome/browser/vr/ArCoreShim.java",

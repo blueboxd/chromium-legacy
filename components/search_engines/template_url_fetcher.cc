@@ -19,6 +19,18 @@
 
 namespace {
 
+// In some network environments, silent failure can be avoided by retrying
+// request on network change. This helps OpenSearch get through in such cases.
+// See https://crbug.com/956689 for context.
+constexpr int kOpenSearchRetryCount = 3;
+
+// Timeout for OpenSearch description document (OSDD) fetch request.
+// Requests for a particular resource are limited to one.
+// Requests may not receive a response, and in that case no
+// further requests would be allowed. The timeout cleans up failed requests
+// so that later attempts to fetch the OSDD can be made.
+constexpr int kOpenSearchTimeoutSeconds = 30;
+
 // Traffic annotation for RequestDelegate.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("open_search", R"(
@@ -116,6 +128,10 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
   simple_url_loader_->SetAllowHttpErrorResults(true);
+  simple_url_loader_->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kOpenSearchTimeoutSeconds));
+  simple_url_loader_->SetRetryOptions(
+      kOpenSearchRetryCount, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   simple_url_loader_->DownloadToString(
       url_loader_factory,
       base::BindOnce(

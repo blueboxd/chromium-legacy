@@ -1,0 +1,25 @@
+# These tests are all flaking after timing changes associated with
+# SkiaRenderer. We will need to determine the root causes, or update the tests
+# before beginning Finch trials. https://crbug.com/982933
+-BluetoothLowEnergyApiTest.*
+-BrowserActionApiTest.*
+-BrowserViewTest.*
+-ChromeMainTest.*
+-ContentSettingsWorkerModulesBrowserTest.*
+-ExtensionOverrideTest.*
+-InputImeApiTest.*
+-MediaRouterUIBrowserTest.*
+-ModernShowActionKey
+-NavigationPredictorBrowserTest.*
+-PaymentRequestCanMakePaymentMetricsTest.*
+-PlatformAppBrowserTest.*
+-PopupTrackerBrowserTest.*
+-RemoteDebuggingTest.*
+-SaveCardBubbleViewsFullFormBrowserTest.*
+-SecurityStateTabHelperTest.*
+-ServiceWorkerBasedBackgroundTest.*
+-ServiceWorkerTest.*
+-TabHoverCardBubbleViewBrowserTest.*
+-TranslateLanguageBrowserTest.*
+-WasmAppTest.*
+-WebDialogBrowserTest.*

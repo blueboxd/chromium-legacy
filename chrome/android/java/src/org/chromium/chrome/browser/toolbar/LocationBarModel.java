@@ -47,11 +47,13 @@ public class LocationBarModel implements ToolbarDataProvider {
     private final Context mContext;
 
     private Tab mTab;
-    private boolean mIsIncognito;
     private int mPrimaryColor;
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
-    private OverviewModeBehavior mOverviewModeBehavior;
+    private boolean mShouldShowGoogleLogo;
 
     private long mNativeLocationBarModelAndroid;
 
@@ -362,8 +364,17 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
         if (getDisplaySearchTerms() != null) {
-            return R.drawable.omnibox_search;
+            if (mShouldShowGoogleLogo) {
+                // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
+                return R.drawable.ic_logo_googleg_24dp;
+            } else {
+                return R.drawable.omnibox_search;
+            }
+        } else if (getNewTabPageForCurrentTab() != null && mShouldShowGoogleLogo) {
+            // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
+            return R.drawable.ic_logo_googleg_24dp;
         }
+
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
     }
 
@@ -415,6 +426,12 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     @Override
     public @ColorRes int getSecurityIconColorStateList() {
+        // Don't apply tint to the search logo, which is shown on the NTP and the SRP pages.
+        if ((getNewTabPageForCurrentTab() != null || getDisplaySearchTerms() != null)
+                && mShouldShowGoogleLogo) {
+            return 0;
+        }
+
         int securityLevel = getSecurityLevel();
         int color = getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
@@ -475,6 +492,11 @@ public class LocationBarModel implements ToolbarDataProvider {
     public String getUrlForDisplay() {
         if (mNativeLocationBarModelAndroid == 0) return "";
         return nativeGetURLForDisplay(mNativeLocationBarModelAndroid);
+    }
+
+    @Override
+    public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {
+        mShouldShowGoogleLogo = shouldShowGoogleLogo;
     }
 
     private native long nativeInit();

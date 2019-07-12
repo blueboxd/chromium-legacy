@@ -403,9 +403,9 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
     WriteAttribute(false, STATE_FOCUSED, &line);
 
   WriteAttribute(
-      false, FormatCoordinates("location", "boundsX", "boundsY", dict), &line);
+      false, FormatCoordinates(dict, "location", "boundsX", "boundsY"), &line);
   WriteAttribute(false,
-                 FormatCoordinates("size", "boundsWidth", "boundsHeight", dict),
+                 FormatCoordinates(dict, "size", "boundsWidth", "boundsHeight"),
                  &line);
 
   bool ignored = false;
@@ -413,20 +413,21 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (!ignored) {
     WriteAttribute(
         false,
-        FormatCoordinates("pageLocation", "pageBoundsX", "pageBoundsY", dict),
+        FormatCoordinates(dict, "pageLocation", "pageBoundsX", "pageBoundsY"),
         &line);
     WriteAttribute(false,
-                   FormatCoordinates("pageSize", "pageBoundsWidth",
-                                     "pageBoundsHeight", dict),
+                   FormatCoordinates(dict, "pageSize", "pageBoundsWidth",
+                                     "pageBoundsHeight"),
                    &line);
     WriteAttribute(false,
-                   FormatCoordinates("unclippedLocation", "unclippedBoundsX",
-                                     "unclippedBoundsY", dict),
+                   FormatCoordinates(dict, "unclippedLocation",
+                                     "unclippedBoundsX", "unclippedBoundsY"),
                    &line);
-    WriteAttribute(false,
-                   FormatCoordinates("unclippedSize", "unclippedBoundsWidth",
-                                     "unclippedBoundsHeight", dict),
-                   &line);
+    WriteAttribute(
+        false,
+        FormatCoordinates(dict, "unclippedSize", "unclippedBoundsWidth",
+                          "unclippedBoundsHeight"),
+        &line);
   }
 
   bool transform;

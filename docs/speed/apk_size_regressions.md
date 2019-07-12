@@ -21,6 +21,8 @@
  * Bisects [will not help you](https://bugs.chromium.org/p/chromium/issues/detail?id=678338).
  * For rolls, you can sometimes guess the commit(s) that caused the regression
    by looking at the `android-binary-size` trybot result for the roll commit.
+ * For V8 rolls, try checking the [V8 size graph](https://chromeperf.appspot.com/report?sid=59435a74c93b42599af4b02e2b3df765faef4685eb015f8aaaf2ecf7f4afb29c)
+   to see if any jumps correspond with a CL in the roll.
  * Otherwise, use [diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md#diagnose_bloat_py)
    in a [local Android checkout](https://chromium.googlesource.com/chromium/src/+/master/docs/android_build_instructions.md)
    to build all commits locally and find the culprit.
@@ -42,7 +44,7 @@
 
 * Check if the same increase happened in Monochrome.minimal.apks.
    * The goal is to ensure nothing creeps into webview unintentionally.
- 
+
 ## Step 2: File Bug or Silence Alert
 
 * If the commit message's `Binary-Size:` footer clearly justifies the size
@@ -60,7 +62,7 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > Commit: **abc123abc123abc123abc123abc123abc123abcd**
 >
 > Link to size graph:
-> [https://chromeperf.appspot.com/report?sid=29a24f1d2b8b785551b26d945108889a5a5eed9a83848feb9f93ce8b58b1884d&num_points=10&rev=**$CRREV**](https://chromeperf.appspot.com/report?sid=29a24f1d2b8b785551b26d945108889a5a5eed9a83848feb9f93ce8b58b1884d&num_points=10&rev=480214)<br>
+> [https://chromeperf.appspot.com/report?sid=6269078068c45a41e23f5ee257da65d3f02da342849cdf3bde6aed0d5c61e450&num_points=10&rev=**$CRREV**](https://chromeperf.appspot.com/report?sid=6269078068c45a41e23f5ee257da65d3f02da342849cdf3bde6aed0d5c61e450&num_points=10&rev=480214)<br>
 > Link to trybot result:
 > [https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size/**$TRYJOB_NUMBER**](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size/11111)
 >
@@ -163,7 +165,7 @@ bug with the following:
 3) Why your commit is "worth" the size increase. For new features, feel free
    to link to a design doc (which presumably includes the motivation for adding
    the feature).
-   
+
 Close the bug as "Won't Fix".
 
 # For Binary Size Sheriffs
@@ -180,6 +182,6 @@ Close the bug as "Won't Fix".
  * Check [alert page](https://chromeperf.appspot.com/alerts?sheriff=Binary%20Size%20Sheriff) regularly for new alerts.
  * Join [g/chrome-binary-size-alerts](https://goto.google.com/chrome-binary-size-alerts).
  * Deal with alerts as outlined above.
- 
+
 ## Step 3: Ping / Clear out Old Regression Bugs
  * https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3DPerformance-Size+type%3DBug-Regression+resource_sizes

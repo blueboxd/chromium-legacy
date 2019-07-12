@@ -5,6 +5,8 @@
 """Handling of the <include> element.
 """
 
+from __future__ import print_function
+
 import os
 
 from grit import exception

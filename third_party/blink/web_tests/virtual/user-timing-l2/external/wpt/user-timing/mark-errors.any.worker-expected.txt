@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL Number should be rejected as the mark-options. assert_throws: Number passed as a dict argument should cause type-error. function "function() { self.performance.mark("mark1", 123); }" did not throw
+FAIL NaN should be rejected as the mark-options. assert_throws: NaN passed as a dict argument should cause type-error. function "function() { self.performance.mark("mark1", NaN); }" did not throw
+FAIL Infinity should be rejected as the mark-options. assert_throws: Infinity passed as a dict argument should cause type-error. function "function() { self.performance.mark("mark1", Infinity); }" did not throw
+FAIL String should be rejected as the mark-options. assert_throws: String passed as a dict argument should cause type-error. function "function() { self.performance.mark("mark1", "string"); }" did not throw
+Harness: the test ran to completion.
+

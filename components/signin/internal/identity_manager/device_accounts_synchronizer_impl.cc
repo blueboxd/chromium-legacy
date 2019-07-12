@@ -18,13 +18,12 @@ DeviceAccountsSynchronizerImpl::DeviceAccountsSynchronizerImpl(
 DeviceAccountsSynchronizerImpl::~DeviceAccountsSynchronizerImpl() = default;
 
 void DeviceAccountsSynchronizerImpl::ReloadAllAccountsFromSystem() {
-  token_service_delegate_->ReloadAccountsFromSystem(
-      /*primary_account_id=*/CoreAccountId());
+  token_service_delegate_->ReloadAllAccountsFromSystem();
 }
 
 void DeviceAccountsSynchronizerImpl::ReloadAccountFromSystem(
     const CoreAccountId& account_id) {
-  token_service_delegate_->AddAccountFromSystem(account_id);
+  token_service_delegate_->ReloadAccountFromSystem(account_id);
 }
 
 }  // namespace identity

@@ -240,7 +240,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   if (!state_) {
     // SSL is not valid. Reject show with NotSupportedError, disconnect the
     // mojo pipe, and destroy this object.
-    AreRequestedMethodsSupportedCallback(false);
+    AreRequestedMethodsSupportedCallback(false, reject_show_error_message_);
     return;
   }
 
@@ -480,7 +480,8 @@ bool PaymentRequest::ChangePaymentMethod(const std::string& method_name,
 }
 
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
-    bool methods_supported) {
+    bool methods_supported,
+    const std::string& error_message) {
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints())
       Pay();
@@ -490,9 +491,8 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
-                     !reject_show_error_message_.empty()
-                         ? reject_show_error_message_
-                         : GetNotSupportedErrorMessage(spec_.get()));
+                     GetNotSupportedErrorMessage(spec_.get()) +
+                         (error_message.empty() ? "" : " " + error_message));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
     OnConnectionTerminated();

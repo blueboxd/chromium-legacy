@@ -54,10 +54,6 @@ void SmsProvider::NotifyReceive(const url::Origin& origin,
   }
 }
 
-void SmsProvider::NotifyTimeout() {
-  observers_.begin()->OnTimeout();
-}
-
 bool SmsProvider::HasObservers() {
   return observers_.might_have_observers();
 }

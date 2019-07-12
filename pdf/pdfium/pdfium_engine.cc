@@ -29,7 +29,8 @@
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "pdf/document_loader_impl.h"
-#include "pdf/draw_utils.h"
+#include "pdf/draw_utils/coordinates.h"
+#include "pdf/draw_utils/shadow.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_document.h"
@@ -3133,17 +3134,7 @@ pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {
-  pp::Rect rv;
-  int right =
-      static_cast<int>(ceil(rect.right() * current_zoom_ - position_.x()));
-  int bottom =
-      static_cast<int>(ceil(rect.bottom() * current_zoom_ - position_.y()));
-
-  rv.set_x(static_cast<int>(rect.x() * current_zoom_ - position_.x()));
-  rv.set_y(static_cast<int>(rect.y() * current_zoom_ - position_.y()));
-  rv.set_width(right - rv.x());
-  rv.set_height(bottom - rv.y());
-  return rv;
+  return draw_utils::GetScreenRect(rect, position_, current_zoom_);
 }
 
 void PDFiumEngine::Highlight(void* buffer,
@@ -3367,8 +3358,8 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
   depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
-  if (!page_shadow_.get() || page_shadow_->depth() != depth) {
-    page_shadow_ = std::make_unique<ShadowMatrix>(
+  if (!page_shadow_ || page_shadow_->depth() != depth) {
+    page_shadow_ = std::make_unique<draw_utils::ShadowMatrix>(
         depth, factor, client_->GetBackgroundColor());
   }
 

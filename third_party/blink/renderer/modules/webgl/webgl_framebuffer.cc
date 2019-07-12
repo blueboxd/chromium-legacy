@@ -219,9 +219,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx, bool opaque)
   ctx->ContextGL()->GenFramebuffers(1, &object_);
 }
 
-WebGLFramebuffer::~WebGLFramebuffer() {
-  RunDestructor();
-}
+WebGLFramebuffer::~WebGLFramebuffer() = default;
 
 void WebGLFramebuffer::SetAttachmentForBoundFramebuffer(GLenum target,
                                                         GLenum attachment,

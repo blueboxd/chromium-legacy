@@ -39,8 +39,11 @@ class HTMLMediaElement;
 
 class TextTrackContainer final : public HTMLDivElement {
  public:
-  TextTrackContainer(Document&);
   TextTrackContainer(HTMLMediaElement&);
+
+  // Node override.
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // Runs the "rules for updating the text track rendering". The
   // ExposingControls enum is used in the WebVTT processing model to reset the
@@ -60,6 +63,7 @@ class TextTrackContainer final : public HTMLDivElement {
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
+  Member<HTMLMediaElement> media_element_;
   Member<ResizeObserver> video_size_observer_;
   float default_font_size_;
 };

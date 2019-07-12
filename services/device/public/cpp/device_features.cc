@@ -18,5 +18,9 @@ const base::Feature kGenericSensorExtraClasses{
 // (Generic Sensor and Device Orientation).
 const base::Feature kSensorContentSetting{"SensorContentSetting",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables usage of the Windows.Devices.Sensors WinRT API for the sensor
+// backend instead of the ISensor API on Windows.
+const base::Feature kWinrtSensorsImplementation{
+    "WinrtSensorsImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

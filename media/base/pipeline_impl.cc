@@ -796,7 +796,10 @@ void PipelineImpl::RendererWrapper::CheckPlaybackEnded() {
   if (shared_state_.renderer && !renderer_ended_)
     return;
 
-  DCHECK_EQ(status_, PIPELINE_OK);
+  // Don't fire an ended event if we're already in an error state.
+  if (status_ != PIPELINE_OK)
+    return;
+
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnEnded, weak_pipeline_));
 }

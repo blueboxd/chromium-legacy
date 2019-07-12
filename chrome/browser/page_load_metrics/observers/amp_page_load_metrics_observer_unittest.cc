@@ -337,13 +337,13 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe", 1);
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe", 1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   ASSERT_NE(nullptr, entry.get());
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay3", 3);
+      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(
@@ -438,14 +438,14 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
       "FullNavigation",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe."
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe."
       "FullNavigation",
       1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay3", 3);
+      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(

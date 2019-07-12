@@ -112,6 +112,7 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed,
                                                 bool seek_to_time = false);
   SMILTime UpdateAnimations(double elapsed, bool seek_to_time);
+  void ApplyAnimations(double elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(double delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
@@ -137,6 +138,7 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
   AnimationsMap scheduled_animations_;
+  HeapVector<ScheduledVector> active_sandwiches_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

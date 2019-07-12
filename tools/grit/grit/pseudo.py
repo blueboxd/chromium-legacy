@@ -21,6 +21,8 @@ character Qof.  It looks sort of like a latin character "p" but it is outside
 the latin-1 character set which will stress character encoding bugs.
 '''
 
+from __future__ import print_function
+
 from grit import lazy_re
 from grit import tclib
 

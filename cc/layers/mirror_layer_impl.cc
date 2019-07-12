@@ -41,8 +41,8 @@ void MirrorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadStateWithContentRects(
-      shared_quad_state, GetIdealContentsScale(), content_rect, content_rect,
-      contents_opaque);
+      shared_quad_state, mirrored_layer->GetIdealContentsScale(), content_rect,
+      content_rect, contents_opaque);
 
   AppendDebugBorderQuad(render_pass, content_rect, shared_quad_state,
                         append_quads_data);
@@ -75,7 +75,10 @@ gfx::Rect MirrorLayerImpl::GetDamageRect() const {
 }
 
 gfx::Rect MirrorLayerImpl::GetEnclosingRectInTargetSpace() const {
-  return GetScaledEnclosingRectInTargetSpace(GetIdealContentsScale());
+  const LayerImpl* mirrored_layer =
+      layer_tree_impl()->LayerById(mirrored_layer_id_);
+  return GetScaledEnclosingRectInTargetSpace(
+      mirrored_layer->GetIdealContentsScale());
 }
 
 const char* MirrorLayerImpl::LayerTypeAsString() const {

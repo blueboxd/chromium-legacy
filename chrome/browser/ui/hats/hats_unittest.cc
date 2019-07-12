@@ -30,5 +30,5 @@ class HatsForceEnabledTest : public testing::Test {
 };
 
 TEST_F(HatsForceEnabledTest, ParamsWithAForcedFlagTest) {
-  ASSERT_EQ(1, hats_service_->hats_finch_config_.probability);
+  ASSERT_EQ(1, hats_service_->probability_);
 }

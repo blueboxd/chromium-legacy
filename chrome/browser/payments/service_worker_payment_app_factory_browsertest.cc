@@ -30,6 +30,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace payments {
 namespace {
@@ -209,6 +210,9 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     return installable_apps_;
   }
 
+  // Returns the error message from the service worker payment app factory.
+  const std::string& error_message() const { return error_message_; }
+
   // Expects that the first app has the |expected_method|.
   void ExpectPaymentAppWithMethod(const std::string& expected_method) {
     ExpectPaymentAppFromScopeWithMethod(kDefaultScope, expected_method);
@@ -258,9 +262,11 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // valid payment methods.
   void OnGotAllPaymentApps(
       content::PaymentAppProvider::PaymentApps apps,
-      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
+      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
+      const std::string& error_message) {
     apps_ = std::move(apps);
     installable_apps_ = std::move(installable_apps);
+    error_message_ = error_message;
   }
 
   // Starts the |test_server| for |hostname|. Returns true on success.
@@ -341,6 +347,9 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // GetAllPaymentAppsForMethods() method.
   ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps_;
 
+  // The error message returned by the service worker factory.
+  std::string error_message_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFactoryBrowserTest);
@@ -354,6 +363,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, NoApps) {
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -363,6 +373,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, NoApps) {
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -378,6 +389,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -388,6 +400,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -402,6 +415,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, BasicCard) {
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("basic-card");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -412,6 +426,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, BasicCard) {
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("basic-card");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -426,6 +441,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, OwnOrigin) {
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://alicepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -436,6 +452,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, OwnOrigin) {
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://alicepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -452,6 +469,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -461,6 +479,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(installable_apps().empty());
     EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -477,6 +496,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://frankpay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -486,6 +506,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://frankpay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -503,6 +524,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://georgepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -512,6 +534,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(installable_apps().empty());
     ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppWithMethod("https://georgepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -533,6 +556,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                                         "https://georgepay.com/webpay");
     ExpectPaymentAppFromScopeWithMethod("/app2/",
                                         "https://georgepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -545,6 +569,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                                         "https://georgepay.com/webpay");
     ExpectPaymentAppFromScopeWithMethod("/app2/",
                                         "https://georgepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -569,6 +594,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                                         "https://georgepay.com/webpay");
     ExpectPaymentAppFromScopeWithMethod("/app2/",
                                         "https://frankpay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -582,6 +608,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                                         "https://georgepay.com/webpay");
     ExpectPaymentAppFromScopeWithMethod("/app2/",
                                         "https://frankpay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -597,6 +624,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://kylepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -606,6 +634,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://kylepay.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -613,11 +642,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // redirects to a different site (https://kylepay.com/webpay).
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        InvalidDifferentSiteRedirect) {
+  std::string expected_pattern =
+      "Cross-site redirect from \"https://larrypay.com:\\d+/webpay\" to "
+      "\"https://kylepay.com/webpay\" not allowed for payment manifests.";
+
   {
     GetAllPaymentAppsForMethods({"https://larrypay.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 
   // Repeat lookups should have identical results.
@@ -626,6 +662,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 }
 
@@ -633,11 +672,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // it redirects 4 times (charlie -> david -> frank -> george -> harry).
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        FourRedirectsIsNotValid) {
+  std::string expected_error_message =
+      "Unable to download the payment manifest because reached the maximum "
+      "number of redirects.";
   {
     GetAllPaymentAppsForMethods({"https://charlie.example.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 
   // Repeat lookups should have identical results.
@@ -646,6 +689,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 }
 
@@ -659,6 +703,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -668,6 +713,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -681,6 +727,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
   // Repeat lookups should have identical results.
@@ -690,6 +737,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+    EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
@@ -698,11 +746,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // https://harry.example.com/payment-manifest.json.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        CrossOriginHttpLinkHeaderIsInvalid) {
+  std::string expected_pattern =
+      "Cross-origin payment method manifest "
+      "\"https://harry.example.com/payment-manifest.json\" not allowed for the "
+      "payment method \"https://ike.example.com:\\d+/webpay\".";
   {
     GetAllPaymentAppsForMethods({"https://ike.example.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 
   // Repeat lookups should have identical results.
@@ -711,6 +766,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 }
 
@@ -718,11 +776,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // its cross-origin default application https://harry.example.com/app.json.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        CrossOriginDefaultApplicationIsInvalid) {
+  std::string expected_pattern =
+      "Cross-origin default application https://harry.example.com/app.json not "
+      "allowed in payment method manifest "
+      "https://john.example.com:\\d+/payment-manifest.json.";
   {
     GetAllPaymentAppsForMethods({"https://john.example.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 
   // Repeat lookups should have identical results.
@@ -731,6 +796,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_TRUE(RE2::FullMatch(error_message(), expected_pattern))
+        << "Actual error message \"" << error_message()
+        << "\" did not match expected pattern \"" << expected_pattern << "\".";
   }
 }
 
@@ -738,11 +806,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // its cross-origin service worker location https://harry.example.com/app.js.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        CrossOriginServiceWorkerIsInvalid) {
+  std::string expected_error_message =
+      "Cross-origin \"serviceworker\".\"src\" https://harry.example.com/app.js "
+      "not allowed in web app manifest https://kyle.example.com/app.json.";
   {
     GetAllPaymentAppsForMethods({"https://kyle.example.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 
   // Repeat lookups should have identical results.
@@ -751,6 +823,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 }
 
@@ -758,11 +831,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // its cross-origin service worker scope https://harry.example.com/webpay/".
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
                        CrossOriginServiceWorkerScopeIsInvalid) {
+  std::string expected_error_message =
+      "Cross-origin \"serviceworker\".\"scope\" "
+      "https://harry.example.com/webpay not allowed in web app manifest "
+      "https://larry.example.com/app.json.";
   {
     GetAllPaymentAppsForMethods({"https://larry.example.com/webpay"});
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 
   // Repeat lookups should have identical results.
@@ -771,6 +849,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
     EXPECT_TRUE(apps().empty());
     EXPECT_TRUE(installable_apps().empty());
+    EXPECT_EQ(expected_error_message, error_message());
   }
 }
 

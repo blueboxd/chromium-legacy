@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -303,8 +302,6 @@ TabletModeController::TabletModeController()
             base::Unretained(this)));
   }
 
-  Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
-
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(this);
@@ -332,7 +329,6 @@ void TabletModeController::Shutdown() {
                             tab_drag_in_splitview_count_);
 
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
 
   if (ShouldInitTabletModeController()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -616,11 +612,6 @@ void TabletModeController::OnInputDeviceConfigurationChanged(
 
 void TabletModeController::OnDeviceListsComplete() {
   HandlePointingDeviceAddedOrRemoved();
-}
-
-void TabletModeController::OnKioskNextEnabled() {
-  tablet_mode_behavior_ = kLockInCurrentMode;
-  AttemptEnterTabletMode();
 }
 
 void TabletModeController::OnLayerAnimationStarted(

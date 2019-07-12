@@ -62,6 +62,18 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizerClient
 
 class PLATFORM_EXPORT PlatformSpeechSynthesizer
     : public GarbageCollectedFinalized<PlatformSpeechSynthesizer> {
+  // Pre-finalization is required to promptly release the owned
+  // WebSpeechSynthesizer.
+  //
+  // If not and delayed until lazily swept, web_speech_synthesizer_client_ may
+  // end up being lazily swept first (i.e., before this
+  // PlatformSpeechSynthesizer), leaving web_speech_synthesizer_ with a
+  // dangling pointer to a finalized object -- WebSpeechSynthesizer embedder
+  // implementations calling notification methods in the other directions by
+  // way of web_speech_synthesizer_client_. Eagerly releasing
+  // WebSpeechSynthesizer prevents such unsafe accesses.
+  USING_PRE_FINALIZER(PlatformSpeechSynthesizer, Dispose);
+
  public:
   static PlatformSpeechSynthesizer* Create(PlatformSpeechSynthesizerClient*);
 
@@ -81,18 +93,9 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
   void SetVoiceList(Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>&);
 
-  // Eager finalization is required to promptly release the owned
-  // WebSpeechSynthesizer.
-  //
-  // If not and delayed until lazily swept, m_webSpeechSynthesizerClient may end
-  // up being lazily swept first (i.e., before this PlatformSpeechSynthesizer),
-  // leaving m_webSpeechSynthesizer with a dangling pointer to a finalized
-  // object -- WebSpeechSynthesizer embedder implementations calling
-  // notification methods in the other directions by way of
-  // m_webSpeechSynthesizerClient. Eagerly releasing WebSpeechSynthesizer
-  // prevents such unsafe accesses.
-  EAGERLY_FINALIZE();
   virtual void Trace(blink::Visitor*);
+
+  void Dispose();
 
  protected:
   virtual void InitializeVoiceList();

@@ -438,6 +438,9 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == last_fling_start_target_)
     last_fling_start_target_ = nullptr;
 
+  if (view == last_mouse_down_target_)
+    last_mouse_down_target_ = nullptr;
+
   event_targeter_->ViewWillBeDestroyed(view);
 }
 
@@ -487,15 +490,32 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
 
+  gfx::PointF transformed_point;
+
   // Ignore mouse_capture_target_ if there are no mouse buttons currently down
   // because this is only for the purpose of dragging.
   if (!target && mouse_capture_target_ &&
       (event.GetType() == blink::WebInputEvent::kMouseUp ||
        IsMouseButtonDown(event))) {
     target = mouse_capture_target_;
+    // Hit testing is skipped for MouseUp with mouse capture which is enabled by
+    // the OOPIF renderer. Instead of using the coordinate transformation in the
+    // browser process process, use the cached coordinates that were determined
+    // by the renderer process on the previous MouseDown.
+    // TODO(yigu): Currently there is a mismatch between the coordinate
+    // transforms from browser process and renderer process. We need to fix it
+    // so that we don't need to cache the transform from MouseDown.
+    // https://crbug.com/934434.
+    if (event.GetType() == blink::WebInputEvent::kMouseUp &&
+        target == last_mouse_down_target_ &&
+        mouse_down_pre_transformed_coordinate_ ==
+            gfx::PointF(event.PositionInWidget().x,
+                        event.PositionInWidget().y)) {
+      transformed_point = mouse_down_post_transformed_coordinate_;
+      needs_transform_point = false;
+    }
   }
 
-  gfx::PointF transformed_point;
   if (!target) {
     latched_target = false;
     auto result =
@@ -505,6 +525,10 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     should_verify_result = (event.GetType() == blink::WebInputEvent::kMouseMove)
                                ? false
                                : result.should_verify_result;
+    if (event.GetType() == blink::WebInputEvent::kMouseDown) {
+      mouse_down_pre_transformed_coordinate_.SetPoint(
+          event.PositionInWidget().x, event.PositionInWidget().y);
+    }
     if (result.should_query_view) {
       DCHECK(!should_verify_result);
       return {result.view, true, transformed_point, latched_target,
@@ -1787,6 +1811,11 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
   if (target && target->ScreenRectIsUnstableFor(event))
     event.SetTargetFrameMovedRecently();
   if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
+    if (event.GetType() == blink::WebInputEvent::kMouseDown) {
+      mouse_down_post_transformed_coordinate_.SetPoint(target_location->x(),
+                                                       target_location->y());
+      last_mouse_down_target_ = target;
+    }
     DispatchMouseEvent(root_view, target,
                        static_cast<const blink::WebMouseEvent&>(event), latency,
                        target_location);

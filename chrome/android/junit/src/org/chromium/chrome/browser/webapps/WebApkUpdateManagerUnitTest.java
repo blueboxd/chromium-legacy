@@ -1094,4 +1094,68 @@ public class WebApkUpdateManagerUnitTest {
         onGotManifestData(updateManager, defaultManifestData());
         assertTrue(updateManager.updateRequested());
     }
+
+    /**
+     * Tests that a forced update is requested and performed immediately if there is a material
+     * change to the manifest.
+     */
+    @Test
+    public void testForcedUpdateSuccess() throws Exception {
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
+        storage.setShouldForceUpdate(true);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotDifferentData(updateManager);
+        assertTrue(updateManager.updateRequested());
+        tryCompletingUpdate(updateManager, storage, WebApkInstallResult.SUCCESS);
+        assertEquals(false, storage.shouldForceUpdate());
+    }
+
+    /**
+     * Tests that a forced update is requested, but not performed if there is no material change to
+     * the manifest.
+     */
+    @Test
+    public void testForcedUpdateNotNeeded() throws Exception {
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
+        storage.setShouldForceUpdate(true);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotManifestData(updateManager, defaultManifestData());
+        assertFalse(updateManager.updateRequested());
+        assertEquals(false, storage.shouldForceUpdate());
+    }
+
+    /**
+     * Tests that a forced update handles failure gracefully.
+     */
+    @Test
+    public void testForcedUpdateFailure() throws Exception {
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
+        storage.setShouldForceUpdate(true);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotDifferentData(updateManager);
+        assertTrue(updateManager.updateRequested());
+        tryCompletingUpdate(updateManager, storage, WebApkInstallResult.FAILURE);
+        assertEquals(false, storage.shouldForceUpdate());
+    }
+
+    /**
+     * Tests that a forced update handles failing to retrieve the manifest.
+     */
+    @Test
+    public void testForcedUpdateManifestNotRetrieved() throws Exception {
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
+        storage.setShouldForceUpdate(true);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotManifestData(updateManager, null);
+        assertFalse(updateManager.updateRequested());
+        assertEquals(false, storage.shouldForceUpdate());
+    }
 }

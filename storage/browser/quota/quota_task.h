@@ -45,17 +45,15 @@ class QuotaTask {
   void DeleteSoon();
 
   QuotaTaskObserver* observer() const { return observer_; }
-  base::SingleThreadTaskRunner* original_task_runner() const {
-    return original_task_runner_.get();
-  }
 
  private:
   friend class base::DeleteHelper<QuotaTask>;
   friend class QuotaTaskObserver;
 
   void Abort();
+
   QuotaTaskObserver* observer_;
-  scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
   bool delete_scheduled_;
 };
 

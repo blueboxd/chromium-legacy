@@ -325,6 +325,12 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   void SetObserver(Observer* observer);
 
+  // Controls whether or not the queue will emit traces events when tasks are
+  // posted to it while disabled. This only applies for the current or next
+  // period during which the queue is disabled. When the queue is re-enabled
+  // this will revert back to the default value of false.
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report);
+
   // Create a task runner for this TaskQueue which will annotate all
   // posted tasks with the given task type.
   // May be called on any thread.

@@ -523,11 +523,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // in a shut down state, so reading from them will return EOS.
   std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;
 
-  // Accumulate, by type, detected track counts across the SourceBuffers.
-  int detected_audio_track_count_;
-  int detected_video_track_count_;
-  int detected_text_track_count_;
-
   // Callback for reporting the number of bytes appended to this ChunkDemuxer.
   BytesReceivedCB bytes_received_cb_;
 

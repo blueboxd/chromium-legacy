@@ -33,8 +33,7 @@ AuthenticationServiceFake::AuthenticationServiceFake(
 
 AuthenticationServiceFake::~AuthenticationServiceFake() {}
 
-void AuthenticationServiceFake::SignIn(ChromeIdentity* identity,
-                                       const std::string& hosted_domain) {
+void AuthenticationServiceFake::SignIn(ChromeIdentity* identity) {
   // Needs to call PrepareForFirstSyncSetup to behave like
   // AuthenticationService.
   sync_setup_service_->PrepareForFirstSyncSetup();

@@ -358,6 +358,7 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
     const JavaParamRef<jobjectArray>& jnames,
     const JavaParamRef<jobjectArray>& jshort_names,
     const JavaParamRef<jobjectArray>& jpackage_names,
+    const JavaParamRef<jobjectArray>& jids,
     const JavaParamRef<jintArray>& jshell_apk_versions,
     const JavaParamRef<jintArray>& jversion_codes,
     const JavaParamRef<jobjectArray>& juris,
@@ -369,7 +370,8 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
     const JavaParamRef<jlongArray>& jtheme_colors,
     const JavaParamRef<jlongArray>& jbackground_colors,
     const JavaParamRef<jlongArray>& jlast_update_check_times_ms,
-    const JavaParamRef<jbooleanArray>& jrelax_updates) {
+    const JavaParamRef<jbooleanArray>& jrelax_updates,
+    const JavaParamRef<jobjectArray>& jupdateStatuses) {
   DCHECK(jcallback_pointer);
   std::vector<std::string> names;
   base::android::AppendJavaStringArrayToStringVector(env, jnames, &names);
@@ -379,6 +381,8 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   std::vector<std::string> package_names;
   base::android::AppendJavaStringArrayToStringVector(env, jpackage_names,
                                                      &package_names);
+  std::vector<std::string> ids;
+  base::android::AppendJavaStringArrayToStringVector(env, jids, &ids);
   std::vector<int> shell_apk_versions;
   base::android::JavaIntArrayToIntVector(env, jshell_apk_versions,
                                          &shell_apk_versions);
@@ -409,9 +413,13 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   std::vector<bool> relax_updates;
   base::android::JavaBooleanArrayToBoolVector(env, jrelax_updates,
                                               &relax_updates);
+  std::vector<std::string> update_statuses;
+  base::android::AppendJavaStringArrayToStringVector(env, jupdateStatuses,
+                                                     &update_statuses);
 
   DCHECK(short_names.size() == names.size());
   DCHECK(short_names.size() == package_names.size());
+  DCHECK(short_names.size() == ids.size());
   DCHECK(short_names.size() == shell_apk_versions.size());
   DCHECK(short_names.size() == version_codes.size());
   DCHECK(short_names.size() == uris.size());
@@ -424,25 +432,32 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   DCHECK(short_names.size() == background_colors.size());
   DCHECK(short_names.size() == last_update_check_times_ms.size());
   DCHECK(short_names.size() == relax_updates.size());
+  DCHECK(short_names.size() == update_statuses.size());
 
   std::vector<WebApkInfo> webapk_list;
   webapk_list.reserve(short_names.size());
   for (size_t i = 0; i < short_names.size(); ++i) {
     webapk_list.push_back(WebApkInfo(
         std::move(names[i]), std::move(short_names[i]),
-        std::move(package_names[i]), shell_apk_versions[i], version_codes[i],
-        std::move(uris[i]), std::move(scopes[i]), std::move(manifest_urls[i]),
-        std::move(manifest_start_urls[i]),
+        std::move(package_names[i]), std::move(ids[i]), shell_apk_versions[i],
+        version_codes[i], std::move(uris[i]), std::move(scopes[i]),
+        std::move(manifest_urls[i]), std::move(manifest_start_urls[i]),
         static_cast<blink::WebDisplayMode>(display_modes[i]),
         static_cast<blink::WebScreenOrientationLockType>(orientations[i]),
         JavaColorToOptionalSkColor(theme_colors[i]),
         JavaColorToOptionalSkColor(background_colors[i]),
         base::Time::FromJavaTime(last_update_check_times_ms[i]),
-        relax_updates[i]));
+        relax_updates[i], std::move(update_statuses[i])));
   }
 
   ShortcutHelper::WebApkInfoCallback* webapk_list_callback =
       reinterpret_cast<ShortcutHelper::WebApkInfoCallback*>(jcallback_pointer);
   webapk_list_callback->Run(webapk_list);
   delete webapk_list_callback;
+}
+
+void ShortcutHelper::SetForceWebApkUpdate(const std::string& id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ShortcutHelper_setForceWebApkUpdate(
+      env, base::android::ConvertUTF8ToJavaString(env, id));
 }

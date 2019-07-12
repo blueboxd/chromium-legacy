@@ -104,10 +104,6 @@ inline IntSize ExpandedIntSize(const DoubleSize& p) {
   return IntSize(clampTo<int>(ceil(p.Width())), clampTo<int>(ceil(p.Height())));
 }
 
-constexpr FloatSize ToFloatSize(const DoubleSize& p) {
-  return FloatSize(p.Width(), p.Height());
-}
-
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DoubleSize&);
 
 }  // namespace blink

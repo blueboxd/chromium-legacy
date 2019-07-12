@@ -34,6 +34,14 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   bool MayHaveRelativeUnit() const;
 
   CalculationCategory Category() const { return expression_->Category(); }
+  bool IsAngle() const { return Category() == kCalcAngle; }
+  bool IsLength() const { return Category() == kCalcLength; }
+  bool IsNumber() const { return Category() == kCalcNumber; }
+  bool IsPercentage() const { return Category() == kCalcPercent; }
+  bool IsTime() const { return Category() == kCalcTime; }
+
+  bool IsPx() const;
+
   bool IsInt() const { return expression_->IsInteger(); }
   bool IsNegative() const { return expression_->DoubleValue() < 0; }
   ValueRange PermittedValueRange() const {

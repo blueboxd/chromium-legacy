@@ -18,19 +18,21 @@ class VIEWS_EXPORT InstallableInkDropPainter : public Painter {
   InstallableInkDropPainter() = default;
   ~InstallableInkDropPainter() override = default;
 
-  void SetActivated(bool activated) { activated_ = activated; }
+  void set_activated(bool activated) { activated_ = activated; }
   bool activated() const { return activated_; }
 
-  void SetHighlighted(bool highlighted) { highlighted_ = highlighted; }
-  bool highlighted() const { return highlighted_; }
+  void set_highlighted_ratio(float highlighted_ratio) {
+    highlighted_ratio_ = highlighted_ratio;
+  }
+  bool highlighted_ratio() const { return highlighted_ratio_; }
 
   // Painter:
   gfx::Size GetMinimumSize() const override;
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
+  float highlighted_ratio_ = 0.0f;
   bool activated_ = false;
-  bool highlighted_ = false;
 };
 
 }  // namespace views

@@ -74,6 +74,8 @@ class AutomationManagerAura : public ui::AXActionHandler,
     event_bundle_sink_ = sink;
   }
 
+  int32_t GetIDFromWindow(aura::Window* window) { return cache_.GetID(window); }
+
  private:
   friend class base::NoDestructor<AutomationManagerAura>;
 

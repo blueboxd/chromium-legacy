@@ -29,7 +29,8 @@ class UI_DEVTOOLS_EXPORT CSSAgent
   protocol::Response disable() override;
   protocol::Response getMatchedStylesForNode(
       int node_id,
-      protocol::Maybe<protocol::CSS::CSSStyle>* inline_style) override;
+      protocol::Maybe<protocol::Array<protocol::CSS::RuleMatch>>*
+          matched_css_rules) override;
   protocol::Response setStyleTexts(
       std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>
           edits,
@@ -49,6 +50,9 @@ class UI_DEVTOOLS_EXPORT CSSAgent
   bool SetPropertiesForUIElement(UIElement* ui_element,
                                  const gfx::Rect& bounds,
                                  bool visible);
+  std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>> BuildMatchedStyles(
+      UIElement* ui_element);
+
   DOMAgent* const dom_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(CSSAgent);

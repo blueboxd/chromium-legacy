@@ -114,6 +114,7 @@ class SVGLength final : public SVGPropertyBase {
   bool IsFontRelative() const { return value_->IsFontRelativeLength(); }
   bool IsCalculated() const { return value_->IsCalculated(); }
 
+  bool IsNegativeNumericLiteral() const;
   bool IsZero() const { return value_->GetFloatValue() == 0; }
 
   static SVGLengthMode LengthModeForAnimatedLengthAttribute(

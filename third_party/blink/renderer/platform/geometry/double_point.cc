@@ -5,11 +5,14 @@
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+DoublePoint::operator FloatPoint() const {
+  return FloatPoint(clampTo<float>(x_), clampTo<float>(y_));
+}
 
 DoublePoint DoublePoint::ExpandedTo(const DoublePoint& other) const {
   return DoublePoint(std::max(x_, other.x_), std::max(y_, other.y_));

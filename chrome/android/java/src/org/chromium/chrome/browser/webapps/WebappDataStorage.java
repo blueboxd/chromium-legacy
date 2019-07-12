@@ -77,6 +77,12 @@ public class WebappDataStorage {
     // The path where serialized update data is written before uploading to the WebAPK server.
     static final String KEY_PENDING_UPDATE_FILE_PATH = "pending_update_file_path";
 
+    // Whether to force an update.
+    static final String KEY_SHOULD_FORCE_UPDATE = "should_force_update";
+
+    // Whether an update has been scheduled.
+    static final String KEY_UPDATE_SCHEDULED = "update_scheduled";
+
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
     public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS;
 
@@ -514,6 +520,33 @@ public class WebappDataStorage {
         return mPreferences.getBoolean(KEY_RELAX_UPDATES, false);
     }
 
+    /** Sets whether an update has been scheduled. */
+    public void setUpdateScheduled(boolean isUpdateScheduled) {
+        mPreferences.edit().putBoolean(KEY_UPDATE_SCHEDULED, isUpdateScheduled).apply();
+    }
+
+    /** Gets whether an update has been scheduled. */
+    public boolean isUpdateScheduled() {
+        return mPreferences.getBoolean(KEY_UPDATE_SCHEDULED, false);
+    }
+
+    /** Sets whether an update should be forced. */
+    public void setShouldForceUpdate(boolean forceUpdate) {
+        mPreferences.edit().putBoolean(KEY_SHOULD_FORCE_UPDATE, forceUpdate).apply();
+    }
+
+    /** Whether to force an update. */
+    public boolean shouldForceUpdate() {
+        return mPreferences.getBoolean(KEY_SHOULD_FORCE_UPDATE, false);
+    }
+
+    /** Returns the update status. */
+    public String getUpdateStatus() {
+        if (isUpdateScheduled()) return "Scheduled";
+        if (shouldForceUpdate()) return "Pending";
+        return didPreviousUpdateSucceed() ? "Succeeded" : "Failed";
+    }
+
     /**
      * Returns file where WebAPK update data should be stored and stores the file name in
      * SharedPreferences.
@@ -556,6 +589,7 @@ public class WebappDataStorage {
 
     /** Returns whether we should check for update. */
     boolean shouldCheckForUpdate() {
+        if (shouldForceUpdate()) return true;
         long checkUpdatesInterval =
                 shouldRelaxUpdates() ? RELAXED_UPDATE_INTERVAL : UPDATE_INTERVAL;
         long now = sClock.currentTimeMillis();

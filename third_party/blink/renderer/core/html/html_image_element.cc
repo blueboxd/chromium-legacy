@@ -757,32 +757,7 @@ void HTMLImageElement::SelectSourceURL(
     GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
   }
 
-  ImageResourceContent* image_content = GetImageLoader().GetContent();
-  // Images such as data: uri's can return immediately and may already have
-  // errored out.
-  bool image_has_loaded = image_content && !image_content->IsLoading() &&
-                          !image_content->ErrorOccurred();
-  bool image_still_loading =
-      !image_has_loaded && GetImageLoader().HasPendingActivity() &&
-      !GetImageLoader().HasPendingError() && !ImageSourceURL().IsEmpty();
-  bool image_has_image = image_content && image_content->HasImage();
-  bool image_is_document = GetImageLoader().IsLoadingImageDocument() &&
-                           image_content && !image_content->ErrorOccurred();
-
-  // Icky special case for deferred images:
-  // A deferred image is not loading, does have pending activity, does not
-  // have an error, but it does have an ImageResourceContent associated
-  // with it, so imageHasLoaded will be true even though the image hasn't
-  // actually loaded. Fixing the definition of imageHasLoaded isn't
-  // sufficient, because a deferred image does have pending activity, does not
-  // have a pending error, and does have a source URL, so if imageHasLoaded
-  // was correct, imageStillLoading would become wrong.
-  //
-  // Instead of dealing with that, there's a separate check that the
-  // ImageResourceContent has non-null image data associated with it, which
-  // isn't folded into imageHasLoaded above.
-  if ((image_has_loaded && image_has_image) || image_still_loading ||
-      image_is_document)
+  if (GetImageLoader().ImageIsPotentiallyAvailable())
     EnsurePrimaryContent();
   else
     EnsureCollapsedOrFallbackContent();

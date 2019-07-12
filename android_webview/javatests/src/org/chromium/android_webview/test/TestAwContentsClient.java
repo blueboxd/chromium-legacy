@@ -392,9 +392,33 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public boolean onConsoleMessage(AwConsoleMessage consoleMessage) {
-        if (TRACE) Log.i(TAG, "onConsoleMessage " + consoleMessage);
+        // Log unconditionally, because JavaScript errors also generate ConsoleMessages (and
+        // developers generally expect logcat to show such errors).
+        logConsoleMessage(consoleMessage);
         mAddMessageToConsoleHelper.notifyCalled(consoleMessage);
         return false;
+    }
+
+    private void logConsoleMessage(AwConsoleMessage consoleMessage) {
+        String formattedMessage = "[" + consoleMessage.sourceId() + ":"
+                + consoleMessage.lineNumber() + "] " + consoleMessage.message();
+        switch (consoleMessage.messageLevel()) {
+            case AwConsoleMessage.MESSAGE_LEVEL_TIP:
+            case AwConsoleMessage.MESSAGE_LEVEL_LOG:
+                Log.i(TAG, "onConsoleMessage " + formattedMessage);
+                break;
+            case AwConsoleMessage.MESSAGE_LEVEL_WARNING:
+                Log.w(TAG, "onConsoleMessage " + formattedMessage);
+                break;
+            case AwConsoleMessage.MESSAGE_LEVEL_ERROR:
+                Log.e(TAG, "onConsoleMessage " + formattedMessage);
+                break;
+            default:
+                // Should not be reached, but fall-through anyway.
+            case AwConsoleMessage.MESSAGE_LEVEL_DEBUG:
+                Log.d(TAG, "onConsoleMessage " + formattedMessage);
+                break;
+        }
     }
 
     /**

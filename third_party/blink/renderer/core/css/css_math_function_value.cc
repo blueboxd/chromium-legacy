@@ -150,4 +150,10 @@ bool CSSMathFunctionValue::IsZero() const {
   return expression_->IsZero();
 }
 
+bool CSSMathFunctionValue::IsPx() const {
+  // TODO(crbug.com/979895): This is the result of refactoring, which might be
+  // an existing bug. Fix it if necessary.
+  return Category() == kCalcLength;
+}
+
 }  // namespace blink

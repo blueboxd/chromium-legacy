@@ -175,6 +175,9 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetTextTrackTextColor(const WebString&) override;
   void SetTextTrackTextShadow(const WebString&) override;
   void SetTextTrackTextSize(const WebString&) override;
+  void SetTextTrackWindowColor(const WebString&) override;
+  void SetTextTrackWindowPadding(const WebString&) override;
+  void SetTextTrackWindowRadius(const WebString&) override;
   void SetThreadedScrollingEnabled(bool) override;
   void SetTouchDragDropEnabled(bool) override;
   void SetBarrelButtonForDragEnabled(bool) override;

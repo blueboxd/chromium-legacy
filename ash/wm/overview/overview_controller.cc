@@ -541,6 +541,10 @@ bool OverviewController::ToggleOverview(
   // can accept text input and it resizes correctly with the a11y keyboard.
   keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
 
+  // Prevent toggling overview during the split view divider snap animation.
+  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
+    return true;
+
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 

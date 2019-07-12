@@ -113,15 +113,20 @@ class ByteCodeProcessor {
             writer = new ClassWriter(reader, 0);
         }
         ClassVisitor chain = writer;
-        /* DEBUGGING:
-         To see the bytecode for a specific class:
-           if (entry.getName().contains("YourClassName")) {
-             chain = new TraceClassVisitor(chain, new PrintWriter(System.out));
-           }
+        /* DEBUGGING:}
          To see objectweb.asm code that will generate bytecode for a given class:
-           java -cp "third_party/ow2_asm/lib/asm-5.0.1.jar:third_party/ow2_asm/lib/"\
-               "asm-util-5.0.1.jar:out/Debug/lib.java/jar_containing_yourclass.jar" \
-               org.objectweb.asm.util.ASMifier org.package.YourClassName
+
+         java -cp
+         "third_party/ow2_asm/lib/asm.jar:third_party/ow2_asm/lib/asm-util.jar:out/Debug/lib.java/jar_containing_yourclass.jar"
+         org.objectweb.asm.util.ASMifier org.package.YourClassName
+
+         See this pdf for more details: https://asm.ow2.io/asm4-guide.pdf
+
+         To see the bytecode for a specific class, uncomment this code with your class name:
+
+        if (entry.getName().contains("YOUR_CLASS_NAME")) {
+          chain = new TraceClassVisitor(chain, new PrintWriter(System.out));
+        }
         */
         if (sShouldUseThreadAnnotations) {
             chain = new ThreadAssertionClassAdapter(chain);

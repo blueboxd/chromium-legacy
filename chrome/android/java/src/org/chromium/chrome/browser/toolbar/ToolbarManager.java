@@ -27,7 +27,6 @@ import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -114,7 +113,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -1698,22 +1696,34 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param activityName Simple class name for the activity this toolbar belongs to.
      */
     public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
-        // Record startup performance statistics
+        recordStartupHistograms(activityCreationTimeMs, activityName);
+        mLocationBar.onDeferredStartup();
+    }
+
+    /**
+     * Record histograms covering Chrome startup.
+     * This method will collect metrics no sooner than RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS since
+     * Activity creation to ensure availability of collected data.
+     *
+     * Histograms will not be collected if Chrome is destroyed before the above timeout passed.
+     */
+    private void recordStartupHistograms(
+            final long activityCreationTimeMs, final String activityName) {
+        // Schedule call to self if minimum time since activity creation has not yet passed.
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
-                onDeferredStartup(activityCreationTimeMs, activityName);
-            }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            // clang-format off
+            mHandler.postDelayed(
+                    () -> recordStartupHistograms(activityCreationTimeMs, activityName),
+                    RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            // clang-format on
             return;
         }
+
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs);
 
-        // mOmniboxStartupMetrics might be null. ie. ToolbarManager is destroyed. See
-        // https://crbug.com/860449
-        if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.maybeRecordHistograms();
-
-        mLocationBar.onDeferredStartup();
+        mOmniboxStartupMetrics.maybeRecordHistograms();
     }
 
     /**

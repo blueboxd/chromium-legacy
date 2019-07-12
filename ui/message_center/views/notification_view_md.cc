@@ -803,16 +803,20 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
 
-  base::string16 app_name = notification.display_source();
-  if (notification.origin_url().is_valid() &&
-      notification.origin_url().SchemeIsHTTPOrHTTPS()) {
+  base::string16 app_name;
+  if (notification.UseOriginAsContextMessage()) {
     app_name = url_formatter::FormatUrlForSecurityDisplay(
         notification.origin_url(),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
     header_row_->SetAppNameElideBehavior(gfx::ELIDE_HEAD);
-  } else if (app_name.empty() && notification.notifier_id().type ==
-                                     NotifierType::SYSTEM_COMPONENT) {
+  } else if (notification.display_source().empty() &&
+             notification.notifier_id().type ==
+                 NotifierType::SYSTEM_COMPONENT) {
     app_name = MessageCenter::Get()->GetSystemNotificationAppName();
+  } else if (!notification.context_message().empty()) {
+    app_name = notification.context_message();
+  } else {
+    app_name = notification.display_source();
   }
   header_row_->SetAppName(app_name);
 }

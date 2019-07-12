@@ -2333,6 +2333,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcVpnDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kVpnFeature)},
 #endif  // OS_CHROMEOS
+#if defined(OS_WIN)
+    {"enable-winrt-sensor-implementation",
+     flag_descriptions::kWinrtSensorsImplementationName,
+     flag_descriptions::kWinrtSensorsImplementationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kWinrtSensorsImplementation)},
+#endif
     {"enable-generic-sensor", flag_descriptions::kEnableGenericSensorName,
      flag_descriptions::kEnableGenericSensorDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGenericSensor)},
@@ -2503,6 +2509,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
+
+    {"omnibox-search-engine-logo",
+     flag_descriptions::kOmniboxSearchEngineLogoName,
+     flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",
@@ -4092,6 +4103,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
+
+    {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
+     flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
+     FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

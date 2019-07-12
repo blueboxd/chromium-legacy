@@ -50,12 +50,10 @@ ShareToData* ShareToDataForWebState(web::WebState* web_state,
   }
 
   BOOL is_page_printable = [web_state->GetView() viewPrintFormatter] != nil;
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  ThumbnailGeneratorBlock thumbnail_generator =
-      activity_services::ThumbnailGeneratorForTab(tab);
+  ChromeActivityItemThumbnailGenerator* thumbnail_generator =
+      [[ChromeActivityItemThumbnailGenerator alloc] initWithWebState:web_state];
   const GURL& finalURLToShare =
       !share_url.is_empty() ? share_url : web_state->GetVisibleURL();
-
   web::NavigationItem* visibleItem =
       web_state->GetNavigationManager()->GetVisibleItem();
   web::UserAgentType userAgent = web::UserAgentType::NONE;

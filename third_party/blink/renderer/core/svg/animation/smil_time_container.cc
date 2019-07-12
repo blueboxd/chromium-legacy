@@ -413,6 +413,7 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
     return;
 
   SMILTime earliest_fire_time = UpdateAnimations(elapsed, seek_to_time);
+  ApplyAnimations(elapsed);
   if (!CanScheduleFrame(earliest_fire_time))
     return;
   double delay_time = earliest_fire_time.Value() - elapsed;
@@ -429,7 +430,8 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
   // scheduledAnimations during this critical section. Similarly, any elements
   // removed will unschedule themselves, so this will catch modification of
   // animationsToApply.
-  prevent_scheduled_animations_changes_ = true;
+  base::AutoReset<bool> no_scheduled_animations_change_scope(
+      &prevent_scheduled_animations_changes_, true);
 #endif
 
   if (document_order_indexes_dirty_)
@@ -445,8 +447,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
     attribute_map.RemoveAll(invalid_keys);
   }
 
-  HeapVector<ScheduledVector> active_sandwiches;
-  active_sandwiches.ReserveInitialCapacity(scheduled_animations_.size());
+  active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
   for (auto& attribute_entry : scheduled_animations_) {
     AttributeMap& attribute_map = attribute_entry.value;
     for (auto& entry : attribute_map) {
@@ -478,20 +479,12 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
       }
 
       if (!sandwich.IsEmpty()) {
-        active_sandwiches.push_back(sandwich);
+        active_sandwiches_.push_back(sandwich);
       }
     }
   }
 
-  if (active_sandwiches.IsEmpty()) {
-#if DCHECK_IS_ON()
-    prevent_scheduled_animations_changes_ = false;
-#endif
-    return earliest_fire_time;
-  }
-
-  ScheduledVector animations_to_apply;
-  for (auto& sandwich : active_sandwiches) {
+  for (auto& sandwich : active_sandwiches_) {
     if (seek_to_time) {
       for (auto& animation : sandwich) {
         animation->TriggerPendingEvents(elapsed);
@@ -525,6 +518,19 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
       if (next_fire_time.IsFinite())
         earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
     }
+  }
+  return earliest_fire_time;
+}
+
+void SMILTimeContainer::ApplyAnimations(double elapsed) {
+#if DCHECK_IS_ON()
+  prevent_scheduled_animations_changes_ = true;
+#endif
+  ScheduledVector animations_to_apply;
+  for (auto& sandwich : active_sandwiches_) {
+    if (sandwich.IsEmpty()) {
+      continue;
+    }
 
     // Results are accumulated to the first animation that animates and
     // contributes to a particular element/attribute pair.
@@ -553,12 +559,13 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
 
     animations_to_apply.push_back(result_element);
   }
+  active_sandwiches_.Shrink(0);
 
   if (animations_to_apply.IsEmpty()) {
 #if DCHECK_IS_ON()
     prevent_scheduled_animations_changes_ = false;
 #endif
-    return earliest_fire_time;
+    return;
   }
 
   UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAnimationAppliedEffect);
@@ -588,7 +595,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
       }
     }
   }
-  return earliest_fire_time;
+  return;
 }
 
 void SMILTimeContainer::AdvanceFrameForTesting() {
@@ -599,6 +606,7 @@ void SMILTimeContainer::AdvanceFrameForTesting() {
 void SMILTimeContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(scheduled_animations_);
   visitor->Trace(owner_svg_element_);
+  visitor->Trace(active_sandwiches_);
 }
 
 }  // namespace blink

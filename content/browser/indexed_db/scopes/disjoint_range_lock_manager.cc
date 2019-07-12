@@ -19,13 +19,14 @@ DisjointRangeLockManager::LockRequest::LockRequest(
     : requested_type(type),
       locks_holder(std::move(locks_holder)),
       acquired_callback(std::move(acquired_callback)) {}
-DisjointRangeLockManager::LockRequest::LockRequest(LockRequest&&) = default;
+DisjointRangeLockManager::LockRequest::LockRequest(LockRequest&&) noexcept =
+    default;
 DisjointRangeLockManager::LockRequest::~LockRequest() = default;
 DisjointRangeLockManager::Lock::Lock() = default;
-DisjointRangeLockManager::Lock::Lock(Lock&&) = default;
+DisjointRangeLockManager::Lock::Lock(Lock&&) noexcept = default;
 DisjointRangeLockManager::Lock::~Lock() = default;
 DisjointRangeLockManager::Lock& DisjointRangeLockManager::Lock::operator=(
-    DisjointRangeLockManager::Lock&&) = default;
+    DisjointRangeLockManager::Lock&&) noexcept = default;
 
 DisjointRangeLockManager::DisjointRangeLockManager(int level_count)
     : task_runner_(base::SequencedTaskRunnerHandle::Get()) {

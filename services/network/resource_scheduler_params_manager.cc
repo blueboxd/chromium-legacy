@@ -9,13 +9,51 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/features.h"
 
 namespace network {
 
 namespace {
+
+base::Optional<base::TimeDelta> GetMaxWaitTimeP2PConnections() {
+  if (!base::FeatureList::IsEnabled(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P)) {
+    return base::nullopt;
+  }
+
+  int max_wait_time_p2p_connections_in_minutes =
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P,
+          "max_wait_time_p2p_connections_in_minutes", 60);
+
+  return base::TimeDelta::FromMinutes(max_wait_time_p2p_connections_in_minutes);
+}
+
+std::set<int32_t> GetThrottledHashes() {
+  std::set<int32_t> throttled_hashes;
+
+  const std::string& throttled_traffic_annotation_tags =
+      base::GetFieldTrialParamValueByFeature(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P,
+          "throttled_traffic_annotation_tags");
+
+  const std::vector<std::string>& tokens =
+      base::SplitString(throttled_traffic_annotation_tags, ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const std::string& token : tokens) {
+    int int_token;
+    bool successful = base::StringToInt(token, &int_token);
+    if (!successful)
+      continue;
+    throttled_hashes.insert(int_token);
+  }
+  return throttled_hashes;
+}
 
 // The maximum number of delayable requests to allow to be in-flight at any
 // point in time (across all hosts).
@@ -216,12 +254,17 @@ ResourceSchedulerParamsManager::ResourceSchedulerParamsManager(
     const ParamsForNetworkQualityContainer&
         params_for_network_quality_container)
     : params_for_network_quality_container_(
-          params_for_network_quality_container) {}
+          params_for_network_quality_container),
+      max_wait_time_p2p_connections_(GetMaxWaitTimeP2PConnections()),
+      throttled_traffic_annotation_hashes_(GetThrottledHashes()) {}
 
 ResourceSchedulerParamsManager::ResourceSchedulerParamsManager(
     const ResourceSchedulerParamsManager& other)
     : params_for_network_quality_container_(
-          other.params_for_network_quality_container_) {}
+          other.params_for_network_quality_container_),
+      max_wait_time_p2p_connections_(other.max_wait_time_p2p_connections_),
+      throttled_traffic_annotation_hashes_(
+          other.throttled_traffic_annotation_hashes_) {}
 
 ResourceSchedulerParamsManager::~ResourceSchedulerParamsManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -237,6 +280,17 @@ ResourceSchedulerParamsManager::GetParamsForEffectiveConnectionType(
     return iter->second;
   return ParamsForNetworkQuality(kDefaultMaxNumDelayableRequestsPerClient, 0.0,
                                  false, base::nullopt);
+}
+
+bool ResourceSchedulerParamsManager::CanThrottleNetworkTrafficAnnotationHash(
+    const int32_t unique_id_hash_code) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(tbansal): Replace this check by an algorithm that builds history
+  // locally, records exponential weighted moving average of request size per
+  // tag. Next, using this database, the algorithm throttles requests whose tag
+  // cause the most traffic.
+  return throttled_traffic_annotation_hashes_.find(unique_id_hash_code) !=
+         throttled_traffic_annotation_hashes_.end();
 }
 
 }  // namespace network

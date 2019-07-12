@@ -46,9 +46,7 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
   SetObject(ctx->ContextGL()->CreateProgram());
 }
 
-WebGLProgram::~WebGLProgram() {
-  RunDestructor();
-}
+WebGLProgram::~WebGLProgram() = default;
 
 void WebGLProgram::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
   gl->DeleteProgram(object_);

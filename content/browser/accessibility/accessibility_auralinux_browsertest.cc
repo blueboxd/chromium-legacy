@@ -17,16 +17,8 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
-// TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
-#if defined(LEAK_SANITIZER)
-#define MAYBE_TestAtkTextListItem DISABLED_TestAtkTextListItem
-#else
-#define MAYBE_TestAtkTextListItem TestAtkTextListItem
-#endif
-
-// TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
 // TODO(crbug.com/981913): This flakes on linux tsan.
-#if defined(LEAK_SANITIZER) || defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER)
 #define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
   DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
 #else
@@ -741,8 +733,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   g_object_unref(atk_text);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
-                       MAYBE_TestAtkTextListItem) {
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -781,6 +772,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_free(text);
 
   g_object_unref(list_item_1);
+  g_object_unref(list_item_2);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -928,6 +920,7 @@ IN_PROC_BROWSER_TEST_F(
   g_object_unref(child_2);
   g_object_unref(child_3);
   g_object_unref(child_7);
+  g_object_unref(parent_div);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,

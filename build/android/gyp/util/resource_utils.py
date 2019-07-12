@@ -335,7 +335,8 @@ def CreateRJavaFiles(srcjar_dir,
                      rjava_build_options,
                      srcjar_out,
                      custom_root_package_name=None,
-                     grandparent_custom_package_name=None):
+                     grandparent_custom_package_name=None,
+                     extra_main_r_text_files=None):
   """Create all R.java files for a set of packages and R.txt files.
 
   Args:
@@ -358,6 +359,7 @@ def CreateRJavaFiles(srcjar_dir,
       as the grandparent_custom_package_name. The format of this package name
       is identical to custom_root_package_name.
       (eg. for vr grandparent_custom_package_name would be "base")
+    extra_main_r_text_files: R.txt files to be added to the root R.java file.
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
@@ -378,12 +380,23 @@ def CreateRJavaFiles(srcjar_dir,
   all_resources = {}
   all_resources_by_type = collections.defaultdict(list)
 
-  for entry in _ParseTextSymbolsFile(main_r_txt_file, fix_package_ids=True):
-    all_resources[(entry.resource_type, entry.name)] = entry
-    all_resources_by_type[entry.resource_type].append(entry)
-    assert entry.resource_type in _ALL_RESOURCE_TYPES, (
-        'Unknown resource type: %s, add to _ALL_RESOURCE_TYPES!' %
-        entry.resource_type)
+  main_r_text_files = [main_r_txt_file]
+  if extra_main_r_text_files:
+    main_r_text_files.extend(extra_main_r_text_files)
+  for r_txt_file in main_r_text_files:
+    for entry in _ParseTextSymbolsFile(r_txt_file, fix_package_ids=True):
+      entry_key = (entry.resource_type, entry.name)
+      if entry_key in all_resources:
+        assert entry == all_resources[entry_key], (
+            'Input R.txt %s provided a duplicate resource with a different '
+            'entry value. Got %s, expected %s.' % (r_txt_file, entry,
+                                                   all_resources[entry_key]))
+      else:
+        all_resources[entry_key] = entry
+        all_resources_by_type[entry.resource_type].append(entry)
+        assert entry.resource_type in _ALL_RESOURCE_TYPES, (
+            'Unknown resource type: %s, add to _ALL_RESOURCE_TYPES!' %
+            entry.resource_type)
 
   if custom_root_package_name:
     # Custom package name is available, thus use it for root_r_java_package.

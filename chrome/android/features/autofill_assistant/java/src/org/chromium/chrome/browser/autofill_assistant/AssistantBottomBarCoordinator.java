@@ -257,7 +257,8 @@ class AssistantBottomBarCoordinator
 
     /** Request showing the Assistant bottom bar view and expand the sheet. */
     public void showAndExpand() {
-        BottomSheetUtils.showContentAndExpand(mBottomSheetController, mContent);
+        BottomSheetUtils.showContentAndExpand(
+                mBottomSheetController, mContent, /* animate= */ true);
     }
 
     /** Hide the Assistant bottom bar view. */

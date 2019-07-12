@@ -31,10 +31,10 @@ AddSupervisionHandler::AddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request,
     content::WebUI* web_ui,
     Delegate* delegate)
-    : binding_(this, std::move(request)),
-      web_ui_(web_ui),
+    : web_ui_(web_ui),
       identity_manager_(
           IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))),
+      binding_(this, std::move(request)),
       delegate_(delegate) {}
 
 AddSupervisionHandler::~AddSupervisionHandler() = default;

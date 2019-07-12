@@ -495,36 +495,36 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
 }
 
-// Tests that addition of a touch handler during a touch sequence will not cause
-// the remaining sequence to be forwarded.
+// Tests that addition of a touch handler during a touch sequence will continue
+// forwarding events.
 TEST_F(PassthroughTouchEventQueueTest,
-       ActiveSequenceNotForwardedWhenHandlersAdded) {
+       ActiveSequenceStillForwardedWhenHandlersAdded) {
   OnHasTouchEventHandlers(false);
 
   // Send a touch-press event while there is no handler.
   PressTouchPoint(1, 1);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
 
   OnHasTouchEventHandlers(true);
 
-  // The remaining touch sequence should not be forwarded.
+  // The remaining touch sequence should be forwarded.
   MoveTouchPoint(0, 5, 5);
   ReleaseTouchPoint(0);
-  EXPECT_EQ(2U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+  EXPECT_EQ(3U, queued_event_count());
 
-  // A new touch sequence should resume forwarding.
+  // A new touch sequence should continue forwarding.
   PressTouchPoint(1, 1);
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(4U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 }
 
-// Tests that removal of a touch handler during a touch sequence will prevent
-// the remaining sequence from being forwarded, even if another touch handler is
-// registered during the same touch sequence.
+// Tests that removal of a touch handler during a touch sequence will not
+// prevent the remaining sequence from being forwarded, even if another touch
+// handler is registered during the same touch sequence.
 TEST_F(PassthroughTouchEventQueueTest,
        ActiveSequenceDroppedWhenHandlersRemoved) {
   // Send a touch-press event.
@@ -543,8 +543,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
-  // Repeated registration/unregstration of handlers should have no effect as
-  // we're still awaiting the ack arrival.
+  // Repeated registration/unregstration of handlers should have no effect.
   OnHasTouchEventHandlers(true);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
@@ -552,30 +551,30 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
-  // clear the queue .
+  // Clear the queue.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
-  // Events should be dropped while there is no touch handler.
+  // Events should still be forwarded while there is no touch handler.
   MoveTouchPoint(0, 10, 10);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Simulate touch handler registration in the middle of a touch sequence.
   OnHasTouchEventHandlers(true);
 
   // The touch end for the interrupted sequence should be dropped.
   ReleaseTouchPoint(0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // A new touch sequence should be forwarded properly.
   PressTouchPoint(1, 1);
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(3U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 }
 
@@ -626,16 +625,14 @@ TEST_F(PassthroughTouchEventQueueTest, SpuriousAcksIgnored) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
-// Tests that touch-move events are not sent to the renderer if the preceding
-// touch-press event did not have a consumer (and consequently, did not hit the
-// main thread in the renderer).
+// Tests that touch-move events are still sent to the renderer even if the
+// preceding touch-press event did not have a consumer.
 TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   // The first touch-press should reach the renderer.
   PressTouchPoint(1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
-  // The second touch should be sent since we don't know if there is
-  // a consumer or not.
+  // The second touch should be sent too.
   MoveTouchPoint(0, 5, 5);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, queued_event_count());
@@ -647,14 +644,13 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
-  // Send a release event. This should not reach the renderer.
+  // Send a release event. This should reach the renderer.
   ReleaseTouchPoint(0);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchEnd, acked_event().GetType());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // Send a press-event, followed by move a following move should not
-  // be sent but held in the queue.
+  // Send a press-event, followed by a move should be sent.
   PressTouchPoint(10, 10);
   MoveTouchPoint(0, 5, 5);
 
@@ -663,11 +659,11 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 6, 5);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(3U, queued_event_count());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(2U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
 TEST_F(PassthroughTouchEventQueueTest, AckTouchEventInReverse) {
@@ -844,25 +840,26 @@ TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
 }
 
-// Tests basic TouchEvent forwarding suppression.
+// Tests that basic TouchEvent forwarding suppression has been disabled.
 TEST_F(PassthroughTouchEventQueueTest, NoTouchBasic) {
-  // Disable TouchEvent forwarding.
+  // The old behaviour was to suppress events when there were no handlers.
+  // Signal the no-handler case and test that events still get forwarded.
   OnHasTouchEventHandlers(false);
   PressTouchPoint(30, 5);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // TouchMove should not be sent to renderer.
+  // TouchMove should be sent to renderer.
   MoveTouchPoint(0, 65, 10);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // TouchEnd should not be sent to renderer.
+  // TouchEnd should be sent to renderer.
   ReleaseTouchPoint(0);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // Enable TouchEvent forwarding.
+  // Signal handlers-present and make sure events are still getting forwarded.
   OnHasTouchEventHandlers(true);
 
   PressTouchPoint(80, 10);
@@ -1172,23 +1169,23 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // Ack the cancel event.  Normally, this would resume touch forwarding,
+  // Ack the cancel event. Normally, this would resume touch forwarding,
   // but we're still within a scroll gesture so it remains disabled.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // Try to forward touch events for the current sequence.
+  // Forward touch events for the current sequence.
   GetAndResetSentEventCount();
   GetAndResetAckedEventCount();
   MoveTouchPoint(0, 1, 1);
   ReleaseTouchPoint(0);
-  EXPECT_FALSE(IsTimeoutRunning());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, GetAndResetAckedEventCount());
+  EXPECT_TRUE(IsTimeoutRunning());
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
-  // Now end the scroll sequence, resuming touch handling.
+  // Now end the scroll sequence.
   SendGestureEvent(blink::WebInputEvent::kGestureScrollEnd);
   PressTouchPoint(0, 1);
   EXPECT_TRUE(IsTimeoutRunning());
@@ -1385,11 +1382,11 @@ TEST_F(PassthroughTouchEventQueueTest,
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Events should not be forwarded, as the point had no consumer.
+  // Events should be forwarded, even though the point had no consumer.
   MoveTouchPoint(0, 0, 15);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Simulate a secondary pointer press.
   PressTouchPoint(20, 0);
@@ -1399,7 +1396,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // TouchMove with a secondary pointer should not be suppressed.
   MoveTouchPoint(1, 25, 0);
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1420,8 +1417,8 @@ TEST_F(PassthroughTouchEventQueueTest,
                                   WebInputEvent::GetStaticTimeStampForTests());
   SetFollowupEvent(followup_scroll);
   MoveTouchPoint(0, 20, 5);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 
   // The secondary pointer press should be forwarded.
@@ -1432,7 +1429,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // TouchMove with a secondary pointer should also be forwarded.
   MoveTouchPoint(1, 25, 0);
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1566,11 +1563,11 @@ TEST_F(PassthroughTouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Give the touchmove a valid id after release it shouldn't be sent.
+  // Give the touchmove a valid id after release; it should be sent.
   event.touches[0].id = press_id;
   SendTouchEvent(event);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
 // Tests that touch points states are correct in TouchMove events.
@@ -1795,14 +1792,14 @@ TEST_F(PassthroughTouchEventQueueTest, TouchScrollStartedUnfiltered) {
             FilterBeforeForwarding(event));
 }
 
-TEST_F(PassthroughTouchEventQueueTest, TouchStartWithoutPageHandlersFiltered) {
+TEST_F(PassthroughTouchEventQueueTest,
+       TouchStartWithoutPageHandlersUnfiltered) {
   OnHasTouchEventHandlers(false);
   SyntheticWebTouchEvent event;
   event.PressPoint(1, 1);
 
-  EXPECT_EQ(
-      PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
-      FilterBeforeForwarding(event));
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchStartWithPageHandlersUnfiltered) {
@@ -1831,7 +1828,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredAfterTimeout) {
             FilterBeforeForwarding(event));
 }
 
-TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithoutPageHandlersFiltered) {
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithoutPageHandlersUnfiltered) {
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.
   PressTouchPoint(1, 1);
@@ -1840,9 +1837,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithoutPageHandlersFiltered) {
   int id = event.PressPoint(1, 1);
   event.MovePoint(id, 2, 2);
 
-  EXPECT_EQ(
-      PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
-      FilterBeforeForwarding(event));
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
 }
 
 TEST_F(PassthroughTouchEventQueueTest, StationaryTouchMoveFiltered) {
@@ -1912,7 +1908,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithNonTouchMoveUnfiltered) {
 }
 
 TEST_F(PassthroughTouchEventQueueTest,
-       TouchMoveWithoutSequenceHandlerFiltered) {
+       TouchMoveWithoutSequenceHandlerUnfiltered) {
   OnHasTouchEventHandlers(true);
   // Start the touch sequence.
   PressTouchPoint(1, 1);
@@ -1920,13 +1916,12 @@ TEST_F(PassthroughTouchEventQueueTest,
   // Send an ack indicating that there's no handler for the current sequence.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
-  // Any subsequent touches in the sequence should be filtered.
+  // Any subsequent touches in the sequence should be unfiltered.
   SyntheticWebTouchEvent event;
   int id = event.PressPoint(1, 1);
   event.MovePoint(id, 3, 3);
 
-  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::
-                kFilteredNoHandlerForSequence,
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
             FilterBeforeForwarding(event));
 }
 

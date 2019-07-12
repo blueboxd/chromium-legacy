@@ -58,7 +58,8 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // remaining. If a payment handler does not have any valid payment method
   // names, then it's not included in the returned set of handlers.
   using VerifyCallback =
-      base::OnceCallback<void(content::PaymentAppProvider::PaymentApps)>;
+      base::OnceCallback<void(content::PaymentAppProvider::PaymentApps,
+                              const std::string& error_message)>;
 
   // Creates the verifier and starts up the parser utility process.
   // The owner of ManifestVerifier owns |downloader|, |parser| and
@@ -88,7 +89,8 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   void OnPaymentMethodManifestDownloaded(
       const GURL& method_manifest_url,
       const GURL& unused_method_manifest_url_after_redirects,
-      const std::string& content);
+      const std::string& content,
+      const std::string& error_message);
 
   // Called when a manifest is parsed.
   void OnPaymentMethodManifestParsed(
@@ -152,6 +154,10 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // manifests will be stored in cache and possibly will be used for caching.
   // Once this number reaches 0, the resource usage callback is invoked.
   size_t number_of_manifests_to_download_;
+
+  // The first error message (if any) to be forwarded to the merchant when
+  // rejecting the promise returned from PaymentRequest.show().
+  std::string first_error_message_;
 
   base::WeakPtrFactory<ManifestVerifier> weak_ptr_factory_;
 

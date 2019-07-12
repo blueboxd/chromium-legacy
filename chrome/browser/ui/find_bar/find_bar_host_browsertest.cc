@@ -25,10 +25,11 @@
 #include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/find_in_page_observer.h"
+#include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -563,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
+  find_tab_helper->StopFinding(FindOnPageSelectionAction::kKeep);
 }
 
 // This tests that we start searching after selected text.
@@ -1044,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
       browser()->tab_strip_model()->GetActiveWebContents());
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
-  find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
+  find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
   ASSERT_TRUE(find_tab_helper->find_ui_active());
@@ -1073,8 +1074,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 
   // End the Find session, thereby making the next F3 start afresh.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Simulate F3 while Find box is closed. Should have 1 match.
   EXPECT_EQ(1, FindInPageASCII(web_contents, "", kFwd, kIgnoreCase, &ordinal));
@@ -1122,8 +1122,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Switch back to first tab.
   browser()->tab_strip_model()->ActivateTabAt(0);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   // Simulate F3.
   ui_test_utils::FindInPage(web_contents_1, base::string16(),
                             kFwd, kIgnoreCase, &ordinal, NULL);
@@ -1159,8 +1158,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Open the Find box again.
   EnsureFindBoxOpen();
@@ -1229,8 +1227,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Now create a second tab and load the same page.
   chrome::AddTabAt(browser(), GURL(), -1, true);
@@ -1255,8 +1252,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Re-open the Find box.
   // This is a special case: previous search in WebContents used to get cleared
@@ -1293,8 +1289,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
@@ -1321,8 +1316,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
 
   // Close the Find box.
   incognito_browser->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
 
   // Now open a new tab in the original (non-incognito) browser.
   chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
@@ -1355,7 +1349,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&web_contents->GetController()));
-  find_tab_helper->StopFinding(FindBarController::kActivateSelectionOnPage);
+  find_tab_helper->StopFinding(FindOnPageSelectionAction::kActivate);
   observer.Wait();
 }
 
@@ -1509,14 +1503,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
   // Close the find bar.
   FindTabHelper* find_tab_helper =
       FindTabHelper::FromWebContents(web_contents_incognito);
-  find_tab_helper->StopFinding(FindBarController::kActivateSelectionOnPage);
+  find_tab_helper->StopFinding(FindOnPageSelectionAction::kActivate);
 
   // Cmd + G triggers IDC_FIND_NEXT command. Thus we test FindInPage()
   // method from browser_commands.cc. FindInPage16() bypasses it.
   EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_FIND_NEXT));
-  ui_test_utils::FindInPageNotificationObserver observer(
-      web_contents_incognito);
-  observer.Wait();
+  ui_test_utils::FindResultWaiter(web_contents_incognito).Wait();
   EXPECT_EQ(ASCIIToUTF16("foo"),
             GetFindBarTextForBrowser(browser_incognito));
   EXPECT_EQ(ASCIIToUTF16("2/2"),
@@ -1547,9 +1539,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_FIND_NEXT));
   WebContents* web_contents_incognito =
       browser_incognito->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::FindInPageNotificationObserver observer(
-      web_contents_incognito);
-  observer.Wait();
+  ui_test_utils::FindResultWaiter(web_contents_incognito).Wait();
   EXPECT_EQ(ASCIIToUTF16("bar"),
             GetFindBarTextForBrowser(browser_incognito));
 }

@@ -85,21 +85,25 @@ public class MostVisitedSitesBridge
 
     @Override
     public void addBlacklistedUrl(String url) {
+        if (mNativeMostVisitedSitesBridge == 0) return;
         nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSitesBridge, url, true);
     }
 
     @Override
     public void removeBlacklistedUrl(String url) {
+        if (mNativeMostVisitedSitesBridge == 0) return;
         nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSitesBridge, url, false);
     }
 
     @Override
     public void recordPageImpression(int tilesCount) {
+        if (mNativeMostVisitedSitesBridge == 0) return;
         nativeRecordPageImpression(mNativeMostVisitedSitesBridge, tilesCount);
     }
 
     @Override
     public void recordTileImpression(Tile tile) {
+        if (mNativeMostVisitedSitesBridge == 0) return;
         nativeRecordTileImpression(mNativeMostVisitedSitesBridge, tile.getIndex(), tile.getType(),
                 tile.getIconType(), tile.getTitleSource(), tile.getSource(),
                 tile.getData().dataGenerationTime.getTime(), tile.getUrl());
@@ -107,6 +111,7 @@ public class MostVisitedSitesBridge
 
     @Override
     public void recordOpenedMostVisitedItem(Tile tile) {
+        if (mNativeMostVisitedSitesBridge == 0) return;
         nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, tile.getIndex(),
                 tile.getType(), tile.getTitleSource(), tile.getSource(),
                 tile.getData().dataGenerationTime.getTime());

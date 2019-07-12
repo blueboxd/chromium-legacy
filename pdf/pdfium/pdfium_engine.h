@@ -38,7 +38,10 @@
 namespace chrome_pdf {
 
 class PDFiumDocument;
+
+namespace draw_utils {
 class ShadowMatrix;
+}
 
 class PDFiumEngine : public PDFEngine,
                      public DocumentLoader::Client,
@@ -394,9 +397,8 @@ class PDFiumEngine : public PDFEngine,
   // Returns the currently visible rectangle in document coordinates.
   pp::Rect GetVisibleRect() const;
 
-  // Given a rectangle in document coordinates, returns the rectange into screen
-  // coordinates (i.e. 0,0 is top left corner of plugin area).  If it's not
-  // visible, an empty rectangle is returned.
+  // Given |rect| in document coordinates, returns the rectangle in screen
+  // coordinates. (i.e. 0,0 is top left corner of plugin area)
   pp::Rect GetScreenRect(const pp::Rect& rect) const;
 
   // Given an image |buffer| with |stride|, highlights |rect|.
@@ -649,7 +651,7 @@ class PDFiumEngine : public PDFEngine,
   base::TimeDelta progressive_paint_timeout_;
 
   // Shadow matrix for generating the page shadow bitmap.
-  std::unique_ptr<ShadowMatrix> page_shadow_;
+  std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
 
   // While true, the document try to be opened and parsed after download each
   // part. Else the document will be opened and parsed only on finish of

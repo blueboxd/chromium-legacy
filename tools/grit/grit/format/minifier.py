@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Framework for stripping whitespace and comments from resource files"""
 
+from __future__ import print_function
+
 from os import path
 import subprocess
 import sys
@@ -26,7 +28,7 @@ def Minify(source, filename):
       stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate(source)
   if p.returncode != 0:
-    print 'Minification failed for %s' % filename
-    print stderr
+    print('Minification failed for %s' % filename)
+    print(stderr)
     sys.exit(p.returncode)
   return stdout

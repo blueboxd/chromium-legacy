@@ -143,8 +143,6 @@ class Command(object):
       _Method.DELETE, '/session/:sessionId/session_storage')
   GET_SESSION_STORAGE_SIZE = (
       _Method.GET, '/session/:sessionId/session_storage/size')
-  GET_SCREEN_ORIENTATION = (_Method.GET, '/session/:sessionId/orientation')
-  SET_SCREEN_ORIENTATION = (_Method.POST, '/session/:sessionId/orientation')
   MOUSE_CLICK = (_Method.POST, '/session/:sessionId/click')
   MOUSE_DOUBLE_CLICK = (_Method.POST, '/session/:sessionId/doubleclick')
   MOUSE_BUTTON_DOWN = (_Method.POST, '/session/:sessionId/buttondown')

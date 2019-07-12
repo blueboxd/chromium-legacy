@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/snapshots/fake_snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -61,8 +60,6 @@ class ShareToDataBuilderTest : public PlatformTest {
                                          [[NSUUID UUID] UUIDString]);
     delegate_ = [[FakeSnapshotGeneratorDelegate alloc] init];
     SnapshotTabHelper::FromWebState(web_state_.get())->SetDelegate(delegate_);
-    LegacyTabHelper::CreateForWebState(web_state_.get());
-
     // Needed by the ShareToDataForWebState to get the tab title.
     DownloadManagerTabHelper::CreateForWebState(web_state_.get(),
                                                 /*delegate=*/nullptr);
@@ -102,7 +99,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNpShareUrl) {
 
   const CGSize size = CGSizeMake(40, 40);
   EXPECT_TRUE(UIImagesAreEqual(
-      actual_data.thumbnailGenerator(size),
+      [actual_data.thumbnailGenerator thumbnailWithSize:size],
       UIImageWithSizeAndSolidColor(size, [UIColor blueColor])));
 }
 
@@ -121,7 +118,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNoShareUrl) {
 
   const CGSize size = CGSizeMake(40, 40);
   EXPECT_TRUE(UIImagesAreEqual(
-      actual_data.thumbnailGenerator(size),
+      [actual_data.thumbnailGenerator thumbnailWithSize:size],
       UIImageWithSizeAndSolidColor(size, [UIColor blueColor])));
 }
 

@@ -22,8 +22,8 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   static void Show(const Browser* browser);
 
  private:
-  // Use Show() above.
-  HatsWebDialog();
+  // Use Show() above. |site_id| is used to select the survey.
+  explicit HatsWebDialog(const std::string& site_id);
   ~HatsWebDialog() override;
 
   // ui::WebDialogDelegate implementation.
@@ -44,6 +44,7 @@ class HatsWebDialog : public ui::WebDialogDelegate {
                          const content::ContextMenuParams& params) override;
 
   const std::string html_data_;
+  const std::string site_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsWebDialog);
 };

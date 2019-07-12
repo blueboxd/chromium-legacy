@@ -43,6 +43,7 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
     private View mHeaderView;
     private TextView mTitle;
     private TextView mUrl;
+    private View mTitleAndUrl;
     private RoundedCornerImageView mImage;
     private View mCircleBg;
     private PropertyModel mModel;
@@ -61,6 +62,7 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
             mHeaderView = getActivity().findViewById(android.R.id.content);
             mTitle = mHeaderView.findViewById(R.id.menu_header_title);
             mUrl = mHeaderView.findViewById(R.id.menu_header_url);
+            mTitleAndUrl = mHeaderView.findViewById(R.id.title_and_url);
             mImage = mHeaderView.findViewById(R.id.menu_header_image);
             mCircleBg = mHeaderView.findViewById(R.id.circle_background);
         });
@@ -131,8 +133,10 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testUrlClick() {
+        // Even though the click event expands/shrinks the url, the click target is the LinearLayout
+        // that contains the title and the url to give the user more area to touch.
         assertFalse("URL has onClickListeners when it shouldn't, yet, have.",
-                mUrl.hasOnClickListeners());
+                mTitleAndUrl.hasOnClickListeners());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(RevampedContextMenuHeaderProperties.URL, URL_STRING);
@@ -146,14 +150,14 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
                             RevampedContextMenuHeaderProperties.URL_MAX_LINES, Integer.MAX_VALUE);
                 }
             });
-            mUrl.callOnClick();
+            mTitleAndUrl.callOnClick();
         });
 
         assertThat("Incorrect max line count for URL.", mUrl.getMaxLines(),
                 equalTo(Integer.MAX_VALUE));
         assertNull("URL is ellipsized when it shouldn't be.", mUrl.getEllipsize());
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mUrl.callOnClick(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mTitleAndUrl.callOnClick(); });
 
         assertThat("Incorrect max line count for URL.", mUrl.getMaxLines(), equalTo(URL_MAX_COUNT));
         assertThat("Incorrect URL ellipsize mode.", mUrl.getEllipsize(),

@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -192,6 +193,13 @@ class ActivityServiceControllerTest : public PlatformTest {
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [[UIApplication sharedApplication] keyWindow].rootViewController =
         parentController_;
+    // Setting the |test_web_state_| to incognito to avoid using the snapshot
+    // genrator to create a thumbnail via the |thumbnail_generator_|.
+    test_web_state_.SetBrowserState(
+        chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+    thumbnail_generator_ = [[ChromeActivityItemThumbnailGenerator alloc]
+        initWithWebState:&test_web_state_];
+
     shareData_ =
         [[ShareToData alloc] initWithShareURL:GURL("https://chromium.org")
                                    visibleURL:GURL("https://chromium.org")
@@ -200,16 +208,12 @@ class ActivityServiceControllerTest : public PlatformTest {
                               isPagePrintable:YES
                              isPageSearchable:YES
                                     userAgent:web::UserAgentType::MOBILE
-                           thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                           thumbnailGenerator:thumbnail_generator_];
   }
 
   void TearDown() override {
     [[UIApplication sharedApplication] keyWindow].rootViewController = nil;
     PlatformTest::TearDown();
-  }
-
-  ThumbnailGeneratorBlock DummyThumbnailGeneratorBlock() {
-    return ^UIImage*(CGSize const& size) { return nil; };
   }
 
   BOOL ArrayContainsImageSource(NSArray* array) {
@@ -319,6 +323,8 @@ class ActivityServiceControllerTest : public PlatformTest {
   ShareToData* shareData_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   bookmarks::BookmarkModel* bookmark_model_;
+  ChromeActivityItemThumbnailGenerator* thumbnail_generator_;
+  web::TestWebState test_web_state_;
 };
 
 TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
@@ -364,7 +370,7 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* findLoginAction =
       (NSString*)activity_services::kUTTypeAppExtensionFindLoginAction;
@@ -428,7 +434,7 @@ TEST_F(ActivityServiceControllerTest,
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* shareAction = @"com.apple.UIKit.activity.PostToFacebook";
   NSArray* urlItems =
@@ -532,7 +538,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
@@ -551,7 +557,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
          isPagePrintable:NO
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_
@@ -575,7 +581,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
@@ -592,7 +598,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::MOBILE
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                            thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_
@@ -614,7 +620,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::NONE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
@@ -642,7 +648,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_
@@ -672,7 +678,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
   id mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
   OCMExpect([mockDispatcher requestDesktopSite]);
   NSArray* items =
@@ -698,7 +704,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::DESKTOP
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                            thumbnailGenerator:thumbnail_generator_];
   mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
   OCMExpect([mockDispatcher requestMobileSite]);
   items = [activityController applicationActivitiesForData:data
@@ -816,7 +822,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
@@ -835,7 +841,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
          isPagePrintable:YES
         isPageSearchable:NO
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_
@@ -859,7 +865,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
@@ -882,7 +888,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
@@ -900,7 +906,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::NONE
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                            thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_

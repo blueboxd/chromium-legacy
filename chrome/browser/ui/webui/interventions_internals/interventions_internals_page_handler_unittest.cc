@@ -54,6 +54,8 @@ constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 constexpr char kLitePageRedirectHtmlId[] = "lite-page-redirect-status";
 constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
+constexpr char kDeferAllScriptPreviewsHtmlId[] =
+    "defer-all-script-preview-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 
 // Descriptions for previews.
@@ -63,6 +65,7 @@ constexpr char kLitePageRedirectDescription[] =
     "Lite Page Redirect / Server Previews";
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
+constexpr char kDeferAllScriptPreviewsDescription[] = "DeferAllScript Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
 
 // The HTML DOM ID used in Javascript.
@@ -70,6 +73,7 @@ constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 constexpr char kLitePageRedirectFlagHtmlId[] = "lite-page-redirect-flag";
 constexpr char kResourceLoadingHintsFlagHtmlId[] =
     "resource-loading-hints-flag";
+constexpr char kDeferAllScriptFlagHtmlId[] = "defer-all-script-flag";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
 constexpr char kEctFlagHtmlId[] = "ect-flag";
 constexpr char kIgnorePreviewsBlacklistFlagHtmlId[] =
@@ -84,6 +88,8 @@ constexpr char kLitePageRedirectFlagLink[] =
     "chrome://flags/#enable-lite-page-server-previews";
 constexpr char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
+constexpr char kDeferAllScriptFlagLink[] =
+    "chrome://flags/#enable-defer-all-script";
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 constexpr char kEctFlagLink[] =
     "chrome://flags/#force-effective-connection-type";
@@ -96,6 +102,7 @@ constexpr char kDataSaverAltConfigLink[] =
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
 constexpr char kLitePageRedirectFeatureName[] = "LitePageServerPreviews";
 constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
+constexpr char kDeferAllScriptFeatureName[] = "DeferAllScriptPreviews";
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
 
 constexpr char kDefaultFlagValue[] = "Default";
@@ -325,7 +332,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 5;
+  constexpr size_t expected = 6;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -464,11 +471,39 @@ TEST_F(InterventionsInternalsPageHandlerTest, LitePageRedirectEnabled) {
   EXPECT_TRUE(resource_loading_hints->second->enabled);
 }
 
+TEST_F(InterventionsInternalsPageHandlerTest, DeferAllScriptPreviewsDisabled) {
+  // Init with kDeferAllScriptPreviews disabled.
+  scoped_feature_list_->InitWithFeatures(
+      {}, {previews::features::kDeferAllScriptPreviews});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto defer_all_script = passed_in_modes.find(kDeferAllScriptPreviewsHtmlId);
+  ASSERT_NE(passed_in_modes.end(), defer_all_script);
+  EXPECT_EQ(kDeferAllScriptPreviewsDescription,
+            defer_all_script->second->description);
+  EXPECT_FALSE(defer_all_script->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, DeferAllScriptPreviewsEnabled) {
+  // Init with kDeferAllScriptPreviews enabled.
+  scoped_feature_list_->InitWithFeatures(
+      {previews::features::kDeferAllScriptPreviews}, {});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto defer_all_script = passed_in_modes.find(kDeferAllScriptPreviewsHtmlId);
+  ASSERT_NE(passed_in_modes.end(), defer_all_script);
+  EXPECT_EQ(kDeferAllScriptPreviewsDescription,
+            defer_all_script->second->description);
+  EXPECT_TRUE(defer_all_script->second->enabled);
+}
+
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 8;
+  constexpr size_t expected = 9;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -660,6 +695,53 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(kDisabledFlagValue, resource_loading_hints_flag->second->value);
   EXPECT_EQ(kResourceLoadingHintsFlagLink,
             resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsDeferAllScriptDefaultValue) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto defer_all_script_flag = passed_in_flags.find(kDeferAllScriptFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), defer_all_script_flag);
+  EXPECT_EQ(flag_descriptions::kEnableDeferAllScriptName,
+            defer_all_script_flag->second->description);
+  EXPECT_EQ(kDefaultFlagValue, defer_all_script_flag->second->value);
+  EXPECT_EQ(kDeferAllScriptFlagLink, defer_all_script_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsDeferAllScriptEnabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                  kDeferAllScriptFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto defer_all_script_flag = passed_in_flags.find(kDeferAllScriptFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), defer_all_script_flag);
+  EXPECT_EQ(flag_descriptions::kEnableDeferAllScriptName,
+            defer_all_script_flag->second->description);
+  EXPECT_EQ(kEnabledFlagValue, defer_all_script_flag->second->value);
+  EXPECT_EQ(kDeferAllScriptFlagLink, defer_all_script_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsDeferAllScriptDisabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                  kDeferAllScriptFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto defer_all_script_flag = passed_in_flags.find(kDeferAllScriptFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), defer_all_script_flag);
+  EXPECT_EQ(flag_descriptions::kEnableDeferAllScriptName,
+            defer_all_script_flag->second->description);
+  EXPECT_EQ(kDisabledFlagValue, defer_all_script_flag->second->value);
+  EXPECT_EQ(kDeferAllScriptFlagLink, defer_all_script_flag->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,

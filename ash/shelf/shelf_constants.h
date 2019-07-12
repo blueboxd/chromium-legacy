@@ -89,18 +89,6 @@ constexpr int kShelfTooltipPreviewMaxWidth = 192;
 constexpr float kShelfTooltipPreviewMaxRatio = 1.5;    // = 3/2
 constexpr float kShelfTooltipPreviewMinRatio = 0.666;  // = 2/3
 
-// Kiosk Next shelf constants.
-// TODO(agawronska): Make it a part of theme.
-
-// Size of the space between control buttons on the shelf. Changes within
-// orientation.
-constexpr int kKioskNextShelfControlSpacingPortraitDp = 96;
-constexpr int kKioskNextShelfControlSpacingLandscapeDp = 122;
-
-// Size of the shelf control buttons (back and home).
-constexpr int kKioskNextShelfControlWidthDp = 64;
-constexpr int kKioskNextShelfControlHeightDp = 40;
-
 class ShelfConstants {
  public:
   // Size of the shelf when visible (height when the shelf is horizontal and

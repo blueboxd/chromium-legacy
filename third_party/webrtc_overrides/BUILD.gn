@@ -61,7 +61,6 @@ static_library("init_webrtc") {
   ]
   deps = [
     ":metrics",
-    ":task_queue_impl",
     "//base",
     "//third_party/webrtc/rtc_base",
     "//third_party/webrtc/system_wrappers",
@@ -97,19 +96,6 @@ source_set("libjingle_webrtc_common") {
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/pc:rtc_pc",
     "//third_party/webrtc/system_wrappers",
-  ]
-}
-
-# TODO(bugs.webrtc.org/10284): Remove when TaskQueue factory is propagated
-# explicetely to all components that needs it.
-source_set("task_queue_impl") {
-  sources = [
-    "task_queue_impl.cc",
-  ]
-  configs += [ "//third_party/webrtc:library_impl_config" ]
-  deps = [
-    ":task_queue_factory",
-    "//third_party/webrtc/api/task_queue",
   ]
 }
 

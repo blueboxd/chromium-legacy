@@ -201,16 +201,34 @@ bool AccessibilityTreeFormatterBase::MatchesNodeFilters(
 }
 
 base::string16 AccessibilityTreeFormatterBase::FormatCoordinates(
-    const char* name,
-    const char* x_name,
-    const char* y_name,
-    const base::DictionaryValue& value) {
+    const base::DictionaryValue& value,
+    const std::string& name,
+    const std::string& x_name,
+    const std::string& y_name) {
   int x, y;
   value.GetInteger(x_name, &x);
   value.GetInteger(y_name, &y);
-  std::string xy_str(base::StringPrintf("%s=(%d, %d)", name, x, y));
+  std::string xy_str(base::StringPrintf("%s=(%d, %d)", name.c_str(), x, y));
 
   return base::UTF8ToUTF16(xy_str);
+}
+
+base::string16 AccessibilityTreeFormatterBase::FormatRectangle(
+    const base::DictionaryValue& value,
+    const std::string& name,
+    const std::string& left_name,
+    const std::string& top_name,
+    const std::string& width_name,
+    const std::string& height_name) {
+  int left, top, width, height;
+  value.GetInteger(left_name, &left);
+  value.GetInteger(top_name, &top);
+  value.GetInteger(width_name, &width);
+  value.GetInteger(height_name, &height);
+  std::string rect_str(base::StringPrintf("%s=(%d, %d, %d, %d)", name.c_str(),
+                                          left, top, width, height));
+
+  return base::UTF8ToUTF16(rect_str);
 }
 
 bool AccessibilityTreeFormatterBase::WriteAttribute(bool include_by_default,

@@ -8802,9 +8802,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
 
-  // Simulate a user gesture.
-  root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
+  // Simulate a user gesture. ExecuteScript internally also sends a user
+  // gesture.
+  script = "a=5";
+  EXPECT_TRUE(content::ExecuteScript(shell()->web_contents(), script));
 
   // We now have (After user gesture)
   // [skippable_url(skip), redirected_url, push_state_url1*, push_state_url2,

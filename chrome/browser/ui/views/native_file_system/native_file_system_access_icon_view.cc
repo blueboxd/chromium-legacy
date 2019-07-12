@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_usage_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -51,15 +52,33 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
   url::Origin origin =
       url::Origin::Create(GetWebContents()->GetLastCommittedURL());
 
-  // TODO(https://crbug.com/979684): Display actual files and directories,
-  // rather than these random hard coded values.
-  NativeFileSystemUsageBubbleView::Usage usage;
-  usage.readable_directories.emplace_back(FILE_PATH_LITERAL("My Fonts"));
-  usage.writable_files.emplace_back(FILE_PATH_LITERAL("/foo/bar/demo.txt"));
-  usage.writable_files.emplace_back(FILE_PATH_LITERAL("README.md"));
-  usage.writable_directories.emplace_back(FILE_PATH_LITERAL("My Project"));
-  NativeFileSystemUsageBubbleView::ShowBubble(GetWebContents(), origin,
-                                              std::move(usage));
+  ChromeNativeFileSystemPermissionContext::GetPermissionGrantsFromUIThread(
+      GetWebContents()->GetBrowserContext(), origin,
+      base::BindOnce(
+          [](int frame_tree_node_id, const url::Origin& origin,
+             ChromeNativeFileSystemPermissionContext::Grants grants) {
+            auto* web_contents =
+                content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+            if (!web_contents ||
+                url::Origin::Create(web_contents->GetLastCommittedURL()) !=
+                    origin) {
+              // If web-contents has navigated to a different origin while we
+              // were looking up current usage, don't show the dialog to avoid
+              // showing the dialog for the wrong origin.
+              return;
+            }
+
+            NativeFileSystemUsageBubbleView::Usage usage;
+            usage.readable_directories =
+                web_contents->GetNativeFileSystemDirectoryHandles();
+            usage.writable_files = std::move(grants.file_write_grants);
+            usage.writable_directories =
+                std::move(grants.directory_write_grants);
+
+            NativeFileSystemUsageBubbleView::ShowBubble(web_contents, origin,
+                                                        std::move(usage));
+          },
+          GetWebContents()->GetMainFrame()->GetFrameTreeNodeId(), origin));
 }
 
 const gfx::VectorIcon& NativeFileSystemAccessIconView::GetVectorIcon() const {

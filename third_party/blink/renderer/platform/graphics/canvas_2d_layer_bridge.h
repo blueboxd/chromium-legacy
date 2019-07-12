@@ -169,6 +169,9 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   CanvasResourceProvider* ResourceProvider() const;
   void FlushRecording();
 
+  PaintRecorder* getRecorder() { return recorder_.get(); }
+  sk_sp<cc::PaintRecord> getLastRecord() { return last_recording_; }
+
  private:
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
@@ -229,6 +232,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
   Deque<RasterTimer> pending_raster_timers_;
+
+  sk_sp<cc::PaintRecord> last_recording_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 

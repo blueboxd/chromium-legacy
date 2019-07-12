@@ -11,12 +11,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeActivity.ActivityType;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -104,18 +107,20 @@ public class AutofillAssistantFacade {
 
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
-        AutofillAssistantModuleEntryProvider.getModuleEntry(activity, (moduleEntry) -> {
-            if (moduleEntry == null) {
-                AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_INSTALL_FAILED);
-                return;
-            }
+        waitForTabWithWebContents(activity, tab -> {
+            AutofillAssistantModuleEntryProvider.getModuleEntry(activity, tab, (moduleEntry) -> {
+                if (moduleEntry == null) {
+                    AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_INSTALL_FAILED);
+                    return;
+                }
 
-            Bundle bundleExtras = activity.getInitialIntent().getExtras();
-            Map<String, String> parameters = extractParameters(bundleExtras);
-            parameters.remove(PARAMETER_ENABLED);
-            String initialUrl = activity.getInitialIntent().getDataString();
-            moduleEntry.start(canStartWithoutOnboarding, initialUrl, parameters, experimentIds,
-                    activity.getInitialIntent().getExtras());
+                Bundle bundleExtras = activity.getInitialIntent().getExtras();
+                Map<String, String> parameters = extractParameters(bundleExtras);
+                parameters.remove(PARAMETER_ENABLED);
+                String initialUrl = activity.getInitialIntent().getDataString();
+                moduleEntry.start(tab, tab.getWebContents(), canStartWithoutOnboarding, initialUrl,
+                        parameters, experimentIds, activity.getInitialIntent().getExtras());
+            });
         });
     }
 
@@ -226,5 +231,26 @@ public class AutofillAssistantFacade {
             }
         }
         return false;
+    }
+
+    /** Provides the callback with a tab that has a web contents, waits if necessary. */
+    private static void waitForTabWithWebContents(ChromeActivity activity, Callback<Tab> callback) {
+        if (activity.getActivityTab() != null
+                && activity.getActivityTab().getWebContents() != null) {
+            callback.onResult(activity.getActivityTab());
+            return;
+        }
+
+        // The tab is not yet available. We need to register as listener and wait for it.
+        activity.getActivityTabProvider().addObserverAndTrigger(
+                new ActivityTabProvider.HintlessActivityTabObserver() {
+                    @Override
+                    public void onActivityTabChanged(Tab tab) {
+                        if (tab == null) return;
+                        activity.getActivityTabProvider().removeObserver(this);
+                        assert tab.getWebContents() != null;
+                        callback.onResult(tab);
+                    }
+                });
     }
 }

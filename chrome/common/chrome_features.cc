@@ -368,6 +368,19 @@ const base::Feature kIncompatibleApplicationsWarning{
     "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables scraping of password-expiry information during SAML login flow, which
+// can lead to an in-session flow for changing SAML password if it has expired.
+// This is safe to enable by default since it does not cause the password-expiry
+// information to be stored, or any user-visible change - in order for anything
+// to happen, the domain administrator has to intentionally send this extra
+// info in the SAML response, and enable the InSessionPasswordChange policy.
+// So, this feature is just for disabling the scraping code if it causes
+// any unforeseen issues.
+const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_ANDROID)
 // Enables or disables the installable ambient badge infobar.
 const base::Feature kInstallableAmbientBadgeInfoBar{

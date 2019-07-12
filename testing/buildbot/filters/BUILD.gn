@@ -36,6 +36,7 @@ source_set("browser_tests_filters") {
   testonly = true
 
   data = [
+    "//testing/buildbot/filters/skia_renderer.browser_tests.filter",
     "//testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
     "//testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter",

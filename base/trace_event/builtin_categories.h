@@ -177,6 +177,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("gpu.service"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("ipc.flow"))                               \
   X(TRACE_DISABLED_BY_DEFAULT("layer-element"))                          \
+  X(TRACE_DISABLED_BY_DEFAULT("lifecycles"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("loading"))                                \
   X(TRACE_DISABLED_BY_DEFAULT("memory-infra"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("memory-infra.v8.code_stats"))             \

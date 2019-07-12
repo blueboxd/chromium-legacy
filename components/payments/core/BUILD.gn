@@ -71,6 +71,7 @@ jumbo_static_library("core") {
   }
 
   deps = [
+    ":error_strings",
     "//base",
     "//components/autofill/core/browser",
     "//components/keyed_service/core",

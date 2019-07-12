@@ -5,6 +5,7 @@
 
 '''Unit tests for grit.xtb_reader'''
 
+from __future__ import print_function
 
 import os
 import sys

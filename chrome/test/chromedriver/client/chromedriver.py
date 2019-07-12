@@ -611,16 +611,6 @@ class ChromeDriver(object):
     params = {'cmd': cmd, 'params': cmd_params};
     return self.ExecuteCommand(Command.SEND_COMMAND_AND_GET_RESULT, params)
 
-  def GetScreenOrientation(self):
-    screen_orientation = self.ExecuteCommand(Command.GET_SCREEN_ORIENTATION)
-    return {
-       'orientation': screen_orientation['orientation']
-    }
-
-  def SetScreenOrientation(self, orientation_type):
-    params = {'parameters': {'orientation': orientation_type}}
-    self.ExecuteCommand(Command.SET_SCREEN_ORIENTATION, params)
-
   def SendKeys(self, *values):
     typing = []
     for value in values:

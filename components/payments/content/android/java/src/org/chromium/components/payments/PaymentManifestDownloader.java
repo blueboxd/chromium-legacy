@@ -35,9 +35,13 @@ public class PaymentManifestDownloader {
         @CalledByNative("ManifestDownloadCallback")
         void onWebAppManifestDownloadSuccess(String content);
 
-        /** Called on failed download. */
+        /**
+         * Called on failed download.
+         *
+         * @param errorMessage The error message, which could be empty or null.
+         */
         @CalledByNative("ManifestDownloadCallback")
-        void onManifestDownloadFailure();
+        void onManifestDownloadFailure(String errorMessage);
     }
 
     private long mNativeObject;

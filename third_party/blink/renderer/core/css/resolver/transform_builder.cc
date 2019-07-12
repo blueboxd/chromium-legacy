@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
@@ -109,14 +110,14 @@ bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
 
     for (const CSSValue* item : *transform_value) {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);
-      if (primitive_value.IsCalculated() &&
-          To<CSSMathFunctionValue>(primitive_value).MayHaveRelativeUnit()) {
-        return true;
-      }
-
-      if (CSSPrimitiveValue::IsRelativeUnit(
-              primitive_value.TypeWithCalcResolved())) {
-        return true;
+      if (primitive_value.IsCalculated()) {
+        if (To<CSSMathFunctionValue>(primitive_value).MayHaveRelativeUnit())
+          return true;
+      } else {
+        CSSPrimitiveValue::UnitType unit_type =
+            To<CSSNumericLiteralValue>(primitive_value).GetType();
+        if (CSSPrimitiveValue::IsRelativeUnit(unit_type))
+          return true;
       }
     }
   }

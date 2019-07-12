@@ -6,6 +6,7 @@ package org.chromium.bytecode;
 
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.RETURN;
@@ -34,6 +35,9 @@ class SplitCompatClassAdapter extends ClassVisitor {
 
     private static final String MODULE_INSTALLER_CLASS_NAME =
             "org/chromium/components/module_installer/ModuleInstaller";
+    private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
+    private static final String GET_INSTANCE_DESCRIPTOR =
+            TypeUtils.getMethodDescriptor(MODULE_INSTALLER_CLASS_NAME);
     private static final String INIT_ACTIVITY_METHOD_NAME = "initActivity";
     private static final String INIT_ACTIVITY_DESCRIPTOR =
             TypeUtils.getMethodDescriptor(VOID, CONTEXT);
@@ -107,7 +111,7 @@ class SplitCompatClassAdapter extends ClassVisitor {
      * <pre>
      * protected void attachBaseContext(Context base) {
      *     super.attachBaseContext(base);
-     *     ModuleInstaller.initActivity(this);
+     *     ModuleInstaller.getInstance().initActivity(this);
      * }
      * </pre>
      */
@@ -115,16 +119,30 @@ class SplitCompatClassAdapter extends ClassVisitor {
         MethodVisitor mv = super.visitMethod(ACC_PROTECTED, ATTACH_BASE_CONTEXT_METHOD_NAME,
                 ATTACH_BASE_CONTEXT_DESCRIPTOR, null, null);
         mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0); // load "this" on stack
-        mv.visitVarInsn(ALOAD, 1); // load first method parameter on stack (Context)
+        // Push "this" on stack.
+        mv.visitVarInsn(ALOAD, 0);
+        // Push first method parameter on stack (Context).
+        mv.visitVarInsn(ALOAD, 1);
+        // Pop argument from stack (Context).
+        // Pop target object from stack ("this").
+        // Calls attachBaseContext.
         mv.visitMethodInsn(INVOKESPECIAL, ANDROID_APP_ACTIVITY_CLASS_NAME,
-                ATTACH_BASE_CONTEXT_METHOD_NAME,
-                ATTACH_BASE_CONTEXT_DESCRIPTOR); // invoke super's attach base context
-        mv.visitVarInsn(ALOAD, 0); // load "this" on stack
-        mv.visitMethodInsn(INVOKESTATIC, MODULE_INSTALLER_CLASS_NAME, INIT_ACTIVITY_METHOD_NAME,
-                INIT_ACTIVITY_DESCRIPTOR);
+                ATTACH_BASE_CONTEXT_METHOD_NAME, ATTACH_BASE_CONTEXT_DESCRIPTOR, false);
+        // Push return value on stack (ModuleInstaller).
+        // Calls getInstance.
+        mv.visitMethodInsn(INVOKESTATIC, MODULE_INSTALLER_CLASS_NAME, GET_INSTANCE_METHOD_NAME,
+                GET_INSTANCE_DESCRIPTOR, false);
+        // Push "this" on stack.
+        mv.visitVarInsn(ALOAD, 0);
+        // Pop argument from stack ("this").
+        // Pop target object from stack (ModuleInstaller).
+        // Calls initActivity.
+        mv.visitMethodInsn(INVOKEINTERFACE, MODULE_INSTALLER_CLASS_NAME, INIT_ACTIVITY_METHOD_NAME,
+                INIT_ACTIVITY_DESCRIPTOR, true);
         mv.visitInsn(RETURN);
-        mv.visitMaxs(2, 2); // max stack size - 2, max locals - 2
+        // Max stack size = 2 (Only push at most 2 before popping).
+        // Max locals = 2 ("this" and 1 parameter).
+        mv.visitMaxs(2, 2);
         mv.visitEnd();
     }
 

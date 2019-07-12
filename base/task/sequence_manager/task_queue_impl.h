@@ -102,6 +102,7 @@ class BASE_EXPORT TaskQueueImpl {
   const char* GetName() const;
   bool IsQueueEnabled() const;
   void SetQueueEnabled(bool enabled);
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report);
   bool IsEmpty() const;
   size_t GetNumberOfPendingTasks() const;
   bool HasTaskToRunImmediately() const;
@@ -340,8 +341,8 @@ class BASE_EXPORT TaskQueueImpl {
     DelayedIncomingQueue delayed_incoming_queue;
     ObserverList<TaskObserver>::Unchecked task_observers;
     base::internal::HeapHandle heap_handle;
-    bool is_enabled;
-    trace_event::BlameContext* blame_context;  // Not owned.
+    bool is_enabled = true;
+    trace_event::BlameContext* blame_context = nullptr;  // Not owned.
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
     OnTaskStartedHandler on_task_started_handler;
@@ -350,7 +351,13 @@ class BASE_EXPORT TaskQueueImpl {
     // excessive calls.
     Optional<DelayedWakeUp> scheduled_wake_up;
     // If false, queue will be disabled. Used only for tests.
-    bool is_enabled_for_test;
+    bool is_enabled_for_test = true;
+    // The time at which the task queue was disabled, if it is currently
+    // disabled.
+    Optional<TimeTicks> disabled_time;
+    // Whether or not the task queue should emit tracing events for tasks
+    // posted to this queue when it is disabled.
+    bool should_report_posted_tasks_when_disabled = false;
   };
 
   void PostTask(PostedTask task);
@@ -394,8 +401,6 @@ class BASE_EXPORT TaskQueueImpl {
                               TimeTicks now,
                               trace_event::TracedValue* state);
 
-  void EnableOrDisableWithSelector(bool enable);
-
   // Schedules delayed work on time domain and calls the observer.
   void UpdateDelayedWakeUp(LazyNow* lazy_now);
   void UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
@@ -411,6 +416,23 @@ class BASE_EXPORT TaskQueueImpl {
   void MaybeLogPostTask(PostedTask* task);
   void MaybeAdjustTaskDelay(PostedTask* task, CurrentThread current_thread);
 
+  // Reports the task if it was due to IPC and was posted to a disabled queue.
+  // This should be called after WillQueueTask has been called for the task.
+  void MaybeReportIpcTaskQueuedFromMainThread(Task* pending_task,
+                                              const char* task_queue_name);
+  bool ShouldReportIpcTaskQueuedFromAnyThreadLocked(
+      base::TimeDelta* time_since_disabled)
+      EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
+  void MaybeReportIpcTaskQueuedFromAnyThreadLocked(Task* pending_task,
+                                                   const char* task_queue_name)
+      EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
+  void MaybeReportIpcTaskQueuedFromAnyThreadUnlocked(
+      Task* pending_task,
+      const char* task_queue_name);
+  void ReportIpcTaskQueued(Task* pending_task,
+                           const char* task_queue_name,
+                           const base::TimeDelta& time_since_disabled);
+
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;
 
@@ -421,6 +443,16 @@ class BASE_EXPORT TaskQueueImpl {
   mutable base::internal::CheckedLock any_thread_lock_;
 
   struct AnyThread {
+    // Mirrored from MainThreadOnly. These are only used for tracing.
+    struct TracingOnly {
+      TracingOnly();
+      ~TracingOnly();
+
+      bool is_enabled = true;
+      Optional<TimeTicks> disabled_time;
+      bool should_report_posted_tasks_when_disabled = false;
+    };
+
     explicit AnyThread(TimeDomain* time_domain);
     ~AnyThread();
 
@@ -441,12 +473,14 @@ class BASE_EXPORT TaskQueueImpl {
     bool unregistered = false;
 
 #if DCHECK_IS_ON()
-    // A cached of |immediate_work_queue->work_queue_set_index()| which is used
+    // A cache of |immediate_work_queue->work_queue_set_index()| which is used
     // to index into
     // SequenceManager::Settings::per_priority_cross_thread_task_delay to apply
     // a priority specific delay for debugging purposes.
     int queue_set_index = 0;
 #endif
+
+    TracingOnly tracing_only;
   };
 
   AnyThread any_thread_ GUARDED_BY(any_thread_lock_);

@@ -344,15 +344,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 // after seeing an error of interest multiple times, in the default mode in
 // which error occurrences are stored in-memory.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(kRecurrentInterstitialFeature,
-                                                  {{"threshold", "2"}});
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
+  chrome_state->SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
@@ -370,15 +370,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
 // count of each error is persisted across browsing sessions).
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPref) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      kRecurrentInterstitialFeature, {{"threshold", "2"}, {"mode", "pref"}});
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
+  chrome_state->SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
@@ -396,6 +396,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
   // Create a new ChromeSSLHostStateDelegate to check that the state has been
   // saved to the pref and that the new ChromeSSLHostStateDelegate reads it.
   ChromeSSLHostStateDelegate new_state(profile);
+  new_state.SetRecurrentInterstitialThresholdForTesting(2);
+  new_state.SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+
   EXPECT_TRUE(new_state.HasSeenRecurrentErrors(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
   EXPECT_TRUE(new_state.HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
@@ -410,15 +414,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 // going backwards in pref mode.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPrefClockGoesBackwards) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      kRecurrentInterstitialFeature, {{"threshold", "2"}, {"mode", "pref"}});
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
+  chrome_state->SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   clock->SetNow(base::Time::Now());
@@ -448,16 +452,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 // threshold of 3 errors, unlike previous tests which use a threshold of 2.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPrefErrorsInPast) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      kRecurrentInterstitialFeature,
-      {{"threshold", "3"}, {"mode", "pref"}, {"reset-time", "10"}});
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetRecurrentInterstitialResetTimeForTesting(10);
+  chrome_state->SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   clock->SetNow(base::Time::Now());

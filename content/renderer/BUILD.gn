@@ -409,8 +409,6 @@ target(link_target_type, "renderer") {
     "storage_util.h",
     "stream_texture_host_android.cc",
     "stream_texture_host_android.h",
-    "text_input_client_observer.cc",
-    "text_input_client_observer.h",
     "theme_helper_mac.h",
     "theme_helper_mac.mm",
     "top_level_blame_context.cc",
@@ -653,6 +651,13 @@ target(link_target_type, "renderer") {
     deps += [
       "//components/services/font/public/cpp",
       "//services/service_manager/zygote",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "text_input_client_observer.cc",
+      "text_input_client_observer.h",
     ]
   }
 

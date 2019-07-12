@@ -491,8 +491,8 @@ void GpuServiceImpl::CreateGpuMemoryBuffer(
     CreateGpuMemoryBufferCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   // This needs to happen in the IO thread.
-  std::move(callback).Run(gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-      id, size, format, usage, client_id, surface_handle));
+  gpu_memory_buffer_factory_->CreateGpuMemoryBufferAsync(
+      id, size, format, usage, client_id, surface_handle, std::move(callback));
 }
 
 void GpuServiceImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

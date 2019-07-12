@@ -87,6 +87,17 @@ class VotesUploader {
   void GeneratePasswordAttributesVote(const base::string16& password_value,
                                       autofill::FormStructure* form_structure);
 
+  // Stores the |unique_renderer_id| and |values| of the fields in
+  // |observed_form| to |initial_field_values_|.
+  void StoreInitialFieldValues(const autofill::FormData& observed_form);
+
+  // Sets the low-entropy hash value of the values stored in |initial_values_|
+  // for the detected |username| field to the corresponding field in
+  // |form_structure|.
+  void SetInitialHashValueOfUsernameField(
+      uint32_t username_element_renderer_id,
+      autofill::FormStructure* form_structure);
+
   bool get_generation_popup_was_shown() const {
     return generation_popup_was_shown_;
   }
@@ -197,6 +208,10 @@ class VotesUploader {
 
   // Whether this form has a generated password changed by user.
   bool generated_password_changed_ = false;
+
+  // Maps an |unique_renderer_id| to the initial value of the fields of an
+  // observed form.
+  std::map<uint32_t, base::string16> initial_values_;
 };
 
 }  // namespace password_manager

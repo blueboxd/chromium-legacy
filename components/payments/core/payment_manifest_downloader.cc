@@ -11,10 +11,12 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
 #include "components/payments/core/error_logger.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/url_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -32,28 +34,31 @@ namespace {
 
 GURL ParseResponseHeader(const GURL& url,
                          scoped_refptr<net::HttpResponseHeaders> headers,
-                         const ErrorLogger& log) {
+                         const ErrorLogger& log,
+                         std::string* out_error_message) {
   if (!headers) {
-    log.Error(base::StringPrintf(
-        "No HTTP headers found on \"%s\" for payment method manifest.",
-        url.spec().c_str()));
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()},
+        nullptr);
+    log.Error(*out_error_message);
     return GURL();
   }
 
   int response_code = headers->response_code();
   if (response_code != net::HTTP_OK && response_code != net::HTTP_NO_CONTENT) {
-    log.Error(base::StringPrintf(
-        "Unable to make a HEAD request to \"%s\" for payment method manifest.",
-        url.spec().c_str()));
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kHttpHeadRequestFailed, {url.spec()}, nullptr),
+    log.Error(*out_error_message);
     return GURL();
   }
 
   std::string link_header;
   headers->GetNormalizedHeader("link", &link_header);
   if (link_header.empty()) {
-    log.Error(base::StringPrintf(
-        "No HTTP Link headers found on \"%s\" for payment method manifest.",
-        url.spec().c_str()));
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()},
+        nullptr);
+    log.Error(*out_error_message);
     return GURL();
   }
 
@@ -76,40 +81,45 @@ GURL ParseResponseHeader(const GURL& url,
       return url.Resolve(payment_method_manifest_url);
   }
 
-  log.Error(
-      base::StringPrintf("No rel=\"payment-method-manifest\" HTTP Link headers "
-                         "found on \"%s\" for payment method manifest.",
-                         url.spec().c_str()));
+  *out_error_message = base::ReplaceStringPlaceholders(
+      errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()}, nullptr);
+  log.Error(*out_error_message);
   return GURL();
 }
 
-bool IsValidManifestUrl(const GURL& url, const ErrorLogger& log) {
+bool IsValidManifestUrl(const GURL& url,
+                        const ErrorLogger& log,
+                        std::string* out_error_message) {
   bool is_valid = UrlUtil::IsValidManifestUrl(url);
   if (!is_valid) {
-    log.Error(
-        base::StringPrintf("\"%s\" is not a valid payment manifest URL with "
-                           "HTTPS scheme (or HTTP scheme for localhost).",
-                           url.spec().c_str()));
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kInvalidManifestUrl, {url.spec()}, nullptr);
+    log.Error(*out_error_message);
   }
   return is_valid;
 }
 
 GURL ParseRedirectUrl(const net::RedirectInfo& redirect_info,
-                      const ErrorLogger& log) {
-  // Do not follow net::HTTP_MULTIPLE_CHOICES, net::HTTP_NOT_MODIFIED and
-  // net::HTTP_USE_PROXY redirects. (306 is no longer used.)
+                      const GURL& original_url,
+                      const ErrorLogger& log,
+                      std::string* out_error_message) {
   if (redirect_info.status_code != net::HTTP_MOVED_PERMANENTLY &&   // 301
       redirect_info.status_code != net::HTTP_FOUND &&               // 302
       redirect_info.status_code != net::HTTP_SEE_OTHER &&           // 303
       redirect_info.status_code != net::HTTP_TEMPORARY_REDIRECT &&  // 307
       redirect_info.status_code != net::HTTP_PERMANENT_REDIRECT) {  // 308
-    log.Error(
-        "Cannot follow HTTP_MULTIPLE_CHOICES (300), HTTP_NOT_MODIFIED (304), "
-        "and HTTP_USE_PROXY (305) redirects for payment manifests.");
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kHttpStatusCodeNotAllowed,
+        {base::NumberToString(redirect_info.status_code),
+         net::GetHttpReasonPhrase(
+             static_cast<net::HttpStatusCode>(redirect_info.status_code)),
+         original_url.spec()},
+        nullptr);
+    log.Error(*out_error_message);
     return GURL();
   }
 
-  if (!IsValidManifestUrl(redirect_info.new_url, log))
+  if (!IsValidManifestUrl(redirect_info.new_url, log, out_error_message))
     return GURL();
 
   return redirect_info.new_url;
@@ -119,10 +129,12 @@ std::string ParseResponseContent(
     const GURL& final_url,
     const std::string& response_body,
     scoped_refptr<net::HttpResponseHeaders> headers,
-    const ErrorLogger& log) {
+    const ErrorLogger& log,
+    std::string* out_error_message) {
   if (!headers || headers->response_code() != net::HTTP_OK) {
-    log.Error(base::StringPrintf("Unable to download payment manifest \"%s\".",
-                                 final_url.spec().c_str()));
+    *out_error_message = base::ReplaceStringPlaceholders(
+        errors::kPaymentManifestDownloadFailed, {final_url.spec()}, nullptr);
+    log.Error(*out_error_message);
     return std::string();
   }
 
@@ -144,7 +156,7 @@ PaymentManifestDownloader::~PaymentManifestDownloader() {}
 void PaymentManifestDownloader::DownloadPaymentMethodManifest(
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
-  DCHECK(IsValidManifestUrl(url, *log_));
+  DCHECK(UrlUtil::IsValidManifestUrl(url));
   // Restrict number of redirects for efficiency and breaking circle.
   InitiateDownload(url, "HEAD",
                    /*allowed_number_of_redirects=*/3, std::move(callback));
@@ -153,7 +165,7 @@ void PaymentManifestDownloader::DownloadPaymentMethodManifest(
 void PaymentManifestDownloader::DownloadWebAppManifest(
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
-  DCHECK(IsValidManifestUrl(url, *log_));
+  DCHECK(UrlUtil::IsValidManifestUrl(url));
   InitiateDownload(url, "GET", /*allowed_number_of_redirects=*/0,
                    std::move(callback));
 }
@@ -178,9 +190,11 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
   downloads_.erase(download_it);
 
   // Manually follow some type of redirects.
+  std::string error_message;
   if (download->allowed_number_of_redirects > 0) {
     DCHECK(download->method == "HEAD");
-    GURL redirect_url = ParseRedirectUrl(redirect_info, *log_);
+    GURL redirect_url = ParseRedirectUrl(redirect_info, download->original_url,
+                                         *log_, &error_message);
     if (!redirect_url.is_empty()) {
       // Do not allow cross site redirects.
       if (net::registry_controlled_domains::SameDomainOrHost(
@@ -191,18 +205,16 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
                          std::move(download->callback));
         return;
       }
-      log_->Error(base::StringPrintf(
-          "Cross-site redirect from \"%s\" to \"%s\" not allowed for payment "
-          "manifests.",
-          download->original_url.spec().c_str(), redirect_url.spec().c_str()));
+      error_message = base::ReplaceStringPlaceholders(
+          errors::kPaymentManifestCrossSiteRedirectNotAllowed,
+          {download->original_url.spec(), redirect_url.spec()}, nullptr);
     }
   } else {
-    log_->Error(
-        "Unable to download the payment manifest because reached the maximum "
-        "number of redirects.");
+    error_message = errors::kReachedMaximumNumberOfRedirects;
   }
-
-  std::move(download->callback).Run(download->original_url, std::string());
+  log_->Error(error_message);
+  std::move(download->callback)
+      .Run(download->original_url, std::string(), error_message);
 }
 
 void PaymentManifestDownloader::OnURLLoaderComplete(
@@ -233,29 +245,33 @@ void PaymentManifestDownloader::OnURLLoaderCompleteInternal(
   std::unique_ptr<Download> download = std::move(download_it->second);
   downloads_.erase(download_it);
 
+  std::string error_message;
   if (download->method == "GET") {
-    std::move(download->callback)
-        .Run(final_url,
-             ParseResponseContent(final_url, response_body, headers, *log_));
+    std::string content = ParseResponseContent(final_url, response_body,
+                                               headers, *log_, &error_message);
+    std::move(download->callback).Run(final_url, content, error_message);
     return;
   }
 
   DCHECK_EQ("HEAD", download->method);
   GURL payment_method_manifest_url =
-      ParseResponseHeader(final_url, headers, *log_);
+      ParseResponseHeader(final_url, headers, *log_, &error_message);
+  if (!payment_method_manifest_url.is_valid()) {
+    std::move(download->callback).Run(final_url, std::string(), error_message);
+    return;
+  }
 
-  if (!payment_method_manifest_url.is_valid() ||
-      !IsValidManifestUrl(payment_method_manifest_url, *log_)) {
-    std::move(download->callback).Run(final_url, std::string());
+  if (!IsValidManifestUrl(payment_method_manifest_url, *log_, &error_message)) {
+    std::move(download->callback).Run(final_url, std::string(), error_message);
     return;
   }
 
   if (!url::IsSameOriginWith(final_url, payment_method_manifest_url)) {
-    log_->Error(base::StringPrintf(
-        "Payment method manifest \"%s\" is not allowed for the method \"%s\" "
-        "because of different origin.",
-        payment_method_manifest_url.spec().c_str(), final_url.spec().c_str()));
-    std::move(download->callback).Run(final_url, std::string());
+    error_message = base::ReplaceStringPlaceholders(
+        errors::kCrossOriginPaymentMethodManifestNotAllowed,
+        {payment_method_manifest_url.spec(), final_url.spec()}, nullptr);
+    log_->Error(error_message);
+    std::move(download->callback).Run(final_url, std::string(), error_message);
     return;
   }
 
@@ -279,7 +295,7 @@ void PaymentManifestDownloader::InitiateDownload(
     const std::string& method,
     int allowed_number_of_redirects,
     PaymentManifestDownloadCallback callback) {
-  DCHECK(IsValidManifestUrl(url, *log_));
+  DCHECK(UrlUtil::IsValidManifestUrl(url));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("payment_manifest_downloader", R"(

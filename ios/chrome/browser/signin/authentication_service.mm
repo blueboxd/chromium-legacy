@@ -292,9 +292,7 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() const {
       ->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
-void AuthenticationService::SignIn(ChromeIdentity* identity,
-                                   const std::string& hosted_domain) {
-  DCHECK(!hosted_domain.empty());
+void AuthenticationService::SignIn(ChromeIdentity* identity) {
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
@@ -312,12 +310,13 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
       ->ReloadAllAccountsFromSystem();
 
   // Ensure that the account the user is trying to sign into has been loaded
-  // from the SSO library and that hosted_domain is set to the provided value.
+  // from the SSO library and that hosted_domain is set (should be the proper
+  // hosted domain or kNoHostedDomainFound that are both non-empty strings).
   const base::Optional<AccountInfo> account_info =
       identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
           account_id);
   CHECK(account_info.has_value());
-  CHECK_EQ(hosted_domain, account_info->hosted_domain);
+  CHECK(!account_info->hosted_domain.empty());
 
   // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
   // if there is already a signed in user. Check that there is no signed in
@@ -343,6 +342,11 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // crbug.com/289493
   sync_service_->GetUserSettings()->SetSyncRequested(true);
   breakpad_helper::SetCurrentlySignedIn(true);
+}
+
+void AuthenticationService::SignIn(ChromeIdentity* identity,
+                                   const std::string&) {
+  SignIn(identity);
 }
 
 void AuthenticationService::SignOut(

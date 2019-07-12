@@ -14,6 +14,8 @@ factors are also removed from existing image sets to support explicitly
 referencing all available images.
 """
 
+from __future__ import print_function
+
 import os
 import re
 

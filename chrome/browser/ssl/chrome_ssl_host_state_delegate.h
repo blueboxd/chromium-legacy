@@ -35,6 +35,8 @@ extern const base::Feature kRecurrentInterstitialFeature;
 // - when errors have recurred multiple times
 class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
  public:
+  enum RecurrentInterstitialMode { PREF, IN_MEMORY, NOT_SET };
+
   explicit ChromeSSLHostStateDelegate(Profile* profile);
   ~ChromeSSLHostStateDelegate() override;
 
@@ -82,6 +84,15 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
   // SetClockForTesting takes ownership of the passed in clock.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+
+  void SetRecurrentInterstitialThresholdForTesting(int threshold);
+  void SetRecurrentInterstitialModeForTesting(
+      ChromeSSLHostStateDelegate::RecurrentInterstitialMode mode);
+  void SetRecurrentInterstitialResetTimeForTesting(int reset);
+
+  RecurrentInterstitialMode GetRecurrentInterstitialMode() const;
+  int GetRecurrentInterstitialThreshold() const;
+  int GetRecurrentInterstitialResetTime() const;
 
  private:
   // Used to specify whether new content setting entries should be created if
@@ -131,6 +142,10 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   std::map<int /* error code */, int /* count */> recurrent_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSSLHostStateDelegate);
+
+  int recurrent_interstitial_threshold_for_testing;
+  enum RecurrentInterstitialMode recurrent_interstitial_mode_for_testing;
+  int recurrent_interstitial_reset_time_for_testing;
 };
 
 #endif  // CHROME_BROWSER_SSL_CHROME_SSL_HOST_STATE_DELEGATE_H_

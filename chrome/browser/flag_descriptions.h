@@ -328,6 +328,9 @@ extern const char kEnableAutofillNativeDropdownViewsDescription[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 
+extern const char kEnableDeferAllScriptName[];
+extern const char kEnableDeferAllScriptDescription[];
+
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
@@ -369,6 +372,9 @@ extern const char kEnforceTLS13DowngradeDescription[];
 
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
+
+extern const char kWinrtSensorsImplementationName[];
+extern const char kWinrtSensorsImplementationDescription[];
 
 extern const char kEnableGenericSensorName[];
 extern const char kEnableGenericSensorDescription[];
@@ -801,6 +807,9 @@ extern const char kOmniboxRichEntitySuggestionsDescription[];
 
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
+
+extern const char kOmniboxSearchEngineLogoName[];
+extern const char kOmniboxSearchEngineLogoDescription[];
 
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];

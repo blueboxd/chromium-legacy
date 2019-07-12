@@ -455,10 +455,7 @@ ChunkDemuxer::ChunkDemuxer(
       media_log_(media_log),
       duration_(kNoTimestamp),
       user_specified_duration_(-1),
-      liveness_(DemuxerStream::LIVENESS_UNKNOWN),
-      detected_audio_track_count_(0),
-      detected_video_track_count_(0),
-      detected_text_track_count_(0) {
+      liveness_(DemuxerStream::LIVENESS_UNKNOWN) {
   DCHECK(open_cb_);
   DCHECK(encrypted_media_init_data_cb_);
   MEDIA_LOG(INFO, media_log_) << GetDisplayName();
@@ -1265,23 +1262,10 @@ void ChunkDemuxer::OnSourceInitDone(
       s->SetLiveness(params.liveness);
   }
 
-  detected_audio_track_count_ += params.detected_audio_track_count;
-  detected_video_track_count_ += params.detected_video_track_count;
-  detected_text_track_count_ += params.detected_text_track_count;
-
   // Wait until all streams have initialized.
   pending_source_init_ids_.erase(source_id);
   if (!pending_source_init_ids_.empty())
     return;
-
-  // Record detected track counts by type corresponding to an MSE playback.
-  // Counts are split into 50 buckets, capped into [0,100] range.
-  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Audio",
-                           detected_audio_track_count_);
-  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Video",
-                           detected_video_track_count_);
-  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Text",
-                           detected_text_track_count_);
 
   for (const auto& s : video_streams_) {
     media_log_->RecordRapporWithSecurityOrigin(

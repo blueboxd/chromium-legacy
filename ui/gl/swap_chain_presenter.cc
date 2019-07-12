@@ -474,6 +474,11 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
       clip_visual_->SetClip(nullptr);
     }
   }
+
+  if (visual_info_.z_order != params.z_order) {
+    visual_info_.z_order = params.z_order;
+    layer_tree_->SetNeedsCommit();
+  }
 }
 
 bool SwapChainPresenter::TryPresentToDecodeSwapChain(

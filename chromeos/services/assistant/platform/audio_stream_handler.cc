@@ -112,7 +112,7 @@ void AudioStreamHandler::OnDecoderInitializedOnThread(
     if (!stopped_)
       OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
 
-    std::move(start_device_owner_on_main_thread_);
+    start_device_owner_on_main_thread_.Reset();
     return;
   }
 
@@ -169,7 +169,7 @@ void AudioStreamHandler::FillDecodedBuffer(void* buffer, int buffer_size) {
 void AudioStreamHandler::OnFillBufferOnThread(
     assistant_client::Callback1<int> on_filled,
     int num_bytes) {
-  std::move(on_filled)(num_bytes);
+  on_filled(num_bytes);
 }
 
 void AudioStreamHandler::DecodeOnThread() {

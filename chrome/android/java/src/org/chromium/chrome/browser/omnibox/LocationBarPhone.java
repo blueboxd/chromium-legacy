@@ -39,7 +39,10 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mFirstVisibleFocusedView = findViewById(R.id.url_bar);
+        // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
+        // See onNativeLibrary ready for when this variable is set for the DSE icon case.
+        mFirstVisibleFocusedView = mFirstVisibleFocusedView == null ? findViewById(R.id.url_bar)
+                                                                    : mFirstVisibleFocusedView;
 
         Rect delegateArea = new Rect();
         mUrlActionContainer.getHitRect(delegateArea);
@@ -47,6 +50,16 @@ public class LocationBarPhone extends LocationBarLayout {
         TouchDelegate touchDelegate = new TouchDelegate(delegateArea, mUrlActionContainer);
         assert mUrlActionContainer.getParent() == this;
         setTouchDelegate(touchDelegate);
+    }
+
+    @Override
+    public void onNativeLibraryReady() {
+        super.onNativeLibraryReady();
+
+        // The search logo will be the first visible view when the google logo is showing.
+        if (mShouldShowGoogleLogo) {
+            mFirstVisibleFocusedView = findViewById(R.id.location_bar_status);
+        }
     }
 
     /**

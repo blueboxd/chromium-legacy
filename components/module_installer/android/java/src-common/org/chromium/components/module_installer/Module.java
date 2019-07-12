@@ -56,7 +56,7 @@ public class Module<T> {
         // Accessing classes in the module may cause its DEX file to be loaded. And on some devices
         // that causes a read mode violation.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            ModuleInstaller.init();
+            ModuleInstaller.getInstance().init();
             Class.forName(mImplClassName);
             return true;
         } catch (ClassNotFoundException e) {
@@ -64,18 +64,18 @@ public class Module<T> {
         }
     }
 
-    /** Requests install of the module. See {@link ModuleInstaller#install} for more details. */
+    /** Requests install of the module. See {@link ModuleInstallerImpl#install} for more details. */
     public void install(OnModuleInstallFinishedListener onFinishedListener) {
         assert !isInstalled();
-        ModuleInstaller.install(mName, onFinishedListener);
+        ModuleInstaller.getInstance().install(mName, onFinishedListener);
     }
 
     /**
-     * Requests deferred install of the module. See {@link ModuleInstaller#installDeferred} for
+     * Requests deferred install of the module. See {@link ModuleInstallerImpl#installDeferred} for
      * more details.
      */
     public void installDeferred() {
-        ModuleInstaller.installDeferred(mName);
+        ModuleInstaller.getInstance().installDeferred(mName);
     }
 
     /**
@@ -85,7 +85,7 @@ public class Module<T> {
     public T getImpl() {
         assert isInstalled();
         if (mImpl == null) {
-            ModuleInstaller.init();
+            ModuleInstaller.getInstance().init();
             // Accessing classes in the module may cause its DEX file to be loaded. And on some
             // devices that causes a read mode violation.
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {

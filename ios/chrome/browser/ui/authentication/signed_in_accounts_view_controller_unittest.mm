@@ -40,8 +40,7 @@ class SignedInAccountsViewControllerTest : public BlockCleanupTest {
     identity_service->AddIdentities(
         @[ @"identity1", @"identity2", @"identity3" ]);
     auth_service_->SignIn(
-        [identity_service->GetAllIdentitiesSortedForDisplay() objectAtIndex:0],
-        kNoHostedDomainFound);
+        [identity_service->GetAllIdentitiesSortedForDisplay() objectAtIndex:0]);
   }
 
  protected:

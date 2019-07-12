@@ -114,9 +114,7 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
       result,
       AddressAccessorySheetDataBuilder(base::string16())
           .AddUserInfo()
-          .AppendSimpleField(canadian.GetRawInfo(ServerFieldType::NAME_FIRST))
-          .AppendSimpleField(canadian.GetRawInfo(ServerFieldType::NAME_MIDDLE))
-          .AppendSimpleField(canadian.GetRawInfo(ServerFieldType::NAME_LAST))
+          .AppendSimpleField(canadian.GetRawInfo(ServerFieldType::NAME_FULL))
           .AppendSimpleField(canadian.GetRawInfo(ServerFieldType::COMPANY_NAME))
           .AppendSimpleField(
               canadian.GetRawInfo(ServerFieldType::ADDRESS_HOME_LINE1))
@@ -163,11 +161,7 @@ TEST_F(AddressAccessoryControllerTest, TriggersRefreshWhenDataChanges) {
   personal_data_manager()->AddProfile(email);
   ASSERT_EQ(result, AddressAccessorySheetDataBuilder(base::string16())
                         .AddUserInfo()
-                        /*name first:*/
-                        .AppendSimpleField(base::string16())
-                        /*name middle:*/
-                        .AppendSimpleField(base::string16())
-                        /*name last:*/
+                        /*name full:*/
                         .AppendSimpleField(base::string16())
                         /*company name:*/
                         .AppendSimpleField(base::string16())

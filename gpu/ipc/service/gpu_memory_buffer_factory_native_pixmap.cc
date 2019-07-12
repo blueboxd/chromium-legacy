@@ -23,7 +23,7 @@
 namespace gpu {
 
 GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap()
-    : vulkan_context_provider_(nullptr) {}
+    : GpuMemoryBufferFactoryNativePixmap(nullptr) {}
 
 GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap(
     viz::VulkanContextProvider* vulkan_context_provider)
@@ -46,30 +46,34 @@ GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(surface_handle, GetVulkanDevice(), size, format,
                                usage);
-  if (!pixmap.get()) {
-    DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << ",  "
-                << gfx::BufferFormatToString(format) << ", usage "
-                << static_cast<int>(usage);
-    return gfx::GpuMemoryBufferHandle();
-  }
-
-  gfx::GpuMemoryBufferHandle new_handle;
-  new_handle.type = gfx::NATIVE_PIXMAP;
-  new_handle.id = id;
-  new_handle.native_pixmap_handle = pixmap->ExportHandle();
-
-  // TODO(reveman): Remove this once crbug.com/628334 has been fixed.
-  {
-    base::AutoLock lock(native_pixmaps_lock_);
-    NativePixmapMapKey key(id.id, client_id);
-    DCHECK(native_pixmaps_.find(key) == native_pixmaps_.end());
-    native_pixmaps_[key] = pixmap;
-  }
-
-  return new_handle;
+  return CreateGpuMemoryBufferFromNativePixmap(id, size, format, usage,
+                                               client_id, std::move(pixmap));
 #else
   NOTIMPLEMENTED();
   return gfx::GpuMemoryBufferHandle();
+#endif
+}
+
+void GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBufferAsync(
+    gfx::GpuMemoryBufferId id,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    int client_id,
+    SurfaceHandle surface_handle,
+    CreateGpuMemoryBufferAsyncCallback callback) {
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()
+      ->GetSurfaceFactoryOzone()
+      ->CreateNativePixmapAsync(
+          surface_handle, GetVulkanDevice(), size, format, usage,
+          base::BindOnce(
+              &GpuMemoryBufferFactoryNativePixmap::OnNativePixmapCreated, id,
+              size, format, usage, client_id, std::move(callback),
+              weak_factory_.GetWeakPtr()));
+#else
+  NOTIMPLEMENTED();
+  std::move(callback).Run(gfx::GpuMemoryBufferHandle());
 #endif
 }
 
@@ -181,6 +185,55 @@ VkDevice GpuMemoryBufferFactoryNativePixmap::GetVulkanDevice() {
   return vulkan_context_provider_
              ? vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice()
              : VK_NULL_HANDLE;
+}
+
+// static
+void GpuMemoryBufferFactoryNativePixmap::OnNativePixmapCreated(
+    gfx::GpuMemoryBufferId id,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    int client_id,
+    CreateGpuMemoryBufferAsyncCallback callback,
+    base::WeakPtr<GpuMemoryBufferFactoryNativePixmap> weak_ptr,
+    scoped_refptr<gfx::NativePixmap> pixmap) {
+  if (weak_ptr) {
+    std::move(callback).Run(weak_ptr->CreateGpuMemoryBufferFromNativePixmap(
+        id, size, format, usage, client_id, pixmap));
+  } else {
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
+  }
+}
+
+gfx::GpuMemoryBufferHandle
+GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBufferFromNativePixmap(
+    gfx::GpuMemoryBufferId id,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    int client_id,
+    scoped_refptr<gfx::NativePixmap> pixmap) {
+  if (!pixmap.get()) {
+    DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << ",  "
+                << gfx::BufferFormatToString(format) << ", usage "
+                << static_cast<int>(usage);
+    return gfx::GpuMemoryBufferHandle();
+  }
+
+  gfx::GpuMemoryBufferHandle new_handle;
+  new_handle.type = gfx::NATIVE_PIXMAP;
+  new_handle.id = id;
+  new_handle.native_pixmap_handle = pixmap->ExportHandle();
+
+  // TODO(reveman): Remove this once crbug.com/628334 has been fixed.
+  {
+    base::AutoLock lock(native_pixmaps_lock_);
+    NativePixmapMapKey key(id.id, client_id);
+    DCHECK(native_pixmaps_.find(key) == native_pixmaps_.end());
+    native_pixmaps_[key] = pixmap;
+  }
+
+  return new_handle;
 }
 
 }  // namespace gpu

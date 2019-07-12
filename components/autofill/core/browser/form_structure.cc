@@ -1886,6 +1886,10 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       added_field->set_vote_type(field->vote_type());
     }
 
+    if (field->initial_value_hash()) {
+      added_field->set_initial_value_hash(field->initial_value_hash().value());
+    }
+
     added_field->set_signature(field->GetFieldSignature());
 
     if (field->properties_mask)

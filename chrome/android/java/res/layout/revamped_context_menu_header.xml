@@ -13,9 +13,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:paddingStart="@dimen/revamped_context_menu_list_lateral_padding"
-    android:paddingEnd="@dimen/revamped_context_menu_list_lateral_padding"
-    android:paddingTop="@dimen/revamped_context_menu_header_vertical_padding"
-    android:paddingBottom="@dimen/revamped_context_menu_header_vertical_padding">
+    android:paddingEnd="@dimen/revamped_context_menu_list_lateral_padding">
 
     <FrameLayout
         android:layout_width="wrap_content"
@@ -28,7 +26,9 @@
             android:background="@drawable/tile_view_icon_background_modern"
             android:layout_width="@dimen/revamped_context_menu_header_circle_bg_diameter"
             android:layout_height="@dimen/revamped_context_menu_header_circle_bg_diameter"
-            android:layout_margin="@dimen/revamped_context_menu_header_circle_bg_margin"
+            android:layout_marginTop="@dimen/revamped_context_menu_header_circle_bg_vertical_margin"
+            android:layout_marginStart="@dimen/revamped_context_menu_header_circle_bg_lateral_margin"
+            android:layout_marginEnd="@dimen/revamped_context_menu_header_circle_bg_lateral_margin"
             android:visibility="invisible" />
 
         <org.chromium.ui.widget.RoundedCornerImageView
@@ -37,6 +37,8 @@
             android:layout_height="@dimen/revamped_context_menu_header_image_max_size"
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
+            android:layout_marginTop="@dimen/revamped_context_menu_header_vertical_padding"
+            android:layout_marginBottom="@dimen/revamped_context_menu_header_vertical_padding"
             app:cornerRadiusTopStart="@dimen/default_rounded_corner_radius"
             app:cornerRadiusTopEnd="@dimen/default_rounded_corner_radius"
             app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
@@ -45,10 +47,13 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/title_and_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_gravity="center_vertical">
+        android:layout_gravity="center_vertical"
+        android:paddingTop="@dimen/revamped_context_menu_header_vertical_padding"
+        android:paddingBottom="@dimen/revamped_context_menu_header_vertical_padding">
 
         <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/menu_header_title"

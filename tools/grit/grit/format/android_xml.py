@@ -59,6 +59,8 @@ in the output xml file. For example:
   </plurals>
 """
 
+from __future__ import print_function
+
 import os
 import re
 import types

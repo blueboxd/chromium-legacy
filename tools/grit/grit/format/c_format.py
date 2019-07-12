@@ -5,6 +5,8 @@
 """Formats as a .C file for compilation.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import types

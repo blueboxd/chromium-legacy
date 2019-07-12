@@ -36,6 +36,9 @@ struct NATIVE_THEME_EXPORT CaptionStyle {
   std::string text_shadow;
   std::string font_family;
   std::string font_variant;
+  std::string window_color;
+  std::string window_padding;
+  std::string window_radius;
 };
 
 }  // namespace ui

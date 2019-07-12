@@ -64,7 +64,9 @@ Polymer({
 
   /** @private */
   hideRipple_: function() {
-    this.getRipple().clear();
+    if (this.hasRipple()) {
+      this.getRipple().clear();
+    }
   },
 
   /** @private */
@@ -112,6 +114,9 @@ Polymer({
       element.icon = icon;
       this.$.icon.appendChild(element);
     });
+    if (!this.hasRipple()) {
+      return;
+    }
     if (icons.length > 1) {
       this.getRipple().classList.remove('circle');
     } else {

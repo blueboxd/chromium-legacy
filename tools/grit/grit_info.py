@@ -6,6 +6,8 @@
 '''Tool to determine inputs and outputs of a grit file.
 '''
 
+from __future__ import print_function
+
 import optparse
 import os
 import posixpath
@@ -104,9 +106,9 @@ def Inputs(filename, defines, ids_file, target_platform=None):
 
 
 def PrintUsage():
-  print 'USAGE: ./grit_info.py --inputs [-D foo] [-f resource_ids] <grd-file>'
-  print ('       ./grit_info.py --outputs [-D foo] [-f resource_ids] ' +
-      '<out-prefix> <grd-file>')
+  print('USAGE: ./grit_info.py --inputs [-D foo] [-f resource_ids] <grd-file>')
+  print('       ./grit_info.py --outputs [-D foo] [-f resource_ids] ' +
+        '<out-prefix> <grd-file>')
 
 
 def DoMain(argv):
@@ -175,9 +177,9 @@ def main(argv):
     result = DoMain(argv[1:])
   except WrongNumberOfArguments, e:
     PrintUsage()
-    print e
+    print(e)
     return 1
-  print result
+  print(result)
   return 0
 
 

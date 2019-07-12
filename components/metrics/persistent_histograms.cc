@@ -43,12 +43,11 @@ constexpr int kSpareFileCreateDelaySeconds = 90;
 // then fails to remove them. See https://crbug.com/934164
 void DeleteOldWindowsTempFiles(const base::FilePath& dir) {
   // Look for any temp files older than one day and remove them. The time check
-  // unsures that nothing in active transition gets deleted; these names only
+  // ensures that nothing in active transition gets deleted; these names only
   // exists on the order of milliseconds when working properly so "one day" is
   // generous but still ensures no big build up of these files. This is an
   // I/O intensive task so do it in the background (enforced by "file" calls).
   base::Time one_day_ago = base::Time::Now() - base::TimeDelta::FromDays(1);
-  int delete_count = 0;
   base::FileEnumerator file_iter(dir, /*recursive=*/false,
                                  base::FileEnumerator::FILES);
   for (base::FilePath path = file_iter.Next(); !path.empty();
@@ -67,11 +66,7 @@ void DeleteOldWindowsTempFiles(const base::FilePath& dir) {
       continue;
 
     base::DeleteFile(path, /*recursive=*/false);
-    delete_count++;
   }
-
-  base::UmaHistogramCounts1000("UMA.PersistentHistograms.TmpRemovals",
-                               delete_count);
 }
 
 // How much time after startup to run the above function. Two minutes is

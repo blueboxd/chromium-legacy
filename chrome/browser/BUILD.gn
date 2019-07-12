@@ -814,6 +814,8 @@ jumbo_split_static_library("browser") {
     "native_file_system/chrome_native_file_system_permission_context.h",
     "native_file_system/native_file_system_permission_context_factory.cc",
     "native_file_system/native_file_system_permission_context_factory.h",
+    "native_file_system/native_file_system_permission_request_manager.cc",
+    "native_file_system/native_file_system_permission_request_manager.h",
     "native_window_notification_source.h",
     "navigation_predictor/navigation_predictor.cc",
     "navigation_predictor/navigation_predictor.h",

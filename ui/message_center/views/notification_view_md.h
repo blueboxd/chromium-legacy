@@ -207,6 +207,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
                                  const base::string16& text) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, AppNameExtension);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, AppNameSystemNotification);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, AppNameWebNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, CreateOrUpdateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);

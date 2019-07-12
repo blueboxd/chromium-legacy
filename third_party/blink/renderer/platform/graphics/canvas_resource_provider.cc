@@ -563,36 +563,54 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return;
 
-    // If |resource_| is still being used by the compositor we need to create
-    // a new resource or reuse a previously recycled one. This class holds one
-    // reference so we check if there is more than one.
-    if (!resource_->HasOneRef() || resource()->is_lost()) {
+    if (DoCopyOnWrite()) {
       DCHECK(!current_resource_has_write_access_)
           << "Write access must be released before sharing the resource";
 
-      auto* old_resource =
-          static_cast<CanvasResourceSharedImage*>(resource_.get());
+      auto old_resource = std::move(resource_);
+      auto* old_resource_shared_image =
+          static_cast<CanvasResourceSharedImage*>(old_resource.get());
       resource_ = NewOrRecycledResource();
+      DCHECK(resource_);
+
       EnsureWriteAccess();
       if (surface_) {
         // Take read access to the outgoing resource for the skia copy below.
-        if (!old_resource->has_read_access()) {
+        if (!old_resource_shared_image->has_read_access()) {
           ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
-              old_resource->GetTextureIdForBackendTexture(),
+              old_resource_shared_image->GetTextureIdForBackendTexture(),
               GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
         }
         surface_->replaceBackendTexture(CreateGrTextureForResource(),
                                         GetGrSurfaceOrigin());
         surface_->flush();
-        if (!old_resource->has_read_access()) {
+        if (!old_resource_shared_image->has_read_access()) {
           ContextGL()->EndSharedImageAccessDirectCHROMIUM(
-              old_resource->GetTextureIdForBackendTexture());
+              old_resource_shared_image->GetTextureIdForBackendTexture());
         }
       }
     }
 
     EnsureWriteAccess();
     resource()->WillDraw();
+  }
+
+  bool DoCopyOnWrite() {
+    // If the resource was lost, we can not use it for writes again.
+    if (resource()->is_lost())
+      return true;
+
+    // We have the only ref to the resource which implies there are no active
+    // readers.
+    if (resource_->HasOneRef())
+      return false;
+
+    // Its possible to have deferred work in skia which uses this resource. Try
+    // flushing once to see if that releases the read refs. We can avoid a copy
+    // by queuing this work before writing to this resource.
+    surface_->flush();
+
+    return !resource_->HasOneRef();
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {

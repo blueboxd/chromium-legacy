@@ -5,6 +5,8 @@
 '''Base types for nodes in a GRIT resource tree.
 '''
 
+from __future__ import print_function
+
 import ast
 import os
 import sys
@@ -54,7 +56,7 @@ class Node(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     if exc_type is not None:
-      print u'Error processing node %s' % unicode(self)
+      print(u'Error processing node %s' % unicode(self))
 
   def __iter__(self):
     '''A preorder iteration through the tree that this node is the root of.'''

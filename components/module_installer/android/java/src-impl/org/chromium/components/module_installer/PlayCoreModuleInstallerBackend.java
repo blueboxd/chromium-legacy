@@ -20,7 +20,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.components.module_installer.ModuleInstallerBackend.OnFinishedListener;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,7 +92,7 @@ import java.util.Set;
     /** Records via UMA all modules that have been requested and are currently installed. */
     public static void recordModuleAvailability() {
         // MUST call init before creating a SplitInstallManager.
-        ModuleInstaller.init();
+        ModuleInstaller.getInstance().init();
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         Set<String> requestedModules = new HashSet<>();
         requestedModules.addAll(
@@ -128,7 +127,7 @@ import java.util.Set;
     public PlayCoreModuleInstallerBackend(OnFinishedListener listener) {
         super(listener);
         // MUST call init before creating a SplitInstallManager.
-        ModuleInstaller.init();
+        ModuleInstaller.getInstance().init();
         mManager = SplitInstallManagerFactory.create(ContextUtils.getApplicationContext());
         mManager.registerListener(this);
     }

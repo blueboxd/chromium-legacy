@@ -79,7 +79,7 @@ class ChromeImpl : public Chrome {
   Status ParseWindowBounds(std::unique_ptr<base::DictionaryValue> params,
                            Window* window);
   Status GetWindowBounds(int window_id, Window* window);
-  Status SetWindowBounds(int window_id,
+  Status SetWindowBounds(Window* window,
                          std::unique_ptr<base::DictionaryValue> bounds);
 
   bool quit_;

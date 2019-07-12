@@ -45,8 +45,7 @@ const OSSettingsBrowserTest = class extends PolymerTest {
 var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload +
-        'chromeos/os_downloads_page/smb_shares_page.html';
+    return super.browsePreload + 'chromeos/os_files_page/smb_shares_page.html';
   }
 
   /** @override */

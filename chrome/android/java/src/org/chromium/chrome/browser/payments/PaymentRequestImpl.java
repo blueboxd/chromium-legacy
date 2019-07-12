@@ -409,7 +409,13 @@ public class PaymentRequestImpl
     private PaymentResponseHelper mPaymentResponseHelper;
 
     /** If not empty, use this error message for rejecting PaymentRequest.show(). */
-    private String mProhibitedOriginOrInvalidSslErrorMessage;
+    private String mRejectShowErrorMessage;
+
+    /**
+     * True when Payment Request is invoked on a prohibited origin (e.g., blob:) or with an invalid
+     * SSL certificate (e.g., self-signed).
+     */
+    private boolean mIsProhibitedOriginOrInvalidSsl;
 
     /**
      * Builds the PaymentRequest service implementation.
@@ -488,8 +494,9 @@ public class PaymentRequestImpl
         // TODO(crbug.com/978471): Improve architecture for handling prohibited origins and invalid
         // SSL certificates.
         if (!UrlUtil.isOriginAllowedToUseWebPaymentApis(mWebContents.getLastCommittedUrl())) {
-            mProhibitedOriginOrInvalidSslErrorMessage = ErrorStrings.PROHIBITED_ORIGIN;
-            Log.d(TAG, mProhibitedOriginOrInvalidSslErrorMessage);
+            mIsProhibitedOriginOrInvalidSsl = true;
+            mRejectShowErrorMessage = ErrorStrings.PROHIBITED_ORIGIN;
+            Log.d(TAG, mRejectShowErrorMessage);
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
@@ -500,10 +507,11 @@ public class PaymentRequestImpl
         mJourneyLogger.setRequestedInformation(
                 mRequestShipping, mRequestPayerEmail, mRequestPayerPhone, mRequestPayerName);
 
-        mProhibitedOriginOrInvalidSslErrorMessage =
-                mDelegate.getInvalidSslCertificateErrorMessage(mWebContents);
-        if (!TextUtils.isEmpty(mProhibitedOriginOrInvalidSslErrorMessage)) {
-            Log.d(TAG, mProhibitedOriginOrInvalidSslErrorMessage);
+        assert mRejectShowErrorMessage == null;
+        mRejectShowErrorMessage = mDelegate.getInvalidSslCertificateErrorMessage(mWebContents);
+        if (!TextUtils.isEmpty(mRejectShowErrorMessage)) {
+            mIsProhibitedOriginOrInvalidSsl = true;
+            Log.d(TAG, mRejectShowErrorMessage);
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
@@ -808,6 +816,11 @@ public class PaymentRequestImpl
     @Override
     public void onPaymentAppCreated(PaymentApp paymentApp) {
         mApps.add(paymentApp);
+    }
+
+    @Override
+    public void onGetPaymentAppsError(String errorMessage) {
+        if (TextUtils.isEmpty(mRejectShowErrorMessage)) mRejectShowErrorMessage = errorMessage;
     }
 
     @Override
@@ -2117,11 +2130,11 @@ public class PaymentRequestImpl
             mJourneyLogger.setNotShown(mArePaymentMethodsSupported
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
-            if (!TextUtils.isEmpty(mProhibitedOriginOrInvalidSslErrorMessage)) {
+            if (mIsProhibitedOriginOrInvalidSsl) {
                 if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
-                disconnectFromClientWithDebugMessage(mProhibitedOriginOrInvalidSslErrorMessage,
-                        PaymentErrorReason.NOT_SUPPORTED);
+                disconnectFromClientWithDebugMessage(
+                        mRejectShowErrorMessage, PaymentErrorReason.NOT_SUPPORTED);
             } else if (mIsIncognito) {
                 // If the user is in the incognito mode, hide the absence of their payment methods
                 // from the merchant site.
@@ -2130,7 +2143,10 @@ public class PaymentRequestImpl
             } else {
                 if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
                 disconnectFromClientWithDebugMessage(
-                        ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE,
+                        ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE
+                                + (TextUtils.isEmpty(mRejectShowErrorMessage)
+                                                ? ""
+                                                : " " + mRejectShowErrorMessage),
                         PaymentErrorReason.NOT_SUPPORTED);
             }
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();

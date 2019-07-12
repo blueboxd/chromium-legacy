@@ -13,7 +13,6 @@ import android.view.View.OnClickListener;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
-import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
@@ -63,6 +62,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
 
     private final ChromeActivity mActivity;
     private final ModalDialogManager mDialogManager;
+    // This field should be set when showing a dialog, and nulled out when the dialog is closed. We
+    // can check if it is null to determine whether we're currently showing our dialog.
     private PropertyModel mTouchlessMenuModel;
     private ModalDialogManager mModalDialogManager;
 
@@ -84,6 +85,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      */
     public void showTouchlessContextMenu(
             ModalDialogManager modalDialogManager, ContextMenuManager.Delegate delegate) {
+        // Don't create a new dialog if we're already showing one.
+        if (mTouchlessMenuModel != null) {
+            return;
+        }
+
         ArrayList<PropertyModel> menuItems = new ArrayList<>();
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
@@ -195,7 +201,9 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                             public void onClick(PropertyModel model, int buttonType) {}
 
                             @Override
-                            public void onDismiss(PropertyModel model, int dismissalCause) {}
+                            public void onDismiss(PropertyModel model, int dismissalCause) {
+                                mTouchlessMenuModel = null;
+                            }
                         })
                 .with(TouchlessDialogProperties.ACTION_NAMES, names)
                 .with(TouchlessDialogProperties.CANCEL_ACTION, (v) -> closeTouchlessContextMenu())

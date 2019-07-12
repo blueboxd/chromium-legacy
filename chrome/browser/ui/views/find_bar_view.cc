@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
@@ -395,8 +396,7 @@ void FindBarView::ButtonPressed(
       break;
     case VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON:
       find_bar_host_->GetFindBarController()->EndFindSession(
-          FindBarController::kKeepSelectionOnPage,
-          FindBarController::kKeepResultsInFindBox);
+          FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
       break;
     default:
       NOTREACHED() << "Unknown button";
@@ -476,7 +476,7 @@ void FindBarView::Find(const base::string16& search_text) {
     // The last two params here are forward (true) and case sensitive (false).
     find_tab_helper->StartFinding(search_text, true, false);
   } else {
-    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
+    find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
     UpdateForResult(find_tab_helper->find_result(), base::string16());
     find_bar_host_->MoveWindowIfNecessary(gfx::Rect());
 

@@ -498,7 +498,7 @@ if (!CheckMul(request->elements(), request->element_size())
          .AssignIfValid(&alloc_size)) {
   // Safe: avoids allocating with a bogus size that overflowed to a smaller than
   // expected value.
-  mojo::ReportBadMessge("Invalid allocation size");
+  mojo::ReportBadMessage("Invalid allocation size");
 }
 
 Element* array = CreateArray(alloc_size);

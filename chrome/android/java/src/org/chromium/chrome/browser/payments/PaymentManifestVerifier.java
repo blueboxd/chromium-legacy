@@ -70,6 +70,13 @@ public class PaymentManifestVerifier
         void onAllOriginsSupported(URI methodName);
 
         /**
+         * Called when a part of verification has failed.
+         *
+         * @param errorMessage Developer facing error message.
+         */
+        void onVerificationError(String errorMessage);
+
+        /**
          * Called when the manifest has been fully verified. No more valid apps or origins will
          * be found after this call.
          */
@@ -524,9 +531,11 @@ public class PaymentManifestVerifier
     }
 
     @Override
-    public void onManifestDownloadFailure() {
+    public void onManifestDownloadFailure(String errorMessage) {
         if (mAtLeastOneManifestFailedToDownloadOrParse) return;
         mAtLeastOneManifestFailedToDownloadOrParse = true;
+
+        mCallback.onVerificationError(errorMessage);
 
         if (mIsManifestCacheStaleOrUnusable) mCallback.onFinishedVerification();
         mCallback.onFinishedUsingResources();

@@ -386,7 +386,7 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
   // has already been created.
   num_did_start_navigation_called_++;
   RegisterTestThrottle(handle);
-  PrepareCompleteCallbackOnHandle(handle);
+  PrepareCompleteCallbackOnRequest();
 }
 
 void NavigationSimulatorImpl::RegisterTestThrottle(NavigationHandle* handle) {
@@ -459,7 +459,7 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   int previous_did_redirect_navigation_called =
       num_did_redirect_navigation_called_;
 
-  PrepareCompleteCallbackOnHandle(request_->navigation_handle());
+  PrepareCompleteCallbackOnRequest();
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request) << "Trying to redirect a navigation that does not go to the "
                     "network stack.";
@@ -523,7 +523,7 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     }
   }
 
-  PrepareCompleteCallbackOnHandle(request_->navigation_handle());
+  PrepareCompleteCallbackOnRequest();
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
@@ -670,7 +670,7 @@ void NavigationSimulatorImpl::FailWithResponseHeaders(
 
   state_ = FAILED;
 
-  PrepareCompleteCallbackOnHandle(handle);
+  PrepareCompleteCallbackOnRequest();
   CHECK(request_);
   TestNavigationURLLoader* url_loader =
       static_cast<TestNavigationURLLoader*>(request_->loader_for_testing());
@@ -980,7 +980,7 @@ void NavigationSimulatorImpl::DidStartNavigation(
 
   // Add a throttle to count NavigationThrottle calls count.
   RegisterTestThrottle(handle);
-  PrepareCompleteCallbackOnHandle(handle);
+  PrepareCompleteCallbackOnRequest();
 }
 
 void NavigationSimulatorImpl::DidRedirectNavigation(
@@ -1166,10 +1166,9 @@ void NavigationSimulatorImpl::OnThrottleChecksComplete(
     std::move(throttle_checks_complete_closure_).Run();
 }
 
-void NavigationSimulatorImpl::PrepareCompleteCallbackOnHandle(
-    NavigationHandleImpl* handle) {
+void NavigationSimulatorImpl::PrepareCompleteCallbackOnRequest() {
   last_throttle_check_result_.reset();
-  handle->set_complete_callback_for_testing(
+  request_->set_complete_callback_for_testing(
       base::BindOnce(&NavigationSimulatorImpl::OnThrottleChecksComplete,
                      weak_factory_.GetWeakPtr()));
 }

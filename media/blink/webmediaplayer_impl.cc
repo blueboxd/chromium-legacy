@@ -678,15 +678,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   ReportMetrics(load_type, loaded_url_, *frame_, media_log_.get());
 
-  // Report poster availability for SRC=.
-  if (load_type == kLoadTypeURL) {
-    if (preload_ == MultibufferDataSource::METADATA) {
-      UMA_HISTOGRAM_BOOLEAN("Media.SRC.PreloadMetaDataHasPoster", has_poster_);
-    } else if (preload_ == MultibufferDataSource::AUTO) {
-      UMA_HISTOGRAM_BOOLEAN("Media.SRC.PreloadAutoHasPoster", has_poster_);
-    }
-  }
-
   // Set subresource URL for crash reporting; will be truncated to 256 bytes.
   static base::debug::CrashKeyString* subresource_url =
       base::debug::AllocateCrashKeyString("subresource_url",

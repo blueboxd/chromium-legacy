@@ -1097,6 +1097,7 @@ class NavigationHandleGrabber : public WebContentsObserver {
     if (navigation_handle->GetURL().path() != "/title2.html")
       return;
     static_cast<NavigationHandleImpl*>(navigation_handle)
+        ->navigation_request()
         ->set_complete_callback_for_testing(
             base::Bind(&NavigationHandleGrabber::SendingNavigationCommitted,
                        base::Unretained(this), navigation_handle));

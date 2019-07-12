@@ -90,6 +90,12 @@ class VIEWS_EXPORT ClassMetaData {
       return current_collection_->members()[current_vector_index_];
     }
 
+    // Returns true if iterator currently on last member for that current
+    // collection.
+    bool IsLastMember() const;
+
+    std::string GetCurrentCollectionName() const;
+
    private:
     friend class ClassMetaData;
     explicit ClassMemberIterator(ClassMetaData* starting_container);

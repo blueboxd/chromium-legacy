@@ -7,6 +7,7 @@
  *   name: string,
  *   shortName: string,
  *   packageName: string,
+ *   id: string,
  *   shellApkVersion: number,
  *   versionCode: number,
  *   uri: string,
@@ -19,9 +20,18 @@
  *   backgroundColor: string,
  *   lastUpdateCheckTimeMs: number,
  *   relaxUpdates: boolean,
+ *   updateStatus: string,
  * }}
  */
 let WebApkInfo;
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   status: string,
+ * }}
+ */
+let UpdateStatus;
 
 /**
  * Creates and returns an element (with |text| as content) assigning it the
@@ -40,8 +50,8 @@ function createElementWithTextAndClass(text, type, className) {
 
 /**
  * Callback from the backend with the information of a WebAPK to display.
- * This will be called once for each WebAPK available on the device and each
- * one will be appended at the end of the other.
+ * This will be called once. All WebAPKs available on the device will be
+ * returned.
  *
  * @param {!Array<WebApkInfo>} webApkList List of objects with information about
  * WebAPKs installed.
@@ -63,6 +73,19 @@ function addWebApkField(webApkList, label, value) {
       createElementWithTextAndClass(label, 'div', 'app-property-label');
   divElement.appendChild(
       createElementWithTextAndClass(value, 'span', 'app-property-value'));
+  webApkList.appendChild(divElement);
+}
+
+/**
+ * @param {HTMLElement} webApkList List of elements which contain WebAPK
+ * attributes.
+ * @param {string} text For the button.
+ * @param {function()} callback Invoked on click.
+ */
+function addWebApkButton(webApkList, text, callback) {
+  const divElement =
+      createElementWithTextAndClass(text, 'button', 'update-button');
+  divElement.onclick = callback;
   webApkList.appendChild(divElement);
 }
 
@@ -100,6 +123,16 @@ function addWebApk(webApkInfo) {
   addWebApkField(
       webApkList, 'Check for Updates Less Frequently: ',
       webApkInfo.relaxUpdates.toString());
+  addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
+
+  addWebApkButton(webApkList, 'Update ' + webApkInfo.name, () => {
+    alert(
+        'The WebAPK will check for an update the next time it launches. ' +
+        'If an update is available, the "Update Status" on this page ' +
+        'will switch to "Scheduled". The update will be installed once ' +
+        'the WebAPK is closed (this may take a few minutes).');
+    chrome.send('requestWebApkUpdate', [webApkInfo.id]);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {

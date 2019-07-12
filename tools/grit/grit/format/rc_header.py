@@ -5,6 +5,8 @@
 '''Item formatters for RC headers.
 '''
 
+from __future__ import print_function
+
 from grit.node import message
 
 

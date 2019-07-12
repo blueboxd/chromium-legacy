@@ -1316,4 +1316,40 @@ TEST_F(NotificationViewMDTest, TestLongTitleAndMessage) {
   EXPECT_EQ(message_height, notification_view()->message_view_->height());
 }
 
+TEST_F(NotificationViewMDTest, AppNameExtension) {
+  base::string16 app_name = base::UTF8ToUTF16("extension name");
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_context_message(app_name);
+
+  UpdateNotificationViews(*notification);
+
+  EXPECT_EQ(app_name, notification_view()->header_row_->app_name_for_testing());
+}
+
+TEST_F(NotificationViewMDTest, AppNameSystemNotification) {
+  base::string16 app_name = base::UTF8ToUTF16("system notification");
+  message_center::MessageCenter::Get()->SetSystemNotificationAppName(app_name);
+  RichNotificationData data;
+  data.settings_button_handler = SettingsButtonHandler::INLINE;
+  auto notification = std::make_unique<Notification>(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
+      base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
+      base::string16(), GURL(),
+      NotifierId(NotifierType::SYSTEM_COMPONENT, "system"), data, nullptr);
+
+  UpdateNotificationViews(*notification);
+
+  EXPECT_EQ(app_name, notification_view()->header_row_->app_name_for_testing());
+}
+
+TEST_F(NotificationViewMDTest, AppNameWebNotification) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_origin_url(GURL("http://example.com"));
+
+  UpdateNotificationViews(*notification);
+
+  EXPECT_EQ(base::UTF8ToUTF16("example.com"),
+            notification_view()->header_row_->app_name_for_testing());
+}
+
 }  // namespace message_center

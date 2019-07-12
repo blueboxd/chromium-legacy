@@ -15,6 +15,20 @@
 
 namespace ui {
 
+namespace {
+
+void OnBufferCreatedOnDrmThread(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    DrmThreadProxy::CreateBufferAsyncCallback callback,
+    std::unique_ptr<GbmBuffer> buffer,
+    scoped_refptr<DrmFramebuffer> framebuffer) {
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), std::move(buffer),
+                                       std::move(framebuffer)));
+}
+
+}  // namespace
+
 DrmThreadProxy::DrmThreadProxy() = default;
 
 DrmThreadProxy::~DrmThreadProxy() = default;
@@ -47,6 +61,24 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
       drm_thread_.task_runner(),
       base::BindOnce(&DrmThread::CreateBuffer, base::Unretained(&drm_thread_),
                      widget, size, format, usage, flags, buffer, framebuffer));
+}
+
+void DrmThreadProxy::CreateBufferAsync(gfx::AcceleratedWidget widget,
+                                       const gfx::Size& size,
+                                       gfx::BufferFormat format,
+                                       gfx::BufferUsage usage,
+                                       uint32_t flags,
+                                       CreateBufferAsyncCallback callback) {
+  DCHECK(drm_thread_.task_runner())
+      << "no task runner! in DrmThreadProxy::CreateBufferAsync";
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DrmThread::CreateBufferAsync,
+                     base::Unretained(&drm_thread_), widget, size, format,
+                     usage, flags,
+                     base::BindOnce(OnBufferCreatedOnDrmThread,
+                                    base::ThreadTaskRunnerHandle::Get(),
+                                    std::move(callback))));
 }
 
 void DrmThreadProxy::CreateBufferFromHandle(

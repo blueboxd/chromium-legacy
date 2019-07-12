@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "components/ui_devtools/ui_element.h"
+
 namespace ui {
 class Layer;
 }
@@ -22,6 +24,9 @@ namespace ui_devtools {
 void AppendLayerProperties(
     const ui::Layer* layer,
     std::vector<std::pair<std::string, std::string>>* ret);
+
+void AppendLayerPropertiesMatchedStyle(const ui::Layer* layer,
+                                       std::vector<UIElement::UIProperty>* ret);
 
 }  // namespace ui_devtools
 

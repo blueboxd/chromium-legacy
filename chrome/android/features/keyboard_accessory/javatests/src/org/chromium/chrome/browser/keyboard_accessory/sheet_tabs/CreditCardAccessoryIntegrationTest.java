@@ -119,7 +119,7 @@ public class CreditCardAccessoryIntegrationTest {
 
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
-        mHelper.waitForKeyboardAccessoryToBeShown(true);
+        mHelper.waitForKeyboardAccessoryToBeShown();
 
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(allOf(withContentDescription(R.string.credit_card_accessory_sheet_toggle),

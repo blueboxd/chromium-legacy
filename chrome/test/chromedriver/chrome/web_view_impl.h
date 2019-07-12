@@ -149,8 +149,6 @@ class WebViewImpl : public WebView {
                                  int xoffset,
                                  int yoffset) override;
   Status SynthesizePinchGesture(int x, int y, double scale_factor) override;
-  Status GetScreenOrientation(std::string* orientation) override;
-  Status SetScreenOrientation(std::string orientation) override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;

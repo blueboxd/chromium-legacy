@@ -5,6 +5,8 @@
 '''The <structure> element.
 '''
 
+from __future__ import print_function
+
 import os
 import platform
 import re
@@ -235,8 +237,8 @@ class StructureNode(base.Node):
 
   def RunPreSubstitutionGatherer(self, debug=False):
     if debug:
-      print 'Running gatherer %s for file %s' % (
-          str(type(self.gatherer)), self.GetInputPath())
+      print('Running gatherer %s for file %s' %
+            (type(self.gatherer), self.GetInputPath()))
 
     # Note: Parse() is idempotent, therefore this method is also.
     self.gatherer.Parse()

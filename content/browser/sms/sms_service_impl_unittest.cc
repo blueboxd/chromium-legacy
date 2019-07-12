@@ -299,12 +299,8 @@ TEST_F(SmsServiceImplTest, Timeout) {
 
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock, Retrieve()).WillOnce(Invoke([&mock]() {
-    mock->NotifyTimeout();
-  }));
-
   service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
+      base::TimeDelta::FromSeconds(0),
       base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
                                      const base::Optional<std::string>& sms) {
         EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, status);
@@ -340,7 +336,7 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
       .WillOnce(Invoke([&listen]() { listen.Quit(); }));
 
   service_ptr1->Receive(
-      base::TimeDelta::FromSeconds(10),
+      base::TimeDelta::FromSeconds(0),
       base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
                                      const base::Optional<std::string>& sms) {
         sms_status1 = status;
@@ -359,9 +355,8 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
 
   listen.Run();
 
-  // Timesout the first request.
-
-  mock->NotifyTimeout();
+  // The first request immediately times out because it uses TimeDelta of 0
+  // seconds.
 
   sms_loop1.Run();
 
@@ -375,6 +370,68 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
 
   EXPECT_EQ("second", response2.value());
   EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
+}
+
+TEST_F(SmsServiceImplTest, SecondRequestTimesOutEarlierThanFirstRequest) {
+  auto impl = std::make_unique<SmsServiceImpl>();
+  auto* mock = new NiceMock<MockSmsProvider>();
+
+  impl->SetSmsProviderForTest(base::WrapUnique(mock));
+
+  blink::mojom::SmsReceiverPtr service_ptr1;
+  GURL url1("http://a.com");
+  impl->Bind(mojo::MakeRequest(&service_ptr1), url::Origin::Create(url1));
+
+  blink::mojom::SmsReceiverPtr service_ptr2;
+  GURL url2("http://b.com");
+  impl->Bind(mojo::MakeRequest(&service_ptr2), url::Origin::Create(url2));
+
+  blink::mojom::SmsStatus sms_status1;
+  base::Optional<std::string> response1;
+  blink::mojom::SmsStatus sms_status2;
+  base::Optional<std::string> response2;
+
+  base::RunLoop listen, sms_loop1, sms_loop2;
+
+  EXPECT_CALL(*mock, Retrieve())
+      .WillOnce(testing::Return())
+      .WillOnce(Invoke([&listen]() { listen.Quit(); }));
+
+  service_ptr1->Receive(
+      base::TimeDelta::FromSeconds(10),
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status1 = status;
+        response1 = sms;
+        sms_loop1.Quit();
+      }));
+
+  service_ptr2->Receive(
+      base::TimeDelta::FromSeconds(0),
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status2 = status;
+        response2 = sms;
+        sms_loop2.Quit();
+      }));
+
+  listen.Run();
+
+  // The second request immediately times out because it uses TimeDelta of 0
+  // seconds.
+
+  sms_loop2.Run();
+
+  EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms_status2);
+
+  // Delivers the first SMS.
+
+  mock->NotifyReceive(url::Origin::Create(url1), "first");
+
+  sms_loop1.Run();
+
+  EXPECT_EQ("first", response1.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status1);
 }
 
 }  // namespace content

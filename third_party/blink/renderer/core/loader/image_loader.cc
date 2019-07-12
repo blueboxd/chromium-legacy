@@ -384,6 +384,32 @@ bool ImageLoader::ShouldUpdateOnInsertedInto(
   return !HasPendingActivity() || referrer_policy != last_referrer_policy_;
 }
 
+bool ImageLoader::ImageIsPotentiallyAvailable() const {
+  bool image_has_loaded = image_content_ && !image_content_->IsLoading() &&
+                          !image_content_->ErrorOccurred();
+  bool image_still_loading = !image_has_loaded && HasPendingActivity() &&
+                             !HasPendingError() &&
+                             !element_->ImageSourceURL().IsEmpty();
+  bool image_has_image = image_content_ && image_content_->HasImage();
+  bool image_is_document = loading_image_document_ && image_content_ &&
+                           !image_content_->ErrorOccurred();
+
+  // Icky special case for deferred images:
+  // A deferred image is not loading, does have pending activity, does not
+  // have an error, but it does have an ImageResourceContent associated
+  // with it, so |image_has_loaded| will be true even though the image hasn't
+  // actually loaded. Fixing the definition of |image_has_loaded| isn't
+  // sufficient, because a deferred image does have pending activity, does not
+  // have a pending error, and does have a source URL, so if |image_has_loaded|
+  // was correct, |image_still_loading| would become wrong.
+  //
+  // Instead of dealing with that, there's a separate check that the
+  // ImageResourceContent has non-null image data associated with it, which
+  // isn't folded into |image_has_loaded| above.
+  return (image_has_loaded && image_has_image) || image_still_loading ||
+         image_is_document;
+}
+
 void ImageLoader::ClearImage() {
   SetImageWithoutConsideringPendingLoadEvent(nullptr);
 }
@@ -667,6 +693,13 @@ void ImageLoader::DoUpdateFromElement(
       new_image_content == old_image_content) {
     ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
+    // Loading didn't start (loading of images was disabled). We show fallback
+    // contents here, while we don't dispatch an 'error' event etc., because
+    // spec-wise the image remains in the "Unavailable" state.
+    if (new_image_content &&
+        new_image_content->GetContentStatus() == ResourceStatus::kNotStarted)
+      NoImageResourceToLoad();
+
     if (pending_load_event_.IsActive())
       pending_load_event_.Cancel();
 

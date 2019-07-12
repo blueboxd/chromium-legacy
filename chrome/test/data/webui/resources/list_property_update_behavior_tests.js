@@ -71,7 +71,9 @@ suite('ListPropertyUpdateBehavior', function() {
        *     called for the |words| property on an item of |complexArray|.
        */
       updateComplexArray(newArray) {
-        if (this.updateList('complexArray', x => x.letter, newArray)) {
+        if (this.updateList(
+                'complexArray', x => x.letter, newArray,
+                true /* uidBasedUpdate */)) {
           return {topArrayChanged: true, wordsArrayChanged: false};
         }
 
@@ -280,4 +282,24 @@ suite('ListPropertyUpdateBehavior', function() {
         assertTrue(result.wordsArrayChanged);
         assertComplexArrayEquals(testElement.complexArray, newArray);
       });
+
+  test('first item with same uid modified', () => {
+    const newArray = JSON.parse(JSON.stringify(testElement.complexArray));
+    assertTrue(newArray[0].words.length > 0);
+    assertNotEquals('apricot', newArray[0].words[0]);
+    newArray[0].words = ['apricot'];
+    assertTrue(testElement.updateList('complexArray', x => x.letter, newArray));
+    assertDeepEquals(['apricot'], testElement.complexArray[0].words);
+  });
+
+  test('first item modified with same uid and last item removed', () => {
+    const newArray = JSON.parse(JSON.stringify(testElement.complexArray));
+    assertTrue(newArray[0].words.length > 0);
+    assertNotEquals('apricot', newArray[0].words[0]);
+    newArray[0].words = ['apricot'];
+    assertTrue(newArray.length > 1);
+    newArray.pop();
+    assertTrue(testElement.updateList('complexArray', x => x.letter, newArray));
+    assertDeepEquals(['apricot'], testElement.complexArray[0].words);
+  });
 });

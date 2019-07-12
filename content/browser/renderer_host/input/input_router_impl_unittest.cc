@@ -1274,10 +1274,10 @@ TEST_P(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
 
-  // The remainder of the touch sequence should be dropped.
+  // The remainder of the touch sequence should be forwarded.
   ReleaseTouchPoint(0);
   SendTouchEvent();
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
 
   PressAndSetTouchActionAuto();
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
@@ -2061,7 +2061,7 @@ TEST_P(InputRouterImplTest, OnSetWhiteListedTouchAction) {
 }
 
 // Tests that touch event stream validation passes when events are filtered
-// out. See crbug.com/581231 for details.
+// out. See https://crbug.com/581231 for details.
 TEST_P(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   // Touch sequence with touch handler.
   OnHasTouchEventHandlers(true);
@@ -2081,11 +2081,11 @@ TEST_P(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
-  // This event will be filtered out, since no consumer exists.
+  // This event will not be filtered out even though no consumer exists.
   ReleaseTouchPoint(1);
   SendTouchEvent();
   dispatched_messages = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, dispatched_messages.size());
+  EXPECT_EQ(1U, dispatched_messages.size());
 
   // If the validator didn't see the filtered out release event, it will crash
   // now, upon seeing a press for a touch which it believes to be still pressed.

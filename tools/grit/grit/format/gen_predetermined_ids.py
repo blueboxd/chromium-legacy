@@ -9,6 +9,8 @@ input to grit via the -p option. This is meant to be run manually every once in
 a while and its output checked in. See tools/gritsettings/README.md for details.
 """
 
+from __future__ import print_function
+
 import fnmatch
 import os
 import re
@@ -128,7 +130,7 @@ def _GeneratePredeterminedIdsFile(ordered_resources_file, out_dir):
   output_resource_map = GenerateResourceMapping(original_resources,
                                                 ordered_resource_ids)
   for res_id in sorted(output_resource_map.keys()):
-    print "{} {}".format(output_resource_map[res_id], res_id)
+    print(output_resource_map[res_id], res_id)
 
 
 def main(argv):

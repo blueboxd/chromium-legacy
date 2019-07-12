@@ -524,8 +524,14 @@ std::unique_ptr<StreamParser> StreamParserFactory::Create(
 
   if (CheckTypeAndCodecs(type, codecs, media_log, &factory_function,
                          &audio_codecs, &video_codecs)) {
-    // Log the number of codecs specified, as well as the details on each one.
-    UMA_HISTOGRAM_COUNTS_100("Media.MSE.NumberOfTracks", codecs.size());
+    // Log the expected codecs.
+    // TODO(wolenetz): Relocate the logging to the parser configuration
+    // callback. This creation method is called in AddId(), and also in
+    // CanChangeType() and ChangeType(), so potentially overlogs codecs leading
+    // to disproportion versus actually parsed codec configurations from
+    // initialization segments. For this work and also recording when implicit
+    // codec switching occurs (without explicit ChangeType), see
+    // https://crbug.com/535738.
     for (size_t i = 0; i < audio_codecs.size(); ++i) {
       UMA_HISTOGRAM_ENUMERATION("Media.MSE.AudioCodec", audio_codecs[i],
                                 CodecInfo::HISTOGRAM_MAX + 1);

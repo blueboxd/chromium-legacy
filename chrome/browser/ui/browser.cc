@@ -182,6 +182,7 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/user_manager/user_manager.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
@@ -237,6 +238,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -313,6 +316,26 @@ bool CanCreateBrowserForProfile(Profile* profile) {
   return IncognitoModePrefs::CanOpenBrowser(profile) &&
          (!profile->IsGuestSession() || profile->IsOffTheRecord()) &&
          profile->AllowsBrowserWindows();
+}
+bool IsOnKioskSplashScreen() {
+#if defined(OS_CHROMEOS)
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (!session_manager)
+    return false;
+  // We have to check this way because of CHECK() in UserManager::Get().
+  if (!user_manager::UserManager::IsInitialized())
+    return false;
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager->IsLoggedInAsKioskApp() &&
+      !user_manager->IsLoggedInAsArcKioskApp())
+    return false;
+  if (session_manager->session_state() != session_manager::SessionState::LOGIN_PRIMARY)
+    return false;
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -394,6 +417,10 @@ class Browser::InterstitialObserver : public content::WebContentsObserver {
 Browser* Browser::Create(const CreateParams& params) {
   if (!CanCreateBrowserForProfile(params.profile))
     return nullptr;
+  // Disable browser creation on kiosk mode while loading.
+  if (IsOnKioskSplashScreen())
+    return nullptr;
+
   return new Browser(params);
 }
 

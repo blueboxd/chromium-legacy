@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -61,6 +62,17 @@ TabSwitchTimeRecorder::TabWasShown(
   DCHECK(!render_widget_visibility_request_timestamp.is_null());
   DCHECK(!tab_switch_start_state_);
   DCHECK(render_widget_visibility_request_timestamp_.is_null());
+
+  if (tab_switch_start_state_) {
+    // TabWasShown() is called multiple times without the tab being hidden in
+    // between. This shouldn't happen per the DCHECK above. Dump without
+    // crashing to gather more information for https://crbug.com/981757.
+    //
+    // TODO(fdoray): This code should be removed no later than August 30, 2019.
+    // https://crbug.com/981757
+    base::debug::DumpWithoutCrashing();
+    weak_ptr_factory_.InvalidateWeakPtrs();
+  }
 
   has_saved_frames_ = has_saved_frames;
   tab_switch_start_state_ = start_state;

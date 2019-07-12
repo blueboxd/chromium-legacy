@@ -38,13 +38,6 @@ void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
   handle.Close();
 }
 
-// static
-size_t SharedMemory::GetHandleLimit() {
-  // Duplicated from the internal Magenta kernel constant kMaxHandleCount
-  // (kernel/lib/zircon/zircon.cpp).
-  return 256 * 1024u;
-}
-
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }

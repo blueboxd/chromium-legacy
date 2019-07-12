@@ -171,13 +171,13 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
   // RenderWidget which forwards them to the TextInputClientObserver
   using Range = gfx::Range;
   using Point = gfx::Point;
-  view->OnMessageReceived(
+  view->GetWidget()->OnMessageReceived(
       TextInputClientMsg_CharacterIndexForPoint(routing_id, Point()));
-  view->OnMessageReceived(
+  view->GetWidget()->OnMessageReceived(
       TextInputClientMsg_FirstRectForCharacterRange(routing_id, Range()));
-  view->OnMessageReceived(
+  view->GetWidget()->OnMessageReceived(
       TextInputClientMsg_StringForRange(routing_id, Range()));
-  view->OnMessageReceived(
+  view->GetWidget()->OnMessageReceived(
       TextInputClientMsg_CharacterIndexForPoint(routing_id, Point()));
 }
 

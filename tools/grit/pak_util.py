@@ -9,6 +9,8 @@ For details on the pak file format, see:
 https://dev.chromium.org/developers/design-documents/linuxresourcesandlocalizedstrings
 """
 
+from __future__ import print_function
+
 import argparse
 import hashlib
 import os

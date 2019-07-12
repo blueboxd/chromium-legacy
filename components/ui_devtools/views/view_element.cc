@@ -83,6 +83,49 @@ ViewElement::GetCustomProperties() const {
   return ret;
 }
 
+std::vector<UIElement::ClassProperties>
+ViewElement::GetCustomPropertiesForMatchedStyle() const {
+  std::vector<UIElement::ClassProperties> ret;
+
+  ui::Layer* layer = view_->layer();
+  if (layer) {
+    std::vector<UIElement::UIProperty> layer_properties;
+    AppendLayerPropertiesMatchedStyle(layer, &layer_properties);
+    ret.emplace_back("Layer", layer_properties);
+  }
+
+  std::vector<UIElement::UIProperty> class_properties;
+  views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
+  for (auto member = metadata->begin(); member != metadata->end(); member++) {
+    if (member.GetCurrentCollectionName() == "View" &&
+        class_properties.empty()) {
+      gfx::Rect bounds = view_->bounds();
+      class_properties.emplace_back("x", base::NumberToString(bounds.x()));
+      class_properties.emplace_back("y", base::NumberToString(bounds.y()));
+      class_properties.emplace_back("width",
+                                    base::NumberToString(bounds.width()));
+      class_properties.emplace_back("height",
+                                    base::NumberToString(bounds.height()));
+      class_properties.emplace_back("is-drawn",
+                                    view_->IsDrawn() ? "true" : "false");
+      base::string16 description = view_->GetTooltipText(gfx::Point());
+      if (!description.empty())
+        class_properties.emplace_back("tooltip",
+                                      base::UTF16ToUTF8(description));
+    }
+
+    class_properties.emplace_back(
+        (*member)->member_name(),
+        base::UTF16ToUTF8((*member)->GetValueAsString(view_)));
+
+    if (member.IsLastMember()) {
+      ret.emplace_back(member.GetCurrentCollectionName(), class_properties);
+      class_properties.clear();
+    }
+  }
+  return ret;
+}
+
 void ViewElement::GetBounds(gfx::Rect* bounds) const {
   *bounds = view_->bounds();
 }

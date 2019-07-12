@@ -81,19 +81,6 @@ AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
   }
 }
 
-// Used by UMA histograms and entries shouldn't be re-ordered or removed.
-enum AudioTrackProcessingStates {
-  AUDIO_PROCESSING_ENABLED = 0,
-  AUDIO_PROCESSING_DISABLED,
-  AUDIO_PROCESSING_IN_WEBRTC,
-  AUDIO_PROCESSING_MAX
-};
-
-void RecordProcessingState(AudioTrackProcessingStates state) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioTrackProcessingStates",
-                            state, AUDIO_PROCESSING_MAX);
-}
-
 // Checks if the default minimum starting volume value for the AGC is overridden
 // on the command line.
 base::Optional<int> GetStartupMinVolumeForAgc() {
@@ -547,7 +534,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
     DCHECK_EQ(audio_mirroring_, WouldModifyAudio(properties));
-    RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
 
@@ -639,8 +625,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   audio_processing_->ApplyConfig(apm_config);
-
-  RecordProcessingState(AUDIO_PROCESSING_ENABLED);
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(

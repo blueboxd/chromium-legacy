@@ -19,11 +19,11 @@ public class ArDelegateImpl implements ArDelegate {
 
     @Override
     public void init() {
-        ArCoreJavaUtils.installArCoreDeviceProviderFactory();
+        ArCoreInstallUtils.installArCoreDeviceProviderFactory();
     }
 
     @Override
     public void registerOnResumeActivity(Activity activity) {
-        ArCoreJavaUtils.onResumeActivityWithNative(activity);
+        ArCoreInstallUtils.onResumeActivityWithNative(activity);
     }
 }

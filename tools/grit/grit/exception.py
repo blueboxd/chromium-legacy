@@ -5,6 +5,8 @@
 '''Exception types for GRIT.
 '''
 
+from __future__ import print_function
+
 class Base(Exception):
   '''A base exception that uses the class's docstring in addition to any
   user-provided message as the body of the Base.

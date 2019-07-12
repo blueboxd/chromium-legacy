@@ -5,6 +5,8 @@
 '''Utilities used by GRIT.
 '''
 
+from __future__ import print_function
+
 import codecs
 import htmlentitydefs
 import os
@@ -434,7 +436,7 @@ def LanguageToCodepage(lang):
   if lang in _LANG_TO_CODEPAGE:
     return _LANG_TO_CODEPAGE[lang]
   else:
-    print "Not sure which codepage to use for %s, assuming cp1252" % lang
+    print("Not sure which codepage to use for %s, assuming cp1252" % lang)
     return 1252
 
 def NewClassInstance(class_name, class_type):

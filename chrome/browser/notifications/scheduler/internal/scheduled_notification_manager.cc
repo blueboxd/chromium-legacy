@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -27,13 +28,15 @@ bool CreateTimeCompare(const NotificationEntry* lhs,
 
 class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
  public:
-  using Store = std::unique_ptr<CollectionStore<NotificationEntry>>;
+  using NotificationStore = std::unique_ptr<CollectionStore<NotificationEntry>>;
 
   ScheduledNotificationManagerImpl(
-      Store store,
+      NotificationStore notification_store,
+      std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
       const SchedulerConfig& config)
-      : store_(std::move(store)),
+      : notification_store_(std::move(notification_store)),
+        icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
         config_(config),
@@ -43,9 +46,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   void Init(Delegate* delegate, InitCallback callback) override {
     DCHECK(!delegate_);
     delegate_ = delegate;
-    store_->InitAndLoad(
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnStoreInitialized,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+    notification_store_->InitAndLoad(base::BindOnce(
+        &ScheduledNotificationManagerImpl::OnNotificationStoreInitialized,
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // NotificationManager implementation.
@@ -69,7 +73,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     entry->schedule_params = std::move(notification_params->schedule_params);
     auto* entry_ptr = entry.get();
     notifications_[type][guid] = std::move(entry);
-    store_->Add(
+    notification_store_->Add(
         guid, *entry_ptr,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -88,7 +92,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     if (notifications_[entry->type].empty())
       notifications_.erase(entry->type);
 
-    store_->Delete(
+    notification_store_->Delete(
         guid,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -133,7 +137,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     while (it != notifications_[type].end()) {
       const auto& entry = *it->second;
       ++it;
-      store_->Delete(
+      notification_store_->Delete(
           entry.guid,
           base::BindOnce(
               &ScheduledNotificationManagerImpl::OnNotificationDeleted,
@@ -155,9 +159,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     }
   }
 
-  void OnStoreInitialized(InitCallback callback,
-                          bool success,
-                          CollectionStore<NotificationEntry>::Entries entries) {
+  void OnNotificationStoreInitialized(
+      InitCallback callback,
+      bool success,
+      CollectionStore<NotificationEntry>::Entries entries) {
     if (!success) {
       std::move(callback).Run(false);
       return;
@@ -169,7 +174,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       bool expired = entry->create_time + config_.notification_expiration <=
                      base::Time::Now();
       if (expired) {
-        store_->Delete(
+        notification_store_->Delete(
             entry->guid,
             base::BindOnce(
                 &ScheduledNotificationManagerImpl::OnNotificationDeleted,
@@ -179,14 +184,26 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       }
     }
     SyncRegisteredClients();
-    std::move(callback).Run(true);
+
+    icon_store_->Init(base::BindOnce(
+        &ScheduledNotificationManagerImpl::OnIconStoreInitialized,
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnIconStoreInitialized(InitCallback callback, bool success) {
+    std::move(callback).Run(success);
   }
 
   void OnNotificationAdded(bool success) { NOTIMPLEMENTED(); }
 
   void OnNotificationDeleted(bool success) { NOTIMPLEMENTED(); }
 
-  Store store_;
+  void OnIconAdded(bool success) { NOTIMPLEMENTED(); }
+
+  void OnIconDeleted(bool success) { NOTIMPLEMENTED(); }
+
+  NotificationStore notification_store_;
+  std::unique_ptr<IconStore> icon_store_;
   const std::unordered_set<SchedulerClientType> clients_;
   Delegate* delegate_;
   std::map<SchedulerClientType,
@@ -201,11 +218,12 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 // static
 std::unique_ptr<ScheduledNotificationManager>
 ScheduledNotificationManager::Create(
-    std::unique_ptr<CollectionStore<NotificationEntry>> store,
+    std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
+    std::unique_ptr<IconStore> icon_store,
     const std::vector<SchedulerClientType>& clients,
     const SchedulerConfig& config) {
-  return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store),
-                                                            clients, config);
+  return std::make_unique<ScheduledNotificationManagerImpl>(
+      std::move(notification_store), std::move(icon_store), clients, config);
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;

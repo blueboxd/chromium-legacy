@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -71,7 +70,6 @@ class ASH_EXPORT TabletModeController
       public WindowTreeHostManager::Observer,
       public SessionObserver,
       public ui::InputDeviceEventObserver,
-      public KioskNextShellObserver,
       public ui::LayerAnimationObserver {
  public:
   // Enable or disable using a screenshot for testing as it makes the
@@ -148,9 +146,6 @@ class ASH_EXPORT TabletModeController
   // ui::InputDeviceEventObserver:
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
-
-  // KioskNextShellObserver:
-  void OnKioskNextEnabled() override;
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;

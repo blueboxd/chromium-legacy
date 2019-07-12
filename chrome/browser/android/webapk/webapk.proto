@@ -46,6 +46,7 @@ message WebApk {
     ORIENTATION_DIFFERS = 11;
     DISPLAY_MODE_DIFFERS = 12;
     WEB_SHARE_TARGET_DIFFERS = 13;
+    MANUALLY_TRIGGERED = 14;
   }
 
   // Package name of the WebAPK.

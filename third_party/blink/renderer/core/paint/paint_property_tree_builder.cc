@@ -1002,13 +1002,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
             state.backdrop_filter_bounds =
                 properties_->Effect()->BackdropFilterBounds();
           }
-          // With BGPT disabled, UpdateFilterReferenceBox gets called from
-          // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
-          // for composited layers.
-          if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-              layer->GetCompositingState() != kPaintsIntoOwnBacking) {
-            layer->UpdateFilterReferenceBox();
-          }
           layer->UpdateCompositorFilterOperationsForBackdropFilter(
               state.backdrop_filter, &state.backdrop_filter_bounds);
           layer->ClearBackdropFilterOnEffectNodeDirty();
@@ -2290,6 +2283,17 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 }
 
 void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
+  if (object_.HasLayer()) {
+    PaintLayer* layer = ToLayoutBoxModelObject(object_).Layer();
+    // With BGPT disabled, UpdateFilterReferenceBox gets called from
+    // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
+    // for composited layers.
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+        layer->GetCompositingState() != kPaintsIntoOwnBacking) {
+      layer->UpdateFilterReferenceBox();
+    }
+  }
+
   if (!object_.IsBox())
     return;
 

@@ -678,6 +678,7 @@
         },
         'test_suites': {
           'gtest_tests': 'chromeos_device_kevin_tests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
       },
@@ -1629,7 +1630,7 @@
           ],
         },
         'test_suites': {
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+          'isolated_scripts': 'chromeos_experimental_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
       },

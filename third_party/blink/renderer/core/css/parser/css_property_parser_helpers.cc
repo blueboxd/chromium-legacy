@@ -202,7 +202,7 @@ class CalcParser {
   }
 
   const CSSMathFunctionValue* Value() const { return calc_value_; }
-  CSSPrimitiveValue* ConsumeValue() {
+  CSSMathFunctionValue* ConsumeValue() {
     if (!calc_value_)
       return nullptr;
     source_range_ = range_;
@@ -450,8 +450,12 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
 namespace {
 
 bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
-  return value &&
-         value->TypeWithCalcResolved() ==
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug in handling user units in math functions. Fix
+  // it if necessary.
+  const auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
+  return numeric_literal &&
+         numeric_literal->GetType() ==
              CSSPrimitiveValue::UnitType::kUserUnits &&
          value->GetDoubleValue() != 0;
 }
@@ -511,14 +515,14 @@ CSSPrimitiveValue* ConsumeAngle(
   if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (calculation->Category() != kCalcAngle)
       return nullptr;
-    if (CSSPrimitiveValue* result = calc_parser.ConsumeValue()) {
-      if (result->GetDoubleValue() < minimum_value) {
-        return CSSNumericLiteralValue::Create(minimum_value,
-                                              result->TypeWithCalcResolved());
+    if (CSSMathFunctionValue* result = calc_parser.ConsumeValue()) {
+      if (result->ComputeDegrees() < minimum_value) {
+        return CSSNumericLiteralValue::Create(
+            minimum_value, CSSPrimitiveValue::UnitType::kDegrees);
       }
-      if (result->GetDoubleValue() > maximum_value) {
-        return CSSNumericLiteralValue::Create(maximum_value,
-                                              result->TypeWithCalcResolved());
+      if (result->ComputeDegrees() > maximum_value) {
+        return CSSNumericLiteralValue::Create(
+            maximum_value, CSSPrimitiveValue::UnitType::kDegrees);
       }
       return result;
     }

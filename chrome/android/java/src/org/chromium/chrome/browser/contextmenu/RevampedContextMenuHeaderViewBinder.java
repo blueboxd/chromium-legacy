@@ -34,7 +34,7 @@ class RevampedContextMenuHeaderViewBinder {
                             ? View.GONE
                             : View.VISIBLE);
         } else if (propertyKey == RevampedContextMenuHeaderProperties.URL_CLICK_LISTENER) {
-            view.findViewById(R.id.menu_header_url)
+            view.findViewById(R.id.title_and_url)
                     .setOnClickListener(
                             model.get(RevampedContextMenuHeaderProperties.URL_CLICK_LISTENER));
         } else if (propertyKey == RevampedContextMenuHeaderProperties.URL_MAX_LINES) {

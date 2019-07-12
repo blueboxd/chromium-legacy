@@ -145,8 +145,7 @@ CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
 CSSMathExpressionNumericLiteral::CSSMathExpressionNumericLiteral(
     CSSNumericLiteralValue* value,
     bool is_integer)
-    : CSSMathExpressionNode(UnitCategory(value->TypeWithCalcResolved()),
-                            is_integer),
+    : CSSMathExpressionNode(UnitCategory(value->GetType()), is_integer),
       value_(value) {}
 
 bool CSSMathExpressionNumericLiteral::IsZero() const {
@@ -233,7 +232,7 @@ bool CSSMathExpressionNumericLiteral::operator==(
 
 CSSPrimitiveValue::UnitType CSSMathExpressionNumericLiteral::ResolvedUnitType()
     const {
-  return value_->TypeWithCalcResolved();
+  return value_->GetType();
 }
 
 void CSSMathExpressionNumericLiteral::Trace(blink::Visitor* visitor) {

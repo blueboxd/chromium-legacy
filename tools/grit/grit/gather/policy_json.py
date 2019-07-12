@@ -5,6 +5,8 @@
 '''Support for "policy_templates.json" format used by the policy template
 generator as a source for generating ADM,ADMX,etc files.'''
 
+from __future__ import print_function
+
 import json
 import types
 import sys
@@ -275,7 +277,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
 
     self.text_ = self._LoadInputFile()
     if util.IsExtraVerbose():
-      print self.text_
+      print(self.text_)
 
     self.data = eval(self.text_)
 

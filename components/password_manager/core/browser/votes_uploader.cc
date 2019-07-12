@@ -7,14 +7,18 @@
 #include <ctype.h>
 
 #include <algorithm>
-
+#include <utility>
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -23,6 +27,7 @@ using autofill::AutofillDownloadManager;
 using autofill::AutofillField;
 using autofill::AutofillUploadContents;
 using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::FormStructure;
 using autofill::PasswordForm;
 using autofill::RandomizedEncoder;
@@ -35,6 +40,8 @@ using Logger = autofill::SavePasswordProgressLogger;
 namespace password_manager {
 
 namespace {
+// Number of distinct low-entropy hash values.
+constexpr uint32_t kNumberOfLowEntropyHashValues = 64;
 
 // Contains all special symbols considered for password-generation.
 constexpr char kSpecialSymbols[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
@@ -100,14 +107,13 @@ void LabelFields(const FieldTypeMap& field_types,
              field->vote_type() !=
                  AutofillUploadContents::Field::NO_INFORMATION);
     }
-
     ServerFieldTypeSet types;
     types.insert(type);
     field->set_possible_types(types);
   }
 }
 
-// Returns true iff |credentials| has the same password as an entry in |matches|
+// Returns true if |credentials| has the same password as an entry in |matches|
 // which doesn't have a username.
 bool IsAddingUsernameToExistingMatch(
     const PasswordForm& credentials,
@@ -152,6 +158,11 @@ int GetRandomSpecialSymbolFromPassword(const base::string16& password) {
                &IsSpecialSymbol);
   DCHECK(!symbols.empty()) << "Password must contain at least one symbol.";
   return symbols[base::RandGenerator(symbols.size())];
+}
+
+size_t GetLowEntropyHashValue(const base::string16& value) {
+  return base::PersistentHash(base::UTF16ToUTF8(value)) %
+         kNumberOfLowEntropyHashValues;
 }
 
 }  // namespace
@@ -398,9 +409,31 @@ void VotesUploader::UploadFirstLoginVotes(
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
 
+  SetInitialHashValueOfUsernameField(
+      form_to_upload.username_element_renderer_id, &form_structure);
+
   download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       std::string(), true /* observed_submission */, nullptr /* prefs */);
+}
+
+void VotesUploader::SetInitialHashValueOfUsernameField(
+    uint32_t username_element_renderer_id,
+    FormStructure* form_structure) {
+  auto it = initial_values_.find(username_element_renderer_id);
+
+  if (it == initial_values_.end() || it->second.empty())
+    return;
+
+  for (const auto& field : *form_structure) {
+    if (field && field->unique_renderer_id == username_element_renderer_id) {
+      const base::string16 form_signature =
+          base::UTF8ToUTF16(form_structure->FormSignatureAsStr());
+      const base::string16 seeded_input = it->second.append(form_signature);
+      field->set_initial_value_hash(GetLowEntropyHashValue(seeded_input));
+      break;
+    }
+  }
 }
 
 void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
@@ -569,6 +602,15 @@ void VotesUploader::GeneratePasswordAttributesVote(
                                  : base::RandGenerator(actual_length - 1) + 1;
 
   form_structure->set_password_length_vote(randomized_length);
+}
+
+void VotesUploader::StoreInitialFieldValues(
+    const autofill::FormData& observed_form) {
+  for (const auto& field : observed_form.fields) {
+    if (!field.value.empty())
+      initial_values_.insert(
+          std::make_pair(field.unique_renderer_id, field.value));
+  }
 }
 
 }  // namespace password_manager

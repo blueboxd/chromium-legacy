@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
@@ -536,6 +537,18 @@ ScriptPromise CredentialsContainer::get(
       }
     }
 
+    if (!options->publicKey()->hasUserVerification()) {
+      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          "publicKey.userVerification was not set to any value in Web "
+          "Authentication navigator.credentials.get() call. This defaults to "
+          "'preferred', which is probably not what you want. If in doubt, set "
+          "to 'discouraged'. See "
+          "https://chromium.googlesource.com/chromium/src/+/master/content/"
+          "browser/webauth/uv_preferred.md for details."));
+    }
+
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -733,6 +746,21 @@ ScriptPromise CredentialsContainer::create(
       }
       options->signal()->AddAlgorithm(
           WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
+    }
+
+    if (options->publicKey()->hasAuthenticatorSelection() &&
+        !options->publicKey()
+             ->authenticatorSelection()
+             ->hasUserVerification()) {
+      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          "publicKey.authenticatorSelection.userVerification was not set to "
+          "any value in Web Authentication navigator.credentials.create() "
+          "call. This defaults to 'preferred', which is probably not what you "
+          "want. If in doubt, set to 'discouraged'. See "
+          "https://chromium.googlesource.com/chromium/src/+/master/content/"
+          "browser/webauth/uv_preferred.md for details"));
     }
 
     auto mojo_options =

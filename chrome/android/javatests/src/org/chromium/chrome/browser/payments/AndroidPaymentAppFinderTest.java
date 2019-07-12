@@ -94,6 +94,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
     // PaymentAppCreatedCallback
     @Override
+    public void onGetPaymentAppsError(String errorMessage) {}
+
+    // PaymentAppCreatedCallback
+    @Override
     public void onAllPaymentAppsCreated() {
         mAllPaymentAppsCreated = true;
     }

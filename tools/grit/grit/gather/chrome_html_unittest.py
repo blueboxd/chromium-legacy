@@ -5,6 +5,7 @@
 
 '''Unit tests for grit.gather.chrome_html'''
 
+from __future__ import print_function
 
 import os
 import re

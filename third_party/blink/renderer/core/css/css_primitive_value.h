@@ -159,7 +159,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return unit == UnitType::kDegrees || unit == UnitType::kRadians ||
            unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
-  bool IsAngle() const { return IsAngle(TypeWithCalcResolved()); }
+  bool IsAngle() const;
   bool IsFontRelativeLength() const;
   static bool IsViewportPercentageLength(UnitType type) {
     return type >= UnitType::kViewportWidth && type <= UnitType::kViewportMax;
@@ -173,19 +173,15 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
            type == UnitType::kExs || type == UnitType::kRems ||
            type == UnitType::kChs || IsViewportPercentageLength(type);
   }
-  bool IsLength() const { return IsLength(TypeWithCalcResolved()); }
-  bool IsNumber() const {
-    return TypeWithCalcResolved() == UnitType::kNumber ||
-           TypeWithCalcResolved() == UnitType::kInteger;
-  }
-  bool IsPercentage() const {
-    return TypeWithCalcResolved() == UnitType::kPercentage;
-  }
-  bool IsPx() const { return TypeWithCalcResolved() == UnitType::kPixels; }
+  bool IsLength() const;
+  bool IsNumber() const;
+  bool IsInteger() const;
+  bool IsPercentage() const;
+  bool IsPx() const;
   static bool IsTime(UnitType unit) {
     return unit == UnitType::kSeconds || unit == UnitType::kMilliseconds;
   }
-  bool IsTime() const { return IsTime(TypeWithCalcResolved()); }
+  bool IsTime() const;
   static bool IsFrequency(UnitType unit) {
     return unit == UnitType::kHertz || unit == UnitType::kKilohertz;
   }

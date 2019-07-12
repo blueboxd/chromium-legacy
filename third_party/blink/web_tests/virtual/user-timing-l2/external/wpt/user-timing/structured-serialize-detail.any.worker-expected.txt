@@ -1,0 +1,16 @@
+This is a testharness.js-based test.
+FAIL The detail property in the mark constructor should be structured-clone. Cannot read property 'randomInfo' of undefined
+FAIL The detail property in the mark method should be structured-clone. Cannot read property 'detail' of null
+FAIL When accessing detail from a mark entry and the detail is not provided, just return a null value. Cannot read property 'detail' of null
+FAIL Mark: Throw an exception when the detail property cannot be structured-serialized. assert_throws: Trying to structured-serialize a Symbol. function "()=>{
+    new PerformanceMark("A", { detail });
+  }" did not throw
+FAIL The detail property in the measure method should be structured-clone. Cannot read property 'detail' of null
+FAIL The detail property in the measure method should be the same reference. Cannot read property 'detail' of null
+FAIL When accessing detail from a measure entry and the detail is not provided, just return a null value. Cannot read property 'detail' of null
+FAIL Measure: Throw an exception when the detail property cannot be structured-serialized. assert_throws: Trying to structured-serialize a Symbol. function "()=>{
+    performance.measure("A", { detail });
+  }" did not throw
+FAIL The detail object is cloned when passed to mark API. Cannot read property 'detail' of null
+Harness: the test ran to completion.
+

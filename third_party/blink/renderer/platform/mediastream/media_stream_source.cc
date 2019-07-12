@@ -166,6 +166,12 @@ void MediaStreamSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(observers_);
 }
 
+void MediaStreamSource::Dispose() {
+  audio_consumers_.clear();
+  platform_source_.reset();
+  constraints_.Reset();
+}
+
 STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
                    MediaStreamSource::kTypeAudio);
 STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,

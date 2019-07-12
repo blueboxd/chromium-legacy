@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL measure entries' detail and start/end are customizable Cannot read property 'name' of null
+FAIL measure should throw a TypeError when passed an invalid argument combination assert_throws: measure should throw a TypeError when passed an options object and an end time function "function() {
+      self.performance.measure("optionsAndNumberEnd", {'start': 2}, 12);
+    }" threw object "SyntaxError: Failed to execute 'measure' on 'Performance': The mark '12' does not exist." ("SyntaxError") expected object "TypeError" ("TypeError")
+Harness: the test ran to completion.
+

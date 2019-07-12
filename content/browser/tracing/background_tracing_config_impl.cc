@@ -281,10 +281,10 @@ base::trace_event::TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
   chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
 
 #if defined(OS_ANDROID)
-  // Set low trace buffer size on Android in order to upload small trace files.
+  // For legacy tracing backend, set low trace buffer size on Android in order
+  // to upload small trace files.
   if (tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
     chrome_config.SetTraceBufferSizeInEvents(20000);
-    chrome_config.SetTraceBufferSizeInKb(500);
   }
 #endif
 

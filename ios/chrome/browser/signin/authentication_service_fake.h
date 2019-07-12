@@ -26,8 +26,7 @@ class AuthenticationServiceFake : public AuthenticationService {
 
   ~AuthenticationServiceFake() override;
 
-  void SignIn(ChromeIdentity* identity,
-              const std::string& hosted_domain) override;
+  void SignIn(ChromeIdentity* identity) override;
 
   void SignOut(signin_metrics::ProfileSignout signout_source,
                ProceduralBlock completion) override;

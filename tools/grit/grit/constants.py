@@ -5,6 +5,7 @@
 '''Constant definitions for GRIT.
 '''
 
+from __future__ import print_function
 
 # This is the Icelandic noun meaning "grit" and is used to check that our
 # input files are in the correct encoding.  The middle character gets encoded

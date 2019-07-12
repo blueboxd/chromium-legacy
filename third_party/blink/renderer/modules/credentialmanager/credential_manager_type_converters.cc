@@ -293,8 +293,11 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
   mojo_criteria->authenticator_attachment =
       ConvertTo<AuthenticatorAttachment>(criteria->authenticatorAttachment());
   mojo_criteria->require_resident_key = criteria->requireResidentKey();
-  mojo_criteria->user_verification =
-      ConvertTo<UserVerificationRequirement>(criteria->userVerification());
+  mojo_criteria->user_verification = UserVerificationRequirement::PREFERRED;
+  if (criteria->hasUserVerification()) {
+    mojo_criteria->user_verification =
+        ConvertTo<UserVerificationRequirement>(criteria->userVerification());
+  }
   return mojo_criteria;
 }
 
@@ -553,8 +556,11 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     }
   }
 
-  mojo_options->user_verification =
-      ConvertTo<UserVerificationRequirement>(options->userVerification());
+  mojo_options->user_verification = UserVerificationRequirement::PREFERRED;
+  if (options->hasUserVerification()) {
+    mojo_options->user_verification =
+        ConvertTo<UserVerificationRequirement>(options->userVerification());
+  }
 
   if (options->hasExtensions()) {
     auto* extensions = options->extensions();

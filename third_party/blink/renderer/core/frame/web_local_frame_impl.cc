@@ -1432,6 +1432,7 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
   is_in_printing_ = true;
 #endif
 
+  GetFrame()->GetDocument()->SetPrinting(Document::kBeforePrinting);
   DispatchPrintEventRecursively(event_type_names::kBeforeprint);
 }
 

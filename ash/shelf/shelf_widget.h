@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_background_animator.h"
@@ -38,8 +37,7 @@ class StatusAreaWidget;
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
-                               public SessionObserver,
-                               public KioskNextShellObserver {
+                               public SessionObserver {
  public:
   ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
@@ -119,9 +117,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // SessionObserver overrides:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnUserSessionAdded(const AccountId& account_id) override;
-
-  // KioskNextShellObserver:
-  void OnKioskNextEnabled() override;
 
   SkColor GetShelfBackgroundColor() const;
   bool GetHitTestRects(aura::Window* target,

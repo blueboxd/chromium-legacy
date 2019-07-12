@@ -14,8 +14,6 @@
 
 namespace blink {
 
-class LayoutPoint;
-
 class PLATFORM_EXPORT DoublePoint {
   DISALLOW_NEW();
 
@@ -33,7 +31,7 @@ class PLATFORM_EXPORT DoublePoint {
   constexpr explicit DoublePoint(const DoubleSize& size)
       : x_(size.Width()), y_(size.Height()) {}
 
-  constexpr explicit operator FloatPoint() const { return FloatPoint(x_, y_); }
+  explicit operator FloatPoint() const;
 
   static constexpr DoublePoint Zero() { return DoublePoint(); }
 
@@ -121,10 +119,6 @@ inline IntPoint CeiledIntPoint(const DoublePoint& p) {
 
 inline IntPoint FlooredIntPoint(const DoublePoint& p) {
   return IntPoint(clampTo<int>(floor(p.X())), clampTo<int>(floor(p.Y())));
-}
-
-constexpr FloatPoint ToFloatPoint(const DoublePoint& a) {
-  return FloatPoint(a.X(), a.Y());
 }
 
 constexpr DoubleSize ToDoubleSize(const DoublePoint& a) {

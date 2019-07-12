@@ -244,8 +244,7 @@ std::string GetAdErrorMessage(authpolicy::ErrorType error) {
 }
 
 bool ExtractSamlPasswordAttributesEnabled() {
-  return ProfileHelper::Get()->GetSigninProfile()->GetPrefs()->GetBoolean(
-      prefs::kSamlInSessionPasswordChangeEnabled);
+  return base::FeatureList::IsEnabled(features::kInSessionPasswordChange);
 }
 
 }  // namespace

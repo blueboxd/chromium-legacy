@@ -360,4 +360,10 @@ void SVGLength::SetInitial(unsigned initial_value) {
   value_ = CreateInitialCSSValue(static_cast<Initial>(initial_value));
 }
 
+bool SVGLength::IsNegativeNumericLiteral() const {
+  if (!value_->IsNumericLiteralValue())
+    return false;
+  return value_->GetDoubleValue() < 0;
+}
+
 }  // namespace blink

@@ -176,8 +176,7 @@ Polymer({
   updateSiteList_: function() {
     this.isLoading_ = true;
     this.browserProxy_.getDisplayList(this.filter).then(listInfo => {
-      this.updateList(
-          'sites', item => `${item.site}_${item.localData}`, listInfo.items);
+      this.updateList('sites', item => item.site, listInfo.items);
       this.isLoading_ = false;
       this.fire('site-data-list-complete');
     });

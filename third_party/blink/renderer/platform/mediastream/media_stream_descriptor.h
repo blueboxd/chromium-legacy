@@ -111,10 +111,6 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   void AddObserver(WebMediaStreamObserver*);
   void RemoveObserver(WebMediaStreamObserver*);
 
-  // |m_extraData| may hold pointers to GC objects, and it may touch them in
-  // destruction.  So this class is eagerly finalized to finalize |m_extraData|
-  // promptly.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*);
 
  private:

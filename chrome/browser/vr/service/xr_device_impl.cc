@@ -211,7 +211,7 @@ void XRDeviceImpl::RequestSession(
       if (IsXrDeviceConsentPromptDisabledForTesting()) {
         DoRequestSession(std::move(options), std::move(callback));
       } else {
-        ArcoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
+        ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
             render_frame_host_->GetProcess()->GetID(),
             render_frame_host_->GetRoutingID(),
             base::BindOnce(&XRDeviceImpl::OnConsentResult,

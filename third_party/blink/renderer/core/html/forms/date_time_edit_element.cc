@@ -548,8 +548,8 @@ void DateTimeEditElement::Trace(Visitor* visitor) {
 }
 
 inline Element* DateTimeEditElement::FieldsWrapperElement() const {
-  DCHECK(firstChild());
-  return ToElementOrDie(firstChild());
+  CHECK(!firstChild() || IsA<Element>(firstChild()));
+  return To<Element>(firstChild());
 }
 
 void DateTimeEditElement::AddField(DateTimeFieldElement* field) {

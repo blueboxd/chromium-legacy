@@ -483,6 +483,10 @@ class WebContents : public PageNavigator,
   // directory handles.
   virtual bool HasNativeFileSystemDirectoryHandles() = 0;
 
+  // Returns the paths of all the native file system directory handles frames in
+  // this WebContents have access to.
+  virtual std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() = 0;
+
   // Indicates whether any frame in the WebContents has writable native file
   // system handles.
   virtual bool HasWritableNativeFileSystemHandles() = 0;

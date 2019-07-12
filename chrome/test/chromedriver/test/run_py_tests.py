@@ -76,10 +76,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     # crbug.com/469947
     'ChromeDriverTest.testTouchPinch',
-    # TODO: re-enable tests when DevTools supports ScreenOrientation commands.
-    'ChromeDriverAndroidTest.testScreenOrientation',
-    'ChromeDriverAndroidTest.testMultipleScreenOrientationChanges',
-    'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
@@ -2504,89 +2500,6 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
     self.assertRaises(chromedriver.UnknownError, self.CreateDriver)
     self._drivers[0].Quit()
     self._drivers[0] = self.CreateDriver()
-
-  def testScreenOrientation(self):
-    self._driver = self.CreateDriver()
-    self._driver.Load(
-      ChromeDriverTest.GetHttpUrlForFile('/chromedriver/orientation_test.html'))
-    screen_orientation_js = self._driver.ExecuteScript(
-        'return screen.orientation.type')
-    screen_orientation = self._driver.GetScreenOrientation()['orientation']
-    if screen_orientation == "LANDSCAPE":
-      screen_orientation = 'landscape-primary'
-    elif screen_orientation == "PORTRAIT":
-      screen_orientation = 'portrait-primary'
-    self.assertEqual(screen_orientation, screen_orientation_js)
-
-    self._driver.SetScreenOrientation("portrait-primary")
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.WaitForCondition(
-      lambda: 'orientation change 1' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    self.assertEqual(screen_orientation['orientation'], "PORTRAIT")
-
-    self._driver.SetScreenOrientation("portrait-secondary")
-    self.WaitForCondition(
-      lambda: 'orientation change 2' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "PORTRAIT")
-
-    self._driver.SetScreenOrientation("PORTRAIT")
-    self.WaitForCondition(
-      lambda: 'orientation change 3' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "PORTRAIT")
-
-    self._driver.SetScreenOrientation("landscape-primary")
-    self.WaitForCondition(
-      lambda: 'orientation change 4' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "LANDSCAPE")
-
-    self._driver.SetScreenOrientation("landscape-secondary")
-    self.WaitForCondition(
-      lambda: 'orientation change 5' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "LANDSCAPE")
-
-    self._driver.SetScreenOrientation("LANDSCAPE")
-    self.WaitForCondition(
-      lambda: 'orientation change 6' in self._driver.FindElement(
-        'tag name', 'div').GetText())
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "LANDSCAPE")
-
-  def testMultipleScreenOrientationChanges(self):
-    self._driver = self.CreateDriver()
-
-    self._driver.SetScreenOrientation('PORTRAIT')
-    self.assertEqual(
-      self._driver.GetScreenOrientation()['orientation'], 'PORTRAIT')
-
-    self._driver.SetScreenOrientation('PORTRAIT')
-    self.assertEqual(
-      self._driver.GetScreenOrientation()['orientation'], 'PORTRAIT')
-
-  def testScreenOrientationAcrossMultipleTabs(self):
-    self._driver = self.CreateDriver()
-
-    self._driver.SetScreenOrientation('LANDSCAPE')
-    self._driver.Load(
-      ChromeDriverTest.GetHttpUrlForFile('/chromedriver/page_test.html'))
-    window1 = self._driver.GetCurrentWindowHandle()
-    self._driver.FindElement('css selector', '#link').Click()
-    orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(orientation['orientation'], 'LANDSCAPE')
-
-    self._driver.ExecuteScript('window.name = "oldWindow";')
-    self._driver.SwitchToWindow('oldWindow')
-    self.assertEqual(window1, self._driver.GetCurrentWindowHandle())
-    orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(orientation['orientation'], 'LANDSCAPE')
 
   def testAndroidGetWindowSize(self):
     self._driver = self.CreateDriver()

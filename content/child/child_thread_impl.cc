@@ -198,7 +198,8 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
 #elif defined(OS_MACOSX)
   auto* client = base::MachPortRendezvousClient::GetInstance();
   if (!client) {
-    LOG(ERROR) << "Mach rendezvous failed.";
+    LOG(ERROR) << "Mach rendezvous failed, terminating process (parent died?)";
+    base::Process::TerminateCurrentProcessImmediately(0);
     return {};
   }
   auto receive = client->TakeReceiveRight('mojo');

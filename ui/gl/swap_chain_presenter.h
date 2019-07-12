@@ -185,6 +185,7 @@ class SwapChainPresenter {
     gfx::Transform transform;
     bool is_clipped = false;
     gfx::Rect clip_rect;
+    int z_order = 0;
   } visual_info_;
 
   // Direct composition visual containing the swap chain content.  Child of

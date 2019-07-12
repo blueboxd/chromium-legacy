@@ -14,13 +14,16 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -31,7 +34,9 @@ InstallableInkDrop::InstallableInkDrop(View* view)
     : view_(view),
       layer_(std::make_unique<ui::Layer>()),
       event_handler_(view_, this),
+      animation_container_(base::MakeRefCounted<gfx::AnimationContainer>()),
       animator_(&painter_,
+                animation_container_.get(),
                 base::Bind(&InstallableInkDrop::SchedulePaint,
                            base::Unretained(this))) {
   // Catch if |view_| is destroyed out from under us.
@@ -48,6 +53,14 @@ InstallableInkDrop::InstallableInkDrop(View* view)
   layer_->SetBounds(gfx::Rect(view_->size()) +
                     layer_->bounds().OffsetFromOrigin());
   layer_->SchedulePaint(gfx::Rect(layer_->size()));
+
+  if (view_->GetWidget()) {
+    // Using CompositorAnimationRunner keeps our animation updates in sync with
+    // compositor frames and avoids jank.
+    animation_container_->SetAnimationRunner(
+        std::make_unique<CompositorAnimationRunner>(
+            view_->GetWidget()->GetCompositor()));
+  }
 }
 
 InstallableInkDrop::~InstallableInkDrop() {
@@ -89,12 +102,12 @@ void InstallableInkDrop::SnapToHidden() {
 
 void InstallableInkDrop::SetHovered(bool is_hovered) {
   is_hovered_ = is_hovered;
-  UpdatePainterForCurrentState();
+  UpdateAnimatorHighlight();
 }
 
 void InstallableInkDrop::SetFocused(bool is_focused) {
   is_focused_ = is_focused;
-  UpdatePainterForCurrentState();
+  UpdateAnimatorHighlight();
 }
 
 bool InstallableInkDrop::IsHighlightFadingInOrVisible() const {
@@ -162,9 +175,8 @@ void InstallableInkDrop::SchedulePaint() {
   layer_->SchedulePaint(gfx::Rect(layer_->size()));
 }
 
-void InstallableInkDrop::UpdatePainterForCurrentState() {
-  painter_.SetHighlighted(IsHighlightFadingInOrVisible());
-  SchedulePaint();
+void InstallableInkDrop::UpdateAnimatorHighlight() {
+  animator_.AnimateHighlight(is_hovered_ || is_focused_);
 }
 
 }  // namespace views

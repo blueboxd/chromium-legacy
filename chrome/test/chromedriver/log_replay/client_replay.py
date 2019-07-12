@@ -129,7 +129,6 @@ _COMMANDS = {
     (Method.GET, "/session/:sessionId/chromium/network_conditions"),
     "GetNetworkConnection":
     (Method.GET, "/session/:sessionId/network_connection"),
-    "GetScreenOrientation": (Method.GET, "/session/:sessionId/orientation"),
     "GetSessionCapabilities": (Method.GET, "/session/:sessionId"),
     "GetSessionStorageItem":
     (Method.GET, "/session/:sessionId/session_storage/key/:key"),
@@ -196,7 +195,6 @@ _COMMANDS = {
     (Method.POST, "/session/:sessionId/chromium/network_conditions"),
     "SetNetworkConnection":
     (Method.POST, "/session/:sessionId/network_connection"),
-    "SetScreenOrientation": (Method.POST, "/session/:sessionId/orientation"),
     "SetScriptTimeout":
     (Method.POST, "/session/:sessionId/timeouts/async_script"),
     "SetSessionStorageItem":

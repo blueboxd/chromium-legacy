@@ -5,6 +5,8 @@
 
 '''Unit tests for node_io.FileNode'''
 
+from __future__ import print_function
+
 import StringIO
 import os
 import sys

@@ -120,7 +120,12 @@ class CORE_EXPORT ScriptController final
   scoped_refptr<DOMWrapperWorld> CreateNewInspectorIsolatedWorld(
       const String& world_name);
 
+  // Disables eval for the main world.
   void DisableEval(const String& error_message);
+
+  // Disables eval for the given isolated |world_id|. This initializes the
+  // window proxy for the isolated world, if it's not yet initialized.
+  void DisableEvalForIsolatedWorld(int world_id, const String& error_message);
 
   TextPosition EventHandlerPosition() const;
 
@@ -142,6 +147,12 @@ class CORE_EXPORT ScriptController final
     return window_proxy_manager_->GetIsolate();
   }
   void EnableEval();
+
+  // Sets whether eval is enabled for the context corresponding to the given
+  // |world|. |error_message| is used only when |allow_eval| is false.
+  void SetEvalForWorld(DOMWrapperWorld& world,
+                       bool allow_eval,
+                       const String& error_message);
 
   v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
                                                  const KURL& base_url,

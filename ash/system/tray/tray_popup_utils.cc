@@ -221,21 +221,6 @@ void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
-void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
-                                               bool show_separator) {
-  if (show_separator) {
-    view->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kTraySeparatorWidth, 0,
-                                      kMenuSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
-  } else {
-    view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
-  }
-  view->SchedulePaint();
-}
-
 void TrayPopupUtils::ConfigureContainer(TriView::Container container,
                                         views::View* container_view) {
   container_view->SetLayoutManager(CreateDefaultLayoutManager(container));
@@ -345,14 +330,6 @@ views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
                 kTrayPopupLabelHorizontalPadding
           : 0,
       kMenuSeparatorVerticalPadding, 0));
-  return separator;
-}
-
-views::Separator* TrayPopupUtils::CreateListSubHeaderSeparator() {
-  views::Separator* separator = new views::Separator();
-  separator->SetColor(kMenuSeparatorColor);
-  separator->SetBorder(views::CreateEmptyBorder(
-      kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
 }
 

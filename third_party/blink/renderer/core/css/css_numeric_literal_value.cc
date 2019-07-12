@@ -104,6 +104,11 @@ double CSSNumericLiteralValue::ComputeDegrees() const {
   }
 }
 
+double CSSNumericLiteralValue::ComputeDotsPerPixel() const {
+  DCHECK(IsResolution());
+  return DoubleValue() * ConversionToCanonicalUnitsScaleFactor(GetType());
+}
+
 double CSSNumericLiteralValue::ComputeLengthPx(
     const CSSToLengthConversionData& conversion_data) const {
   return conversion_data.ZoomedComputedPixels(num_, GetType());

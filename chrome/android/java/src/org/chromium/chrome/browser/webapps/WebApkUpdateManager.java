@@ -110,6 +110,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         @WebApkUpdateReason
         int updateReason = needsUpdate(mInfo, fetchedInfo, primaryIconUrl, badgeIconUrl);
         boolean needsUpgrade = (updateReason != WebApkUpdateReason.NONE);
+        if (mStorage.shouldForceUpdate() && needsUpgrade) {
+            updateReason = WebApkUpdateReason.MANUALLY_TRIGGERED;
+        }
         Log.i(TAG, "Got Manifest: " + gotManifest);
         Log.i(TAG, "WebAPK upgrade needed: " + needsUpgrade);
 
@@ -130,7 +133,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         }
 
         if (!needsUpgrade) {
-            if (!mStorage.didPreviousUpdateSucceed()) {
+            if (!mStorage.didPreviousUpdateSucceed() || mStorage.shouldForceUpdate()) {
                 onFinishedUpdate(mStorage, WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
             }
             return;
@@ -178,18 +181,30 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     /** Schedules update for when WebAPK is not running. */
     private void scheduleUpdate() {
         WebApkUma.recordUpdateRequestQueued(1);
+        TaskInfo updateTask;
+        if (mStorage.shouldForceUpdate()) {
+            // Start an update task ASAP for forced updates.
+            updateTask = TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID,
+                                         WebApkUpdateTask.class, 0 /* windowEndTimeMs */)
+                                 .setUpdateCurrent(true)
+                                 .setIsPersisted(true)
+                                 .build();
+            mStorage.setUpdateScheduled(true);
+            mStorage.setShouldForceUpdate(false);
+        } else {
+            // The task deadline should be before {@link WebappDataStorage#RETRY_UPDATE_DURATION}
+            updateTask =
+                    TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, WebApkUpdateTask.class,
+                                    DateUtils.HOUR_IN_MILLIS, DateUtils.HOUR_IN_MILLIS * 23)
+                            .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
+                            .setUpdateCurrent(true)
+                            .setIsPersisted(true)
+                            .setRequiresCharging(true)
+                            .build();
+        }
 
-        // The task deadline should be before {@link WebappDataStorage#RETRY_UPDATE_DURATION}
-        TaskInfo taskInfo =
-                TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, WebApkUpdateTask.class,
-                                DateUtils.HOUR_IN_MILLIS, DateUtils.HOUR_IN_MILLIS * 23)
-                        .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
-                        .setUpdateCurrent(true)
-                        .setIsPersisted(true)
-                        .setRequiresCharging(true)
-                        .build();
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
-                ContextUtils.getApplicationContext(), taskInfo);
+                ContextUtils.getApplicationContext(), updateTask);
     }
 
     /** Sends update request to the WebAPK Server. Should be called when WebAPK is not running. */
@@ -284,6 +299,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     private static void onFinishedUpdate(
             WebappDataStorage storage, @WebApkInstallResult int result, boolean relaxUpdates) {
+        storage.setShouldForceUpdate(false);
+        storage.setUpdateScheduled(false);
         recordUpdate(storage, result, relaxUpdates);
         storage.deletePendingUpdateRequestFile();
     }

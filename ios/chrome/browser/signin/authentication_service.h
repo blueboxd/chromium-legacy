@@ -86,11 +86,13 @@ class AuthenticationService : public KeyedService,
   virtual ChromeIdentity* GetAuthenticatedIdentity() const;
 
   // Signs |identity| in to Chrome with |hosted_domain| as its hosted domain,
-  // pauses sync and logs |identity| in to http://google.com. If |identity| has
-  // no hosted domain, |hosted_domain| should be empty.
+  // pauses sync and logs |identity| in to http://google.com.
   // Virtual for testing.
-  virtual void SignIn(ChromeIdentity* identity,
-                      const std::string& hosted_domain);
+  virtual void SignIn(ChromeIdentity* identity);
+
+  // Old and deprecated override of SignIn(ChromeIdentity* identity). Will be
+  // removed once all downstream code has been converted to use the new method.
+  void SignIn(ChromeIdentity* identity, const std::string&);
 
   // Signs the authenticated user out of Chrome.
   // Virtual for testing.

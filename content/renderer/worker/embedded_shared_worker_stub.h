@@ -63,7 +63,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       const base::UnguessableToken& appcache_host_id,
-      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
@@ -120,18 +119,13 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
       service_worker_provider_info_;
 
-  // NetworkService: The URLLoaderFactory used for loading the shared worker
-  // main script.
-  network::mojom::URLLoaderFactoryPtr main_script_loader_factory_;
-
-  // NetworkService:
   blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;
 
   // The factory bundle used for loading subresources for this shared worker.
   scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
 
-  // NetworkService (PlzWorker): The response override parameters used for
-  // taking a resource pre-requested by the browser process.
+  // The response override parameters used for taking a resource pre-requested
+  // by the browser process.
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
   // Out-of-process NetworkService:

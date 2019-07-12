@@ -86,8 +86,7 @@ RulesRegistry::RulesRegistry(content::BrowserContext* browser_context,
       id_(id),
       ready_(/*signaled=*/!cache_delegate),  // Immediately ready if no cache
                                              // delegate to wait for.
-      last_generated_rule_identifier_id_(0),
-      weak_ptr_factory_(this) {
+      last_generated_rule_identifier_id_(0) {
   if (cache_delegate) {
     cache_delegate_ = cache_delegate->GetWeakPtr();
     cache_delegate->Init(this);

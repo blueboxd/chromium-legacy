@@ -183,7 +183,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<BluetoothEventRouter> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothEventRouter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothEventRouter);
 };

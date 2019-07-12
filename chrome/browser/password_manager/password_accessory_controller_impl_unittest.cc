@@ -23,6 +23,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -67,7 +68,8 @@ class MockPasswordGenerationController
 
   explicit MockPasswordGenerationController(content::WebContents* web_contents);
 
-  MOCK_METHOD1(OnGenerationRequested, void(bool));
+  MOCK_METHOD1(OnGenerationRequested,
+               void(autofill::password_generation::PasswordGenerationType));
 };
 
 // static
@@ -662,8 +664,12 @@ TEST_F(PasswordAccessoryControllerTest, OnAutomaticGenerationRequested) {
   MockPasswordGenerationController* mock_pwd_generation_controller =
       static_cast<MockPasswordGenerationController*>(
           PasswordGenerationController::GetIfExisting(web_contents()));
-  EXPECT_CALL(*mock_pwd_generation_controller, OnGenerationRequested(false));
-  controller()->OnGenerationRequested(false);
+  EXPECT_CALL(
+      *mock_pwd_generation_controller,
+      OnGenerationRequested(
+          autofill::password_generation::PasswordGenerationType::kAutomatic));
+  controller()->OnGenerationRequested(
+      autofill::password_generation::PasswordGenerationType::kAutomatic);
 }
 
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
@@ -700,6 +706,9 @@ TEST_F(PasswordAccessoryControllerTest, OnManualGenerationRequested) {
       static_cast<MockPasswordGenerationController*>(
           PasswordGenerationController::GetIfExisting(web_contents()));
   EXPECT_CALL(mock_manual_filling_controller_, Hide());
-  EXPECT_CALL(*mock_pwd_generation_controller, OnGenerationRequested(true));
+  EXPECT_CALL(
+      *mock_pwd_generation_controller,
+      OnGenerationRequested(
+          autofill::password_generation::PasswordGenerationType::kManual));
   controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
 }

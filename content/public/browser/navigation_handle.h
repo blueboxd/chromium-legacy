@@ -296,6 +296,10 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns true if the target is an inner response of a signed exchange.
   virtual bool IsSignedExchangeInnerResponse() = 0;
 
+  // Returns true if prefetched alternative subresource signed exchange was sent
+  // to the renderer process.
+  virtual bool HasPrefetchedAlternativeSubresourceSignedExchange() = 0;
+
   // Returns true if the navigation response was cached.
   virtual bool WasResponseCached() = 0;
 

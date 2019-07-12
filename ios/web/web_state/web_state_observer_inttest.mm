@@ -2256,6 +2256,12 @@ TEST_P(WebStateObserverTest, ImmediatelyStopNavigation) {
 // simulator-only.
 #if TARGET_IPHONE_SIMULATOR
 TEST_P(WebStateObserverTest, StopNavigationAfterPolicyDeciderCallback) {
+  if (@available(iOS 13, *)) {
+    // The navigation may or may not start, which is ok, but there is no need to
+    // test this scenario.
+    return;
+  }
+
   GURL url(test_server_->GetURL("/hung"));
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;

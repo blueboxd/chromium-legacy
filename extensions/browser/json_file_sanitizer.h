@@ -91,7 +91,7 @@ class JsonFileSanitizer {
   std::set<base::FilePath> file_paths_;
   Callback callback_;
   data_decoder::mojom::JsonParserPtr json_parser_ptr_;
-  base::WeakPtrFactory<JsonFileSanitizer> weak_factory_;
+  base::WeakPtrFactory<JsonFileSanitizer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsonFileSanitizer);
 };

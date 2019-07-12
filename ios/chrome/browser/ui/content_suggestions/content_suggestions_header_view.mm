@@ -130,25 +130,14 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   // Fake Toolbar.
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
-  UIBlurEffect* blurEffect = buttonFactory.toolbarConfiguration.blurEffect;
-  UIView* fakeToolbar = nil;
-  UIView* fakeToolbarContentView;
-  if (blurEffect) {
-    UIVisualEffectView* visualEffectView =
-        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    fakeToolbar = visualEffectView;
-    fakeToolbarContentView = visualEffectView.contentView;
-  } else {
-    fakeToolbar = [[UIView alloc] init];
-    fakeToolbarContentView = fakeToolbar;
-  }
+  UIView* fakeToolbar = [[UIView alloc] init];
   fakeToolbar.backgroundColor =
-      buttonFactory.toolbarConfiguration.blurBackgroundColor;
+      buttonFactory.toolbarConfiguration.backgroundColor;
   [searchField insertSubview:fakeToolbar atIndex:0];
   fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Fake location bar.
-  [fakeToolbarContentView addSubview:self.fakeLocationBar];
+  [fakeToolbar addSubview:self.fakeLocationBar];
 
   // Omnibox, used for animations.
   // TODO(crbug.com/936811): See if it is possible to share some initialization
@@ -335,7 +324,7 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
     self.separator.alpha = percent;
   }
 
-  // Grow the blur to cover the safeArea top.
+  // Grow the background to cover the safeArea top.
   self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
 
   CGFloat toolbarExpandedHeight = ToolbarHeight();

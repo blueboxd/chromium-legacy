@@ -26,32 +26,6 @@
   return self;
 }
 
-- (UIBlurEffect*)blurEffect {
-  if (UIAccessibilityIsReduceTransparencyEnabled())
-    return nil;
-
-  switch (self.style) {
-    case NORMAL:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
-    case INCOGNITO:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-  }
-}
-
-- (UIColor*)blurBackgroundColor {
-  if (UIAccessibilityIsReduceTransparencyEnabled()) {
-    switch (self.style) {
-      case NORMAL:
-        return
-            [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
-      case INCOGNITO:
-        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
-    }
-  }
-  return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent
-                           alpha:kBlurBackgroundAlpha];
-}
-
 - (UIColor*)NTPBackgroundColor {
   switch (self.style) {
     case NORMAL:
@@ -127,18 +101,6 @@
           [UIColor colorWithWhite:1
                             alpha:kAdaptiveLocationBarBackgroundAlphaIncognito *
                                   visibilityFactor];
-  }
-}
-
-- (UIVisualEffect*)vibrancyEffectForBlurEffect:(UIBlurEffect*)blurEffect {
-  if (!blurEffect)
-    return nil;
-
-  switch (self.style) {
-    case NORMAL:
-      return [UIVibrancyEffect effectForBlurEffect:blurEffect];
-    case INCOGNITO:
-      return nil;
   }
 }
 

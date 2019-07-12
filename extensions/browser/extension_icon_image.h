@@ -136,7 +136,7 @@ class IconImage : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<IconImage> weak_ptr_factory_;
+  base::WeakPtrFactory<IconImage> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IconImage);
 };

@@ -575,11 +575,17 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that deletes the stored password.'>
         Delete password
       </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_EDIT_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that edits the stored password.'>
+        Edit password
+      </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_HIDE_STORED_PASSWORD" desc="A tooltip on a button that hides the saved password that is being shown.">
         Hide password
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD" desc='Content description for the button that allows users to delete the stored password.'>
         Delete stored password
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_EDIT_STORED_PASSWORD" desc='Content description for the button that allows users to edit the stored password.'>
+        Edit stored password
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_USERNAME_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the username of a saved account has been copied into clipboard.'>
         Username copied

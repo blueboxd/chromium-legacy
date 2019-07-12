@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -117,11 +118,11 @@ TEST_F(LocalFrameClientImplTest, TestDocumentInterfaceBrokerOverride) {
   MainFrame()->GetFrame()->SetDocumentInterfaceBrokerForTesting(
       doc.PassInterface().PassHandle());
 
-  mojom::blink::FrameHostTestInterfacePtr frame_test;
+  mojo::Remote<mojom::blink::FrameHostTestInterface> frame_test;
   MainFrame()
       ->GetFrame()
       ->GetDocumentInterfaceBroker()
-      .GetFrameHostTestInterface(mojo::MakeRequest(&frame_test));
+      .GetFrameHostTestInterface(frame_test.BindNewPipeAndPassReceiver());
   frame_test->GetName(base::BindOnce([](const WTF::String& result) {
     EXPECT_EQ(result, kGetNameTestResponse);
   }));

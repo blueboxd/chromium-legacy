@@ -167,7 +167,7 @@ void GetMimeTypeForLocalPath(
 }
 
 MimeTypeCollector::MimeTypeCollector(content::BrowserContext* context)
-    : context_(context), left_(0), weak_ptr_factory_(this) {}
+    : context_(context), left_(0) {}
 
 MimeTypeCollector::~MimeTypeCollector() {}
 

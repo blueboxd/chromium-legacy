@@ -818,8 +818,7 @@ WebViewGuest::WebViewGuest(WebContents* owner_web_contents)
       did_set_explicit_zoom_(false),
       is_spatial_navigation_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableSpatialNavigation)),
-      weak_ptr_factory_(this) {
+              switches::kEnableSpatialNavigation)) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
 }

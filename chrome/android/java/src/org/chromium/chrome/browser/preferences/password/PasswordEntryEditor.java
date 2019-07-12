@@ -33,6 +33,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -95,8 +96,8 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Extras are set on this intent in class {@link SavePasswordsPreferences}.
         mExtras = getArguments();
@@ -207,6 +208,9 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.password_entry_editor_action_bar_menu, menu);
+        menu.findItem(R.id.action_edit_saved_password)
+                .setVisible(
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID));
     }
 
     @Override
@@ -216,6 +220,7 @@ public class PasswordEntryEditor extends Fragment {
             removeItem();
             return true;
         }
+        // TODO(crbug.com/377410): Handle action_edit_saved_password clicks.
         return super.onOptionsItemSelected(item);
     }
 

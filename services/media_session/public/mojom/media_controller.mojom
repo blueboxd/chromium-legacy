@@ -65,7 +65,7 @@ interface MediaController {
   // |minimum_size_pc| and closest to |desired_size_px|.
   ObserveImages(
       MediaSessionImageType type, int32 minimum_size_px, int32 desired_size_px,
-      MediaControllerImageObserver observer);
+      pending_remote<MediaControllerImageObserver> observer);
 };
 
 // The observer for observing media controller events. This is different to a

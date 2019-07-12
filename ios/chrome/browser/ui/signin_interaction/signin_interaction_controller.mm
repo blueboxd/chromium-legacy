@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/unified_consent/feature.h"

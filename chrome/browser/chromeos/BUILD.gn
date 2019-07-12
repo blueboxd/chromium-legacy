@@ -650,6 +650,8 @@ source_set("chromeos") {
     "authpolicy/data_pipe_utils.h",
     "authpolicy/kerberos_files_handler.cc",
     "authpolicy/kerberos_files_handler.h",
+    "backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",
+    "backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h",
     "base/file_flusher.cc",
     "base/file_flusher.h",
     "base/locale_util.cc",
@@ -2078,8 +2080,6 @@ source_set("chromeos") {
     # Extension API implementations.
     "extensions/autotest_private/autotest_private_api.cc",
     "extensions/autotest_private/autotest_private_api.h",
-    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",
-    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h",
     "extensions/echo_private_api.cc",
     "extensions/echo_private_api.h",
     "extensions/file_manager/device_event_router.cc",
@@ -2889,7 +2889,7 @@ proto_library("user_activity_event_proto") {
 
 proto_library("backdrop_wallpaper_proto") {
   sources = [
-    "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.proto",
+    "backdrop_wallpaper_handlers/backdrop_wallpaper.proto",
   ]
   generate_python = false
 }

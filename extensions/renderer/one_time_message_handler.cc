@@ -142,7 +142,7 @@ bool WillListenerReplyAsync(v8::Local<v8::Context> context,
 
 OneTimeMessageHandler::OneTimeMessageHandler(
     NativeExtensionBindingsSystem* bindings_system)
-    : bindings_system_(bindings_system), weak_factory_(this) {}
+    : bindings_system_(bindings_system) {}
 OneTimeMessageHandler::~OneTimeMessageHandler() {}
 
 bool OneTimeMessageHandler::HasPort(ScriptContext* script_context,

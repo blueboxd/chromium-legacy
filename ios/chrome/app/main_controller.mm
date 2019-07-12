@@ -111,6 +111,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/appearance_customizer/appearance_customizer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -128,6 +129,7 @@
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -1324,8 +1326,11 @@ enum class EnterTabSwitcherSnapshotResult {
   // Enables UI initializations to query the keyWindow's size.
   [self.window makeKeyAndVisible];
 
+  CustomizeUIAppearance();
+
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
+
   _tabSwitcher = self.mainCoordinator.tabSwitcher;
   // Call -restoreInternalState so that the grid shows the correct panel.
   [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel

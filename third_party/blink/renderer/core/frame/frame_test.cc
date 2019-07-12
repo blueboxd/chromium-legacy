@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/frame.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -194,11 +195,11 @@ TEST_F(FrameTest, TestDocumentInterfaceBrokerOverride) {
   GetDocument().GetFrame()->SetDocumentInterfaceBrokerForTesting(
       doc.PassInterface().PassHandle());
 
-  mojom::blink::FrameHostTestInterfacePtr frame_test;
+  mojo::Remote<mojom::blink::FrameHostTestInterface> frame_test;
   GetDocument()
       .GetFrame()
       ->GetDocumentInterfaceBroker()
-      .GetFrameHostTestInterface(mojo::MakeRequest(&frame_test));
+      .GetFrameHostTestInterface(frame_test.BindNewPipeAndPassReceiver());
   frame_test->GetName(base::BindOnce([](const WTF::String& result) {
     EXPECT_EQ(result, kGetNameTestResponse);
   }));

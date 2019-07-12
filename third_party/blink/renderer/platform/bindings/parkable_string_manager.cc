@@ -38,48 +38,14 @@ struct ParkableStringManager::Statistics {
 
 namespace {
 
-enum class CompressionMode { kDisabled, kBackground, kForeground };
-
-// Compression mode. Foreground parking takes precedence over background, and
-// both are mutually exclusive.
-CompressionMode GetCompressionMode() {
-  if (base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
-    return CompressionMode::kForeground;
-  if (base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
-    return CompressionMode::kBackground;
-  return CompressionMode::kDisabled;
-}
-
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
 
   void OnPurgeMemory() override {
-    // Memory pressure compression is enabled for all modes.
-    if (GetCompressionMode() == CompressionMode::kDisabled)
-      return;
     ParkableStringManager::Instance().PurgeMemory();
   }
 };
-
-void RecordMemoryStatistics(const ParkableStringManager::Statistics& stats,
-                            const std::string& suffix) {
-  base::UmaHistogramCounts100000("Memory.ParkableString.TotalSizeKb" + suffix,
-                                 stats.original_size / 1000);
-  base::UmaHistogramCounts100000(
-      "Memory.ParkableString.CompressedSizeKb" + suffix,
-      stats.compressed_size / 1000);
-  size_t savings = stats.compressed_original_size - stats.compressed_size;
-  base::UmaHistogramCounts100000("Memory.ParkableString.SavingsKb" + suffix,
-                                 savings / 1000);
-
-  if (stats.compressed_original_size != 0) {
-    size_t ratio_percentage =
-        (100 * stats.compressed_size) / stats.compressed_original_size;
-    base::UmaHistogramPercentage(
-        "Memory.ParkableString.CompressionRatio" + suffix, ratio_percentage);
-  }
-}
 
 }  // namespace
 
@@ -146,48 +112,6 @@ ParkableStringManager::~ParkableStringManager() = default;
 void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
   DCHECK(IsMainThread());
   backgrounded_ = backgrounded;
-
-  if (GetCompressionMode() != CompressionMode::kBackground)
-    return;
-
-  if (backgrounded_) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        Thread::Current()->GetTaskRunner();
-    DCHECK(task_runner);
-    task_runner->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
-                       base::Unretained(this),
-                       ParkableStringImpl::ParkingMode::kAlways),
-        base::TimeDelta::FromSeconds(kParkingDelayInSeconds));
-    // We only want to record statistics in the following case: a foreground tab
-    // goes to background, and stays in background until the stats are recorded,
-    // to make analysis simpler.
-    //
-    // To that end:
-    // 1. Don't post a recording task if one has been posted and hasn't run yet.
-    // 2. Any background -> foreground transition between now and the
-    //    recording task running cancels the task.
-    //
-    // Also drop strings that can be dropped cheaply in this task, to prevent
-    // used-once strings from increasing memory usage.
-    if (!waiting_to_record_stats_) {
-      task_runner->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&ParkableStringManager::
-                             DropStringsWithCompressedDataAndRecordStatistics,
-                         base::Unretained(this)),
-          base::TimeDelta::FromSeconds(kParkingDelayInSeconds +
-                                       kStatisticsRecordingDelayInSeconds));
-      waiting_to_record_stats_ = true;
-      should_record_stats_ = true;
-    }
-  } else {
-    // See (2) above.
-    if (waiting_to_record_stats_) {
-      should_record_stats_ = false;
-    }
-  }
 }
 
 bool ParkableStringManager::IsRendererBackgrounded() const {
@@ -223,8 +147,7 @@ bool ParkableStringManager::ShouldPark(const StringImpl& string) {
   // Don't attempt to park strings smaller than this size.
   static constexpr unsigned int kSizeThreshold = 10000;
   // TODO(lizeb): Consider parking non-main thread strings.
-  return string.length() > kSizeThreshold && IsMainThread() &&
-         GetCompressionMode() != CompressionMode::kDisabled;
+  return string.length() > kSizeThreshold && IsMainThread();
 }
 
 scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
@@ -272,8 +195,7 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
     did_register_memory_pressure_listener_ = true;
   }
 
-  if (!has_posted_unparking_time_accounting_task_ &&
-      GetCompressionMode() == CompressionMode::kForeground) {
+  if (!has_posted_unparking_time_accounting_task_) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         Thread::Current()->GetTaskRunner();
     DCHECK(task_runner);
@@ -332,7 +254,6 @@ void ParkableStringManager::RecordUnparkingTime(
 
 void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
-  DCHECK_NE(CompressionMode::kDisabled, GetCompressionMode());
 
   size_t total_size = 0;
   for (ParkableStringImpl* str : parked_strings_)
@@ -355,36 +276,8 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   }
 }
 
-void ParkableStringManager::ParkAllIfRendererBackgrounded(
-    ParkableStringImpl::ParkingMode mode) {
-  DCHECK(IsMainThread());
-
-  if (IsRendererBackgrounded())
-    ParkAll(mode);
-}
-
 size_t ParkableStringManager::Size() const {
   return parked_strings_.size() + unparked_strings_.size();
-}
-
-void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
-  DCHECK(IsMainThread());
-  DCHECK_EQ(CompressionMode::kBackground, GetCompressionMode());
-  DCHECK(waiting_to_record_stats_);
-  waiting_to_record_stats_ = false;
-  if (!should_record_stats_)
-    return;
-  // See |SetRendererBackgrounded()|, is |should_record_stats_| is true then the
-  // renderer is still backgrounded_.
-  DCHECK(IsRendererBackgrounded());
-
-  // We are in the background, drop all the ParkableStrings we can without
-  // costing any CPU (as we already have the compressed representation).
-  ParkAllIfRendererBackgrounded(
-      ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
-
-  Statistics stats = ComputeStatistics();
-  RecordMemoryStatistics(stats, "");
 }
 
 void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
@@ -395,13 +288,23 @@ void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
                             total_parking_thread_time_);
   }
   Statistics stats = ComputeStatistics();
-  RecordMemoryStatistics(stats, ".5min");
+  base::UmaHistogramCounts100000("Memory.ParkableString.TotalSizeKb.5min",
+                                 stats.original_size / 1000);
+  base::UmaHistogramCounts100000("Memory.ParkableString.CompressedSizeKb.5min",
+                                 stats.compressed_size / 1000);
+  size_t savings = stats.compressed_original_size - stats.compressed_size;
+  base::UmaHistogramCounts100000("Memory.ParkableString.SavingsKb.5min",
+                                 savings / 1000);
+
+  if (stats.compressed_original_size != 0) {
+    size_t ratio_percentage =
+        (100 * stats.compressed_size) / stats.compressed_original_size;
+    base::UmaHistogramPercentage("Memory.ParkableString.CompressionRatio.5min",
+                                 ratio_percentage);
+  }
 }
 
 void ParkableStringManager::AgeStringsAndPark() {
-  if (GetCompressionMode() != CompressionMode::kForeground)
-    return;
-
   TRACE_EVENT0("blink", "ParkableStringManager::AgeStringsAndPark");
   has_pending_aging_task_ = false;
 
@@ -428,9 +331,6 @@ void ParkableStringManager::AgeStringsAndPark() {
 }
 
 void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
-  if (GetCompressionMode() != CompressionMode::kForeground)
-    return;
-
   if (has_pending_aging_task_)
     return;
 
@@ -446,7 +346,6 @@ void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
 
 void ParkableStringManager::PurgeMemory() {
   DCHECK(IsMainThread());
-  DCHECK_NE(CompressionMode::kDisabled, GetCompressionMode());
 
   ParkAll(ParkableStringImpl::ParkingMode::kAlways);
   // Critical memory pressure: drop compressed data for strings that we cannot
@@ -504,9 +403,7 @@ ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
 
 void ParkableStringManager::ResetForTesting() {
   backgrounded_ = false;
-  waiting_to_record_stats_ = false;
   has_pending_aging_task_ = false;
-  should_record_stats_ = false;
   has_posted_unparking_time_accounting_task_ = false;
   did_register_memory_pressure_listener_ = false;
   total_unparking_time_ = base::TimeDelta();
@@ -517,9 +414,7 @@ void ParkableStringManager::ResetForTesting() {
 
 ParkableStringManager::ParkableStringManager()
     : backgrounded_(false),
-      waiting_to_record_stats_(false),
       has_pending_aging_task_(false),
-      should_record_stats_(false),
       has_posted_unparking_time_accounting_task_(false),
       did_register_memory_pressure_listener_(false),
       total_unparking_time_(),

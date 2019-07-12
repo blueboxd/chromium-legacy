@@ -69,8 +69,7 @@ MimeHandlerViewEmbedder::MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
       resource_url_(resource_url),
       mime_type_(mime_type),
       stream_id_(stream_id),
-      internal_id_(internal_id),
-      weak_factory_(this) {}
+      internal_id_(internal_id) {}
 
 MimeHandlerViewEmbedder::~MimeHandlerViewEmbedder() {}
 

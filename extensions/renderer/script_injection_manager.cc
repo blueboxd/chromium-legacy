@@ -103,16 +103,14 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
 
   bool should_run_idle_;
 
-  base::WeakPtrFactory<RFOHelper> weak_factory_;
+  base::WeakPtrFactory<RFOHelper> weak_factory_{this};
 };
 
 ScriptInjectionManager::RFOHelper::RFOHelper(content::RenderFrame* render_frame,
                                              ScriptInjectionManager* manager)
     : content::RenderFrameObserver(render_frame),
       manager_(manager),
-      should_run_idle_(true),
-      weak_factory_(this) {
-}
+      should_run_idle_(true) {}
 
 ScriptInjectionManager::RFOHelper::~RFOHelper() {
 }

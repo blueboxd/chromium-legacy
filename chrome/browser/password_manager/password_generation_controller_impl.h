@@ -48,11 +48,14 @@ class PasswordGenerationControllerImpl
       const password_manager::PasswordManagerDriver* target_frame_driver,
       const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
-  void OnGenerationRequested(bool manual) override;
+  void OnGenerationRequested(
+      autofill::password_generation::PasswordGenerationType type) override;
   void GeneratedPasswordAccepted(
       const base::string16& password,
-      base::WeakPtr<password_manager::PasswordManagerDriver> driver) override;
-  void GeneratedPasswordRejected() override;
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver,
+      autofill::password_generation::PasswordGenerationType type) override;
+  void GeneratedPasswordRejected(
+      autofill::password_generation::PasswordGenerationType type) override;
   gfx::NativeWindow top_level_native_window() const override;
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
@@ -90,7 +93,7 @@ class PasswordGenerationControllerImpl
   // Called to show the generation modal dialog. |manual| - whether the
   // dialog was shown for a manual or automatic generation flow. This is used
   // for metrics.
-  void ShowDialog(bool manual);
+  void ShowDialog(autofill::password_generation::PasswordGenerationType type);
 
   // Resets the current active frame driver, as well as the dialog if shown
   // and the generation element data.

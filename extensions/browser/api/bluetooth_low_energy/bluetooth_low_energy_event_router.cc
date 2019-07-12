@@ -240,8 +240,7 @@ BluetoothLowEnergyEventRouter::BluetoothLowEnergyEventRouter(
     : adapter_(NULL),
       last_callback_request_id_(0),
       browser_context_(context),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {
+      extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context_);
   VLOG(1) << "Initializing BluetoothLowEnergyEventRouter.";

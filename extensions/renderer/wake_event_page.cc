@@ -41,9 +41,7 @@ class WakeEventPage::WakeEventPageNativeHandler
   // Handles own lifetime.
   WakeEventPageNativeHandler(ScriptContext* context,
                              const MakeRequestCallback& make_request)
-      : ObjectBackedNativeHandler(context),
-        make_request_(make_request),
-        weak_ptr_factory_(this) {
+      : ObjectBackedNativeHandler(context), make_request_(make_request) {
     // Delete self on invalidation. base::Unretained because by definition this
     // can't be deleted before it's deleted.
     context->AddInvalidationObserver(base::BindOnce(
@@ -97,7 +95,7 @@ class WakeEventPage::WakeEventPageNativeHandler
   }
 
   MakeRequestCallback make_request_;
-  base::WeakPtrFactory<WakeEventPageNativeHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<WakeEventPageNativeHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WakeEventPageNativeHandler);
 };

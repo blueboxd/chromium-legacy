@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_service_impl.h"
 
+#include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
@@ -26,7 +27,6 @@
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
-#include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -513,21 +513,20 @@ bool AppCacheServiceImpl::EraseHost(const base::UnguessableToken& host_id) {
 }
 
 void AppCacheServiceImpl::RegisterHostForFrame(
-    blink::mojom::AppCacheHostRequest host_request,
-    blink::mojom::AppCacheFrontendPtrInfo frontend,
+    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id,
     int32_t render_frame_id,
     int process_id,
     mojo::ReportBadMessageCallback bad_message_callback) {
-  blink::mojom::AppCacheFrontendPtr appcache_frontend_ptr(std::move(frontend));
-  RegisterHostInternal(
-      std::move(host_request), std::move(appcache_frontend_ptr), host_id,
-      render_frame_id, process_id, std::move(bad_message_callback));
+  RegisterHostInternal(std::move(host_receiver), std::move(frontend_remote),
+                       host_id, render_frame_id, process_id,
+                       std::move(bad_message_callback));
 }
 
 void AppCacheServiceImpl::RegisterHostInternal(
-    blink::mojom::AppCacheHostRequest host_request,
-    blink::mojom::AppCacheFrontendPtr frontend,
+    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id,
     int32_t render_frame_id,
     int process_id,
@@ -545,13 +544,13 @@ void AppCacheServiceImpl::RegisterHostInternal(
   if (host) {
     // Switch the frontend proxy so that the host can make IPC calls from
     // here on.
-    host->set_frontend(std::move(frontend), render_frame_id);
+    host->set_frontend(std::move(frontend_remote), render_frame_id);
   } else {
     host = std::make_unique<AppCacheHost>(host_id, process_id, render_frame_id,
-                                          std::move(frontend), this);
+                                          std::move(frontend_remote), this);
   }
 
-  host->BindRequest(std::move(host_request));
+  host->BindReceiver(std::move(host_receiver));
 
   hosts_.emplace(std::piecewise_construct, std::forward_as_tuple(host_id),
                  std::forward_as_tuple(std::move(host)));

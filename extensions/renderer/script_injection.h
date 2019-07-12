@@ -146,7 +146,7 @@ class ScriptInjection {
   // A helper class to hold the render frame and watch for its deletion.
   std::unique_ptr<FrameWatcher> frame_watcher_;
 
-  base::WeakPtrFactory<ScriptInjection> weak_ptr_factory_;
+  base::WeakPtrFactory<ScriptInjection> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjection);
 };

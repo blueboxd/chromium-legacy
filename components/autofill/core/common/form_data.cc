@@ -81,7 +81,9 @@ FormData::FormData(const FormData& data)
       unique_renderer_id(data.unique_renderer_id),
       submission_event(data.submission_event),
       fields(data.fields),
-      username_predictions(data.username_predictions) {}
+      username_predictions(data.username_predictions),
+      is_gaia_with_skip_save_password_form(
+          data.is_gaia_with_skip_save_password_form) {}
 
 FormData::~FormData() {
 }

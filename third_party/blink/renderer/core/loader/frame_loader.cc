@@ -206,6 +206,14 @@ void FrameLoader::Init() {
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
+  WillCommitNavigation();
+  if (!DetachDocument())
+    return;
+
+  CommitDocumentLoader(provisional_document_loader_.Release());
+
+  // Load the document if needed.
+  document_loader_->StartLoadingResponse();
 
   frame_->GetDocument()->CancelParsing();
 
@@ -923,7 +931,18 @@ void FrameLoader::CommitNavigation(
   }
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
+
   provisional_document_loader_->StartLoading();
+  WillCommitNavigation();
+
+  if (!DetachDocument())
+    return;
+
+  CommitDocumentLoader(provisional_document_loader_.Release());
+
+  // Load the document if needed.
+  document_loader_->StartLoadingResponse();
+
   TakeObjectSnapshot();
 }
 
@@ -982,7 +1001,7 @@ void FrameLoader::DidAccessInitialDocument() {
   }
 }
 
-bool FrameLoader::PrepareForCommit() {
+bool FrameLoader::DetachDocument() {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
@@ -1030,16 +1049,12 @@ bool FrameLoader::PrepareForCommit() {
   // domWindow) since the doc is now detached?
   if (frame_->GetDocument())
     frame_->GetDocument()->Shutdown();
-  document_loader_ = provisional_document_loader_.Release();
-  if (document_loader_)
-    document_loader_->MarkAsCommitted();
-
-  TakeObjectSnapshot();
+  document_loader_ = nullptr;
 
   return true;
 }
 
-void FrameLoader::CommitProvisionalLoad() {
+void FrameLoader::WillCommitNavigation() {
   DCHECK(Client()->HasWebView());
 
   // Check if the destination page is allowed to access the previous page's
@@ -1052,9 +1067,14 @@ void FrameLoader::CommitProvisionalLoad() {
             security_origin->CanRequest(frame_->GetDocument()->Url()));
   }
   virtual_time_pauser_.UnpauseVirtualTime();
+}
 
-  if (!PrepareForCommit())
-    return;
+void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader) {
+  document_loader_ = document_loader;
+  CHECK(document_loader_);
+  document_loader_->MarkAsCommitted();
+
+  TakeObjectSnapshot();
 
   Client()->TransitionToCommittedForNewPage();
 }

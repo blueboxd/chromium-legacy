@@ -124,7 +124,7 @@ void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&WaitForPlaneFences, base::Passed(&planes)),
+      base::BindOnce(&WaitForPlaneFences, std::move(planes)),
       std::move(callback));
 }
 

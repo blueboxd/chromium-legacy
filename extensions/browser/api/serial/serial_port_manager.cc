@@ -52,9 +52,7 @@ SerialPortManager* SerialPortManager::Get(content::BrowserContext* context) {
 }
 
 SerialPortManager::SerialPortManager(content::BrowserContext* context)
-    : thread_id_(SerialConnection::kThreadId),
-      context_(context),
-      weak_factory_(this) {
+    : thread_id_(SerialConnection::kThreadId), context_(context) {
   ApiResourceManager<SerialConnection>* manager =
       ApiResourceManager<SerialConnection>::Get(context_);
   DCHECK(manager) << "No serial connection manager.";

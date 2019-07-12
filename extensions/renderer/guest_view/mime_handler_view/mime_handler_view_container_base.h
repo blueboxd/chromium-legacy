@@ -133,7 +133,7 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   mojo::Binding<mime_handler::BeforeUnloadControl>
       before_unload_control_binding_;
 
-  base::WeakPtrFactory<MimeHandlerViewContainerBase> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewContainerBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewContainerBase);
 };

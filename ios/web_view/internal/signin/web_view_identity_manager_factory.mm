@@ -124,12 +124,6 @@ WebViewIdentityManagerFactory* WebViewIdentityManagerFactory::GetInstance() {
   return instance.get();
 }
 
-// static
-void WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
-  WebViewIdentityManagerFactory::GetInstance();
-  WebViewSigninClientFactory::GetInstance();
-}
-
 std::unique_ptr<KeyedService>
 WebViewIdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {

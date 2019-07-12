@@ -259,8 +259,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
           {content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0),
-      process_observer_(this),
-      weak_ptr_factory_(this) {
+      process_observer_(this) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
   extension_registry_->AddObserver(this);

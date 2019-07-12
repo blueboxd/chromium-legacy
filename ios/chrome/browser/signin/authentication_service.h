@@ -90,10 +90,6 @@ class AuthenticationService : public KeyedService,
   // Virtual for testing.
   virtual void SignIn(ChromeIdentity* identity);
 
-  // Old and deprecated override of SignIn(ChromeIdentity* identity). Will be
-  // removed once all downstream code has been converted to use the new method.
-  void SignIn(ChromeIdentity* identity, const std::string&);
-
   // Signs the authenticated user out of Chrome.
   // Virtual for testing.
   virtual void SignOut(signin_metrics::ProfileSignout signout_source,

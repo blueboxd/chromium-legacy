@@ -282,7 +282,7 @@ void Gpu::CreateJpegDecodeAccelerator(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::CreateJpegDecodeAccelerator,
-                     base::Unretained(gpu_.get()), base::Passed(&jda_request)));
+                     base::Unretained(gpu_.get()), std::move(jda_request)));
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -292,7 +292,7 @@ void Gpu::CreateVideoEncodeAcceleratorProvider(
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&GpuPtrIO::CreateVideoEncodeAcceleratorProvider,
                                 base::Unretained(gpu_.get()),
-                                base::Passed(&vea_provider_request)));
+                                std::move(vea_provider_request)));
 }
 
 void Gpu::EstablishGpuChannel(gpu::GpuChannelEstablishedCallback callback) {

@@ -2614,8 +2614,7 @@ class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
             config,
             map,
             "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"),
-        callback_registered_(false),
-        weak_ptr_factory_(this) {}
+        callback_registered_(false) {}
   ~ClearCacheQuotaHeuristic() override {}
   bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 
@@ -2633,7 +2632,7 @@ class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
   // clearing the cache.
   bool callback_registered_;
 
-  base::WeakPtrFactory<ClearCacheQuotaHeuristic> weak_ptr_factory_;
+  base::WeakPtrFactory<ClearCacheQuotaHeuristic> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClearCacheQuotaHeuristic);
 };

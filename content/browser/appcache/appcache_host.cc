@@ -73,26 +73,26 @@ bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
 
 }  // namespace
 
-AppCacheHost::AppCacheHost(const base::UnguessableToken& host_id,
-                           int process_id,
-                           int render_frame_id,
-                           blink::mojom::AppCacheFrontendPtr frontend,
-                           AppCacheServiceImpl* service)
+AppCacheHost::AppCacheHost(
+    const base::UnguessableToken& host_id,
+    int process_id,
+    int render_frame_id,
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+    AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
-      frontend_ptr_(std::move(frontend)),
-      frontend_(frontend_ptr_.get()),
+      frontend_remote_(std::move(frontend_remote)),
+      frontend_(frontend_remote_.is_bound() ? frontend_remote_.get() : nullptr),
       render_frame_id_(render_frame_id),
       service_(service),
       storage_(service->storage()),
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
-      associated_cache_info_pending_(false),
-      binding_(this) {
+      associated_cache_info_pending_(false) {
   service_->AddObserver(this);
 }
 
@@ -120,10 +120,11 @@ AppCacheHost::~AppCacheHost() {
     std::move(pending_start_update_callback_).Run(false);
 }
 
-void AppCacheHost::BindRequest(blink::mojom::AppCacheHostRequest request) {
-  binding_.Bind(std::move(request));
-  // Unretained is safe because |this| will outlive |binding_|.
-  binding_.set_connection_error_handler(
+void AppCacheHost::BindReceiver(
+    mojo::PendingReceiver<blink::mojom::AppCacheHost> receiver) {
+  receiver_.Bind(std::move(receiver));
+  // Unretained is safe because |this| will outlive |receiver_|.
+  receiver_.set_disconnect_handler(
       base::BindOnce(&AppCacheHost::Unregister, base::Unretained(this)));
 }
 

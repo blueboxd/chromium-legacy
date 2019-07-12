@@ -61,7 +61,8 @@ class EPKPChallengeKeyBase {
     PREPARE_KEY_DBUS_ERROR,
     PREPARE_KEY_USER_REJECTED,
     PREPARE_KEY_GET_CERTIFICATE_FAILED,
-    PREPARE_KEY_RESET_REQUIRED
+    PREPARE_KEY_RESET_REQUIRED,
+    PREPARE_KEY_ATTESTATION_UNSUPPORTED
   };
 
   EPKPChallengeKeyBase();
@@ -143,6 +144,8 @@ class EPKPChallengeKeyBase {
 
   void IsAttestationPreparedCallback(const PrepareKeyContext& context,
                                      base::Optional<bool> result);
+  void PrepareKeyErrorHandlerCallback(const PrepareKeyContext& context,
+                                      base::Optional<bool> is_tpm_enabled);
   void DoesKeyExistCallback(const PrepareKeyContext& context,
                             base::Optional<bool> result);
   void AskForUserConsent(const base::Callback<void(bool)>& callback) const;

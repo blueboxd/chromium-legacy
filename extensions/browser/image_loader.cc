@@ -211,9 +211,7 @@ std::vector<ImageLoader::LoadResult> LoadImagesBlocking(
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoader
 
-ImageLoader::ImageLoader()
-    : weak_ptr_factory_(this) {
-}
+ImageLoader::ImageLoader() {}
 
 ImageLoader::~ImageLoader() {
 }

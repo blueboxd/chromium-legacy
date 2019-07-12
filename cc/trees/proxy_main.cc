@@ -155,7 +155,7 @@ void ProxyMain::BeginMainFrame(
                                   base::Unretained(proxy_impl_.get()),
                                   CommitEarlyOutReason::ABORTED_NOT_VISIBLE,
                                   begin_main_frame_start_time,
-                                  base::Passed(&empty_swap_promises)));
+                                  std::move(empty_swap_promises)));
     return;
   }
 
@@ -186,7 +186,7 @@ void ProxyMain::BeginMainFrame(
                        base::Unretained(proxy_impl_.get()),
                        CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE,
                        begin_main_frame_start_time,
-                       base::Passed(&empty_swap_promises)));
+                       std::move(empty_swap_promises)));
     // When we stop deferring main frame updates, we should resume any
     // previously requested pipeline stages.
     deferred_final_pipeline_stage_ =
@@ -257,7 +257,7 @@ void ProxyMain::BeginMainFrame(
                                   base::Unretained(proxy_impl_.get()),
                                   CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
                                   begin_main_frame_start_time,
-                                  base::Passed(&empty_swap_promises)));
+                                  std::move(empty_swap_promises)));
     // We intentionally don't report CommitComplete() here since it was aborted
     // prematurely and we're waiting to do another commit in the future.
     // When we stop deferring commits, we should resume any previously requested
@@ -300,11 +300,11 @@ void ProxyMain::BeginMainFrame(
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
-                                  base::Unretained(proxy_impl_.get()),
-                                  CommitEarlyOutReason::FINISHED_NO_UPDATES,
-                                  begin_main_frame_start_time,
-                                  base::Passed(&swap_promises)));
+        FROM_HERE,
+        base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
+                       base::Unretained(proxy_impl_.get()),
+                       CommitEarlyOutReason::FINISHED_NO_UPDATES,
+                       begin_main_frame_start_time, std::move(swap_promises)));
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit

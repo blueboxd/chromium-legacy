@@ -185,7 +185,7 @@ class UserScriptLoader : public content::NotificationObserver {
   // The associated observers.
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<UserScriptLoader> weak_factory_;
+  base::WeakPtrFactory<UserScriptLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptLoader);
 };

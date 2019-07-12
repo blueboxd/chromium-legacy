@@ -255,8 +255,7 @@ WebViewFindHelper::FindInfo::FindInfo(
       search_text_(search_text),
       options_(std::move(options)),
       find_function_(find_function),
-      replied_(false),
-      weak_ptr_factory_(this) {}
+      replied_(false) {}
 
 void WebViewFindHelper::FindInfo::AggregateResults(
     int number_of_matches,

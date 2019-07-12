@@ -221,7 +221,6 @@ test("google_apis_unittests") {
     "gaia/oauth2_id_token_decoder_unittest.cc",
     "gaia/oauth2_mint_token_flow_unittest.cc",
     "gaia/oauth2_token_service_delegate_unittest.cc",
-    "gaia/oauth2_token_service_unittest.cc",
     "gaia/oauth_multilogin_result_unittest.cc",
     "gaia/oauth_request_signer_unittest.cc",
     "google_api_keys_unittest.cc",

@@ -222,6 +222,11 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
     return r.username_predictions;
   }
 
+  static bool is_gaia_with_skip_save_password_form(
+      const autofill::FormData& d) {
+    return d.is_gaia_with_skip_save_password_form;
+  }
+
   static bool Read(autofill::mojom::FormDataDataView data,
                    autofill::FormData* out);
 };
@@ -562,11 +567,6 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
 
   static bool only_for_fallback(const autofill::PasswordForm& r) {
     return r.only_for_fallback;
-  }
-
-  static bool is_gaia_with_skip_save_password_form(
-      const autofill::PasswordForm& r) {
-    return r.is_gaia_with_skip_save_password_form;
   }
 
   static bool Read(autofill::mojom::PasswordFormDataView data,

@@ -57,7 +57,7 @@ class IOThreadExtensionMessageFilter : public content::BrowserMessageFilter {
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 
   // Weak pointers produced by this factory are bound to the IO thread.
-  base::WeakPtrFactory<IOThreadExtensionMessageFilter> weak_ptr_factory_;
+  base::WeakPtrFactory<IOThreadExtensionMessageFilter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadExtensionMessageFilter);
 };

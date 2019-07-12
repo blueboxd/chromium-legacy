@@ -17,8 +17,7 @@ namespace extensions {
 
 TestMimeHandlerViewGuest::TestMimeHandlerViewGuest(
     content::WebContents* owner_web_contents)
-    : MimeHandlerViewGuest(owner_web_contents),
-      weak_ptr_factory_(this) {}
+    : MimeHandlerViewGuest(owner_web_contents) {}
 
 TestMimeHandlerViewGuest::~TestMimeHandlerViewGuest() {}
 

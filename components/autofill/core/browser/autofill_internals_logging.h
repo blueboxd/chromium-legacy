@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -235,22 +237,31 @@ class AutofillInternalsMessage {
 // Class that forwards log messages to the WebUI for display.
 class AutofillInternalsLogging {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void Log(const base::Value& message) = 0;
+    virtual void LogRaw(const base::Value& message) = 0;
+  };
+
   AutofillInternalsLogging();
   virtual ~AutofillInternalsLogging();
 
-  // Main API function that is called when something is logged.
-  static void Log(std::string message);
+  void AddObserver(AutofillInternalsLogging::Observer* observer);
+  void RemoveObserver(const Observer* observer);
+  bool HasObservers() const;
 
-  static void SetAutofillInternalsLogger(
-      std::unique_ptr<AutofillInternalsLogging> logger);
+  // Main API function that is called when something is logged.
+  static void Log(const std::string& message);
+
+  static AutofillInternalsLogging* GetInstance();
 
  private:
-  static void LogRaw(base::Value&& message);
-  virtual void LogHelper(const base::Value& message) = 0;
-  virtual void LogRawHelper(const base::Value& message) = 0;
+  static void LogRaw(const base::Value& message);
 
   // Grant access to LogRaw().
   friend class AutofillInternalsMessage;
+
+  base::ObserverList<AutofillInternalsLogging::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillInternalsLogging);
 };

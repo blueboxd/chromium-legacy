@@ -201,7 +201,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
-  WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
+  WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
   WebViewProfileSyncServiceFactory::GetInstance();

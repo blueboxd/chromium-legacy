@@ -38,8 +38,7 @@ GCCallback::GCCallback(ScriptContext* context,
     : context_(context),
       object_(context->isolate(), object),
       closure_callback_(closure_callback),
-      fallback_(fallback),
-      weak_ptr_factory_(this) {
+      fallback_(fallback) {
   DCHECK(closure_callback_ || !v8_callback.IsEmpty());
   if (!v8_callback.IsEmpty())
     v8_callback_.Reset(context->isolate(), v8_callback);

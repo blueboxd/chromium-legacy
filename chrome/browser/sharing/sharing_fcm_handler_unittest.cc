@@ -25,9 +25,10 @@ const int kAckTimeToLiveMinutes = 30;
 
 class MockSharingMessageHandler : public SharingMessageHandler {
  public:
-  MockSharingMessageHandler() {}
-  ~MockSharingMessageHandler() override {}
+  MockSharingMessageHandler() = default;
+  ~MockSharingMessageHandler() override = default;
 
+  // SharingMessageHandler implementation:
   MOCK_METHOD1(OnMessage, void(const SharingMessage& message));
 };
 

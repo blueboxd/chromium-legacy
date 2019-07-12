@@ -33,8 +33,7 @@ void DrmWindowProxy::SchedulePageFlip(
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DrmThread::SchedulePageFlip,
-                     base::Unretained(drm_thread_), widget_,
-                     base::Passed(&planes),
+                     base::Unretained(drm_thread_), widget_, std::move(planes),
                      CreateSafeOnceCallback(std::move(submission_callback)),
                      CreateSafeOnceCallback(std::move(presentation_callback))));
 }

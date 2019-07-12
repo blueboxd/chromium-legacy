@@ -192,7 +192,7 @@ class ExtensionFrameHelper
   // navigation happens, it is either the initial one or a reload.
   bool has_started_first_navigation_ = false;
 
-  base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);
 };

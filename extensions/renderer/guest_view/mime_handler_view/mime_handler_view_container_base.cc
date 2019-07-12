@@ -112,8 +112,7 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
       plugin_path_(info.path.MaybeAsASCII()),
       mime_type_(mime_type),
       embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()),
-      before_unload_control_binding_(this),
-      weak_factory_(this) {
+      before_unload_control_binding_(this) {
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[embedder_render_frame].insert(
       this);

@@ -273,6 +273,8 @@ void ScriptController::ExecuteJavaScriptURL(
       ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
       base_url, SanitizeScriptErrors::kDoNotSanitize, ScriptFetchOptions(),
       kDoNotExecuteScriptWhenScriptsDisabled);
+  UseCounter::Count(*GetFrame()->GetDocument(),
+                    WebFeature::kExecutedJavaScriptURL);
 
   // If executing script caused this frame to be removed from the page, we
   // don't want to try to replace its document!

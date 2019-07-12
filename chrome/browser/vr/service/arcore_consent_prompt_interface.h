@@ -12,10 +12,10 @@ namespace vr {
 
 // TODO(crbug.com/968233): Unify consent flow.
 // This class solves layering problem until the above bug gets fixed.
-class VR_EXPORT ArCoreConsentPromptInterface {
+class VR_EXPORT ArcoreConsentPromptInterface {
  public:
-  static void SetInstance(ArCoreConsentPromptInterface*);
-  static ArCoreConsentPromptInterface* GetInstance();
+  static void SetInstance(ArcoreConsentPromptInterface*);
+  static ArcoreConsentPromptInterface* GetInstance();
 
   virtual void ShowConsentPrompt(
       int render_process_id,

@@ -53,7 +53,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     const base::UnguessableToken& appcache_host_id,
-    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factory_bundle_info,
@@ -67,11 +66,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_(info->url),
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(subresource_loader_factory_bundle_info);
-  // The ID of the precreated AppCacheHost can be valid only when the
-  // NetworkService is enabled.
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         appcache_host_id.is_empty());
 
   if (main_script_load_params) {
     response_override_ =
@@ -95,7 +91,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   }
 
   service_worker_provider_info_ = std::move(service_worker_provider_info);
-  main_script_loader_factory_ = std::move(main_script_loader_factory);
   controller_info_ = std::move(controller_info);
 
   // If the network service crashes, then self-destruct so clients don't get
@@ -172,35 +167,20 @@ void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   if (blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
-    // PlzSharedWorker w/ off-the-main-thread shared worker script fetch:
+    // Off-the-main-thread shared worker script fetch:
     // |response_override_| will be passed to WebWorkerFetchContextImpl in
     // CreateWorkerFetchContext() and consumed during off-the-main-thread
     // shared worker script fetch.
-    DCHECK(response_override_);
     return ServiceWorkerNetworkProviderForSharedWorker::Create(
-        std::move(service_worker_provider_info_),
-        std::move(main_script_loader_factory_), std::move(controller_info_),
+        std::move(service_worker_provider_info_), std::move(controller_info_),
         subresource_loader_factory_bundle_, IsOriginSecure(url_),
         nullptr /* response_override */);
   }
 
-#if DCHECK_IS_ON()
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // PlzSharedWorker:
-    // |response_override_| is passed to DocumentLoader and consumed during
-    // on-the-main-thread shared worker script fetch.
-    DCHECK(response_override_);
-  } else {
-    // Legacy loading path:
-    // This path will be removed once PlzSharedWorker and off-the-main-thread
-    // shared worker script fetch are enabled by default.
-    DCHECK(!response_override_);
-  }
-#endif  // DCHECK_IS_ON()
-
+  // |response_override_| is passed to DocumentLoader and consumed during
+  // on-the-main-thread shared worker script fetch.
   return ServiceWorkerNetworkProviderForSharedWorker::Create(
-      std::move(service_worker_provider_info_),
-      std::move(main_script_loader_factory_), std::move(controller_info_),
+      std::move(service_worker_provider_info_), std::move(controller_info_),
       subresource_loader_factory_bundle_, IsOriginSecure(url_),
       std::move(response_override_));
 }

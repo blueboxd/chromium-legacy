@@ -151,6 +151,9 @@ crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/927107 [ android ] Pixel_CSS3DBlueBox [ Failure ]
 
 # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
+crbug.com/925744 [ android ] Pixel_Video_MP4 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_VP9 [ Skip ]

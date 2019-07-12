@@ -4,18 +4,17 @@
 
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 
-#include <algorithm>
-#include <set>
-
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/escape.h"
 
 using password_manager::PasswordManagerInternalsService;
@@ -34,56 +33,79 @@ content::WebUIDataSource* CreatePasswordManagerInternalsHTMLSource() {
   return source;
 }
 
-}  // namespace
+// chrome://password-manager-internals specific UI handler that takes care of
+// subscribing to the autofill logging instance.
+class PasswordManagerInternalsUIHandler : public content::WebUIMessageHandler,
+                                          public password_manager::LogReceiver {
+ public:
+  PasswordManagerInternalsUIHandler() = default;
+  ~PasswordManagerInternalsUIHandler() override;
 
-PasswordManagerInternalsUI::PasswordManagerInternalsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      WebContentsObserver(web_ui->GetWebContents()),
-      registered_with_logging_service_(false) {
-  // Set up the chrome://password-manager-internals/ source.
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreatePasswordManagerInternalsHTMLSource());
+ private:
+  // content::WebUIMessageHandler:
+  void RegisterMessages() override;
+
+  // Implements content::WebUIMessageHandler.
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
+
+  // LogReceiver implementation.
+  void LogSavePasswordProgress(const std::string& text) override;
+
+  void StartSubscription();
+  void EndSubscription();
+
+  // JavaScript call handler.
+  void OnLoaded(const base::ListValue* args);
+
+  // Whether |this| is registered as a log receiver with the
+  // PasswordManagerInternalsService.
+  bool registered_with_logging_service_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsUIHandler);
+};
+
+PasswordManagerInternalsUIHandler::~PasswordManagerInternalsUIHandler() {
+  EndSubscription();
 }
 
-PasswordManagerInternalsUI::~PasswordManagerInternalsUI() {
-  UnregisterFromLoggingServiceIfNecessary();
+void PasswordManagerInternalsUIHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "loaded",
+      base::BindRepeating(&PasswordManagerInternalsUIHandler::OnLoaded,
+                          base::Unretained(this)));
 }
 
-void PasswordManagerInternalsUI::DidStartLoading() {
-  // In case this tab is being reloaded, unregister itself until the reload is
-  // completed.
-  UnregisterFromLoggingServiceIfNecessary();
+void PasswordManagerInternalsUIHandler::OnJavascriptAllowed() {
+  StartSubscription();
 }
 
-void PasswordManagerInternalsUI::DidStopLoading() {
-  web_ui()->CallJavascriptFunctionUnsafe("setUpPasswordManagerInternals");
-  DCHECK(!registered_with_logging_service_);
+void PasswordManagerInternalsUIHandler::OnJavascriptDisallowed() {
+  EndSubscription();
+}
+
+void PasswordManagerInternalsUIHandler::OnLoaded(const base::ListValue* args) {
+  AllowJavascript();
+  CallJavascriptFunction("setUpPasswordManagerInternals");
+  CallJavascriptFunction(
+      "notifyAboutIncognito",
+      base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
+}
+
+void PasswordManagerInternalsUIHandler::StartSubscription() {
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
-  // No service means the WebUI is displayed in Incognito.
-  base::Value is_incognito(!service);
-  web_ui()->CallJavascriptFunctionUnsafe("notifyAboutIncognito", is_incognito);
-
-  if (service) {
-    registered_with_logging_service_ = true;
-
-    std::string past_logs(service->RegisterReceiver(this));
-    LogSavePasswordProgress(past_logs);
-  }
-}
-
-void PasswordManagerInternalsUI::LogSavePasswordProgress(
-    const std::string& text) {
-  if (!registered_with_logging_service_ || text.empty())
+  if (!service)
     return;
-  std::string no_quotes(text);
-  std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
-  base::Value text_string_value(net::EscapeForHTML(no_quotes));
-  web_ui()->CallJavascriptFunctionUnsafe("addLog", text_string_value);
+
+  registered_with_logging_service_ = true;
+
+  std::string past_logs(service->RegisterReceiver(this));
+  LogSavePasswordProgress(past_logs);
 }
 
-void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {
+void PasswordManagerInternalsUIHandler::EndSubscription() {
   if (!registered_with_logging_service_)
     return;
   registered_with_logging_service_ = false;
@@ -93,3 +115,26 @@ void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {
   if (service)
     service->UnregisterReceiver(this);
 }
+
+void PasswordManagerInternalsUIHandler::LogSavePasswordProgress(
+    const std::string& text) {
+  if (!registered_with_logging_service_ || text.empty())
+    return;
+  std::string no_quotes(text);
+  std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
+  base::Value text_string_value(net::EscapeForHTML(no_quotes));
+  CallJavascriptFunction("addLog", text_string_value);
+}
+
+}  // namespace
+
+PasswordManagerInternalsUI::PasswordManagerInternalsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile,
+                                CreatePasswordManagerInternalsHTMLSource());
+  web_ui->AddMessageHandler(
+      std::make_unique<PasswordManagerInternalsUIHandler>());
+}
+
+PasswordManagerInternalsUI::~PasswordManagerInternalsUI() = default;

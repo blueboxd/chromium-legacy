@@ -96,7 +96,7 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
 
   bool ready_to_create_mime_handler_view_ = false;
 
-  base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewEmbedder);
 };

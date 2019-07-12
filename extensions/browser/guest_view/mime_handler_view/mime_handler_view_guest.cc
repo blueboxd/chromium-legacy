@@ -57,8 +57,7 @@ StreamContainer::StreamContainer(
       mime_type_(transferrable_loader_->head.mime_type),
       original_url_(original_url),
       stream_url_(transferrable_loader_->url),
-      response_headers_(transferrable_loader_->head.headers),
-      weak_factory_(this) {}
+      response_headers_(transferrable_loader_->head.headers) {}
 
 StreamContainer::~StreamContainer() {
 }
@@ -90,8 +89,7 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
           ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(this)),
       embedder_frame_process_id_(content::ChildProcessHost::kInvalidUniqueID),
       embedder_frame_routing_id_(MSG_ROUTING_NONE),
-      embedder_widget_routing_id_(MSG_ROUTING_NONE),
-      weak_factory_(this) {}
+      embedder_widget_routing_id_(MSG_ROUTING_NONE) {}
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
   // Before attaching is complete, the instance ID is not valid.

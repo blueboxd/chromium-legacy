@@ -186,7 +186,7 @@ class WebRequestProxyingURLLoaderFactory
     };
     std::unique_ptr<FollowRedirectParams> pending_follow_redirect_params_;
 
-    base::WeakPtrFactory<InProgressRequest> weak_factory_;
+    base::WeakPtrFactory<InProgressRequest> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
   };
@@ -270,7 +270,7 @@ class WebRequestProxyingURLLoaderFactory
   // internally generated request ID for the same request.
   std::map<int32_t, uint64_t> network_request_id_to_web_request_id_;
 
-  base::WeakPtrFactory<WebRequestProxyingURLLoaderFactory> weak_factory_;
+  base::WeakPtrFactory<WebRequestProxyingURLLoaderFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestProxyingURLLoaderFactory);
 };

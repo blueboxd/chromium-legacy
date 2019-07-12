@@ -147,7 +147,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
     SetCcLayer(nullptr, false, false);
 }
 
-bool RemoteFrame::PrepareForCommit() {
+bool RemoteFrame::DetachDocument() {
   DetachChildren();
   return !!GetPage();
 }

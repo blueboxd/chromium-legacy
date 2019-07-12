@@ -61,8 +61,6 @@ component("blink") {
     "webinbandtexttrack_impl.h",
     "webmediaplayer_params.cc",
     "webmediaplayer_params.h",
-    "webmediaplayer_util.cc",
-    "webmediaplayer_util.h",
     "webmediasource_impl.cc",
     "webmediasource_impl.h",
     "websourcebuffer_impl.cc",
@@ -150,7 +148,6 @@ test("media_blink_unittests") {
     "watch_time_component_unittest.cc",
     "watch_time_reporter_unittest.cc",
     "webmediaplayer_impl_unittest.cc",
-    "webmediaplayer_util_unittest.cc",
   ]
 
   if (is_android) {

@@ -107,7 +107,7 @@ class ImageSanitizer {
   ImageDecodedCallback image_decoded_callback_;
   SanitizationDoneCallback done_callback_;
   data_decoder::mojom::ImageDecoderPtr image_decoder_ptr_;
-  base::WeakPtrFactory<ImageSanitizer> weak_factory_;
+  base::WeakPtrFactory<ImageSanitizer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageSanitizer);
 };

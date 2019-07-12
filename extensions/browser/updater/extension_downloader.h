@@ -429,7 +429,7 @@ class ExtensionDownloader {
   crx_file::VerifierFormat crx_format_requirement_;
 
   // Used to create WeakPtrs to |this|.
-  base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloader);
 };

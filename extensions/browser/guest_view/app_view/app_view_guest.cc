@@ -107,9 +107,8 @@ GuestViewBase* AppViewGuest::Create(WebContents* owner_web_contents) {
 
 AppViewGuest::AppViewGuest(WebContents* owner_web_contents)
     : GuestView<AppViewGuest>(owner_web_contents),
-      app_view_guest_delegate_(ExtensionsAPIClient::Get()
-                                   ->CreateAppViewGuestDelegate()),
-      weak_ptr_factory_(this) {
+      app_view_guest_delegate_(
+          ExtensionsAPIClient::Get()->CreateAppViewGuestDelegate()) {
   if (app_view_guest_delegate_)
     app_delegate_.reset(app_view_guest_delegate_->CreateAppDelegate());
 }

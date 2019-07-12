@@ -765,6 +765,10 @@ below:
         more options
       </message>
 
+      <message name="IDS_AX_MEDIA_TOUCHLESS_PLAY_PAUSE_ACTION" desc="Accessibility help description for play/pause action on touchless device using DPAD.">
+        select to toggle play pause
+      </message>
+
       <message name="IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION" desc="Accessibility help description for seek action on touchless device using DPAD.">
         left and right to seek
       </message>

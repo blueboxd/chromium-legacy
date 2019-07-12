@@ -166,6 +166,7 @@ struct FormData {
   SubmissionIndicatorEvent submission_event;
   array<FormFieldData> fields;
   array<uint32> username_predictions;
+  bool is_gaia_with_skip_save_password_form;
 };
 
 // autofill::FormFieldDataPredictions
@@ -298,7 +299,6 @@ struct PasswordForm {
   bool is_affiliation_based_match;
   SubmissionIndicatorEvent submission_event;
   bool only_for_fallback;
-  bool is_gaia_with_skip_save_password_form;
 };
 
 // Note: Even though https://crbug.com/628104 is solved, we still can not use a

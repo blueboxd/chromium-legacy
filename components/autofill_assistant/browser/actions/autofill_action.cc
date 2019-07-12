@@ -58,6 +58,11 @@ void AutofillAction::InternalProcessAction(
       (!is_autofill_card_ &&
        delegate_->GetClientMemory()->selected_address(name_));
   if (!has_valid_data) {
+    auto* error_info = processed_action_proto_->mutable_status_details()
+                           ->mutable_autofill_error_info();
+    error_info->set_address_key_requested(name_);
+    error_info->set_client_memory_address_key_names(
+        delegate_->GetClientMemory()->GetAllAddressKeyNames());
     EndAction(PRECONDITION_FAILED);
     return;
   }

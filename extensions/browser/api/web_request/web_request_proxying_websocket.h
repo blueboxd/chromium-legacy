@@ -138,7 +138,7 @@ class WebRequestProxyingWebSocket
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
 
-  base::WeakPtrFactory<WebRequestProxyingWebSocket> weak_factory_;
+  base::WeakPtrFactory<WebRequestProxyingWebSocket> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebRequestProxyingWebSocket);
 };
 

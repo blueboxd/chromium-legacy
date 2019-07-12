@@ -12,7 +12,8 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -27,7 +28,7 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
         last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
 
   void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {
-    last_host_id_ = bindings_.dispatch_context();
+    last_host_id_ = receivers_.current_context();
     last_cache_id_ = info->cache_id;
     last_status_ = info->status;
   }
@@ -47,18 +48,18 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  blink::mojom::AppCacheFrontendPtr Bind(
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> Bind(
       const base::UnguessableToken& host_id) {
-    blink::mojom::AppCacheFrontendPtr result;
-    bindings_.AddBinding(this, mojo::MakeRequest(&result), host_id);
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> result;
+    receivers_.Add(this, result.InitWithNewPipeAndPassReceiver(), host_id);
     return result;
   }
 
   base::UnguessableToken last_host_id_;
   int64_t last_cache_id_;
   blink::mojom::AppCacheStatus last_status_;
-  mojo::BindingSet<blink::mojom::AppCacheFrontend, base::UnguessableToken>
-      bindings_;
+  mojo::ReceiverSet<blink::mojom::AppCacheFrontend, base::UnguessableToken>
+      receivers_;
 };
 
 }  // namespace

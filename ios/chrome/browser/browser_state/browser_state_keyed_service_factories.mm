@@ -103,7 +103,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ConsentAuditorFactory::GetInstance();
   FullscreenControllerFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
-  IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
+  IdentityManagerFactory::GetInstance();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();
   IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance();
   IOSChromeFaviconLoaderFactory::GetInstance();

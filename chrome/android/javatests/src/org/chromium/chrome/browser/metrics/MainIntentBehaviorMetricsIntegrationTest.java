@@ -73,7 +73,11 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     @MediumTest
     @Test
     public void testFocusOmnibox() {
-        startActivity(true);
+        // startActivity(true) creates a NTP which is problematical for this test if
+        // ChromeTabbedActivity.setupCompositorContent runs before that NTP is created because
+        // that creates a SimpleAnimationLayout which tries to hide the page resulting in a
+        // MainIntentActionType.SWITCH_TABS. Starting from about:blank avoids this confusion.
+        startActivityWithAboutBlank(true);
         assertMainIntentBehavior(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -108,9 +112,12 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
-    @DisabledTest(message = "crbug.com/982081")
     public void testBackgrounded() {
-        startActivity(true);
+        // startActivity(true) creates a NTP which is problematical for this test if
+        // ChromeTabbedActivity.setupCompositorContent runs before that NTP is created because
+        // that creates a SimpleAnimationLayout which tries to hide the page resulting in a
+        // MainIntentActionType.SWITCH_TABS. Starting from about:blank avoids this confusion.
+        startActivityWithAboutBlank(true);
         assertMainIntentBehavior(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().finish());
         assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.BACKGROUNDED);
@@ -135,7 +142,11 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     public void testContinuation() {
         try {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(500);
-            startActivity(true);
+            // startActivity(true) creates a NTP which is problematical for this test if
+            // ChromeTabbedActivity.setupCompositorContent runs before that NTP is created because
+            // that creates a SimpleAnimationLayout which tries to hide the page resulting in a
+            // MainIntentActionType.SWITCH_TABS. Starting from about:blank avoids this confusion.
+            startActivityWithAboutBlank(true);
             assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.CONTINUATION);
         } finally {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(

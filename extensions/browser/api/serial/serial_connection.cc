@@ -172,8 +172,7 @@ SerialConnection::SerialConnection(
       receive_pipe_watcher_(FROM_HERE,
                             mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       send_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      client_binding_(this),
-      weak_factory_(this) {
+      client_binding_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(serial_port_info.is_valid());
   serial_port_.Bind(std::move(serial_port_info));

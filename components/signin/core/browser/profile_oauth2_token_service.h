@@ -56,6 +56,60 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Checks in the cache for a valid access token for a specified |account_id|
+  // and |scopes|, and if not found starts a request for an OAuth2 access token
+  // using the OAuth2 refresh token maintained by this instance for that
+  // |account_id|. The caller owns the returned Request.
+  // |scopes| is the set of scopes to get an access token for, |consumer| is
+  // the object that will be called back with results if the returned request
+  // is not deleted.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequest(
+      const CoreAccountId& account_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      OAuth2AccessTokenManager::Consumer* consumer);
+
+  // Try to get refresh token from delegate. If it is accessible (i.e. not
+  // empty), return it directly, otherwise start request to get access token.
+  // Used for getting tokens to send to Gaia Multilogin endpoint.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestForMultilogin(
+      const CoreAccountId& account_id,
+      OAuth2AccessTokenManager::Consumer* consumer);
+
+  // This method does the same as |StartRequest| except it uses |client_id| and
+  // |client_secret| to identify OAuth client app instead of using
+  // Chrome's default values.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestForClient(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      OAuth2AccessTokenManager::Consumer* consumer);
+
+  // This method does the same as |StartRequest| except it uses the
+  // URLLoaderFactory given by |url_loader_factory| instead of using the one
+  // returned by Delegate::GetURLLoaderFactory().
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestWithContext(
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      OAuth2AccessTokenManager::Consumer* consumer);
+
+  // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
+  // invalid. This should be done if the token was received from this class,
+  // but was not accepted by the server (e.g., the server returned
+  // 401 Unauthorized). The token will be removed from the cache for the given
+  // scopes.
+  void InvalidateAccessToken(const CoreAccountId& account_id,
+                             const OAuth2AccessTokenManager::ScopeSet& scopes,
+                             const std::string& access_token);
+
+  // Removes token from cache (if it is cached) and calls
+  // InvalidateTokenForMultilogin method of the delegate. This should be done if
+  // the token was received from this class, but was not accepted by the server
+  // (e.g., the server returned 401 Unauthorized).
+  virtual void InvalidateTokenForMultilogin(const CoreAccountId& failed_account,
+                                            const std::string& token);
+
   // If set, this callback will be invoked when a new refresh token is
   // available. Contains diagnostic information about the source of the update
   // credentials operation.
@@ -125,6 +179,14 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
 
+  // Clears the internal token cache.
+  void ClearCache();
+
+  // Clears all of the tokens belonging to |account_id| from the internal token
+  // cache. It does not matter what other parameters, like |client_id| were
+  // used to request the tokens.
+  void ClearCacheForAccount(const CoreAccountId& account_id);
+
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
   void RecreateDeviceIdIfNeeded();
@@ -137,6 +199,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   signin_metrics::SourceForRefreshTokenOperation update_refresh_token_source_ =
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
+
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

@@ -22,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -1554,16 +1553,6 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
-  UMA_HISTOGRAM_BOOLEAN("PrintPreview.InitiatedByScript",
-                        frame->Top() == frame);
-
-  // Logging whether the top frame is remote is sufficient in this case. If
-  // the top frame is local, the printing code will function correctly and
-  // the frame itself will be printed, so the cases this histogram tracks is
-  // where printing of a subframe will fail as of now.
-  UMA_HISTOGRAM_BOOLEAN("PrintPreview.OutOfProcessSubframe",
-                        frame->Top()->IsWebRemoteFrame());
-
   RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
       GetWidget()->input_handler().handling_input_event());
 }

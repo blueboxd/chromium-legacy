@@ -119,10 +119,8 @@ FrameRendererThumbnail::~FrameRendererThumbnail() {
 std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
     const std::vector<std::string> thumbnail_checksums,
     const base::FilePath& output_folder) {
-  base::FilePath resolved_output_folder =
-      base::MakeAbsoluteFilePath(output_folder);
   auto frame_renderer = base::WrapUnique(
-      new FrameRendererThumbnail(thumbnail_checksums, resolved_output_folder));
+      new FrameRendererThumbnail(thumbnail_checksums, output_folder));
   frame_renderer->Initialize();
   return frame_renderer;
 }
@@ -235,7 +233,10 @@ void FrameRendererThumbnail::SaveThumbnailTask() {
                         kThumbnailsPageSize, kThumbnailsPageSize.width() * 4,
                         true, std::vector<gfx::PNGCodec::Comment>(), &png);
 
-  base::FilePath filepath = output_folder_.Append(kThumbnailFilename);
+  base::FilePath filepath =
+      base::MakeAbsoluteFilePath(output_folder_).Append(kThumbnailFilename);
+  LOG(INFO) << "Saving thumbnails image to " << filepath;
+
   base::File thumbnail_file(
       filepath, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   int num_bytes =

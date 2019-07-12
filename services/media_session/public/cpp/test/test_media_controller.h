@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -44,7 +45,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<ImageTypePair> expected_;
   base::Optional<ImageTypePair> current_;
 
-  mojo::Binding<mojom::MediaControllerImageObserver> binding_{this};
+  mojo::Receiver<mojom::MediaControllerImageObserver> receiver_{this};
 };
 
 // A mock MediaControllerObsever that can be used for waiting for state changes.
@@ -135,8 +136,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void ObserveImages(mojom::MediaSessionImageType type,
                      int minimum_size_px,
                      int desired_size_px,
-                     mojom::MediaControllerImageObserverPtr observer) override {
-  }
+                     mojo::PendingRemote<mojom::MediaControllerImageObserver>
+                         observer) override {}
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

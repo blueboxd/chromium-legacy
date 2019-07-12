@@ -28,8 +28,6 @@ class ServiceWorkerNetworkProviderForSharedWorker final
  public:
   // Creates a new instance.
   // - |info|: provider info from the browser
-  // - |script_loader_factory|: the factory for loading the worker's
-  //   scripts
   // - |controller_info|: info about controller service worker
   // - |fallback_loader_factory|: the factory to use when a service worker falls
   //   back to network (unlike the default factory of this renderer, it skips
@@ -38,7 +36,6 @@ class ServiceWorkerNetworkProviderForSharedWorker final
   // - |response_override|: the main script response
   static std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker> Create(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
-      network::mojom::URLLoaderFactoryPtr script_loader_factory,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
       bool is_secure_context,
@@ -69,9 +66,6 @@ class ServiceWorkerNetworkProviderForSharedWorker final
   // |context_| is null if |this| is an invalid instance, in which case there is
   // no connection to the browser process.
   scoped_refptr<ServiceWorkerProviderContext> context_;
-
-  // The URL loader factory for loading the worker's scripts.
-  network::mojom::URLLoaderFactoryPtr script_loader_factory_;
 };
 
 }  // namespace content

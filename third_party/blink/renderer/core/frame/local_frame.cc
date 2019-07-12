@@ -369,8 +369,8 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
 }
 
-bool LocalFrame::PrepareForCommit() {
-  return Loader().PrepareForCommit();
+bool LocalFrame::DetachDocument() {
+  return Loader().DetachDocument();
 }
 
 void LocalFrame::CheckCompleted() {

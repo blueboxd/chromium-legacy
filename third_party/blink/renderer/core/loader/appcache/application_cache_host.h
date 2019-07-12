@@ -35,7 +35,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -130,7 +131,7 @@ class CORE_EXPORT ApplicationCacheHost
  protected:
   DocumentLoader* GetDocumentLoader() const { return document_loader_; }
 
-  mojom::blink::AppCacheHostPtr backend_host_;
+  mojo::Remote<mojom::blink::AppCacheHost> backend_host_;
   mojom::blink::AppCacheStatus status_ =
       mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 
@@ -186,7 +187,7 @@ class CORE_EXPORT ApplicationCacheHost
   bool defers_events_ =
       true;  // Events are deferred until after document onload.
   Vector<DeferredEvent> deferred_events_;
-  mojo::Binding<mojom::blink::AppCacheFrontend> binding_;
+  mojo::Receiver<mojom::blink::AppCacheFrontend> receiver_{this};
   base::UnguessableToken host_id_;
   mojom::blink::AppCacheInfo cache_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -269,7 +269,7 @@ void ClientResourceProvider::ReceiveReturnsFromParent(
       // |cb| is destroyed when leaving scope.
     };
     release_callbacks.push_back(
-        base::BindOnce(run_callback, base::Passed(&imported.release_callback),
+        base::BindOnce(run_callback, std::move(imported.release_callback),
                        imported.returned_sync_token, imported.returned_lost));
     // We don't want to keep this resource, so we leave |imported_keep_end_it|
     // pointing to it (since it points past the end of what we're keeping). We

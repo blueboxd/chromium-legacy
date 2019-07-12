@@ -17,13 +17,16 @@
 
 @class CWVSyncController;
 
+namespace ios_web_view {
+class WebViewBrowserState;
+}
+
 // iOS WebView specific signin client.
 class IOSWebViewSigninClient : public SigninClient {
  public:
   IOSWebViewSigninClient(
       PrefService* pref_service,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      network::mojom::CookieManager* cookie_manager,
+      ios_web_view::WebViewBrowserState* browser_state,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map);
 
@@ -61,8 +64,7 @@ class IOSWebViewSigninClient : public SigninClient {
   std::unique_ptr<WaitForNetworkCallbackHelper> network_callback_helper_;
   // The PrefService associated with this service.
   PrefService* pref_service_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  network::mojom::CookieManager* cookie_manager_;
+  ios_web_view::WebViewBrowserState* browser_state_;
   // Used to check if sign in cookies are allowed.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.

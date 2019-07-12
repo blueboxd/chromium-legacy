@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -51,7 +52,8 @@ class PasswordAccessoryControllerImpl
   void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) override;
-  void OnGenerationRequested(bool manual) override;
+  void OnGenerationRequested(
+      autofill::password_generation::PasswordGenerationType type) override;
   void DidNavigateMainFrame() override;
   void GetFavicon(
       int desired_size_in_pixel,

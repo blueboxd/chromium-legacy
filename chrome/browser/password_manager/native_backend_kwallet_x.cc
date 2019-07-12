@@ -282,11 +282,6 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
   }
 }
 
-void UMALogDeserializationStatus(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.KWalletDeserializationStatus",
-                        success);
-}
-
 }  // namespace
 
 // Using USER_VISIBLE priority, because the passwords obtained through tasks on
@@ -769,9 +764,8 @@ NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
   bool success = true;
   if (version > 0) {
     // In current pickles, we expect 64-bit sizes. Failure is an error.
-    success = DeserializeValueSize(
-        signon_realm, iter, version, false, false, &forms);
-    UMALogDeserializationStatus(success);
+    success =
+        DeserializeValueSize(signon_realm, iter, version, false, false, &forms);
     return forms;
   }
 
@@ -785,7 +779,6 @@ NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
     success = DeserializeValueSize(
         signon_realm, iter, version, !size_32, false, &forms);
   }
-  UMALogDeserializationStatus(success);
   return forms;
 }
 

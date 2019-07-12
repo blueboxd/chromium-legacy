@@ -59,8 +59,7 @@ namespace bt_private = api::bluetooth_private;
 BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
     : browser_context_(context),
       adapter_(nullptr),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {
+      extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   BLUETOOTH_LOG(USER) << "BluetoothEventRouter()";
   DCHECK(browser_context_);

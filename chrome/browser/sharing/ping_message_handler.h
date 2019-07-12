@@ -11,7 +11,9 @@
 class PingMessageHandler : public SharingMessageHandler {
  public:
   PingMessageHandler();
+  ~PingMessageHandler() override;
 
+  // SharingMessageHandler implementation:
   void OnMessage(
       const chrome_browser_sharing::SharingMessage& message) override;
 

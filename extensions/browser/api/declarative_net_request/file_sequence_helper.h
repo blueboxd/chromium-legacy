@@ -141,7 +141,7 @@ class FileSequenceHelper {
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details. Mutable to allow GetWeakPtr() usage from const methods.
-  mutable base::WeakPtrFactory<FileSequenceHelper> weak_factory_;
+  mutable base::WeakPtrFactory<FileSequenceHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSequenceHelper);
 };

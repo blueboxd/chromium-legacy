@@ -16,12 +16,13 @@ namespace media_session {
 // size and type preferences it specified when the observer was added.
 class MediaController::ImageObserverHolder {
  public:
-  ImageObserverHolder(MediaController* owner,
-                      mojom::MediaSessionImageType type,
-                      int minimum_size_px,
-                      int desired_size_px,
-                      mojom::MediaControllerImageObserverPtr observer,
-                      const std::vector<MediaImage>& current_images)
+  ImageObserverHolder(
+      MediaController* owner,
+      mojom::MediaSessionImageType type,
+      int minimum_size_px,
+      int desired_size_px,
+      mojo::PendingRemote<mojom::MediaControllerImageObserver> observer,
+      const std::vector<MediaImage>& current_images)
       : manager_(minimum_size_px, desired_size_px),
         owner_(owner),
         type_(type),
@@ -233,7 +234,7 @@ void MediaController::ObserveImages(
     mojom::MediaSessionImageType type,
     int minimum_size_px,
     int desired_size_px,
-    mojom::MediaControllerImageObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaControllerImageObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = session_images_.find(type);

@@ -298,6 +298,29 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   return false;
 }
 
+// Returns true if starting in guest mode is enforced. If |show_warning| is
+// true, send a warning if guest mode is requested but not allowed by policy.
+bool IsGuestModeEnforced(const base::CommandLine& command_line,
+                         bool show_warning) {
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+
+  // Check if guest mode enforcement commandline switch or policy are provided.
+  if (command_line.HasSwitch(switches::kGuest) ||
+      service->GetBoolean(prefs::kBrowserGuestModeEnforced)) {
+    // Check if guest mode is allowed by policy.
+    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled))
+      return true;
+    if (show_warning) {
+      LOG(WARNING) << "Guest mode disabled by policy, launching a normal "
+                   << "browser session.";
+    }
+  }
+#endif
+  return false;
+}
+
 }  // namespace
 
 StartupBrowserCreator::StartupBrowserCreator()
@@ -351,20 +374,11 @@ bool StartupBrowserCreator::LaunchBrowser(
                  << "browser session.";
   }
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-  if (command_line.HasSwitch(switches::kGuest)) {
-    PrefService* service = g_browser_process->local_state();
-    DCHECK(service);
-    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
-      profile = g_browser_process->profile_manager()
-                    ->GetProfile(ProfileManager::GetGuestProfilePath())
-                    ->GetOffTheRecordProfile();
-    } else {
-      LOG(WARNING) << "Guest mode disabled by policy, launching a normal "
-                   << "browser session.";
-    }
+  if (IsGuestModeEnforced(command_line, /* show_warning= */ true)) {
+    profile = g_browser_process->profile_manager()
+                  ->GetProfile(ProfileManager::GetGuestProfilePath())
+                  ->GetOffTheRecordProfile();
   }
-#endif
 
 #if defined(OS_WIN)
   // Continue with the incognito profile if this is a credential provider logon.
@@ -1012,16 +1026,10 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
   }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-  // If opening in Guest mode switch is provided, load the default profile so
+  // If opening in Guest mode is requested, load the default profile so
   // that last opened profile would not trigger a user management dialog.
-  if (command_line.HasSwitch(switches::kGuest)) {
-    PrefService* service = g_browser_process->local_state();
-    DCHECK(service);
-    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled))
-      return profiles::GetDefaultProfileDir(user_data_dir);
-  }
-#endif
+  if (IsGuestModeEnforced(command_line, /* show_warning= */ false))
+    return profiles::GetDefaultProfileDir(user_data_dir);
 
   if (command_line.HasSwitch(switches::kProfileDirectory)) {
     return user_data_dir.Append(

@@ -81,9 +81,7 @@ void UsbDeviceManager::Observer::OnDeviceRemoved(
 void UsbDeviceManager::Observer::OnDeviceManagerConnectionError() {}
 
 UsbDeviceManager::UsbDeviceManager(content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
-      client_binding_(this),
-      weak_factory_(this) {
+    : browser_context_(browser_context), client_binding_(this) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(this, usb::OnDeviceAdded::kEventName);

@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
 #else
 #define MAYBE_AnnotationLanguages AnnotationLanguages
 #endif
-IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationLanguages) {
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, MAYBE_AnnotationLanguages) {
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);
 

@@ -8,12 +8,12 @@
 
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AccountInfoFetcher::AccountInfoFetcher(
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountFetcherService* service,
     const CoreAccountId& account_id)

@@ -18,7 +18,7 @@ class SharedURLLoaderFactory;
 }
 
 class AccountFetcherService;
-class OAuth2TokenService;
+class ProfileOAuth2TokenService;
 
 // An account information fetcher that gets an OAuth token of appropriate
 // scope and uses it to fetch account information. This does not handle
@@ -27,7 +27,7 @@ class AccountInfoFetcher : public OAuth2AccessTokenManager::Consumer,
                            public gaia::GaiaOAuthClient::Delegate {
  public:
   AccountInfoFetcher(
-      OAuth2TokenService* token_service,
+      ProfileOAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccountFetcherService* service,
       const CoreAccountId& account_id);
@@ -52,7 +52,7 @@ class AccountInfoFetcher : public OAuth2AccessTokenManager::Consumer,
   void OnNetworkError(int response_code) override;
 
  private:
-  OAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountFetcherService* service_;
   const CoreAccountId account_id_;

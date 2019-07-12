@@ -48,7 +48,6 @@
 #include "media/blink/watch_time_reporter.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webinbandtexttrack_impl.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -69,6 +68,7 @@
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -689,10 +689,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.GetString().Utf8()));
   load_start_time_ = base::TimeTicks::Now();
 
-  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource,
-                                      load_type == kLoadTypeURL
-                                          ? GetMediaURLScheme(loaded_url_)
-                                          : mojom::MediaURLScheme::kUnknown);
+  media_metrics_provider_->Initialize(
+      load_type == kLoadTypeMediaSource,
+      load_type == kLoadTypeURL ? blink::GetMediaURLScheme(loaded_url_)
+                                : mojom::MediaURLScheme::kUnknown);
 
   // Media source pipelines can start immediately.
   if (load_type == kLoadTypeMediaSource) {
@@ -1103,7 +1103,7 @@ blink::WebTimeRanges WebMediaPlayerImpl::Buffered() const {
     buffered_data_source_host_->AddBufferedTimeRanges(&buffered_time_ranges,
                                                       duration);
   }
-  return ConvertToWebTimeRanges(buffered_time_ranges);
+  return blink::ConvertToWebTimeRanges(buffered_time_ranges);
 }
 
 blink::WebTimeRanges WebMediaPlayerImpl::Seekable() const {
@@ -1396,7 +1396,7 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
   }
 
   encrypted_client_->Encrypted(
-      ConvertToWebInitDataType(init_data_type), init_data.data(),
+      blink::ConvertToWebInitDataType(init_data_type), init_data.data(),
       base::saturated_cast<unsigned int>(init_data.size()));
 }
 
@@ -1760,7 +1760,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
     // be considered a format error.
     SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
   } else {
-    SetNetworkState(PipelineErrorToNetworkState(status));
+    SetNetworkState(blink::PipelineErrorToNetworkState(status));
   }
 
   // PipelineController::Stop() is idempotent.

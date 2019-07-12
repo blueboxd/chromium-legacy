@@ -13,11 +13,13 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "url/gurl.h"
 
+using autofill::password_generation::PasswordGenerationType;
 using base::ListValue;
 using base::Value;
 
@@ -224,6 +226,20 @@ void LogNewlySavedPasswordIsGenerated(bool value) {
 void LogGenerationPresaveConflict(GenerationPresaveConflict value) {
   base::UmaHistogramEnumeration("PasswordGeneration.PresaveConflict", value);
 }
+
+void LogGenerationDialogChoice(GenerationDialogChoice choice,
+                               PasswordGenerationType type) {
+  switch (type) {
+    case PasswordGenerationType::kAutomatic:
+      base::UmaHistogramEnumeration(
+          "KeyboardAccessory.GenerationDialogChoice.Automatic", choice);
+      break;
+    case PasswordGenerationType::kManual:
+      base::UmaHistogramEnumeration(
+          "KeyboardAccessory.GenerationDialogChoice.Manual", choice);
+      break;
+  };
+}  // namespace metrics_util
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {

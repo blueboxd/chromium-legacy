@@ -1002,7 +1002,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
       context_type_(context_type),
       program_completion_queries_(
-          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT) {
+          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
+      feature_handle_for_scheduler_(
+          host->GetTopExecutionContext()->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kWebGL,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(context_provider);
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a

@@ -7,6 +7,7 @@
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,18 +16,15 @@
 
 IOSWebViewSigninClient::IOSWebViewSigninClient(
     PrefService* pref_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    network::mojom::CookieManager* cookie_manager,
+    ios_web_view::WebViewBrowserState* browser_state,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map)
     : network_callback_helper_(
           std::make_unique<WaitForNetworkCallbackHelper>()),
       pref_service_(pref_service),
-      url_loader_factory_(url_loader_factory),
-      cookie_manager_(cookie_manager),
+      browser_state_(browser_state),
       cookie_settings_(cookie_settings),
-      host_content_settings_map_(host_content_settings_map) {
-}
+      host_content_settings_map_(host_content_settings_map) {}
 
 IOSWebViewSigninClient::~IOSWebViewSigninClient() {
 }
@@ -46,11 +44,11 @@ PrefService* IOSWebViewSigninClient::GetPrefs() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 IOSWebViewSigninClient::GetURLLoaderFactory() {
-  return url_loader_factory_;
+  return browser_state_->GetSharedURLLoaderFactory();
 }
 
 network::mojom::CookieManager* IOSWebViewSigninClient::GetCookieManager() {
-  return cookie_manager_;
+  return browser_state_->GetCookieManager();
 }
 
 void IOSWebViewSigninClient::DoFinalInit() {}

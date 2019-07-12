@@ -131,9 +131,7 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
       : content::WebContentsObserver(
             content::WebContents::FromRenderFrameHost(render_frame_host)),
         dispatcher_(dispatcher),
-        render_frame_host_(render_frame_host),
-        weak_ptr_factory_(this) {
-  }
+        render_frame_host_(render_frame_host) {}
 
   ~UIThreadResponseCallbackWrapper() override {}
 
@@ -170,7 +168,7 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
   content::RenderFrameHost* render_frame_host_;
-  base::WeakPtrFactory<UIThreadResponseCallbackWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<UIThreadResponseCallbackWrapper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UIThreadResponseCallbackWrapper);
 };
@@ -185,8 +183,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       : dispatcher_(dispatcher),
         observer_(this),
         render_process_host_(render_process_host),
-        worker_thread_id_(worker_thread_id),
-        weak_ptr_factory_(this) {
+        worker_thread_id_(worker_thread_id) {
     observer_.Add(render_process_host_);
 
     DCHECK(ExtensionsClient::Get()
@@ -243,7 +240,8 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       observer_;
   content::RenderProcessHost* const render_process_host_;
   const int worker_thread_id_;
-  base::WeakPtrFactory<UIThreadWorkerResponseCallbackWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<UIThreadWorkerResponseCallbackWrapper> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(UIThreadWorkerResponseCallbackWrapper);
 };

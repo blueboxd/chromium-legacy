@@ -7,8 +7,12 @@
 
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
+#include "base/files/file_path.h"
 #include "build/build_config.h"
+
+#if !defined(OS_ANDROID)
+#include "base/memory/scoped_refptr.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/callback.h"
@@ -18,7 +22,10 @@ class AccountTrackerService;
 class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
+
+#if !defined(OS_ANDROID)
 class TokenWebData;
+#endif
 
 namespace image_fetcher {
 class ImageDecoder;
@@ -51,6 +58,7 @@ struct IdentityManagerBuildParams {
   PrefService* local_state;
   network::NetworkConnectionTracker* network_connection_tracker;
   PrefService* pref_service;
+  base::FilePath profile_path;
   SigninClient* signin_client;
   std::unique_ptr<ProfileOAuth2TokenService> token_service;
 

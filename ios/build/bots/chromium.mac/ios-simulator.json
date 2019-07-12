@@ -84,73 +84,9 @@
       "priority": 30
     },
     {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s Plus",
-      "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
-      "priority": 30
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s",
-      "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
-      "priority": 30
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 6s",
-      "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
-      "priority": 30
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPad Air 2",
-      "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool":"Chrome",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.4"
-          }],
-          "120": [{
-            "host os": "Mac-10.14.3"
-          }]
-      },
-      "priority": 30
-    },
-    {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
-      "os": "11.4",
+      "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {

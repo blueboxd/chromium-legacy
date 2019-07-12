@@ -13,7 +13,6 @@
 #include "base/timer/mock_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"

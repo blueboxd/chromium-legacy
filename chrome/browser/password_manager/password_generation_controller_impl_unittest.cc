@@ -18,15 +18,19 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+
+using autofill::password_generation::PasswordGenerationType;
+using password_manager::metrics_util::GenerationDialogChoice;
 
 namespace {
 using autofill::FooterCommand;
@@ -138,9 +142,10 @@ class MockPasswordGenerationDialogView
  public:
   MockPasswordGenerationDialogView() = default;
 
-  MOCK_METHOD2(Show,
+  MOCK_METHOD3(Show,
                void(base::string16&,
-                    base::WeakPtr<password_manager::PasswordManagerDriver>));
+                    base::WeakPtr<password_manager::PasswordManagerDriver>,
+                    PasswordGenerationType));
   MOCK_METHOD0(Destroy, void());
 
   virtual ~MockPasswordGenerationDialogView() { Destroy(); }
@@ -338,47 +343,64 @@ TEST_F(PasswordGenerationControllerTest,
       .WillOnce(Return(generated_password));
   EXPECT_CALL(*raw_dialog_view,
               Show(generated_password,
-                   PointsToSameAddress(mock_password_manager_driver_.get())));
-  controller()->OnGenerationRequested(false);
+                   PointsToSameAddress(mock_password_manager_driver_.get()),
+                   PasswordGenerationType::kAutomatic));
+  controller()->OnGenerationRequested(PasswordGenerationType::kAutomatic);
 }
 
-TEST_F(PasswordGenerationControllerTest, RecordsGeneratedPasswordRejected) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-
-  InitializeAutomaticGeneration(test_password);
-
+TEST_F(PasswordGenerationControllerTest,
+       RecordsGeneratedPasswordAcceptedAutomatic) {
   base::HistogramTester histogram_tester;
-
-  EXPECT_CALL(mock_dialog_factory(), Run)
-      .WillOnce(Return(ByMove(std::move(mock_dialog_))));
-  controller()->OnGenerationRequested(false);
-
-  EXPECT_CALL(mock_manual_filling_controller_,
-              OnAutomaticGenerationStatusChanged(false));
-  controller()->GeneratedPasswordRejected();
-
-  histogram_tester.ExpectUniqueSample(
-      "KeyboardAccessory.GeneratedPasswordDialog", false, 1);
-}
-
-TEST_F(PasswordGenerationControllerTest, RecordsGeneratedPasswordAccepted) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-
-  InitializeAutomaticGeneration(test_password);
-
-  base::HistogramTester histogram_tester;
-
-  EXPECT_CALL(mock_dialog_factory(), Run)
-      .WillOnce(Return(ByMove(std::move(mock_dialog_))));
-  controller()->OnGenerationRequested(false);
 
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(false));
   controller()->GeneratedPasswordAccepted(
-      test_password, mock_password_manager_driver_->AsWeakPtr());
+      ASCIIToUTF16("t3stp@ssw0rd"), mock_password_manager_driver_->AsWeakPtr(),
+      PasswordGenerationType::kAutomatic);
 
   histogram_tester.ExpectUniqueSample(
-      "KeyboardAccessory.GeneratedPasswordDialog", true, 1);
+      "KeyboardAccessory.GenerationDialogChoice.Automatic",
+      GenerationDialogChoice::kAccepted, 1);
+}
+
+TEST_F(PasswordGenerationControllerTest,
+       RecordsGeneratedPasswordRejectedAutomatic) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(false));
+  controller()->GeneratedPasswordRejected(PasswordGenerationType::kAutomatic);
+
+  histogram_tester.ExpectUniqueSample(
+      "KeyboardAccessory.GenerationDialogChoice.Automatic",
+      GenerationDialogChoice::kRejected, 1);
+}
+
+TEST_F(PasswordGenerationControllerTest,
+       RecordsGeneratedPasswordAcceptedManual) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(false));
+  controller()->GeneratedPasswordAccepted(
+      ASCIIToUTF16("t3stp@ssw0rd"), mock_password_manager_driver_->AsWeakPtr(),
+      PasswordGenerationType::kManual);
+
+  histogram_tester.ExpectUniqueSample(
+      "KeyboardAccessory.GenerationDialogChoice.Manual",
+      GenerationDialogChoice::kAccepted, 1);
+}
+TEST_F(PasswordGenerationControllerTest,
+       RecordsGeneratedPasswordRejectedManual) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(false));
+  controller()->GeneratedPasswordRejected(PasswordGenerationType::kManual);
+
+  histogram_tester.ExpectUniqueSample(
+      "KeyboardAccessory.GenerationDialogChoice.Manual",
+      GenerationDialogChoice::kRejected, 1);
 }
 
 TEST_F(PasswordGenerationControllerTest,
@@ -416,7 +438,7 @@ TEST_F(PasswordGenerationControllerTest,
 TEST_F(PasswordGenerationControllerTest, HidesDialogWhenFocusChanges) {
   base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
   InitializeManualGeneration(test_password);
-  controller()->OnGenerationRequested(true);
+  controller()->OnGenerationRequested(PasswordGenerationType::kManual);
 
   NiceMock<MockPasswordGenerationDialogView>* raw_dialog_view =
       mock_dialog_.get();
@@ -424,7 +446,8 @@ TEST_F(PasswordGenerationControllerTest, HidesDialogWhenFocusChanges) {
       .WillOnce(Return(ByMove(std::move(mock_dialog_))));
   EXPECT_CALL(*raw_dialog_view,
               Show(test_password,
-                   PointsToSameAddress(mock_password_manager_driver_.get())));
+                   PointsToSameAddress(mock_password_manager_driver_.get()),
+                   PasswordGenerationType::kManual));
   controller()->ShowManualGenerationDialog(mock_password_manager_driver_.get(),
                                            GetTestGenerationUIData1());
   EXPECT_CALL(mock_manual_filling_controller_,
@@ -439,7 +462,7 @@ TEST_F(PasswordGenerationControllerTest, HidesDialogWhenFocusChanges) {
 TEST_F(PasswordGenerationControllerTest, ShowManualDialogForActiveFrame) {
   base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
   InitializeManualGeneration(test_password);
-  controller()->OnGenerationRequested(true);
+  controller()->OnGenerationRequested(PasswordGenerationType::kManual);
 
   NiceMock<MockPasswordGenerationDialogView>* raw_dialog_view =
       mock_dialog_.get();
@@ -447,7 +470,8 @@ TEST_F(PasswordGenerationControllerTest, ShowManualDialogForActiveFrame) {
       .WillOnce(Return(ByMove(std::move(mock_dialog_))));
   EXPECT_CALL(*raw_dialog_view,
               Show(test_password,
-                   PointsToSameAddress(mock_password_manager_driver_.get())));
+                   PointsToSameAddress(mock_password_manager_driver_.get()),
+                   PasswordGenerationType::kManual));
   controller()->ShowManualGenerationDialog(mock_password_manager_driver_.get(),
                                            GetTestGenerationUIData1());
 }
@@ -463,7 +487,7 @@ TEST_F(PasswordGenerationControllerTest,
 TEST_F(PasswordGenerationControllerTest, DontShowDialogIfAlreadyShown) {
   base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
   InitializeManualGeneration(test_password);
-  controller()->OnGenerationRequested(true);
+  controller()->OnGenerationRequested(PasswordGenerationType::kManual);
 
   NiceMock<MockPasswordGenerationDialogView>* raw_dialog_view =
       mock_dialog_.get();
@@ -472,7 +496,8 @@ TEST_F(PasswordGenerationControllerTest, DontShowDialogIfAlreadyShown) {
 
   EXPECT_CALL(*raw_dialog_view,
               Show(test_password,
-                   PointsToSameAddress(mock_password_manager_driver_.get())));
+                   PointsToSameAddress(mock_password_manager_driver_.get()),
+                   PasswordGenerationType::kManual));
   controller()->ShowManualGenerationDialog(mock_password_manager_driver_.get(),
                                            GetTestGenerationUIData1());
 
@@ -482,9 +507,8 @@ TEST_F(PasswordGenerationControllerTest, DontShowDialogIfAlreadyShown) {
 }
 
 TEST_F(PasswordGenerationControllerTest, DontShowManualDialogIfFocusChanged) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-  InitializeManualGeneration(test_password);
-  controller()->OnGenerationRequested(true);
+  InitializeManualGeneration(ASCIIToUTF16("t3stp@ssw0rd"));
+  controller()->OnGenerationRequested(PasswordGenerationType::kManual);
 
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(false));

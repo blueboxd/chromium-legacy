@@ -73,6 +73,7 @@ struct WebLocalizedString {
     kAXMediaVolumeSliderHelp,
     kAXMediaEnterPictureInPictureButton,
     kAXMediaExitPictureInPictureButton,
+    kAXMediaTouchLessPlayPauseAction,
     kAXMediaTouchLessSeekAction,
     kAXMediaTouchLessVolumeAction,
     kAXMillisecondFieldText,

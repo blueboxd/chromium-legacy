@@ -106,7 +106,7 @@ class PostMessageSupport {
 
   Delegate* const delegate_;
 
-  base::WeakPtrFactory<PostMessageSupport> weak_factory_;
+  base::WeakPtrFactory<PostMessageSupport> weak_factory_{this};
 };
 
 }  // namespace extensions

@@ -4,6 +4,10 @@
 
 #include "components/autofill_assistant/browser/client_memory.h"
 
+#include <algorithm>
+
+#include "base/strings/string_util.h"
+
 namespace autofill_assistant {
 
 ClientMemory::ClientMemory() = default;
@@ -40,6 +44,15 @@ void ClientMemory::set_selected_address(
 
 bool ClientMemory::has_selected_address(const std::string& name) {
   return selected_addresses_.find(name) != selected_addresses_.end();
+}
+
+std::string ClientMemory::GetAllAddressKeyNames() const {
+  std::vector<std::string> entries;
+  for (const auto& entry : selected_addresses_) {
+    entries.emplace_back(entry.first);
+  }
+  std::sort(entries.begin(), entries.end());
+  return base::JoinString(entries, ",");
 }
 
 }  // namespace autofill_assistant

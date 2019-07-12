@@ -17381,6 +17381,7 @@ Called by update_net_error_codes.py.-->
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
   <int value="573" label="SelectToSpeakEnabled"/>
+  <int value="574" label="BrowserGuestModeEnforced"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -23856,6 +23857,7 @@ Called by update_net_error_codes.py.-->
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
   <int value="2954" label="BasicCardType"/>
+  <int value="2955" label="ExecutedJavaScriptURL"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -27439,6 +27441,11 @@ Called by update_net_error_codes.py.-->
   <int value="16385" label="FOLDER"/>
   <int value="32769" label="FILE"/>
   <int value="32770" label="PDF"/>
+</enum>
+
+<enum name="GenerationDialogChoice">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Rejected"/>
 </enum>
 
 <enum name="GeolocationAuthorizationAction">
@@ -53171,8 +53178,8 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninInvestigatedScenario">
-  <int value="0" label="Upgrade low risk"/>
-  <int value="1" label="Upgrade high risk"/>
+  <int value="0" label="First-time sign in"/>
+  <int value="1" label="Upgrade high risk (deprecated 07-2019)"/>
   <int value="2" label="Same account"/>
   <int value="3" label="Different account"/>
 </enum>

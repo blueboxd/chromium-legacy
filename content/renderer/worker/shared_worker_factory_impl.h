@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
 
 #include "base/macros.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
@@ -34,7 +33,6 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       const base::Optional<base::UnguessableToken>& appcache_host_id,
-      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,

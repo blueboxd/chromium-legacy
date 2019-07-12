@@ -76,15 +76,16 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                        TRACE_EVENT_SCOPE_GLOBAL);
   if (is_deferral_enabled_) {
     StartRecording();
-  }
-  // Clear the background transparent or opaque. Similar code at
-  // CanvasResourceProvider::Clear().
-  if (IsValid()) {
-    DCHECK(recorder_);
-    recorder_->getRecordingCanvas()->clear(
-        color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
-                                                  : SK_ColorTRANSPARENT);
-    DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
+
+    // Clear the background transparent or opaque. Similar code at
+    // CanvasResourceProvider::Clear().
+    if (IsValid()) {
+      DCHECK(recorder_);
+      recorder_->getRecordingCanvas()->clear(
+          color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
+                                                    : SK_ColorTRANSPARENT);
+      DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
+    }
   }
 }
 

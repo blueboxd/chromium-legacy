@@ -49,7 +49,7 @@ base::flat_map<std::string, std::string> CreateResponseHeadersMap(
 
 MimeHandlerServiceImpl::MimeHandlerServiceImpl(
     base::WeakPtr<StreamContainer> stream_container)
-    : stream_(stream_container), weak_factory_(this) {}
+    : stream_(stream_container) {}
 
 MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {}
 

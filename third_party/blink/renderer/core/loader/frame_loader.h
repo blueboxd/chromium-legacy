@@ -173,12 +173,10 @@ class CORE_EXPORT FrameLoader final {
                                        WebFrameLoadType,
                                        HistoryItem*);
 
-  // This prepares the FrameLoader for the next commit. It will dispatch unload
-  // events, abort XHR requests and detach the document. Returns true if the
-  // frame is ready to receive the next commit, or false otherwise.
-  bool PrepareForCommit();
-
-  void CommitProvisionalLoad();
+  // This will attempt to detach the current document. It will dispatch unload
+  // events and abort XHR requests. Returns true if the frame is ready to
+  // receive the next document commit, or false otherwise.
+  bool DetachDocument();
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
@@ -245,6 +243,11 @@ class CORE_EXPORT FrameLoader final {
 
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
+
+  void WillCommitNavigation();
+
+  // Commits the given |document_loader|.
+  void CommitDocumentLoader(DocumentLoader* document_loader);
 
   LocalFrameClient* Client() const;
 

@@ -6,6 +6,8 @@
 #define COMPONENTS_AUTOFILL_CORE_COMMON_FORM_DATA_H_
 
 #include <limits>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -95,6 +97,8 @@ struct FormData {
   // contain IDs of elements which are not in |fields|. This is only used during
   // parsing into PasswordForm, and hence not serialised for storage.
   std::vector<uint32_t> username_predictions;
+  // True if this is a Gaia form which should be skipped on saving.
+  bool is_gaia_with_skip_save_password_form = false;
 };
 
 // For testing.

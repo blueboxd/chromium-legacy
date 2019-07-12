@@ -245,6 +245,9 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // unavailable. Expects service not to be available when called.
   void ReportServiceIsNotAvailable();
 
+  // Changes the behavior of TpmIsEnabled().
+  void set_tpm_is_enabled(bool value) { tpm_is_enabled_ = value; }
+
   // Sets the unmount result of Unmount() call.
   void set_unmount_result(bool result) { unmount_result_ = result; }
 
@@ -448,6 +451,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   bool supports_low_entropy_credentials_ = false;
   // Controls if CheckKeyEx actually checks the key.
   bool enable_auth_check_ = false;
+  bool tpm_is_enabled_ = true;
 
   // Reply to GetRsuDeviceId().
   std::string rsu_device_id_;

@@ -99,7 +99,7 @@ struct HidDeviceManager::GetApiDevicesParams {
 };
 
 HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
-    : browser_context_(context), binding_(this), weak_factory_(this) {
+    : browser_context_(context), binding_(this) {
   event_router_ = EventRouter::Get(context);
   if (event_router_) {
     event_router_->RegisterObserver(this, hid::OnDeviceAdded::kEventName);

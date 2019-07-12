@@ -139,7 +139,7 @@ class NativeExtensionBindingsSystem {
   // A function to acquire an internal API.
   v8::Eternal<v8::FunctionTemplate> get_internal_api_;
 
-  base::WeakPtrFactory<NativeExtensionBindingsSystem> weak_factory_;
+  base::WeakPtrFactory<NativeExtensionBindingsSystem> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystem);
 };

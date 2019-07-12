@@ -187,11 +187,11 @@ void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
 
 void FakeCryptohomeClient::TpmIsEnabled(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), tpm_is_enabled_));
 }
 
 bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
-  *enabled = true;
+  *enabled = tpm_is_enabled_;
   return true;
 }
 

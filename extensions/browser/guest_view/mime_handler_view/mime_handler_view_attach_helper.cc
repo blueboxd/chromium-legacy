@@ -145,7 +145,7 @@ void MimeHandlerViewAttachHelper::CreateFullPageMimeHandlerView(
 
 MimeHandlerViewAttachHelper::MimeHandlerViewAttachHelper(
     content::RenderProcessHost* render_process_host)
-    : render_process_host_(render_process_host), weak_factory_(this) {
+    : render_process_host_(render_process_host) {
   render_process_host->AddObserver(this);
 }
 

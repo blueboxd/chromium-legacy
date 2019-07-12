@@ -57,6 +57,7 @@ const CGFloat kVerticalMargin = 12.;
     // Avatar view.
     _avatarView = [[UIImageView alloc] init];
     _avatarView.translatesAutoresizingMaskIntoConstraints = NO;
+    _avatarView.clipsToBounds = YES;
     [self addSubview:_avatarView];
 
     // Title.
@@ -147,7 +148,8 @@ const CGFloat kVerticalMargin = 12.;
 
 - (void)setAvatar:(UIImage*)avatarImage {
   if (avatarImage) {
-    self.avatarView.image = CircularImageFromImage(avatarImage, kAvatarSize);
+    self.avatarView.image = avatarImage;
+    self.avatarView.layer.cornerRadius = kAvatarSize / 2.0;
   } else {
     self.avatarView.image = nil;
   }

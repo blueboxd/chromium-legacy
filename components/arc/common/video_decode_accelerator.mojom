@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 // This file defines the mojo interface between Android and Chromium for video
 // decoding. Any Mojo callee that returns a value does so by callback.
@@ -78,7 +78,7 @@ struct VideoDecodeAcceleratorConfig {
 // the dummy buffer.
 //
 // Deprecated method IDs: 3, 7, 8
-// Next method ID: 10
+// Next method ID: 11
 interface VideoDecodeAccelerator {
   [Extensible]
   enum Result {
@@ -104,7 +104,13 @@ interface VideoDecodeAccelerator {
 
   // Sets the number of output picture buffers.
   // This releases any buffers in use/imported previously.
-  AssignPictureBuffers@2(uint32 count);
+  AssignPictureBuffersDeprecated@2(uint32 count);
+
+  // Sets the number of output picture buffers. |size| is the frame size
+  // adjusted by Android.
+  // This releases any buffers in use/imported previously.
+  [MinVersion=4]
+  AssignPictureBuffers@10(uint32 count, Size size);
 
   // Imports a buffer to be used by the accelerator with specified
   // |picture_buffer_id|.

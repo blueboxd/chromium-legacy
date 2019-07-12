@@ -344,11 +344,6 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
   breakpad_helper::SetCurrentlySignedIn(true);
 }
 
-void AuthenticationService::SignIn(ChromeIdentity* identity,
-                                   const std::string&) {
-  SignIn(identity);
-}
-
 void AuthenticationService::SignOut(
     signin_metrics::ProfileSignout signout_source,
     ProceduralBlock completion) {

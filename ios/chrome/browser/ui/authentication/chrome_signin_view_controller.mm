@@ -18,7 +18,6 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
@@ -340,22 +339,52 @@ enum AuthenticationState {
 }
 
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
-  [button setBackgroundColor:[UIColor colorNamed:kTintColor]
-                    forState:UIControlStateNormal];
+  UIColor* hintColor = UIColor.cr_systemBackgroundColor;
+  UIColor* backgroundColor = [UIColor colorNamed:kTintColor];
+  UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    // As of iOS 13 Beta 3, MDCFlatButton has a bug updating it's colors
+    // automatically. Here the colors are resolved and passed instead.
+    hintColor =
+        [hintColor resolvedColorWithTraitCollection:self.traitCollection];
+    backgroundColor =
+        [backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+    titleColor =
+        [titleColor resolvedColorWithTraitCollection:self.traitCollection];
+  }
+#endif
+
+  button.underlyingColorHint = hintColor;
+  button.inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
+  [button setBackgroundColor:backgroundColor forState:UIControlStateNormal];
+  [button setTitleColor:titleColor forState:UIControlStateNormal];
   [button setImage:nil forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
-               forState:UIControlStateNormal];
-  [button setUnderlyingColorHint:UIColor.cr_systemBackgroundColor];
-  [button setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
 }
 
 - (void)setSecondaryButtonStyling:(MDCButton*)button {
-  [button setBackgroundColor:UIColor.cr_systemBackgroundColor
-                    forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor colorNamed:kTintColor]
-               forState:UIControlStateNormal];
-  [button setUnderlyingColorHint:UIColor.cr_systemBackgroundColor];
-  [button setInkColor:[UIColor colorWithWhite:0 alpha:0.06f]];
+  UIColor* hintColor = UIColor.cr_systemBackgroundColor;
+  UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
+  UIColor* titleColor = [UIColor colorNamed:kTintColor];
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    // As of iOS 13 Beta 3, MDCFlatButton has a bug updating it's colors
+    // automatically. Here the colors are resolved and passed instead.
+    hintColor =
+        [hintColor resolvedColorWithTraitCollection:self.traitCollection];
+    backgroundColor =
+        [backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+    titleColor =
+        [titleColor resolvedColorWithTraitCollection:self.traitCollection];
+  }
+#endif
+
+  button.underlyingColorHint = hintColor;
+  button.inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
+  [button setBackgroundColor:backgroundColor forState:UIControlStateNormal];
+  [button setTitleColor:titleColor forState:UIControlStateNormal];
 }
 
 // Configures the primary button as the more button. This can be used in
@@ -463,9 +492,18 @@ enum AuthenticationState {
 }
 
 - (void)updateGradientColors {
+  UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    backgroundColor =
+        [backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+  }
+#endif
+
   _gradientLayer.colors = @[
-    (id)[UIColor.cr_systemBackgroundColor colorWithAlphaComponent:0].CGColor,
-    (id)UIColor.cr_systemBackgroundColor.CGColor
+    (id)[backgroundColor colorWithAlphaComponent:0].CGColor,
+    (id)backgroundColor.CGColor
   ];
 }
 

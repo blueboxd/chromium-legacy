@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_MESSAGE_HANDLER_ANDROID_H_
 
 #include "base/macros.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
 // Handles incoming messages for the click to call feature.
@@ -15,7 +14,7 @@ class ClickToCallMessageHandler : public SharingMessageHandler {
   ClickToCallMessageHandler();
   ~ClickToCallMessageHandler() override;
 
-  // SharingMessageHandler
+  // SharingMessageHandler implementation:
   void OnMessage(
       const chrome_browser_sharing::SharingMessage& message) override;
 

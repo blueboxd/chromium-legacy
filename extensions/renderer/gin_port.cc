@@ -39,8 +39,7 @@ GinPort::GinPort(v8::Local<v8::Context> context,
       name_(name),
       event_handler_(event_handler),
       delegate_(delegate),
-      accessed_sender_(false),
-      weak_factory_(this) {
+      accessed_sender_(false) {
   context_invalidation_listener_.emplace(
       context, base::BindOnce(&GinPort::OnContextInvalidated,
                               weak_factory_.GetWeakPtr()));

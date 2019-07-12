@@ -1329,9 +1329,6 @@ void BackgroundSyncManager::FireReadyEvents(
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (disabled_)
-    return;
-
   op_scheduler_.ScheduleOperation(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,

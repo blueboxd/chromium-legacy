@@ -81,18 +81,9 @@ CGFloat kFakeTextBoxWidth = 240;
   ToolbarConfiguration* configuration =
       [[ToolbarConfiguration alloc] initWithStyle:NORMAL];
 
-  UIBlurEffect* effect = [configuration blurEffect];
-  UIView* containerView;
-  if (effect) {
-    UIVisualEffectView* effectView =
-        [[UIVisualEffectView alloc] initWithEffect:effect];
-    [effectView.contentView addSubview:self.popupViewController.view];
-    containerView = effectView;
-  } else {
-    containerView = [[UIView alloc] init];
-    [containerView addSubview:self.popupViewController.view];
-  }
-  containerView.backgroundColor = [configuration blurBackgroundColor];
+  UIView* containerView = [[UIView alloc] init];
+  [containerView addSubview:self.popupViewController.view];
+  containerView.backgroundColor = [configuration backgroundColor];
   containerView.translatesAutoresizingMaskIntoConstraints = NO;
   self.popupViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.popupViewController.view, containerView);

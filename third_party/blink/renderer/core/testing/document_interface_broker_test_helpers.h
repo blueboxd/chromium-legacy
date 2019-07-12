@@ -7,6 +7,8 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom-blink.h"
 #include "third_party/blink/renderer/core/testing/test_document_interface_broker.h"
@@ -21,17 +23,18 @@ constexpr char kGetNameTestResponse[] = "BlinkTestName";
 // examples.
 class FrameHostTestInterfaceImpl : public mojom::blink::FrameHostTestInterface {
  public:
-  FrameHostTestInterfaceImpl() : binding_(this) {}
+  FrameHostTestInterfaceImpl() = default;
   ~FrameHostTestInterfaceImpl() override {}
 
-  void BindAndFlush(mojom::blink::FrameHostTestInterfaceRequest request);
+  void BindAndFlush(
+      mojo::PendingReceiver<mojom::blink::FrameHostTestInterface> receiver);
 
  protected:
   void Ping(const KURL& url, const WTF::String& event) override {}
   void GetName(GetNameCallback callback) override;
 
  private:
-  mojo::Binding<mojom::blink::FrameHostTestInterface> binding_;
+  mojo::Receiver<mojom::blink::FrameHostTestInterface> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameHostTestInterfaceImpl);
 };
@@ -46,7 +49,8 @@ class FrameHostTestDocumentInterfaceBroker
                                     std::move(request)) {}
 
   void GetFrameHostTestInterface(
-      mojom::blink::FrameHostTestInterfaceRequest request) override;
+      mojo::PendingReceiver<mojom::blink::FrameHostTestInterface> receiver)
+      override;
 };
 
 }  // namespace blink

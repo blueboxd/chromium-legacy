@@ -789,9 +789,11 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
           const ComputedStyle* style = GetComputedStyle();
           if (style && style->ImageRendering() != EImageRendering::kPixelated) {
             context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
+            UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
             return;
           }
         }
+        UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", false);
       }
       // or image snapshot rendering: grab a snapshot and raster it.
       SkBlendMode composite_operator =

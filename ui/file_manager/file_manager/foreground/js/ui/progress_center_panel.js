@@ -335,12 +335,16 @@ class ProgressCenterPanel {
             return strf('COPY_FILE_NAME', info['source']);
           } else if (item.type === ProgressItemType.MOVE) {
             return strf('MOVE_FILE_NAME', info['source']);
+          } else {
+            return item.message;
           }
         } else {
           if (item.type === ProgressItemType.COPY) {
             return strf('COPY_ITEMS_REMAINING', info['source']);
           } else if (item.type === ProgressItemType.MOVE) {
             return strf('MOVE_ITEMS_REMAINING', info['source']);
+          } else {
+            return item.message;
           }
         }
         break;
@@ -348,9 +352,9 @@ class ProgressCenterPanel {
         if (info['count'] > 1) {
           return strf('FILE_ITEMS', info['source']);
         }
-        return info['source'];
+        return info['source'] || item.message;
       case 'error':
-        break;
+        return item.message;
       default:
         assertNotReached();
         break;
@@ -421,25 +425,28 @@ class ProgressCenterPanel {
       panelItem.progress = item.progressRateInPercent.toString();
       switch (item.state) {
         case 'completed':
-          // Create a completed panel.
-          const donePanelItem = this.completedHost_.addPanelItem(item.id);
-          donePanelItem.panelType = donePanelItem.panelTypeDone;
-          donePanelItem.setAttribute(
-              'primary-text',
-              this.generateSourceString_(item, panelItem.userData));
-          donePanelItem.setAttribute(
-              'secondary-text',
-              this.generateDestinationString_(item, panelItem.userData));
-          donePanelItem.signalCallback = (signal) => {
-            if (signal === 'dismiss') {
+          // Create a completed panel for copies an moves.
+          // TODO(crbug.com/947388) decide if we want these for delete, etc.
+          if (item.type === 'copy' || item.type === 'move') {
+            const donePanelItem = this.completedHost_.addPanelItem(item.id);
+            donePanelItem.panelType = donePanelItem.panelTypeDone;
+            donePanelItem.setAttribute(
+                'primary-text',
+                this.generateSourceString_(item, panelItem.userData));
+            donePanelItem.setAttribute(
+                'secondary-text',
+                this.generateDestinationString_(item, panelItem.userData));
+            donePanelItem.signalCallback = (signal) => {
+              if (signal === 'dismiss') {
+                this.completedHost_.removePanelItem(donePanelItem);
+              }
+            };
+            // Delete after 7 seconds, doesn't matter if it's manually deleted
+            // before the timer fires, as removePanelItem handles that case.
+            setTimeout(() => {
               this.completedHost_.removePanelItem(donePanelItem);
-            }
-          };
-          // Delete after 7 seconds, doesn't matter if it's manually deleted
-          // before the timer fires, as removePanelItem handles that case.
-          setTimeout(() => {
-            this.completedHost_.removePanelItem(donePanelItem);
-          }, 7000);
+            }, 7000);
+          }
           // Drop through to remove the progress panel.
         case 'canceled':
           // Remove the feedback panel when complete.

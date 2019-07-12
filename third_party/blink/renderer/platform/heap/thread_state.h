@@ -421,10 +421,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
       DCHECK(state->CheckThread());
 #endif
       DCHECK(!state->SweepForbidden());
-      DCHECK(!state->ordered_pre_finalizers_.Contains(
-          PreFinalizer(self, T::InvokePreFinalizer)));
-      state->ordered_pre_finalizers_.insert(
-          PreFinalizer(self, T::InvokePreFinalizer));
+      DCHECK(std::find(state->ordered_pre_finalizers_.begin(),
+                       state->ordered_pre_finalizers_.end(),
+                       PreFinalizer(self, T::InvokePreFinalizer)) ==
+             state->ordered_pre_finalizers_.end());
+      state->ordered_pre_finalizers_.emplace_back(self, T::InvokePreFinalizer);
     }
   };
 
@@ -577,7 +578,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // Pre-finalizers are called in the reverse order in which they are
   // registered by the constructors (including constructors of Mixin objects)
   // for an object, by processing the ordered_pre_finalizers_ back-to-front.
-  LinkedHashSet<PreFinalizer> ordered_pre_finalizers_;
+  Deque<PreFinalizer> ordered_pre_finalizers_;
 
   v8::Isolate* isolate_ = nullptr;
   V8TraceRootsCallback v8_trace_roots_ = nullptr;

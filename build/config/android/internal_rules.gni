@@ -1295,11 +1295,13 @@ if (enable_java_templates) {
           invoker.output,
         ]
 
+        _rebased_output = rebase_path(invoker.output, root_build_dir)
+
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
-          "--output",
-          rebase_path(outputs[0], root_build_dir),
+          "--dex-path",
+          _rebased_output,
         ]
 
         if (_proguard_enabled) {
@@ -1320,7 +1322,7 @@ if (enable_java_templates) {
 
         if (defined(invoker.input_dex_classpath)) {
           inputs += [ invoker.build_config ]
-          args += [ "--input-list=@FileArg(${invoker.input_dex_classpath})" ]
+          args += [ "--inputs=@FileArg(${invoker.input_dex_classpath})" ]
         }
 
         inputs += _dexing_jars

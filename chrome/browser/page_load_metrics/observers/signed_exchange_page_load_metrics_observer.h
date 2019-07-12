@@ -35,6 +35,19 @@ extern const char
 extern const char kHistogramCachedSignedExchangeDomContentLoaded[];
 extern const char kHistogramCachedSignedExchangeLoad[];
 
+extern const char kHistogramAltSubSxgSignedExchangePrefix[];
+extern const char kHistogramAltSubSxgSignedExchangeParseStart[];
+extern const char kHistogramAltSubSxgSignedExchangeFirstInputDelay[];
+extern const char kHistogramAltSubSxgSignedExchangeFirstPaint[];
+extern const char kHistogramAltSubSxgSignedExchangeFirstContentfulPaint[];
+extern const char
+    kHistogramAltSubSxgSignedExchangeParseStartToFirstContentfulPaint[];
+extern const char kHistogramAltSubSxgSignedExchangeFirstMeaningfulPaint[];
+extern const char
+    kHistogramAltSubSxgSignedExchangeParseStartToFirstMeaningfulPaint[];
+extern const char kHistogramAltSubSxgSignedExchangeDomContentLoaded[];
+extern const char kHistogramAltSubSxgSignedExchangeLoad[];
+
 }  // namespace internal
 
 class SignedExchangePageLoadMetricsObserver
@@ -69,6 +82,10 @@ class SignedExchangePageLoadMetricsObserver
  private:
   // True iff the page main resource was served from disk cache.
   bool was_cached_ = false;
+
+  // True iff prefetched alternative signed exchange was sent to the renderer
+  // process.
+  bool had_prefetched_alt_sxg_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangePageLoadMetricsObserver);
 };

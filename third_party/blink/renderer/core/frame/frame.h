@@ -130,7 +130,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // dispatch unload events, abort XHR requests and detach the document.
   // Returns true if the frame is ready to receive the next commit, or false
   // otherwise.
-  virtual bool PrepareForCommit() = 0;
+  virtual bool DetachDocument() = 0;
 
   // LayoutObject for the element that contains this frame.
   LayoutEmbeddedContent* OwnerLayoutObject() const;

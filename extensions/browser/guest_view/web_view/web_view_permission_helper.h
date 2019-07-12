@@ -148,7 +148,7 @@ class WebViewPermissionHelper
 
   bool default_media_access_permission_;
 
-  base::WeakPtrFactory<WebViewPermissionHelper> weak_factory_;
+  base::WeakPtrFactory<WebViewPermissionHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebViewPermissionHelper);
 };

@@ -169,8 +169,7 @@ static content::RenderProcessHost* GetExtensionProcess(
 
 MessageService::MessageService(BrowserContext* context)
     : context_(context),
-      messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()),
-      weak_factory_(this) {
+      messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(nullptr, messaging_delegate_);
 }

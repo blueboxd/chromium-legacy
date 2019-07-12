@@ -14,6 +14,11 @@
 #include "components/account_id/account_id.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+namespace backdrop {
+class Collection;
+class Image;
+}  // namespace backdrop
+
 namespace backdrop_wallpaper_handlers {
 class CollectionInfoFetcher;
 class ImageInfoFetcher;
@@ -289,8 +294,7 @@ class WallpaperPrivateGetCollectionsInfoFunction
   // Callback upon completion of fetching the collections info.
   void OnCollectionsInfoFetched(
       bool success,
-      const std::vector<extensions::api::wallpaper_private::CollectionInfo>&
-          collections_info_list);
+      const std::vector<backdrop::Collection>& collections);
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetCollectionsInfoFunction);
 };
@@ -314,10 +318,8 @@ class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
       image_info_fetcher_;
 
   // Callback upon completion of fetching the images info.
-  void OnImagesInfoFetched(
-      bool success,
-      const std::vector<extensions::api::wallpaper_private::ImageInfo>&
-          images_info_list);
+  void OnImagesInfoFetched(bool success,
+                           const std::vector<backdrop::Image>& images);
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetImagesInfoFunction);
 };
@@ -433,10 +435,9 @@ class WallpaperPrivateGetSurpriseMeImageFunction
 
  private:
   // Callback upon completion of fetching the surprise me image info.
-  void OnSurpriseMeImageFetched(
-      bool success,
-      const extensions::api::wallpaper_private::ImageInfo& image_info,
-      const std::string& next_resume_token);
+  void OnSurpriseMeImageFetched(bool success,
+                                const backdrop::Image& image,
+                                const std::string& next_resume_token);
 
   // Fetcher for the surprise me image info.
   std::unique_ptr<backdrop_wallpaper_handlers::SurpriseMeImageFetcher>

@@ -322,7 +322,7 @@ cca.mojo.getSupportedFpsRanges = function(deviceId) {
  * @return {Promise<MediaStream>} Promise of the MediaStream that returned from
  *     MediaDevices.getUserMedia().
  */
-cca.mojo.getUserMedia = function(deviceId, constraints) {
+cca.mojo.getUserMedia = async function(deviceId, constraints) {
   let streamWidth = 0;
   let streamHeight = 0;
   let minFrameRate = 0;
@@ -352,17 +352,14 @@ cca.mojo.getUserMedia = function(deviceId, constraints) {
   // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
   // will fallback to use the default one.
   try {
-    return cca.mojo.MojoInterface.getProxy()
-        .setFpsRange(
-            deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate)
-        .then(({isSuccess}) => {
-          if (!isSuccess && hasSpecifiedFrameRateRange) {
-            console.error('Failed to negotiate the frame rate range.');
-          }
-          return navigator.mediaDevices.getUserMedia(constraints);
-        });
+    const {isSuccess} = await cca.mojo.MojoInterface.getProxy().setFpsRange(
+        deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate);
+
+    if (!isSuccess && hasSpecifiedFrameRateRange) {
+      console.error('Failed to negotiate the frame rate range.');
+    }
   } catch (e) {
-    console.error(e);
+    // Ignore HALv1 Error.
   }
   return navigator.mediaDevices.getUserMedia(constraints);
 };

@@ -76,6 +76,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
@@ -285,6 +286,24 @@ public class SavePasswordsPreferencesTest {
             openActionBarOverflowOrOptionsMenu(
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
             return withText(R.string.search);
+        }
+    }
+
+    /**
+     * Looks for the edit saved password icon by id. If it cannot be found, it's probably hidden in
+     * the overflow menu. In that case, open the menu and search for its title.
+     * @return Returns either the edit saved password icon button or the edit saved password menu
+     *         option.
+     */
+    public static Matcher<View> withEditMenuIdOrText() {
+        Matcher<View> matcher = withId(R.id.action_edit_saved_password);
+        try {
+            Espresso.onView(matcher).check(matches(isDisplayed()));
+            return matcher;
+        } catch (Exception NoMatchingViewException) {
+            openActionBarOverflowOrOptionsMenu(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+            return withText(R.string.password_entry_editor_edit_stored_password_action_title);
         }
     }
 
@@ -1448,6 +1467,25 @@ public class SavePasswordsPreferencesTest {
                                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS));
 
         Espresso.onView(withId(R.id.menu_id_search)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the icon for editing saved passwords is visible if the Feature is enabled.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testEditSavedPasswordIconVisibleInActionBarWithFeature() throws Exception {
+        setPasswordSource( // Initialize preferences
+                new SavedPasswordEntry("https://example.com", "test user", "test password"));
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).check(matches(isDisplayed()));
     }
 
     /**

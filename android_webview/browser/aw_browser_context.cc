@@ -17,7 +17,6 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -37,7 +36,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
-#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -52,6 +51,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
+
 using base::FilePath;
 using content::BrowserThread;
 
@@ -85,18 +85,6 @@ std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
   // android ProxyConfigServices.
   config_service_android->set_exclude_pac_url(true);
   return config_service_android;
-}
-
-std::unique_ptr<AwSafeBrowsingWhitelistManager>
-CreateSafeBrowsingWhitelistManager() {
-  // Should not be called until the end of PreMainMessageLoopRun,
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
-  return std::make_unique<AwSafeBrowsingWhitelistManager>(
-      background_task_runner, io_task_runner);
 }
 
 // Empty method to skip origin security check as DownloadManager will set its
@@ -264,15 +252,6 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
                                auth_pref_callback);
   }
 
-  safe_browsing_ui_manager_ =
-      new AwSafeBrowsingUIManager(GetAwURLRequestContext());
-  safe_browsing_trigger_manager_ =
-      std::make_unique<safe_browsing::TriggerManager>(
-          safe_browsing_ui_manager_.get(),
-          /*referrer_chain_provider=*/nullptr,
-          /*local_state_prefs=*/nullptr);
-  safe_browsing_whitelist_manager_ = CreateSafeBrowsingWhitelistManager();
-
   content::WebUIControllerFactory::RegisterFactory(
       AwWebUIControllerFactory::GetInstance());
 }
@@ -415,39 +394,6 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
       nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
-}
-
-AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() const {
-  return safe_browsing_ui_manager_.get();
-}
-
-safe_browsing::RemoteSafeBrowsingDatabaseManager*
-AwBrowserContext::GetSafeBrowsingDBManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!safe_browsing_db_manager_) {
-    safe_browsing_db_manager_ =
-        new safe_browsing::RemoteSafeBrowsingDatabaseManager();
-  }
-  if (!safe_browsing_db_manager_started_) {
-    // V4ProtocolConfig is not used. Just create one with empty values..
-    safe_browsing::V4ProtocolConfig config("", false, "", "");
-    safe_browsing_db_manager_->StartOnIOThread(
-        safe_browsing_ui_manager_->GetURLLoaderFactoryOnIOThread(), config);
-    safe_browsing_db_manager_started_ = true;
-  }
-  return safe_browsing_db_manager_.get();
-}
-
-safe_browsing::TriggerManager* AwBrowserContext::GetSafeBrowsingTriggerManager()
-    const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return safe_browsing_trigger_manager_.get();
-}
-
-AwSafeBrowsingWhitelistManager*
-AwBrowserContext::GetSafeBrowsingWhitelistManager() const {
-  // Should not be called until the end of PreMainMessageLoopRun,
-  return safe_browsing_whitelist_manager_.get();
 }
 
 network::mojom::HttpAuthDynamicParamsPtr

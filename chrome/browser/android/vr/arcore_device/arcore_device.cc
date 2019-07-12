@@ -14,8 +14,8 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl_thread.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -74,13 +74,13 @@ ArCoreDevice::ArCoreDevice(
     std::unique_ptr<ArCoreFactory> arcore_factory,
     std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
     std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_to_surface_bridge,
-    std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils)
+    std::unique_ptr<vr::ArCoreInstallUtils> arcore_install_utils)
     : VRDeviceBase(mojom::XRDeviceId::ARCORE_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       arcore_factory_(std::move(arcore_factory)),
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_(std::move(mailbox_to_surface_bridge)),
-      arcore_session_utils_(std::move(arcore_session_utils)),
+      arcore_install_utils_(std::move(arcore_install_utils)),
       session_state_(std::make_unique<ArCoreDevice::SessionState>()),
       weak_ptr_factory_(this) {
   // Ensure display_info_ is set to avoid crash in CallDeferredSessionCallback
@@ -97,16 +97,25 @@ ArCoreDevice::ArCoreDevice(
 }
 
 ArCoreDevice::ArCoreDevice()
-    : ArCoreDevice(std::make_unique<ArCoreImplFactory>(),
-                   std::make_unique<ArImageTransportFactory>(),
-                   std::make_unique<vr::MailboxToSurfaceBridge>(),
-                   std::make_unique<vr::ArCoreJavaUtils>()) {}
+    : ArCoreDevice(
+          std::make_unique<ArCoreImplFactory>(),
+          std::make_unique<ArImageTransportFactory>(),
+          std::make_unique<vr::MailboxToSurfaceBridge>(),
+          std::make_unique<vr::ArCoreJavaUtils>(
+              base::BindRepeating(
+                  &ArCoreDevice::OnRequestInstallArModuleResult,
+                  base::Unretained(this)),  // unretained is fine for callbacks
+                                            // since ArCoreDevice owns the
+                                            // ArCoreJavaUtils instance
+              base::BindRepeating(
+                  &ArCoreDevice::OnRequestInstallSupportedArCoreResult,
+                  base::Unretained(this)))) {}
 
 ArCoreDevice::~ArCoreDevice() {
   CallDeferredRequestSessionCallback(/*success=*/false);
   // The GL thread must be terminated since it uses our members. For example,
   // there might still be a posted Initialize() call in flight that uses
-  // arcore_session_utils_ and arcore_factory_. Ensure that the thread is
+  // arcore_install_utils_ and arcore_factory_. Ensure that the thread is
   // stopped before other members get destructed. Don't call Stop() here,
   // destruction calls Stop() and doing so twice is illegal (null pointer
   // dereference).
@@ -181,6 +190,15 @@ void ArCoreDevice::RequestSession(
 
 void ArCoreDevice::RequestSessionAfterInitialization(int render_process_id,
                                                      int render_frame_id) {
+  session_state_->start_immersive_activity_callback_ =
+      base::BindOnce(&ArCoreDevice::RequestArSessionConsent, GetWeakPtr(),
+                     render_process_id, render_frame_id);
+
+  RequestArModule(render_process_id, render_frame_id);
+}
+
+void ArCoreDevice::RequestArSessionConsent(int render_process_id,
+                                           int render_frame_id) {
   auto ready_callback =
       base::BindRepeating(&ArCoreDevice::OnDrawingSurfaceReady, GetWeakPtr());
   auto touch_callback =
@@ -188,7 +206,7 @@ void ArCoreDevice::RequestSessionAfterInitialization(int render_process_id,
   auto destroyed_callback =
       base::BindOnce(&ArCoreDevice::OnDrawingSurfaceDestroyed, GetWeakPtr());
 
-  arcore_session_utils_->RequestArSession(
+  arcore_install_utils_->RequestArSession(
       render_process_id, render_frame_id, std::move(ready_callback),
       std::move(touch_callback), std::move(destroyed_callback));
 }
@@ -232,7 +250,7 @@ void ArCoreDevice::OnSessionEnded() {
   DVLOG(1) << __func__;
 
   // This may be a no-op in case it's destroyed already.
-  arcore_session_utils_->DestroyDrawingSurface();
+  arcore_install_utils_->DestroyDrawingSurface();
 
   // The GL thread had initialized its context with a drawing_widget based on
   // the ArImmersiveOverlay's Surface, and the one it has is no longer valid.
@@ -256,6 +274,88 @@ void ArCoreDevice::OnSessionEnded() {
   // Shut down the mailbox bridge, this has the side effect of also destroying
   // GL resources in the GPU process.
   mailbox_bridge_ = nullptr;
+}
+
+void ArCoreDevice::RequestArModule(int render_process_id, int render_frame_id) {
+  DVLOG(1) << __func__;
+  if (arcore_install_utils_->ShouldRequestInstallArModule()) {
+    if (!arcore_install_utils_->CanRequestInstallArModule()) {
+      OnRequestArModuleResult(render_process_id, render_frame_id, false);
+      return;
+    }
+
+    on_request_ar_module_result_callback_ =
+        base::BindOnce(&ArCoreDevice::OnRequestArModuleResult, GetWeakPtr(),
+                       render_process_id, render_frame_id);
+    arcore_install_utils_->RequestInstallArModule(render_process_id,
+                                                  render_frame_id);
+    return;
+  }
+
+  OnRequestArModuleResult(render_process_id, render_frame_id, true);
+}
+
+void ArCoreDevice::OnRequestArModuleResult(int render_process_id,
+                                           int render_frame_id,
+                                           bool success) {
+  DVLOG(3) << __func__ << ": success=" << success;
+
+  if (!success) {
+    CallDeferredRequestSessionCallback(/*success=*/false);
+    return;
+  }
+
+  RequestArCoreInstallOrUpdate(render_process_id, render_frame_id);
+}
+
+void ArCoreDevice::RequestArCoreInstallOrUpdate(int render_process_id,
+                                                int render_frame_id) {
+  DVLOG(1) << __func__;
+  DCHECK(IsOnMainThread());
+  DCHECK(!on_request_arcore_install_or_update_result_callback_);
+
+  if (arcore_install_utils_->ShouldRequestInstallSupportedArCore()) {
+    // ARCore is not installed or requires an update. Store the callback to be
+    // processed later once installation/update is complete or got cancelled.
+    on_request_arcore_install_or_update_result_callback_ = base::BindOnce(
+        &ArCoreDevice::OnRequestArCoreInstallOrUpdateResult, GetWeakPtr());
+
+    arcore_install_utils_->RequestInstallSupportedArCore(render_process_id,
+                                                         render_frame_id);
+    return;
+  }
+
+  OnRequestArCoreInstallOrUpdateResult(true);
+}
+
+void ArCoreDevice::OnRequestArCoreInstallOrUpdateResult(bool success) {
+  DVLOG(1) << __func__;
+  DCHECK(IsOnMainThread());
+
+  if (!success) {
+    CallDeferredRequestSessionCallback(/*success=*/false);
+    return;
+  }
+
+  DCHECK(session_state_->start_immersive_activity_callback_);
+  std::move(session_state_->start_immersive_activity_callback_).Run();
+}
+
+void ArCoreDevice::OnRequestInstallArModuleResult(bool success) {
+  DVLOG(1) << __func__;
+  DCHECK(IsOnMainThread());
+
+  if (on_request_ar_module_result_callback_) {
+    std::move(on_request_ar_module_result_callback_).Run(success);
+  }
+}
+
+void ArCoreDevice::OnRequestInstallSupportedArCoreResult(bool success) {
+  DVLOG(1) << __func__;
+  DCHECK(IsOnMainThread());
+  DCHECK(on_request_arcore_install_or_update_result_callback_);
+
+  std::move(on_request_arcore_install_or_update_result_callback_).Run(success);
 }
 
 void ArCoreDevice::CallDeferredRequestSessionCallback(bool success) {
@@ -330,7 +430,7 @@ void ArCoreDevice::RequestArCoreGlInitialization(
   DCHECK(IsOnMainThread());
   DCHECK(session_state_->is_arcore_gl_thread_initialized_);
 
-  if (!arcore_session_utils_->EnsureLoaded()) {
+  if (!arcore_install_utils_->EnsureLoaded()) {
     DLOG(ERROR) << "ARCore was not loaded properly.";
     OnArCoreGlInitializationComplete(false);
     return;
@@ -345,7 +445,7 @@ void ArCoreDevice::RequestArCoreGlInitialization(
     PostTaskToGlThread(base::BindOnce(
         &ArCoreGl::Initialize,
         session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-        arcore_session_utils_.get(), arcore_factory_.get(), drawing_widget,
+        arcore_install_utils_.get(), arcore_factory_.get(), drawing_widget,
         frame_size, rotation,
         CreateMainThreadCallback(base::BindOnce(
             &ArCoreDevice::OnArCoreGlInitializationComplete, GetWeakPtr()))));

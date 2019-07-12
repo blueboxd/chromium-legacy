@@ -878,25 +878,31 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
   bool is_secure_context = (execution_context && execution_context->IsSecureContext());
   {% endif %}{# needs secure context #}
   {# Origin-Trial-enabled attributes #}
-  {% for attribute in feature.attributes %}
-  {% filter secure_context(attribute.secure_context_test) %}
-  {% if attribute.is_data_type_property %}
+  {% for secure_context_test, attribute_list in feature.attributes | selectattr('is_data_type_property') | groupby('secure_context_test') %}
+  {% filter secure_context(secure_context_test) %}
   static constexpr V8DOMConfiguration::AttributeConfiguration
-  k{{attribute.name}}Configurations[] = {
-      {{attribute_configuration(attribute) | trim | indent(6)}}
+  kAttributeConfigurations[] = {
+  {% for attribute in attribute_list %}
+      {{attribute_configuration(attribute) | trim | indent(6)}},
+  {% endfor %}
   };
-  for (const auto& config : k{{attribute.name}}Configurations)
-    V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, config);
-  {% else %}
+  V8DOMConfiguration::InstallAttributes(isolate, world, instance, prototype,
+                                        kAttributeConfigurations,
+                                        base::size(kAttributeConfigurations));
+  {% endfilter %}
+  {% endfor %}
+  {% for secure_context_test, attribute_list in feature.attributes | rejectattr('is_data_type_property') | groupby('secure_context_test') %}
+  {% filter secure_context(secure_context_test) %}
   static constexpr V8DOMConfiguration::AccessorConfiguration
-  k{{attribute.name}}Configurations[] = {
-      {{accessor_configuration(attribute) | trim | indent(6)}}
+  kAccessorConfigurations[] = {
+  {% for attribute in attribute_list %}
+      {{accessor_configuration(attribute) | trim | indent(6)}},
+  {% endfor %}
   };
-  for (const auto& config : k{{attribute.name}}Configurations) {
-    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
-                                        interface, signature, config);
-  }
-  {% endif %}
+  V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
+                                       interface, signature,
+                                       kAccessorConfigurations,
+                                       base::size(kAccessorConfigurations));
   {% endfilter %}{# secure_context #}
   {% endfor %}
   {# Origin-Trial-enabled constants #}

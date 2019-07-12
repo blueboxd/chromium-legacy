@@ -244,8 +244,7 @@ AppWindow::AppWindow(BrowserContext* context,
     : browser_context_(context),
       extension_id_(extension->id()),
       session_id_(SessionID::NewUnique()),
-      app_delegate_(app_delegate),
-      image_loader_ptr_factory_(this) {
+      app_delegate_(app_delegate) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
       << "Only off the record window may be opened in the guest mode.";

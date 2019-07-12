@@ -808,6 +808,7 @@ extern const char kPartnerBookmarkMappings[];
 
 extern const char kQuickCheckEnabled[];
 extern const char kBrowserGuestModeEnabled[];
+extern const char kBrowserGuestModeEnforced[];
 extern const char kBrowserAddPersonEnabled[];
 extern const char kForceBrowserSignin[];
 extern const char kSigninAllowedOnNextStartup[];

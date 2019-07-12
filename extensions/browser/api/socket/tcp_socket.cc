@@ -86,8 +86,7 @@ TCPSocket::TCPSocket(content::BrowserContext* browser_context,
       browser_context_(browser_context),
       socket_mode_(UNKNOWN),
       mojo_data_pump_(nullptr),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 TCPSocket::TCPSocket(network::mojom::TCPConnectedSocketPtr socket,
                      mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -101,9 +100,7 @@ TCPSocket::TCPSocket(network::mojom::TCPConnectedSocketPtr socket,
       mojo_data_pump_(std::make_unique<MojoDataPump>(std::move(receive_stream),
                                                      std::move(send_stream))),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      peer_addr_(remote_addr),
-
-      weak_factory_(this) {
+      peer_addr_(remote_addr) {
   is_connected_ = true;
 }
 

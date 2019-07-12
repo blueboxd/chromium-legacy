@@ -1629,7 +1629,7 @@ void InProcessCommandBuffer::DidSwapBuffersComplete(
 
   PostOrRunClientCallback(base::BindOnce(
       &InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread,
-      client_thread_weak_ptr_, base::Passed(&params)));
+      client_thread_weak_ptr_, std::move(params)));
 }
 
 const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {

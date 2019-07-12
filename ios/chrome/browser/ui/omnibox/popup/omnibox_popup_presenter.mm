@@ -45,20 +45,10 @@ const CGFloat kVerticalOffset = 6;
     ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
         initWithStyle:incognito ? INCOGNITO : NORMAL];
 
-    UIBlurEffect* effect = [configuration blurEffect];
-
-    if (effect) {
-      UIVisualEffectView* effectView =
-          [[UIVisualEffectView alloc] initWithEffect:effect];
-      [effectView.contentView addSubview:viewController.view];
-      _popupContainerView = effectView;
-
-    } else {
-      UIView* containerView = [[UIView alloc] init];
-      [containerView addSubview:viewController.view];
-      _popupContainerView = containerView;
-    }
-    _popupContainerView.backgroundColor = [configuration blurBackgroundColor];
+    UIView* containerView = [[UIView alloc] init];
+    [containerView addSubview:viewController.view];
+    _popupContainerView = containerView;
+    _popupContainerView.backgroundColor = [configuration backgroundColor];
     _popupContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     AddSameConstraints(viewController.view, _popupContainerView);

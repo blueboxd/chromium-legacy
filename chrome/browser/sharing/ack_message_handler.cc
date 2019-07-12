@@ -6,6 +6,8 @@
 
 AckMessageHandler::AckMessageHandler() = default;
 
+AckMessageHandler::~AckMessageHandler() = default;
+
 void AckMessageHandler::OnMessage(
     const chrome_browser_sharing::SharingMessage& message) {
   // TODO

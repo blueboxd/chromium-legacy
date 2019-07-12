@@ -26,9 +26,11 @@ class PasswordGenerationDialogViewAndroid
   ~PasswordGenerationDialogViewAndroid() override;
 
   // Called to show the dialog. |password| is the generated password.
-  void Show(base::string16& password,
-            base::WeakPtr<password_manager::PasswordManagerDriver>
-                target_frame_driver) override;
+  void Show(
+      base::string16& password,
+      base::WeakPtr<password_manager::PasswordManagerDriver>
+          target_frame_driver,
+      autofill::password_generation::PasswordGenerationType type) override;
 
   // Called from Java via JNI.
   void PasswordAccepted(JNIEnv* env,
@@ -50,6 +52,10 @@ class PasswordGenerationDialogViewAndroid
   // made. Used to ensure that the accepted password message is sent back to the
   // same frame.
   base::WeakPtr<password_manager::PasswordManagerDriver> target_frame_driver_;
+
+  // Whether the dialog was shown for manual generation or not. Used for
+  // metrics.
+  autofill::password_generation::PasswordGenerationType generation_type_;
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationDialogViewAndroid);
 };
 

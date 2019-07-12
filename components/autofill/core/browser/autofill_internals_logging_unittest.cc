@@ -180,25 +180,24 @@ TEST(AutofillInternalsBuffer, CanStreamCustomObjects) {
       json);
 }
 
-class MockAutofillInternalsLogging : public AutofillInternalsLogging {
+class MockAutofillInternalsLogging : public AutofillInternalsLogging::Observer {
  public:
-  MOCK_METHOD1(LogHelper, void(const base::Value&));
-  MOCK_METHOD1(LogRawHelper, void(const base::Value&));
+  MOCK_METHOD1(Log, void(const base::Value&));
+  MOCK_METHOD1(LogRaw, void(const base::Value&));
 };
 
 // Don't add further tests to this. AutofillInternalsLogging uses a global
-// pointer to the AutofillInternalsLogging instance and if more tests are
-// executed in parallel, these can interfere.
+// instance and if more tests are executed in parallel, these can interfere.
 TEST(AutofillInternalsMessage, VerifySubmissionOnDestruction) {
   AutofillInternalsBuffer buffer;
   buffer << LoggingScope::kContext;
   base::Value expected = buffer.RetrieveResult();
 
-  auto logging = std::make_unique<MockAutofillInternalsLogging>();
-  EXPECT_CALL(*logging, LogRawHelper(testing::Eq(testing::ByRef(expected))));
-  AutofillInternalsLogging::SetAutofillInternalsLogger(std::move(logging));
+  MockAutofillInternalsLogging logging_internals;
+  EXPECT_CALL(logging_internals, LogRaw(testing::Eq(testing::ByRef(expected))));
+  AutofillInternalsLogging::GetInstance()->AddObserver(&logging_internals);
   LOG_AF_INTERNALS << LoggingScope::kContext;
-  AutofillInternalsLogging::SetAutofillInternalsLogger(nullptr);
+  AutofillInternalsLogging::GetInstance()->RemoveObserver(&logging_internals);
 }
 
 }  // namespace autofill

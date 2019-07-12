@@ -228,8 +228,7 @@ ExtensionDownloader::ExtensionDownloader(
                               base::Unretained(this))),
       extension_cache_(nullptr),
       identity_manager_(nullptr),
-      crx_format_requirement_(crx_format_requirement),
-      weak_ptr_factory_(this) {
+      crx_format_requirement_(crx_format_requirement) {
   DCHECK(delegate_);
   DCHECK(url_loader_factory_);
 }

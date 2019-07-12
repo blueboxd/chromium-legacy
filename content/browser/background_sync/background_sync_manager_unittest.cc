@@ -1234,6 +1234,7 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
 TEST_F(BackgroundSyncManagerTest, DisableWhilePending) {
   InitDelayedSyncEventTest();
   SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Register(sync_options_1_));
 
   // Corrupting the backend should result in the manager disabling itself on the

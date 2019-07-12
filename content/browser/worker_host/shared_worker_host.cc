@@ -249,7 +249,6 @@ void SharedWorkerHost::Start(
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
-      /*main_script_loader_factory=*/nullptr,
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       std::move(host), std::move(worker_request_),

@@ -253,7 +253,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
-  GetFrame()->PrepareForCommit();
+  GetFrame()->DetachDocument();
   EXPECT_FALSE(page_holder_->GetFrame().Loader().GetDocumentLoader());
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);

@@ -532,23 +532,14 @@ void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
   bool is_secure_context = (execution_context && execution_context->IsSecureContext());
   if (is_secure_context) {
     static constexpr V8DOMConfiguration::AccessorConfiguration
-    kpartial4LongAttributeConfigurations[] = {
-        { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
+    kAccessorConfigurations[] = {
+        { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
-    for (const auto& config : kpartial4LongAttributeConfigurations) {
-      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
-                                          interface, signature, config);
-    }
-  }
-  if (is_secure_context) {
-    static constexpr V8DOMConfiguration::AccessorConfiguration
-    kpartial4StaticLongAttributeConfigurations[] = {
-        { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
-    };
-    for (const auto& config : kpartial4StaticLongAttributeConfigurations) {
-      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
-                                          interface, signature, config);
-    }
+    V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
+                                         interface, signature,
+                                         kAccessorConfigurations,
+                                         base::size(kAccessorConfigurations));
   }
   static constexpr V8DOMConfiguration::ConstantConfiguration
   kPARTIAL4UNSIGNEDSHORTConfiguration = {"PARTIAL4_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(4)};

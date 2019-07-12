@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/aw_browser_process.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/task/single_thread_task_executor.h"
@@ -15,6 +16,7 @@
 namespace android_webview {
 
 class AwContentBrowserClient;
+class AwBrowserProcess;
 
 class AwBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -33,6 +35,8 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 
   AwContentBrowserClient* browser_client_;
+
+  std::unique_ptr<AwBrowserProcess> browser_process_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserMainParts);
 };

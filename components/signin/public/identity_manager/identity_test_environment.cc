@@ -45,16 +45,6 @@
 
 namespace identity {
 
-IdentityTestEnvironment::ExtraParams::ExtraParams() = default;
-
-IdentityTestEnvironment::ExtraParams::~ExtraParams() = default;
-
-IdentityTestEnvironment::ExtraParams::ExtraParams(
-    IdentityTestEnvironment::ExtraParams&& other) = default;
-
-IdentityTestEnvironment::ExtraParams& IdentityTestEnvironment::ExtraParams::
-operator=(ExtraParams&& other) = default;
-
 class IdentityManagerDependenciesOwner {
  public:
   IdentityManagerDependenciesOwner(
@@ -115,15 +105,13 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     network::TestURLLoaderFactory* test_url_loader_factory,
     sync_preferences::TestingPrefServiceSyncable* pref_service,
     signin::AccountConsistencyMethod account_consistency,
-    TestSigninClient* test_signin_client,
-    ExtraParams extra_params)
+    TestSigninClient* test_signin_client)
     : IdentityTestEnvironment(
           std::make_unique<IdentityManagerDependenciesOwner>(
               pref_service,
               test_signin_client),
           test_url_loader_factory,
-          account_consistency,
-          std::move(extra_params)) {
+          account_consistency) {
   DCHECK(!test_url_loader_factory || !test_signin_client);
 }
 
@@ -150,8 +138,7 @@ void IdentityTestEnvironment::Initialize() {
 IdentityTestEnvironment::IdentityTestEnvironment(
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
     network::TestURLLoaderFactory* test_url_loader_factory,
-    signin::AccountConsistencyMethod account_consistency,
-    ExtraParams extra_params)
+    signin::AccountConsistencyMethod account_consistency)
     : weak_ptr_factory_(this) {
   dependencies_owner_ = std::move(dependencies_owner);
   TestSigninClient* test_signin_client = dependencies_owner_->signin_client();
@@ -164,9 +151,9 @@ IdentityTestEnvironment::IdentityTestEnvironment(
   IdentityManager::RegisterProfilePrefs(test_pref_service->registry());
   IdentityManager::RegisterLocalStatePrefs(test_pref_service->registry());
 
-  owned_identity_manager_ = BuildIdentityManagerForTests(
-      test_signin_client, test_pref_service, base::FilePath(),
-      account_consistency, std::move(extra_params));
+  owned_identity_manager_ =
+      BuildIdentityManagerForTests(test_signin_client, test_pref_service,
+                                   base::FilePath(), account_consistency);
 
   Initialize();
 }
@@ -177,27 +164,12 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
     SigninClient* signin_client,
     PrefService* pref_service,
     base::FilePath user_data_dir,
-    signin::AccountConsistencyMethod account_consistency,
-    ExtraParams extra_params) {
+    signin::AccountConsistencyMethod account_consistency) {
   auto account_tracker_service = std::make_unique<AccountTrackerService>();
   account_tracker_service->Initialize(pref_service, user_data_dir);
 
-#if defined(OS_IOS)
-  std::unique_ptr<ProfileOAuth2TokenService> token_service;
-  if (extra_params.token_service_provider) {
-    token_service = std::make_unique<FakeProfileOAuth2TokenService>(
-        pref_service,
-        std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
-            signin_client, std::move(extra_params.token_service_provider),
-            account_tracker_service.get()));
-  } else {
-    token_service =
-        std::make_unique<FakeProfileOAuth2TokenService>(pref_service);
-  }
-#else
   auto token_service =
       std::make_unique<FakeProfileOAuth2TokenService>(pref_service);
-#endif
 
   auto account_fetcher_service = std::make_unique<AccountFetcherService>();
   account_fetcher_service->Initialize(

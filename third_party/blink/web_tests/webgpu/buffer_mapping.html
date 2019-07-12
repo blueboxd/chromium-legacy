@@ -23,7 +23,7 @@ promise_test(async t => {
 
     const readback = device.createBuffer({
       size,
-      usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.MAP_READ,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     const commandEncoder = device.createCommandEncoder();
@@ -45,7 +45,7 @@ promise_test(async t => {
     // Test simple MapWrite.
     const buffer = device.createBuffer({
       size: 12,
-      usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
     });
 
     const arrayBuffer = await buffer.mapWriteAsync();
@@ -68,7 +68,7 @@ promise_test(async t => {
 
     const buffer = device.createBuffer({
       size,
-      usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
     });
 
     const arrayBuffer = await buffer.mapWriteAsync();
@@ -93,7 +93,7 @@ promise_test(async t => {
     // Test simple MapRead
     const buffer = device.createBuffer({
       size: 12,
-      usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.MAP_READ,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     buffer.setSubData(8, new Uint32Array([3]));
@@ -110,7 +110,7 @@ promise_test(async t => {
 
     const buffer = device.createBuffer({
       size,
-      usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.MAP_READ,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     const data = new Uint32Array(new ArrayBuffer(size));
@@ -129,7 +129,7 @@ promise_test(async t => {
       // Test simple CreateBufferMapped
       const [buffer, arrayBuffer] = device.createBufferMapped({
         size: 12,
-        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+        usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
       });
 
       checkMapWriteResult(arrayBuffer, 12);
@@ -151,7 +151,7 @@ promise_test(async t => {
 
       const [buffer, arrayBuffer] = device.createBufferMapped({
         size,
-        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+        usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
       });
 
       checkMapWriteResult(arrayBuffer, size);
@@ -175,7 +175,7 @@ promise_test(async t => {
       // Test simple non-mappable CreateBufferMapped
       const [buffer, arrayBuffer] = device.createBufferMapped({
         size: 12,
-        usage: GPUBufferUsage.TRANSFER_SRC,
+        usage: GPUBufferUsage.COPY_SRC,
       });
 
       checkMapWriteResult(arrayBuffer, 12);
@@ -197,7 +197,7 @@ promise_test(async t => {
 
       const [buffer, arrayBuffer] = device.createBufferMapped({
         size,
-        usage: GPUBufferUsage.TRANSFER_SRC,
+        usage: GPUBufferUsage.COPY_SRC,
       });
 
       checkMapWriteResult(arrayBuffer, size);
@@ -221,7 +221,7 @@ promise_test(async t => {
       // Test simple CreateBufferMappedAsync
       const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
         size: 12,
-        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+        usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
       });
 
       checkMapWriteResult(arrayBuffer, 12);
@@ -243,7 +243,7 @@ promise_test(async t => {
 
       const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
         size,
-        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+        usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
       });
 
       checkMapWriteResult(arrayBuffer, size);
@@ -267,7 +267,7 @@ promise_test(async t => {
       // Test simple non-mappable CreateBufferMappedAsync
       const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
         size: 12,
-        usage: GPUBufferUsage.TRANSFER_SRC,
+        usage: GPUBufferUsage.COPY_SRC,
       });
 
       checkMapWriteResult(arrayBuffer, 12);
@@ -289,7 +289,7 @@ promise_test(async t => {
 
       const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
         size,
-        usage: GPUBufferUsage.TRANSFER_SRC,
+        usage: GPUBufferUsage.COPY_SRC,
       });
 
       checkMapWriteResult(arrayBuffer, size);
@@ -419,7 +419,7 @@ promise_test(async t => {
         let didReject = false;
         await device.createBufferMappedAsync({
           size: Number.MAX_SAFE_INTEGER,
-          usage: GPUBufferUsage.TRANSFER_DST,
+          usage: GPUBufferUsage.COPY_DST,
         }).catch(() => {
           didReject = true;
         });
@@ -430,7 +430,7 @@ promise_test(async t => {
         try {
           device.createBufferMapped({
             size: Number.MAX_SAFE_INTEGER,
-            usage: GPUBufferUsage.TRANSFER_DST,
+            usage: GPUBufferUsage.COPY_DST,
           });
         } catch (err) {
           didThrow = true;

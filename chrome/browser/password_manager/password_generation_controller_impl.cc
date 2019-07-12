@@ -20,16 +20,11 @@
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 using autofill::mojom::FocusedFieldType;
-
-namespace {
-
-void RecordGenerationDialogDismissal(bool accepted) {
-  UMA_HISTOGRAM_BOOLEAN("KeyboardAccessory.GeneratedPasswordDialog", accepted);
-}
-
-}  // namespace
+using autofill::password_generation::PasswordGenerationType;
+using password_manager::metrics_util::GenerationDialogChoice;
 
 PasswordGenerationControllerImpl::~PasswordGenerationControllerImpl() = default;
 
@@ -132,7 +127,7 @@ void PasswordGenerationControllerImpl::ShowManualGenerationDialog(
       !manual_generation_requested_)
     return;
   generation_element_data_ = std::make_unique<GenerationElementData>(ui_data);
-  ShowDialog(true /* manual */);
+  ShowDialog(PasswordGenerationType::kManual);
 }
 
 void PasswordGenerationControllerImpl::FocusedInputChanged(
@@ -143,29 +138,34 @@ void PasswordGenerationControllerImpl::FocusedInputChanged(
     active_frame_driver_ = std::move(driver);
 }
 
-void PasswordGenerationControllerImpl::OnGenerationRequested(bool manual) {
-  if (manual) {
+void PasswordGenerationControllerImpl::OnGenerationRequested(
+    PasswordGenerationType type) {
+  if (type == PasswordGenerationType::kManual) {
     manual_generation_requested_ = true;
     ChromePasswordManagerClient::FromWebContents(web_contents_)
         ->GeneratePassword();
   } else {
-    ShowDialog(false /* manual */);
+    ShowDialog(PasswordGenerationType::kAutomatic);
   }
 }
 
 void PasswordGenerationControllerImpl::GeneratedPasswordAccepted(
     const base::string16& password,
-    base::WeakPtr<password_manager::PasswordManagerDriver> driver) {
+    base::WeakPtr<password_manager::PasswordManagerDriver> driver,
+    PasswordGenerationType type) {
   if (!driver)
     return;
-  RecordGenerationDialogDismissal(true);
+  password_manager::metrics_util::LogGenerationDialogChoice(
+      GenerationDialogChoice::kAccepted, type);
   driver->GeneratedPasswordAccepted(password);
   ResetState();
 }
 
-void PasswordGenerationControllerImpl::GeneratedPasswordRejected() {
-  RecordGenerationDialogDismissal(false);
+void PasswordGenerationControllerImpl::GeneratedPasswordRejected(
+    PasswordGenerationType type) {
   ResetState();
+  password_manager::metrics_util::LogGenerationDialogChoice(
+      GenerationDialogChoice::kRejected, type);
 }
 
 gfx::NativeWindow PasswordGenerationControllerImpl::top_level_native_window()
@@ -203,7 +203,7 @@ PasswordGenerationControllerImpl::PasswordGenerationControllerImpl(
       manual_filling_controller_(std::move(manual_filling_controller_)),
       create_dialog_factory_(create_dialog_factory) {}
 
-void PasswordGenerationControllerImpl::ShowDialog(bool manual) {
+void PasswordGenerationControllerImpl::ShowDialog(PasswordGenerationType type) {
   if (!active_frame_driver_ || dialog_view_) {
     return;
   }
@@ -227,7 +227,7 @@ void PasswordGenerationControllerImpl::ShowDialog(bool manual) {
   active_frame_driver_->GetPasswordManager()
       ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
                                                spec_priority);
-  dialog_view_->Show(password, active_frame_driver_);
+  dialog_view_->Show(password, active_frame_driver_, type);
 }
 
 bool PasswordGenerationControllerImpl::IsActiveFrameDriver(

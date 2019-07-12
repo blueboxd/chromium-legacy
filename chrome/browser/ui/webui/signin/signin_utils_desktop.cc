@@ -126,5 +126,5 @@ bool IsCrossAccountError(Profile* profile,
   InvestigatedScenario scenario =
       SigninInvestigator(email, gaia_id, &provider).Investigate();
 
-  return scenario == InvestigatedScenario::DIFFERENT_ACCOUNT;
+  return scenario == InvestigatedScenario::kDifferentAccount;
 }

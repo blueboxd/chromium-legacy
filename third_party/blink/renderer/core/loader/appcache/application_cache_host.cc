@@ -30,6 +30,9 @@
 
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
+#include <utility>
+
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -103,7 +106,6 @@ ApplicationCacheHost::ApplicationCacheHost(
     mojom::blink::DocumentInterfaceBroker* interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : document_loader_(document_loader),
-      binding_(this),
       task_runner_(std::move(task_runner)),
       interface_broker_(interface_broker) {}
 
@@ -138,8 +140,8 @@ void ApplicationCacheHost::SetApplicationCache(
 void ApplicationCacheHost::DetachFromDocumentLoader() {
   // Detach from the owning DocumentLoader and close mojo pipes.
   SetApplicationCache(nullptr);
-  binding_.Close();
-  backend_host_ = nullptr;
+  receiver_.reset();
+  backend_host_.reset();
   document_loader_ = nullptr;
 }
 
@@ -415,30 +417,31 @@ bool ApplicationCacheHost::BindBackend() {
   else
     host_id_ = base::UnguessableToken::Create();
 
-  mojom::blink::AppCacheFrontendPtr frontend_ptr;
-  binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner_), task_runner_);
+  mojo::PendingRemote<mojom::blink::AppCacheFrontend> frontend_remote;
+  receiver_.Bind(frontend_remote.InitWithNewPipeAndPassReceiver(),
+                 task_runner_);
 
   if (interface_broker_) {
     interface_broker_->RegisterAppCacheHost(
-        mojo::MakeRequest(&backend_host_, std::move(task_runner_)),
-        std::move(frontend_ptr), host_id_);
+        backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
+        std::move(frontend_remote), host_id_);
     return true;
   }
 
   DEFINE_STATIC_LOCAL(
-      const mojom::blink::AppCacheBackendPtr, backend_ptr, ([] {
-        mojom::blink::AppCacheBackendPtr result;
+      const mojo::Remote<mojom::blink::AppCacheBackend>, backend_remote, ([] {
+        mojo::Remote<mojom::blink::AppCacheBackend> result;
         Platform::Current()->GetInterfaceProvider()->GetInterface(
-            mojo::MakeRequest(&result));
+            result.BindNewPipeAndPassReceiver());
         return result;
       }()));
 
   // Once we have 'WebContextInterfaceBroker', we can call this function through
   // it like render frame.
   // Refer to the design document, 'https://bit.ly/2GT0rZv'.
-  backend_ptr.get()->RegisterHost(
-      mojo::MakeRequest(&backend_host_, std::move(task_runner_)),
-      std::move(frontend_ptr), host_id_);
+  backend_remote->RegisterHost(
+      backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
+      std::move(frontend_remote), host_id_);
   return true;
 }
 

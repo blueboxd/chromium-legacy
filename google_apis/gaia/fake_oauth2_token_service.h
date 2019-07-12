@@ -29,9 +29,6 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const CoreAccountId& account_id,
       const GoogleServiceAuthError& auth_error);
 
-  void InvalidateTokenForMultilogin(const CoreAccountId& account_id,
-                                    const std::string& token) override {}
-
   FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate();
 
  private:

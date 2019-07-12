@@ -18,11 +18,11 @@
 #include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_permission.h"
 #include "media/base/mime_util.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_key_system_configuration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

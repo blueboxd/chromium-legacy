@@ -350,7 +350,7 @@ LoadRequestData::LoadRequestData(LoadRequestData&&) = default;
 LoadRequestData& LoadRequestData::operator=(LoadRequestData&&) = default;
 
 FileSequenceHelper::FileSequenceHelper()
-    : connector_(content::GetSystemConnector()->Clone()), weak_factory_(this) {}
+    : connector_(content::GetSystemConnector()->Clone()) {}
 
 FileSequenceHelper::~FileSequenceHelper() {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());

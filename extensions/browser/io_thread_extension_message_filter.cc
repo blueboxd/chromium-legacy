@@ -23,8 +23,7 @@ IOThreadExtensionMessageFilter::IOThreadExtensionMessageFilter(
     : BrowserMessageFilter(ExtensionMsgStart),
       render_process_id_(render_process_id),
       browser_context_id_(context),
-      extension_info_map_(ExtensionSystem::Get(context)->info_map()),
-      weak_ptr_factory_(this) {
+      extension_info_map_(ExtensionSystem::Get(context)->info_map()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

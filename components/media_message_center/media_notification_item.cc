@@ -69,8 +69,10 @@ MediaNotificationItem::MediaNotificationItem(
 
     // TODO(https://crbug.com/931397): Use dip to calculate the size.
     // Bind an observer to be notified when the artwork changes.
-    media_session::mojom::MediaControllerImageObserverPtr artwork_observer;
-    artwork_observer_binding_.Bind(mojo::MakeRequest(&artwork_observer));
+    mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
+        artwork_observer;
+    artwork_observer_receiver_.Bind(
+        artwork_observer.InitWithNewPipeAndPassReceiver());
     media_controller_ptr_->ObserveImages(
         media_session::mojom::MediaSessionImageType::kArtwork,
         kMediaSessionNotificationArtworkMinSize,

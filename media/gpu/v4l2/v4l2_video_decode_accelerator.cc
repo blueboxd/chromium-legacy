@@ -639,6 +639,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
+  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
+  // However the size of PictureBuffer might not be adjusted by ARC++. So we
+  // keep this until ARC++ side is fixed.
   int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
       V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_), 0);
   if (plane_horiz_bits_per_pixel == 0 ||

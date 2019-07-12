@@ -12,9 +12,8 @@ from .idl_reference_proxy import RefByIdFactory
 from .idl_reference_proxy import Proxy
 from .user_defined_type import UserDefinedType
 
-# This file defines following classes to provide IDL types.
+# The implementation class hierarchy of IdlType
 #
-# <Classes>
 # IdlType
 # + SimpleType
 # + ReferenceType
@@ -61,7 +60,6 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     def syntactic_form(self):
         """
         Returns a text representation of the type in the form of Web IDL syntax.
-        @return str
         """
         raise exceptions.NotImplementedError()
 
@@ -71,7 +69,6 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         Returns the type name.
         https://heycam.github.io/webidl/#dfn-type-name
         Note that a type name is not necessarily unique.
-        @return str
         """
         raise exceptions.NotImplementedError()
 
@@ -87,174 +84,172 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     @property
     def is_numeric(self):
         """
-        Returns True if |self| is a number type.
-        @return bool
+        Returns True if this is an integer type or floating point number type.
         """
         return False
 
     @property
     def is_integer(self):
-        """
-        Returns True if |self| is an integer type.
-        @return bool
-        """
+        """Returns True if this is an integer type."""
         return False
 
     @property
     def is_boolean(self):
-        """
-        Returns True if |self| is a boolean type.
-        @return bool
-        """
+        """Returns True if this is a boolean type."""
         return False
 
     @property
     def is_string(self):
-        """
-        Returns True if |self| is a string type.
-        @return bool
-        """
+        """Returns True if this is a DOMString, ByteString, or USVString."""
         return False
 
     @property
     def is_object(self):
         """
-        Returns True if |self| is an object type.
-        @return bool
+        Returns True if this is exactly type 'object'.
+
+        Note that this method doesn't return True for an interface or dictionary
+        type, or type 'any'.
         """
         return False
 
     @property
     def is_symbol(self):
-        """
-        Returns True if |self| is a symbol type.
-        @return bool
-        """
+        """Returns True if this is type 'symbol'."""
         return False
 
     @property
     def is_any(self):
-        """
-        Returns True if |self| is an any type.
-        @return bool
-        """
+        """Returns True if this is type 'any'."""
         return False
 
     @property
     def is_void(self):
-        """
-        Returns True if |self| is a void type.
-        @return bool
-        """
+        """Returns True if this is type 'void'."""
         return False
 
     @property
     def is_interface(self):
-        """
-        Returns True if |self| is an interface type.
-        @return bool
-        """
-        return False
-
-    @property
-    def is_callback_interface(self):
-        """
-        Returns True if |self| is a callback interface type.
-        @return bool
-        """
+        """Returns True if this is an interface type."""
         return False
 
     @property
     def is_dictionary(self):
-        """
-        Returns True if |self| is a dictionary type.
-        @return bool
-        """
+        """Returns True if this is a dictionary type."""
         return False
 
     @property
     def is_enumeration(self):
-        """
-        Returns True if |self| is an enumeration type.
-        @return bool
-        """
+        """Returns True if this is an enumeration type."""
+        return False
+
+    @property
+    def is_callback_interface(self):
+        """Returns True if this is a callback interface type."""
         return False
 
     @property
     def is_callback_function(self):
-        """
-        Returns True if |self| is a callback function type.
-        @return bool
-        """
+        """Returns True if this is a callback function type."""
         return False
 
     @property
     def is_typedef(self):
         """
-        Returns True if |self| is a typedef.
-        @return bool
-        """
-        return False
+        Returns True if this is a typedef.
 
-    @property
-    def is_nullable(self):
-        """
-        Returns True if |self| is a nullable type.
-
-        NOTE: If |self| is a union type which includes a nullable type, this
-        returns False, because |self| itself is not a nullable type.
-        Use |does_include_nullable_type| in such a case.
-        @return bool
-        """
-        return False
-
-    @property
-    def is_annotated(self):
-        """
-        Returns True if |self| is annotated.
-        @return bool
-        """
-        return bool(self.extended_attributes)
-
-    @property
-    def is_promise(self):
-        """
-        Returns True if |self| is a promise type.
-        @return bool
-        """
-        return False
-
-    @property
-    def is_record(self):
-        """
-        Returns True if |self| is a record type.
-        @return bool
+        Despite that 'typedef' in Web IDL is not a type, IdlType treats typedefs
+        as type-wrapping-type just like nullable type and promise type.  You can
+        access the typedef'ed type through |original_type|.
         """
         return False
 
     @property
     def is_sequence(self):
-        """
-        Returns True if |self| is a sequence type.
-        @return bool
-        """
+        """Returns True if this is a sequence type."""
         return False
 
     @property
     def is_frozen_array(self):
-        """
-        Returns True if |self| is a froen array type.
-        @return bool
-        """
+        """Returns True if this is a froen array type."""
+        return False
+
+    @property
+    def is_record(self):
+        """Returns True if this is a record type."""
+        return False
+
+    @property
+    def is_promise(self):
+        """Returns True if this is a promise type."""
         return False
 
     @property
     def is_union(self):
+        """Returns True if this is a union type."""
+        return False
+
+    @property
+    def is_nullable(self):
         """
-        Returns True if |self| is a union type.
-        @return bool
+        Returns True if this is a nullable type.
+
+        NOTE: If |self| is a union type which includes a nullable type, this
+        returns False, because |self| itself is not a nullable type.  Use
+        |does_include_nullable_type| in such a case.
         """
         return False
+
+    @property
+    def is_annotated(self):
+        """Returns True if this is annotated."""
+        return bool(self.extended_attributes)
+
+    @property
+    def original_type(self):
+        """Returns the typedef'ed type."""
+        return None
+
+    @property
+    def element_type(self):
+        """Returns the element type if |is_sequence| or |is_frozen_array|."""
+        return None
+
+    @property
+    def key_type(self):
+        """Returns the key type if |is_record|."""
+        return None
+
+    @property
+    def value_type(self):
+        """Returns the value type if |is_record|."""
+        return None
+
+    @property
+    def result_type(self):
+        """Returns the result type if |is_promise|."""
+        return None
+
+    @property
+    def member_types(self):
+        """Returns member types if |is_union|."""
+        return None
+
+    @property
+    def flattened_member_types(self):
+        """
+        Returns a set of flattened member types if |is_union|.
+        https://heycam.github.io/webidl/#dfn-flattened-union-member-types
+
+        Note that this is not simple flattening, and a nullable type will be
+        unwrapped.  Annotated types are always unwrapped in IdlType.
+        """
+        return None
+
+    @property
+    def inner_type(self):
+        """Returns the inner type of type IdlType if |is_nullable|."""
+        return None
 
     def _format_syntactic_form(self, syntactic_form_inner):
         """Helper function to implement |syntactic_form|."""
@@ -289,13 +284,13 @@ class SimpleType(IdlType):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert name in SimpleType._VALID_TYPES, (
+            'Unknown type name: {}'.format(name))
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert name in SimpleType._VALID_TYPES, (
-            'Unknown type name: {}'.format(name))
         self._name = name
 
     # IdlType overrides
@@ -444,14 +439,6 @@ class TypedefType(IdlType, WithIdentifier):
         WithIdentifier.__init__(self, typedef.identifier)
         self._typedef = typedef
 
-    @property
-    def original_type(self):
-        """
-        Returns the typedef'ed original type
-        @return IdlType
-        """
-        return self._typedef.idl_type
-
     # IdlType overrides
     @property
     def syntactic_form(self):
@@ -471,6 +458,10 @@ class TypedefType(IdlType, WithIdentifier):
     def is_typedef(self):
         return True
 
+    @property
+    def original_type(self):
+        return self._typedef.idl_type
+
 
 class _ArrayLikeType(IdlType):
     def __init__(self,
@@ -478,14 +469,15 @@ class _ArrayLikeType(IdlType):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(element_type, IdlType)
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert isinstance(element_type, IdlType)
         self._element_type = element_type
 
+    # IdlType overrides
     @property
     def element_type(self):
         return self._element_type
@@ -556,32 +548,15 @@ class RecordType(IdlType):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(key_type, IdlType)
+        assert isinstance(value_type, IdlType)
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert isinstance(key_type, IdlType)
-        assert isinstance(value_type, IdlType)
-
         self._key_type = key_type
         self._value_type = value_type
-
-    @property
-    def key_type(self):
-        """
-        Returns the key type.
-        @return IdlType
-        """
-        return self._key_type
-
-    @property
-    def value_type(self):
-        """
-        Returns the value type.
-        @return IdlType
-        """
-        return self._value_type
 
     # IdlType overrides
     @property
@@ -598,6 +573,14 @@ class RecordType(IdlType):
     def is_record(self):
         return True
 
+    @property
+    def key_type(self):
+        return self._key_type
+
+    @property
+    def value_type(self):
+        return self._value_type
+
 
 class PromiseType(IdlType):
     def __init__(self,
@@ -605,21 +588,13 @@ class PromiseType(IdlType):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(result_type, IdlType)
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert isinstance(result_type, IdlType)
         self._result_type = result_type
-
-    @property
-    def result_type(self):
-        """
-        Returns the result type.
-        @return IdlType
-        """
-        return self._result_type
 
     # IdlType overrides
     @property
@@ -636,45 +611,31 @@ class PromiseType(IdlType):
     def is_promise(self):
         return True
 
+    @property
+    def result_type(self):
+        """
+        Returns the result type.
+        @return IdlType
+        """
+        return self._result_type
 
-# https://heycam.github.io/webidl/#idl-union
+
 class UnionType(IdlType):
+    """https://heycam.github.io/webidl/#idl-union"""
+
     def __init__(self,
                  member_types,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(member_types, (list, tuple))
+        assert all(isinstance(member, IdlType) for member in member_types)
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert isinstance(member_types, (list, tuple))
-        assert all(isinstance(member, IdlType) for member in member_types)
         self._member_types = tuple(member_types)
-
-    # TODO(peria): Make it possible to access the definition directly from this
-    # object.
-
-    @property
-    def member_types(self):
-        """
-        Returns a list of member types.
-        @return tuple(IdlType)
-        """
-        return self._member_types
-
-    @property
-    def flattened_member_types(self):
-        """
-        Returns a set of flattened member types.
-        NOTE: Returned set does not contain nullable types even if |self|
-        contains nullable types in its members.
-        https://heycam.github.io/webidl/#dfn-flattened-union-member-types
-        @return set(IdlType)
-        """
-        # TODO(peria): Implement this method.
-        assert False, 'Not implemented yet'
 
     # IdlType overrides
     @property
@@ -696,6 +657,14 @@ class UnionType(IdlType):
     def is_union(self):
         return True
 
+    @property
+    def member_types(self):
+        return self._member_types
+
+    @property
+    def flattened_member_types(self):
+        assert False, 'Not implemented yet'
+
 
 class NullableType(IdlType):
     def __init__(self,
@@ -703,12 +672,12 @@ class NullableType(IdlType):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(inner_type, IdlType)
         IdlType.__init__(
             self,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
-        assert isinstance(inner_type, IdlType)
         self._inner_type = inner_type
 
     # IdlType overrides

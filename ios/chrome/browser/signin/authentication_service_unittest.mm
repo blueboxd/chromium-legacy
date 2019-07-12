@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -15,6 +16,7 @@
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -29,8 +31,6 @@
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
-#include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -54,28 +54,6 @@ using testing::Return;
 
 namespace {
 
-class FakeSigninClient : public IOSChromeSigninClient {
- public:
-  explicit FakeSigninClient(
-      ios::ChromeBrowserState* browser_state,
-      scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      scoped_refptr<HostContentSettingsMap> host_content_settings_map)
-      : IOSChromeSigninClient(browser_state,
-                              cookie_settings,
-                              host_content_settings_map) {}
-};
-
-std::unique_ptr<KeyedService> BuildFakeTestSigninClient(
-    web::BrowserState* context) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<FakeSigninClient>(
-      chrome_browser_state,
-      ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
-      ios::HostContentSettingsMapFactory::GetForBrowserState(
-          chrome_browser_state));
-}
-
 std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
   return std::make_unique<syncer::MockSyncService>();
 }
@@ -88,34 +66,6 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
-class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
- public:
-  TestIdentityManagerObserver(identity::IdentityManager* identity_manager)
-      : scoped_observer_(this) {
-    DCHECK(identity_manager);
-    scoped_observer_.Add(identity_manager);
-  }
-
-  TestIdentityManagerObserver(const TestIdentityManagerObserver&) = delete;
-  TestIdentityManagerObserver& operator=(const TestIdentityManagerObserver&) =
-      delete;
-
-  int refresh_token_available_count() const {
-    return refresh_token_available_count_;
-  }
-
-  // IdentityManager::Observer
-  void OnRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info) override {
-    refresh_token_available_count_++;
-  }
-
- private:
-  int refresh_token_available_count_ = 0;
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
-      scoped_observer_;
-};
-
 }  // namespace
 
 class AuthenticationServiceTest : public PlatformTest {
@@ -125,8 +75,6 @@ class AuthenticationServiceTest : public PlatformTest {
 
     TestChromeBrowserState::Builder builder;
     builder.SetPrefService(CreatePrefService());
-    builder.AddTestingFactory(SigninClientFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeTestSigninClient));
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildMockSyncService));
     builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
@@ -577,13 +525,11 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
 }
 
 // Tests that MDM errors are correctly cleared on foregrounding, sending
-// refresh token available notifications.
+// notifications that the state of error has changed.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
-  TestIdentityManagerObserver observer(identity_manager());
-
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
-  EXPECT_EQ(2, observer.refresh_token_available_count());
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
 
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity(0), user_info);
@@ -591,37 +537,48 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
-  EXPECT_EQ(2, observer.refresh_token_available_count());
 
-  // MDM error for |identity_| is being cleared, refresh token available
-  // notification will be sent.
-  FireApplicationDidEnterBackground();
-  FireApplicationWillEnterForeground();
-  EXPECT_EQ(3, observer.refresh_token_available_count());
+  // MDM error for |identity_| is being cleared and the error state of refresh
+  // token will be updated.
+  {
+    bool notification_received = false;
+    identity::TestIdentityManagerObserver observer(identity_manager());
+    observer.SetOnErrorStateOfRefreshTokenUpdatedCallback(
+        base::BindLambdaForTesting([&]() { notification_received = true; }));
+
+    FireApplicationDidEnterBackground();
+    FireApplicationWillEnterForeground();
+    EXPECT_TRUE(notification_received);
+    EXPECT_EQ(
+        base::SysNSStringToUTF8([identity(0) gaiaID]),
+        observer.AccountFromErrorStateOfRefreshTokenUpdatedCallback().gaia);
+  }
 
   // MDM error has already been cleared, no notification will be sent.
-  FireApplicationDidEnterBackground();
-  FireApplicationWillEnterForeground();
-  EXPECT_EQ(3, observer.refresh_token_available_count());
+  {
+    bool notification_received = false;
+    identity::TestIdentityManagerObserver observer(identity_manager());
+    observer.SetOnErrorStateOfRefreshTokenUpdatedCallback(
+        base::BindLambdaForTesting([&]() { notification_received = true; }));
+
+    FireApplicationDidEnterBackground();
+    FireApplicationWillEnterForeground();
+    EXPECT_FALSE(notification_received);
+  }
 }
 
-// Tests that MDM errors are correctly cleared when signing out, without sending
-// refresh token available notifications.
+// Tests that MDM errors are correctly cleared when signing out.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
-  TestIdentityManagerObserver observer(identity_manager());
-
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
 
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity(0), user_info);
-  int refresh_token_available_count_before_signout =
-      observer.refresh_token_available_count();
 
   authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN, nil);
   EXPECT_FALSE(HasCachedMDMInfo(identity(0)));
-  EXPECT_EQ(refresh_token_available_count_before_signout,
-            observer.refresh_token_available_count());
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0UL);
 }
 
 // Tests that potential MDM notifications are correctly handled and dispatched

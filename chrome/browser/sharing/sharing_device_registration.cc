@@ -9,8 +9,10 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/fcm_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -130,6 +132,8 @@ int SharingDeviceRegistration::GetDeviceCapabilities() const {
 
 bool SharingDeviceRegistration::IsTelephonySupported() const {
 #if defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(kClickToCallReceiver))
+    return false;
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_SharingJNIBridge_isTelephonySupported(env);
 #endif

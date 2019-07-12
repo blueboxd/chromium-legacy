@@ -16,8 +16,9 @@ const char kPaymentRequestPrefilledName[] =
 
 // static
 void Metrics::RecordDropOut(DropOutReason reason) {
-  DCHECK_LE(reason, DropOutReason::kMaxValue);
-  base::UmaHistogramEnumeration(kDropOutEnumName, reason);
+  DCHECK_LE(reason, DropOutReason::NUM_ENTRIES);
+  base::UmaHistogramEnumeration(kDropOutEnumName, reason,
+                                DropOutReason::NUM_ENTRIES);
 }
 
 // static
@@ -25,18 +26,20 @@ void Metrics::RecordPaymentRequestPrefilledSuccess(bool initially_complete,
                                                    bool success) {
   if (initially_complete && success) {
     base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
-                                  PaymentRequestPrefilled::PREFILLED_SUCCESS);
+                                  PaymentRequestPrefilled::PREFILLED_SUCCESS,
+                                  PaymentRequestPrefilled::NUM_ENTRIES);
   } else if (initially_complete && !success) {
     base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
-                                  PaymentRequestPrefilled::PREFILLED_FAILURE);
+                                  PaymentRequestPrefilled::PREFILLED_FAILURE,
+                                  PaymentRequestPrefilled::NUM_ENTRIES);
   } else if (!initially_complete && success) {
-    base::UmaHistogramEnumeration(
-        kPaymentRequestPrefilledName,
-        PaymentRequestPrefilled::NOTPREFILLED_SUCCESS);
+    base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
+                                  PaymentRequestPrefilled::NOTPREFILLED_SUCCESS,
+                                  PaymentRequestPrefilled::NUM_ENTRIES);
   } else if (!initially_complete && !success) {
-    base::UmaHistogramEnumeration(
-        kPaymentRequestPrefilledName,
-        PaymentRequestPrefilled::NOTPREFILLED_FAILURE);
+    base::UmaHistogramEnumeration(kPaymentRequestPrefilledName,
+                                  PaymentRequestPrefilled::NOTPREFILLED_FAILURE,
+                                  PaymentRequestPrefilled::NUM_ENTRIES);
   }
 }
 

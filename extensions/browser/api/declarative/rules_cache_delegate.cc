@@ -45,8 +45,7 @@ RulesCacheDelegate::RulesCacheDelegate(Type type, bool log_storage_init_delay)
     : type_(type),
       browser_context_(nullptr),
       log_storage_init_delay_(log_storage_init_delay),
-      notified_registry_(false),
-      weak_ptr_factory_(this) {}
+      notified_registry_(false) {}
 
 RulesCacheDelegate::~RulesCacheDelegate() {}
 

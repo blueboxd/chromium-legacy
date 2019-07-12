@@ -220,7 +220,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
 
 TEST_F(CredentialsFilterTest, ShouldSave_SignIn_Form) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
-  form.is_gaia_with_skip_save_password_form = true;
+  form.form_data.is_gaia_with_skip_save_password_form = true;
 
   SetSyncingPasswords(false);
   EXPECT_FALSE(filter_.ShouldSave(form));

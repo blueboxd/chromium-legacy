@@ -21,6 +21,8 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/appcache_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -196,8 +198,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   AppCacheHost* GetHost(const base::UnguessableToken& host_id);
   bool EraseHost(const base::UnguessableToken& host_id);
   void RegisterHostForFrame(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtrInfo frontend,
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
@@ -246,8 +248,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   friend class content::AppCacheBackendImpl;
 
   void RegisterHostInternal(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtr frontend,
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,

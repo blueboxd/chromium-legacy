@@ -246,7 +246,7 @@ class SerialConnection : public ApiResource,
   // connection encountered an error.
   base::OnceClosure connection_error_handler_;
 
-  base::WeakPtrFactory<SerialConnection> weak_factory_;
+  base::WeakPtrFactory<SerialConnection> weak_factory_{this};
 };
 
 }  // namespace extensions

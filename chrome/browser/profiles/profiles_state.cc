@@ -66,6 +66,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 
   // Preferences about the user manager.
   registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnabled, true);
+  registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnforced, false);
   registry->RegisterBooleanPref(prefs::kBrowserAddPersonEnabled, true);
   registry->RegisterBooleanPref(prefs::kForceBrowserSignin, false);
 }

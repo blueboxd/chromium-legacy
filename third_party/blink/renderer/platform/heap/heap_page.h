@@ -151,10 +151,10 @@ uint32_t ComputeRandomMagic();
 //
 // | random magic value (32 bits) | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
-// | in construction (1 bit)      | true: bit not set; false bit set
+// | in construction (1 bit)      | bit not set: true; bit set: false
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
-// | wrapper mark bit (1 bit)     |
 // | unused (2 bits)              |
+// | mark bit (1 bit)             |
 //
 // Notes:
 // - 14 bits for |gc_info_index} (type information) are enough as there are

@@ -213,13 +213,15 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
     return;
   }
   if (selected_action == autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL) {
-    OnGenerationRequested(true /* manual */);
+    OnGenerationRequested(
+        autofill::password_generation::PasswordGenerationType::kManual);
     GetManualFillingController()->Hide();
     return;
   }
   if (selected_action ==
       autofill::AccessoryAction::GENERATE_PASSWORD_AUTOMATIC) {
-    OnGenerationRequested(false /* manual */);
+    OnGenerationRequested(
+        autofill::password_generation::PasswordGenerationType::kAutomatic);
     GetManualFillingController()->Hide();
     return;
   }
@@ -281,12 +283,13 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
                                          std::move(footer_commands_to_add)));
 }
 
-void PasswordAccessoryControllerImpl::OnGenerationRequested(bool manual) {
+void PasswordAccessoryControllerImpl::OnGenerationRequested(
+    autofill::password_generation::PasswordGenerationType type) {
   PasswordGenerationController* pwd_generation_controller =
       PasswordGenerationController::GetIfExisting(web_contents_);
 
   DCHECK(pwd_generation_controller);
-  pwd_generation_controller->OnGenerationRequested(manual);
+  pwd_generation_controller->OnGenerationRequested(type);
 }
 
 void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {

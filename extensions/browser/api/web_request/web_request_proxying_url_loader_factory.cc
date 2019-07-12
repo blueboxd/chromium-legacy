@@ -58,8 +58,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
           network_service_request_id_ != 0 &&
           ExtensionWebRequestEventRouter::GetInstance()
               ->HasAnyExtraHeadersListener(factory_->browser_context_)),
-      header_client_binding_(this),
-      weak_factory_(this) {
+      header_client_binding_(this) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
@@ -835,8 +834,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       navigation_ui_data_(std::move(navigation_ui_data)),
       info_map_(info_map),
       url_loader_header_client_binding_(this),
-      proxies_(proxies),
-      weak_factory_(this) {
+      proxies_(proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   target_factory_.Bind(std::move(target_factory_info));
   target_factory_.set_connection_error_handler(

@@ -185,8 +185,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
           kMinDurationBetweenSuccessiveRestartsHours)),
       dispatch_chrome_updated_event_(false),
       did_read_delayed_restart_preferences_(false),
-      was_last_restart_due_to_delayed_restart_api_(false),
-      weak_ptr_factory_(this) {
+      was_last_restart_due_to_delayed_restart_api_(false) {
   // RuntimeAPI is redirected in incognito, so |browser_context_| is never
   // incognito.
   DCHECK(!browser_context_->IsOffTheRecord());

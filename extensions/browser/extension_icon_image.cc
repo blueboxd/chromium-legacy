@@ -136,8 +136,7 @@ IconImage::IconImage(content::BrowserContext* context,
       default_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
           default_icon,
           skia::ImageOperations::RESIZE_BEST,
-          gfx::Size(resource_size_in_dip, resource_size_in_dip))),
-      weak_ptr_factory_(this) {
+          gfx::Size(resource_size_in_dip, resource_size_in_dip))) {
   if (observer)
     AddObserver(observer);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);

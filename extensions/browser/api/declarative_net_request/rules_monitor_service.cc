@@ -210,8 +210,7 @@ RulesMonitorService::RulesMonitorService(
       prefs_(ExtensionPrefs::Get(browser_context)),
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
-      context_(browser_context),
-      weak_factory_(this) {
+      context_(browser_context) {
   registry_observer_.Add(extension_registry_);
 }
 

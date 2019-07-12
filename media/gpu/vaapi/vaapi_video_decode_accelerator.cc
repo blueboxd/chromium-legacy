@@ -626,7 +626,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       buffers.size() >= requested_num_pics_,
       "Got an invalid number of picture buffers. (Got " << buffers.size()
       << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
-  DCHECK(requested_pic_size_ == buffers[0].size());
+  // requested_pic_size_ can be adjusted by VDA client.
+  requested_pic_size_ = buffers[0].size();
 
   va_surface_format_ = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
@@ -646,8 +647,6 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   }
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    DCHECK(requested_pic_size_ == buffers[i].size());
-
     // If we aren't in BufferAllocationMode::kNone, this |picture| is
     // only used as a copy destination. Therefore, the VaapiWrapper used and
     // owned by |picture| is |vpp_vaapi_wrapper_|.

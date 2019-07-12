@@ -192,6 +192,7 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread(
     return;
   }
 
+  LOG(ERROR) << "from contextimpl. calling firereadyevents";
   background_sync_manager_->FireReadyEvents(
       sync_type,
       base::BindOnce(
@@ -202,6 +203,7 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread(
 void BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread(
     base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LOG(ERROR) << "DidFireBackgroundSyncEventsOnIOThread";
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            std::move(done_closure));

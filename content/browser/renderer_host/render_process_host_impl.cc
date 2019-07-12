@@ -2156,7 +2156,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   registry->AddInterface(base::BindRepeating(
-      &ChromeAppCacheService::CreateBackend,
+      &ChromeAppCacheService::CreateBackendForRequest,
       base::Unretained(storage_partition_impl_->GetAppCacheService()),
       GetID()));
 

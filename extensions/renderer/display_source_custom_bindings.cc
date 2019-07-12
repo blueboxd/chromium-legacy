@@ -28,9 +28,7 @@ const char kSessionNotFound[] = "Session not found";
 DisplaySourceCustomBindings::DisplaySourceCustomBindings(
     ScriptContext* context,
     NativeExtensionBindingsSystem* bindings_system)
-    : ObjectBackedNativeHandler(context),
-      bindings_system_(bindings_system),
-      weak_factory_(this) {}
+    : ObjectBackedNativeHandler(context), bindings_system_(bindings_system) {}
 
 DisplaySourceCustomBindings::~DisplaySourceCustomBindings() {}
 

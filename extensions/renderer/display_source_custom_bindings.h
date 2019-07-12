@@ -61,7 +61,7 @@ class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
 
   NativeExtensionBindingsSystem* bindings_system_;
 
-  base::WeakPtrFactory<DisplaySourceCustomBindings> weak_factory_;
+  base::WeakPtrFactory<DisplaySourceCustomBindings> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySourceCustomBindings);
 };

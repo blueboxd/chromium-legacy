@@ -40,6 +40,8 @@
 #include "content/test/test_document_interface_broker.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -613,12 +615,13 @@ struct SourceAnnotation {
 class BlinkFrameHostTestInterfaceImpl
     : public blink::mojom::FrameHostTestInterface {
  public:
-  BlinkFrameHostTestInterfaceImpl() : binding_(this) {}
+  BlinkFrameHostTestInterfaceImpl() {}
   ~BlinkFrameHostTestInterfaceImpl() override {}
 
-  void BindAndFlush(blink::mojom::FrameHostTestInterfaceRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.WaitForIncomingMethodCall();
+  void BindAndFlush(
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.WaitForIncomingCall();
   }
 
   const base::Optional<SourceAnnotation>& ping_source() const {
@@ -635,7 +638,7 @@ class BlinkFrameHostTestInterfaceImpl
   }
 
  private:
-  mojo::Binding<blink::mojom::FrameHostTestInterface> binding_;
+  mojo::Receiver<blink::mojom::FrameHostTestInterface> receiver_{this};
   base::Optional<SourceAnnotation> ping_source_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkFrameHostTestInterfaceImpl);
@@ -651,9 +654,10 @@ class FrameHostTestDocumentInterfaceBroker
                                     std::move(request)) {}
 
   void GetFrameHostTestInterface(
-      blink::mojom::FrameHostTestInterfaceRequest request) override {
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
+      override {
     BlinkFrameHostTestInterfaceImpl impl;
-    impl.BindAndFlush(std::move(request));
+    impl.BindAndFlush(std::move(receiver));
   }
 };
 
@@ -663,9 +667,9 @@ TEST_F(RenderFrameImplTest, TestDocumentInterfaceBrokerOverride) {
       frame()->GetDocumentInterfaceBroker(), mojo::MakeRequest(&doc));
   frame()->SetDocumentInterfaceBrokerForTesting(std::move(doc));
 
-  blink::mojom::FrameHostTestInterfacePtr frame_test;
+  mojo::Remote<blink::mojom::FrameHostTestInterface> frame_test;
   frame()->GetDocumentInterfaceBroker()->GetFrameHostTestInterface(
-      mojo::MakeRequest(&frame_test));
+      frame_test.BindNewPipeAndPassReceiver());
   frame_test->GetName(base::BindOnce([](const std::string& result) {
     EXPECT_EQ(result, kGetNameTestResponse);
   }));
@@ -737,7 +741,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
     : public blink::mojom::DocumentInterfaceBroker {
  public:
   using BinderCallback = base::RepeatingCallback<void(
-      blink::mojom::FrameHostTestInterfaceRequest)>;
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>)>;
   TestSimpleDocumentInterfaceBrokerImpl(BinderCallback binder_callback)
       : binding_(this), binder_callback_(binder_callback) {}
   void BindAndFlush(blink::mojom::DocumentInterfaceBrokerRequest request) {
@@ -749,8 +753,9 @@ class TestSimpleDocumentInterfaceBrokerImpl
  private:
   // blink::mojom::DocumentInterfaceBroker
   void GetFrameHostTestInterface(
-      blink::mojom::FrameHostTestInterfaceRequest request) override {
-    binder_callback_.Run(std::move(request));
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
+      override {
+    binder_callback_.Run(std::move(receiver));
   }
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager>) override {}
@@ -763,9 +768,10 @@ class TestSimpleDocumentInterfaceBrokerImpl
   void GetVirtualAuthenticatorManager(
       mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
           receiver) override {}
-  void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
-                            blink::mojom::AppCacheFrontendPtr frontend,
-                            const base::UnguessableToken& id) override {}
+  void RegisterAppCacheHost(
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+      const base::UnguessableToken& id) override {}
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;
@@ -775,12 +781,13 @@ class TestSimpleDocumentInterfaceBrokerImpl
 
 class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
  public:
-  FrameHostTestInterfaceImpl() : binding_(this) {}
+  FrameHostTestInterfaceImpl() = default;
   ~FrameHostTestInterfaceImpl() override {}
 
-  void BindAndFlush(mojom::FrameHostTestInterfaceRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.WaitForIncomingMethodCall();
+  void BindAndFlush(
+      mojo::PendingReceiver<mojom::FrameHostTestInterface> receiver) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.WaitForIncomingCall();
   }
 
   const base::Optional<SourceAnnotation>& ping_source() const {
@@ -793,7 +800,7 @@ class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
   }
 
  private:
-  mojo::Binding<mojom::FrameHostTestInterface> binding_;
+  mojo::Receiver<mojom::FrameHostTestInterface> receiver_{this};
   base::Optional<SourceAnnotation> ping_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameHostTestInterfaceImpl);
@@ -808,22 +815,22 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
       : RenderFrameObserver(render_frame) {}
 
   void RequestTestInterfaceOnFrameEvent(const std::string& event) {
-    mojom::FrameHostTestInterfacePtr ptr;
+    mojo::Remote<mojom::FrameHostTestInterface> remote;
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&ptr));
+        remote.BindNewPipeAndPassReceiver());
 
     blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
-    ptr->Ping(
+    remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
         event);
 
-    blink::mojom::FrameHostTestInterfacePtr blink_ptr;
+    mojo::Remote<blink::mojom::FrameHostTestInterface> blink_remote;
     blink::mojom::DocumentInterfaceBroker* document_interface_broker =
         render_frame()->GetDocumentInterfaceBroker();
     DCHECK(document_interface_broker);
     document_interface_broker->GetFrameHostTestInterface(
-        mojo::MakeRequest(&blink_ptr));
-    blink_ptr->Ping(
+        blink_remote.BindNewPipeAndPassReceiver());
+    blink_remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
         event);
   }
@@ -1030,7 +1037,8 @@ void ExpectPendingInterfaceRequestsFromSources(
           [&sources](mojo::ScopedMessagePipeHandle handle) {
             FrameHostTestInterfaceImpl impl;
             impl.BindAndFlush(
-                mojom::FrameHostTestInterfaceRequest(std::move(handle)));
+                mojo::PendingReceiver<mojom::FrameHostTestInterface>(
+                    std::move(handle)));
             ASSERT_TRUE(impl.ping_source().has_value());
             sources.push_back(impl.ping_source().value());
           }));
@@ -1041,9 +1049,10 @@ void ExpectPendingInterfaceRequestsFromSources(
   ASSERT_TRUE(document_interface_broker_request.is_pending());
   TestSimpleDocumentInterfaceBrokerImpl broker(base::BindLambdaForTesting(
       [&document_interface_broker_sources](
-          blink::mojom::FrameHostTestInterfaceRequest request) {
+          mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>
+              receiver) {
         BlinkFrameHostTestInterfaceImpl impl;
-        impl.BindAndFlush(std::move(request));
+        impl.BindAndFlush(std::move(receiver));
         ASSERT_TRUE(impl.ping_source().has_value());
         document_interface_broker_sources.push_back(impl.ping_source().value());
       }));

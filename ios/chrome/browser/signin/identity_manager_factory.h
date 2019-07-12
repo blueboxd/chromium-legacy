@@ -32,10 +32,6 @@ class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();
 
-  // Ensures that IdentityManagerFactory and the factories on which it depends
-  // are built.
-  static void EnsureFactoryAndDependeeFactoriesBuilt();
-
   // Methods to register or remove observers of IdentityManager
   // creation/shutdown.
   void AddObserver(IdentityManagerFactoryObserver* observer);

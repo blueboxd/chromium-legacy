@@ -34,7 +34,7 @@ SyncCredentialsFilter::~SyncCredentialsFilter() {}
 bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
   return !client_->IsIncognito() &&
-         !form.is_gaia_with_skip_save_password_form &&
+         !form.form_data.is_gaia_with_skip_save_password_form &&
          !sync_util::IsSyncAccountCredential(
              form, sync_service_factory_function_.Run(),
              identity_manager_factory_function_.Run());

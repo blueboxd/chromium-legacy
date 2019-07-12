@@ -74,3 +74,7 @@ function setUpPasswordManagerInternals() {
 function notifyAboutIncognito(isIncognito) {
   document.body.dataset.incognito = isIncognito;
 }
+
+document.addEventListener("DOMContentLoaded", function(event) {
+  chrome.send('loaded');
+});

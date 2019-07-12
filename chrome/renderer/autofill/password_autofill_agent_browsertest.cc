@@ -3672,7 +3672,7 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   const std::vector<autofill::PasswordForm>& parsed_forms =
       fake_driver_.password_forms_parsed().value();
   ASSERT_EQ(1u, parsed_forms.size());
-  EXPECT_TRUE(parsed_forms[0].is_gaia_with_skip_save_password_form);
+  EXPECT_TRUE(parsed_forms[0].form_data.is_gaia_with_skip_save_password_form);
 }
 
 TEST_F(PasswordAutofillAgentTest,

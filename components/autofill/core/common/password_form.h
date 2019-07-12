@@ -290,9 +290,6 @@ struct PasswordForm {
   // only with the fallback.
   bool only_for_fallback = false;
 
-  // True iff this is Gaia form which should be skipped on saving.
-  bool is_gaia_with_skip_save_password_form = false;
-
   // True iff the new password field was found with server hints or autocomplete
   // attributes. Only set on form parsing for filling, and not persisted. Used
   // as signal for password generation eligibility.

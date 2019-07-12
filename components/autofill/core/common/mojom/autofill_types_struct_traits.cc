@@ -122,6 +122,9 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
   if (!data.ReadUsernamePredictions(&out->username_predictions))
     return false;
 
+  out->is_gaia_with_skip_save_password_form =
+      data.is_gaia_with_skip_save_password_form();
+
   return true;
 }
 
@@ -290,9 +293,6 @@ bool StructTraits<
   out->is_public_suffix_match = data.is_public_suffix_match();
   out->is_affiliation_based_match = data.is_affiliation_based_match();
   out->only_for_fallback = data.only_for_fallback();
-  out->is_gaia_with_skip_save_password_form =
-      data.is_gaia_with_skip_save_password_form();
-
   return true;
 }
 

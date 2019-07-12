@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/stack.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -36,6 +37,7 @@
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -226,11 +228,11 @@ class AppCacheRequestHandlerTest
     mock_service_->set_appcache_policy(mock_policy_.get());
     const auto kHostId = base::UnguessableToken::Create();
     const int kRenderFrameId = 2;
-    blink::mojom::AppCacheFrontendPtrInfo frontend;
-    mojo::MakeRequest(&frontend);
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote;
+    ignore_result(frontend_remote.InitWithNewPipeAndPassReceiver());
     mock_service_->RegisterHostForFrame(
-        mojo::MakeRequest(&host_ptr_), std::move(frontend), kHostId,
-        kRenderFrameId, kMockProcessId, GetBadMessageCallback());
+        host_remote_.BindNewPipeAndPassReceiver(), std::move(frontend_remote),
+        kHostId, kRenderFrameId, kMockProcessId, GetBadMessageCallback());
     host_ = mock_service_->GetHost(kHostId);
     job_factory_ = std::make_unique<MockURLRequestJobFactory>();
     empty_context_->set_job_factory(job_factory_.get());
@@ -247,6 +249,7 @@ class AppCacheRequestHandlerTest
     url_request_.reset();
     mock_service_.reset();
     mock_policy_.reset();
+    host_remote_.reset();
     job_factory_.reset();
     empty_context_.reset();
     host_ = nullptr;
@@ -936,7 +939,7 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<MockAppCacheService> mock_service_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
-  blink::mojom::AppCacheHostPtr host_ptr_;
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
   std::unique_ptr<net::URLRequestContext> empty_context_;
   std::unique_ptr<MockURLRequestJobFactory> job_factory_;
   MockURLRequestDelegate delegate_;

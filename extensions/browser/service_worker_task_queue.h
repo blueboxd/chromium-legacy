@@ -151,7 +151,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   content::BrowserContext* const browser_context_ = nullptr;
 
-  base::WeakPtrFactory<ServiceWorkerTaskQueue> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerTaskQueue> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTaskQueue);
 };

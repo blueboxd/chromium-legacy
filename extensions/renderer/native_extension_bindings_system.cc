@@ -449,8 +449,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::BindRepeating(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
-      messaging_service_(this),
-      weak_factory_(this) {
+      messaging_service_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
   api_system_.RegisterCustomType("types.ChromeSetting",

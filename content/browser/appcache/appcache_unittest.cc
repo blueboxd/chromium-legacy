@@ -5,12 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -30,13 +33,14 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
       service.storage(), GURL("http://blah/manifest"), 111);
   group->AddCache(cache.get());
 
-  blink::mojom::AppCacheFrontendPtr frontend1;
-  mojo::MakeRequest(&frontend1);
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend1;
+  ignore_result(frontend1.InitWithNewPipeAndPassReceiver());
   AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
                      /*process_id=*/1, /*render_frame_id=*/1,
                      std::move(frontend1), &service);
-  blink::mojom::AppCacheFrontendPtr frontend2;
-  mojo::MakeRequest(&frontend2);
+
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend2;
+  ignore_result(frontend2.InitWithNewPipeAndPassReceiver());
   AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
                      /*process_id=*/2, /*render_frame_id=*/2,
                      std::move(frontend2), &service);

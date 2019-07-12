@@ -22,7 +22,7 @@ namespace extensions {
 
 RequirementsChecker::RequirementsChecker(
     scoped_refptr<const Extension> extension)
-    : PreloadCheck(extension), weak_ptr_factory_(this) {}
+    : PreloadCheck(extension) {}
 
 RequirementsChecker::~RequirementsChecker() {}
 

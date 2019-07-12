@@ -7,12 +7,14 @@
 #include "content/browser/frame_host/back_forward_cache.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,6 +102,40 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kHidden);
 }
 
+// Navigate from A to B and go back.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1;", url_b.spec())));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // The two pages are using different BrowsingInstances.
+  EXPECT_FALSE(rfh_a->GetSiteInstance()->IsRelatedSiteInstance(
+      rfh_b->GetSiteInstance()));
+
+  // 3) Go back to A.
+  EXPECT_TRUE(ExecJs(shell(), "history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_FALSE(delete_rfh_b.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+}
+
 // Navigate from back and forward repeatedly.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigateBackForwardRepeatedly) {
@@ -153,6 +189,70 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_FALSE(delete_rfh_b.deleted());
+}
+
+// The current page can't enter the BackForwardCache if another page can script
+// it. This can happen when one document opens a popup using window.open() for
+// instance. It prevents the BackForwardCache from being used.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
+  // This test assumes cross-site navigation staying in the same
+  // BrowsingInstance to use a different SiteInstance. Otherwise, it will
+  // timeout at step 2).
+  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+    return;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A and open a popup.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+  EXPECT_EQ(1u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+  Shell* popup = OpenPopup(rfh_a, url_a, "");
+  EXPECT_EQ(2u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // 2) Navigate to B. The previous document can't enter the BackForwardCache,
+  // because of the popup.
+  EXPECT_TRUE(ExecJs(rfh_a, JsReplace("location = $1;", url_b.spec())));
+  delete_rfh_a.WaitUntilDeleted();
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  EXPECT_EQ(2u, rfh_b->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // 3) Go back to A. The previous document can't enter the BackForwardCache,
+  // because of the popup.
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  EXPECT_TRUE(ExecJs(rfh_b, "history.back();"));
+  delete_rfh_b.WaitUntilDeleted();
+
+  // 4) Make the popup drop the window.opener connection. It happens when the
+  //    user does an omnibox-initiated navigation, which happens in a new
+  //    BrowsingInstance.
+  RenderFrameHostImpl* rfh_a_new = current_frame_host();
+  EXPECT_EQ(2u, rfh_a_new->GetSiteInstance()->GetRelatedActiveContentsCount());
+  NavigateToURL(popup, url_b);
+  EXPECT_EQ(1u, rfh_a_new->GetSiteInstance()->GetRelatedActiveContentsCount());
+
+  // 5) Navigate to B again. In theory, the current document should be able to
+  // enter the BackForwardCache. It can't, because the RenderFrameHost still
+  // "remembers" it had access to the popup. See
+  // RenderFrameHostImpl::scheduler_tracked_features().
+  RenderFrameDeletedObserver delete_rfh_a_new(rfh_a_new);
+  EXPECT_TRUE(ExecJs(rfh_a_new, JsReplace("location = $1;", url_b.spec())));
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  delete_rfh_a_new.WaitUntilDeleted();
+
+  // 6) Go back to A. The current document can finally enter the
+  // BackForwardCache, because it is alone in its BrowsingInstance and has never
+  // been related to any other document.
+  RenderFrameHostImpl* rfh_b_new = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b_new(rfh_b_new);
+  EXPECT_TRUE(ExecJs(rfh_b_new, "history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(delete_rfh_b_new.deleted());
+  EXPECT_TRUE(rfh_b_new->is_in_back_forward_cache());
 }
 
 // Navigate from A(B) to C and go back.

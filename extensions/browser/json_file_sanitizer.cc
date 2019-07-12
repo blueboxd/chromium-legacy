@@ -50,9 +50,7 @@ std::unique_ptr<JsonFileSanitizer> JsonFileSanitizer::CreateAndStart(
 
 JsonFileSanitizer::JsonFileSanitizer(const std::set<base::FilePath>& file_paths,
                                      Callback callback)
-    : file_paths_(file_paths),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+    : file_paths_(file_paths), callback_(std::move(callback)) {}
 
 JsonFileSanitizer::~JsonFileSanitizer() = default;
 

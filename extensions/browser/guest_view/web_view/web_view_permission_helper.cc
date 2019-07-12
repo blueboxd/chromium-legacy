@@ -152,11 +152,9 @@ WebViewPermissionHelper::WebViewPermissionHelper(WebViewGuest* web_view_guest)
     : content::WebContentsObserver(web_view_guest->web_contents()),
       next_permission_request_id_(guest_view::kInstanceIDNone),
       web_view_guest_(web_view_guest),
-      default_media_access_permission_(false),
-      weak_factory_(this) {
-      web_view_permission_helper_delegate_.reset(
-          ExtensionsAPIClient::Get()->CreateWebViewPermissionHelperDelegate(
-              this));
+      default_media_access_permission_(false) {
+  web_view_permission_helper_delegate_.reset(
+      ExtensionsAPIClient::Get()->CreateWebViewPermissionHelperDelegate(this));
 }
 
 WebViewPermissionHelper::~WebViewPermissionHelper() {

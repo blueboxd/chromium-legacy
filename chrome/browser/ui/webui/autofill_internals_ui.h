@@ -6,20 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_AUTOFILL_INTERNALS_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/autofill/autofill_internals_logging_impl.h"
-#include "components/autofill/core/browser/autofill_internals_logging.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class AutofillInternalsUI : public content::WebUIController,
-                            public content::WebContentsObserver {
+class AutofillInternalsUI : public content::WebUIController {
  public:
   explicit AutofillInternalsUI(content::WebUI* web_ui);
-
-  // WebContentsObserver implementation.
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  ~AutofillInternalsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillInternalsUI);

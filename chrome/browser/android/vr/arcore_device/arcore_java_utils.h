@@ -11,26 +11,39 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
 
 namespace vr {
 
-class ArCoreJavaUtils : public ArCoreSessionUtils {
+class ArCoreJavaUtils : public ArCoreInstallUtils {
  public:
-  ArCoreJavaUtils();
+  explicit ArCoreJavaUtils(
+      base::RepeatingCallback<void(bool)> ar_module_installation_callback,
+      base::RepeatingCallback<void(bool)> ar_core_installation_callback);
   ~ArCoreJavaUtils() override;
-
-  // ArCoreSessionUtils:
+  bool ShouldRequestInstallArModule() override;
+  bool CanRequestInstallArModule() override;
+  void RequestInstallArModule(int render_process_id,
+                              int render_frame_id) override;
+  bool ShouldRequestInstallSupportedArCore() override;
+  void RequestInstallSupportedArCore(int render_process_id,
+                                     int render_frame_id) override;
   void RequestArSession(int render_process_id,
                         int render_frame_id,
                         SurfaceReadyCallback ready_callback,
                         SurfaceTouchCallback touch_callback,
                         SurfaceDestroyedCallback destroyed_callback) override;
   void DestroyDrawingSurface() override;
-  bool EnsureLoaded() override;
-  base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override;
 
   // Methods called from the Java side.
+  void OnRequestInstallArModuleResult(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      bool success);
+  void OnRequestInstallSupportedArCoreResult(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      bool success);
   void OnDrawingSurfaceReady(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -47,10 +60,16 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  bool EnsureLoaded() override;
+  base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override;
+
  private:
   base::android::ScopedJavaLocalRef<jobject> getTabFromRenderer(
       int render_process_id,
       int render_frame_id);
+
+  base::RepeatingCallback<void(bool)> ar_module_installation_callback_;
+  base::RepeatingCallback<void(bool)> ar_core_installation_callback_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
 

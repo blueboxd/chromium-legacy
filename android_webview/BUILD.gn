@@ -487,6 +487,8 @@ source_set("common") {
     "browser/aw_browser_permission_request_delegate.h",
     "browser/aw_browser_policy_connector.cc",
     "browser/aw_browser_policy_connector.h",
+    "browser/aw_browser_process.cc",
+    "browser/aw_browser_process.h",
     "browser/aw_browser_terminator.cc",
     "browser/aw_browser_terminator.h",
     "browser/aw_content_browser_client.cc",

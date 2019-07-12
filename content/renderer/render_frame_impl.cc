@@ -148,7 +148,6 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -191,6 +190,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_context_features.h"
@@ -7389,7 +7389,7 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
     blink::WebSetSinkIdCompleteCallback completion_callback) {
   std::move(
-      media::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
+      blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
       .Run(AudioDeviceFactory::GetOutputDeviceInfo(
                GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
                .device_status());

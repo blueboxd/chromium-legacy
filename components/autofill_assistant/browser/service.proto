@@ -456,6 +456,11 @@ message ProcessedActionStatusDetailsProto {
   // more appropriate error. When that happens, this field contains the original
   // status, to help debugging.
   optional ProcessedActionStatusProto original_status = 2;
+
+  // More information included for autofill related errors.
+  //
+  // For now this is only filled for PRECONDITION_FAILED errors.
+  optional AutofillErrorInfoProto autofill_error_info = 3;
 }
 
 message NavigationInfoProto {
@@ -505,6 +510,18 @@ message UnexpectedErrorInfoProto {
   // JavaScript exception column number, within the js snippet that was sent to
   // devtools runtime by the client, if reporting a JavaScript error.
   optional int32 js_exception_column_number = 5;
+}
+
+// Message to report autofill related errors for debugging purposes.
+message AutofillErrorInfoProto {
+  // Comma separated list of address keys in the client memory when the
+  // unexpected error occurred. Memory values are never reported this way since
+  // they may contain PII. Only the address key names!
+  optional string client_memory_address_key_names = 1;
+
+  // Name of the address key requested in the list of keys in
+  // |client_memory_address_key_names|.
+  optional string address_key_requested = 2;
 }
 
 enum ProcessedActionStatusProto {

@@ -212,7 +212,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   operation->Cancel();
 }
 
-TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
+TEST_F(ImageWriterWriteFromUrlOperationTest, DISABLED_VerifyFile) {
   std::unique_ptr<char[]> data_buffer(new char[kTestFileSize]);
   base::ReadFile(test_utils_.GetImagePath(), data_buffer.get(), kTestFileSize);
   base::MD5Digest expected_digest;
@@ -238,7 +238,18 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
   operation->SetImagePath(test_utils_.GetImagePath());
   {
     base::RunLoop run_loop;
-    operation->VerifyDownload(run_loop.QuitClosure());
+    // The OnProgress tasks are posted with priority USER_VISIBLE priority so
+    // post the quit closure with the same priority to ensure it doesn't run too
+    // soon.
+    operation->VerifyDownload(base::Bind(
+        [](base::OnceClosure quit_closure) {
+          base::PostTaskWithTraits(
+              FROM_HERE,
+              {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+              std::move(quit_closure));
+        },
+        run_loop.QuitClosure()));
+
     run_loop.Run();
   }
 

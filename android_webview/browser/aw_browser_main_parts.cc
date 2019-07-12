@@ -77,6 +77,9 @@ int AwBrowserMainParts::PreEarlyInitialization() {
     main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
         base::MessagePump::Type::UI);
   }
+
+  browser_process_ = std::make_unique<AwBrowserProcess>(
+      browser_client_->aw_feature_list_creator());
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -118,7 +121,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   AwBrowserContext* context = browser_client_->InitBrowserContext();
   context->PreMainMessageLoopRun(browser_client_->GetNonNetworkServiceNetLog());
-
+  AwBrowserProcess::GetInstance()->InitSafeBrowsing();
   content::RenderFrameHost::AllowInjectingJavaScript();
 }
 

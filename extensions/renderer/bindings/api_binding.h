@@ -162,7 +162,7 @@ class APIBinding {
   // unavailable are removed after object instantiation.
   v8::Eternal<v8::ObjectTemplate> object_template_;
 
-  base::WeakPtrFactory<APIBinding> weak_factory_;
+  base::WeakPtrFactory<APIBinding> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(APIBinding);
 };

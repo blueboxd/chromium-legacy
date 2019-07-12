@@ -114,6 +114,8 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrostini;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAdditionalEnterpriseReporting;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniAdvancedAccessControls;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAppUninstallGui;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAnsibleInfrastructure;

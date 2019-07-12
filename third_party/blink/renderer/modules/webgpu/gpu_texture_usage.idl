@@ -9,8 +9,8 @@ typedef unsigned long GPUTextureUsageFlags;
     RuntimeEnabled=WebGPU
 ] interface GPUTextureUsage {
     const unsigned long NONE = 0;
-    const unsigned long TRANSFER_SRC = 1;
-    const unsigned long TRANSFER_DST = 2;
+    const unsigned long COPY_SRC = 1;
+    const unsigned long COPY_DST = 2;
     const unsigned long SAMPLED = 4;
     const unsigned long STORAGE = 8;
     const unsigned long OUTPUT_ATTACHMENT = 16;

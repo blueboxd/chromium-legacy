@@ -2351,6 +2351,9 @@ const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 // Whether Guest Mode is enabled within the browser.
 const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
 
+// Whether Guest Mode is enforced within the browser.
+const char kBrowserGuestModeEnforced[] = "profile.browser_guest_enforced";
+
 // Whether Adding a new Person is enabled within the user manager.
 const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 

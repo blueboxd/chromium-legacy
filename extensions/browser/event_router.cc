@@ -180,8 +180,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
       extension_prefs_(extension_prefs),
       extension_registry_observer_(this),
       listeners_(this),
-      lazy_event_dispatch_util_(browser_context_),
-      weak_factory_(this) {
+      lazy_event_dispatch_util_(browser_context_) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 

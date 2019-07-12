@@ -587,6 +587,14 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/media/',
+        ],
+        'allowed': [
+            'media::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/media_capabilities/',
         ],
         'allowed': [

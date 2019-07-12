@@ -6,17 +6,16 @@
 
 #include <string>
 
-#include "chrome/browser/autofill/autofill_internals_logging_impl.h"
+#include "base/bind.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/autofill/core/browser/autofill_internals_logging.h"
 #include "components/grit/components_resources.h"
-#include "content/public/browser/web_ui_data_source.h"
-
-#include "base/bind.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace {
 
@@ -31,28 +30,85 @@ content::WebUIDataSource* CreateAutofillInternalsHTMLSource() {
   return source;
 }
 
-}  // namespace
+// Message handler for AutofillInternalsLoggingImpl. The purpose of this class
+// is to enable safe calls to JavaScript, while the renderer is fully loaded.
+class AutofillInternalsUIHandler
+    : public content::WebUIMessageHandler,
+      public autofill::AutofillInternalsLogging::Observer {
+ public:
+  AutofillInternalsUIHandler() = default;
+  ~AutofillInternalsUIHandler() override = default;
 
-AutofillInternalsUI::AutofillInternalsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui), WebContentsObserver(web_ui->GetWebContents()) {
-  // Set up the chrome://autofill-internals source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateAutofillInternalsHTMLSource());
+ private:
+  // content::WebUIMessageHandler:
+  void RegisterMessages() override;
 
-  autofill::AutofillInternalsLoggingImpl* internals_logging_impl =
-      new autofill::AutofillInternalsLoggingImpl();
-  internals_logging_impl->set_web_ui(web_ui);
-  autofill::AutofillInternalsLogging* internals_logging =
-      static_cast<autofill::AutofillInternalsLogging*>(internals_logging_impl);
-  autofill::AutofillInternalsLogging::SetAutofillInternalsLogger(
-      std::unique_ptr<autofill::AutofillInternalsLogging>(internals_logging));
+  // Implements content::WebUIMessageHandler.
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
+
+  // Implements autofill::AutofillInternalsLogging::Observer.
+  void Log(const base::Value& message) override;
+  void LogRaw(const base::Value& message) override;
+
+  // JavaScript call handler.
+  void OnLoaded(const base::ListValue* args);
+
+  void StartSubscription();
+  void EndSubscription();
+
+  ScopedObserver<autofill::AutofillInternalsLogging,
+                 autofill::AutofillInternalsLogging::Observer>
+      observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillInternalsUIHandler);
+};
+
+void AutofillInternalsUIHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "loaded", base::BindRepeating(&AutofillInternalsUIHandler::OnLoaded,
+                                    base::Unretained(this)));
 }
 
-void AutofillInternalsUI::DidStartLoading() {}
+void AutofillInternalsUIHandler::OnJavascriptAllowed() {
+  StartSubscription();
+}
 
-void AutofillInternalsUI::DidStopLoading() {
-  web_ui()->CallJavascriptFunctionUnsafe("setUpAutofillInternals");
-  web_ui()->CallJavascriptFunctionUnsafe(
+void AutofillInternalsUIHandler::OnJavascriptDisallowed() {
+  EndSubscription();
+}
+
+void AutofillInternalsUIHandler::OnLoaded(const base::ListValue* args) {
+  AllowJavascript();
+  CallJavascriptFunction("setUpAutofillInternals");
+  CallJavascriptFunction(
       "notifyAboutIncognito",
       base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
 }
+
+void AutofillInternalsUIHandler::Log(const base::Value& message) {
+  CallJavascriptFunction("addLog", message);
+}
+
+void AutofillInternalsUIHandler::LogRaw(const base::Value& message) {
+  CallJavascriptFunction("addRawLog", message);
+}
+
+void AutofillInternalsUIHandler::StartSubscription() {
+  observer_.Add(autofill::AutofillInternalsLogging::GetInstance());
+}
+
+void AutofillInternalsUIHandler::EndSubscription() {
+  observer_.RemoveAll();
+}
+
+}  // namespace
+
+AutofillInternalsUI::AutofillInternalsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile, CreateAutofillInternalsHTMLSource());
+  web_ui->AddMessageHandler(std::make_unique<AutofillInternalsUIHandler>());
+}
+
+AutofillInternalsUI::~AutofillInternalsUI() = default;

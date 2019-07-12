@@ -188,6 +188,9 @@ class CORE_EXPORT DocumentLoader
   void StartLoading();
   void StopLoading();
 
+  // Starts loading the response.
+  void StartLoadingResponse();
+
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
   // cannot commit, true otherwise.
@@ -316,8 +319,9 @@ class CORE_EXPORT DocumentLoader
   void WillCommitNavigation();
   void DidCommitNavigation(GlobalObjectReusePolicy);
 
-  void CommitNavigation(const AtomicString& mime_type,
-                        const KURL& overriding_url = KURL());
+  void PrepareForNavigationCommit();
+  void FinishNavigationCommit(const AtomicString& mime_type,
+                              const KURL& overriding_url = KURL());
 
   void CommitSameDocumentNavigationInternal(
       const KURL&,
@@ -351,11 +355,12 @@ class CORE_EXPORT DocumentLoader
                                     WebFrameLoadType,
                                     HistoryNavigationType);
 
+  void FinalizeMHTMLArchiveLoad();
   void HandleRedirect(const KURL& current_request_url);
   void HandleResponse();
   void HandleData(const char* data, size_t length);
 
-  void LoadEmpty();
+  void InitializeEmptyResponse();
 
   bool ShouldReportTimingInfoToParent();
 

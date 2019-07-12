@@ -116,7 +116,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.
-  base::WeakPtrFactory<RulesMonitorService> weak_factory_;
+  base::WeakPtrFactory<RulesMonitorService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RulesMonitorService);
 };

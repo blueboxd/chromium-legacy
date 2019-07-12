@@ -24,7 +24,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -349,7 +349,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   if (frame) {
     // Report UMA and RAPPOR metrics.
-    media::ReportMetrics(load_type, url, *frame_, media_log_.get());
+    blink::ReportMetrics(load_type, url, *frame_, media_log_.get());
     web_frame = frame->GetWebFrame();
   }
 
@@ -661,7 +661,7 @@ void WebMediaPlayerMS::SetSinkId(
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   media::OutputDeviceStatusCB callback =
-      media::ConvertToOutputDeviceStatusCB(std::move(completion_callback));
+      blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback));
   if (audio_renderer_) {
     audio_renderer_->SwitchOutputDevice(sink_id.Utf8(), std::move(callback));
   } else {

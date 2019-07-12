@@ -43,6 +43,9 @@ MediaControlsTouchlessOverlayElement::MediaControlsTouchlessOverlayElement(
   ParserAppendChild(volume_down_button);
 
   StringBuilder aria_label;
+  aria_label.Append(GetLocale().QueryString(
+      WebLocalizedString::kAXMediaTouchLessPlayPauseAction));
+  aria_label.Append(" ");
   aria_label.Append(
       GetLocale().QueryString(WebLocalizedString::kAXMediaTouchLessSeekAction));
   aria_label.Append(" ");

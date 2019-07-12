@@ -10,6 +10,8 @@ source_set("identity_manager") {
     "diagnostics_provider_impl.h",
     "primary_account_mutator_impl.cc",
     "primary_account_mutator_impl.h",
+    "profile_oauth2_token_service_builder.cc",
+    "profile_oauth2_token_service_builder.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -21,10 +23,19 @@ source_set("identity_manager") {
   deps = [
     "//components/prefs",
     "//components/signin/core/browser:internals",
+    "//components/signin/core/browser/webdata",
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",
     "//google_apis",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      "//chromeos/components/account_manager",
+      "//chromeos/constants",
+      "//components/user_manager",
+    ]
+  }
 
   if (!is_android && !is_ios) {
     sources += [

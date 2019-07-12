@@ -36,19 +36,19 @@ class FileNodeUnittest(unittest.TestCase):
     root.StartParsing(u'grit', None)
     root.HandleAttribute(u'latest_public_release', u'0')
     root.HandleAttribute(u'current_release', u'1')
-    root.HandleAttribute(u'base_dir', ur'..\resource')
+    root.HandleAttribute(u'base_dir', r'..\resource')
     translations = empty.TranslationsNode()
     translations.StartParsing(u'translations', root)
     root.AddChild(translations)
     file_node = node_io.FileNode()
     file_node.StartParsing(u'file', translations)
-    file_node.HandleAttribute(u'path', ur'flugel\kugel.pdf')
+    file_node.HandleAttribute(u'path', r'flugel\kugel.pdf')
     translations.AddChild(file_node)
     root.EndParsing()
 
     self.failUnless(root.ToRealPath(file_node.GetInputPath()) ==
                     util.normpath(
-                      os.path.join(ur'../resource', ur'flugel/kugel.pdf')))
+                      os.path.join(r'../resource', r'flugel/kugel.pdf')))
 
   def VerifyCliquesContainEnglishAndFrenchAndNothingElse(self, cliques):
     self.assertEqual(2, len(cliques))

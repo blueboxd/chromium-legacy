@@ -299,7 +299,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // instance.
   base::WeakPtr<RulesCacheDelegate> cache_delegate_;
 
-  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_;
+  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistry);
 };

@@ -275,11 +275,9 @@ class PasswordManager : public FormSubmissionObserver {
   // should be skipped on saving.
   // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
   // from PasswordForm to FormData, and remove it from arguments.
-  NewPasswordFormManager* ProvisionallySaveForm(
-      const autofill::FormData& form,
-      PasswordManagerDriver* driver,
-      bool is_manual_fallback,
-      bool is_gaia_with_skip_save_password_form);
+  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
+                                                PasswordManagerDriver* driver,
+                                                bool is_manual_fallback);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.

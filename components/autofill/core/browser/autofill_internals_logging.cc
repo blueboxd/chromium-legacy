@@ -191,32 +191,47 @@ AutofillInternalsLogging::AutofillInternalsLogging() = default;
 
 AutofillInternalsLogging::~AutofillInternalsLogging() = default;
 
-std::unique_ptr<AutofillInternalsLogging>& GetAutofillInternalLogging() {
-  static base::NoDestructor<std::unique_ptr<AutofillInternalsLogging>> logger;
-  return *logger;
+// static
+AutofillInternalsLogging* AutofillInternalsLogging::GetInstance() {
+  static base::NoDestructor<AutofillInternalsLogging> logger;
+  return logger.get();
 }
 
-void AutofillInternalsLogging::SetAutofillInternalsLogger(
-    std::unique_ptr<AutofillInternalsLogging> logger) {
-  GetAutofillInternalLogging().swap(logger);
+void AutofillInternalsLogging::AddObserver(
+    AutofillInternalsLogging::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AutofillInternalsLogging::RemoveObserver(
+    const AutofillInternalsLogging::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool AutofillInternalsLogging::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 // static
-void AutofillInternalsLogging::Log(std::string message) {
-  if (GetAutofillInternalLogging())
-    GetAutofillInternalLogging()->LogHelper(base::Value(std::move(message)));
+void AutofillInternalsLogging::Log(const std::string& message) {
+  auto& observers = AutofillInternalsLogging::GetInstance()->observers_;
+  if (!observers.might_have_observers())
+    return;
+  base::Value message_value(message);
+  for (Observer& obs : observers)
+    obs.Log(message_value);
 }
 
 // static
-void AutofillInternalsLogging::LogRaw(base::Value&& message) {
-  if (GetAutofillInternalLogging())
-    GetAutofillInternalLogging()->LogRawHelper(std::move(message));
+void AutofillInternalsLogging::LogRaw(const base::Value& message) {
+  auto& observers = AutofillInternalsLogging::GetInstance()->observers_;
+  for (Observer& obs : observers)
+    obs.LogRaw(message);
 }
 
 // Implementation of other methods.
 
 bool IsLogAutofillInternalsActive() {
-  return !!GetAutofillInternalLogging();
+  return AutofillInternalsLogging::GetInstance()->HasObservers();
 }
 
 }  // namespace autofill

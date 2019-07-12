@@ -595,7 +595,7 @@ class AppWindow : public content::WebContentsDelegate,
   // processes.
   bool did_finish_first_navigation_ = false;
 
-  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
+  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };

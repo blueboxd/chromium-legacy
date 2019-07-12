@@ -16,6 +16,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -56,7 +57,7 @@ void AppCacheNavigationHandleCore::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host_.get() == nullptr);
   precreated_host_ = std::make_unique<AppCacheHost>(
-      appcache_host_id_, process_id_, MSG_ROUTING_NONE, nullptr,
+      appcache_host_id_, process_id_, MSG_ROUTING_NONE, mojo::NullRemote(),
       GetAppCacheService());
 
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==

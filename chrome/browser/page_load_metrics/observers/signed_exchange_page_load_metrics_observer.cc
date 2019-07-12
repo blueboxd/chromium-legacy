@@ -11,16 +11,22 @@ namespace internal {
 
 #define HISTOGRAM_SXG_PREFIX "PageLoad.Clients.SignedExchange."
 #define HISTOGRAM_CACHED_SXG_PREFIX "PageLoad.Clients.SignedExchange.Cached."
+#define HISTOGRAM_ALT_SUB_SXG_PREFIX \
+  "PageLoad.Clients.SignedExchange.AltSubSXG."
 
 constexpr char kHistogramSignedExchangePrefix[] = HISTOGRAM_SXG_PREFIX;
 constexpr char kHistogramCachedSignedExchangePrefix[] =
     HISTOGRAM_CACHED_SXG_PREFIX;
+constexpr char kHistogramAltSubSxgSignedExchangePrefix[] =
+    HISTOGRAM_ALT_SUB_SXG_PREFIX;
 
-#define SXG_LOAD_METRIC_VARIABLE(name, suffix)            \
-  constexpr char kHistogramSignedExchange##name[] =       \
-      HISTOGRAM_SXG_PREFIX suffix;                        \
-  constexpr char kHistogramCachedSignedExchange##name[] = \
-      HISTOGRAM_CACHED_SXG_PREFIX suffix;
+#define SXG_LOAD_METRIC_VARIABLE(name, suffix)               \
+  constexpr char kHistogramSignedExchange##name[] =          \
+      HISTOGRAM_SXG_PREFIX suffix;                           \
+  constexpr char kHistogramCachedSignedExchange##name[] =    \
+      HISTOGRAM_CACHED_SXG_PREFIX suffix;                    \
+  constexpr char kHistogramAltSubSxgSignedExchange##name[] = \
+      HISTOGRAM_ALT_SUB_SXG_PREFIX suffix;
 
 SXG_LOAD_METRIC_VARIABLE(ParseStart, "ParseTiming.NavigationToParseStart")
 SXG_LOAD_METRIC_VARIABLE(FirstInputDelay, "InteractiveTiming.FirstInputDelay3")
@@ -40,17 +46,22 @@ SXG_LOAD_METRIC_VARIABLE(
     "DocumentTiming.NavigationToDOMContentLoadedEventFired")
 SXG_LOAD_METRIC_VARIABLE(Load, "DocumentTiming.NavigationToLoadEventFired")
 
-#define SXG_PAGE_LOAD_HISTOGRAM(name, sample)                             \
-  {                                                                       \
-    const base::TimeDelta value = sample;                                 \
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramSignedExchange##name, value); \
-    if (was_cached_) {                                                    \
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramCachedSignedExchange##name, \
-                          value);                                         \
-    }                                                                     \
+#define SXG_PAGE_LOAD_HISTOGRAM(name, sample)                                \
+  {                                                                          \
+    const base::TimeDelta value = sample;                                    \
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramSignedExchange##name, value);    \
+    if (was_cached_) {                                                       \
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramCachedSignedExchange##name,    \
+                          value);                                            \
+    }                                                                        \
+    if (had_prefetched_alt_sxg_) {                                           \
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAltSubSxgSignedExchange##name, \
+                          value);                                            \
+    }                                                                        \
   }
 
 #undef SXG_LOAD_METRIC_VARIABLE
+#undef HISTOGRAM_ALT_SUB_SXG_PREFIX
 #undef HISTOGRAM_CACHED_SXG_PREFIX
 #undef HISTOGRAM_SXG_PREFIX
 
@@ -65,6 +76,8 @@ SignedExchangePageLoadMetricsObserver::OnCommit(
     ukm::SourceId source_id) {
   if (navigation_handle->IsSignedExchangeInnerResponse()) {
     was_cached_ = navigation_handle->WasResponseCached();
+    had_prefetched_alt_sxg_ =
+        navigation_handle->HasPrefetchedAlternativeSubresourceSignedExchange();
     return CONTINUE_OBSERVING;
   }
 
@@ -155,6 +168,13 @@ void SignedExchangePageLoadMetricsObserver::OnFirstInputInPage(
   if (was_cached_) {
     UMA_HISTOGRAM_CUSTOM_TIMES(
         internal::kHistogramCachedSignedExchangeFirstInputDelay,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
+  }
+  if (had_prefetched_alt_sxg_) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramAltSubSxgSignedExchangeFirstInputDelay,
         timing.interactive_timing->first_input_delay.value(),
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
         50);

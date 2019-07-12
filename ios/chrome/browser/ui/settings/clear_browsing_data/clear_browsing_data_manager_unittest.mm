@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -18,12 +17,17 @@
 #include "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
+#include "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/fake_browsing_data_counter_wrapper_producer.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -41,6 +45,14 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
   return std::make_unique<syncer::TestSyncService>();
 }
 
+std::unique_ptr<KeyedService> BuildMockSyncSetupService(
+    web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  return std::make_unique<SyncSetupServiceMock>(
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
+}
+
 class ClearBrowsingDataManagerTest : public PlatformTest {
  public:
   ClearBrowsingDataManagerTest() {
@@ -51,16 +63,22 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
         factory.CreateSyncable(registry.get());
     RegisterBrowserStatePrefs(registry.get());
 
-    TestChromeBrowserState::TestingFactories factories = {
-        {ProfileSyncServiceFactory::GetInstance(),
-         base::BindRepeating(&CreateTestSyncService)},
-    };
-    browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
-        CreateChromeBrowserStateForIdentityTestEnvironment(factories);
+    TestChromeBrowserState::Builder builder;
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              base::BindRepeating(&CreateTestSyncService));
+    builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
+                              base::BindRepeating(&BuildMockSyncSetupService));
+    builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        AuthenticationServiceFactory::GetDefaultFactory());
+    browser_state_ = builder.Build();
 
-    identity_test_env_adaptor_.reset(
-        new IdentityTestEnvironmentChromeBrowserStateAdaptor(
-            browser_state_.get()));
+    AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+        browser_state_.get(),
+        std::make_unique<AuthenticationServiceDelegateFake>());
+
+    ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+        ->AddIdentities(@[ @"foo" ]);
 
     model_ = [[TableViewModel alloc] init];
     remover_ = std::make_unique<FakeBrowsingDataRemover>();
@@ -79,19 +97,18 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
                           browser_state_->GetPrefs());
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
-    return identity_test_env_adaptor_->identity_test_env();
+  ChromeIdentity* fake_identity() {
+    return [ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                ->GetAllIdentities() firstObject];
   }
 
  protected:
+  web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
-      identity_test_env_adaptor_;
   TableViewModel* model_;
   std::unique_ptr<BrowsingDataRemover> remover_;
   ClearBrowsingDataManager* manager_;
   syncer::TestSyncService* test_sync_service_;
-  web::TestWebThreadBundle thread_bundle_;
   IntegerPrefMember time_range_pref_;
 };
 
@@ -119,7 +136,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
   test_sync_service_->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 
-  identity_test_env()->SetPrimaryAccount("syncuser@example.com");
+  AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
+      ->SignIn(fake_identity());
 
   [manager_ loadModel:model_];
 

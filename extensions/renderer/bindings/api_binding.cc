@@ -218,8 +218,7 @@ APIBinding::APIBinding(const std::string& api_name,
       type_refs_(type_refs),
       request_handler_(request_handler),
       event_handler_(event_handler),
-      access_checker_(access_checker),
-      weak_factory_(this) {
+      access_checker_(access_checker) {
   // TODO(devlin): It might make sense to instantiate the object_template_
   // directly here, which would avoid the need to hold on to
   // |property_definitions_| and |enums_|. However, there are *some* cases where

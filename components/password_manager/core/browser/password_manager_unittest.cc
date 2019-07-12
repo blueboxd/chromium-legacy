@@ -325,7 +325,6 @@ class PasswordManagerTest : public testing::Test {
     form.form_data.fields.push_back(field);
 
     SetUniqueIdIfNeeded(&form.form_data);
-
     return form;
   }
 
@@ -911,7 +910,7 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
 // Tests that on Chrome sign-in form credentials are not saved.
 TEST_F(PasswordManagerTest, DoNotSaveOnChromeSignInForm) {
   PasswordForm form(MakeSimpleForm());
-  form.is_gaia_with_skip_save_password_form = true;
+  form.form_data.is_gaia_with_skip_save_password_form = true;
   std::vector<PasswordForm> observed = {form};
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
@@ -1261,15 +1260,16 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
       } else {
         TurnOnNewParsingForFilling(&scoped_feature_list, true);
       }
-
       std::vector<PasswordForm> observed;
       PasswordForm form(MakeSimpleGAIAForm());
       // Simulate that this is Gaia form that should be ignored for
       // saving/filling.
-      form.is_gaia_with_skip_save_password_form = true;
+      form.form_data.is_gaia_with_skip_save_password_form = true;
       observed.push_back(form);
+
       EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
           .WillRepeatedly(Return(true));
+
       manager()->OnPasswordFormsParsed(&driver_, observed);
       manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1281,6 +1281,7 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
           .WillByDefault(Return(true));
 
       EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+
       EXPECT_CALL(
           *store_,
           SaveGaiaPasswordHash(
@@ -1312,7 +1313,7 @@ TEST_F(PasswordManagerTest,
     PasswordForm form(MakeSimpleGAIAForm());
     // Simulate that this is Gaia form that should be ignored for
     // saving/filling.
-    form.is_gaia_with_skip_save_password_form = true;
+    form.form_data.is_gaia_with_skip_save_password_form = true;
     EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
         .WillRepeatedly(Return(true));
     manager()->OnPasswordFormsParsed(&driver_, {form});

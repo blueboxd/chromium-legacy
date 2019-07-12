@@ -7,16 +7,16 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace identity {
 
 AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string& oauth_consumer_name,
-                                       OAuth2TokenService* token_service,
+                                       ProfileOAuth2TokenService* token_service,
                                        const identity::ScopeSet& scopes,
                                        TokenCallback callback,
                                        Mode mode)
@@ -31,7 +31,7 @@ AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
 AccessTokenFetcher::AccessTokenFetcher(
     const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const identity::ScopeSet& scopes,
     TokenCallback callback,
@@ -50,7 +50,7 @@ AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string client_id,
                                        const std::string client_secret,
                                        const std::string& oauth_consumer_name,
-                                       OAuth2TokenService* token_service,
+                                       ProfileOAuth2TokenService* token_service,
                                        const identity::ScopeSet& scopes,
                                        TokenCallback callback,
                                        Mode mode)
@@ -69,7 +69,7 @@ AccessTokenFetcher::AccessTokenFetcher(
     const std::string client_id,
     const std::string client_secret,
     const std::string& oauth_consumer_name,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const identity::ScopeSet& scopes,
     TokenCallback callback,

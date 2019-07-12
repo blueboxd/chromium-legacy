@@ -393,7 +393,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
-  base::WeakPtrFactory<WebViewGuest> weak_ptr_factory_;
+  base::WeakPtrFactory<WebViewGuest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

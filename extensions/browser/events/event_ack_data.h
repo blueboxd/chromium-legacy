@@ -59,7 +59,7 @@ class EventAckData {
   // Created on UI thread, but accessed only on IO thread.
   scoped_refptr<IOEventInfo> unacked_events_;
 
-  base::WeakPtrFactory<EventAckData> weak_factory_;
+  base::WeakPtrFactory<EventAckData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventAckData);
 };

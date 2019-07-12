@@ -367,7 +367,7 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::SetAnimationEvents,
-                                proxy_main_weak_ptr_, base::Passed(&events)));
+                                proxy_main_weak_ptr_, std::move(events)));
 }
 
 size_t ProxyImpl::CompositedAnimationsCount() const {
@@ -559,7 +559,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
-                     base::Passed(&begin_main_frame_state)));
+                     std::move(begin_main_frame_state)));
   host_impl_->DidSendBeginMainFrame(args);
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }

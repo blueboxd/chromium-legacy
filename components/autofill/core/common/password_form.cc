@@ -82,7 +82,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("submission_event", ToString(form.submission_event));
   target->SetBoolean("only_for_fallback", form.only_for_fallback);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
-                     form.is_gaia_with_skip_save_password_form);
+                     form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
 }
 
@@ -161,8 +161,6 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_icon_url == form.app_icon_url &&
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
-         is_gaia_with_skip_save_password_form ==
-             form.is_gaia_with_skip_save_password_form &&
          is_new_password_reliable == form.is_new_password_reliable;
 }
 

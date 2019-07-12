@@ -116,8 +116,7 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       tab_id_(-1),
       browser_window_id_(-1),
       extension_dispatcher_(extension_dispatcher),
-      did_create_current_document_element_(false),
-      weak_ptr_factory_(this) {
+      did_create_current_document_element_(false) {
   g_frame_helpers.Get().insert(this);
   if (render_frame->IsMainFrame()) {
     // Manages its own lifetime.

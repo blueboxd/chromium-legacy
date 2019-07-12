@@ -44,8 +44,7 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
                                      request,
                                      false /* is_download */,
                                      true /* is_async */)),
-      proxies_(proxies),
-      weak_factory_(this) {}
+      proxies_(proxies) {}
 
 WebRequestProxyingWebSocket::~WebRequestProxyingWebSocket() {
   // This is important to ensure that no outstanding blocking requests continue

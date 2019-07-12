@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
@@ -21,11 +20,6 @@
 namespace blink {
 
 class ParkableString;
-
-const base::Feature kCompressParkableStringsInBackground{
-    "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kCompressParkableStringsInForeground{
-    "CompressParkableStringsInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
 class PLATFORM_EXPORT ParkableStringManagerDumpProvider
     : public base::trace_event::MemoryDumpProvider {
@@ -69,8 +63,6 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   // Public for testing.
   constexpr static int kAgingIntervalInSeconds = 2;
-  constexpr static int kParkingDelayInSeconds = 10;
-  constexpr static int kStatisticsRecordingDelayInSeconds = 30;
 
  private:
   friend class ParkableString;
@@ -85,8 +77,6 @@ class PLATFORM_EXPORT ParkableStringManager {
   void OnUnparked(ParkableStringImpl*);
 
   void ParkAll(ParkableStringImpl::ParkingMode mode);
-  void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
-  void DropStringsWithCompressedDataAndRecordStatistics();
   void RecordStatisticsAfter5Minutes() const;
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
@@ -102,9 +92,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   ParkableStringManager();
 
   bool backgrounded_;
-  bool waiting_to_record_stats_;
   bool has_pending_aging_task_;
-  bool should_record_stats_;
   bool has_posted_unparking_time_accounting_task_;
   bool did_register_memory_pressure_listener_;
   base::TimeDelta total_unparking_time_;
@@ -112,7 +100,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> unparked_strings_;
   WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> parked_strings_;
 
-  friend class ParkableStringTestBase;
+  friend class ParkableStringTest;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringManager);
 };

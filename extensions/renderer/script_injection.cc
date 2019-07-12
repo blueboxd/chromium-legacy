@@ -167,8 +167,7 @@ ScriptInjection::ScriptInjection(
       complete_(false),
       did_inject_js_(false),
       log_activity_(log_activity),
-      frame_watcher_(new FrameWatcher(render_frame, this)),
-      weak_ptr_factory_(this) {
+      frame_watcher_(new FrameWatcher(render_frame, this)) {
   CHECK(injection_host_.get());
 }
 

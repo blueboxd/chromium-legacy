@@ -137,9 +137,9 @@ void HardwareDisplayController::SchedulePageFlip(
       .Run(gfx::SwapResult::SWAP_ACK, std::move(out_fence));
 
   // Everything was submitted successfully, wait for asynchronous completion.
-  page_flip_request->TakeCallback(base::BindOnce(
-      &CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(&presentation_callback), base::Passed(&plane_list)));
+  page_flip_request->TakeCallback(
+      base::BindOnce(&CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(presentation_callback), std::move(plane_list)));
   page_flip_request_ = std::move(page_flip_request);
 }
 

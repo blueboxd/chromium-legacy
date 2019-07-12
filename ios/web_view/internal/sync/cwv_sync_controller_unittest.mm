@@ -12,14 +12,19 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/ios/browser/fake_device_accounts_provider.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
+#include "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
@@ -50,57 +55,56 @@ const char kTestPassphrase[] = "dummy-passphrase";
 const char kTestScope1[] = "scope1.chromium.org";
 const char kTestScope2[] = "scope2.chromium.org";
 
+std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
+  return std::make_unique<syncer::MockSyncService>();
+}
+
 }  // namespace
 
 class CWVSyncControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVSyncControllerTest()
-      : browser_state_(/*off_the_record=*/false),
-        identity_test_env_(nullptr,
-                           nullptr,
-                           signin::AccountConsistencyMethod::kDisabled,
-                           nullptr,
-                           CreateExtraParams()),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::ANY_ACCOUNT,
-            identity_test_env_.identity_manager()) {
-    web_state_.SetBrowserState(&browser_state_);
+  CWVSyncControllerTest() : browser_state_(/*off_the_record=*/false) {
+    WebViewProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+        &browser_state_, base::BindRepeating(&BuildMockSyncService));
 
-    profile_sync_service_ = std::make_unique<syncer::MockSyncService>();
-
-    EXPECT_CALL(*profile_sync_service_, AddObserver(_))
+    EXPECT_CALL(*mock_sync_service(), AddObserver(_))
         .WillOnce(Invoke(this, &CWVSyncControllerTest::AddObserver));
 
     sync_controller_ = [[CWVSyncController alloc]
-          initWithSyncService:profile_sync_service_.get()
-              identityManager:identity_test_env_.identity_manager()
-        signinErrorController:&signin_error_controller_];
+          initWithSyncService:mock_sync_service()
+              identityManager:identity_manager()
+        signinErrorController:signin_error_controller()];
+
+    WebViewSigninClientFactory::GetForBrowserState(&browser_state_)
+        ->SetSyncController(sync_controller_);
   }
 
   ~CWVSyncControllerTest() override {
-    EXPECT_CALL(*profile_sync_service_, RemoveObserver(_));
+    EXPECT_CALL(*mock_sync_service(), RemoveObserver(_));
   }
 
   void AddObserver(syncer::SyncServiceObserver* observer) {
     sync_service_observer_ = observer;
   }
 
-  static identity::IdentityTestEnvironment::ExtraParams CreateExtraParams() {
-    auto provider = std::make_unique<FakeDeviceAccountsProvider>();
-    provider->AddAccount(kTestGaiaId, kTestEmail);
-    identity::IdentityTestEnvironment::ExtraParams extra_params;
-    extra_params.token_service_provider = std::move(provider);
-    return extra_params;
+  identity::IdentityManager* identity_manager() {
+    return WebViewIdentityManagerFactory::GetForBrowserState(&browser_state_);
+  }
+
+  syncer::MockSyncService* mock_sync_service() {
+    return static_cast<syncer::MockSyncService*>(
+        WebViewProfileSyncServiceFactory::GetForBrowserState(&browser_state_));
+  }
+
+  SigninErrorController* signin_error_controller() {
+    return WebViewSigninErrorControllerFactory::GetForBrowserState(
+        &browser_state_);
   }
 
   web::TestWebThreadBundle web_thread_bundle_;
   ios_web_view::WebViewBrowserState browser_state_;
-  web::TestWebState web_state_;
-  identity::IdentityTestEnvironment identity_test_env_;
-  SigninErrorController signin_error_controller_;
-  std::unique_ptr<syncer::MockSyncService> profile_sync_service_;
-  CWVSyncController* sync_controller_;
-  syncer::SyncServiceObserver* sync_service_observer_;
+  CWVSyncController* sync_controller_ = nil;
+  syncer::SyncServiceObserver* sync_service_observer_ = nullptr;
 };
 
 // Verifies CWVSyncControllerDataSource methods are invoked with the correct
@@ -142,8 +146,7 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
     sync_controller_.delegate = delegate;
 
     [[delegate expect] syncControllerDidStartSync:sync_controller_];
-    sync_service_observer_->OnSyncConfigurationCompleted(
-        profile_sync_service_.get());
+    sync_service_observer_->OnSyncConfigurationCompleted(mock_sync_service());
     [[delegate expect]
           syncController:sync_controller_
         didFailWithError:[OCMArg checkWithBlock:^BOOL(NSError* error) {
@@ -160,8 +163,8 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
     // Create authentication error.
     GoogleServiceAuthError auth_error(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    identity_test_env_.UpdatePersistentErrorOfRefreshTokenForAccount(
-        identity_test_env_.identity_manager()->GetPrimaryAccountId(),
+    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+        identity_manager(), identity_manager()->GetPrimaryAccountId(),
         auth_error);
 
     [[delegate expect] syncController:sync_controller_
@@ -192,11 +195,11 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
 
 // Verifies CWVSyncController's passphrase API.
 TEST_F(CWVSyncControllerTest, Passphrase) {
-  EXPECT_CALL(*profile_sync_service_->GetMockUserSettings(),
+  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
               IsPassphraseRequiredForDecryption())
       .WillOnce(Return(true));
   EXPECT_TRUE(sync_controller_.passphraseNeeded);
-  EXPECT_CALL(*profile_sync_service_->GetMockUserSettings(),
+  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
               SetDecryptionPassphrase(kTestPassphrase))
       .WillOnce(Return(true));
   EXPECT_TRUE([sync_controller_ unlockWithPassphrase:@(kTestPassphrase)]);

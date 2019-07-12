@@ -293,8 +293,10 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
         setAccessibilityValue:l10n_util::GetNSString(IDS_IOS_SETTING_OFF)];
     [_checkBoxButton setImage:[UIImage imageNamed:kCheckBoxImageName]
                      forState:UIControlStateNormal];
-    [_checkBoxButton setImage:[UIImage imageNamed:kCheckBoxCheckedImageName]
-                     forState:UIControlStateSelected];
+    UIImage* selectedImage = [[UIImage imageNamed:kCheckBoxCheckedImageName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [_checkBoxButton setImage:selectedImage forState:UIControlStateSelected];
+    _checkBoxButton.tintColor = [UIColor colorNamed:kTintColor];
   }
   return _checkBoxButton;
 }

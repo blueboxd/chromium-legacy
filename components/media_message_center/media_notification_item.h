@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -118,8 +119,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       observer_binding_{this};
 
-  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
-      artwork_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
+      artwork_observer_receiver_{this};
 
   base::WeakPtrFactory<MediaNotificationItem> weak_ptr_factory_{this};
 

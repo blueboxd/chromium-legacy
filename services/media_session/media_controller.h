@@ -45,7 +45,8 @@ class MediaController : public mojom::MediaController,
   void ObserveImages(mojom::MediaSessionImageType type,
                      int minimum_size_px,
                      int desired_size_px,
-                     mojom::MediaControllerImageObserverPtr observer) override;
+                     mojo::PendingRemote<mojom::MediaControllerImageObserver>
+                         observer) override;
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(

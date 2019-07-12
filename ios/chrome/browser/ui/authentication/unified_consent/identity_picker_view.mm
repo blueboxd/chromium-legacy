@@ -63,7 +63,9 @@ const CGFloat kArrowDownMargin = 12.;
     _arrowDownImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _arrowDownImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _arrowDownImageView.image =
-        [UIImage imageNamed:@"identity_picker_view_arrow_down"];
+        [[UIImage imageNamed:@"identity_picker_view_arrow_down"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _arrowDownImageView.tintColor = UIColor.cr_labelColor;
     [self addSubview:_arrowDownImageView];
 
     // Main view with avatar, name and email.

@@ -38,7 +38,6 @@
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "url/gurl.h"
 
 namespace blink {

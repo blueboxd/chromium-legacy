@@ -646,7 +646,7 @@ bool NewPasswordFormManager::ProvisionallySave(
     return is_submitted_;
 
   parsed_submitted_form_ = std::move(parsed_submitted_form);
-  parsed_submitted_form_->is_gaia_with_skip_save_password_form =
+  parsed_submitted_form_->form_data.is_gaia_with_skip_save_password_form =
       is_gaia_with_skip_save_password_form;
   submitted_form_ = submitted_form;
   is_submitted_ = true;

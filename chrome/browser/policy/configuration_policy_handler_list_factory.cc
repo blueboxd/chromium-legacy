@@ -1059,6 +1059,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     browser_switcher::prefs::kChromeParameters,
     base::Value::Type::LIST },
 #endif
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  { key::kBrowserGuestModeEnforced,
+    prefs::kBrowserGuestModeEnforced,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

@@ -118,14 +118,17 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   observer_binding_.Bind(mojo::MakeRequest(&media_controller_observer));
   media_controller_ptr_->AddObserver(std::move(media_controller_observer));
 
-  media_session::mojom::MediaControllerImageObserverPtr artwork_observer;
-  artwork_observer_binding_.Bind(mojo::MakeRequest(&artwork_observer));
+  mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
+      artwork_observer;
+  artwork_observer_receiver_.Bind(
+      artwork_observer.InitWithNewPipeAndPassReceiver());
   media_controller_ptr_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kArtwork,
       kMinimumArtworkSize, kDesiredArtworkSize, std::move(artwork_observer));
 
-  media_session::mojom::MediaControllerImageObserverPtr icon_observer;
-  icon_observer_binding_.Bind(mojo::MakeRequest(&icon_observer));
+  mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
+      icon_observer;
+  icon_observer_receiver_.Bind(icon_observer.InitWithNewPipeAndPassReceiver());
   media_controller_ptr_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kSourceIcon,
       kMinimumIconSize, kDesiredIconSize, std::move(icon_observer));

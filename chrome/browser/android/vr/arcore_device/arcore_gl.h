@@ -36,7 +36,7 @@ class GLSurface;
 }  // namespace gl
 
 namespace vr {
-class ArCoreSessionUtils;
+class ArCoreInstallUtils;
 class WebXrPresentationState;
 }  // namespace vr
 
@@ -63,7 +63,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   explicit ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport);
   ~ArCoreGl() override;
 
-  void Initialize(vr::ArCoreSessionUtils* session_utils,
+  void Initialize(vr::ArCoreInstallUtils* install_utils,
                   ArCoreFactory* arcore_factory,
                   gfx::AcceleratedWidget drawing_widget,
                   const gfx::Size& frame_size,

@@ -13588,21 +13588,14 @@ void V8TestObject::InstallFeatureName(
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
   static constexpr V8DOMConfiguration::AccessorConfiguration
-  koriginTrialEnabledLongAttributeConfigurations[] = {
-      { "originTrialEnabledLongAttribute", V8TestObject::OriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::OriginTrialEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
+  kAccessorConfigurations[] = {
+      { "originTrialEnabledLongAttribute", V8TestObject::OriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::OriginTrialEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "unscopableOriginTrialEnabledLongAttribute", V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
   };
-  for (const auto& config : koriginTrialEnabledLongAttributeConfigurations) {
-    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
-                                        interface, signature, config);
-  }
-  static constexpr V8DOMConfiguration::AccessorConfiguration
-  kunscopableOriginTrialEnabledLongAttributeConfigurations[] = {
-      { "unscopableOriginTrialEnabledLongAttribute", V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
-  };
-  for (const auto& config : kunscopableOriginTrialEnabledLongAttributeConfigurations) {
-    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
-                                        interface, signature, config);
-  }
+  V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
+                                       interface, signature,
+                                       kAccessorConfigurations,
+                                       base::size(kAccessorConfigurations));
   static constexpr V8DOMConfiguration::MethodConfiguration
   kOriginTrialEnabledVoidMethodConfigurations[] = {
       {"originTrialEnabledVoidMethod", V8TestObject::OriginTrialEnabledVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}

@@ -118,7 +118,7 @@ class UpdateService : public KeyedService,
   THREAD_CHECKER(thread_checker_);
 
   // used to create WeakPtrs to |this|.
-  base::WeakPtrFactory<UpdateService> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateService);
 };

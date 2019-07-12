@@ -4,9 +4,11 @@
 
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
 
+#include <string>
 #include <utility>
 
 #include "components/image_fetcher/core/image_decoder.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -16,6 +18,8 @@
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 #include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_builder.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
@@ -40,6 +44,14 @@
 namespace identity {
 
 namespace {
+
+std::unique_ptr<AccountTrackerService> BuildAccountTrackerService(
+    PrefService* pref_service,
+    base::FilePath profile_path) {
+  auto account_tracker_service = std::make_unique<AccountTrackerService>();
+  account_tracker_service->Initialize(pref_service, profile_path);
+  return account_tracker_service;
+}
 
 std::unique_ptr<PrimaryAccountManager> BuildPrimaryAccountManager(
     SigninClient* client,
@@ -93,10 +105,22 @@ IdentityManagerBuildParams::~IdentityManagerBuildParams() = default;
 std::unique_ptr<IdentityManager> BuildIdentityManager(
     IdentityManagerBuildParams* params) {
   std::unique_ptr<AccountTrackerService> account_tracker_service =
-      std::move(params->account_tracker_service);
+      BuildAccountTrackerService(params->pref_service, params->profile_path);
 
   std::unique_ptr<ProfileOAuth2TokenService> token_service =
-      std::move(params->token_service);
+      BuildProfileOAuth2TokenService(
+          params->pref_service, account_tracker_service.get(),
+          params->network_connection_tracker, params->account_consistency,
+#if defined(OS_CHROMEOS)
+          params->account_manager, params->is_regular_profile,
+#endif
+#if !defined(OS_ANDROID)
+          params->delete_signin_cookies_on_exit, params->token_web_data,
+#endif
+#if defined(OS_WIN)
+          params->reauth_callback,
+#endif
+          params->signin_client);
 
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
       token_service.get(), params->signin_client);

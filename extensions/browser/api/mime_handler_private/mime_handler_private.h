@@ -35,7 +35,7 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
   // A handle to the stream being handled by the MimeHandlerViewGuest.
   base::WeakPtr<StreamContainer> stream_;
 
-  base::WeakPtrFactory<MimeHandlerServiceImpl> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerServiceImpl> weak_factory_{this};
 };
 
 }  // namespace extensions

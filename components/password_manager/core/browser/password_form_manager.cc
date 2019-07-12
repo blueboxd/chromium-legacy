@@ -153,7 +153,7 @@ void PasswordFormManager::Init(
   metrics_recorder_->RecordFormSignature(observed_form_signature_);
 
   if (owned_form_fetcher_ &&
-      !observed_form_.is_gaia_with_skip_save_password_form) {
+      !observed_form_.form_data.is_gaia_with_skip_save_password_form) {
     owned_form_fetcher_->Fetch();
   }
   form_fetcher_->AddConsumer(this);

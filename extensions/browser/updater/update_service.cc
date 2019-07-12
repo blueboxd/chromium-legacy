@@ -194,9 +194,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
 UpdateService::UpdateService(
     content::BrowserContext* browser_context,
     scoped_refptr<update_client::UpdateClient> update_client)
-    : browser_context_(browser_context),
-      update_client_(update_client),
-      weak_ptr_factory_(this) {
+    : browser_context_(browser_context), update_client_(update_client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(update_client_);
   update_data_provider_ =

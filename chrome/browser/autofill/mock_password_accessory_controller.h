@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockPasswordAccessoryController : public PasswordAccessoryController {
@@ -26,7 +27,8 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::mojom::FillingStatus));
   MOCK_METHOD2(RefreshSuggestionsForField,
                void(autofill::mojom::FocusedFieldType, bool));
-  MOCK_METHOD1(OnGenerationRequested, void(bool));
+  MOCK_METHOD1(OnGenerationRequested,
+               void(autofill::password_generation::PasswordGenerationType));
   MOCK_METHOD0(DidNavigateMainFrame, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));

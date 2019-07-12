@@ -67,7 +67,7 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<ExtensionUserScriptLoader> weak_factory_;
+  base::WeakPtrFactory<ExtensionUserScriptLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUserScriptLoader);
 };

@@ -633,50 +633,17 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
       CommitData(span.data(), span.size());
   }
 
-  if (loading_mhtml_archive_) {
-    ArchiveResource* main_resource = nullptr;
-    if (!frame_->IsMainFrame()) {
-      // Only the top-frame can load MHTML.
-      frame_->Console().AddMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kError,
-          "Attempted to load a multipart archive into an subframe: " +
-              url_.GetString()));
-    } else {
-      archive_ = MHTMLArchive::Create(url_, data_buffer_);
-      archive_load_result_ = archive_->LoadResult();
-      if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
-        archive_.Clear();
-        // Log if attempting to load an invalid archive resource.
-        frame_->Console().AddMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kError,
-            "Malformed multipart archive: " + url_.GetString()));
-      } else {
-        main_resource = archive_->MainResource();
-      }
-    }
-    data_buffer_ = nullptr;
-    if (main_resource) {
-      // The origin is the MHTML file, we need to set the base URL to the
-      // document encoded in the MHTML so relative URLs are resolved properly.
-      CommitNavigation(main_resource->MimeType(), main_resource->Url());
-      // CommitNavigation runs unload listeners which can detach the frame.
-      if (!frame_)
-        return;
-      scoped_refptr<SharedBuffer> data(main_resource->Data());
-      for (const auto& span : *data)
-        CommitData(span.data(), span.size());
-    } else {
-      // Cannot parse mhtml archive - load empty document instead.
-      CommitNavigation(response_.MimeType());
-    }
+  if (loading_mhtml_archive_ && state_ < kCommitted) {
+    FinalizeMHTMLArchiveLoad();
   }
 
   // We should not call FinishedLoading before committing navigation,
-  // except for the mhtml case, which is forcefully committed above.
-  // In any way, by this point we should have already committed.
-  DCHECK_GE(state_, kCommitted);
+  // except for the mhtml case. When loading an MHTML archive, the whole archive
+  // has to be validated before committing the navigation. The validation
+  // process loads the entire body of the archive, which will move the state to
+  // FinishedLoading.
+  if (!loading_mhtml_archive_)
+    DCHECK_GE(state_, kCommitted);
 
   base::TimeTicks response_end_time = finish_time;
   if (response_end_time.is_null())
@@ -696,6 +663,29 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
       parser_.Clear();
     }
   }
+}
+
+void DocumentLoader::FinalizeMHTMLArchiveLoad() {
+  if (!frame_->IsMainFrame()) {
+    // Only the top-frame can load MHTML.
+    frame_->Console().AddMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
+        "Attempted to load a multipart archive into an subframe: " +
+            url_.GetString()));
+  } else {
+    archive_ = MHTMLArchive::Create(url_, data_buffer_);
+    archive_load_result_ = archive_->LoadResult();
+    if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
+      archive_.Clear();
+      // Log if attempting to load an invalid archive resource.
+      frame_->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError,
+          "Malformed multipart archive: " + url_.GetString()));
+    }
+  }
+  data_buffer_ = nullptr;
 }
 
 void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
@@ -824,8 +814,7 @@ void DocumentLoader::HandleResponse() {
     frame_->Owner()->RenderFallbackContent(frame_);
 }
 
-void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
-                                      const KURL& overriding_url) {
+void DocumentLoader::PrepareForNavigationCommit() {
   if (state_ != kProvisional)
     return;
 
@@ -839,10 +828,10 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   }
 
   DCHECK_EQ(state_, kProvisional);
-  GetFrameLoader().CommitProvisionalLoad();
-  if (!frame_)
-    return;
+}
 
+void DocumentLoader::FinishNavigationCommit(const AtomicString& mime_type,
+                                            const KURL& overriding_url) {
   const AtomicString& encoding = GetResponse().TextEncodingName();
 
   // Prepare a DocumentInit before clearing the frame, because it may need to
@@ -1115,16 +1104,10 @@ bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
   return SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(url.Protocol());
 }
 
-void DocumentLoader::LoadEmpty() {
+void DocumentLoader::InitializeEmptyResponse() {
   response_ = ResourceResponse(url_);
   response_.SetMimeType("text/html");
   response_.SetTextEncodingName("utf-8");
-  CommitNavigation(response_.MimeType());
-  // Committing can run unload handlers, which can detach this frame or
-  // stop this loader.
-  if (!frame_)
-    return;
-  FinishedLoading(clock_->NowTicks());
 }
 
 void DocumentLoader::StartLoading() {
@@ -1146,7 +1129,8 @@ void DocumentLoader::StartLoadingInternal() {
   }
 
   if (loading_url_as_empty_document_) {
-    LoadEmpty();
+    InitializeEmptyResponse();
+    PrepareForNavigationCommit();
     return;
   }
 
@@ -1248,11 +1232,14 @@ void DocumentLoader::StartLoadingInternal() {
     // from StartLoadingBody().
     body_loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
     if (body_loader_) {
-      // If we did not finish synchronously, load empty document instead.
-      FinishedLoading(clock_->NowTicks());
+      // Finalize the load of the MHTML archive. If the load fail (ie. did not
+      // finish synchronously), |body_loader_| will be null amd the load will
+      // not be finalized. When StartLoadingResponse is called later, an empty
+      // document will be loaded instead of the MHTML archive.
+      // TODO(clamy): Simplify this code path.
+      FinalizeMHTMLArchiveLoad();
     }
-    // FinishedLoading call above must commit navigation for mhtml archive.
-    CHECK_GE(state_, kCommitted);
+    PrepareForNavigationCommit();
     return;
   }
 
@@ -1261,8 +1248,35 @@ void DocumentLoader::StartLoadingInternal() {
   if (defers_loading_)
     body_loader_->SetDefersLoading(true);
 
-  CommitNavigation(response_.MimeType());
+  PrepareForNavigationCommit();
+}
+
+void DocumentLoader::StartLoadingResponse() {
+  if (!frame_)
+    return;
+
+  ArchiveResource* main_resource =
+      loading_mhtml_archive_ && archive_ ? archive_->MainResource() : nullptr;
+  if (main_resource)
+    FinishNavigationCommit(main_resource->MimeType(), main_resource->Url());
+  else
+    FinishNavigationCommit(response_.MimeType());
+
   CHECK_GE(state_, kCommitted);
+
+  // Finish load of MHTML archives and empty documents.
+  if (main_resource) {
+    scoped_refptr<SharedBuffer> data(main_resource->Data());
+    for (const auto& span : *data)
+      CommitData(span.data(), span.size());
+  }
+
+  if (loading_mhtml_archive_ || loading_url_as_empty_document_) {
+    // Finish the load of an empty document if the URL was meant to load as an
+    // empty document or the load of the MHTML archive failed.
+    FinishedLoading(CurrentTimeTicks());
+    return;
+  }
 
   // TODO(dgozman): why do we stop loading for media documents?
   // This seems like a hack.

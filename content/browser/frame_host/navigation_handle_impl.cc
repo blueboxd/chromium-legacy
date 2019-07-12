@@ -389,6 +389,11 @@ bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
              : false;
 }
 
+bool NavigationHandleImpl::HasPrefetchedAlternativeSubresourceSignedExchange() {
+  return !navigation_request_->commit_params()
+              .prefetched_signed_exchanges.empty();
+}
+
 bool NavigationHandleImpl::WasResponseCached() {
   return navigation_request_->response()
              ? navigation_request_->response()->head.was_fetched_via_cache

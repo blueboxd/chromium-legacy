@@ -20,7 +20,7 @@
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
@@ -119,7 +119,7 @@ ArCoreGl::~ArCoreGl() {
   CloseBindingsIfOpen();
 }
 
-void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
+void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
                           ArCoreFactory* arcore_factory,
                           gfx::AcceleratedWidget drawing_widget,
                           const gfx::Size& frame_size,
@@ -141,7 +141,7 @@ void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
 
   // Get the activity context.
   base::android::ScopedJavaLocalRef<jobject> application_context =
-      session_utils->GetApplicationContext();
+      install_utils->GetApplicationContext();
   if (!application_context.obj()) {
     DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
     std::move(callback).Run(false);

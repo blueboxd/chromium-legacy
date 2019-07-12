@@ -29,7 +29,7 @@ class IncludeNodeUnittest(unittest.TestCase):
     root.StartParsing(u'grit', None)
     root.HandleAttribute(u'latest_public_release', u'0')
     root.HandleAttribute(u'current_release', u'1')
-    root.HandleAttribute(u'base_dir', ur'..\resource')
+    root.HandleAttribute(u'base_dir', r'..\resource')
     release = misc.ReleaseNode()
     release.StartParsing(u'release', root)
     release.HandleAttribute(u'seq', u'1')
@@ -39,20 +39,20 @@ class IncludeNodeUnittest(unittest.TestCase):
     release.AddChild(includes)
     include_node = include.IncludeNode()
     include_node.StartParsing(u'include', includes)
-    include_node.HandleAttribute(u'file', ur'flugel\kugel.pdf')
+    include_node.HandleAttribute(u'file', r'flugel\kugel.pdf')
     includes.AddChild(include_node)
     root.EndParsing()
 
     self.assertEqual(root.ToRealPath(include_node.GetInputPath()),
                      util.normpath(
-                       os.path.join(ur'../resource', ur'flugel/kugel.pdf')))
+                       os.path.join(r'../resource', r'flugel/kugel.pdf')))
 
   def testGetPathNoBasedir(self):
     root = misc.GritNode()
     root.StartParsing(u'grit', None)
     root.HandleAttribute(u'latest_public_release', u'0')
     root.HandleAttribute(u'current_release', u'1')
-    root.HandleAttribute(u'base_dir', ur'..\resource')
+    root.HandleAttribute(u'base_dir', r'..\resource')
     release = misc.ReleaseNode()
     release.StartParsing(u'release', root)
     release.HandleAttribute(u'seq', u'1')
@@ -62,7 +62,7 @@ class IncludeNodeUnittest(unittest.TestCase):
     release.AddChild(includes)
     include_node = include.IncludeNode()
     include_node.StartParsing(u'include', includes)
-    include_node.HandleAttribute(u'file', ur'flugel\kugel.pdf')
+    include_node.HandleAttribute(u'file', r'flugel\kugel.pdf')
     include_node.HandleAttribute(u'use_base_dir', u'false')
     includes.AddChild(include_node)
     root.EndParsing()

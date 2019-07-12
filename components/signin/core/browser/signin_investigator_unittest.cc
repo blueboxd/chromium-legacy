@@ -116,14 +116,14 @@ TEST_F(SigninInvestigatorTest, EqualityDifferentEmailFallbackEmptyCurrentId) {
 
 TEST_F(SigninInvestigatorTest, InvestigateSameAccount) {
   AssertInvestigatedScenario(kSameEmail, kSameId,
-                             InvestigatedScenario::SAME_ACCOUNT);
+                             InvestigatedScenario::kSameAccount);
 }
 
-TEST_F(SigninInvestigatorTest, InvestigateUpgrade) {
-  AssertInvestigatedScenario("", "", InvestigatedScenario::UPGRADE_LOW_RISK);
+TEST_F(SigninInvestigatorTest, InvestigateFirstSignIn) {
+  AssertInvestigatedScenario("", "", InvestigatedScenario::kFirstSignIn);
 }
 
 TEST_F(SigninInvestigatorTest, InvestigateDifferentAccount) {
   AssertInvestigatedScenario(kDifferentEmail, kDifferentId,
-                             InvestigatedScenario::DIFFERENT_ACCOUNT);
+                             InvestigatedScenario::kDifferentAccount);
 }

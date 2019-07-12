@@ -102,6 +102,18 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (kDisallowedFeatures & rfh->scheduler_tracked_features())
     return false;
 
+  // Two pages in the same BrowsingInstance can script each other. When a page
+  // can be scripted from outside, it can't enter the BackForwardCache.
+  //
+  // The "RelatedActiveContentsCount" below is compared against 0, not 1. This
+  // is because the |rfh| is not a "current" RenderFrameHost anymore. It is not
+  // "active" itself.
+  //
+  // This check makes sure the old and new document aren't sharing the same
+  // BrowsingInstance.
+  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0)
+    return false;
+
   return true;
 }
 

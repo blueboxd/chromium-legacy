@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
@@ -87,9 +88,11 @@ SharingService::SharingService(
       chrome_browser_sharing::SharingMessage::kPingMessage,
       &ping_message_handler_);
 #if defined(OS_ANDROID)
-  fcm_handler_->AddSharingHandler(
-      chrome_browser_sharing::SharingMessage::kClickToCallMessage,
-      &click_to_call_message_handler_);
+  if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
+    fcm_handler_->AddSharingHandler(
+        chrome_browser_sharing::SharingMessage::kClickToCallMessage,
+        &click_to_call_message_handler_);
+  }
 #endif  // defined(OS_ANDROID)
 
   if (!sync_service_->HasObserver(this))

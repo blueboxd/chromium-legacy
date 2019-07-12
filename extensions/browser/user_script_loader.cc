@@ -164,8 +164,7 @@ UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
       ready_(false),
       queued_load_(false),
       browser_context_(browser_context),
-      host_id_(host_id),
-      weak_factory_(this) {
+      host_id_(host_id) {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());

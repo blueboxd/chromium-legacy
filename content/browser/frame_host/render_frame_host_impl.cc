@@ -174,6 +174,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/url_request_context.h"
@@ -6146,7 +6147,7 @@ void RenderFrameHostImpl::GetInterface(
 
 // This is a test-only interface, not exposed in production.
 void RenderFrameHostImpl::GetFrameHostTestInterface(
-    blink::mojom::FrameHostTestInterfaceRequest request) {
+    mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver) {
   class FrameHostTestInterfaceImpl
       : public blink::mojom::FrameHostTestInterface {
    public:
@@ -6156,8 +6157,8 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
     }
   };
 
-  mojo::MakeStrongBinding(std::make_unique<FrameHostTestInterfaceImpl>(),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FrameHostTestInterfaceImpl>(),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAudioContextManager(
@@ -6215,8 +6216,8 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
 }
 
 void RenderFrameHostImpl::RegisterAppCacheHost(
-    blink::mojom::AppCacheHostRequest host_request,
-    blink::mojom::AppCacheFrontendPtr frontend,
+    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id) {
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
@@ -6225,8 +6226,8 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
                      appcache_service_impl->AsWeakPtr(),
-                     std::move(host_request), frontend.PassInterface(), host_id,
-                     routing_id_, GetProcess()->GetID(),
+                     std::move(host_receiver), std::move(frontend_remote),
+                     host_id, routing_id_, GetProcess()->GetID(),
                      mojo::GetBadMessageCallback()));
 }
 

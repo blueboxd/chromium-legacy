@@ -42,8 +42,7 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor {
   // See the above variant for comments on common parameters.
   static std::unique_ptr<TestChromeBrowserState>
   CreateChromeBrowserStateForIdentityTestEnvironment(
-      TestChromeBrowserState::Builder& builder,
-      bool use_ios_token_service_delegate = false);
+      TestChromeBrowserState::Builder& builder);
 
   // Sets the testing factories that identity::IdentityTestEnvironment
   // requires explicitly on a Profile that is passed to it.
@@ -87,10 +86,8 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor {
   // FakeProfileOAuth2TokenService.
   static std::unique_ptr<KeyedService> BuildIdentityManagerForTests(
       web::BrowserState* browser_state);
-  static std::unique_ptr<KeyedService>
-  BuildIdentityManagerForTestWithIOSDelegate(web::BrowserState* browser_state);
   static TestChromeBrowserState::TestingFactories
-  GetIdentityTestEnvironmentFactories(bool use_ios_token_service_delegate);
+  GetIdentityTestEnvironmentFactories();
 
   identity::IdentityTestEnvironment identity_test_env_;
 

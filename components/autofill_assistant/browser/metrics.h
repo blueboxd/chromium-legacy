@@ -19,7 +19,7 @@ class Metrics {
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DropOutReason
   //
   // This enum is used in histograms, do not remove/renumber entries. Only add
-  // at the end and update kMaxValue. Also remember to update the
+  // at the end and update NUM_ENTRIES. Also remember to update the
   // AutofillAssistantDropOutReason enum listing in
   // tools/metrics/histograms/enums.xml.
   enum class DropOutReason {
@@ -45,7 +45,7 @@ class Metrics {
     NO_INITIAL_SCRIPTS = 19,
     DFM_INSTALL_FAILED = 20,
 
-    kMaxValue = DFM_INSTALL_FAILED
+    NUM_ENTRIES = 21
   };
 
   // The different ways that autofill assistant can stop.
@@ -55,7 +55,7 @@ class Metrics {
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OnBoarding
   //
   // This enum is used in histograms, do not remove/renumber entries. Only add
-  // at the end and update kMaxValue. Also remember to update the
+  // at the end and update NUM_ENTRIES. Also remember to update the
   // AutofillAssistantOnBoarding enum listing in
   // tools/metrics/histograms/enums.xml.
   enum class OnBoarding {
@@ -64,7 +64,7 @@ class Metrics {
     OB_ACCEPTED = 2,
     OB_CANCELLED = 3,
 
-    kMaxValue = OB_CANCELLED
+    NUM_ENTRIES = 4
   };
 
   // The different ways for payment request to succeed or fail, broken down by
@@ -72,7 +72,7 @@ class Metrics {
   // or not.
   //
   // This enum is used in histograms, do not remove/renumber entries. Only add
-  // at the end and update kMaxValue. Also remember to update the
+  // at the end and update NUM_ENTRIES. Also remember to update the
   // AutofillAssistantPaymentRequestPrefilled enum listing in
   // tools/metrics/histograms/enums.xml.
   enum class PaymentRequestPrefilled {
@@ -81,7 +81,7 @@ class Metrics {
     PREFILLED_FAILURE = 2,
     NOTPREFILLED_FAILURE = 3,
 
-    kMaxValue = NOTPREFILLED_FAILURE
+    NUM_ENTRIES = 4
   };
 
   static void RecordDropOut(DropOutReason reason);
@@ -161,6 +161,9 @@ class Metrics {
       case DropOutReason::DFM_INSTALL_FAILED:
         out << "DFM_INSTALL_FAILED";
         break;
+      case DropOutReason::NUM_ENTRIES:
+        out << "NUM_ENTRIES";
+        break;
 
         // Intentionally no default case to make compilation fail
         // if a new value was added to the enum but not to this list.
@@ -189,6 +192,9 @@ class Metrics {
         break;
       case OnBoarding::OB_CANCELLED:
         out << "OB_CANCELLED";
+        break;
+      case OnBoarding::NUM_ENTRIES:
+        out << "NUM_ENTRIES";
         break;
     }
     return out;

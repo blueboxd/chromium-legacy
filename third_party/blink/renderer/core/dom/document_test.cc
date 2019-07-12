@@ -865,8 +865,8 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   EXPECT_TRUE(mock_client->show_validation_message_was_called);
   mock_client->Reset();
 
-  // prepareForCommit() unloads the document, and shutdown.
-  GetDocument().GetFrame()->PrepareForCommit();
+  // DetachDocument() unloads the document, and shutdowns.
+  GetDocument().GetFrame()->DetachDocument();
   EXPECT_TRUE(mock_client->document_detached_was_called);
   // Unload handler tried to show a validation message, but it should fail.
   EXPECT_FALSE(mock_client->show_validation_message_was_called);

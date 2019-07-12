@@ -395,7 +395,7 @@ class EventRouter : public KeyedService,
 
   EventAckData event_ack_data_;
 
-  base::WeakPtrFactory<EventRouter> weak_factory_;
+  base::WeakPtrFactory<EventRouter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };

@@ -85,18 +85,25 @@ class PasswordGenerationController {
 
   // Called by the UI code to signal that the user requested password
   // generation. This should prompt a modal dialog with the generated password.
-  // |manual| - whether the requests originates from a an automatic
+  // |type| - whether the requests originates from a an automatic
   // generation flow or from a manual one.
-  virtual void OnGenerationRequested(bool manual) = 0;
+  virtual void OnGenerationRequested(
+      autofill::password_generation::PasswordGenerationType type) = 0;
 
   // Called from the modal dialog if the user accepted the generated password.
   // |driver| is used to communicate the message back to the renderer.
+  // |type| what type of generation led to the accepted password
+  // (automatic or manual).
   virtual void GeneratedPasswordAccepted(
       const base::string16& password,
-      base::WeakPtr<password_manager::PasswordManagerDriver> driver) = 0;
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver,
+      autofill::password_generation::PasswordGenerationType type) = 0;
 
   // Called from the modal dialog if the user rejected the generated password.
-  virtual void GeneratedPasswordRejected() = 0;
+  // |type| what type of generation led to the rejected password
+  // (automatic or manual).
+  virtual void GeneratedPasswordRejected(
+      autofill::password_generation::PasswordGenerationType type) = 0;
 
   // -----------------
   // Member accessors:

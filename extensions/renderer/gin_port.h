@@ -154,7 +154,7 @@ class GinPort final : public gin::Wrappable<GinPort> {
   base::Optional<binding::ContextInvalidationListener>
       context_invalidation_listener_;
 
-  base::WeakPtrFactory<GinPort> weak_factory_;
+  base::WeakPtrFactory<GinPort> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GinPort);
 };

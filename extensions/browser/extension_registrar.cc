@@ -39,8 +39,8 @@ ExtensionRegistrar::ExtensionRegistrar(content::BrowserContext* browser_context,
       extension_prefs_(ExtensionPrefs::Get(browser_context)),
       registry_(ExtensionRegistry::Get(browser_context)),
       renderer_helper_(
-          RendererStartupHelperFactory::GetForBrowserContext(browser_context)),
-      weak_factory_(this) {}
+          RendererStartupHelperFactory::GetForBrowserContext(browser_context)) {
+}
 
 ExtensionRegistrar::~ExtensionRegistrar() = default;
 

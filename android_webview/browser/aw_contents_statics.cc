@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -65,7 +65,7 @@ JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(JNIEnv* env) {
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
   std::string locale =
-      AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager()->app_locale();
+      AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager()->app_locale();
   privacy_policy_url =
       google_util::AppendGoogleLocaleParam(privacy_policy_url, locale);
   return base::android::ConvertUTF8ToJavaString(env, privacy_policy_url.spec());
@@ -105,7 +105,7 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
   std::vector<std::string> rules;
   base::android::AppendJavaStringArrayToStringVector(env, jrules, &rules);
   AwSafeBrowsingWhitelistManager* whitelist_manager =
-      AwBrowserContext::GetDefault()->GetSafeBrowsingWhitelistManager();
+      AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager();
   whitelist_manager->SetWhitelistOnUIThread(
       std::move(rules),
       base::BindOnce(&SafeBrowsingWhitelistAssigned,

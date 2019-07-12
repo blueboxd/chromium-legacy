@@ -22,7 +22,6 @@
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_result_promise_helper.h"
 #include "media/blink/cdm_session_adapter.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -30,6 +29,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 
 namespace media {
 

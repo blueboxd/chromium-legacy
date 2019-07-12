@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -39,6 +40,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -348,6 +353,7 @@ class AppCacheStorageImplTest : public testing::Test {
     mock_quota_manager_proxy_ = nullptr;
     delegate_.reset();
     service_.reset();
+    host_remote_.reset();
     FlushTasks(db_runner.get());
     FlushTasks(background_thread->task_runner().get());
     FlushTasks(db_runner.get());
@@ -1690,7 +1696,7 @@ class AppCacheStorageImplTest : public testing::Test {
       // eventually fail when it gets to disk cache initialization.
       host1_id_ = base::UnguessableToken::Create();
       service_->RegisterHostForFrame(
-          blink::mojom::AppCacheHostRequest(), BindFrontend(), host1_id_,
+          host_remote_.BindNewPipeAndPassReceiver(), BindFrontend(), host1_id_,
           kMockRenderFrameId, kMockProcessId, GetBadMessageCallback());
       AppCacheHost* host1 = service_->GetHost(host1_id_);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
@@ -1704,7 +1710,7 @@ class AppCacheStorageImplTest : public testing::Test {
       // cache initialization.
       host2_id_ = base::UnguessableToken::Create();
       service_->RegisterHostForFrame(
-          blink::mojom::AppCacheHostRequest(), BindFrontend(), host2_id_,
+          host_remote_.BindNewPipeAndPassReceiver(), BindFrontend(), host2_id_,
           kMockRenderFrameId, kMockProcessId, GetBadMessageCallback());
       AppCacheHost* host2 = service_->GetHost(host2_id_);
       network::ResourceRequest request;
@@ -1770,9 +1776,10 @@ class AppCacheStorageImplTest : public testing::Test {
 
   MockStorageDelegate* delegate() { return delegate_.get(); }
 
-  blink::mojom::AppCacheFrontendPtrInfo BindFrontend() {
-    blink::mojom::AppCacheFrontendPtrInfo result;
-    frontend_bindings_.AddBinding(&frontend_, mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> BindFrontend() {
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> result;
+    frontend_receivers_.Add(&frontend_,
+                            result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 
@@ -1838,13 +1845,14 @@ class AppCacheStorageImplTest : public testing::Test {
 
   base::UnguessableToken host1_id_;
   base::UnguessableToken host2_id_;
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
 
   // Specifically for the Reinitalize test.
   base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir temp_directory_;
   std::unique_ptr<MockServiceObserver> observer_;
   MockAppCacheFrontend frontend_;
-  mojo::BindingSet<blink::mojom::AppCacheFrontend> frontend_bindings_;
+  mojo::ReceiverSet<blink::mojom::AppCacheFrontend> frontend_receivers_;
   std::unique_ptr<AppCacheRequestHandler> handler_;
   network::TestURLLoaderFactory mock_url_loader_factory_;
 

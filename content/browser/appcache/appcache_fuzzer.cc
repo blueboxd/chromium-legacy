@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/icu_util.h"
+#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -17,6 +18,8 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -149,11 +152,11 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   auto dispatch_context =
       std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
-  blink::mojom::AppCacheBackendPtr host;
-  SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
-                                                 mojo::MakeRequest(&host));
+  mojo::Remote<blink::mojom::AppCacheBackend> host;
+  SingletonEnv().appcache_service->CreateBackend(
+      /*process_id=*/1, host.BindNewPipeAndPassReceiver());
 
-  std::map<int, blink::mojom::AppCacheHostPtr> registered_hosts;
+  std::map<int, mojo::Remote<blink::mojom::AppCacheHost>> registered_hosts;
   std::map<int, base::UnguessableToken> registered_host_ids_;
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
@@ -162,10 +165,11 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         auto& host_id_token = registered_host_ids_[host_id];
         if (host_id_token.is_empty())
           host_id_token = base::UnguessableToken::Create();
-        blink::mojom::AppCacheFrontendPtr frontend;
-        mojo::MakeRequest(&frontend);
-        host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
-                           std::move(frontend), host_id_token);
+        mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend;
+        ignore_result(frontend.InitWithNewPipeAndPassReceiver());
+        host->RegisterHost(
+            registered_hosts[host_id].BindNewPipeAndPassReceiver(),
+            std::move(frontend), host_id_token);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {

@@ -219,7 +219,9 @@ void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
     return;
   }
   if (!result.value()) {
-    context.callback.Run(PREPARE_KEY_RESET_REQUIRED);
+    cryptohome_client_->TpmIsEnabled(
+        base::BindOnce(&EPKPChallengeKeyBase::PrepareKeyErrorHandlerCallback,
+                       base::Unretained(this), context));
     return;
   }
   // Attestation is available, see if the key we need already exists.
@@ -229,6 +231,21 @@ void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
       context.key_name,
       base::BindOnce(&EPKPChallengeKeyBase::DoesKeyExistCallback,
                      base::Unretained(this), context));
+}
+
+void EPKPChallengeKeyBase::PrepareKeyErrorHandlerCallback(
+    const PrepareKeyContext& context,
+    base::Optional<bool> is_tpm_enabled) {
+  if (!is_tpm_enabled.has_value()) {
+    context.callback.Run(PREPARE_KEY_DBUS_ERROR);
+    return;
+  }
+
+  if (is_tpm_enabled.value()) {
+    context.callback.Run(PREPARE_KEY_RESET_REQUIRED);
+  } else {
+    context.callback.Run(PREPARE_KEY_ATTESTATION_UNSUPPORTED);
+  }
 }
 
 void EPKPChallengeKeyBase::DoesKeyExistCallback(

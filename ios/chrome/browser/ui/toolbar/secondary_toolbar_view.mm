@@ -31,9 +31,6 @@ const CGFloat kToolsMenuOffset = -7;
 // Redefined as readwrite
 @property(nonatomic, strong, readwrite) NSArray<ToolbarButton*>* allButtons;
 
-// The blur visual effect view, redefined as readwrite.
-@property(nonatomic, strong, readwrite) UIView* blur;
-
 // Separator above the toolbar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* separator;
 
@@ -63,7 +60,6 @@ const CGFloat kToolsMenuOffset = -7;
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize searchButton = _searchButton;
 @synthesize tabGridButton = _tabGridButton;
-@synthesize blur = _blur;
 
 #pragma mark - Public
 
@@ -106,30 +102,10 @@ const CGFloat kToolsMenuOffset = -7;
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
-  UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
-  if (blurEffect) {
-    self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  } else {
-    self.blur = [[UIView alloc] init];
-  }
-  self.blur.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.blurBackgroundColor;
-  [self addSubview:self.blur];
-  self.blur.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.blur, self);
+  self.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
 
   UIView* contentView = self;
-  UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
-      vibrancyEffectForBlurEffect:blurEffect];
-  if (vibrancy && IconForSearchButton() != ToolbarSearchButtonIconColorful) {
-    // Add vibrancy only if we have a vibrancy effect.
-    UIVisualEffectView* vibrancyView =
-        [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-    [self addSubview:vibrancyView];
-    vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameConstraints(self, vibrancyView);
-    contentView = vibrancyView.contentView;
-  }
 
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];

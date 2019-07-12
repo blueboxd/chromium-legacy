@@ -393,7 +393,7 @@ class ProcessManager : public KeyedService,
   std::map<int, std::set<ExtensionId>> worker_process_to_extension_ids_;
 
   // Must be last member, see doc on WeakPtrFactory.
-  base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ProcessManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManager);
 };

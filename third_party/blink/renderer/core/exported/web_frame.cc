@@ -40,7 +40,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   // wasn't detached before continuing with the swap.
   // FIXME: There is no unit test for this condition, so one needs to be
   // written.
-  if (!old_frame->PrepareForCommit()) {
+  if (!old_frame->DetachDocument()) {
     // If the Swap() fails, it should be because the frame has been detached
     // already. Otherwise the caller will not detach the frame when we return
     // false, and the browser and renderer will disagree about the destruction

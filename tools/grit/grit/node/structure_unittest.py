@@ -82,11 +82,11 @@ class StructureUnittest(unittest.TestCase):
     node, = grd.GetChildrenOfType(structure.StructureNode)
     self.assertEqual(grd.ToRealPath(node.GetInputPath()),
                      os.path.abspath(os.path.join(
-                         base_dir, ur'structure_variables.html')))
+                         base_dir, r'structure_variables.html')))
 
   def testGetPathNoBasedir(self):
     base_dir = util.PathFromRoot('grit/testdata')
-    abs_path = os.path.join(base_dir, ur'structure_variables.html')
+    abs_path = os.path.join(base_dir, r'structure_variables.html')
     rel_path = os.path.relpath(abs_path, os.getcwd())
     grd = util.ParseGrdForUnittest('''
         <structures>
@@ -97,7 +97,7 @@ class StructureUnittest(unittest.TestCase):
     node, = grd.GetChildrenOfType(structure.StructureNode)
     self.assertEqual(grd.ToRealPath(node.GetInputPath()),
                      os.path.abspath(os.path.join(
-                         base_dir, ur'structure_variables.html')))
+                         base_dir, r'structure_variables.html')))
 
   def testCompressGzip(self):
     test_data_root = util.PathFromRoot('grit/testdata')

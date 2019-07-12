@@ -14,12 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_builder.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
@@ -44,17 +41,6 @@
 #include "base/bind.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #endif
-
-namespace {
-
-std::unique_ptr<AccountTrackerService> BuildAccountTrackerService(
-    Profile* profile) {
-  auto account_tracker_service = std::make_unique<AccountTrackerService>();
-  account_tracker_service->Initialize(profile->GetPrefs(), profile->GetPath());
-  return account_tracker_service;
-}
-
-}  // namespace
 
 void IdentityManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -117,11 +103,11 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   identity::IdentityManagerBuildParams params;
   params.account_consistency =
       AccountConsistencyModeManager::GetMethodForProfile(profile),
-  params.account_tracker_service = BuildAccountTrackerService(profile);
   params.image_decoder = std::make_unique<ImageDecoderImpl>();
   params.local_state = g_browser_process->local_state();
   params.network_connection_tracker = content::GetNetworkConnectionTracker();
   params.pref_service = profile->GetPrefs();
+  params.profile_path = profile->GetPath();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
 
 #if !defined(OS_ANDROID)
@@ -148,20 +134,6 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
                           base::Unretained(profile));
 #endif
-
-  params.token_service = ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
-      context, params.pref_service, params.account_tracker_service.get(),
-      params.network_connection_tracker, params.account_consistency,
-#if defined(OS_CHROMEOS)
-      params.account_manager, params.is_regular_profile,
-#endif
-#if !defined(OS_ANDROID)
-      params.delete_signin_cookies_on_exit, params.token_web_data,
-#endif
-#if defined(OS_WIN)
-      params.reauth_callback,
-#endif
-      params.signin_client);
 
   std::unique_ptr<identity::IdentityManager> identity_manager =
       identity::BuildIdentityManager(&params);

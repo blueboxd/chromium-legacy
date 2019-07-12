@@ -210,8 +210,7 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     : UserScriptLoader(browser_context, host_id),
       content_verifier_(
           ExtensionSystem::Get(browser_context)->content_verifier()),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+      extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(browser_context)

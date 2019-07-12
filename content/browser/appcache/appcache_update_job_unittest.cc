@@ -33,7 +33,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -765,8 +765,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     MockFrontend mock_frontend;
     AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                      /*process_id=*/1, /*render_frame_id=*/1, nullptr,
-                      service_.get());
+                      /*process_id=*/1, /*render_frame_id=*/1,
+                      mojo::NullRemote(), service_.get());
     host.set_frontend_for_testing(&mock_frontend);
 
     update->StartUpdate(&host, GURL());
@@ -808,26 +808,26 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       MockFrontend mock_frontend4;
 
       AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/1, /*render_frame_id=*/1, nullptr,
-                         service_.get());
+                         /*process_id=*/1, /*render_frame_id=*/1,
+                         mojo::NullRemote(), service_.get());
       host1.set_frontend_for_testing(&mock_frontend1);
       host1.AssociateCompleteCache(cache1);
 
       AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/2, /*render_frame_id=*/2, nullptr,
-                         service_.get());
+                         /*process_id=*/2, /*render_frame_id=*/2,
+                         mojo::NullRemote(), service_.get());
       host2.set_frontend_for_testing(&mock_frontend2);
       host2.AssociateCompleteCache(cache2);
 
       AppCacheHost host3(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/3, /*render_frame_id=*/3, nullptr,
-                         service_.get());
+                         /*process_id=*/3, /*render_frame_id=*/3,
+                         mojo::NullRemote(), service_.get());
       host3.set_frontend_for_testing(&mock_frontend3);
       host3.AssociateCompleteCache(cache1);
 
       AppCacheHost host4(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/4, /*render_frame_id=*/4, nullptr,
-                         service_.get());
+                         /*process_id=*/4, /*render_frame_id=*/4,
+                         mojo::NullRemote(), service_.get());
       host4.set_frontend_for_testing(&mock_frontend4);
 
       AppCacheUpdateJob* update =
@@ -3085,8 +3085,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     MockFrontend mock_frontend;
     AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                      /*process_id=*/1, /*render_frame_id=*/1, nullptr,
-                      service_.get());
+                      /*process_id=*/1, /*render_frame_id=*/1,
+                      mojo::NullRemote(), service_.get());
     host.set_frontend_for_testing(&mock_frontend);
     update->StartUpdate(&host, GURL());
 
@@ -3521,7 +3521,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     constexpr int kRenderFrameIdForTests = 456;
     hosts_.push_back(std::make_unique<AppCacheHost>(
         base::UnguessableToken::Create(), process_id_, kRenderFrameIdForTests,
-        nullptr, service_.get()));
+        mojo::NullRemote(), service_.get()));
     hosts_.back()->set_frontend_for_testing(frontend);
     return hosts_.back().get();
   }
@@ -3891,7 +3891,8 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
 
   MockFrontend mock_frontend;
   AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                    /*process_id=*/1, /*render_frame_id=*/1, nullptr, &service);
+                    /*process_id=*/1, /*render_frame_id=*/1, mojo::NullRemote(),
+                    &service);
   host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 
@@ -3918,7 +3919,8 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
 
   MockFrontend mock_frontend;
   AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                    /*process_id=*/1, /*render_frame_id=*/1, nullptr, &service);
+                    /*process_id=*/1, /*render_frame_id=*/1, mojo::NullRemote(),
+                    &service);
   host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 

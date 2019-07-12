@@ -83,9 +83,9 @@ static_library("vr_android") {
       "arcore_device/arcore_gl_thread.h",
       "arcore_device/arcore_impl.cc",
       "arcore_device/arcore_impl.h",
+      "arcore_device/arcore_install_utils.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
-      "arcore_device/arcore_session_utils.h",
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
       "arcore_device/type_converters.cc",
@@ -222,7 +222,6 @@ android_library("ar_java") {
 if (enable_arcore) {
   generate_jni("ar_jni_headers") {
     sources = [
-      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreInstallUtils.java",
       "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
     ]
   }

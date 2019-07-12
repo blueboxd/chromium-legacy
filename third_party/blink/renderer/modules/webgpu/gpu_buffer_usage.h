@@ -17,8 +17,8 @@ class GPUBufferUsage : public ScriptWrappable {
   static constexpr uint32_t kNone = 0;
   static constexpr uint32_t kMapRead = 1;
   static constexpr uint32_t kMapWrite = 2;
-  static constexpr uint32_t kTransferSrc = 4;
-  static constexpr uint32_t kTransferDst = 8;
+  static constexpr uint32_t kCopySrc = 4;
+  static constexpr uint32_t kCopyDst = 8;
   static constexpr uint32_t kIndex = 16;
   static constexpr uint32_t kVertex = 32;
   static constexpr uint32_t kUniform = 64;

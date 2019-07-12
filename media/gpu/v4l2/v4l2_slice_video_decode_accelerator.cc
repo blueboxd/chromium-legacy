@@ -508,6 +508,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK_GT(num_pictures, 0u);
   DCHECK(!pic_size.IsEmpty());
 
+  // Since VdaVideoDeecoder doesn't allocate PictureBuffer with size adjusted by
+  // itself, we have to adjust here.
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -1320,6 +1322,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     const std::vector<PictureBuffer>& buffers) {
   VLOGF(2);
+  DCHECK(!output_streamon_);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kAwaitingPictureBuffers);
   TRACE_EVENT1("media,gpu", "V4L2SVDA::AssignPictureBuffersTask",
@@ -1336,6 +1339,41 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
              << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
+  }
+
+  // If a client allocate a different frame size, S_FMT should be called with
+  // the size.
+  if (coded_size_ != buffers[0].size()) {
+    const auto& new_frame_size = buffers[0].size();
+    v4l2_format format = {};
+    format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    format.fmt.pix_mp.width = new_frame_size.width();
+    format.fmt.pix_mp.height = new_frame_size.height();
+    format.fmt.pix_mp.pixelformat = output_format_fourcc_;
+    format.fmt.pix_mp.num_planes = output_planes_count_;
+    if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+      VPLOGF(1) << "Failed with frame size adjusted by client: "
+                << new_frame_size.ToString();
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
+    }
+
+    coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+    // If size specified by ProvidePictureBuffers() is adjusted by the client,
+    // the size must not be adjusted by a v4l2 driver again.
+    if (coded_size_ != new_frame_size) {
+      VLOGF(1) << "The size of PictureBuffer is invalid."
+               << " size adjusted by the client = " << new_frame_size.ToString()
+               << " size adjusted by a driver = " << coded_size_.ToString();
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+
+    if (!gfx::Rect(coded_size_).Contains(gfx::Rect(decoder_->GetPicSize()))) {
+      VLOGF(1) << "Got invalid adjusted coded size: " << coded_size_.ToString();
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
   }
 
   // Allocate the output buffers.
@@ -1358,8 +1396,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(output_buffer_map_.empty());
   output_buffer_map_.resize(buffers.size());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
-    DCHECK(buffers[i].size() == coded_size_);
-
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
     DCHECK(!output_record.at_client);

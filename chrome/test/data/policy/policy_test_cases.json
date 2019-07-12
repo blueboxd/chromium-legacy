@@ -2443,6 +2443,16 @@
     ]
   },
 
+  "BrowserGuestModeEnforced": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserGuestModeEnforced": true },
+    "pref_mappings": [
+      { "pref": "profile.browser_guest_enforced",
+        "local_state": true
+      }
+    ]
+  },
+
   "BrowserAddPersonEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "BrowserAddPersonEnabled": true },

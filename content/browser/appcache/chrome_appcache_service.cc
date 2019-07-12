@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/chrome_appcache_service.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +48,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
 
 void ChromeAppCacheService::CreateBackend(
     int process_id,
-    blink::mojom::AppCacheBackendRequest request) {
+    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
   // The process_id is the id of the RenderProcessHost, which can be reused for
   // a new renderer process if the previous renderer process was shutdown.
   // It can take some time after shutdown for the pipe error to propagate
@@ -56,35 +58,42 @@ void ChromeAppCacheService::CreateBackend(
   Unbind(process_id);
 
   Bind(std::make_unique<AppCacheBackendImpl>(this, process_id),
-       std::move(request), process_id);
+       std::move(receiver), process_id);
+}
+
+void ChromeAppCacheService::CreateBackendForRequest(
+    int process_id,
+    blink::mojom::AppCacheBackendRequest request) {
+  // Implicit conversion to mojo::PendingReceiver<T>.
+  CreateBackend(process_id, std::move(request));
 }
 
 void ChromeAppCacheService::Bind(
     std::unique_ptr<blink::mojom::AppCacheBackend> backend,
-    blink::mojom::AppCacheBackendRequest request,
+    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver,
     int process_id) {
-  DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
-  process_bindings_[process_id] =
-      bindings_.AddBinding(std::move(backend), std::move(request));
+  DCHECK(process_receivers_.find(process_id) == process_receivers_.end());
+  process_receivers_[process_id] =
+      receivers_.Add(std::move(backend), std::move(receiver));
 }
 
 void ChromeAppCacheService::Unbind(int process_id) {
-  auto it = process_bindings_.find(process_id);
-  if (it != process_bindings_.end()) {
-    bindings_.RemoveBinding(it->second);
-    DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
+  auto it = process_receivers_.find(process_id);
+  if (it != process_receivers_.end()) {
+    receivers_.Remove(it->second);
+    DCHECK(process_receivers_.find(process_id) == process_receivers_.end());
   }
 }
 
 void ChromeAppCacheService::UnregisterBackend(
     AppCacheBackendImpl* backend_impl) {
   int process_id = backend_impl->process_id();
-  process_bindings_.erase(process_bindings_.find(process_id));
+  process_receivers_.erase(process_receivers_.find(process_id));
   AppCacheServiceImpl::UnregisterBackend(backend_impl);
 }
 
 void ChromeAppCacheService::Shutdown() {
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,

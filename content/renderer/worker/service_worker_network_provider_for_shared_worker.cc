@@ -10,11 +10,8 @@
 #include "content/public/common/origin_util.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/loader/web_url_loader_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
@@ -23,7 +20,6 @@ namespace content {
 std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker>
 ServiceWorkerNetworkProviderForSharedWorker::Create(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
-    network::mojom::URLLoaderFactoryPtr script_loader_factory,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
     bool is_secure_context,
@@ -36,9 +32,6 @@ ServiceWorkerNetworkProviderForSharedWorker::Create(
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
       std::move(controller_info), std::move(fallback_loader_factory));
-  if (script_loader_factory)
-    provider->script_loader_factory_ = std::move(script_loader_factory);
-
   return provider;
 }
 
@@ -72,22 +65,6 @@ ServiceWorkerNetworkProviderForSharedWorker::CreateURLLoader(
     // think it's a real frame. Just return nullptr to use the default loader
     // instead of the script loader.
     return nullptr;
-  }
-
-  // If the |script_loader_factory_| exists, use it.
-  if (script_loader_factory_) {
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (!render_thread) {
-      // RenderThreadImpl is nullptr in some tests.
-      return nullptr;
-    }
-
-    // TODO(crbug.com/796425): Temporarily wrap the raw
-    // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
-    return std::make_unique<WebURLLoaderImpl>(
-        render_thread->resource_dispatcher(), std::move(task_runner_handle),
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            script_loader_factory_.get()));
   }
 
   // Otherwise go to default resource loading.

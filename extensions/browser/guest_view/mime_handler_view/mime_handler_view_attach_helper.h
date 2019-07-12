@@ -102,7 +102,7 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
 
   content::RenderProcessHost* const render_process_host_;
 
-  base::WeakPtrFactory<MimeHandlerViewAttachHelper> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewAttachHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewAttachHelper);
 };

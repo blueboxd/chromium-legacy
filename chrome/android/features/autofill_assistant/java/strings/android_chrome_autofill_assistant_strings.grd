@@ -133,9 +133,6 @@
       <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_PRIVACY_NOTICE" desc="Privacy notice telling users that autofill assistant will send personal data to a third party’s website.">
         Chrome will send personal data you selected to <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown.">
-        Google Assistant in Chrome first run screen is shown
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP"
                desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action."
                internal_comment="TODO(wnwen): Remove duplication in components/autofill_assistant_strings.grdp">

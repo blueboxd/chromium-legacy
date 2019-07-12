@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "ui/views/view.h"
 
@@ -81,12 +82,12 @@ class ASH_EXPORT LockScreenMediaControlsView
       observer_binding_{this};
 
   // Used to receive updates to the active media's icon.
-  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
-      icon_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
+      icon_observer_receiver_{this};
 
   // Used to receive updates to the active media's artwork.
-  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
-      artwork_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
+      artwork_observer_receiver_{this};
 
   // The info about the current media session. It will be null if there is not
   // a current session.

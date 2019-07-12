@@ -250,11 +250,8 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 void AccountReconcilor::EnableReconcile() {
   SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
   RegisterWithAllDependencies();
-#if !defined(OS_IOS)
-  // TODO(droger): Investigate why this breaks tests on iOS.
   if (IsIdentityManagerReady())
     StartReconcile();
-#endif  // !defined(OS_IOS)
 }
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {

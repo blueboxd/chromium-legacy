@@ -129,7 +129,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   int next_resource_id_ = 0;
   ResourceIdToDeviceInfoMap devices_;
   DeviceIdToResourceIdMap resource_ids_;
-  base::WeakPtrFactory<HidDeviceManager> weak_factory_;
+  base::WeakPtrFactory<HidDeviceManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceManager);
 };

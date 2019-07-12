@@ -61,8 +61,7 @@ ShellExtensionLoader::ShellExtensionLoader(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       extension_registrar_(browser_context, this),
-      keep_alive_requester_(browser_context),
-      weak_factory_(this) {}
+      keep_alive_requester_(browser_context) {}
 
 ShellExtensionLoader::~ShellExtensionLoader() = default;
 

@@ -69,7 +69,8 @@ interface AppCacheBackend {
   // workers.
   // TODO(mek): Once it has 'WebContextInterfaceBroker' for workers, move this
   // to the implementation of 'WebContextInterfaceBroker'. crbug.com/718652
-  RegisterHost(AppCacheHost& host_request, AppCacheFrontend frontend,
+  RegisterHost(pending_receiver<AppCacheHost> host_receiver,
+               pending_remote<AppCacheFrontend> frontend,
                mojo_base.mojom.UnguessableToken host_id);
 };
 
@@ -144,4 +145,3 @@ interface AppCacheFrontend {
   // used for subresources.
   SetSubresourceFactory(network.mojom.URLLoaderFactory url_loader_factory);
 };
-

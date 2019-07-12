@@ -22,7 +22,7 @@ from grit.tool import interface
 
 # Used to collapse presentable content to determine if
 # xml:space="preserve" is needed.
-_WHITESPACES_REGEX = lazy_re.compile(ur'\s\s*')
+_WHITESPACES_REGEX = lazy_re.compile(r'\s\s*')
 
 
 # See XmlEscape below.

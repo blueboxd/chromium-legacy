@@ -9,9 +9,9 @@
 namespace blink {
 
 void FrameHostTestInterfaceImpl::BindAndFlush(
-    mojom::blink::FrameHostTestInterfaceRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.WaitForIncomingMethodCall();
+    mojo::PendingReceiver<mojom::blink::FrameHostTestInterface> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.WaitForIncomingCall();
 }
 
 void FrameHostTestInterfaceImpl::GetName(GetNameCallback callback) {
@@ -19,9 +19,9 @@ void FrameHostTestInterfaceImpl::GetName(GetNameCallback callback) {
 }
 
 void FrameHostTestDocumentInterfaceBroker::GetFrameHostTestInterface(
-    mojom::blink::FrameHostTestInterfaceRequest request) {
+    mojo::PendingReceiver<mojom::blink::FrameHostTestInterface> receiver) {
   FrameHostTestInterfaceImpl impl;
-  impl.BindAndFlush(std::move(request));
+  impl.BindAndFlush(std::move(receiver));
 }
 
 }  // namespace blink

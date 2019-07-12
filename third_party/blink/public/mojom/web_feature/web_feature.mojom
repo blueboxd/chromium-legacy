@@ -2341,6 +2341,7 @@ enum WebFeature {
   kDiscardInputEventToMovingIframe = 2952,
   kSignedExchangeSubresourcePrefetch = 2953,
   kBasicCardType = 2954,
+  kExecutedJavaScriptURL = 2955,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

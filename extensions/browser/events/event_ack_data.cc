@@ -90,8 +90,7 @@ void EventAckData::FinishExternalRequestOnIO(
 }
 
 EventAckData::EventAckData()
-    : unacked_events_(base::MakeRefCounted<IOEventInfo>()),
-      weak_factory_(this) {}
+    : unacked_events_(base::MakeRefCounted<IOEventInfo>()) {}
 EventAckData::~EventAckData() = default;
 
 void EventAckData::IncrementInflightEvent(

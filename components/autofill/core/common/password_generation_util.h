@@ -79,6 +79,13 @@ enum PasswordGenerationEvent {
   EVENT_ENUM_COUNT
 };
 
+enum class PasswordGenerationType {
+  // The user was automatically shown the possibility to generate a password.
+  kAutomatic,
+  // The user had to manually request password generation.
+  kManual
+};
+
 // Wrapper to store the user interactions with the password generation bubble.
 struct PasswordGenerationActions {
   // Whether the user has clicked on the learn more link.

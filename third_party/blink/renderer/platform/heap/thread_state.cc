@@ -273,7 +273,7 @@ void ThreadState::RunTerminationGC() {
   CHECK(!GetPersistentRegion()->NumberOfPersistents());
 
   // All of pre-finalizers should be consumed.
-  DCHECK(ordered_pre_finalizers_.IsEmpty());
+  DCHECK(ordered_pre_finalizers_.empty());
   CHECK_EQ(GetGCState(), kNoGCScheduled);
 
   Heap().RemoveAllPages();
@@ -1281,15 +1281,15 @@ void ThreadState::InvokePreFinalizers() {
   // The prefinalizer callback wrapper returns |true| when its associated
   // object is unreachable garbage and the prefinalizer callback has run.
   // The registered prefinalizer entry must then be removed and deleted.
-  Vector<PreFinalizer> reversed;
+  Deque<PreFinalizer> remaining_ordered_pre_finalizers;
   for (auto rit = ordered_pre_finalizers_.rbegin();
        rit != ordered_pre_finalizers_.rend(); ++rit) {
-    reversed.push_back(*rit);
+    const PreFinalizer& pre_finalizer = *rit;
+    if (!(pre_finalizer.second)(pre_finalizer.first))
+      remaining_ordered_pre_finalizers.push_front(pre_finalizer);
   }
-  for (PreFinalizer pre_finalizer : reversed) {
-    if ((pre_finalizer.second)(pre_finalizer.first))
-      ordered_pre_finalizers_.erase(pre_finalizer);
-  }
+
+  ordered_pre_finalizers_ = std::move(remaining_ordered_pre_finalizers);
 }
 
 // static

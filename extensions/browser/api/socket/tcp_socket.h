@@ -189,7 +189,7 @@ class TCPSocket : public Socket {
 
   // WeakPtr is used when posting tasks to |task_runner_| which might outlive
   // |this|.
-  base::WeakPtrFactory<TCPSocket> weak_factory_;
+  base::WeakPtrFactory<TCPSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };

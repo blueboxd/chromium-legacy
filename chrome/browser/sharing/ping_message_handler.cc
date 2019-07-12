@@ -6,6 +6,8 @@
 
 PingMessageHandler::PingMessageHandler() = default;
 
+PingMessageHandler::~PingMessageHandler() = default;
+
 void PingMessageHandler::OnMessage(
     const chrome_browser_sharing::SharingMessage& message) {
   // TODO

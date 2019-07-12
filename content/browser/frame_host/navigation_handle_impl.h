@@ -105,6 +105,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsFormSubmission() override;
   bool WasInitiatedByLinkClick() override;
   bool IsSignedExchangeInnerResponse() override;
+  bool HasPrefetchedAlternativeSubresourceSignedExchange() override;
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;

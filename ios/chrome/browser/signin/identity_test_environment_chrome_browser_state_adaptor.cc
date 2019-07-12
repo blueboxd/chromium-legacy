@@ -49,10 +49,8 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
 std::unique_ptr<TestChromeBrowserState>
 IdentityTestEnvironmentChromeBrowserStateAdaptor::
     CreateChromeBrowserStateForIdentityTestEnvironment(
-        TestChromeBrowserState::Builder& builder,
-        bool use_ios_token_service_delegate) {
-  for (auto& identity_factory :
-       GetIdentityTestEnvironmentFactories(use_ios_token_service_delegate)) {
+        TestChromeBrowserState::Builder& builder) {
+  for (auto& identity_factory : GetIdentityTestEnvironmentFactories()) {
     builder.AddTestingFactory(identity_factory.first, identity_factory.second);
   }
 
@@ -63,8 +61,7 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
 void IdentityTestEnvironmentChromeBrowserStateAdaptor::
     SetIdentityTestEnvironmentFactoriesOnBrowserContext(
         TestChromeBrowserState* chrome_browser_state) {
-  for (const auto& factory_pair : GetIdentityTestEnvironmentFactories(
-           /*use_ios_token_service_delegate=*/false)) {
+  for (const auto& factory_pair : GetIdentityTestEnvironmentFactories()) {
     factory_pair.first->SetTestingFactory(chrome_browser_state,
                                           factory_pair.second);
   }
@@ -75,8 +72,7 @@ void IdentityTestEnvironmentChromeBrowserStateAdaptor::
     AppendIdentityTestEnvironmentFactories(
         TestChromeBrowserState::TestingFactories* factories_to_append_to) {
   TestChromeBrowserState::TestingFactories identity_factories =
-      GetIdentityTestEnvironmentFactories(
-          /*use_ios_token_service_delegate=*/false);
+      GetIdentityTestEnvironmentFactories();
   factories_to_append_to->insert(factories_to_append_to->end(),
                                  identity_factories.begin(),
                                  identity_factories.end());
@@ -96,32 +92,13 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::BuildIdentityManagerForTests(
 }
 
 // static
-std::unique_ptr<KeyedService> IdentityTestEnvironmentChromeBrowserStateAdaptor::
-    BuildIdentityManagerForTestWithIOSDelegate(
-        web::BrowserState* browser_state) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
-
-  identity::IdentityTestEnvironment::ExtraParams extra_params;
-  extra_params.token_service_provider =
-      std::make_unique<DeviceAccountsProviderImpl>();
-
-  return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
-      SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      chrome_browser_state->GetPrefs(), base::FilePath(),
-      signin::AccountConsistencyMethod::kMirror, std::move(extra_params));
-}
-
-// static
 TestChromeBrowserState::TestingFactories
 IdentityTestEnvironmentChromeBrowserStateAdaptor::
-    GetIdentityTestEnvironmentFactories(bool use_ios_token_service_delegate) {
+    GetIdentityTestEnvironmentFactories() {
   return {{SigninClientFactory::GetInstance(),
            base::BindRepeating(&BuildTestSigninClient)},
           {IdentityManagerFactory::GetInstance(),
-           base::BindRepeating(use_ios_token_service_delegate
-                                   ? &BuildIdentityManagerForTestWithIOSDelegate
-                                   : &BuildIdentityManagerForTests)}};
+           base::BindRepeating(&BuildIdentityManagerForTests)}};
 }
 
 IdentityTestEnvironmentChromeBrowserStateAdaptor::

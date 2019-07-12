@@ -372,7 +372,7 @@ const base::Feature kPrioritizeBootstrapTasks = {
 // HTTP(S) navigations when the BrowsingInstance doesn't contain any other
 // windows.
 const base::Feature kProactivelySwapBrowsingInstance{
-    "kProactivelySwapBrowsingInstance", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ProactivelySwapBrowsingInstance", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable raster-inducing scroll.
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",

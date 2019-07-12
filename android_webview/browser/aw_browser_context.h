@@ -10,14 +10,13 @@
 
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/browser_context.h"
 
@@ -51,15 +50,10 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
-namespace safe_browsing {
-class TriggerManager;
-}  // namespace safe_browsing
-
 namespace android_webview {
 
 class AwFormDatabaseService;
 class AwQuotaManagerBridge;
-class AwSafeBrowsingWhitelistManager;
 class AwURLRequestContextGetter;
 
 namespace prefs {
@@ -133,11 +127,6 @@ class AwBrowserContext : public content::BrowserContext,
   // visitedlink::VisitedLinkDelegate implementation.
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
-  AwSafeBrowsingUIManager* GetSafeBrowsingUIManager() const;
-  safe_browsing::RemoteSafeBrowsingDatabaseManager* GetSafeBrowsingDBManager();
-  safe_browsing::TriggerManager* GetSafeBrowsingTriggerManager() const;
-  AwSafeBrowsingWhitelistManager* GetSafeBrowsingWhitelistManager() const;
-
   // Constructs HttpAuthDynamicParams based on |user_pref_service_|.
   network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
 
@@ -167,14 +156,6 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;
-  std::unique_ptr<safe_browsing::TriggerManager> safe_browsing_trigger_manager_;
-  scoped_refptr<safe_browsing::RemoteSafeBrowsingDatabaseManager>
-      safe_browsing_db_manager_;
-  bool safe_browsing_db_manager_started_ = false;
-
-  std::unique_ptr<AwSafeBrowsingWhitelistManager>
-      safe_browsing_whitelist_manager_;
   SimpleFactoryKey simple_factory_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);

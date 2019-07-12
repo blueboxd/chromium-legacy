@@ -67,7 +67,7 @@ class StreamContainer {
   GURL stream_url_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
-  base::WeakPtrFactory<StreamContainer> weak_factory_;
+  base::WeakPtrFactory<StreamContainer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamContainer);
 };
@@ -200,7 +200,7 @@ class MimeHandlerViewGuest
   bool maybe_has_frame_container_ = false;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
-  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

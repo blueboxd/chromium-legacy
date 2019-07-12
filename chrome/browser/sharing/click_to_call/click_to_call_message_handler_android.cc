@@ -8,8 +8,10 @@
 #include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/ClickToCallMessageHandler_jni.h"
 #include "chrome/browser/sharing/proto/click_to_call_message.pb.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
 ClickToCallMessageHandler::ClickToCallMessageHandler() = default;
+
 ClickToCallMessageHandler::~ClickToCallMessageHandler() = default;
 
 void ClickToCallMessageHandler::OnMessage(

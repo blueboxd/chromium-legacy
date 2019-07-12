@@ -248,7 +248,7 @@ class MessageService : public BrowserContextKeyedAPI,
   PendingChannelMap pending_incognito_channels_;
   PendingLazyContextChannelMap pending_lazy_context_channels_;
 
-  base::WeakPtrFactory<MessageService> weak_factory_;
+  base::WeakPtrFactory<MessageService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessageService);
 };

@@ -91,47 +91,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   void RemoveAccessTokenDiagnosticsObserver(
       OAuth2AccessTokenManager::DiagnosticsObserver* observer);
 
-  // Checks in the cache for a valid access token for a specified |account_id|
-  // and |scopes|, and if not found starts a request for an OAuth2 access token
-  // using the OAuth2 refresh token maintained by this instance for that
-  // |account_id|. The caller owns the returned Request.
-  // |scopes| is the set of scopes to get an access token for, |consumer| is
-  // the object that will be called back with results if the returned request
-  // is not deleted. Virtual for mocking.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequest(
-      const CoreAccountId& account_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      OAuth2AccessTokenManager::Consumer* consumer);
-
-  // Try to get refresh token from delegate. If it is accessible (i.e. not
-  // empty), return it directly, otherwise start request to get access token.
-  // Used for getting tokens to send to Gaia Multilogin endpoint.
-  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestForMultilogin(
-      const CoreAccountId& account_id,
-      OAuth2AccessTokenManager::Consumer* consumer);
-
-  // This method does the same as |StartRequest| except it uses |client_id| and
-  // |client_secret| to identify OAuth client app instead of using
-  // Chrome's default values.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestForClient(
-      const CoreAccountId& account_id,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      OAuth2AccessTokenManager::Consumer* consumer);
-
-  // This method does the same as |StartRequest| except it uses the
-  // URLLoaderfactory given by |url_loader_factory| instead of using the one
-  // returned by Delegate::GetURLLoaderFactory().
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  std::unique_ptr<OAuth2AccessTokenManager::Request> StartRequestWithContext(
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      OAuth2AccessTokenManager::Consumer* consumer);
-
   // Returns true iff all credentials have been loaded from disk.
   bool AreAllCredentialsLoaded() const;
 
@@ -159,23 +118,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // Returns the auth error associated with |account_id|. Only persistent errors
   // will be returned.
   GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
-
-  // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
-  // invalid. This should be done if the token was received from this class,
-  // but was not accepted by the server (e.g., the server returned
-  // 401 Unauthorized). The token will be removed from the cache for the given
-  // scopes.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  void InvalidateAccessToken(const CoreAccountId& account_id,
-                             const OAuth2AccessTokenManager::ScopeSet& scopes,
-                             const std::string& access_token);
-
-  // Removes token from cache (if it is cached) and calls
-  // InvalidateTokenForMultilogin method of the delegate. This should be done if
-  // the token was received from this class, but was not accepted by the server
-  // (e.g., the server returned 401 Unauthorized).
-  virtual void InvalidateTokenForMultilogin(const CoreAccountId& failed_account,
-                                            const std::string& token);
 
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
@@ -210,23 +152,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // OAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
 
-  // Add a new entry to the cache.
-  // Subclasses can override if there are implementation-specific reasons
-  // that an access token should ever not be cached.
-  virtual void RegisterTokenResponse(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
-
-  // Clears the internal token cache.
-  void ClearCache();
-
-  // Clears all of the tokens belonging to |account_id| from the internal token
-  // cache. It does not matter what other parameters, like |client_id| were
-  // used to request the tokens.
-  void ClearCacheForAccount(const CoreAccountId& account_id);
-
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
   // Deprecated. It's moved to OAuth2AccessTokenManager.
@@ -238,6 +163,9 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
  private:
+  // TODO(https://crbug.com/967598): Completely merge this class into
+  // ProfileOAuth2TokenService.
+  friend class ProfileOAuth2TokenService;
   friend class OAuth2TokenServiceDelegate;
 
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;

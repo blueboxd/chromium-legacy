@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -259,9 +259,9 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       content::ResourceThrottle* throttle =
           MaybeCreateAwSafeBrowsingResourceThrottle(
               request, resource_type,
-              AwBrowserContext::GetDefault()->GetSafeBrowsingDBManager(),
-              AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager(),
-              AwBrowserContext::GetDefault()
+              AwBrowserProcess::GetInstance()->GetSafeBrowsingDBManager(),
+              AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager(),
+              AwBrowserProcess::GetInstance()
                   ->GetSafeBrowsingWhitelistManager());
       if (throttle == nullptr) {
         // Should not happen

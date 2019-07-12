@@ -935,9 +935,9 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
 
   if (!safe_browsing_url_checker_delegate_) {
     safe_browsing_url_checker_delegate_ = new AwUrlCheckerDelegateImpl(
-        browser_context_->GetSafeBrowsingDBManager(),
-        browser_context_->GetSafeBrowsingUIManager(),
-        browser_context_->GetSafeBrowsingWhitelistManager());
+        AwBrowserProcess::GetInstance()->GetSafeBrowsingDBManager(),
+        AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager(),
+        AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager());
   }
 
   return safe_browsing_url_checker_delegate_.get();

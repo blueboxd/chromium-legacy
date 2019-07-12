@@ -51,7 +51,7 @@ void EntryIsDirectory(content::BrowserContext* context,
 }  // namespace
 
 IsDirectoryCollector::IsDirectoryCollector(content::BrowserContext* context)
-    : context_(context), left_(0), weak_ptr_factory_(this) {}
+    : context_(context), left_(0) {}
 
 IsDirectoryCollector::~IsDirectoryCollector() {}
 

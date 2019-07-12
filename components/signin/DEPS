@@ -1,4 +1,5 @@
 include_rules = [
+  "+chromeos/components/account_manager",
   "+components/content_settings",
   "+components/google/core",
   "+components/image_fetcher/core",
@@ -7,6 +8,7 @@ include_rules = [
   "+components/prefs",
   "+components/sync_preferences",
   "+components/signin",
+  "+components/user_manager",
   "+components/webdata/common",
   "+crypto",
   "+google_apis/gaia",

@@ -11,6 +11,7 @@
 
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
 namespace password_manager {
@@ -334,6 +335,16 @@ enum class PasswordDropdownSelectedOption {
   kMaxValue = kGenerate
 };
 
+// Used in UMA histograms, please do NOT reorder.
+// Metric: "KeyboardAccessory.GenerationDialogChoice.{Automatic, Manual}".
+enum class GenerationDialogChoice {
+  // The user accepted the generated password.
+  kAccepted = 0,
+  // The user rejected the generated password.
+  kRejected = 1,
+  kMaxValue = kRejected
+};
+
 // Type of the conflict with existing credentials when starting password
 // generation.
 enum class GenerationPresaveConflict {
@@ -451,6 +462,12 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
 // Log whether a saved password was generated.
 void LogNewlySavedPasswordIsGenerated(bool value);
+
+// Log whether the generated password was accepted or rejected for generation of
+// |type| (automatic or manual).
+void LogGenerationDialogChoice(
+    GenerationDialogChoice choice,
+    autofill::password_generation::PasswordGenerationType type);
 
 // Log whether there is a conflict with existing credentials when presaving
 // a generated password.

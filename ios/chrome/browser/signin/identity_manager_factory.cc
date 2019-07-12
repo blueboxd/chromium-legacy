@@ -114,12 +114,6 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return instance.get();
 }
 
-// static
-void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
-  IdentityManagerFactory::GetInstance();
-  SigninClientFactory::GetInstance();
-}
-
 void IdentityManagerFactory::AddObserver(
     IdentityManagerFactoryObserver* observer) {
   observer_list_.AddObserver(observer);

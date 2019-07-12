@@ -550,8 +550,8 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
     // standard flow for saving hash does not work. Save a password hash now
     // since a navigation to ntp is the sign of successful sign-in.
     PasswordFormManagerInterface* manager = GetSubmittedManager();
-    if (manager &&
-        manager->GetSubmittedForm()->is_gaia_with_skip_save_password_form) {
+    if (manager && manager->GetSubmittedForm()
+                       ->form_data.is_gaia_with_skip_save_password_form) {
       MaybeSavePasswordHash(*manager);
     }
   }
@@ -624,8 +624,7 @@ void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (IsNewFormParsingForSavingEnabled())
-    ProvisionallySaveForm(password_form.form_data, driver, false,
-                          password_form.is_gaia_with_skip_save_password_form);
+    ProvisionallySaveForm(password_form.form_data, driver, false);
 
   ProvisionallySavePassword(password_form, driver);
 }
@@ -650,8 +649,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
   }
 
   if (IsNewFormParsingForSavingEnabled()) {
-    ProvisionallySaveForm(password_form.form_data, driver, false,
-                          password_form.is_gaia_with_skip_save_password_form);
+    ProvisionallySaveForm(password_form.form_data, driver, false);
   }
 
   ProvisionallySavePassword(password_form, driver);
@@ -672,9 +670,8 @@ void PasswordManager::ShowManualFallbackForSaving(
 
   std::unique_ptr<PasswordFormManagerInterface> manager;
   if (IsNewFormParsingForSavingEnabled()) {
-    NewPasswordFormManager* matched_manager = ProvisionallySaveForm(
-        password_form.form_data, driver, true,
-        password_form.is_gaia_with_skip_save_password_form);
+    NewPasswordFormManager* matched_manager =
+        ProvisionallySaveForm(password_form.form_data, driver, true);
     manager = matched_manager ? matched_manager->Clone() : nullptr;
   } else {
     manager = FindAndCloneMatchedPasswordFormManager(
@@ -817,7 +814,7 @@ void PasswordManager::CreateFormManagers(
     // TODO(https://crbug.com/831123): Implement inside NewPasswordFormManger
     // not-filling Gaia forms that should be ignored instead of non-creating
     // NewPasswordFormManger instance.
-    if (form.is_gaia_with_skip_save_password_form)
+    if (form.form_data.is_gaia_with_skip_save_password_form)
       continue;
     if (!client_->IsFillingEnabled(form.origin))
       continue;
@@ -859,8 +856,7 @@ NewPasswordFormManager* PasswordManager::CreateFormManager(
 NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     const FormData& submitted_form,
     PasswordManagerDriver* driver,
-    bool is_manual_fallback,
-    bool is_gaia_with_skip_save_password_form) {
+    bool is_manual_fallback) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -917,8 +913,9 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
-  if (!matched_manager->ProvisionallySave(submitted_form, driver,
-                                          is_gaia_with_skip_save_password_form))
+  if (!matched_manager->ProvisionallySave(
+          submitted_form, driver,
+          submitted_form.is_gaia_with_skip_save_password_form))
     return nullptr;
 
   // Set all other form managers to no submission state.
@@ -1091,12 +1088,13 @@ void PasswordManager::OnPasswordFormsRendered(
                             visible_forms.begin(),
                             visible_forms.end());
 
-  if (!did_stop_loading && !submitted_manager->GetSubmittedForm()
-                                ->is_gaia_with_skip_save_password_form) {
-    // |is_gaia_with_skip_save_password_form| = true means that this is a Chrome
-    // sign-in page. Chrome sign-in pages are redirected to an empty pages, and
-    // for some reasons |did_stop_loading| might be false. So |did_stop_loading|
-    // is ignored for them.
+  if (!did_stop_loading &&
+      !submitted_manager->GetSubmittedForm()
+           ->form_data.is_gaia_with_skip_save_password_form) {
+    // |form_data.is_gaia_with_skip_save_password_form| = true means that this
+    // is a Chrome sign-in page. Chrome sign-in pages are redirected to an empty
+    // pages, and for some reasons |did_stop_loading| might be false. So
+    // |did_stop_loading| is ignored for them.
     return;
   }
 

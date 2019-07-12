@@ -7,24 +7,21 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/vr/service/arcore_consent_prompt_interface.h"
 #include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class VR_EXPORT ArCoreConsentPrompt : public ArCoreConsentPromptInterface {
+class VR_EXPORT ArcoreConsentPrompt : public ArcoreConsentPromptInterface {
  public:
   void ShowConsentPrompt(
       int render_process_id,
       int render_frame_id,
       base::OnceCallback<void(bool)> response_callback) override;
 
-  ArCoreConsentPrompt();
-  ~ArCoreConsentPrompt();
+  ArcoreConsentPrompt();
+  ~ArcoreConsentPrompt();
 
   // device::VrDevicePermissionProvider:
   void GetUserPermission(int render_process_id,
@@ -35,51 +32,8 @@ class VR_EXPORT ArCoreConsentPrompt : public ArCoreConsentPromptInterface {
                            const base::android::JavaParamRef<jobject>& j_caller,
                            jboolean is_granted);
 
-  // Returns true if AR module installation is supported, false otherwise.
-  virtual bool CanRequestInstallArModule();
-  // Returns true if AR module is not installed, false otherwise.
-  virtual bool ShouldRequestInstallArModule();
-  virtual void RequestInstallArModule();
-  virtual bool ShouldRequestInstallSupportedArCore();
-  virtual void RequestInstallSupportedArCore();
-
-  // Called from Java end.
-  void OnRequestInstallArModuleResult(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      bool success);
-  void OnRequestInstallSupportedArCoreResult(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      bool success);
-
  private:
-  void RequestArModule();
-  void OnRequestArModuleResult(bool success);
-  void RequestArCoreInstallOrUpdate();
-  void OnRequestArCoreInstallOrUpdateResult(bool success);
-
-  void CallDeferredUserConsentCallback(bool is_permission_granted);
-
-  base::WeakPtr<ArCoreConsentPrompt> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   base::OnceCallback<void(bool)> on_user_consent_callback_;
-
-  base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
-  base::OnceCallback<void(bool)>
-      on_request_arcore_install_or_update_result_callback_;
-
-  base::android::ScopedJavaLocalRef<jobject> jdelegate_;
-  int render_process_id_;
-  int render_frame_id_;
-
-  base::android::ScopedJavaGlobalRef<jobject> java_install_utils_;
-  THREAD_CHECKER(thread_checker_);
-
-  base::WeakPtrFactory<ArCoreConsentPrompt> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ArCoreConsentPrompt);
 };
 
 }  // namespace vr

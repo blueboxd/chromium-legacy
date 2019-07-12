@@ -58,6 +58,7 @@ const int kDBusError = 1;
 const int kUserRejected = 2;
 const int kGetCertificateFailed = 3;
 const int kResetRequired = 4;
+const int kPrepareKeyAttestationUnsupported = 5;
 
 const char kUserEmail[] = "test@google.com";
 
@@ -331,6 +332,15 @@ TEST_F(EPKPChallengeMachineKeyTest, AttestationNotPrepared) {
   cryptohome_client_.set_tpm_attestation_is_prepared(false);
 
   EXPECT_EQ(GetCertificateError(kResetRequired),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+// Test that we get proper error message in case we don't have TPM.
+TEST_F(EPKPChallengeMachineKeyTest, AttestationUnsupported) {
+  cryptohome_client_.set_tpm_attestation_is_prepared(false);
+  cryptohome_client_.set_tpm_is_enabled(false);
+
+  EXPECT_EQ(GetCertificateError(kPrepareKeyAttestationUnsupported),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 

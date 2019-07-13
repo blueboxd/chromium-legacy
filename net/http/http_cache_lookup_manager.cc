@@ -14,10 +14,9 @@ namespace net {
 
 // Returns parameters associated with the start of a server push lookup
 // transaction.
-base::Value NetLogPushLookupTransactionCallback(
+base::Value NetLogPushLookupTransactionParams(
     const NetLogSource& net_log,
-    const ServerPushDelegate::ServerPushHelper* push_helper,
-    NetLogCaptureMode /* capture_mode */) {
+    const ServerPushDelegate::ServerPushHelper* push_helper) {
   base::DictionaryValue dict;
   net_log.AddToEventParameters(&dict);
   dict.SetString("push_url", push_helper->GetURL().possibly_invalid_spec());
@@ -40,9 +39,10 @@ int HttpCacheLookupManager::LookupTransaction::StartLookup(
     HttpCache* cache,
     CompletionOnceCallback callback,
     const NetLogWithSource& session_net_log) {
-  net_log_.BeginEvent(NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION,
-                      base::Bind(&NetLogPushLookupTransactionCallback,
-                                 session_net_log.source(), push_helper_.get()));
+  net_log_.BeginEvent(NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION, [&] {
+    return NetLogPushLookupTransactionParams(session_net_log.source(),
+                                             push_helper_.get());
+  });
 
   request_->url = push_helper_->GetURL();
   request_->method = "GET";

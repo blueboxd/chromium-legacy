@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/values.h"
 #include "net/http/http_auth_controller.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
@@ -42,10 +43,10 @@ QuicProxyClientSocket::QuicProxyClientSocket(
   request_.method = "CONNECT";
   request_.url = GURL("https://" + endpoint.ToString());
 
-  net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
-                      net_log_.source().ToEventParametersCallback());
-  net_log_.AddEvent(NetLogEventType::HTTP2_PROXY_CLIENT_SESSION,
-                    stream_->net_log().source().ToEventParametersCallback());
+  net_log_.BeginEventReferencingSource(NetLogEventType::SOCKET_ALIVE,
+                                       net_log_.source());
+  net_log_.AddEventReferencingSource(
+      NetLogEventType::HTTP2_PROXY_CLIENT_SESSION, stream_->net_log().source());
 }
 
 QuicProxyClientSocket::~QuicProxyClientSocket() {
@@ -350,10 +351,9 @@ int QuicProxyClientSocket::DoSendRequest() {
   BuildTunnelRequest(endpoint_, authorization_headers, user_agent_,
                      &request_line, &request_.extra_headers);
 
-  net_log_.AddEvent(
-      NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
-      base::Bind(&HttpRequestHeaders::NetLogCallback,
-                 base::Unretained(&request_.extra_headers), &request_line));
+  NetLogRequestHeaders(net_log_,
+                       NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+                       request_line, &request_.extra_headers);
 
   spdy::SpdyHeaderBlock headers;
   CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, &headers);
@@ -399,9 +399,9 @@ int QuicProxyClientSocket::DoReadReplyComplete(int result) {
   if (response_.headers->GetHttpVersion() < HttpVersion(1, 0))
     return ERR_TUNNEL_CONNECTION_FAILED;
 
-  net_log_.AddEvent(
-      NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+  NetLogResponseHeaders(
+      net_log_, NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+      response_.headers.get());
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

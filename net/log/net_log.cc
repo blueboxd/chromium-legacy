@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,58 +16,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 
 namespace {
-
-base::Value NetLogBoolCallback(const char* name,
-                               bool value,
-                               NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetBoolean(name, value);
-  return std::move(event_params);
-}
-
-base::Value NetLogIntCallback(const char* name,
-                              int value,
-                              NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetInteger(name, value);
-  return std::move(event_params);
-}
-
-base::Value NetLogInt64Callback(const char* name,
-                                int64_t value,
-                                NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetKey(name, NetLogNumberValue(value));
-  return std::move(event_params);
-}
-
-base::Value NetLogStringCallback(const char* name,
-                                 const std::string* value,
-                                 NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetString(name, *value);
-  return std::move(event_params);
-}
-
-base::Value NetLogCharStringCallback(const char* name,
-                                     const char* value,
-                                     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetString(name, value);
-  return std::move(event_params);
-}
-
-base::Value NetLogString16Callback(const char* name,
-                                   const base::string16* value,
-                                   NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue event_params;
-  event_params.SetString(name, *value);
-  return std::move(event_params);
-}
 
 // IEEE 64-bit doubles have a 52-bit mantissa, and can therefore represent
 // 53-bits worth of precision (see also documentation for JavaScript's
@@ -117,26 +68,25 @@ NetLog* NetLog::ThreadSafeObserver::net_log() const {
   return net_log_;
 }
 
-void NetLog::ThreadSafeObserver::OnAddEntryData(
-    const NetLogEntryData& entry_data) {
-  OnAddEntry(NetLogEntry(&entry_data, capture_mode()));
-}
-
-NetLog::NetLog() : last_id_(0), is_capturing_(0) {
-}
+NetLog::NetLog() : last_id_(0), observer_capture_modes_(0) {}
 
 NetLog::~NetLog() = default;
 
-void NetLog::AddGlobalEntry(NetLogEventType type) {
-  AddEntry(type, NetLogSource(NetLogSourceType::NONE, NextID()),
-           NetLogEventPhase::NONE, nullptr);
+void NetLog::AddEntry(NetLogEventType type,
+                      const NetLogSource& source,
+                      NetLogEventPhase phase) {
+  AddEntry(type, source, phase, [] { return base::Value(); });
 }
 
-void NetLog::AddGlobalEntry(
-    NetLogEventType type,
-    const NetLogParametersCallback& parameters_callback) {
+void NetLog::AddGlobalEntry(NetLogEventType type) {
   AddEntry(type, NetLogSource(NetLogSourceType::NONE, NextID()),
-           NetLogEventPhase::NONE, &parameters_callback);
+           NetLogEventPhase::NONE);
+}
+
+void NetLog::AddGlobalEntryWithStringParams(NetLogEventType type,
+                                            base::StringPiece name,
+                                            base::StringPiece value) {
+  AddGlobalEntry(type, [&] { return NetLogParamsWithString(name, value); });
 }
 
 uint32_t NetLog::NextID() {
@@ -144,7 +94,7 @@ uint32_t NetLog::NextID() {
 }
 
 bool NetLog::IsCapturing() const {
-  return base::subtle::NoBarrier_Load(&is_capturing_) != 0;
+  return GetObserverCaptureModes() != 0;
 }
 
 void NetLog::AddObserver(NetLog::ThreadSafeObserver* observer,
@@ -159,7 +109,7 @@ void NetLog::AddObserver(NetLog::ThreadSafeObserver* observer,
 
   observer->net_log_ = this;
   observer->capture_mode_ = capture_mode;
-  UpdateIsCapturing();
+  UpdateObserverCaptureModes();
 }
 
 void NetLog::SetObserverCaptureMode(NetLog::ThreadSafeObserver* observer,
@@ -169,6 +119,7 @@ void NetLog::SetObserverCaptureMode(NetLog::ThreadSafeObserver* observer,
   DCHECK(HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
   observer->capture_mode_ = capture_mode;
+  UpdateObserverCaptureModes();
 }
 
 void NetLog::RemoveObserver(NetLog::ThreadSafeObserver* observer) {
@@ -182,12 +133,17 @@ void NetLog::RemoveObserver(NetLog::ThreadSafeObserver* observer) {
 
   observer->net_log_ = nullptr;
   observer->capture_mode_ = NetLogCaptureMode::kDefault;
-  UpdateIsCapturing();
+  UpdateObserverCaptureModes();
 }
 
-void NetLog::UpdateIsCapturing() {
+void NetLog::UpdateObserverCaptureModes() {
   lock_.AssertAcquired();
-  base::subtle::NoBarrier_Store(&is_capturing_, observers_.size() ? 1 : 0);
+
+  NetLogCaptureModeSet capture_mode_set = 0;
+  for (const auto* observer : observers_)
+    NetLogCaptureModeSetAdd(observer->capture_mode_, &capture_mode_set);
+
+  base::subtle::NoBarrier_Store(&observer_capture_modes_, capture_mode_set);
 }
 
 bool NetLog::HasObserver(ThreadSafeObserver* observer) {
@@ -270,56 +226,45 @@ const char* NetLog::EventPhaseToString(NetLogEventPhase phase) {
   return nullptr;
 }
 
-// static
-NetLogParametersCallback NetLog::BoolCallback(const char* name, bool value) {
-  return base::Bind(&NetLogBoolCallback, name, value);
+void NetLog::AddEntryInternal(NetLogEventType type,
+                              const NetLogSource& source,
+                              NetLogEventPhase phase,
+                              const GetParamsInterface* get_params) {
+  NetLogCaptureModeSet observer_capture_modes = GetObserverCaptureModes();
+
+  for (int i = 0; i <= static_cast<int>(NetLogCaptureMode::kLast); ++i) {
+    NetLogCaptureMode capture_mode = static_cast<NetLogCaptureMode>(i);
+    if (!NetLogCaptureModeSetContains(capture_mode, observer_capture_modes))
+      continue;
+
+    NetLogEntry entry(type, source, phase, base::TimeTicks::Now(),
+                      get_params->GetParams(capture_mode));
+
+    // Notify all of the log observers with |capture_mode|.
+    base::AutoLock lock(lock_);
+    for (auto* observer : observers_) {
+      if (observer->capture_mode() == capture_mode)
+        observer->OnAddEntry(entry);
+    }
+  }
 }
 
-// static
-NetLogParametersCallback NetLog::IntCallback(const char* name, int value) {
-  return base::Bind(&NetLogIntCallback, name, value);
+NetLogCaptureModeSet NetLog::GetObserverCaptureModes() const {
+  return base::subtle::NoBarrier_Load(&observer_capture_modes_);
 }
 
-// static
-NetLogParametersCallback NetLog::Int64Callback(const char* name,
-                                               int64_t value) {
-  return base::Bind(&NetLogInt64Callback, name, value);
-}
+void NetLog::AddEntryWithMaterializedParams(NetLogEventType type,
+                                            const NetLogSource& source,
+                                            NetLogEventPhase phase,
+                                            base::Value&& params) {
+  NetLogEntry entry(type, source, phase, base::TimeTicks::Now(),
+                    std::move(params));
 
-// static
-NetLogParametersCallback NetLog::StringCallback(const char* name,
-                                                const std::string* value) {
-  DCHECK(value);
-  return base::Bind(&NetLogStringCallback, name, value);
-}
-
-// static
-NetLogParametersCallback NetLog::StringCallback(const char* name,
-                                                const char* value) {
-  DCHECK(value);
-  return base::Bind(&NetLogCharStringCallback, name, value);
-}
-
-// static
-NetLogParametersCallback NetLog::StringCallback(const char* name,
-                                                const base::string16* value) {
-  DCHECK(value);
-  return base::Bind(&NetLogString16Callback, name, value);
-}
-
-void NetLog::AddEntry(NetLogEventType type,
-                      const NetLogSource& source,
-                      NetLogEventPhase phase,
-                      const NetLogParametersCallback* parameters_callback) {
-  if (!IsCapturing())
-    return;
-  NetLogEntryData entry_data(type, source, phase, base::TimeTicks::Now(),
-                             parameters_callback);
-
-  // Notify all of the log observers.
+  // Notify all of the log observers with |capture_mode|.
   base::AutoLock lock(lock_);
-  for (auto* observer : observers_)
-    observer->OnAddEntryData(entry_data);
+  for (auto* observer : observers_) {
+    observer->OnAddEntry(entry);
+  }
 }
 
 base::Value NetLogStringValue(base::StringPiece raw) {

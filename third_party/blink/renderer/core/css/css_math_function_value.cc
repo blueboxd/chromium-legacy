@@ -45,26 +45,6 @@ CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                 calc.GetValueRange());
 }
 
-CSSPrimitiveValue::UnitType CSSMathFunctionValue::TypeWithMathFunctionResolved()
-    const {
-  switch (expression_->Category()) {
-    case kCalcAngle:
-      return UnitType::kDegrees;
-    case kCalcFrequency:
-      return UnitType::kHertz;
-    case kCalcNumber:
-      return UnitType::kNumber;
-    case kCalcPercent:
-      return UnitType::kPercentage;
-    case kCalcLength:
-      return UnitType::kPixels;
-    case kCalcTime:
-      return UnitType::kMilliseconds;
-    default:
-      return UnitType::kUnknown;
-  }
-}
-
 bool CSSMathFunctionValue::MayHaveRelativeUnit() const {
   UnitType resolved_type = expression_->ResolvedUnitType();
   return IsRelativeUnit(resolved_type) || resolved_type == UnitType::kUnknown;

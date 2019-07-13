@@ -135,16 +135,13 @@ void ClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
-                     base::BindRepeating(&NetLogGroupIdCallback,
-                                         base::Unretained(&group_id)));
+                     [&] { return NetLogGroupIdParams(group_id); });
   }
 }
 
-base::Value ClientSocketPool::NetLogGroupIdCallback(
-    const GroupId* group_id,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value ClientSocketPool::NetLogGroupIdParams(const GroupId& group_id) {
   base::DictionaryValue event_params;
-  event_params.SetString("group_id", group_id->ToString());
+  event_params.SetString("group_id", group_id.ToString());
   return std::move(event_params);
 }
 

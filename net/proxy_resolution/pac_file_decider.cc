@@ -66,9 +66,8 @@ PacFileDataWithSource::PacFileDataWithSource(const PacFileDataWithSource&) =
 PacFileDataWithSource& PacFileDataWithSource::operator=(
     const PacFileDataWithSource&) = default;
 
-base::Value PacFileDecider::PacSource::NetLogCallback(
-    const GURL* effective_pac_url,
-    NetLogCaptureMode /* capture_mode */) const {
+base::Value PacFileDecider::PacSource::NetLogParams(
+    const GURL& effective_pac_url) const {
   base::Value dict(base::Value::Type::DICTIONARY);
   std::string source;
   switch (type) {
@@ -77,11 +76,11 @@ base::Value PacFileDecider::PacSource::NetLogCallback(
       break;
     case PacSource::WPAD_DNS:
       source = "WPAD DNS: ";
-      source += effective_pac_url->possibly_invalid_spec();
+      source += effective_pac_url.possibly_invalid_spec();
       break;
     case PacSource::CUSTOM:
       source = "Custom PAC URL: ";
-      source += effective_pac_url->possibly_invalid_spec();
+      source += effective_pac_url.possibly_invalid_spec();
       break;
   }
   dict.SetStringKey("source", source);
@@ -312,10 +311,9 @@ int PacFileDecider::DoFetchPacScript() {
   GURL effective_pac_url;
   DetermineURL(pac_source, &effective_pac_url);
 
-  net_log_.BeginEvent(
-      NetLogEventType::PAC_FILE_DECIDER_FETCH_PAC_SCRIPT,
-      base::Bind(&PacSource::NetLogCallback, base::Unretained(&pac_source),
-                 &effective_pac_url));
+  net_log_.BeginEvent(NetLogEventType::PAC_FILE_DECIDER_FETCH_PAC_SCRIPT, [&] {
+    return pac_source.NetLogParams(effective_pac_url);
+  });
 
   if (pac_source.type == PacSource::WPAD_DHCP) {
     if (!dhcp_pac_file_fetcher_) {

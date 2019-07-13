@@ -172,8 +172,8 @@ class NET_EXPORT HttpRequestHeaders {
 
   // Takes in the request line and returns a Value for use with the NetLog
   // containing both the request line and all headers fields.
-  base::Value NetLogCallback(const std::string* request_line,
-                             NetLogCaptureMode capture_mode) const;
+  base::Value NetLogParams(const std::string& request_line,
+                           NetLogCaptureMode capture_mode) const;
 
   const HeaderVector& GetHeaderVector() const { return headers_; }
 

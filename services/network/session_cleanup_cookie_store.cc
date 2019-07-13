@@ -44,9 +44,9 @@ SessionCleanupCookieStore::SessionCleanupCookieStore(
     : persistent_store_(cookie_store) {}
 
 SessionCleanupCookieStore::~SessionCleanupCookieStore() {
-  net_log_.AddEvent(
-      net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
-      net::NetLog::StringCallback("type", "SessionCleanupCookieStore"));
+  net_log_.AddEventWithStringParams(
+      net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED, "type",
+      "SessionCleanupCookieStore");
 }
 
 void SessionCleanupCookieStore::DeleteSessionCookies(
@@ -69,8 +69,10 @@ void SessionCleanupCookieStore::DeleteSessionCookies(
     }
     net_log_.AddEvent(
         net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
-        base::BindRepeating(&CookieStoreOriginFiltered, cookie.first,
-                            cookie.second));
+        [&](net::NetLogCaptureMode capture_mode) {
+          return CookieStoreOriginFiltered(cookie.first, cookie.second,
+                                           capture_mode);
+        });
     session_only_cookies.push_back(cookie);
   }
 

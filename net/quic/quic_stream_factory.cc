@@ -111,9 +111,8 @@ const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
-base::Value NetLogQuicStreamFactoryJobCallback(
-    const quic::QuicServerId* server_id,
-    NetLogCaptureMode capture_mode) {
+base::Value NetLogQuicStreamFactoryJobParams(
+    const quic::QuicServerId* server_id) {
   base::DictionaryValue dict;
   dict.SetString(
       "server_id",
@@ -123,10 +122,6 @@ base::Value NetLogQuicStreamFactoryJobCallback(
   return std::move(dict);
 }
 
-NetLogParametersCallback NetLogQuicConnectionMigrationTriggerCallback(
-    const char* trigger) {
-  return NetLog::StringCallback("trigger", trigger);
-}
 // Helper class that is used to log a connection migration event.
 class ScopedConnectionMigrationEventLog {
  public:
@@ -134,8 +129,9 @@ class ScopedConnectionMigrationEventLog {
       : net_log_(NetLogWithSource::Make(
             net_log,
             NetLogSourceType::QUIC_CONNECTION_MIGRATION)) {
-    net_log_.BeginEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-                        NetLogQuicConnectionMigrationTriggerCallback(trigger));
+    net_log_.BeginEventWithStringParams(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
+        trigger);
   }
 
   ~ScopedConnectionMigrationEventLog() {
@@ -533,16 +529,16 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       connection_retried_(false),
       session_(nullptr),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle) {
-  net_log_.BeginEvent(
-      NetLogEventType::QUIC_STREAM_FACTORY_JOB,
-      base::Bind(&NetLogQuicStreamFactoryJobCallback, &key_.server_id()));
+  net_log_.BeginEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB, [&] {
+    return NetLogQuicStreamFactoryJobParams(&key_.server_id());
+  });
   // Associate |net_log_| with |net_log|.
-  net_log_.AddEvent(
+  net_log_.AddEventReferencingSource(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
-      net_log.source().ToEventParametersCallback());
-  net_log.AddEvent(
+      net_log.source());
+  net_log.AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
-      net_log_.source().ToEventParametersCallback());
+      net_log_.source());
 }
 
 QuicStreamFactory::Job::~Job() {
@@ -777,9 +773,9 @@ int QuicStreamFactory::Job::DoConnect() {
   DCHECK(dns_resolution_end_time_ != base::TimeTicks());
   io_state_ = STATE_CONNECT_COMPLETE;
   bool require_confirmation = was_alternative_service_recently_broken_;
-  net_log_.BeginEvent(
-      NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT,
-      NetLog::BoolCallback("require_confirmation", require_confirmation));
+  net_log_.AddEntryWithBoolParams(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT, NetLogEventPhase::BEGIN,
+      "require_confirmation", require_confirmation);
 
   DCHECK_NE(quic_version_.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
   int rv = factory_->CreateSession(
@@ -1348,12 +1344,12 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   auto it = active_jobs_.find(session_key);
   if (it != active_jobs_.end()) {
     const NetLogWithSource& job_net_log = it->second->net_log();
-    job_net_log.AddEvent(
+    job_net_log.AddEventReferencingSource(
         NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
-        net_log.source().ToEventParametersCallback());
-    net_log.AddEvent(
+        net_log.source());
+    net_log.AddEventReferencingSource(
         NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
-        job_net_log.source().ToEventParametersCallback());
+        job_net_log.source());
     it->second->AddRequest(request);
     return ERR_IO_PENDING;
   }

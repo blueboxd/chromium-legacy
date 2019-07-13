@@ -15,8 +15,7 @@
 
 namespace net {
 
-base::Value NetLogX509CertificateCallback(const X509Certificate* certificate,
-                                          NetLogCaptureMode capture_mode) {
+base::Value NetLogX509CertificateParams(const X509Certificate* certificate) {
   base::Value dict(base::Value::Type::DICTIONARY);
   base::Value certs(base::Value::Type::LIST);
   std::vector<std::string> encoded_chain;

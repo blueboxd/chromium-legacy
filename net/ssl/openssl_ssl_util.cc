@@ -5,10 +5,9 @@
 #include "net/ssl/openssl_ssl_util.h"
 
 #include <errno.h>
+
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -17,6 +16,7 @@
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -128,10 +128,9 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
   }
 }
 
-base::Value NetLogOpenSSLErrorCallback(int net_error,
-                                       int ssl_error,
-                                       const OpenSSLErrorInfo& error_info,
-                                       NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogOpenSSLErrorParams(int net_error,
+                                     int ssl_error,
+                                     const OpenSSLErrorInfo& error_info) {
   base::DictionaryValue dict;
   dict.SetInteger("net_error", net_error);
   dict.SetInteger("ssl_error", ssl_error);
@@ -210,12 +209,14 @@ int MapOpenSSLErrorWithDetails(int err,
   }
 }
 
-NetLogParametersCallback CreateNetLogOpenSSLErrorCallback(
-    int net_error,
-    int ssl_error,
-    const OpenSSLErrorInfo& error_info) {
-  return base::Bind(&NetLogOpenSSLErrorCallback,
-                    net_error, ssl_error, error_info);
+void NetLogOpenSSLError(const NetLogWithSource& net_log,
+                        NetLogEventType type,
+                        int net_error,
+                        int ssl_error,
+                        const OpenSSLErrorInfo& error_info) {
+  net_log.AddEvent(type, [&] {
+    return NetLogOpenSSLErrorParams(net_error, ssl_error, error_info);
+  });
 }
 
 int GetNetSSLVersion(SSL* ssl) {

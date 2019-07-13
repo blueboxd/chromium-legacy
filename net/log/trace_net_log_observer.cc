@@ -55,29 +55,29 @@ TraceNetLogObserver::~TraceNetLogObserver() {
 }
 
 void TraceNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
-  base::Value params(entry.ParametersToValue());
-  switch (entry.phase()) {
+  base::Value params = entry.params.Clone();
+  switch (entry.phase) {
     case NetLogEventPhase::BEGIN:
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
-          entry.source().id, "source_type",
-          NetLog::SourceTypeToString(entry.source().type), "params",
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type),
+          entry.source.id, "source_type",
+          NetLog::SourceTypeToString(entry.source.type), "params",
           std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLogEventPhase::END:
       TRACE_EVENT_NESTABLE_ASYNC_END2(
-          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
-          entry.source().id, "source_type",
-          NetLog::SourceTypeToString(entry.source().type), "params",
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type),
+          entry.source.id, "source_type",
+          NetLog::SourceTypeToString(entry.source.type), "params",
           std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;
     case NetLogEventPhase::NONE:
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
-          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type()),
-          entry.source().id, "source_type",
-          NetLog::SourceTypeToString(entry.source().type), "params",
+          kNetLogTracingCategory, NetLog::EventTypeToString(entry.type),
+          entry.source.id, "source_type",
+          NetLog::SourceTypeToString(entry.source.type), "params",
           std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
               new TracedValue(std::move(params))));
       break;

@@ -59,6 +59,7 @@ struct TestNetLogEntry {
   // parameters.
   std::string GetParamsJson() const;
 
+  // TODO(eroman): This duplicates NetLogEntry.
   NetLogEventType type;
   base::TimeTicks time;
   NetLogSource source;

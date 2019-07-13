@@ -39,8 +39,8 @@ bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
   auth_challenge_ = challenge->challenge_text();
   net_log_.BeginEvent(NetLogEventType::AUTH_HANDLER_INIT);
   bool ok = Init(challenge, ssl_info);
-  net_log_.EndEvent(NetLogEventType::AUTH_HANDLER_INIT,
-                    NetLog::BoolCallback("succeeded", ok));
+  net_log_.AddEntryWithBoolParams(NetLogEventType::AUTH_HANDLER_INIT,
+                                  NetLogEventPhase::END, "succeeded", ok);
 
   // Init() is expected to set the scheme, realm, score, and properties.  The
   // realm may be empty.
@@ -100,9 +100,10 @@ void HttpAuthHandler::FinishGenerateAuthToken(int rv) {
 HttpAuth::AuthorizationResult HttpAuthHandler::HandleAnotherChallenge(
     HttpAuthChallengeTokenizer* challenge) {
   auto authorization_result = HandleAnotherChallengeImpl(challenge);
-  net_log_.AddEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE,
-                    HttpAuth::NetLogAuthorizationResultCallback(
-                        "authorization_result", authorization_result));
+  net_log_.AddEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE, [&] {
+    return HttpAuth::NetLogAuthorizationResultParams("authorization_result",
+                                                     authorization_result);
+  });
   return authorization_result;
 }
 

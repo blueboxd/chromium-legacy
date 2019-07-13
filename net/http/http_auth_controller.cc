@@ -23,7 +23,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
@@ -128,18 +127,11 @@ void HistogramAuthEvent(HttpAuthHandler* handler, AuthEvent auth_event) {
                             kTargetBucketsEnd);
 }
 
-base::Value ControllerParamsToValue(HttpAuth::Target target,
-                                    const GURL* url,
-                                    NetLogCaptureMode) {
+base::Value ControllerParamsToValue(HttpAuth::Target target, const GURL& url) {
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetStringPath("target", HttpAuth::GetAuthTargetString(target));
-  params.SetStringPath("url", url->spec());
+  params.SetStringPath("url", url.spec());
   return params;
-}
-
-NetLogParametersCallback ControllerParamsCallback(HttpAuth::Target target,
-                                                  const GURL& url) {
-  return base::BindRepeating(&ControllerParamsToValue, target, &url);
 }
 
 }  // namespace
@@ -173,11 +165,12 @@ void HttpAuthController::BindToCallingNetLog(
   if (!net_log_.source().IsValid()) {
     net_log_ = NetLogWithSource::Make(caller_net_log.net_log(),
                                       NetLogSourceType::HTTP_AUTH_CONTROLLER);
-    net_log_.BeginEvent(NetLogEventType::AUTH_CONTROLLER,
-                        ControllerParamsCallback(target_, auth_url_));
+    net_log_.BeginEvent(NetLogEventType::AUTH_CONTROLLER, [&] {
+      return ControllerParamsToValue(target_, auth_url_);
+    });
   }
-  caller_net_log.AddEvent(NetLogEventType::AUTH_BOUND_TO_CONTROLLER,
-                          net_log_.source().ToEventParametersCallback());
+  caller_net_log.AddEventReferencingSource(
+      NetLogEventType::AUTH_BOUND_TO_CONTROLLER, net_log_.source());
 }
 
 int HttpAuthController::MaybeGenerateAuthToken(
@@ -189,8 +182,8 @@ int HttpAuthController::MaybeGenerateAuthToken(
   bool needs_auth = HaveAuth() || SelectPreemptiveAuth(caller_net_log);
   if (!needs_auth)
     return OK;
-  net_log_.BeginEvent(NetLogEventType::AUTH_GENERATE_TOKEN,
-                      caller_net_log.source().ToEventParametersCallback());
+  net_log_.BeginEventReferencingSource(NetLogEventType::AUTH_GENERATE_TOKEN,
+                                       caller_net_log.source());
   const AuthCredentials* credentials = nullptr;
   if (identity_.source != HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS)
     credentials = &identity_.credentials;
@@ -275,8 +268,8 @@ int HttpAuthController::HandleAuthChallenge(
   DCHECK(!auth_info_);
 
   BindToCallingNetLog(caller_net_log);
-  net_log_.BeginEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE,
-                      caller_net_log.source().ToEventParametersCallback());
+  net_log_.BeginEventReferencingSource(NetLogEventType::AUTH_HANDLE_CHALLENGE,
+                                       caller_net_log.source());
 
   // Give the existing auth handler first try at the authentication headers.
   // This will also evict the entry in the HttpAuthCache if the previous

@@ -17,9 +17,7 @@ namespace net {
 
 namespace {
 
-base::Value SourceEventParametersCallback(
-    const NetLogSource source,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value SourceEventParametersCallback(const NetLogSource source) {
   if (!source.IsValid())
     return base::Value();
   base::DictionaryValue event_params;
@@ -49,8 +47,8 @@ void NetLogSource::AddToEventParameters(base::Value* event_params) const {
   event_params->SetKey("source_dependency", std::move(dict));
 }
 
-NetLogParametersCallback NetLogSource::ToEventParametersCallback() const {
-  return base::Bind(&SourceEventParametersCallback, *this);
+base::Value NetLogSource::ToEventParameters() const {
+  return SourceEventParametersCallback(*this);
 }
 
 // static

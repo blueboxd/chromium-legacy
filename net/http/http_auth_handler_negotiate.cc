@@ -211,9 +211,11 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
     x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
                                                   &channel_bindings_);
   if (!channel_bindings_.empty())
-    net_log().AddEvent(
-        NetLogEventType::AUTH_CHANNEL_BINDINGS,
-        base::Bind(&NetLogParameterChannelBindings, channel_bindings_));
+    net_log().AddEvent(NetLogEventType::AUTH_CHANNEL_BINDINGS,
+                       [&](NetLogCaptureMode capture_mode) {
+                         return NetLogParameterChannelBindings(
+                             channel_bindings_, capture_mode);
+                       });
   return true;
 }
 

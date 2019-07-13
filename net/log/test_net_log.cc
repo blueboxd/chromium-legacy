@@ -56,12 +56,12 @@ class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
     // simpler.
     std::unique_ptr<base::DictionaryValue> param_dict =
         base::DictionaryValue::From(
-            base::Value::ToUniquePtrValue(entry.ParametersToValue()));
+            base::Value::ToUniquePtrValue(entry.params.Clone()));
 
     // Only need to acquire the lock when accessing class variables.
     base::AutoLock lock(lock_);
-    entry_list_.push_back(TestNetLogEntry(entry.type(), base::TimeTicks::Now(),
-                                          entry.source(), entry.phase(),
+    entry_list_.push_back(TestNetLogEntry(entry.type, base::TimeTicks::Now(),
+                                          entry.source, entry.phase,
                                           std::move(param_dict)));
   }
 

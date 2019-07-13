@@ -118,7 +118,7 @@ float SVGLength::Value(const SVGLengthContext& context) const {
     return context.ResolveValue(AsCSSPrimitiveValue(), UnitMode());
 
   return context.ConvertValueToUserUnits(value_->GetFloatValue(), UnitMode(),
-                                         value_->TypeWithCalcResolved());
+                                         NumericLiteralType());
 }
 
 void SVGLength::SetValueAsNumber(float value) {
@@ -127,10 +127,30 @@ void SVGLength::SetValueAsNumber(float value) {
 }
 
 void SVGLength::SetValue(float value, const SVGLengthContext& context) {
+  // |value| is in user units.
+  if (IsCalculated()) {
+    value_ = CSSNumericLiteralValue::Create(
+        value, CSSPrimitiveValue::UnitType::kUserUnits);
+    return;
+  }
   value_ = CSSNumericLiteralValue::Create(
       context.ConvertValueFromUserUnits(value, UnitMode(),
-                                        value_->TypeWithCalcResolved()),
-      value_->TypeWithCalcResolved());
+                                        NumericLiteralType()),
+      NumericLiteralType());
+}
+
+void SVGLength::SetValueInSpecifiedUnits(float value) {
+  DCHECK(!IsCalculated());
+  value_ = CSSNumericLiteralValue::Create(value, NumericLiteralType());
+}
+
+bool SVGLength::IsRelative() const {
+  if (IsPercentage())
+    return true;
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug with relative units in math functions.
+  return !IsCalculated() &&
+         CSSPrimitiveValue::IsRelativeUnit(NumericLiteralType());
 }
 
 static bool IsSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
@@ -225,7 +245,8 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
     if (!IsSupportedCalculationCategory(math_value->Category()))
       return SVGParseStatus::kExpectedLength;
   } else {
-    if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
+    const auto* numeric_literal_value = To<CSSNumericLiteralValue>(new_value);
+    if (!IsSupportedCSSUnitType(numeric_literal_value->GetType()))
       return SVGParseStatus::kExpectedLength;
   }
 
@@ -337,11 +358,13 @@ void SVGLength::CalculateAnimatedValue(
   CSSPrimitiveValue::UnitType new_unit =
       CSSPrimitiveValue::UnitType::kUserUnits;
   if (percentage < 0.5) {
-    if (!from_length->IsCalculated())
-      new_unit = from_length->TypeWithCalcResolved();
+    if (!from_length->IsCalculated()) {
+      new_unit = from_length->NumericLiteralType();
+    }
   } else {
-    if (!to_length->IsCalculated())
-      new_unit = to_length->TypeWithCalcResolved();
+    if (!to_length->IsCalculated()) {
+      new_unit = to_length->NumericLiteralType();
+    }
   }
   animated_number = length_context.ConvertValueFromUserUnits(
       animated_number, UnitMode(), new_unit);

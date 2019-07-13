@@ -135,12 +135,11 @@ void SVGLengthList::CalculateAnimatedValue(
   for (uint32_t i = 0; i < to_length_list_size; ++i) {
     // TODO(shanmuga.m): Support calc for SVGLengthList animation
     float animated_number = at(i)->Value(length_context);
-    CSSPrimitiveValue::UnitType unit_type =
-        to_list->at(i)->TypeWithCalcResolved();
+    const SVGLength* length_for_unit_type = to_list->at(i);
     float effective_from = 0;
     if (from_length_list_size) {
       if (percentage < 0.5)
-        unit_type = from_list->at(i)->TypeWithCalcResolved();
+        length_for_unit_type = from_list->at(i);
       effective_from = from_list->at(i)->Value(length_context);
     }
     float effective_to = to_list->at(i)->Value(length_context);
@@ -152,6 +151,11 @@ void SVGLengthList::CalculateAnimatedValue(
     animation_element->AnimateAdditiveNumber(
         percentage, repeat_count, effective_from, effective_to,
         effective_to_at_end, animated_number);
+    // |animated_number| is in user units.
+    CSSPrimitiveValue::UnitType unit_type =
+        length_for_unit_type->IsCalculated()
+            ? CSSPrimitiveValue::UnitType::kUserUnits
+            : length_for_unit_type->NumericLiteralType();
     at(i)->SetUnitType(unit_type);
     at(i)->SetValue(animated_number, length_context);
   }

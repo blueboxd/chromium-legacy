@@ -199,8 +199,8 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
   // release() socket. It ends up working though, since those methods are being
   // used to layer sockets (and the destination sources are the same).
   DCHECK(socket_.get());
-  socket_->NetLog().BeginEvent(NetLogEventType::SOCKET_IN_USE,
-                               requesting_source_.ToEventParametersCallback());
+  socket_->NetLog().BeginEventReferencingSource(NetLogEventType::SOCKET_IN_USE,
+                                                requesting_source_);
 }
 
 void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {

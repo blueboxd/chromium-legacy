@@ -20,6 +20,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 
@@ -182,10 +183,10 @@ const char* HttpAuth::AuthorizationResultToString(
 }
 
 // static
-NetLogParametersCallback HttpAuth::NetLogAuthorizationResultCallback(
+base::Value HttpAuth::NetLogAuthorizationResultParams(
     const char* name,
     AuthorizationResult authorization_result) {
-  return NetLog::StringCallback(
+  return NetLogParamsWithString(
       name, AuthorizationResultToString(authorization_result));
 }
 

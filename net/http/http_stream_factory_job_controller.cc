@@ -32,8 +32,7 @@ namespace {
 
 // Returns parameters associated with the proxy resolution.
 base::Value NetLogHttpStreamJobProxyServerResolved(
-    const ProxyServer& proxy_server,
-    NetLogCaptureMode /* capture_mode */) {
+    const ProxyServer& proxy_server) {
   base::DictionaryValue dict;
 
   dict.SetString("proxy_server", proxy_server.is_valid()
@@ -48,18 +47,15 @@ base::Value NetLogHttpStreamJobProxyServerResolved(
 // the main job.
 const int kMaxDelayTimeForMainJobSecs = 3;
 
-base::Value NetLogJobControllerCallback(const GURL* url,
-                                        bool is_preconnect,
-                                        NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogJobControllerParams(const GURL& url, bool is_preconnect) {
   base::DictionaryValue dict;
-  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetString("url", url.possibly_invalid_spec());
   dict.SetBoolean("is_preconnect", is_preconnect);
   return std::move(dict);
 }
 
-base::Value NetLogAltSvcCallback(const AlternativeServiceInfo* alt_svc_info,
-                                 bool is_broken,
-                                 NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogAltSvcParams(const AlternativeServiceInfo* alt_svc_info,
+                               bool is_broken) {
   base::DictionaryValue dict;
   dict.SetString("alt_svc", alt_svc_info->ToString());
   dict.SetBoolean("is_broken", is_broken);
@@ -106,9 +102,9 @@ HttpStreamFactory::JobController::JobController(
           session->net_log(),
           NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)) {
   DCHECK(factory);
-  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER,
-                      base::Bind(&NetLogJobControllerCallback,
-                                 &request_info.url, is_preconnect));
+  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER, [&] {
+    return NetLogJobControllerParams(request_info.url, is_preconnect);
+  });
 }
 
 HttpStreamFactory::JobController::~JobController() {
@@ -142,10 +138,11 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
   request_ = request.get();
 
   // Associates |net_log_| with |source_net_log|.
-  source_net_log.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
-                          net_log_.source().ToEventParametersCallback());
-  net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
-                    source_net_log.source().ToEventParametersCallback());
+  source_net_log.AddEventReferencingSource(
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND, net_log_.source());
+  net_log_.AddEventReferencingSource(
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
+      source_net_log.source());
 
   RunLoop(OK);
   return request;
@@ -458,8 +455,8 @@ void HttpStreamFactory::JobController::AddConnectionAttemptsToRequest(
 
 void HttpStreamFactory::JobController::ResumeMainJobLater(
     const base::TimeDelta& delay) {
-  net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_DELAYED,
-                    NetLog::Int64Callback("delay", delay.InMilliseconds()));
+  net_log_.AddEventWithInt64Params(NetLogEventType::HTTP_STREAM_JOB_DELAYED,
+                                   "delay", delay.InMilliseconds());
   resume_main_job_callback_.Reset(
       base::BindOnce(&HttpStreamFactory::JobController::ResumeMainJob,
                      ptr_factory_.GetWeakPtr()));
@@ -474,9 +471,9 @@ void HttpStreamFactory::JobController::ResumeMainJob() {
     return;
   }
   main_job_is_resumed_ = true;
-  main_job_->net_log().AddEvent(
-      NetLogEventType::HTTP_STREAM_JOB_RESUMED,
-      NetLog::Int64Callback("delay", main_job_wait_time_.InMilliseconds()));
+  main_job_->net_log().AddEventWithInt64Params(
+      NetLogEventType::HTTP_STREAM_JOB_RESUMED, "delay",
+      main_job_wait_time_.InMilliseconds());
 
   main_job_->Resume();
   main_job_wait_time_ = base::TimeDelta();
@@ -640,10 +637,11 @@ int HttpStreamFactory::JobController::DoResolveProxyComplete(int rv) {
 
   proxy_resolve_request_ = nullptr;
   net_log_.AddEvent(
-      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED,
-      base::Bind(
-          &NetLogHttpStreamJobProxyServerResolved,
-          proxy_info_.is_empty() ? ProxyServer() : proxy_info_.proxy_server()));
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED, [&] {
+        return NetLogHttpStreamJobProxyServerResolved(
+            proxy_info_.is_empty() ? ProxyServer()
+                                   : proxy_info_.proxy_server());
+      });
 
   if (rv != OK)
     return rv;
@@ -770,12 +768,12 @@ void HttpStreamFactory::JobController::BindJob(Job* job) {
   job_bound_ = true;
   bound_job_ = job;
 
-  request_->net_log().AddEvent(
+  request_->net_log().AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_JOB,
-      job->net_log().source().ToEventParametersCallback());
-  job->net_log().AddEvent(
+      job->net_log().source());
+  job->net_log().AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_REQUEST,
-      request_->net_log().source().ToEventParametersCallback());
+      request_->net_log().source());
 
   OrphanUnboundJob();
 }
@@ -1012,9 +1010,9 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     const bool is_broken = http_server_properties.IsAlternativeServiceBroken(
         alternative_service_info.alternative_service());
     net_log_.AddEvent(
-        NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND,
-        base::BindRepeating(&NetLogAltSvcCallback, &alternative_service_info,
-                            is_broken));
+        NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND, [&] {
+          return NetLogAltSvcParams(&alternative_service_info, is_broken);
+        });
     if (is_broken) {
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
       continue;

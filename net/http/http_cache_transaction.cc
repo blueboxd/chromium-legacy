@@ -42,6 +42,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache_writers.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
@@ -2362,10 +2363,9 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   if (range_found || special_headers || external_validation_.initialized) {
     // Log the headers before request_ is modified.
     std::string empty;
-    net_log_.AddEvent(
-        NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_->extra_headers), &empty));
+    NetLogRequestHeaders(net_log_,
+                         NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS,
+                         empty, &request_->extra_headers);
   }
 
   // We don't support ranges and validation headers.

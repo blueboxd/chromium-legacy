@@ -34,7 +34,6 @@
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/log/net_log_parameters_callback.h"
 
 namespace base {
 class ListValue;
@@ -181,10 +180,8 @@ class NET_EXPORT HostCache {
     // from |back|. Fields that cannot be merged take precedence from |front|.
     static Entry MergeEntries(Entry front, Entry back);
 
-    // Creates a callback for use with the NetLog that returns a Value
-    // representation of the entry.  The callback must be destroyed before
-    // |this| is.
-    NetLogParametersCallback CreateNetLogCallback() const;
+    // Creates a value representation of the entry for use with NetLog.
+    base::Value NetLogParams() const;
 
     // Creates a copy of |this| with the port of all address and hostname values
     // set to |port| if the current port is 0. Preserves any non-zero ports.
@@ -223,7 +220,6 @@ class NET_EXPORT HostCache {
                       int network_changes,
                       EntryStaleness* out) const;
 
-    base::Value NetLogCallback(NetLogCaptureMode capture_mode) const;
     base::DictionaryValue GetAsValue(bool include_staleness) const;
 
     // The resolve results for this entry.

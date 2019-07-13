@@ -22,17 +22,21 @@
 namespace net {
 namespace {
 
-base::Value ElideNetLogHeaderCallback(base::StringPiece header_name,
-                                      base::StringPiece header_value,
-                                      base::StringPiece error_message,
-                                      NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
-  dict.SetKey("header_name", NetLogStringValue(header_name));
-  dict.SetKey("header_value", NetLogStringValue(ElideHeaderValueForNetLog(
-                                  capture_mode, header_name.as_string(),
-                                  header_value.as_string())));
-  dict.SetString("error", error_message);
-  return std::move(dict);
+void NetLogInvalidHeader(const NetLogWithSource& net_log,
+                         base::StringPiece header_name,
+                         base::StringPiece header_value,
+                         const char* error_message) {
+  net_log.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
+                   [&](NetLogCaptureMode capture_mode) {
+                     base::DictionaryValue dict;
+                     dict.SetKey("header_name", NetLogStringValue(header_name));
+                     dict.SetKey("header_value",
+                                 NetLogStringValue(ElideHeaderValueForNetLog(
+                                     capture_mode, header_name.as_string(),
+                                     header_value.as_string())));
+                     dict.SetString("error", error_message);
+                     return dict;
+                   });
 }
 
 bool ContainsUppercaseAscii(base::StringPiece str) {
@@ -65,19 +69,15 @@ size_t HeaderCoalescer::EstimateMemoryUsage() const {
 bool HeaderCoalescer::AddHeader(base::StringPiece key,
                                 base::StringPiece value) {
   if (key.empty()) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                      base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                 "Header name must not be empty."));
+    NetLogInvalidHeader(net_log_, key, value, "Header name must not be empty.");
     return false;
   }
 
   base::StringPiece key_name = key;
   if (key[0] == ':') {
     if (regular_header_seen_) {
-      net_log_.AddEvent(
-          NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-          base::Bind(&ElideNetLogHeaderCallback, key, value,
-                     "Pseudo header must not follow regular headers."));
+      NetLogInvalidHeader(net_log_, key, value,
+                          "Pseudo header must not follow regular headers.");
       return false;
     }
     key_name.remove_prefix(1);
@@ -86,25 +86,21 @@ bool HeaderCoalescer::AddHeader(base::StringPiece key,
   }
 
   if (!HttpUtil::IsValidHeaderName(key_name)) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                      base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                 "Invalid character in header name."));
+    NetLogInvalidHeader(net_log_, key, value,
+                        "Invalid character in header name.");
     return false;
   }
 
   if (ContainsUppercaseAscii(key_name)) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                      base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                 "Upper case characters in header name."));
+    NetLogInvalidHeader(net_log_, key, value,
+                        "Upper case characters in header name.");
     return false;
   }
 
   // 32 byte overhead according to RFC 7540 Section 6.5.2.
   header_list_size_ += key.size() + value.size() + 32;
   if (header_list_size_ > max_header_list_size_) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                      base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                 "Header list too large."));
+    NetLogInvalidHeader(net_log_, key, value, "Header list too large.");
     return false;
   }
 
@@ -124,9 +120,7 @@ bool HeaderCoalescer::AddHeader(base::StringPiece key,
       std::string error_line;
       base::StringAppendF(&error_line,
                           "Invalid character 0x%02X in header value.", c);
-      net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                        base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                   error_line.c_str()));
+      NetLogInvalidHeader(net_log_, key, value, error_line.c_str());
       return false;
     }
   }

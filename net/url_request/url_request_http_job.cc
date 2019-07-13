@@ -491,9 +491,8 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
   if (result == OK) {
     StartTransactionInternal();
   } else {
-    std::string source("delegate");
-    request_->net_log().AddEvent(NetLogEventType::CANCELLED,
-                                 NetLog::StringCallback("source", &source));
+    request_->net_log().AddEventWithStringParams(NetLogEventType::CANCELLED,
+                                                 "source", "delegate");
     // Don't call back synchronously to the delegate.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -704,9 +703,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   OnCallToDelegateComplete();
 
   if (result != OK) {
-    std::string source("delegate");
-    request_->net_log().AddEvent(NetLogEventType::CANCELLED,
-                                 NetLog::StringCallback("source", &source));
+    request_->net_log().AddEventWithStringParams(NetLogEventType::CANCELLED,
+                                                 "source", "delegate");
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
     return;
   }
@@ -922,10 +920,8 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
         if (error == ERR_IO_PENDING) {
           awaiting_callback_ = true;
         } else {
-          std::string source("delegate");
-          request_->net_log().AddEvent(
-              NetLogEventType::CANCELLED,
-              NetLog::StringCallback("source", &source));
+          request_->net_log().AddEventWithStringParams(
+              NetLogEventType::CANCELLED, "source", "delegate");
           OnCallToDelegateComplete();
           NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error));
         }

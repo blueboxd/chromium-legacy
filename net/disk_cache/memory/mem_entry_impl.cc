@@ -70,9 +70,7 @@ std::string GenerateChildName(const std::string& base_name, int64_t child_id) {
 
 // Returns NetLog parameters for the creation of a MemEntryImpl. A separate
 // function is needed because child entries don't store their key().
-base::Value NetLogEntryCreationCallback(
-    const MemEntryImpl* entry,
-    net::NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogEntryCreationParams(const MemEntryImpl* entry) {
   base::Value dict(base::Value::Type::DICTIONARY);
   std::string key;
   switch (entry->type()) {
@@ -203,16 +201,16 @@ int MemEntryImpl::ReadData(int index,
                            int buf_len,
                            CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_READ_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        false);
   }
 
   int result = InternalReadData(index, offset, buf, buf_len);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_READ_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                            net::NetLogEventPhase::END, result);
   }
   return result;
 }
@@ -224,17 +222,18 @@ int MemEntryImpl::WriteData(int index,
                             CompletionOnceCallback callback,
                             bool truncate) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_WRITE_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        truncate);
   }
 
   int result = InternalWriteData(index, offset, buf, buf_len, truncate);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_WRITE_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                            net::NetLogEventPhase::END, result);
   }
+
   return result;
 }
 
@@ -243,8 +242,8 @@ int MemEntryImpl::ReadSparseData(int64_t offset,
                                  int buf_len,
                                  CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_READ,
-                        CreateNetLogSparseOperationCallback(offset, buf_len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_READ,
+                          net::NetLogEventPhase::BEGIN, offset, buf_len);
   }
   int result = InternalReadSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
@@ -257,8 +256,8 @@ int MemEntryImpl::WriteSparseData(int64_t offset,
                                   int buf_len,
                                   CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE,
-                        CreateNetLogSparseOperationCallback(offset, buf_len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_WRITE,
+                          net::NetLogEventPhase::BEGIN, offset, buf_len);
   }
   int result = InternalWriteSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
@@ -271,14 +270,14 @@ int MemEntryImpl::GetAvailableRange(int64_t offset,
                                     int64_t* start,
                                     CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_GET_RANGE,
-                        CreateNetLogSparseOperationCallback(offset, len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_GET_RANGE,
+                          net::NetLogEventPhase::BEGIN, offset, len);
   }
   int result = InternalGetAvailableRange(offset, len, start);
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLogEventType::SPARSE_GET_RANGE,
-        CreateNetLogGetAvailableRangeResultCallback(*start, result));
+    net_log_.EndEvent(net::NetLogEventType::SPARSE_GET_RANGE, [&] {
+      return CreateNetLogGetAvailableRangeResultParams(*start, result);
+    });
   }
   return result;
 }
@@ -324,7 +323,7 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
   net_log_ = net::NetLogWithSource::Make(
       net_log, net::NetLogSourceType::MEMORY_CACHE_ENTRY);
   net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_MEM_ENTRY_IMPL,
-                      base::Bind(&NetLogEntryCreationCallback, this));
+                      [&] { return NetLogEntryCreationParams(this); });
 }
 
 MemEntryImpl::~MemEntryImpl() {
@@ -463,10 +462,10 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
     if (child_offset < child->child_first_pos_)
       break;
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(
-          net::NetLogEventType::SPARSE_READ_CHILD_DATA,
-          CreateNetLogSparseReadWriteCallback(child->net_log_.source(),
-                                              io_buf->BytesRemaining()));
+      NetLogSparseReadWrite(net_log_,
+                            net::NetLogEventType::SPARSE_READ_CHILD_DATA,
+                            net::NetLogEventPhase::BEGIN,
+                            child->net_log_.source(), io_buf->BytesRemaining());
     }
     int ret =
         child->ReadData(kSparseData, child_offset, io_buf.get(),
@@ -528,9 +527,9 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     int data_size = child->GetDataSize(kSparseData);
 
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
-                          CreateNetLogSparseReadWriteCallback(
-                              child->net_log_.source(), write_len));
+      NetLogSparseReadWrite(
+          net_log_, net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
+          net::NetLogEventPhase::BEGIN, child->net_log_.source(), write_len);
     }
 
     // Always writes to the child entry. This operation may overwrite data

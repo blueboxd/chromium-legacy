@@ -18,9 +18,7 @@ namespace net {
 
 // Returns a Value containing NetLog parameters for constructing
 // a CookieMonster.
-base::Value NetLogCookieMonsterConstructorCallback(
-    bool persistent_store,
-    NetLogCaptureMode capture_mode);
+base::Value NetLogCookieMonsterConstructorParams(bool persistent_store);
 
 // Returns a Value containing NetLog parameters for adding a cookie.
 base::Value NetLogCookieMonsterCookieAdded(const CanonicalCookie* cookie,

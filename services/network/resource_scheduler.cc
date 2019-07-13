@@ -808,10 +808,9 @@ class ResourceScheduler::Client
     // Only log on requests that were blocked by the ResourceScheduler.
     if (start_mode == START_ASYNC) {
       DCHECK_NE(RequestStartTrigger::NONE, trigger);
-      request->url_request()->net_log().AddEvent(
-          net::NetLogEventType::RESOURCE_SCHEDULER_REQUEST_STARTED,
-          net::NetLog::StringCallback("trigger",
-                                      RequestStartTriggerString(trigger)));
+      request->url_request()->net_log().AddEventWithStringParams(
+          net::NetLogEventType::RESOURCE_SCHEDULER_REQUEST_STARTED, "trigger",
+          RequestStartTriggerString(trigger));
     }
     if (request)
       RecordMetricsOnStartRequest(*request, ticks_now);

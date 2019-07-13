@@ -48,7 +48,7 @@ base::Value CaptureModeToValue(NetLogCaptureMode capture_mode) {
   return base::Value(CaptureModeToInt(capture_mode));
 }
 
-base::Value NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
+base::Value NetCaptureModeParams(NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetKey("capture_mode", CaptureModeToValue(capture_mode));
   return std::move(dict);
@@ -87,7 +87,9 @@ TEST(NetLogTest, CaptureModes) {
     EXPECT_EQ(mode, net_log.GetObserver()->capture_mode());
 
     net_log.AddGlobalEntry(NetLogEventType::SOCKET_ALIVE,
-                           base::Bind(NetCaptureModeCallback));
+                           [&](NetLogCaptureMode capture_mode) {
+                             return NetCaptureModeParams(capture_mode);
+                           });
 
     TestNetLogEntry::List entries;
     net_log.GetEntries(&entries);
@@ -152,7 +154,9 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
 
 void AddEvent(NetLog* net_log) {
   net_log->AddGlobalEntry(NetLogEventType::CANCELLED,
-                          base::Bind(CaptureModeToValue));
+                          [&](NetLogCaptureMode capture_mode) {
+                            return CaptureModeToValue(capture_mode);
+                          });
 }
 
 // A thread that waits until an event has been signalled before calling
@@ -501,28 +505,12 @@ TEST(NetLogTest, NetLogNumberValue) {
 // Tests that serializing a NetLogEntry with empty parameters omits a value for
 // "params".
 TEST(NetLogTest, NetLogEntryToValueEmptyParams) {
-  // NetLogEntry with a null parameters callback.
-  NetLogEntryData entry_data1(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
-                              NetLogEventPhase::BEGIN, base::TimeTicks(),
-                              nullptr);
-  NetLogEntry entry1(&entry_data1, NetLogCaptureMode::kDefault);
+  // NetLogEntry with no params.
+  NetLogEntry entry1(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
+                     NetLogEventPhase::BEGIN, base::TimeTicks(), base::Value());
 
-  // NetLogEntry with a parameters callback that returns a NONE value.
-  NetLogParametersCallback callback2 =
-      base::BindRepeating([](NetLogCaptureMode) { return base::Value(); });
-  NetLogEntryData entry_data2(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
-                              NetLogEventPhase::BEGIN, base::TimeTicks(),
-                              &callback2);
-  NetLogEntry entry2(&entry_data2, NetLogCaptureMode::kDefault);
-
-  ASSERT_FALSE(entry_data1.parameters_callback);
-  ASSERT_TRUE(entry_data2.parameters_callback);
-
-  ASSERT_TRUE(entry1.ParametersToValue().is_none());
-  ASSERT_TRUE(entry2.ParametersToValue().is_none());
-
+  ASSERT_TRUE(entry1.params.is_none());
   ASSERT_FALSE(entry1.ToValue().FindKey("params"));
-  ASSERT_FALSE(entry2.ToValue().FindKey("params"));
 }
 
 }  // namespace

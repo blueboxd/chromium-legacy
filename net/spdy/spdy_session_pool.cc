@@ -184,18 +184,18 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
   if (key == it->second->spdy_session_key()) {
     UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
                               SPDY_SESSION_GET_MAX);
-    net_log.AddEvent(
+    net_log.AddEventReferencingSource(
         NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION,
-        it->second->net_log().source().ToEventParametersCallback());
+        it->second->net_log().source());
     return it->second;
   }
 
   if (enable_ip_based_pooling) {
     UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING_FROM_IP_POOL,
                               SPDY_SESSION_GET_MAX);
-    net_log.AddEvent(
+    net_log.AddEventReferencingSource(
         NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
-        it->second->net_log().source().ToEventParametersCallback());
+        it->second->net_log().source());
     return it->second;
   }
 
@@ -665,9 +665,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(
       FROM_HERE, base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
                                 weak_ptr_factory_.GetWeakPtr(), key));
 
-  source_net_log.AddEvent(
+  source_net_log.AddEventReferencingSource(
       NetLogEventType::HTTP2_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET,
-      available_session->net_log().source().ToEventParametersCallback());
+      available_session->net_log().source());
 
   // Look up the IP address for this session so that we can match
   // future sessions (potentially to different domains) which can

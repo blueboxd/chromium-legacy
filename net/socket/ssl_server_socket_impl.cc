@@ -637,9 +637,8 @@ int SSLServerContextImpl::SocketImpl::DoPayloadRead() {
   int net_error =
       MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
   if (net_error != ERR_IO_PENDING) {
-    net_log_.AddEvent(
-        NetLogEventType::SSL_READ_ERROR,
-        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+    NetLogOpenSSLError(net_log_, NetLogEventType::SSL_READ_ERROR, net_error,
+                       ssl_error, error_info);
   }
   return net_error;
 }
@@ -658,9 +657,8 @@ int SSLServerContextImpl::SocketImpl::DoPayloadWrite() {
   int net_error =
       MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
   if (net_error != ERR_IO_PENDING) {
-    net_log_.AddEvent(
-        NetLogEventType::SSL_WRITE_ERROR,
-        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+    NetLogOpenSSLError(net_log_, NetLogEventType::SSL_WRITE_ERROR, net_error,
+                       ssl_error, error_info);
   }
   return net_error;
 }
@@ -737,9 +735,8 @@ int SSLServerContextImpl::SocketImpl::DoHandshake() {
     } else {
       LOG(ERROR) << "handshake failed; returned " << rv << ", SSL error code "
                  << ssl_error << ", net_error " << net_error;
-      net_log_.AddEvent(
-          NetLogEventType::SSL_HANDSHAKE_ERROR,
-          CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+      NetLogOpenSSLError(net_log_, NetLogEventType::SSL_HANDSHAKE_ERROR,
+                         net_error, ssl_error, error_info);
     }
   }
   return net_error;

@@ -1923,8 +1923,7 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
 
   void OnAddEntry(const NetLogEntry& entry) override {
     ++count_;
-    base::Value value = entry.ParametersToValue();
-    if (!value.is_none() && value.is_dict())
+    if (!entry.params.is_none() && entry.params.is_dict())
       dict_count_++;
   }
 

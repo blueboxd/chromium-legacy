@@ -2344,6 +2344,7 @@ enum WebFeature {
   kExecutedJavaScriptURL = 2955,
   kLinkPrefetchLoadEvent = 2956,
   kLinkPrefetchErrorEvent = 2957,
+  kFontSizeWebkitXxxLarge = 2958,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

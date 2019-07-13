@@ -71,9 +71,9 @@ void SyncCallback::OnFileIOComplete(int bytes_copied) {
   entry_->DecrementIoCount();
   if (!callback_.is_null()) {
     if (entry_->net_log().IsCapturing()) {
-      entry_->net_log().EndEvent(
-          end_event_type_,
-          disk_cache::CreateNetLogReadWriteCompleteCallback(bytes_copied));
+      disk_cache::NetLogReadWriteComplete(entry_->net_log(), end_event_type_,
+                                          net::NetLogEventPhase::END,
+                                          bytes_copied);
     }
     entry_->ReportIOTime(disk_cache::EntryImpl::kAsyncIO, start_);
     buf_ = nullptr;  // Release the buffer before invoking the callback.
@@ -335,17 +335,17 @@ int EntryImpl::ReadDataImpl(int index,
                             int buf_len,
                             CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_READ_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        false);
   }
 
   int result =
       InternalReadData(index, offset, buf, buf_len, std::move(callback));
 
   if (result != net::ERR_IO_PENDING && net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_READ_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                            net::NetLogEventPhase::END, result);
   }
   return result;
 }
@@ -357,17 +357,17 @@ int EntryImpl::WriteDataImpl(int index,
                              CompletionOnceCallback callback,
                              bool truncate) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_WRITE_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        truncate);
   }
 
   int result = InternalWriteData(index, offset, buf, buf_len,
                                  std::move(callback), truncate);
 
   if (result != net::ERR_IO_PENDING && net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_WRITE_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                            net::NetLogEventPhase::END, result);
   }
   return result;
 }
@@ -752,9 +752,9 @@ void EntryImpl::BeginLogging(net::NetLog* net_log, bool created) {
   DCHECK(!net_log_.net_log());
   net_log_ = net::NetLogWithSource::Make(
       net_log, net::NetLogSourceType::DISK_CACHE_ENTRY);
-  net_log_.BeginEvent(
-      net::NetLogEventType::DISK_CACHE_ENTRY_IMPL,
-      CreateNetLogParametersEntryCreationCallback(this, created));
+  net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_ENTRY_IMPL, [&] {
+    return CreateNetLogParametersEntryCreationParams(this, created);
+  });
 }
 
 const net::NetLogWithSource& EntryImpl::net_log() const {

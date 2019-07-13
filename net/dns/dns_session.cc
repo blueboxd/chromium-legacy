@@ -295,8 +295,8 @@ std::unique_ptr<DnsSession::SocketLease> DnsSession::AllocateSocket(
   if (!socket.get())
     return std::unique_ptr<SocketLease>();
 
-  socket->NetLog().BeginEvent(NetLogEventType::SOCKET_IN_USE,
-                              source.ToEventParametersCallback());
+  socket->NetLog().BeginEventReferencingSource(NetLogEventType::SOCKET_IN_USE,
+                                               source);
 
   SocketLease* lease = new SocketLease(this, server_index, std::move(socket));
   return std::unique_ptr<SocketLease>(lease);

@@ -41,12 +41,10 @@ namespace network {
 
 namespace {
 
-base::Value NetLogErrorCallback(int line_number,
-                                const std::string* message,
-                                net::NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogErrorParams(int line_number, const std::string& message) {
   base::DictionaryValue dict;
   dict.SetInteger("line_number", line_number);
-  dict.SetString("message", *message);
+  dict.SetString("message", message);
   return std::move(dict);
 }
 
@@ -92,21 +90,21 @@ class ClientMixin : public ClientInterface {
 
   // Overridden from ClientInterface:
   void Alert(const std::string& message) override {
-    auto callback = net::NetLog::StringCallback("message", &message);
-    net_log_with_source_.AddEvent(net::NetLogEventType::PAC_JAVASCRIPT_ALERT,
-                                  callback);
+    net_log_with_source_.AddEventWithStringParams(
+        net::NetLogEventType::PAC_JAVASCRIPT_ALERT, "message", message);
     if (net_log_)
-      net_log_->AddGlobalEntry(net::NetLogEventType::PAC_JAVASCRIPT_ALERT,
-                               callback);
+      net_log_->AddGlobalEntryWithStringParams(
+          net::NetLogEventType::PAC_JAVASCRIPT_ALERT, "message", message);
   }
 
   void OnError(int32_t line_number, const std::string& message) override {
-    auto callback = base::Bind(&NetLogErrorCallback, line_number, &message);
-    net_log_with_source_.AddEvent(net::NetLogEventType::PAC_JAVASCRIPT_ERROR,
-                                  callback);
+    net_log_with_source_.AddEvent(
+        net::NetLogEventType::PAC_JAVASCRIPT_ERROR,
+        [&] { return NetLogErrorParams(line_number, message); });
     if (net_log_)
-      net_log_->AddGlobalEntry(net::NetLogEventType::PAC_JAVASCRIPT_ERROR,
-                               callback);
+      net_log_->AddGlobalEntry(net::NetLogEventType::PAC_JAVASCRIPT_ERROR, [&] {
+        return NetLogErrorParams(line_number, message);
+      });
     if (error_observer_) {
       error_observer_->OnPACScriptError(line_number,
                                         base::UTF8ToUTF16(message));

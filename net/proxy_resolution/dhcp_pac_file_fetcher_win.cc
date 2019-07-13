@@ -202,9 +202,7 @@ class TaskRunnerWithCap : public base::TaskRunner {
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerWithCap);
 };
 
-base::Value NetLogGetAdaptersDoneCallback(
-    DhcpAdapterNamesLoggingInfo* info,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogGetAdaptersDoneParams(DhcpAdapterNamesLoggingInfo* info) {
   base::Value result(base::Value::Type::DICTIONARY);
 
   // Add information on each of the adapters enumerated (including those that
@@ -246,9 +244,7 @@ base::Value NetLogGetAdaptersDoneCallback(
   return result;
 }
 
-base::Value NetLogFetcherDoneCallback(int fetcher_index,
-                                      int net_error,
-                                      NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogFetcherDoneParams(int fetcher_index, int net_error) {
   base::Value result(base::Value::Type::DICTIONARY);
 
   result.SetIntKey("fetcher_index", fetcher_index);
@@ -363,8 +359,7 @@ void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
   logging_info->origin_thread_end_time = base::TimeTicks::Now();
 
   net_log_.EndEvent(NetLogEventType::WPAD_DHCP_WIN_GET_ADAPTERS,
-                    base::Bind(&NetLogGetAdaptersDoneCallback,
-                               base::Unretained(logging_info)));
+                    [&] { return NetLogGetAdaptersDoneParams(logging_info); });
 
   // Enable unit tests to wait for this to happen; in production this function
   // call is a no-op.
@@ -412,9 +407,9 @@ void DhcpPacFileFetcherWin::OnFetcherDone(size_t fetcher_index,
                                           int result) {
   DCHECK(state_ == STATE_NO_RESULTS || state_ == STATE_SOME_RESULTS);
 
-  net_log_.AddEvent(
-      NetLogEventType::WPAD_DHCP_WIN_ON_FETCHER_DONE,
-      base::Bind(&NetLogFetcherDoneCallback, fetcher_index, result));
+  net_log_.AddEvent(NetLogEventType::WPAD_DHCP_WIN_ON_FETCHER_DONE, [&] {
+    return NetLogFetcherDoneParams(fetcher_index, result);
+  });
 
   if (--num_pending_fetchers_ == 0) {
     TransitionToDone();
@@ -495,9 +490,9 @@ void DhcpPacFileFetcherWin::TransitionToDone() {
   DCHECK_EQ(state_, STATE_DONE);
   DCHECK(fetchers_.empty());
 
-  net_log_.EndEvent(
-      NetLogEventType::WPAD_DHCP_WIN_FETCH,
-      base::Bind(&NetLogFetcherDoneCallback, used_fetcher_index, result));
+  net_log_.EndEvent(NetLogEventType::WPAD_DHCP_WIN_FETCH, [&] {
+    return NetLogFetcherDoneParams(used_fetcher_index, result);
+  });
 
   // We may be deleted re-entrantly within this outcall.
   std::move(callback).Run(result);

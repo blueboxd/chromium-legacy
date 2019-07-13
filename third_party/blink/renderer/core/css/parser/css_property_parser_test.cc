@@ -573,4 +573,16 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyContainStyleUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyFontSizeWebkitXxxLargeUseCount) {
+  WebFeature feature = WebFeature::kFontSizeWebkitXxxLarge;
+  ParseProperty(CSSPropertyID::kFontSize, "xx-small");
+  ParseProperty(CSSPropertyID::kFontSize, "larger");
+  ParseProperty(CSSPropertyID::kFontSize, "smaller");
+  ParseProperty(CSSPropertyID::kFontSize, "10%");
+  ParseProperty(CSSPropertyID::kFontSize, "20px");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kFontSize, "-webkit-xxx-large");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
 }  // namespace blink

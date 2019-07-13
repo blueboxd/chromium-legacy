@@ -24,10 +24,10 @@
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
+#include "net/log/net_log_values.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -55,14 +55,10 @@ void AddEntries(FileNetLogObserver* logger,
                 size_t entry_size) {
   // Get base size of event.
   const int kDummyId = 0;
-  std::string message = "";
-  NetLogParametersCallback callback =
-      NetLog::StringCallback("message", &message);
   NetLogSource source(NetLogSourceType::HTTP2_SESSION, kDummyId);
-  NetLogEntryData base_entry_data(NetLogEventType::PAC_JAVASCRIPT_ERROR, source,
-                                  NetLogEventPhase::BEGIN,
-                                  base::TimeTicks::Now(), &callback);
-  NetLogEntry base_entry(&base_entry_data, NetLogCaptureMode::kEverything);
+  NetLogEntry base_entry(NetLogEventType::PAC_JAVASCRIPT_ERROR, source,
+                         NetLogEventPhase::BEGIN, base::TimeTicks::Now(),
+                         NetLogParamsWithString("message", ""));
   base::Value value = base_entry.ToValue();
   std::string json;
   base::JSONWriter::Write(value, &json);
@@ -87,12 +83,11 @@ void AddEntries(FileNetLogObserver* logger,
 
     // String size accounts for the number of digits in id so that all events
     // are the same size.
-    message = std::string(entry_size - base_entry_size - id.size() + 1, 'x');
-    callback = NetLog::StringCallback("message", &message);
-    NetLogEntryData entry_data(NetLogEventType::PAC_JAVASCRIPT_ERROR, source,
-                               NetLogEventPhase::BEGIN, base::TimeTicks::Now(),
-                               &callback);
-    NetLogEntry entry(&entry_data, NetLogCaptureMode::kEverything);
+    std::string message =
+        std::string(entry_size - base_entry_size - id.size() + 1, 'x');
+    NetLogEntry entry(NetLogEventType::PAC_JAVASCRIPT_ERROR, source,
+                      NetLogEventPhase::BEGIN, base::TimeTicks::Now(),
+                      NetLogParamsWithString("message", message));
     logger->OnAddEntry(entry);
   }
 }

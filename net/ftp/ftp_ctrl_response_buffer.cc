@@ -84,8 +84,7 @@ int FtpCtrlResponseBuffer::ConsumeData(const char* data, int data_length) {
 
 namespace {
 
-base::Value NetLogFtpCtrlResponseCallback(const FtpCtrlResponse* response,
-                                          NetLogCaptureMode capture_mode) {
+base::Value NetLogFtpCtrlResponseParams(const FtpCtrlResponse* response) {
   base::ListValue lines;
   for (const auto& line : response->lines)
     lines.GetList().push_back(NetLogStringValue(line));
@@ -103,7 +102,7 @@ FtpCtrlResponse FtpCtrlResponseBuffer::PopResponse() {
   responses_.pop();
 
   net_log_.AddEvent(NetLogEventType::FTP_CONTROL_RESPONSE,
-                    base::Bind(&NetLogFtpCtrlResponseCallback, &result));
+                    [&] { return NetLogFtpCtrlResponseParams(&result); });
 
   return result;
 }

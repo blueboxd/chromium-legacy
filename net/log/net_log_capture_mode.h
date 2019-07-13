@@ -17,7 +17,10 @@ namespace net {
 // detail is included in their parameters.
 //
 // The capture mode is expressed as a number, where higher values imply more
-// information. The exact numeric values should not be depended on.
+// information.
+//
+// Note the numeric values are used in a bitfield (NetLogCaptureModeSet) so must
+// be sequential starting from 0, and not exceed 31.
 enum class NetLogCaptureMode : uint32_t {
   // Default logging level, which is expected to be light-weight and
   // does best-effort stripping of privacy/security sensitive data.
@@ -25,7 +28,7 @@ enum class NetLogCaptureMode : uint32_t {
   //  * Includes most HTTP request/response headers, but strips cookies and
   //    auth.
   //  * Does not include the full bytes read/written to sockets.
-  kDefault,
+  kDefault = 0,
 
   // Logging level that includes everything from kDefault, plus sensitive data
   // that it may have strippped.
@@ -39,7 +42,31 @@ enum class NetLogCaptureMode : uint32_t {
   //  * Includes the actual bytes read/written to sockets
   //  * Will result in large log files.
   kEverything,
+
+  kLast = kEverything,
 };
+
+// Bitfield of NetLogCaptureMode, that should be initialized to zero for empty
+// set. Bit "i" being set means that the set contains NetLogCaptureMode with
+// value "i".
+//
+// Use the NetLogCaptureModeSet*() functions to operate on it.
+using NetLogCaptureModeSet = uint32_t;
+
+inline NetLogCaptureModeSet NetLogCaptureModeToBit(
+    NetLogCaptureMode capture_mode) {
+  return 1 << static_cast<uint32_t>(capture_mode);
+}
+
+inline bool NetLogCaptureModeSetContains(NetLogCaptureMode capture_mode,
+                                         NetLogCaptureModeSet set) {
+  return (set & NetLogCaptureModeToBit(capture_mode)) != 0;
+}
+
+inline bool NetLogCaptureModeSetAdd(NetLogCaptureMode value,
+                                    NetLogCaptureModeSet* set) {
+  return *set |= NetLogCaptureModeToBit(value);
+}
 
 // Returns true if |capture_mode| permits logging sensitive values such as
 // cookies and credentials.

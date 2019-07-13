@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,7 +30,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -126,13 +124,6 @@ bool RequestCreatedBefore(const URLRequest* request1,
   // If requests were created at the same time, sort by ID.  Mostly matters for
   // testing purposes.
   return request1->identifier() < request2->identifier();
-}
-
-// Returns a Value representing the state of a pre-existing URLRequest when
-// net-internals was opened.
-base::Value GetRequestStateAsValue(const net::URLRequest* request,
-                                   NetLogCaptureMode capture_mode) {
-  return request->GetStateAsValue();
 }
 
 }  // namespace
@@ -504,15 +495,9 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
 
   // Create fake events.
   for (auto* request : requests) {
-    NetLogParametersCallback callback =
-        base::Bind(&GetRequestStateAsValue, base::Unretained(request));
-
-    // Note that passing the hardcoded NetLogCaptureMode::kDefault below is
-    // fine, since GetRequestStateAsValue() ignores the capture mode.
-    NetLogEntryData entry_data(
-        NetLogEventType::REQUEST_ALIVE, request->net_log().source(),
-        NetLogEventPhase::BEGIN, request->creation_time(), &callback);
-    NetLogEntry entry(&entry_data, NetLogCaptureMode::kDefault);
+    NetLogEntry entry(NetLogEventType::REQUEST_ALIVE,
+                      request->net_log().source(), NetLogEventPhase::BEGIN,
+                      request->creation_time(), request->GetStateAsValue());
     observer->OnAddEntry(entry);
   }
 }

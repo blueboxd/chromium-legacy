@@ -1741,8 +1741,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     if (primitive_value->IsCalculated()) {
       const CSSMathFunctionValue& math_value =
           To<CSSMathFunctionValue>(*primitive_value);
-      if (math_value.TypeWithMathFunctionResolved() ==
-          CSSPrimitiveValue::UnitType::kNumber) {
+      if (math_value.IsNumber()) {
         double double_value = math_value.GetDoubleValue();
         auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
         return *CSSNumericLiteralValue::Create(std::round(double_value),

@@ -71,6 +71,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "url/origin.h"
 
 using base::Time;
@@ -360,10 +361,9 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
   cookieable_schemes_.insert(
       cookieable_schemes_.begin(), kDefaultCookieableSchemes,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
-  net_log_.BeginEvent(
-      NetLogEventType::COOKIE_STORE_ALIVE,
-      base::BindRepeating(&NetLogCookieMonsterConstructorCallback,
-                          store != nullptr));
+  net_log_.BeginEvent(NetLogEventType::COOKIE_STORE_ALIVE, [&] {
+    return NetLogCookieMonsterConstructorParams(store != nullptr);
+  });
 }
 
 // Asynchronous CookieMonster API
@@ -513,9 +513,9 @@ void CookieMonster::SetCookieableSchemes(
 void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_);
-  net_log_.AddEvent(
-      NetLogEventType::COOKIE_STORE_SESSION_PERSISTENCE,
-      NetLog::BoolCallback("persistence", persist_session_cookies));
+  net_log_.AddEntryWithBoolParams(
+      NetLogEventType::COOKIE_STORE_SESSION_PERSISTENCE, NetLogEventPhase::NONE,
+      "persistence", persist_session_cookies);
   persist_session_cookies_ = persist_session_cookies;
 }
 
@@ -1075,10 +1075,11 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
       cc_skipped_secure = cc;
       histogram_cookie_delete_equivalent_->Add(
           COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE);
-      net_log_.AddEvent(
-          NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
-          base::BindRepeating(&NetLogCookieMonsterCookieRejectedSecure, cc,
-                              &ecc));
+      net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
+                        [&](NetLogCaptureMode capture_mode) {
+                          return NetLogCookieMonsterCookieRejectedSecure(
+                              cc, &ecc, capture_mode);
+                        });
       // If the cookie is equivalent to the new cookie and wouldn't have been
       // skipped for being HTTP-only, record that it is a skipped secure cookie
       // that would have been deleted otherwise.
@@ -1102,8 +1103,10 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
         skipped_httponly = true;
         net_log_.AddEvent(
             NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
-            base::BindRepeating(&NetLogCookieMonsterCookieRejectedHttponly, cc,
-                                &ecc));
+            [&](NetLogCaptureMode capture_mode) {
+              return NetLogCookieMonsterCookieRejectedHttponly(cc, &ecc,
+                                                               capture_mode);
+            });
       } else {
         cookie_it_to_possibly_delete = curit;
       }
@@ -1132,8 +1135,10 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
       DCHECK(cc_skipped_secure);
       net_log_.AddEvent(
           NetLogEventType::COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE,
-          base::BindRepeating(&NetLogCookieMonsterCookiePreservedSkippedSecure,
-                              cc_skipped_secure, cc_to_possibly_delete, &ecc));
+          [&](NetLogCaptureMode capture_mode) {
+            return NetLogCookieMonsterCookiePreservedSkippedSecure(
+                cc_skipped_secure, cc_to_possibly_delete, &ecc, capture_mode);
+          });
     }
   }
 
@@ -1154,8 +1159,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   CanonicalCookie* cc_ptr = cc.get();
 
   net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_ADDED,
-                    base::BindRepeating(&NetLogCookieMonsterCookieAdded,
-                                        cc.get(), sync_to_store));
+                    [&](NetLogCaptureMode capture_mode) {
+                      return NetLogCookieMonsterCookieAdded(
+                          cc.get(), sync_to_store, capture_mode);
+                    });
   if ((cc_ptr->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store) {
     store_->AddCookie(*cc_ptr);
@@ -1368,8 +1375,10 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
   if (deletion_cause != DELETE_COOKIE_DONT_RECORD) {
     net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_DELETED,
-                      base::BindRepeating(&NetLogCookieMonsterCookieDeleted, cc,
-                                          mapping.cause, sync_to_store));
+                      [&](NetLogCaptureMode capture_mode) {
+                        return NetLogCookieMonsterCookieDeleted(
+                            cc, mapping.cause, sync_to_store, capture_mode);
+                      });
   }
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&

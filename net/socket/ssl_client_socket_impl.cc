@@ -45,7 +45,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_client_session_cache.h"
@@ -80,9 +79,8 @@ const int kCertVerifyPending = 1;
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
-base::Value NetLogPrivateKeyOperationCallback(uint16_t algorithm,
-                                              SSLPrivateKey* key,
-                                              NetLogCaptureMode mode) {
+base::Value NetLogPrivateKeyOperationParams(uint16_t algorithm,
+                                            SSLPrivateKey* key) {
   base::DictionaryValue value;
   value.SetString("algorithm", SSL_get_signature_algorithm_name(
                                    algorithm, 0 /* exclude curve */));
@@ -90,8 +88,7 @@ base::Value NetLogPrivateKeyOperationCallback(uint16_t algorithm,
   return std::move(value);
 }
 
-base::Value NetLogSSLInfoCallback(SSLClientSocketImpl* socket,
-                                  NetLogCaptureMode capture_mode) {
+base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
   SSLInfo ssl_info;
   if (!socket->GetSSLInfo(&ssl_info))
     return base::Value();
@@ -112,18 +109,16 @@ base::Value NetLogSSLInfoCallback(SSLClientSocketImpl* socket,
   return std::move(dict);
 }
 
-base::Value NetLogSSLAlertCallback(const void* bytes,
-                                   size_t len,
-                                   NetLogCaptureMode capture_mode) {
+base::Value NetLogSSLAlertParams(const void* bytes, size_t len) {
   base::DictionaryValue dict;
   dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   return std::move(dict);
 }
 
-base::Value NetLogSSLMessageCallback(bool is_write,
-                                     const void* bytes,
-                                     size_t len,
-                                     NetLogCaptureMode capture_mode) {
+base::Value NetLogSSLMessageParams(bool is_write,
+                                   const void* bytes,
+                                   size_t len,
+                                   NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   if (len == 0) {
     NOTREACHED();
@@ -951,9 +946,8 @@ int SSLClientSocketImpl::DoHandshake() {
 
     LOG(ERROR) << "handshake failed; returned " << rv << ", SSL error code "
                << ssl_error << ", net_error " << net_error;
-    net_log_.AddEvent(
-        NetLogEventType::SSL_HANDSHAKE_ERROR,
-        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+    NetLogOpenSSLError(net_log_, NetLogEventType::SSL_HANDSHAKE_ERROR,
+                       net_error, ssl_error, error_info);
   }
 
   next_handshake_state_ = STATE_HANDSHAKE_COMPLETE;
@@ -1140,9 +1134,9 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
     return ssl_verify_invalid;
   }
 
-  net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED,
-                    base::Bind(&NetLogX509CertificateCallback,
-                               base::Unretained(server_cert_.get())));
+  net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED, [&] {
+    return NetLogX509CertificateParams(server_cert_.get());
+  });
 
   // If the certificate is bad and has been previously accepted, use
   // the previous status and bypass the error.
@@ -1329,10 +1323,8 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
       net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
                                     rv, buf->data());
     } else {
-      net_log_.AddEvent(
-          NetLogEventType::SSL_READ_ERROR,
-          CreateNetLogOpenSSLErrorCallback(rv, pending_read_ssl_error_,
-                                           pending_read_error_info_));
+      NetLogOpenSSLError(net_log_, NetLogEventType::SSL_READ_ERROR, rv,
+                         pending_read_ssl_error_, pending_read_error_info_);
     }
     pending_read_ssl_error_ = SSL_ERROR_NONE;
     pending_read_error_info_ = OpenSSLErrorInfo();
@@ -1400,10 +1392,8 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
                                   rv, buf->data());
   } else if (rv != ERR_IO_PENDING) {
-    net_log_.AddEvent(
-        NetLogEventType::SSL_READ_ERROR,
-        CreateNetLogOpenSSLErrorCallback(rv, pending_read_ssl_error_,
-                                         pending_read_error_info_));
+    NetLogOpenSSLError(net_log_, NetLogEventType::SSL_READ_ERROR, rv,
+                       pending_read_ssl_error_, pending_read_error_info_);
     pending_read_ssl_error_ = SSL_ERROR_NONE;
     pending_read_error_info_ = OpenSSLErrorInfo();
   }
@@ -1435,9 +1425,8 @@ int SSLClientSocketImpl::DoPayloadWrite() {
   int net_error = MapLastOpenSSLError(ssl_error, err_tracer, &error_info);
 
   if (net_error != ERR_IO_PENDING) {
-    net_log_.AddEvent(
-        NetLogEventType::SSL_WRITE_ERROR,
-        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+    NetLogOpenSSLError(net_log_, NetLogEventType::SSL_WRITE_ERROR, net_error,
+                       ssl_error, error_info);
   }
   return net_error;
 }
@@ -1615,19 +1604,17 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
     SSL_set_signing_algorithm_prefs(ssl_.get(), preferences.data(),
                                     preferences.size());
 
-    net_log_.AddEvent(
-        NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
-        NetLog::IntCallback(
-            "cert_count",
-            base::checked_cast<int>(
-                1 + ssl_config_.client_cert->intermediate_buffers().size())));
+    net_log_.AddEventWithIntParams(
+        NetLogEventType::SSL_CLIENT_CERT_PROVIDED, "cert_count",
+        base::checked_cast<int>(
+            1 + ssl_config_.client_cert->intermediate_buffers().size()));
     return 1;
   }
 #endif  // defined(OS_IOS)
 
   // Send no client certificate.
-  net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
-                    NetLog::IntCallback("cert_count", 0));
+  net_log_.AddEventWithIntParams(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
+                                 "cert_count", 0);
   return 1;
 }
 
@@ -1700,13 +1687,13 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
   DCHECK(signature_.empty());
   DCHECK(ssl_config_.client_private_key);
 
-  net_log_.BeginEvent(
-      NetLogEventType::SSL_PRIVATE_KEY_OP,
-      base::BindRepeating(
-          &NetLogPrivateKeyOperationCallback, algorithm,
-          // Pass the SSLPrivateKey pointer to avoid making copies of the
-          // provider name in the common case with logging disabled.
-          base::Unretained(ssl_config_.client_private_key.get())));
+  net_log_.BeginEvent(NetLogEventType::SSL_PRIVATE_KEY_OP, [&] {
+    return NetLogPrivateKeyOperationParams(
+        algorithm,
+        // Pass the SSLPrivateKey pointer to avoid making copies of the
+        // provider name in the common case with logging disabled.
+        ssl_config_.client_private_key.get());
+  });
 
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->Sign(
@@ -1772,13 +1759,15 @@ void SSLClientSocketImpl::MessageCallback(int is_write,
     case SSL3_RT_ALERT:
       net_log_.AddEvent(is_write ? NetLogEventType::SSL_ALERT_SENT
                                  : NetLogEventType::SSL_ALERT_RECEIVED,
-                        base::Bind(&NetLogSSLAlertCallback, buf, len));
+                        [&] { return NetLogSSLAlertParams(buf, len); });
       break;
     case SSL3_RT_HANDSHAKE:
       net_log_.AddEvent(
           is_write ? NetLogEventType::SSL_HANDSHAKE_MESSAGE_SENT
                    : NetLogEventType::SSL_HANDSHAKE_MESSAGE_RECEIVED,
-          base::Bind(&NetLogSSLMessageCallback, !!is_write, buf, len));
+          [&](NetLogCaptureMode capture_mode) {
+            return NetLogSSLMessageParams(!!is_write, buf, len, capture_mode);
+          });
       break;
     default:
       return;
@@ -1792,7 +1781,7 @@ void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
   }
 
   net_log_.EndEvent(NetLogEventType::SSL_CONNECT,
-                    base::Bind(&NetLogSSLInfoCallback, base::Unretained(this)));
+                    [&] { return NetLogSSLInfoParams(this); });
 }
 
 void SSLClientSocketImpl::RecordNegotiatedProtocol() const {

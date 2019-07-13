@@ -10,15 +10,16 @@
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
 namespace {
 
-base::Value NetLogUDPDataTranferCallback(int byte_count,
-                                         const char* bytes,
-                                         const IPEndPoint* address,
-                                         NetLogCaptureMode capture_mode) {
+base::Value NetLogUDPDataTranferParams(int byte_count,
+                                       const char* bytes,
+                                       const IPEndPoint* address,
+                                       NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetInteger("byte_count", byte_count);
   if (NetLogCaptureIncludesSocketBytes(capture_mode))
@@ -28,12 +29,11 @@ base::Value NetLogUDPDataTranferCallback(int byte_count,
   return std::move(dict);
 }
 
-base::Value NetLogUDPConnectCallback(
-    const IPEndPoint* address,
-    NetworkChangeNotifier::NetworkHandle network,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogUDPConnectParams(
+    const IPEndPoint& address,
+    NetworkChangeNotifier::NetworkHandle network) {
   base::DictionaryValue dict;
-  dict.SetString("address", address->ToString());
+  dict.SetString("address", address.ToString());
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle)
     dict.SetInteger("bound_to_network", network);
   return std::move(dict);
@@ -41,19 +41,21 @@ base::Value NetLogUDPConnectCallback(
 
 }  // namespace
 
-NetLogParametersCallback CreateNetLogUDPDataTranferCallback(
-    int byte_count,
-    const char* bytes,
-    const IPEndPoint* address) {
+void NetLogUDPDataTranfer(const NetLogWithSource& net_log,
+                          NetLogEventType type,
+                          int byte_count,
+                          const char* bytes,
+                          const IPEndPoint* address) {
   DCHECK(bytes);
-  return base::Bind(&NetLogUDPDataTranferCallback, byte_count, bytes, address);
+  net_log.AddEvent(type, [&](NetLogCaptureMode capture_mode) {
+    return NetLogUDPDataTranferParams(byte_count, bytes, address, capture_mode);
+  });
 }
 
-NetLogParametersCallback CreateNetLogUDPConnectCallback(
-    const IPEndPoint* address,
+base::Value CreateNetLogUDPConnectParams(
+    const IPEndPoint& address,
     NetworkChangeNotifier::NetworkHandle network) {
-  DCHECK(address);
-  return base::Bind(&NetLogUDPConnectCallback, address, network);
+  return NetLogUDPConnectParams(address, network);
 }
 
 }  // namespace net

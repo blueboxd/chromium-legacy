@@ -81,8 +81,7 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
 
 namespace {
 
-base::Value CertVerifyResultCallback(const CertVerifyResult& verify_result,
-                                     NetLogCaptureMode capture_mode) {
+base::Value CertVerifyResultParams(const CertVerifyResult& verify_result) {
   base::DictionaryValue results;
   results.SetBoolean("has_md5", verify_result.has_md5);
   results.SetBoolean("has_md2", verify_result.has_md2);
@@ -92,9 +91,8 @@ base::Value CertVerifyResultCallback(const CertVerifyResult& verify_result,
   results.SetBoolean("is_issued_by_additional_trust_anchor",
                      verify_result.is_issued_by_additional_trust_anchor);
   results.SetInteger("cert_status", verify_result.cert_status);
-  results.SetKey("verified_cert",
-                 NetLogX509CertificateCallback(
-                     verify_result.verified_cert.get(), capture_mode));
+  results.SetKey("verified_cert", NetLogX509CertificateParams(
+                                      verify_result.verified_cert.get()));
 
   std::unique_ptr<base::ListValue> hashes(new base::ListValue());
   for (auto it = verify_result.public_key_hashes.begin();
@@ -220,9 +218,9 @@ class CertVerifierJob {
                                         NetLogSourceType::CERT_VERIFIER_JOB)),
         cert_verifier_(cert_verifier),
         is_first_job_(false) {
-    net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_JOB,
-                        base::Bind(&NetLogX509CertificateCallback,
-                                   base::Unretained(key.certificate().get())));
+    net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_JOB, [&] {
+      return NetLogX509CertificateParams(key.certificate().get());
+    });
   }
 
   // Indicates whether this was the first job started by the CertVerifier. This
@@ -276,9 +274,8 @@ class CertVerifierJob {
     std::unique_ptr<CertVerifierRequest> request(new CertVerifierRequest(
         this, std::move(callback), verify_result, net_log));
 
-    request->net_log().AddEvent(
-        NetLogEventType::CERT_VERIFIER_REQUEST_BOUND_TO_JOB,
-        net_log_.source().ToEventParametersCallback());
+    request->net_log().AddEventReferencingSource(
+        NetLogEventType::CERT_VERIFIER_REQUEST_BOUND_TO_JOB, net_log_.source());
 
     requests_.Append(request.get());
     return request;
@@ -289,9 +286,9 @@ class CertVerifierJob {
 
   // Called on completion of the Job to log UMA metrics and NetLog events.
   void LogMetrics(const ResultHelper& verify_result) {
-    net_log_.EndEvent(
-        NetLogEventType::CERT_VERIFIER_JOB,
-        base::Bind(&CertVerifyResultCallback, verify_result.result));
+    net_log_.EndEvent(NetLogEventType::CERT_VERIFIER_JOB, [&] {
+      return CertVerifyResultParams(verify_result.result);
+    });
     base::TimeDelta latency = base::TimeTicks::Now() - start_time_;
     if (cert_verifier_->should_record_histograms_) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency", latency,

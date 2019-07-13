@@ -38,10 +38,9 @@ namespace {
 // after a certain timeout has passed without receiving an ACK.
 bool g_connect_backup_jobs_enabled = true;
 
-base::Value NetLogCreateConnectJobCallback(
+base::Value NetLogCreateConnectJobParams(
     bool backup_job,
-    const ClientSocketPool::GroupId* group_id,
-    net::NetLogCaptureMode capture_mode) {
+    const ClientSocketPool::GroupId* group_id) {
   base::DictionaryValue dict;
   dict.SetBoolean("backup_job", backup_job);
   dict.SetString("group_id", group_id->ToString());
@@ -297,8 +296,7 @@ void TransportClientSocketPool::RequestSockets(
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
-                     base::BindRepeating(&NetLogGroupIdCallback,
-                                         base::Unretained(&group_id)));
+                     [&] { return NetLogGroupIdParams(group_id); });
   }
 
   Request request(nullptr /* no handle */, CompletionOnceCallback(),
@@ -313,9 +311,9 @@ void TransportClientSocketPool::RequestSockets(
     num_sockets = max_sockets_per_group_;
   }
 
-  request.net_log().BeginEvent(
-      NetLogEventType::SOCKET_POOL_CONNECTING_N_SOCKETS,
-      NetLog::IntCallback("num_sockets", num_sockets));
+  request.net_log().BeginEventWithIntParams(
+      NetLogEventType::SOCKET_POOL_CONNECTING_N_SOCKETS, "num_sockets",
+      num_sockets);
 
   Group* group = GetOrCreateGroup(group_id);
 
@@ -417,9 +415,9 @@ int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
           group_id, request.socket_params(), request.proxy_annotation_tag(),
           request.priority(), request.socket_tag(), group));
   owned_connect_job->net_log().AddEvent(
-      NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
-      base::BindRepeating(&NetLogCreateConnectJobCallback,
-                          false /* backup_job */, base::Unretained(&group_id)));
+      NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED, [&] {
+        return NetLogCreateConnectJobParams(false /* backup_job */, &group_id);
+      });
   ConnectJob* connect_job = owned_connect_job.get();
   bool was_group_empty = group->IsEmpty();
   // Need to add the ConnectJob to the group before connecting, to ensure
@@ -528,8 +526,8 @@ bool TransportClientSocketPool::AssignIdleSocketToRequest(
 void TransportClientSocketPool::LogBoundConnectJobToRequest(
     const NetLogSource& connect_job_source,
     const Request& request) {
-  request.net_log().AddEvent(NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-                             connect_job_source.ToEventParametersCallback());
+  request.net_log().AddEventReferencingSource(
+      NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB, connect_job_source);
 }
 
 void TransportClientSocketPool::SetPriority(const GroupId& group_id,
@@ -1073,10 +1071,9 @@ void TransportClientSocketPool::HandOutSocket(
   handle->set_connect_timing(connect_timing);
 
   if (reuse_type == ClientSocketHandle::REUSED_IDLE) {
-    net_log.AddEvent(
-        NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET,
-        NetLog::IntCallback("idle_ms",
-                            static_cast<int>(idle_time.InMilliseconds())));
+    net_log.AddEventWithIntParams(
+        NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET, "idle_ms",
+        static_cast<int>(idle_time.InMilliseconds()));
   }
 
   if (reuse_type != ClientSocketHandle::UNUSED) {
@@ -1086,9 +1083,9 @@ void TransportClientSocketPool::HandOutSocket(
                                 idle_socket_count_ + 1, 1, 256, 50);
   }
 
-  net_log.AddEvent(
+  net_log.AddEventReferencingSource(
       NetLogEventType::SOCKET_POOL_BOUND_TO_SOCKET,
-      handle->socket()->NetLog().source().ToEventParametersCallback());
+      handle->socket()->NetLog().source());
 
   handed_out_socket_count_++;
   group->IncrementActiveSocketCount();
@@ -1511,9 +1508,9 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
           group_id, request->socket_params(), request->proxy_annotation_tag(),
           request->priority(), request->socket_tag(), this);
   owned_backup_job->net_log().AddEvent(
-      NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
-      base::BindRepeating(&NetLogCreateConnectJobCallback,
-                          true /* backup_job */, &group_id_));
+      NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED, [&] {
+        return NetLogCreateConnectJobParams(true /* backup_job */, &group_id_);
+      });
   ConnectJob* backup_job = owned_backup_job.get();
   AddJob(std::move(owned_backup_job), false);
   client_socket_pool_->connecting_socket_count_++;

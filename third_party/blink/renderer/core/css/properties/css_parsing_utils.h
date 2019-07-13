@@ -142,7 +142,7 @@ CSSValue* ConsumeCounter(CSSParserTokenRange&, const CSSParserContext&, int);
 
 CSSValue* ConsumeFontSize(
     CSSParserTokenRange&,
-    CSSParserMode,
+    const CSSParserContext&,
     css_property_parser_helpers::UnitlessQuirk =
         css_property_parser_helpers::UnitlessQuirk::kForbid);
 

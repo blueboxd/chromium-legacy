@@ -80,7 +80,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
@@ -271,10 +270,9 @@ bool HaveOnlyLoopbackAddresses() {
 }
 
 // Creates NetLog parameters when the resolve failed.
-base::Value NetLogProcTaskFailedCallback(uint32_t attempt_number,
-                                         int net_error,
-                                         int os_error,
-                                         NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogProcTaskFailedParams(uint32_t attempt_number,
+                                       int net_error,
+                                       int os_error) {
   base::DictionaryValue dict;
   if (attempt_number)
     dict.SetInteger("attempt_number", attempt_number);
@@ -304,24 +302,19 @@ base::Value NetLogProcTaskFailedCallback(uint32_t attempt_number,
 }
 
 // Creates NetLog parameters when the DnsTask failed.
-base::Value NetLogDnsTaskFailedCallback(
-    int net_error,
-    int dns_error,
-    NetLogParametersCallback results_callback,
-    NetLogCaptureMode capture_mode) {
+base::Value NetLogDnsTaskFailedParams(const HostCache::Entry& results,
+                                      int dns_error) {
   base::DictionaryValue dict;
-  dict.SetInteger("net_error", net_error);
+  dict.SetInteger("net_error", results.error());
   if (dns_error)
     dict.SetInteger("dns_error", dns_error);
-  if (results_callback)
-    dict.SetKey("resolve_results", results_callback.Run(capture_mode));
+  dict.SetKey("resolve_results", results.NetLogParams());
   return std::move(dict);
 }
 
 // Creates NetLog parameters containing the information of the request. Use
 // NetLogRequestInfoCallback if the request is specified via RequestInfo.
-base::Value NetLogRequestCallback(const HostPortPair& host,
-                                  NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogRequestParams(const HostPortPair& host) {
   base::DictionaryValue dict;
 
   dict.SetString("host", host.ToString());
@@ -333,19 +326,17 @@ base::Value NetLogRequestCallback(const HostPortPair& host,
 }
 
 // Creates NetLog parameters for the creation of a HostResolverManager::Job.
-base::Value NetLogJobCreationCallback(const NetLogSource& source,
-                                      const std::string* host,
-                                      NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogJobCreationParams(const NetLogSource& source,
+                                    const std::string& host) {
   base::DictionaryValue dict;
   source.AddToEventParameters(&dict);
-  dict.SetString("host", *host);
+  dict.SetString("host", host);
   return std::move(dict);
 }
 
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
-base::Value NetLogJobAttachCallback(const NetLogSource& source,
-                                    RequestPriority priority,
-                                    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogJobAttachParams(const NetLogSource& source,
+                                  RequestPriority priority) {
   base::DictionaryValue dict;
   source.AddToEventParameters(&dict);
   dict.SetString("priority", RequestPriorityToString(priority));
@@ -353,14 +344,11 @@ base::Value NetLogJobAttachCallback(const NetLogSource& source,
 }
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
-base::Value NetLogDnsConfigCallback(const DnsConfig* config,
-                                    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogDnsConfigParams(const DnsConfig* config) {
   return base::Value::FromUniquePtrValue(config->ToValue());
 }
 
-base::Value NetLogIPv6AvailableCallback(bool ipv6_available,
-                                        bool cached,
-                                        NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogIPv6AvailableParams(bool ipv6_available, bool cached) {
   base::DictionaryValue dict;
   dict.SetBoolean("ipv6_available", ipv6_available);
   dict.SetBoolean("cached", cached);
@@ -375,7 +363,7 @@ base::Value NetLogIPv6AvailableCallback(bool ipv6_available,
 void LogStartRequest(const NetLogWithSource& source_net_log,
                      const HostPortPair& host) {
   source_net_log.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST,
-                            base::BindRepeating(&NetLogRequestCallback, host));
+                            [&] { return NetLogRequestParams(host); });
 }
 
 // Logs when a request has just completed (before its callback is run).
@@ -519,6 +507,13 @@ bool DnsServerSupportsDoh(const IPAddress& dns_server) {
       }));
   return upgradable_servers->find(dns_server.ToString()) !=
          upgradable_servers->end();
+}
+
+void NetLogHostCacheEntry(const NetLogWithSource& net_log,
+                          NetLogEventType type,
+                          NetLogEventPhase phase,
+                          const HostCache::Entry& results) {
+  net_log.AddEntry(type, phase, [&] { return results.NetLogParams(); });
 }
 
 }  // namespace
@@ -859,8 +854,9 @@ class HostResolverManager::ProcTask {
                        params_.resolver_proc, network_task_runner_,
                        std::move(completion_callback)));
 
-    net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_STARTED,
-                      NetLog::IntCallback("attempt_number", attempt_number_));
+    net_log_.AddEventWithIntParams(
+        NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_STARTED, "attempt_number",
+        attempt_number_);
 
     // If the results aren't received within a given time, RetryIfNotComplete
     // will start a new attempt if none of the outstanding attempts have
@@ -940,22 +936,21 @@ class HostResolverManager::ProcTask {
     // and retries.
     weak_ptr_factory_.InvalidateWeakPtrs();
 
-    NetLogParametersCallback net_log_callback;
-    NetLogParametersCallback attempt_net_log_callback;
     if (error != OK) {
-      net_log_callback = base::BindRepeating(&NetLogProcTaskFailedCallback, 0,
-                                             error, os_error);
-      attempt_net_log_callback = base::BindRepeating(
-          &NetLogProcTaskFailedCallback, attempt_number, error, os_error);
+      net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_PROC_TASK, [&] {
+        return NetLogProcTaskFailedParams(0, error, os_error);
+      });
+      net_log_.AddEvent(
+          NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_FINISHED, [&] {
+            return NetLogProcTaskFailedParams(attempt_number, error, os_error);
+          });
     } else {
-      net_log_callback = results.CreateNetLogCallback();
-      attempt_net_log_callback =
-          NetLog::IntCallback("attempt_number", attempt_number);
+      net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_PROC_TASK,
+                        [&] { return results.NetLogParams(); });
+      net_log_.AddEventWithIntParams(
+          NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_FINISHED,
+          "attempt_number", attempt_number);
     }
-    net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_PROC_TASK,
-                      net_log_callback);
-    net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_FINISHED,
-                      attempt_net_log_callback);
 
     std::move(callback_).Run(error, results);
   }
@@ -1413,9 +1408,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK_NE(OK, net_error);
     HostCache::Entry results(net_error, HostCache::Entry::SOURCE_UNKNOWN);
 
-    net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
-                      base::Bind(&NetLogDnsTaskFailedCallback, results.error(),
-                                 parse_result, results.CreateNetLogCallback()));
+    net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK, [&] {
+      return NetLogDnsTaskFailedParams(results, parse_result);
+    });
 
     // If we have a TTL from a previously completed transaction, use it.
     base::TimeDelta previous_transaction_ttl;
@@ -1436,8 +1431,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
   void OnSuccess(const HostCache::Entry& results) {
-    net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
-                      results.CreateNetLogCallback());
+    NetLogHostCacheEntry(net_log_, NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
+                         NetLogEventPhase::END, results);
     delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
@@ -1524,9 +1519,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                                    NetLogSourceType::HOST_RESOLVER_IMPL_JOB)) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CREATE_JOB);
 
-    net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB,
-                        base::Bind(&NetLogJobCreationCallback,
-                                   source_net_log.source(), &hostname_));
+    net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB, [&] {
+      return NetLogJobCreationParams(source_net_log.source(), hostname_);
+    });
   }
 
   ~Job() override {
@@ -1585,14 +1580,14 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
     priority_tracker_.Add(request->priority());
 
-    request->source_net_log().AddEvent(
-        NetLogEventType::HOST_RESOLVER_IMPL_JOB_ATTACH,
-        net_log_.source().ToEventParametersCallback());
+    request->source_net_log().AddEventReferencingSource(
+        NetLogEventType::HOST_RESOLVER_IMPL_JOB_ATTACH, net_log_.source());
 
-    net_log_.AddEvent(
-        NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_ATTACH,
-        base::Bind(&NetLogJobAttachCallback, request->source_net_log().source(),
-                   priority()));
+    net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_ATTACH,
+                      [&] {
+                        return NetLogJobAttachParams(
+                            request->source_net_log().source(), priority());
+                      });
 
     if (!request->parameters().is_speculative)
       had_non_speculative_request_ = true;
@@ -1620,10 +1615,11 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     LogCancelRequest(request->source_net_log());
 
     priority_tracker_.Remove(request->priority());
-    net_log_.AddEvent(
-        NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
-        base::Bind(&NetLogJobAttachCallback, request->source_net_log().source(),
-                   priority()));
+    net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
+                      [&] {
+                        return NetLogJobAttachParams(
+                            request->source_net_log().source(), priority());
+                      });
 
     if (num_active_requests() > 0) {
       UpdatePriority();
@@ -2719,8 +2715,10 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     if (resolved) {
       // |MaybeServeFromCache()| will update |*out_stale_info| as needed.
       DCHECK(out_stale_info->has_value());
-      source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
-                              resolved.value().CreateNetLogCallback());
+      NetLogHostCacheEntry(source_net_log,
+                           NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
+                           NetLogEventPhase::NONE, resolved.value());
+
       return resolved.value();
     }
     DCHECK(!out_stale_info->has_value());
@@ -2731,8 +2729,9 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   resolved = ServeFromHosts(hostname, *out_effective_query_type,
                             default_family_due_to_no_ipv6);
   if (resolved) {
-    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
-                            resolved.value().CreateNetLogCallback());
+    NetLogHostCacheEntry(source_net_log,
+                         NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
+                         NetLogEventPhase::NONE, resolved.value());
     return resolved.value();
   }
 
@@ -2848,8 +2847,9 @@ base::Optional<HostCache::Entry> HostResolverManager::MaybeServeFromCache(
   }
   if (cache_result) {
     *out_stale_info = std::move(staleness);
-    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
-                            cache_result->second.CreateNetLogCallback());
+    NetLogHostCacheEntry(source_net_log,
+                         NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
+                         NetLogEventPhase::NONE, cache_result->second);
     return cache_result->second;
   }
   return base::nullopt;
@@ -3183,9 +3183,10 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
     last_ipv6_probe_time_ = tick_clock_->NowTicks();
     cached = false;
   }
-  net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK,
-                   base::Bind(&NetLogIPv6AvailableCallback,
-                              last_ipv6_probe_result_, cached));
+  net_log.AddEvent(
+      NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK, [&] {
+        return NetLogIPv6AvailableParams(last_ipv6_probe_result_, cached);
+      });
   return last_ipv6_probe_result_;
 }
 
@@ -3368,9 +3369,9 @@ DnsConfig HostResolverManager::GetBaseDnsConfig(bool log_to_net_log) {
     }
 
     if (log_to_net_log && net_log_) {
-      net_log_->AddGlobalEntry(
-          NetLogEventType::DNS_CONFIG_CHANGED,
-          base::BindRepeating(&NetLogDnsConfigCallback, &dns_config));
+      net_log_->AddGlobalEntry(NetLogEventType::DNS_CONFIG_CHANGED, [&] {
+        return NetLogDnsConfigParams(&dns_config);
+      });
     }
 
     // TODO(szym): Remove once http://crbug.com/137914 is resolved.

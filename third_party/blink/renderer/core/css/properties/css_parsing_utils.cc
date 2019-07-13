@@ -1302,13 +1302,15 @@ CSSValue* ConsumeCounter(CSSParserTokenRange& range,
 }
 
 CSSValue* ConsumeFontSize(CSSParserTokenRange& range,
-                          CSSParserMode css_parser_mode,
+                          const CSSParserContext& context,
                           css_property_parser_helpers::UnitlessQuirk unitless) {
+  if (range.Peek().Id() == CSSValueID::kWebkitXxxLarge)
+    context.Count(WebFeature::kFontSizeWebkitXxxLarge);
   if (range.Peek().Id() >= CSSValueID::kXxSmall &&
       range.Peek().Id() <= CSSValueID::kLarger)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeLengthOrPercent(
-      range, css_parser_mode, kValueRangeNonNegative, unitless);
+      range, context.Mode(), kValueRangeNonNegative, unitless);
 }
 
 CSSValue* ConsumeLineHeight(CSSParserTokenRange& range,

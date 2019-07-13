@@ -200,9 +200,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   // |CSSPrimitiveValue| that's not of any of its subclasses.
   static CSSPrimitiveValue* CreateFromLength(const Length& value, float zoom);
 
-  // TODO(crbug.com/979895): Split this function properly.
-  UnitType TypeWithCalcResolved() const;
-
   double ComputeDegrees() const;
   double ComputeSeconds() const;
   double ComputeDotsPerPixel() const;

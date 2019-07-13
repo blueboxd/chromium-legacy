@@ -314,10 +314,9 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 };
 
 // Returns NetLog parameters describing a proxy configuration change.
-base::Value NetLogProxyConfigChangedCallback(
+base::Value NetLogProxyConfigChangedParams(
     const base::Optional<ProxyConfigWithAnnotation>* old_config,
-    const ProxyConfigWithAnnotation* new_config,
-    NetLogCaptureMode /* capture_mode */) {
+    const ProxyConfigWithAnnotation* new_config) {
   base::Value dict(base::Value::Type::DICTIONARY);
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
@@ -327,8 +326,7 @@ base::Value NetLogProxyConfigChangedCallback(
   return dict;
 }
 
-base::Value NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
-                                       NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogBadProxyListParams(const ProxyRetryInfoMap* retry_info) {
   base::Value dict(base::Value::Type::DICTIONARY);
   base::Value list(base::Value::Type::LIST);
 
@@ -339,9 +337,7 @@ base::Value NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
-base::Value NetLogFinishedResolvingProxyCallback(
-    const ProxyInfo* result,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogFinishedResolvingProxyParams(const ProxyInfo* result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("pac_string", result->ToPacString());
   return dict;
@@ -1409,9 +1405,9 @@ void ProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
       existing->second.bad_until = iter->second.bad_until;
   }
   if (net_log_) {
-    net_log_->AddGlobalEntry(
-        NetLogEventType::BAD_PROXY_LIST_REPORTED,
-        base::Bind(&NetLogBadProxyListCallback, &new_retry_info));
+    net_log_->AddGlobalEntry(NetLogEventType::BAD_PROXY_LIST_REPORTED, [&] {
+      return NetLogBadProxyListParams(&new_retry_info);
+    });
   }
 }
 
@@ -1441,7 +1437,7 @@ int ProxyResolutionService::DidFinishResolvingProxy(
 
     net_log.AddEvent(
         NetLogEventType::PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST,
-        base::Bind(&NetLogFinishedResolvingProxyCallback, result));
+        [&] { return NetLogFinishedResolvingProxyParams(result); });
 
     // This check is done to only log the NetLog event when necessary, it's
     // not a performance optimization.
@@ -1449,7 +1445,7 @@ int ProxyResolutionService::DidFinishResolvingProxy(
       result->DeprioritizeBadProxies(proxy_retry_info_);
       net_log.AddEvent(
           NetLogEventType::PROXY_RESOLUTION_SERVICE_DEPRIORITIZED_BAD_PROXIES,
-          base::Bind(&NetLogFinishedResolvingProxyCallback, result));
+          [&] { return NetLogFinishedResolvingProxyParams(result); });
     }
   } else {
     net_log.AddEventWithNetErrorCode(
@@ -1636,9 +1632,10 @@ void ProxyResolutionService::OnProxyConfigChanged(
 
   // Emit the proxy settings change to the NetLog stream.
   if (net_log_) {
-    net_log_->AddGlobalEntry(NetLogEventType::PROXY_CONFIG_CHANGED,
-                             base::Bind(&NetLogProxyConfigChangedCallback,
-                                        &fetched_config_, &effective_config));
+    net_log_->AddGlobalEntry(NetLogEventType::PROXY_CONFIG_CHANGED, [&] {
+      return NetLogProxyConfigChangedParams(&fetched_config_,
+                                            &effective_config);
+    });
   }
 
   if (config.value().has_pac_url()) {

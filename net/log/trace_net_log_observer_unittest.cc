@@ -22,7 +22,6 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -389,11 +388,9 @@ TEST_F(TraceNetLogObserverTest,
 TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
   EnableTraceLogWithNetLog();
-  NetLogParametersCallback net_log_callback;
-  std::string param = "bar";
-  net_log_callback = NetLog::StringCallback("foo", &param);
 
-  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED, net_log_callback);
+  net_log()->AddGlobalEntryWithStringParams(NetLogEventType::CANCELLED, "foo",
+                                            "bar");
   net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
 
   EndTraceAndFlush();

@@ -93,12 +93,6 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
   }
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::TypeWithCalcResolved() const {
-  if (IsNumericLiteralValue())
-    return To<CSSNumericLiteralValue>(this)->GetType();
-  return To<CSSMathFunctionValue>(this)->TypeWithMathFunctionResolved();
-}
-
 bool CSSPrimitiveValue::IsCalculatedPercentageWithLength() const {
   // TODO(crbug.com/979895): Move this function to |CSSMathFunctionValue|.
   return IsCalculated() &&

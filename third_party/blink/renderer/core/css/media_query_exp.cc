@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -301,18 +302,39 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
     return MediaQueryExp(lower_media_feature, exp_value);
   }
 
-  if (FeatureWithValidDensity(lower_media_feature, value) ||
-      FeatureWithValidPositiveLength(lower_media_feature, value) ||
-      FeatureWithPositiveInteger(lower_media_feature, value) ||
+  if (FeatureWithValidDensity(lower_media_feature, value)) {
+    // TODO(crbug.com/983613): Support resolution in math functions.
+    DCHECK(value->IsNumericLiteralValue());
+    const auto* numeric_literal = To<CSSNumericLiteralValue>(value);
+    exp_value.value = numeric_literal->DoubleValue();
+    exp_value.unit = numeric_literal->GetType();
+    exp_value.is_value = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithPositiveInteger(lower_media_feature, value) ||
       FeatureWithPositiveNumber(lower_media_feature, value) ||
       FeatureWithZeroOrOne(lower_media_feature, value)) {
+    exp_value.value = value->GetDoubleValue();
+    exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
     exp_value.is_value = true;
-    if (!value->IsLength() || !value->IsMathFunctionValue()) {
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithValidPositiveLength(lower_media_feature, value)) {
+    if (value->IsNumber()) {
       exp_value.value = value->GetDoubleValue();
-      if (value->IsNumber())
-        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-      else
-        exp_value.unit = value->TypeWithCalcResolved();
+      exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+      exp_value.is_value = true;
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
+
+    DCHECK(value->IsLength());
+    if (const auto* numeric_literal =
+            DynamicTo<CSSNumericLiteralValue>(value)) {
+      exp_value.value = numeric_literal->GetDoubleValue();
+      exp_value.unit = numeric_literal->GetType();
+      exp_value.is_value = true;
       return MediaQueryExp(lower_media_feature, exp_value);
     }
 
@@ -326,6 +348,7 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
     }
     exp_value.value = math_value->DoubleValue();
     exp_value.unit = expression_unit;
+    exp_value.is_value = true;
     return MediaQueryExp(lower_media_feature, exp_value);
   }
 

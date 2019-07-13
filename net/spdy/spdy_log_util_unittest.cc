@@ -60,13 +60,13 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
   EXPECT_EQ("cookie: name=value", list.GetList()[1].GetString());
 }
 
-TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
+TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogParams) {
   spdy::SpdyHeaderBlock headers;
   headers["foo"] = "bar";
   headers["cookie"] = "name=value";
 
   std::unique_ptr<base::Value> dict = base::Value::ToUniquePtrValue(
-      SpdyHeaderBlockNetLogCallback(&headers, NetLogCaptureMode::kDefault));
+      SpdyHeaderBlockNetLogParams(&headers, NetLogCaptureMode::kDefault));
 
   ASSERT_TRUE(dict);
   ASSERT_TRUE(dict->is_dict());
@@ -84,7 +84,7 @@ TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
   EXPECT_EQ("cookie: [10 bytes were stripped]",
             header_list->GetList()[1].GetString());
 
-  dict = base::Value::ToUniquePtrValue(SpdyHeaderBlockNetLogCallback(
+  dict = base::Value::ToUniquePtrValue(SpdyHeaderBlockNetLogParams(
       &headers, NetLogCaptureMode::kIncludeSensitive));
 
   ASSERT_TRUE(dict);

@@ -1212,8 +1212,7 @@ bool ConsumeFont(bool important,
       properties);
 
   // Now a font size _must_ come.
-  CSSValue* font_size =
-      css_parsing_utils::ConsumeFontSize(range, context.Mode());
+  CSSValue* font_size = css_parsing_utils::ConsumeFontSize(range, context);
   if (!font_size || range.AtEnd())
     return false;
 

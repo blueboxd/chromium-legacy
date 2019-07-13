@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "net/base/net_export.h"
-#include "net/log/net_log_capture_mode.h"
 
 namespace base {
 class Value;
@@ -19,9 +18,8 @@ namespace net {
 class X509Certificate;
 
 // Creates NetLog parameter to describe an X509Certificate.
-NET_EXPORT base::Value NetLogX509CertificateCallback(
-    const X509Certificate* certificate,
-    NetLogCaptureMode capture_mode);
+NET_EXPORT base::Value NetLogX509CertificateParams(
+    const X509Certificate* certificate);
 
 }  // namespace net
 

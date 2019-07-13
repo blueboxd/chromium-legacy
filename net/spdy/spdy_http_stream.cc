@@ -347,7 +347,9 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, &headers);
   stream_->net_log().AddEvent(
       NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+      [&](NetLogCaptureMode capture_mode) {
+        return SpdyHeaderBlockNetLogParams(&headers, capture_mode);
+      });
   DispatchRequestHeadersCallback(headers);
   result = stream_->SendRequestHeaders(
       std::move(headers),

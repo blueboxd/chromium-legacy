@@ -16,6 +16,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_basic_stream.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -394,10 +395,9 @@ int HttpProxyClientSocket::DoSendRequest() {
     BuildTunnelRequest(endpoint_, extra_headers, user_agent, &request_line_,
                        &request_headers_);
 
-    net_log_.AddEvent(
-        NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_headers_), &request_line_));
+    NetLogRequestHeaders(net_log_,
+                         NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+                         request_line_, &request_headers_);
   }
 
   parser_buf_ = base::MakeRefCounted<GrowableIOBuffer>();
@@ -429,9 +429,9 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
   if (response_.headers->GetHttpVersion() < HttpVersion(1, 0))
     return ERR_TUNNEL_CONNECTION_FAILED;
 
-  net_log_.AddEvent(
-      NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+  NetLogResponseHeaders(
+      net_log_, NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+      response_.headers.get());
 
   if (proxy_delegate_) {
     int rv = proxy_delegate_->OnHttp1TunnelHeadersReceived(proxy_server_,

@@ -40,6 +40,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_chunked_decoder.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_request_headers.h"
@@ -1105,9 +1106,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  net_log_.AddEvent(
-      NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+  NetLogResponseHeaders(net_log_,
+                        NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
+                        response_.headers.get());
   if (response_headers_callback_)
     response_headers_callback_.Run(response_.headers);
 

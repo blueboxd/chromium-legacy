@@ -101,7 +101,7 @@ bool SVGLengthTearOff::HasExposedLengthUnit() {
   if (Target()->IsCalculated())
     return false;
 
-  CSSPrimitiveValue::UnitType unit = Target()->TypeWithCalcResolved();
+  CSSPrimitiveValue::UnitType unit = Target()->NumericLiteralType();
   return IsValidLengthUnit(unit) ||
          unit == CSSPrimitiveValue::UnitType::kUnknown ||
          unit == CSSPrimitiveValue::UnitType::kUserUnits;
@@ -109,7 +109,7 @@ bool SVGLengthTearOff::HasExposedLengthUnit() {
 
 uint16_t SVGLengthTearOff::unitType() {
   return HasExposedLengthUnit()
-             ? ToInterfaceConstant(Target()->TypeWithCalcResolved())
+             ? ToInterfaceConstant(Target()->NumericLiteralType())
              : kSvgLengthtypeUnknown;
 }
 

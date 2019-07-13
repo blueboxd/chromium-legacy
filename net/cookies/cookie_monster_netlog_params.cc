@@ -9,9 +9,7 @@
 
 namespace net {
 
-base::Value NetLogCookieMonsterConstructorCallback(
-    bool persistent_store,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogCookieMonsterConstructorParams(bool persistent_store) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetBoolKey("persistent_store", persistent_store);
   return dict;

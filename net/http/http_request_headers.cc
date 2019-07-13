@@ -184,11 +184,11 @@ std::string HttpRequestHeaders::ToString() const {
   return output;
 }
 
-base::Value HttpRequestHeaders::NetLogCallback(
-    const std::string* request_line,
+base::Value HttpRequestHeaders::NetLogParams(
+    const std::string& request_line,
     NetLogCaptureMode capture_mode) const {
   base::DictionaryValue dict;
-  dict.SetKey("line", NetLogStringValue(*request_line));
+  dict.SetKey("line", NetLogStringValue(request_line));
   auto headers = std::make_unique<base::ListValue>();
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
     std::string log_value =

@@ -34,13 +34,23 @@ namespace net {
 
 namespace {
 
-base::Value NetLogQuicPushStreamCallback(quic::QuicStreamId stream_id,
-                                         const GURL* url,
-                                         NetLogCaptureMode capture_mode) {
+base::Value NetLogQuicPushStreamParams(quic::QuicStreamId stream_id,
+                                       const GURL& url) {
   base::DictionaryValue dict;
   dict.SetInteger("stream_id", stream_id);
-  dict.SetString("url", url->spec());
+  dict.SetString("url", url.spec());
   return std::move(dict);
+}
+
+void NetLogQuicPushStream(const NetLogWithSource& net_log1,
+                          const NetLogWithSource& net_log2,
+                          NetLogEventType type,
+                          quic::QuicStreamId stream_id,
+                          const GURL& url) {
+  net_log1.AddEvent(type,
+                    [&] { return NetLogQuicPushStreamParams(stream_id, url); });
+  net_log2.AddEvent(type,
+                    [&] { return NetLogQuicPushStreamParams(stream_id, url); });
 }
 
 }  // namespace
@@ -116,14 +126,13 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   if (!quic_session()->IsConnected())
     return GetResponseStatus();
 
-  stream_net_log.AddEvent(
+  stream_net_log.AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
-      quic_session()->net_log().source().ToEventParametersCallback());
-  stream_net_log.AddEvent(
+      quic_session()->net_log().source());
+  stream_net_log.AddEventWithIntParams(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_MODE,
-      NetLog::IntCallback(
-          "connection_migration_mode",
-          static_cast<int>(quic_session()->connection_migration_mode())));
+      "connection_migration_mode",
+      static_cast<int>(quic_session()->connection_migration_mode()));
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
@@ -138,14 +147,10 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       quic_session()->GetPushPromiseIndex()->GetPromised(url);
   if (promised) {
     found_promise_ = true;
-    stream_net_log_.AddEvent(
+    NetLogQuicPushStream(
+        stream_net_log_, quic_session()->net_log(),
         NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
-        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
-                   &request_info_->url));
-    quic_session()->net_log().AddEvent(
-        NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
-        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
-                   &request_info_->url));
+        promised->id(), request_info_->url);
     return OK;
   }
 
@@ -180,14 +185,9 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
   stream_->SetPriority(spdy_priority);
 
   next_state_ = STATE_OPEN;
-  stream_net_log_.AddEvent(
-      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                 &request_info_->url));
-  quic_session()->net_log().AddEvent(
-      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                 &request_info_->url));
+  NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
+                       NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+                       stream_->id(), request_info_->url);
   return OK;
 }
 
@@ -581,8 +581,10 @@ int QuicHttpStream::DoSendHeaders() {
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
-      base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
-                 priority_));
+      [&](NetLogCaptureMode capture_mode) {
+        return QuicRequestNetLogParams(stream_->id(), &request_headers_,
+                                       priority_, capture_mode);
+      });
   DispatchRequestHeadersCallback(request_headers_);
   bool has_upload_data = request_body_stream_ != nullptr;
 

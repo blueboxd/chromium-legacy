@@ -31,8 +31,7 @@ namespace net {
 
 namespace {
 
-base::Value TrialVerificationJobResultCallback(bool trial_success,
-                                               NetLogCaptureMode capture_mode) {
+base::Value TrialVerificationJobResultParams(bool trial_success) {
   base::Value results(base::Value::Type::DICTIONARY);
   results.SetBoolKey("trial_success", trial_success);
   return results;
@@ -139,9 +138,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
         primary_error_(primary_error),
         primary_result_(primary_result) {
     net_log_.BeginEvent(NetLogEventType::TRIAL_CERT_VERIFIER_JOB);
-    source_net_log.AddEvent(
+    source_net_log.AddEventReferencingSource(
         NetLogEventType::TRIAL_CERT_VERIFIER_JOB_COMPARISON_STARTED,
-        net_log_.source().ToEventParametersCallback());
+        net_log_.source());
   }
 
   ~TrialVerificationJob() {
@@ -172,9 +171,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     UMA_HISTOGRAM_ENUMERATION("Net.CertVerifier_TrialComparisonResult",
                               result_code);
 
-    net_log_.EndEvent(
-        NetLogEventType::TRIAL_CERT_VERIFIER_JOB,
-        base::BindRepeating(&TrialVerificationJobResultCallback, is_success));
+    net_log_.EndEvent(NetLogEventType::TRIAL_CERT_VERIFIER_JOB, [&] {
+      return TrialVerificationJobResultParams(is_success);
+    });
 
     if (!is_success) {
       cert_verifier->report_callback_.Run(

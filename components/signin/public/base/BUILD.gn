@@ -35,18 +35,16 @@ static_library("base") {
     "signin_switches.h",
   ]
   deps = [
-    ":signin_buildflags",
-    "//components/account_id",
-    "//components/keyed_service/core",
     "//components/prefs",
     "//third_party/icu:icui18n",
     "//third_party/re2",
-    "//ui/gfx",
-    "//url",
   ]
   public_deps = [
+    ":signin_buildflags",
     "//base",
+    "//components/keyed_service/core",
     "//google_apis",
+    "//url",
   ]
 
   if (is_chromeos) {
@@ -86,12 +84,10 @@ source_set("unit_tests") {
 
   deps = [
     ":base",
-    ":signin_buildflags",
+    "//base",
     "//base/test:test_support",
     "//components/sync_preferences:test_support",
-    "//testing/gmock",
     "//testing/gtest",
-    "//ui/gfx:test_support",
     "//url",
   ]
 }

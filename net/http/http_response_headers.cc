@@ -1330,7 +1330,7 @@ bool HttpResponseHeaders::GetContentRangeFor206(
       instance_length);
 }
 
-base::Value HttpResponseHeaders::NetLogCallback(
+base::Value HttpResponseHeaders::NetLogParams(
     NetLogCaptureMode capture_mode) const {
   base::DictionaryValue dict;
   base::ListValue headers;

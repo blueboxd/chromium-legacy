@@ -12,9 +12,12 @@
 #include "net/base/auth.h"
 #include "net/base/net_export.h"
 #include "net/http/http_util.h"
-#include "net/log/net_log_parameters_callback.h"
 
 template <class T> class scoped_refptr;
+
+namespace base {
+class Value;
+}
 
 namespace net {
 
@@ -149,9 +152,8 @@ class NET_EXPORT_PRIVATE HttpAuth {
   static const char* AuthorizationResultToString(
       AuthorizationResult authorization_result);
 
-  // Use with BoundNetLog to log an authorization result. The returned callback
-  // is valid as long as |name| is valid.
-  static NetLogParametersCallback NetLogAuthorizationResultCallback(
+  // Returns a value for logging an authorization result to a NetLog.
+  static base::Value NetLogAuthorizationResultParams(
       const char* name,
       AuthorizationResult authorization_result);
 

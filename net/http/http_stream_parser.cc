@@ -17,6 +17,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_chunked_decoder.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -67,16 +68,23 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-base::Value NetLogSendRequestBodyCallback(
-    uint64_t length,
-    bool is_chunked,
-    bool did_merge,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogSendRequestBodyParams(uint64_t length,
+                                        bool is_chunked,
+                                        bool did_merge) {
   base::DictionaryValue dict;
   dict.SetInteger("length", static_cast<int>(length));
   dict.SetBoolean("is_chunked", is_chunked);
   dict.SetBoolean("did_merge", did_merge);
   return std::move(dict);
+}
+
+void NetLogSendRequestBody(const NetLogWithSource& net_log,
+                           uint64_t length,
+                           bool is_chunked,
+                           bool did_merge) {
+  net_log.AddEvent(NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_BODY, [&] {
+    return NetLogSendRequestBodyParams(length, is_chunked, did_merge);
+  });
 }
 
 // Returns true if |error_code| is an error for which we give the server a
@@ -229,9 +237,9 @@ int HttpStreamParser::SendRequest(
   DCHECK(!callback.is_null());
   DCHECK(response);
 
-  net_log_.AddEvent(NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
-                    base::Bind(&HttpRequestHeaders::NetLogCallback,
-                               base::Unretained(&headers), &request_line));
+  NetLogRequestHeaders(net_log_,
+                       NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
+                       request_line, &headers);
 
   DVLOG(1) << __func__ << "() request_line = \"" << request_line << "\""
            << " headers = \"" << headers.ToString() << "\"";
@@ -295,11 +303,9 @@ int HttpStreamParser::SendRequest(
     request_headers_->SetOffset(0);
     did_merge = true;
 
-    net_log_.AddEvent(NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_BODY,
-                      base::Bind(&NetLogSendRequestBodyCallback,
-                                 request_->upload_data_stream->size(),
-                                 false, /* not chunked */
-                                 true /* merged */));
+    NetLogSendRequestBody(net_log_, request_->upload_data_stream->size(),
+                          false, /* not chunked */
+                          true /* merged */);
   }
 
   if (!did_merge) {
@@ -500,11 +506,9 @@ int HttpStreamParser::DoSendHeadersComplete(int result) {
        // !IsEOF() indicates that the body wasn't merged.
        (request_->upload_data_stream->size() > 0 &&
         !request_->upload_data_stream->IsEOF()))) {
-    net_log_.AddEvent(NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_BODY,
-                      base::Bind(&NetLogSendRequestBodyCallback,
-                                 request_->upload_data_stream->size(),
-                                 request_->upload_data_stream->is_chunked(),
-                                 false /* not merged */));
+    NetLogSendRequestBody(net_log_, request_->upload_data_stream->size(),
+                          request_->upload_data_stream->is_chunked(),
+                          false /* not merged */);
     io_state_ = STATE_SEND_BODY;
     return OK;
   }

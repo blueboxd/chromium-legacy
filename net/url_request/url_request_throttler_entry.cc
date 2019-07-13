@@ -51,11 +51,9 @@ const int URLRequestThrottlerEntry::kDefaultMaximumBackoffMs = 15 * 60 * 1000;
 const int URLRequestThrottlerEntry::kDefaultEntryLifetimeMs = 2 * 60 * 1000;
 
 // Returns NetLog parameters when a request is rejected by throttling.
-base::Value NetLogRejectedRequestCallback(
-    const std::string* url_id,
-    int num_failures,
-    const base::TimeDelta& release_after,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogRejectedRequestParams(const std::string* url_id,
+                                        int num_failures,
+                                        const base::TimeDelta& release_after) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("url", *url_id);
   dict.SetIntKey("num_failures", num_failures);
@@ -155,10 +153,11 @@ bool URLRequestThrottlerEntry::ShouldRejectRequest(
     const URLRequest& request) const {
   bool reject_request = false;
   if (!is_backoff_disabled_ && GetBackoffEntry()->ShouldRejectRequest()) {
-    net_log_.AddEvent(NetLogEventType::THROTTLING_REJECTED_REQUEST,
-                      base::Bind(&NetLogRejectedRequestCallback, &url_id_,
-                                 GetBackoffEntry()->failure_count(),
-                                 GetBackoffEntry()->GetTimeUntilRelease()));
+    net_log_.AddEvent(NetLogEventType::THROTTLING_REJECTED_REQUEST, [&] {
+      return NetLogRejectedRequestParams(
+          &url_id_, GetBackoffEntry()->failure_count(),
+          GetBackoffEntry()->GetTimeUntilRelease());
+    });
     reject_request = true;
   }
 

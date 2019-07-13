@@ -183,8 +183,8 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
     retry_info.net_error = net_error;
     (*proxy_retry_info)[proxy_key] = retry_info;
   }
-  net_log.AddEvent(NetLogEventType::PROXY_LIST_FALLBACK,
-                   NetLog::StringCallback("bad_proxy", &proxy_key));
+  net_log.AddEventWithStringParams(NetLogEventType::PROXY_LIST_FALLBACK,
+                                   "bad_proxy", proxy_key);
 }
 
 void ProxyList::UpdateRetryInfoOnFallback(

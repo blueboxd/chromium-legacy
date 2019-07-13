@@ -342,9 +342,8 @@ void URLRequest::LogBlockedBy(const char* blocked_by) {
   blocked_by_ = blocked_by;
   use_blocked_by_as_load_param_ = false;
 
-  net_log_.BeginEvent(
-      NetLogEventType::DELEGATE_INFO,
-      NetLog::StringCallback("delegate_blocked_by", &blocked_by_));
+  net_log_.BeginEventWithStringParams(NetLogEventType::DELEGATE_INFO,
+                                      "delegate_blocked_by", blocked_by_);
 }
 
 void URLRequest::LogAndReportBlockedBy(const char* source) {
@@ -621,10 +620,10 @@ URLRequest::URLRequest(const GURL& url,
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   context->url_requests()->insert(this);
-  net_log_.BeginEvent(
-      NetLogEventType::REQUEST_ALIVE,
-      base::BindRepeating(&NetLogURLRequestConstructorCallback, &url, priority_,
-                          traffic_annotation_));
+  net_log_.BeginEvent(NetLogEventType::REQUEST_ALIVE, [&] {
+    return NetLogURLRequestConstructorParams(url, priority_,
+                                             traffic_annotation_);
+  });
 }
 
 void URLRequest::BeforeRequestComplete(int error) {
@@ -637,9 +636,8 @@ void URLRequest::BeforeRequestComplete(int error) {
   OnCallToDelegateComplete();
 
   if (error != OK) {
-    std::string source("delegate");
-    net_log_.AddEvent(NetLogEventType::CANCELLED,
-                      NetLog::StringCallback("source", &source));
+    net_log_.AddEventWithStringParams(NetLogEventType::CANCELLED, "source",
+                                      "delegate");
     StartJob(new URLRequestErrorJob(this, network_delegate_, error));
   } else if (!delegate_redirect_url_.is_empty()) {
     GURL new_url;
@@ -662,12 +660,11 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   privacy_mode_ = DeterminePrivacyMode();
 
-  net_log_.BeginEvent(
-      NetLogEventType::URL_REQUEST_START_JOB,
-      base::BindRepeating(
-          &NetLogURLRequestStartCallback, &url(), &method_, load_flags_,
-          privacy_mode_,
-          upload_data_stream_ ? upload_data_stream_->identifier() : -1));
+  net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
+    return NetLogURLRequestStartParams(
+        url(), method_, load_flags_, privacy_mode_,
+        upload_data_stream_ ? upload_data_stream_->identifier() : -1);
+  });
 
   job_.reset(job);
   job_->SetExtraRequestHeaders(extra_request_headers_);
@@ -697,9 +694,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
       // We need to clear the referrer anyway to avoid an infinite recursion
       // when starting the error job.
       referrer_.clear();
-      std::string source("delegate");
-      net_log_.AddEvent(NetLogEventType::CANCELLED,
-                        NetLog::StringCallback("source", &source));
+      net_log_.AddEventWithStringParams(NetLogEventType::CANCELLED, "source",
+                                        "delegate");
       RestartWithJob(new URLRequestErrorJob(this, network_delegate_,
                                             ERR_BLOCKED_BY_CLIENT));
       return;
@@ -981,10 +977,9 @@ void URLRequest::Redirect(
   // |redirect_info.new_url|.
   OnCallToDelegateComplete();
   if (net_log_.IsCapturing()) {
-    net_log_.AddEvent(
-        NetLogEventType::URL_REQUEST_REDIRECTED,
-        NetLog::StringCallback("location",
-                               &redirect_info.new_url.possibly_invalid_spec()));
+    net_log_.AddEventWithStringParams(
+        NetLogEventType::URL_REQUEST_REDIRECTED, "location",
+        redirect_info.new_url.possibly_invalid_spec());
   }
 
   if (network_delegate_)
@@ -1040,9 +1035,9 @@ void URLRequest::SetPriority(RequestPriority priority) {
     return;
 
   priority_ = priority;
-  net_log_.AddEvent(
-      NetLogEventType::URL_REQUEST_SET_PRIORITY,
-      NetLog::StringCallback("priority", RequestPriorityToString(priority_)));
+  net_log_.AddEventWithStringParams(NetLogEventType::URL_REQUEST_SET_PRIORITY,
+                                    "priority",
+                                    RequestPriorityToString(priority_));
   if (job_.get())
     job_->SetPriority(priority_);
 }

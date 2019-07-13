@@ -36,22 +36,22 @@ RequestPriority ConvertQuicPriorityToRequestPriority(
                          : static_cast<RequestPriority>(HIGHEST - priority);
 }
 
-base::Value QuicRequestNetLogCallback(quic::QuicStreamId stream_id,
-                                      const spdy::SpdyHeaderBlock* headers,
-                                      spdy::SpdyPriority priority,
-                                      NetLogCaptureMode capture_mode) {
-  base::Value dict = SpdyHeaderBlockNetLogCallback(headers, capture_mode);
+base::Value QuicRequestNetLogParams(quic::QuicStreamId stream_id,
+                                    const spdy::SpdyHeaderBlock* headers,
+                                    spdy::SpdyPriority priority,
+                                    NetLogCaptureMode capture_mode) {
+  base::Value dict = SpdyHeaderBlockNetLogParams(headers, capture_mode);
   DCHECK(dict.is_dict());
   dict.SetIntKey("quic_priority", static_cast<int>(priority));
   dict.SetIntKey("quic_stream_id", static_cast<int>(stream_id));
   return dict;
 }
 
-base::Value QuicResponseNetLogCallback(quic::QuicStreamId stream_id,
-                                       bool fin_received,
-                                       const spdy::SpdyHeaderBlock* headers,
-                                       NetLogCaptureMode capture_mode) {
-  base::Value dict = SpdyHeaderBlockNetLogCallback(headers, capture_mode);
+base::Value QuicResponseNetLogParams(quic::QuicStreamId stream_id,
+                                     bool fin_received,
+                                     const spdy::SpdyHeaderBlock* headers,
+                                     NetLogCaptureMode capture_mode) {
+  base::Value dict = SpdyHeaderBlockNetLogParams(headers, capture_mode);
   dict.SetIntKey("quic_stream_id", static_cast<int>(stream_id));
   dict.SetBoolKey("fin", fin_received);
   return dict;

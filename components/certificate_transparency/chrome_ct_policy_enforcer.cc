@@ -28,7 +28,6 @@
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_with_source.h"
 
 using net::ct::CTPolicyCompliance;
@@ -88,14 +87,12 @@ const char* CTPolicyComplianceToString(CTPolicyCompliance status) {
   return "unknown";
 }
 
-base::Value NetLogCertComplianceCheckResultCallback(
+base::Value NetLogCertComplianceCheckResultParams(
     net::X509Certificate* cert,
     bool build_timely,
-    CTPolicyCompliance compliance,
-    net::NetLogCaptureMode capture_mode) {
+    CTPolicyCompliance compliance) {
   base::DictionaryValue dict;
-  dict.SetKey("certificate",
-              net::NetLogX509CertificateCallback(cert, capture_mode));
+  dict.SetKey("certificate", net::NetLogX509CertificateParams(cert));
   dict.SetBoolean("build_timely", build_timely);
   dict.SetString("ct_compliance_status",
                  CTPolicyComplianceToString(compliance));
@@ -132,12 +129,10 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCompliance(
     compliance = CheckCTPolicyCompliance(*cert, verified_scts);
   }
 
-  net::NetLogParametersCallback net_log_callback =
-      base::BindRepeating(&NetLogCertComplianceCheckResultCallback,
-                          base::Unretained(cert), build_timely, compliance);
-
-  net_log.AddEvent(net::NetLogEventType::CERT_CT_COMPLIANCE_CHECKED,
-                   net_log_callback);
+  net_log.AddEvent(net::NetLogEventType::CERT_CT_COMPLIANCE_CHECKED, [&] {
+    return NetLogCertComplianceCheckResultParams(cert, build_timely,
+                                                 compliance);
+  });
 
   return compliance;
 }

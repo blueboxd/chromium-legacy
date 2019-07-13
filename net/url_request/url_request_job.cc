@@ -35,8 +35,7 @@ namespace net {
 namespace {
 
 // Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
-base::Value SourceStreamSetCallback(SourceStream* source_stream,
-                                    NetLogCaptureMode /* capture_mode */) {
+base::Value SourceStreamSetParams(SourceStream* source_stream) {
   base::Value event_params(base::Value::Type::DICTIONARY);
   event_params.SetStringKey("filters", source_stream->Description());
   return event_params;
@@ -471,8 +470,7 @@ void URLRequestJob::NotifyFinalHeadersReceived() {
     } else {
       request_->net_log().AddEvent(
           NetLogEventType::URL_REQUEST_FILTERS_SET,
-          base::Bind(&SourceStreamSetCallback,
-                     base::Unretained(source_stream_.get())));
+          [&] { return SourceStreamSetParams(source_stream_.get()); });
     }
   }
 

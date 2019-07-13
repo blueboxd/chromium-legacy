@@ -35,6 +35,7 @@
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/extras/sqlite/sqlite_persistent_store_backend_base.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -45,8 +46,8 @@ using base::Time;
 
 namespace {
 
-base::Value CookieKeyedLoadNetLogCallback(const std::string& key,
-                                          net::NetLogCaptureMode capture_mode) {
+base::Value CookieKeyedLoadNetLogParams(const std::string& key,
+                                        net::NetLogCaptureMode capture_mode) {
   if (!net::NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::DictionaryValue dict;
@@ -1356,7 +1357,9 @@ void SQLitePersistentCookieStore::LoadCookiesForKey(
     LoadedCallback loaded_callback) {
   DCHECK(!loaded_callback.is_null());
   net_log_.AddEvent(NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_STARTED,
-                    base::BindRepeating(CookieKeyedLoadNetLogCallback, key));
+                    [&](NetLogCaptureMode capture_mode) {
+                      return CookieKeyedLoadNetLogParams(key, capture_mode);
+                    });
   // Note that |backend_| keeps |this| alive by keeping a reference count.
   // If this class is ever converted over to a WeakPtr<> pattern (as TODO it
   // should be) this will need to be replaced by a more complex pattern that
@@ -1398,9 +1401,9 @@ size_t SQLitePersistentCookieStore::GetQueueLengthForTesting() {
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
-  net_log_.AddEvent(
-      NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
-      NetLog::StringCallback("type", "SQLitePersistentCookieStore"));
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED, "type",
+      "SQLitePersistentCookieStore");
   backend_->Close();
 }
 
@@ -1415,8 +1418,9 @@ void SQLitePersistentCookieStore::CompleteKeyedLoad(
     const std::string& key,
     LoadedCallback callback,
     std::vector<std::unique_ptr<CanonicalCookie>> cookie_list) {
-  net_log_.AddEvent(NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED,
-                    NetLog::StringCallback("domain", &key));
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED, "domain",
+      key);
   std::move(callback).Run(std::move(cookie_list));
 }
 

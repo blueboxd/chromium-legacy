@@ -629,18 +629,21 @@ FloatSize SVGSVGElement::CurrentViewportSize() const {
 }
 
 bool SVGSVGElement::HasIntrinsicWidth() const {
-  return width()->CurrentValue()->TypeWithCalcResolved() !=
-         CSSPrimitiveValue::UnitType::kPercentage;
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug that we are not handling math functions
+  // involving percentages correctly. Fix it if necessary.
+  return !width()->CurrentValue()->IsPercentage();
 }
 
 bool SVGSVGElement::HasIntrinsicHeight() const {
-  return height()->CurrentValue()->TypeWithCalcResolved() !=
-         CSSPrimitiveValue::UnitType::kPercentage;
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug that we are not handling math functions
+  // involving percentages correctly. Fix it if necessary.
+  return !height()->CurrentValue()->IsPercentage();
 }
 
 float SVGSVGElement::IntrinsicWidth() const {
-  if (width()->CurrentValue()->TypeWithCalcResolved() ==
-      CSSPrimitiveValue::UnitType::kPercentage)
+  if (!HasIntrinsicWidth())
     return 0;
 
   SVGLengthContext length_context(this);
@@ -648,8 +651,7 @@ float SVGSVGElement::IntrinsicWidth() const {
 }
 
 float SVGSVGElement::IntrinsicHeight() const {
-  if (height()->CurrentValue()->TypeWithCalcResolved() ==
-      CSSPrimitiveValue::UnitType::kPercentage)
+  if (!HasIntrinsicHeight())
     return 0;
 
   SVGLengthContext length_context(this);

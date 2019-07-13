@@ -17,8 +17,7 @@ namespace net {
 
 namespace {
 
-base::Value NetLogAddressListCallback(const AddressList* address_list,
-                                      NetLogCaptureMode capture_mode) {
+base::Value NetLogAddressListParams(const AddressList* address_list) {
   base::Value dict(base::Value::Type::DICTIONARY);
   base::Value list(base::Value::Type::LIST);
 
@@ -91,8 +90,8 @@ void AddressList::SetDefaultCanonicalName() {
   set_canonical_name(front().ToStringWithoutPort());
 }
 
-NetLogParametersCallback AddressList::CreateNetLogCallback() const {
-  return base::Bind(&NetLogAddressListCallback, this);
+base::Value AddressList::NetLogParams() const {
+  return NetLogAddressListParams(this);
 }
 
 }  // namespace net

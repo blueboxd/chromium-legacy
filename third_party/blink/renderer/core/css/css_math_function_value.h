@@ -30,7 +30,6 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
     return CalculationValue::Create(value, PermittedValueRange());
   }
 
-  UnitType TypeWithMathFunctionResolved() const;
   bool MayHaveRelativeUnit() const;
 
   CalculationCategory Category() const { return expression_->Category(); }

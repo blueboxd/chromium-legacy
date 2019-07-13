@@ -290,9 +290,8 @@ int SparseControl::StartIO(SparseOperation op,
   abort_ = false;
 
   if (entry_->net_log().IsCapturing()) {
-    entry_->net_log().BeginEvent(
-        GetSparseEventType(operation_),
-        CreateNetLogSparseOperationCallback(offset_, buf_len_));
+    NetLogSparseOperation(entry_->net_log(), GetSparseEventType(operation_),
+                          net::NetLogEventPhase::BEGIN, offset_, buf_len_);
   }
   DoChildrenIO();
 
@@ -690,9 +689,9 @@ void SparseControl::DoChildrenIO() {
   // Range operations are finished synchronously, often without setting
   // |finished_| to true.
   if (kGetRangeOperation == operation_ && entry_->net_log().IsCapturing()) {
-    entry_->net_log().EndEvent(
-        net::NetLogEventType::SPARSE_GET_RANGE,
-        CreateNetLogGetAvailableRangeResultCallback(offset_, result_));
+    entry_->net_log().EndEvent(net::NetLogEventType::SPARSE_GET_RANGE, [&] {
+      return CreateNetLogGetAvailableRangeResultParams(offset_, result_);
+    });
   }
   if (finished_) {
     if (kGetRangeOperation != operation_ && entry_->net_log().IsCapturing()) {
@@ -726,20 +725,20 @@ bool SparseControl::DoChildIO() {
   switch (operation_) {
     case kReadOperation:
       if (entry_->net_log().IsCapturing()) {
-        entry_->net_log().BeginEvent(
-            net::NetLogEventType::SPARSE_READ_CHILD_DATA,
-            CreateNetLogSparseReadWriteCallback(child_->net_log().source(),
-                                                child_len_));
+        NetLogSparseReadWrite(entry_->net_log(),
+                              net::NetLogEventType::SPARSE_READ_CHILD_DATA,
+                              net::NetLogEventPhase::BEGIN,
+                              child_->net_log().source(), child_len_);
       }
       rv = child_->ReadDataImpl(kSparseData, child_offset_, user_buf_.get(),
                                 child_len_, std::move(callback));
       break;
     case kWriteOperation:
       if (entry_->net_log().IsCapturing()) {
-        entry_->net_log().BeginEvent(
-            net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
-            CreateNetLogSparseReadWriteCallback(child_->net_log().source(),
-                                                child_len_));
+        NetLogSparseReadWrite(entry_->net_log(),
+                              net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
+                              net::NetLogEventPhase::BEGIN,
+                              child_->net_log().source(), child_len_);
       }
       rv = child_->WriteDataImpl(kSparseData, child_offset_, user_buf_.get(),
                                  child_len_, std::move(callback), false);

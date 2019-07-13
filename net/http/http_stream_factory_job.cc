@@ -66,18 +66,17 @@ const base::Feature kLimitEarlyPreconnectsExperiment{
 }  // namespace
 
 // Returns parameters associated with the start of a HTTP stream job.
-base::Value NetLogHttpStreamJobCallback(const NetLogSource& source,
-                                        const GURL* original_url,
-                                        const GURL* url,
-                                        bool expect_spdy,
-                                        bool using_quic,
-                                        RequestPriority priority,
-                                        NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogHttpStreamJobParams(const NetLogSource& source,
+                                      const GURL& original_url,
+                                      const GURL& url,
+                                      bool expect_spdy,
+                                      bool using_quic,
+                                      RequestPriority priority) {
   base::DictionaryValue dict;
   if (source.IsValid())
     source.AddToEventParameters(&dict);
-  dict.SetString("original_url", original_url->GetOrigin().spec());
-  dict.SetString("url", url->GetOrigin().spec());
+  dict.SetString("original_url", original_url.GetOrigin().spec());
+  dict.SetString("url", url.GetOrigin().spec());
   dict.SetBoolean("expect_spdy", expect_spdy);
   dict.SetBoolean("using_quic", using_quic);
   dict.SetString("priority", RequestPriorityToString(priority));
@@ -86,9 +85,7 @@ base::Value NetLogHttpStreamJobCallback(const NetLogSource& source,
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
-base::Value NetLogHttpStreamProtoCallback(
-    NextProto negotiated_protocol,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogHttpStreamProtoParams(NextProto negotiated_protocol) {
   base::DictionaryValue dict;
 
   dict.SetString("proto", NextProtoToString(negotiated_protocol));
@@ -629,13 +626,13 @@ int HttpStreamFactory::Job::DoStart() {
   const NetLogWithSource* net_log = delegate_->GetNetLog();
 
   if (net_log) {
-    net_log_.BeginEvent(
-        NetLogEventType::HTTP_STREAM_JOB,
-        base::Bind(&NetLogHttpStreamJobCallback, net_log->source(),
-                   &request_info_.url, &origin_url_, expect_spdy_, using_quic_,
-                   priority_));
-    net_log->AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_STARTED_JOB,
-                      net_log_.source().ToEventParametersCallback());
+    net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB, [&] {
+      return NetLogHttpStreamJobParams(net_log->source(), request_info_.url,
+                                       origin_url_, expect_spdy_, using_quic_,
+                                       priority_);
+    });
+    net_log->AddEventReferencingSource(
+        NetLogEventType::HTTP_STREAM_REQUEST_STARTED_JOB, net_log_.source());
   }
 
   // Don't connect to restricted ports.
@@ -656,8 +653,9 @@ int HttpStreamFactory::Job::DoStart() {
 int HttpStreamFactory::Job::DoWait() {
   next_state_ = STATE_WAIT_COMPLETE;
   bool should_wait = delegate_->ShouldWait(this);
-  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING,
-                      NetLog::BoolCallback("should_wait", should_wait));
+  net_log_.AddEntryWithBoolParams(NetLogEventType::HTTP_STREAM_JOB_WAITING,
+                                  NetLogEventPhase::BEGIN, "should_wait",
+                                  should_wait);
   if (should_wait)
     return ERR_IO_PENDING;
 
@@ -945,9 +943,9 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       if (connection_->socket()->WasAlpnNegotiated()) {
         was_alpn_negotiated_ = true;
         negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
-        net_log_.AddEvent(
-            NetLogEventType::HTTP_STREAM_REQUEST_PROTO,
-            base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
+        net_log_.AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_PROTO, [&] {
+          return NetLogHttpStreamProtoParams(negotiated_protocol_);
+        });
         if (negotiated_protocol_ == kProtoHTTP2) {
           if (is_websocket_) {
             // WebSocket is not supported over a fresh HTTP/2 connection.

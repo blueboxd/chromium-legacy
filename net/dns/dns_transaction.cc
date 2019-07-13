@@ -107,11 +107,9 @@ bool IsIPLiteral(const std::string& hostname) {
   return ip.AssignFromIPLiteral(hostname);
 }
 
-base::Value NetLogStartCallback(const std::string* hostname,
-                                uint16_t qtype,
-                                NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogStartParams(const std::string& hostname, uint16_t qtype) {
   base::DictionaryValue dict;
-  dict.SetString("hostname", *hostname);
+  dict.SetString("hostname", hostname);
   dict.SetInteger("query_type", qtype);
   return std::move(dict);
 }
@@ -147,7 +145,7 @@ class DnsAttempt {
   // Returns a Value representing the received response, along with a reference
   // to the NetLog source source of the UDP socket used.  The request must have
   // completed before this is called.
-  base::Value NetLogResponseCallback(NetLogCaptureMode capture_mode) const {
+  base::Value NetLogResponseParams() const {
     DCHECK(GetResponse()->IsValid());
 
     base::DictionaryValue dict;
@@ -833,7 +831,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(!callback_.is_null());
     DCHECK(attempts_.empty());
     net_log_.BeginEvent(NetLogEventType::DNS_TRANSACTION,
-                        base::Bind(&NetLogStartCallback, &hostname_, qtype_));
+                        [&] { return NetLogStartParams(hostname_, qtype_); });
     AttemptResult result(PrepareSearch(), nullptr);
     if (result.rv == OK) {
       qnames_initial_size_ = qnames_.size();
@@ -980,9 +978,8 @@ class DnsTransactionImpl : public DnsTransaction,
     if (!got_socket)
       return AttemptResult(ERR_CONNECTION_REFUSED, nullptr);
 
-    net_log_.AddEvent(
-        NetLogEventType::DNS_TRANSACTION_ATTEMPT,
-        attempt->GetSocketNetLog().source().ToEventParametersCallback());
+    net_log_.AddEventReferencingSource(NetLogEventType::DNS_TRANSACTION_ATTEMPT,
+                                       attempt->GetSocketNetLog().source());
 
     int rv = attempt->Start(base::Bind(
         &DnsTransactionImpl::OnUdpAttemptComplete, base::Unretained(this),
@@ -1063,9 +1060,9 @@ class DnsTransactionImpl : public DnsTransaction,
     ++attempts_count_;
     had_tcp_attempt_ = true;
 
-    net_log_.AddEvent(
+    net_log_.AddEventReferencingSource(
         NetLogEventType::DNS_TRANSACTION_TCP_ATTEMPT,
-        attempt->GetSocketNetLog().source().ToEventParametersCallback());
+        attempt->GetSocketNetLog().source());
 
     int rv = attempt->Start(base::Bind(&DnsTransactionImpl::OnAttemptComplete,
                                        base::Unretained(this), attempt_number));
@@ -1080,8 +1077,8 @@ class DnsTransactionImpl : public DnsTransaction,
   // Begins query for the current name. Makes the first attempt.
   AttemptResult StartQuery() {
     std::string dotted_qname = DNSDomainToString(qnames_.front());
-    net_log_.BeginEvent(NetLogEventType::DNS_TRANSACTION_QUERY,
-                        NetLog::StringCallback("qname", &dotted_qname));
+    net_log_.BeginEventWithStringParams(NetLogEventType::DNS_TRANSACTION_QUERY,
+                                        "qname", dotted_qname);
 
     first_server_index_ = session_->config().nameservers.empty()
                               ? 0
@@ -1116,8 +1113,7 @@ class DnsTransactionImpl : public DnsTransaction,
   void LogResponse(const DnsAttempt* attempt) {
     if (attempt && attempt->GetResponse()) {
       net_log_.AddEvent(NetLogEventType::DNS_TRANSACTION_RESPONSE,
-                        base::Bind(&DnsAttempt::NetLogResponseCallback,
-                                   base::Unretained(attempt)));
+                        [&] { return attempt->NetLogResponseParams(); });
     }
   }
 

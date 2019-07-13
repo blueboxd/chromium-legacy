@@ -201,11 +201,6 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
   return front;
 }
 
-NetLogParametersCallback HostCache::Entry::CreateNetLogCallback() const {
-  return base::BindRepeating(&HostCache::Entry::NetLogCallback,
-                             base::Unretained(this));
-}
-
 HostCache::Entry HostCache::Entry::CopyWithDefaultPort(uint16_t port) const {
   Entry copy(*this);
 
@@ -295,8 +290,7 @@ void HostCache::Entry::GetStaleness(base::TimeTicks now,
   out->stale_hits = stale_hits_;
 }
 
-base::Value HostCache::Entry::NetLogCallback(
-    NetLogCaptureMode capture_mode) const {
+base::Value HostCache::Entry::NetLogParams() const {
   return GetAsValue(false /* include_staleness */);
 }
 

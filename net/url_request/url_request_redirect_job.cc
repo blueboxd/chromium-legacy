@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -61,9 +62,8 @@ void URLRequestRedirectJob::GetLoadTimingInfo(
 }
 
 void URLRequestRedirectJob::Start() {
-  request()->net_log().AddEvent(
-      NetLogEventType::URL_REQUEST_REDIRECT_JOB,
-      NetLog::StringCallback("reason", &redirect_reason_));
+  request()->net_log().AddEventWithStringParams(
+      NetLogEventType::URL_REQUEST_REDIRECT_JOB, "reason", redirect_reason_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&URLRequestRedirectJob::StartAsync,
                                 weak_factory_.GetWeakPtr()));
@@ -114,10 +114,10 @@ void URLRequestRedirectJob::StartAsync() {
       HttpUtil::AssembleRawHeaders(header_string));
   DCHECK(fake_headers_->IsRedirect(nullptr));
 
-  request()->net_log().AddEvent(
+  NetLogResponseHeaders(
+      request()->net_log(),
       NetLogEventType::URL_REQUEST_FAKE_RESPONSE_HEADERS_CREATED,
-      base::Bind(&HttpResponseHeaders::NetLogCallback,
-                 base::Unretained(fake_headers_.get())));
+      fake_headers_.get());
 
   // TODO(mmenke):  Consider calling the NetworkDelegate with the headers here.
   // There's some weirdness about how to handle the case in which the delegate

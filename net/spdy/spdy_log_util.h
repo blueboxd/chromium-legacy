@@ -34,7 +34,7 @@ NET_EXPORT_PRIVATE base::ListValue ElideSpdyHeaderBlockForNetLog(
     NetLogCaptureMode capture_mode);
 
 // Converts a spdy::SpdyHeaderBlock into NetLog event parameters.
-NET_EXPORT_PRIVATE base::Value SpdyHeaderBlockNetLogCallback(
+NET_EXPORT_PRIVATE base::Value SpdyHeaderBlockNetLogParams(
     const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode);
 

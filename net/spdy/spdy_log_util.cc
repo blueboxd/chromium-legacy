@@ -37,8 +37,8 @@ base::ListValue ElideSpdyHeaderBlockForNetLog(
   return headers_list;
 }
 
-base::Value SpdyHeaderBlockNetLogCallback(const spdy::SpdyHeaderBlock* headers,
-                                          NetLogCaptureMode capture_mode) {
+base::Value SpdyHeaderBlockNetLogParams(const spdy::SpdyHeaderBlock* headers,
+                                        NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);

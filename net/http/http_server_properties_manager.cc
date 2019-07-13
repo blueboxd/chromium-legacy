@@ -73,11 +73,6 @@ void AddAlternativeServiceFieldsToDictionaryValue(
                   NextProtoToString(alternative_service.protocol));
 }
 
-base::Value NetLogCallback(const base::Value* http_server_properties_dict,
-                           NetLogCaptureMode capture_mode) {
-  return http_server_properties_dict->Clone();
-}
-
 // A local or temporary data structure to hold preferences for a server.
 // This is used only in UpdatePrefs.
 struct ServerPref {
@@ -467,7 +462,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
 
   bool detected_corrupted_prefs = false;
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_CACHE,
-                    base::Bind(&NetLogCallback, http_server_properties_dict));
+                    [&] { return http_server_properties_dict->Clone(); });
   int version = kMissingVersion;
   if (!http_server_properties_dict->GetIntegerWithoutPathExpansion(kVersionKey,
                                                                    &version)) {
@@ -1150,7 +1145,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache(
   setting_prefs_ = false;
 
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_PREFS,
-                    base::Bind(&NetLogCallback, &http_server_properties_dict));
+                    [&] { return http_server_properties_dict.Clone(); });
 }
 
 void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(

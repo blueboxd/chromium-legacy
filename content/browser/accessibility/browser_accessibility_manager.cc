@@ -545,7 +545,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
   }
 
   if (focus->GetRole() == ax::mojom::Role::kPopUpButton) {
-    BrowserAccessibility* child = focus->InternalGetChild(0);
+    BrowserAccessibility* child = focus->InternalGetFirstChild();
     if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
         !child->GetData().HasState(ax::mojom::State::kInvisible)) {
       // The active descendant is found on the menu list popup, i.e. on the
@@ -861,10 +861,10 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     return nullptr;
 
   if (object->PlatformChildCount())
-    return object->PlatformGetChild(0);
+    return object->PlatformGetFirstChild();
 
   while (object) {
-    BrowserAccessibility* sibling = object->GetNextSibling();
+    BrowserAccessibility* sibling = object->PlatformGetNextSibling();
     if (sibling)
       return sibling;
 
@@ -890,7 +890,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
     return object->PlatformDeepestLastChild();
   }
 
-  BrowserAccessibility* sibling = object->GetPreviousSibling();
+  BrowserAccessibility* sibling = object->PlatformGetPreviousSibling();
   if (!sibling)
     return object->PlatformGetParent();
 
@@ -1010,9 +1010,8 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
     // to find the text-only objects.
     if (!start_object.InternalChildCount())
       return text_only_objects;
-    start_text_object = start_object.InternalGetChild(0);
-    end_text_object =
-        start_object.InternalGetChild(start_object.InternalChildCount() - 1);
+    start_text_object = start_object.InternalGetFirstChild();
+    end_text_object = start_object.InternalGetLastChild();
   } else if (child_index1 <= child_index2 ||
              end_object.IsDescendantOf(&start_object)) {
     start_text_object = &start_object;

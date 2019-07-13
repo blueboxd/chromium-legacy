@@ -16,11 +16,12 @@ class MockNativeFileSystemPermissionContext
   MockNativeFileSystemPermissionContext();
   ~MockNativeFileSystemPermissionContext();
 
-  MOCK_METHOD3(
-      GetWritePermissionGrant,
-      scoped_refptr<NativeFileSystemPermissionGrant>(const url::Origin& origin,
-                                                     const base::FilePath& path,
-                                                     bool is_directory));
+  MOCK_METHOD4(GetWritePermissionGrant,
+               scoped_refptr<NativeFileSystemPermissionGrant>(
+                   const url::Origin& origin,
+                   const base::FilePath& path,
+                   bool is_directory,
+                   NativeFileSystemPermissionContext::UserAction user_action));
 
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,

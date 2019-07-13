@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":os_add_languages_dialog",
     ":os_languages",
     ":os_languages_page",
+    ":os_languages_section",
     "../../languages_page:languages_browser_proxy",
     "../../languages_page:languages_types",
     "../../languages_page:manage_input_methods_page",
@@ -36,9 +37,24 @@ js_library("os_languages") {
   ]
 }
 
-js_library("os_languages_page") {
+js_library("os_languages_section") {
   deps = [
     ":os_languages",
+    ":os_languages_page",
+    "../..:route",
+    "../../languages_page:languages_types",
+    "../../languages_page:manage_input_methods_page",
+    "../../settings_page:settings_animated_pages",
+    "../../settings_page:settings_subpage",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
+  ]
+}
+
+js_library("os_languages_page") {
+  deps = [
     "../..:lifetime_browser_proxy",
     "../..:route",
     "../../languages_page:languages_types",

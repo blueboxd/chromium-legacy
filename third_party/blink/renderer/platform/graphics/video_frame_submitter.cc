@@ -74,11 +74,7 @@ void VideoFrameSubmitter::StopRendering() {
 void VideoFrameSubmitter::DidReceiveFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(video_frame_provider_);
-
-  // DidReceiveFrame is called before rendering has started, as a part of
-  // VideoRendererSink::PaintSingleFrame.
-  if (!is_rendering_)
-    SubmitSingleFrame();
+  SubmitSingleFrame();
 }
 
 bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
@@ -345,11 +341,9 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
   //
   // See https://crbug.com/829813 and https://crbug.com/829565.
   if (ShouldSubmit()) {
-    // We don't want to submit when |is_rendering_| because OnBeginFrame() calls
-    // are already driving submissions. We should still submit the empty frame
-    // in the other branch for memory savings.
-    if (!is_rendering_)
-      SubmitSingleFrame();
+    // Submit even if we're rendering, otherwise we may display an empty frame
+    // before the next OnBeginFrame() which can cause a visible flash.
+    SubmitSingleFrame();
   } else {
     // Post a delayed task to submit an empty frame. We don't do this here,
     // since there is a race between when we're notified that the player is not
@@ -360,15 +354,13 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
     // the auto-PiP a chance to start. Note that the empty frame isn't required
     // for visual correctness; it's just for resource cleanup. We can delay
     // resource cleanup a little.
-
-    // If there are any in-flight empty frame requests, then cancel them. We
+    //
+    // If there are any in-flight empty frame requests, this cancels them. We
     // want to wait until any group of state changes stabilizes.
-    empty_frame_weak_ptr_factory_.InvalidateWeakPtrs();
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
+    empty_frame_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(500),
         base::BindOnce(&VideoFrameSubmitter::SubmitEmptyFrameIfNeeded,
-                       empty_frame_weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(500));
+                       base::Unretained(this)));
   }
 }
 
@@ -473,15 +465,8 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
   if (!video_frame)
     return;
 
-  // TODO(dalecurtis): This probably shouldn't be posted since it runs the risk
-  // of having state change out from under it. All call sites into this method
-  // should be from posted tasks so it should be safe to remove the post.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&VideoFrameSubmitter::SubmitFrame),
-                     weak_ptr_factory_.GetWeakPtr(),
-                     viz::BeginFrameAck::CreateManualAckWithDamage(),
-                     std::move(video_frame)));
+  SubmitFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
+              std::move(video_frame));
 
   video_frame_provider_->PutCurrentFrame();
 }

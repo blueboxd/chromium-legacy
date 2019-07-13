@@ -44,6 +44,8 @@ source_set("location_bar") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/badges",
+    "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen",

@@ -26,6 +26,7 @@
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -326,8 +327,8 @@ class AssistantManagerServiceImpl
 
   bool is_first_client_discourse_context_query_ = true;
 
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_binding_;
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_;
 
   // Info associated to the active media session.
   media_session::mojom::MediaSessionInfoPtr media_session_info_ptr_;

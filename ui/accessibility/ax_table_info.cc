@@ -374,7 +374,10 @@ void AXTableInfo::UpdateExtraMacNodes() {
 AXNode* AXTableInfo::CreateExtraMacColumnNode(size_t col_index) {
   int32_t id = tree_->GetNextNegativeInternalNodeId();
   size_t index_in_parent = col_index + table_node_->children().size();
-  AXNode* node = new AXNode(tree_, table_node_, id, index_in_parent);
+  int32_t unignored_index_in_parent =
+      col_index + table_node_->GetUnignoredChildCount();
+  AXNode* node = new AXNode(tree_, table_node_, id, index_in_parent,
+                            unignored_index_in_parent);
   AXNodeData data;
   data.id = id;
   data.role = ax::mojom::Role::kColumn;
@@ -392,7 +395,10 @@ AXNode* AXTableInfo::CreateExtraMacColumnNode(size_t col_index) {
 AXNode* AXTableInfo::CreateExtraMacTableHeaderNode() {
   int32_t id = tree_->GetNextNegativeInternalNodeId();
   size_t index_in_parent = col_count + table_node_->children().size();
-  AXNode* node = new AXNode(tree_, table_node_, id, index_in_parent);
+  int32_t unignored_index_in_parent =
+      col_count + table_node_->GetUnignoredChildCount();
+  AXNode* node = new AXNode(tree_, table_node_, id, index_in_parent,
+                            unignored_index_in_parent);
   AXNodeData data;
   data.id = id;
   data.role = ax::mojom::Role::kTableHeaderContainer;

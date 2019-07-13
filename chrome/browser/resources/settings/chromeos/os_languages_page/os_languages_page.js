@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'os-settings-languages-page' is the settings page
+ * @fileoverview 'os-settings-languages-page' is the settings sub-page
  * for language and input method settings.
  */
 cr.exportPath('settings');
@@ -13,12 +13,6 @@ cr.exportPath('settings');
  *      menu to keep it briefly on-screen.
  */
 settings.kMenuCloseDelay = 100;
-
-/**
- * Name of the language setting is shown uma histogram.
- * @type {string}
- */
-const LANGUAGE_SETTING_IS_SHOWN_UMA_NAME = 'Translate.LanguageSettingsIsShown';
 
 (function() {
 'use strict';
@@ -59,15 +53,6 @@ Polymer({
      * @private
      */
     detailLanguage_: Object,
-
-    /**
-     * Whether the language settings list is opened.
-     * @private
-     */
-    languagesOpened_: {
-      type: Boolean,
-      observer: 'onLanguagesOpenedChanged_',
-    },
 
     /** @private */
     showAddLanguagesDialog_: Boolean,
@@ -363,15 +348,6 @@ Polymer({
   },
 
   /**
-   * @param {string} prospectiveUILanguage
-   * @return {string}
-   * @private
-   */
-  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
-    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
-  },
-
-  /**
    * Returns either the "selected" class, if the language matches the
    * prospective UI language, or an empty string.
    * @param {string} languageCode The language code identifying a language.
@@ -406,14 +382,6 @@ Polymer({
     return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
   },
 
-  getInputMethodName_: function(id) {
-    const inputMethod =
-        this.languages.inputMethods.enabled.find(function(inputMethod) {
-          return inputMethod.id == id;
-        });
-    return inputMethod ? inputMethod.displayName : '';
-  },
-
   /**
    * @param {!Event} e
    * @private
@@ -445,19 +413,6 @@ Polymer({
     }
 
     menu.showAt(/** @type {!Element} */ (e.target));
-  },
-
-  /**
-   * @param {boolean} newVal The new value of languagesOpened_.
-   * @param {boolean} oldVal The old value of languagesOpened_.
-   * @private
-   */
-  onLanguagesOpenedChanged_: function(newVal, oldVal) {
-    if (!oldVal && newVal) {
-      chrome.send(
-          'metricsHandler:recordBooleanHistogram',
-          [LANGUAGE_SETTING_IS_SHOWN_UMA_NAME, true]);
-    }
   },
 
   /**

@@ -32,7 +32,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/fetch/fetch_api_request_proto.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -2311,10 +2311,9 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
               init_request_info->download_guid());
     EXPECT_EQ(request_info->request_index(),
               init_request_info->request_index());
-    EXPECT_EQ(ServiceWorkerUtils::SerializeFetchRequestToString(
-                  *(request_info->fetch_request())),
-              ServiceWorkerUtils::SerializeFetchRequestToString(
-                  *(init_request_info->fetch_request())));
+    EXPECT_EQ(
+        SerializeFetchRequestToString(*(request_info->fetch_request())),
+        SerializeFetchRequestToString(*(init_request_info->fetch_request())));
   }
 
   // Create another registration.

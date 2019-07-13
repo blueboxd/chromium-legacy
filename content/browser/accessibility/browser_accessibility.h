@@ -140,7 +140,18 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
   BrowserAccessibility* PlatformGetParent() const;
+  virtual BrowserAccessibility* PlatformGetFirstChild() const;
+  virtual BrowserAccessibility* PlatformGetLastChild() const;
+  virtual BrowserAccessibility* PlatformGetNextSibling() const;
+  virtual BrowserAccessibility* PlatformGetPreviousSibling() const;
+  using PlatformChildIterator = ui::AXNode::ChildIteratorBase<
+      BrowserAccessibility,
+      &BrowserAccessibility::PlatformGetNextSibling,
+      &BrowserAccessibility::PlatformGetPreviousSibling,
+      &BrowserAccessibility::PlatformGetLastChild>;
 
+  PlatformChildIterator PlatformChildrenBegin() const;
+  PlatformChildIterator PlatformChildrenEnd() const;
   // Return a pointer to the first ancestor that is a selection container
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
@@ -158,9 +169,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
   BrowserAccessibility* GetClosestPlatformObject() const;
-
-  BrowserAccessibility* GetPreviousSibling() const;
-  BrowserAccessibility* GetNextSibling() const;
 
   bool IsPreviousSiblingOnSameLine() const;
   bool IsNextSiblingOnSameLine() const;
@@ -266,6 +274,17 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   uint32_t InternalChildCount() const;
   BrowserAccessibility* InternalGetChild(uint32_t child_index) const;
   BrowserAccessibility* InternalGetParent() const;
+  BrowserAccessibility* InternalGetFirstChild() const;
+  BrowserAccessibility* InternalGetLastChild() const;
+  BrowserAccessibility* InternalGetNextSibling() const;
+  BrowserAccessibility* InternalGetPreviousSibling() const;
+  using InternalChildIterator = ui::AXNode::ChildIteratorBase<
+      BrowserAccessibility,
+      &BrowserAccessibility::InternalGetNextSibling,
+      &BrowserAccessibility::InternalGetPreviousSibling,
+      &BrowserAccessibility::InternalGetLastChild>;
+  InternalChildIterator InternalChildrenBegin() const;
+  InternalChildIterator InternalChildrenEnd() const;
 
   int32_t GetId() const;
   gfx::RectF GetLocation() const;
@@ -549,6 +568,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // which they correspond.
   std::set<ui::AXPlatformNode*> GetNodesForNodeIdSet(
       const std::set<int32_t>& ids);
+
+  // If the node has a child tree, get the root node.
+  BrowserAccessibility* PlatformGetRootOfChildTree() const;
 
   // A unique ID, since node IDs are frame-local.
   ui::AXUniqueId unique_id_;

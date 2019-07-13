@@ -366,6 +366,9 @@ crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscree
 
 # ====== Layout team owned tests from here ======
 
+crbug.com/983322 css3/masking/clip-path-selection.html [ Failure ]
+crbug.com/983593 external/wpt/quirks/table-cell-width-calculation.html [ Failure ]
+
 crbug.com/974853 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
 
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
@@ -5563,6 +5566,8 @@ crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainti
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
 crbug.com/875884 [ Linux ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]

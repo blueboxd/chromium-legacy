@@ -265,7 +265,7 @@ blink::WebString WebContentDecryptionModuleSessionImpl::SessionId() const {
 }
 
 void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
-    blink::WebEncryptedMediaInitDataType init_data_type,
+    EmeInitDataType eme_init_data_type,
     const unsigned char* init_data,
     size_t init_data_length,
     blink::WebEncryptedMediaSessionType session_type,
@@ -279,7 +279,6 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
   //    implementation value does not support initDataType as an Initialization
   //    Data Type, return a promise rejected with a NotSupportedError.
   //    String comparison is case-sensitive.
-  EmeInitDataType eme_init_data_type = ConvertToEmeInitDataType(init_data_type);
   if (!IsSupportedKeySystemWithInitDataType(adapter_->GetKeySystem(),
                                             eme_init_data_type)) {
     std::string message =

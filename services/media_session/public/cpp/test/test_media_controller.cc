@@ -53,9 +53,9 @@ void TestMediaControllerImageObserver::WaitForExpectedImageOfType(
 
 TestMediaControllerObserver::TestMediaControllerObserver(
     mojom::MediaControllerPtr& media_controller)
-    : binding_(this) {
-  mojom::MediaControllerObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+    : receiver_(this) {
+  mojo::PendingRemote<mojom::MediaControllerObserver> observer;
+  receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
   media_controller->AddObserver(std::move(observer));
 }
 
@@ -208,9 +208,9 @@ void TestMediaController::ToggleSuspendResume() {
 }
 
 void TestMediaController::AddObserver(
-    mojom::MediaControllerObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaControllerObserver> observer) {
   ++add_observer_count_;
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(observer));
 }
 
 void TestMediaController::PreviousTrack() {
@@ -233,17 +233,14 @@ void TestMediaController::Seek(base::TimeDelta seek_time) {
 
 void TestMediaController::SimulateMediaSessionInfoChanged(
     mojom::MediaSessionInfoPtr session_info) {
-  observers_.ForAllPtrs(
-      [&session_info](mojom::MediaControllerObserver* observer) {
-        observer->MediaSessionInfoChanged(session_info.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionInfoChanged(session_info.Clone());
 }
 
 void TestMediaController::SimulateMediaSessionActionsChanged(
     const std::vector<mojom::MediaSessionAction>& actions) {
-  observers_.ForAllPtrs([&actions](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_)
     observer->MediaSessionActionsChanged(actions);
-  });
 }
 
 void TestMediaController::Flush() {

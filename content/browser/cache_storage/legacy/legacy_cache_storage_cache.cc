@@ -327,17 +327,15 @@ blink::mojom::FetchAPIRequestPtr CreateRequest(
 blink::mojom::FetchAPIResponsePtr CreateResponse(
     const proto::CacheMetadata& metadata,
     const std::string& cache_name) {
+  // We no longer support Responses with only a single URL entry.  This field
+  // was deprecated in M57.
+  if (metadata.response().has_url())
+    return nullptr;
+
   std::vector<GURL> url_list;
-  // From Chrome 57, proto::CacheMetadata's url field was deprecated.
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.Response.HasDeprecatedURL",
-                        metadata.response().has_url());
-  if (metadata.response().has_url()) {
-    url_list.push_back(GURL(metadata.response().url()));
-  } else {
-    url_list.reserve(metadata.response().url_list_size());
-    for (int i = 0; i < metadata.response().url_list_size(); ++i)
-      url_list.push_back(GURL(metadata.response().url_list(i)));
-  }
+  url_list.reserve(metadata.response().url_list_size());
+  for (int i = 0; i < metadata.response().url_list_size(); ++i)
+    url_list.push_back(GURL(metadata.response().url_list(i)));
 
   ResponseHeaderMap headers;
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
@@ -1148,6 +1146,12 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
   QueryCacheResult* match = &query_cache_context->matches->back();
   match->request = CreateRequest(*metadata, GURL(entry->GetKey()));
   match->response = CreateResponse(*metadata, cache_name_);
+
+  if (!match->response) {
+    entry->Doom();
+    QueryCacheOpenNextEntry(std::move(query_cache_context));
+    return;
+  }
 
   if (query_cache_context->request &&
       (!query_cache_context->options ||

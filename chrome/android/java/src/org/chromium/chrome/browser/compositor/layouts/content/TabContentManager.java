@@ -466,7 +466,7 @@ public class TabContentManager {
     }
 
     private boolean isNativeViewShowing(Tab tab) {
-        return tab != null && (SadTab.isShowing(tab) || SuspendedTab.from(tab).isShowing());
+        return tab != null && (SadTab.isShowing(tab) || SuspendedTab.isShowing(tab));
     }
 
     // Class Object Methods

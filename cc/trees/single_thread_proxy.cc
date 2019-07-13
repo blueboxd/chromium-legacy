@@ -435,6 +435,10 @@ bool SingleThreadProxy::IsInsideDraw() {
   return inside_draw_;
 }
 
+bool SingleThreadProxy::IsBeginMainFrameExpected() {
+  return true;
+}
+
 void SingleThreadProxy::DidActivateSyncTree() {
   CommitComplete();
 }

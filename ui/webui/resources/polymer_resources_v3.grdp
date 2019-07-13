@@ -164,16 +164,8 @@
              file="../../../third_party/polymer/v3_0/components-chromium/iron-selector/iron-selector.js"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_POLYMER_3_0_IRON_TEST_HELPERS_IRON_TEST_HELPERS_JS"
-             file="../../../third_party/polymer/v3_0/components-chromium/iron-test-helpers/iron-test-helpers.js"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_POLYMER_3_0_IRON_TEST_HELPERS_MOCK_INTERACTIONS_JS"
              file="../../../third_party/polymer/v3_0/components-chromium/iron-test-helpers/mock-interactions.js"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_3_0_IRON_TEST_HELPERS_TEST_HELPERS_JS"
-             file="../../../third_party/polymer/v3_0/components-chromium/iron-test-helpers/test-helpers.js"
              type="chrome_html"
              compress="gzip" />
   <if expr="chromeos">
@@ -207,14 +199,6 @@
                compress="gzip" />
     <structure name="IDR_POLYMER_3_0_NEON_ANIMATION_NEON_ANIMATION_RUNNER_BEHAVIOR_JS"
                file="../../../third_party/polymer/v3_0/components-chromium/neon-animation/neon-animation-runner-behavior.js"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_POLYMER_3_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATABLE_BEHAVIOR_JS"
-               file="../../../third_party/polymer/v3_0/components-chromium/neon-animation/neon-shared-element-animatable-behavior.js"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_POLYMER_3_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATION_BEHAVIOR_JS"
-               file="../../../third_party/polymer/v3_0/components-chromium/neon-animation/neon-shared-element-animation-behavior.js"
                type="chrome_html"
                compress="gzip" />
   </if>

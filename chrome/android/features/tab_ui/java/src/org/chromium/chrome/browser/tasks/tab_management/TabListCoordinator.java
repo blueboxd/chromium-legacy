@@ -190,8 +190,7 @@ public class TabListCoordinator implements Destroyable {
     }
 
     void updateThumbnailLocation() {
-        Rect rect = mRecyclerView.getRectOfCurrentThumbnail(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index());
+        Rect rect = mRecyclerView.getRectOfCurrentThumbnail(mMediator.indexOfSelected());
         if (rect == null) return;
         mThumbnailLocationOfCurrentTab.set(rect);
     }

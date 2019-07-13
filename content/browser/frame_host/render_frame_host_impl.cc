@@ -3017,6 +3017,10 @@ blink::FrameOwnerElementType RenderFrameHostImpl::GetFrameOwnerElementType() {
   return frame_tree_node_->frame_owner_element_type();
 }
 
+bool RenderFrameHostImpl::HasTransientUserActivation() {
+  return frame_tree_node_->HasTransientUserActivation();
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
@@ -4235,13 +4239,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &media::MediaMetricsProvider::Create,
-      GetProcess()->GetBrowserContext()->IsOffTheRecord()
-          ? media::MediaMetricsProvider::BrowsingMode::kIncognito
-          : media::MediaMetricsProvider::BrowsingMode::kNormal,
-      frame_tree_node_->IsMainFrame()
-          ? media::MediaMetricsProvider::FrameStatus::kTopFrame
-          : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
+      &media::MediaMetricsProvider::Create, frame_tree_node_->IsMainFrame(),
       base::BindRepeating(
           &RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource,
           // This callback is only executed when Create() is called, during

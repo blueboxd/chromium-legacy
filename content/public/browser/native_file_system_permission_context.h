@@ -19,6 +19,21 @@ class NativeFileSystemPermissionContext {
   // TODO(mek): Add methods related to read permissions as well, when revoking
   // and re-prompting for those gets implemented.
 
+  // The type of action a user took that resulted in needing a permission grant
+  // for a particular path. This is used to signal to the permission context if
+  // the path was the result of a "save" operation, which an implementation can
+  // use to automatically grant write access to the path.
+  enum class UserAction {
+    // The path for which a permission grant is requested was the result of a
+    // "open" dialog, and as such the grant should probably not start out as
+    // granted.
+    kOpen,
+    // The path for which a permission grant is requested was the result of a
+    // "save" dialog, and as such it could make sense to return a grant that
+    // immediately allows write access without needing to request it.
+    kSave,
+  };
+
   // Returns the permission grant to use for a particular path. This could be a
   // grant that applies to more than just the path passed in, for example if a
   // user has already granted write access to a directory, this method could
@@ -27,7 +42,8 @@ class NativeFileSystemPermissionContext {
   virtual scoped_refptr<NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
-                          bool is_directory) = 0;
+                          bool is_directory,
+                          UserAction user_action) = 0;
 
   // Displays a dialog to confirm that the user intended to give read access to
   // a specific directory.

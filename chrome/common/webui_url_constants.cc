@@ -404,6 +404,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
                                           kHelpSubPage,
                                           kInternetSubPage,
                                           kKerberosAccountsSubPage,
+                                          kLanguageOptionsSubPage,
                                           kLockScreenSubPage,
                                           kNetworkDetailSubPage,
                                           kNetworksSubPage,

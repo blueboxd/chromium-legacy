@@ -79,7 +79,6 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     std::unordered_map<uint32_t, std::string> interned_legacy_event_names_;
     std::unordered_map<uint32_t, std::string> interned_debug_annotation_names_;
 
-    std::unordered_map<uint32_t, std::string> interned_frame_names_;
     struct Frame {
       uint32_t function_name_id;
       uint32_t mapping_id;
@@ -96,6 +95,20 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     std::unordered_map<uint32_t, std::vector<uint32_t>> interned_callstacks_;
 
     DISALLOW_COPY_AND_ASSIGN(ProducerWriterState);
+  };
+
+  // Some sequence data can appear out of order with the rest, like
+  // symbolization data which is prepended to the rest of the trace data.
+  // We need to keep this around even when the ProducerWriterState gets
+  // swapped out.
+  struct UnorderedProducerWriterState {
+    UnorderedProducerWriterState();
+    ~UnorderedProducerWriterState();
+
+    std::unordered_map<uint32_t, uint32_t> interned_profiled_frame_;
+    std::unordered_map<uint32_t, std::string> interned_frame_names_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnorderedProducerWriterState);
   };
 
   // Packet sequences are given in order so when we encounter a new one we need
@@ -125,6 +138,8 @@ class TrackEventJSONExporter : public JSONTraceExporter {
   void HandleTrackEvent(const perfetto::protos::ChromeTracePacket& packet);
   void HandleStreamingProfilePacket(
       const perfetto::protos::StreamingProfilePacket& profile_packet);
+  void HandleProfiledFrameSymbols(
+      const perfetto::protos::ProfiledFrameSymbols& frame_symbols);
 
   // New typed args handlers go here. Used inside HandleTrackEvent to process
   // args.
@@ -142,6 +157,9 @@ class TrackEventJSONExporter : public JSONTraceExporter {
 
   // Tracks all the interned state in the current sequence.
   std::unique_ptr<ProducerWriterState> current_state_;
+
+  // Tracks out-of-order seqeuence data.
+  std::map<uint32_t, UnorderedProducerWriterState> unordered_state_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackEventJSONExporter);
 };

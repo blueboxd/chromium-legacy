@@ -21,7 +21,7 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/fetch/fetch_api_request_proto.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -335,7 +335,7 @@ void CreateMetadataTask::StoreMetadata() {
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
     pending_request_proto.set_serialized_request(
-        ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
+        SerializeFetchRequestToString(*requests_[i]));
     if (requests_[i]->blob)
       pending_request_proto.set_request_body_size(requests_[i]->blob->size);
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),

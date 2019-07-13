@@ -15,7 +15,6 @@
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "remoting/protocol/native_ip_synthesizer.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
 
@@ -233,9 +232,8 @@ void PortAllocatorSession::OnSessionRequestResult(
       base::StringToUint(relay_port, &relay_port_int)) {
     cricket::RelayServerConfig relay_config(cricket::RELAY_GTURN);
     rtc::SocketAddress address(relay_ip, relay_port_int);
-    // |relay_ip| is in IPv4 so we will need to do an IPv6 synthesis.
     relay_config.ports.push_back(
-        cricket::ProtocolAddress(ToNativeSocket(address), cricket::PROTO_UDP));
+        cricket::ProtocolAddress(address, cricket::PROTO_UDP));
     config->AddRelay(relay_config);
   }
 

@@ -165,9 +165,7 @@ class MockWebMediaPlayerEncryptedMediaClient
   MockWebMediaPlayerEncryptedMediaClient() = default;
 
   MOCK_METHOD3(Encrypted,
-               void(blink::WebEncryptedMediaInitDataType,
-                    const unsigned char*,
-                    unsigned));
+               void(EmeInitDataType, const unsigned char*, unsigned));
   MOCK_METHOD0(DidBlockPlaybackWaitingForKey, void());
   MOCK_METHOD0(DidResumePlaybackBlockedForKey, void());
 
@@ -341,9 +339,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(
-        MediaMetricsProvider::BrowsingMode::kNormal,
-        MediaMetricsProvider::FrameStatus::kNotTopFrame,
-        base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
+        false, base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
 
@@ -1411,9 +1407,8 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
   InitializeWebMediaPlayerImpl();
 
   base::RunLoop loop;
-  EXPECT_CALL(
-      encrypted_client_,
-      Encrypted(blink::WebEncryptedMediaInitDataType::kWebm, NotNull(), Gt(0u)))
+  EXPECT_CALL(encrypted_client_,
+              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)))
       .WillOnce(RunClosure(loop.QuitClosure()));
 
   // Cannot wait for metadata since we don't have a CDM and pipeline

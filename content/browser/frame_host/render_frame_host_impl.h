@@ -289,6 +289,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       PrepareForInnerWebContentsAttachCallback callback) override;
   void UpdateSubresourceLoaderFactories() override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
+  bool HasTransientUserActivation() override;
+
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
 

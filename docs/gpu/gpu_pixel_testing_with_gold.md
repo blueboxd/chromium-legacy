@@ -162,6 +162,25 @@ see all such images, visit [this link][untriaged non tot].
 [untriaged non tot comment]: https://bugs.chromium.org/p/skia/issues/detail?id=9189#c4
 [untriaged non tot]: https://chrome-gpu-gold.skia.org/search?fdiffmax=-1&fref=false&frgbamax=255&frgbamin=0&head=false&include=false&limit=50&master=false&match=name&metric=combined&neg=false&offset=0&pos=false&query=source_type%3Dchrome-gpu&sort=desc&unt=true
 
+### Finding A Failed Build
+
+If for some reason you know that a test run produced a bad image, but do not
+have a direct link to the failed build (e.g. you found a bad image using the
+untriaged non-ToT link from above), you may want to find the failed Swarming
+task to help debug the issue. Gold currently provides a list of CLs that were
+under test when a particular image was produced, but does not provide a link to
+the build that produced it, so the following workaround can be used.
+
+Assuming the failure is relatively recent (within the past week or so), you can
+use the flakiness dashboard to help find the failed run. To do so, substitute
+the test name into
+`https://test-results.appspot.com/dashboards/flakiness_dashboard.html#showAllRuns=true&testType=pixel_skia_gold_test&tests=[test_name]`
+and scroll through the history until you find the failed build (represented by
+a red square). Click on the build and follow the `Build log` link. This will
+take you to the failed build, from which you can get to the Swarming task like
+normal by scrolling to the failed step and clicking on the link for the failed
+shard number.
+
 ### Triaging A Specific Image
 
 If for some reason an image is not showing up in Gold but you know the hash, you

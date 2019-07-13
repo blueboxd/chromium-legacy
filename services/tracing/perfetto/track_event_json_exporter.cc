@@ -125,6 +125,8 @@ void TrackEventJSONExporter::ProcessPackets(
       SetTraceStatsMetadata(packet.trace_stats());
     } else if (packet.has_streaming_profile_packet()) {
       HandleStreamingProfilePacket(packet.streaming_profile_packet());
+    } else if (packet.has_profiled_frame_symbols()) {
+      HandleProfiledFrameSymbols(packet.profiled_frame_symbols());
     } else {
       // If none of the above matched, this packet was emitted by the service
       // and has no equivalent in the old trace format. We thus ignore it.
@@ -149,7 +151,13 @@ TrackEventJSONExporter::ProducerWriterState::ProducerWriterState(
       last_seen_thread_descriptor(std::move(last_seen_thread_descriptor)),
       incomplete(incomplete) {}
 
-TrackEventJSONExporter::ProducerWriterState::~ProducerWriterState() {}
+TrackEventJSONExporter::ProducerWriterState::~ProducerWriterState() = default;
+
+TrackEventJSONExporter::UnorderedProducerWriterState::
+    UnorderedProducerWriterState() = default;
+
+TrackEventJSONExporter::UnorderedProducerWriterState::
+    ~UnorderedProducerWriterState() = default;
 
 void TrackEventJSONExporter::StartNewState(uint32_t trusted_packet_sequence_id,
                                            bool state_cleared) {
@@ -231,11 +239,6 @@ void TrackEventJSONExporter::HandleInternedData(
            (iter.first->second.first == src_loc.file_name() &&
             iter.first->second.second == src_loc.function_name()));
   }
-  for (const auto& frame_name : data.function_names()) {
-    auto iter = current_state_->interned_frame_names_.insert(
-        std::make_pair(frame_name.iid(), frame_name.str()));
-    DCHECK(iter.second || iter.first->second == frame_name.str());
-  }
   for (const auto& frame : data.frames()) {
     auto iter = current_state_->interned_frames_.emplace(
         frame.iid(),
@@ -267,6 +270,15 @@ void TrackEventJSONExporter::HandleInternedData(
 
     current_state_->interned_callstacks_.emplace(callstack.iid(),
                                                  std::move(frame_ids));
+  }
+
+  // Unordered data which may be required at any time during export.
+  for (const auto& function_name : data.function_names()) {
+    auto iter =
+        unordered_state_data_[current_state_->trusted_packet_sequence_id]
+            .interned_frame_names_.insert(
+                std::make_pair(function_name.iid(), function_name.str()));
+    DCHECK(iter.second || iter.first->second == function_name.str());
   }
 }
 
@@ -533,21 +545,34 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
     std::string module_name;
     std::string module_id;
     uintptr_t rel_pc = frame->second.rel_pc;
+    const auto& frame_names =
+        unordered_state_data_[current_state_->trusted_packet_sequence_id]
+            .interned_frame_names_;
     if (rel_pc) {
-      frame_name = base::StringPrintf("off:0x%" PRIxPTR, rel_pc);
+      const auto& profiled_frames =
+          unordered_state_data_[current_state_->trusted_packet_sequence_id]
+              .interned_profiled_frame_;
+
+      auto frame_iter = profiled_frames.find(frame_id);
+      if (frame_iter != profiled_frames.end()) {
+        auto frame_name_iter = frame_names.find(frame_iter->second);
+        DCHECK(frame_name_iter != frame_names.end());
+        frame_name = frame_name_iter->second;
+      } else {
+        frame_name = base::StringPrintf("off:0x%" PRIxPTR, rel_pc);
+      }
     } else {
-      frame_name = GetInternedName(frame->second.function_name_id,
-                                   current_state_->interned_frame_names_);
+      frame_name = GetInternedName(frame->second.function_name_id, frame_names);
     }
 
     auto module =
         current_state_->interned_mappings_.find(frame->second.mapping_id);
-    DCHECK(module != current_state_->interned_mappings_.end());
-
-    module_name = GetInternedName(module->second.name_id,
-                                  current_state_->interned_module_names_);
-    module_id = GetInternedName(module->second.build_id,
-                                current_state_->interned_module_ids_);
+    if (module != current_state_->interned_mappings_.end()) {
+      module_name = GetInternedName(module->second.name_id,
+                                    current_state_->interned_module_names_);
+      module_id = GetInternedName(module->second.build_id,
+                                  current_state_->interned_module_ids_);
+    }
 
     base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
                         module_name.c_str(), module_id.c_str());
@@ -580,6 +605,19 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
   if (add_arg) {
     add_arg->AppendF("%" PRId32, current_state_->tid);
   }
+}
+
+void TrackEventJSONExporter::HandleProfiledFrameSymbols(
+    const perfetto::protos::ProfiledFrameSymbols& frame_symbols) {
+  auto iter =
+      unordered_state_data_[current_state_->trusted_packet_sequence_id]
+          .interned_profiled_frame_.insert(std::make_pair(
+              frame_symbols.frame_iid(), frame_symbols.function_name_id()));
+  auto& frame_names =
+      unordered_state_data_[current_state_->trusted_packet_sequence_id]
+          .interned_frame_names_;
+  DCHECK(iter.second || frame_names[iter.first->second] ==
+                            frame_names[frame_symbols.function_name_id()]);
 }
 
 void TrackEventJSONExporter::HandleDebugAnnotation(

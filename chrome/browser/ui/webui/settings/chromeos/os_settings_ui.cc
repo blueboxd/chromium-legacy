@@ -59,7 +59,11 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   ::settings::SettingsUI::InitOSWebUIHandlers(profile, web_ui, html_source);
 
-  // TODO(jamescook): Remove after basic_page.html is forked for OS settings.
+  // This handler is for chrome://os-settings.
+  html_source->AddBoolean("isOSSettings", true);
+
+  // Needed for JS code shared between browser and OS settings (for example,
+  // page_visibility.js).
   html_source->AddBoolean("showOSSettings", true);
 
   AddSettingsPageUIHandler(

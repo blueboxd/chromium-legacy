@@ -363,22 +363,6 @@
                file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animation-runner-behavior.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATABLE_BEHAVIOR_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-shared-element-animatable-behavior-extracted.js"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATABLE_BEHAVIOR_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-shared-element-animatable-behavior.html"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATION_BEHAVIOR_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-shared-element-animation-behavior-extracted.js"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_SHARED_ELEMENT_ANIMATION_BEHAVIOR_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-shared-element-animation-behavior.html"
-               type="chrome_html"
-               compress="gzip" />
   </if>
   <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_WEB_ANIMATIONS_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/web-animations.html"

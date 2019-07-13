@@ -198,6 +198,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void PostAnimationEventsToMainThreadOnImplThread(
       std::unique_ptr<MutatorEvents> events) override {}
   bool IsInsideDraw() override { return false; }
+  bool IsBeginMainFrameExpected() override { return true; }
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                             base::TimeDelta delay) override {

@@ -21,6 +21,14 @@ from grit.node import message
 from grit.node import node_io
 
 
+# Python 3 doesn't have long() as int() works everywhere.  But we really do need
+# the long() behavior on Python 2 as our ids are much too large for int().
+try:
+  long
+except NameError:
+  long = int
+
+
 # RTL languages
 # TODO(jennyz): remove this fixed set of RTL language array
 # now that generic expand_variable code exists.

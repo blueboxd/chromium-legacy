@@ -58,6 +58,8 @@ REPRESENTATIVE_WIN_DESKTOP = Tag(
     'Rendering desktop representatives for windows')
 SIMPLE_MOBILE_SITES = Tag(
     'simple_mobile_sites', 'Simple mobile sites')
+THROUGHPUT_TEST = Tag(
+    'throughput_test', 'Test cases for throughput measurement')
 TOP_REAL_WORLD_DESKTOP = Tag(
     'top_real_world_desktop', 'Top real world desktop stories')
 TOP_REAL_WORLD_MOBILE = Tag(

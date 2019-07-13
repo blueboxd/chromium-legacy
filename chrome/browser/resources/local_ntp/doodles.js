@@ -394,7 +394,6 @@ doodles.showLogoOrDoodle = function(fromCache) {
       const isDarkModeEnabled =
           window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (isDarkModeEnabled) {
-        document.body.style.setProperty('--logo-margin-bottom', '34px');
         $(doodles.IDS.LOGO_DOODLE_WRAPPER).style.backgroundColor =
             doodles.targetDoodle.metadata.darkBackgroundColor;
       }

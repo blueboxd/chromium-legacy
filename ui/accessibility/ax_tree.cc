@@ -609,7 +609,10 @@ AXNode* AXTree::CreateNode(AXNode* parent,
                            int32_t id,
                            size_t index_in_parent,
                            AXTreeUpdateState* update_state) {
-  AXNode* new_node = new AXNode(this, parent, id, index_in_parent);
+  // If this node is the root, use the given index_in_parent as the unignored
+  // index in parent to provide consistency with index_in_parent.
+  AXNode* new_node = new AXNode(this, parent, id, index_in_parent,
+                                parent ? 0 : index_in_parent);
   id_map_[new_node->id()] = new_node;
   for (AXTreeObserver& observer : observers_) {
     if (update_state->IsReparentedNode(new_node))
@@ -1052,10 +1055,11 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
   // If original node is ordered set, then set its hierarchical level equal to
   // its first child that sets a hierarchical level, if any.
   if (ordered_set == &original_node) {
-    for (size_t i = 0; i < original_node.GetUnignoredChildCount(); ++i) {
-      int32_t level =
-          original_node.GetUnignoredChildAtIndex(i)->GetIntAttribute(
-              ax::mojom::IntAttribute::kHierarchicalLevel);
+    for (auto unignored_iterator = original_node.UnignoredChildrenBegin();
+         unignored_iterator != original_node.UnignoredChildrenEnd();
+         ++unignored_iterator) {
+      int32_t level = unignored_iterator->GetIntAttribute(
+          ax::mojom::IntAttribute::kHierarchicalLevel);
       if (level)
         original_level =
             original_level ? std::min(level, original_level) : level;
@@ -1065,8 +1069,11 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
   bool node_is_radio_button =
       (original_node.data().role == ax::mojom::Role::kRadioButton);
 
-  for (size_t i = 0; i < local_parent->GetUnignoredChildCount(); ++i) {
-    const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
+  size_t i = 0;
+  for (AXNode::UnignoredChildIterator it =
+           local_parent->UnignoredChildrenBegin();
+       it != local_parent->UnignoredChildrenEnd(); ++it, ++i) {
+    const AXNode* child = it.get();
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can

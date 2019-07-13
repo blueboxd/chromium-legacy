@@ -32,15 +32,3 @@ js_library("neon-animation-runner-behavior-extracted") {
     ":neon-animatable-behavior-extracted",
   ]
 }
-
-js_library("neon-shared-element-animatable-behavior-extracted") {
-  deps = [
-    ":neon-animatable-behavior-extracted",
-  ]
-}
-
-js_library("neon-shared-element-animation-behavior-extracted") {
-  deps = [
-    ":neon-animation-behavior-extracted",
-  ]
-}

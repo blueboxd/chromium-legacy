@@ -17,7 +17,7 @@ let fakeDeviceInitParams = {
     supportsImmersive: true,
     views: VALID_VIEWS,
     viewerOrigin: IDENTITY_TRANSFORM,
-    localToFloorLevelTransform: VALID_LOCAL_TO_FLOOR_TRANSFORM
+    floorOrigin: VALID_FLOOR_ORIGIN
 };
 
 let requestSessionModes = [
@@ -48,7 +48,7 @@ let testFunction = function(session, t, fakeDeviceController) {
               assert_not_equals(pose, null);
 
               let poseMatrix = pose.transform.matrix;
-              assert_matrices_approx_equal(poseMatrix, VALID_LOCAL_TO_FLOOR_MATRIX);
+              assert_matrices_approx_equal(poseMatrix, VALID_FLOOR_ORIGIN_MATRIX);
 
               // If an explicit array of bounds points was not provided then the
               // bounds geometry should represent the four corners of the rectangle

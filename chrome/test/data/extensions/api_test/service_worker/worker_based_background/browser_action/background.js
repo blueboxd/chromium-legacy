@@ -8,8 +8,9 @@ chrome.browserAction.onClicked.addListener(() => {
   chrome.test.assertFalse(initialUserGesture);
 
   // We should be running with a user gesture.
-  // TODO(lazyboy): isProcessingUserGesture() only performs renderer level
-  // checks, also call an actual API that requires gesture.
+  // Note: isProcessingUserGesture() only performs renderer level
+  // checks. There are other tests that call APIs that use actual
+  // gesture.
   chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
   // Call an API so we can check gesture state in the callback.
   chrome.tabs.create({url: chrome.runtime.getURL('page.html')}, () => {

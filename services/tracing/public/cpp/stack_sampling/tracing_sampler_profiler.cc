@@ -279,6 +279,11 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
     // useless anyway.
     if (frame_name.empty())
       frame_name = "Unknown";
+    if (frame.module) {
+      module_id = frame.module->GetId();
+      if (module_name.empty())
+        module_name = frame.module->GetDebugBasename().MaybeAsASCII();
+    }
 #else
     if (frame.module) {
       module_name = frame.module->GetDebugBasename().MaybeAsASCII();
@@ -447,11 +452,13 @@ void TracingSamplerProfiler::StartTracing(
   // Create and start the stack sampling profiler.
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
+  auto profile_builder = std::make_unique<TracingProfileBuilder>(
+      sampled_thread_id_, std::move(trace_writer), should_enable_filtering);
+  auto* module_cache = profile_builder->GetModuleCache();
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      sampled_thread_id_, params,
-      std::make_unique<TracingProfileBuilder>(
-          sampled_thread_id_, std::move(trace_writer), should_enable_filtering),
-      std::make_unique<StackSamplerAndroid>(sampled_thread_id_));
+      sampled_thread_id_, params, std::move(profile_builder),
+      std::make_unique<StackSamplerAndroid>(sampled_thread_id_, module_cache));
+
 #else
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params,

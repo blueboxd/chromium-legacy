@@ -806,9 +806,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!children_) {
     uint32_t childCount = owner_->PlatformChildCount();
     children_.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
-    for (uint32_t index = 0; index < childCount; ++index) {
-      BrowserAccessibilityCocoa* child =
-          ToBrowserAccessibilityCocoa(owner_->PlatformGetChild(index));
+    for (auto it = owner_->PlatformChildrenBegin();
+         it != owner_->PlatformChildrenEnd(); ++it) {
+      BrowserAccessibilityCocoa* child = ToBrowserAccessibilityCocoa(it.get());
       if ([child isIgnored])
         [children_ addObjectsFromArray:[child children]];
       else
@@ -1220,8 +1220,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     // AXTableInfo and indirect_child_ids.
     uint32_t childCount = owner_->PlatformChildCount();
     if (childCount > 0) {
-      BrowserAccessibility* tableHeader =
-          owner_->PlatformGetChild(childCount - 1);
+      BrowserAccessibility* tableHeader = owner_->PlatformGetLastChild();
       if (tableHeader->GetRole() == ax::mojom::Role::kTableHeaderContainer)
         return ToBrowserAccessibilityCocoa(tableHeader);
     }
@@ -1952,9 +1951,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   // If it's multiselectable or if the previous attempts failed,
   // return any children with the "selected" state, which may
   // come from aria-selected.
-  uint32_t childCount = owner_->PlatformChildCount();
-  for (uint32_t index = 0; index < childCount; ++index) {
-    BrowserAccessibility* child = owner_->PlatformGetChild(index);
+  for (auto it = owner_->PlatformChildrenBegin();
+       it != owner_->PlatformChildrenEnd(); ++it) {
+    BrowserAccessibility* child = it.get();
     if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
       [ret addObject:ToBrowserAccessibilityCocoa(child)];
   }

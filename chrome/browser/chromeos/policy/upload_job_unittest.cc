@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -20,8 +21,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
+#include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/fake_oauth2_access_token_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -156,20 +160,35 @@ void FakeOAuth2AccessTokenManagerWithCaching::InvalidateAccessTokenImpl(
   SetTokenInvalid(access_token);
 }
 
+class FakeOAuth2AccessTokenManagerDelegate
+    : public OAuth2AccessTokenManager::Delegate {
+ public:
+  FakeOAuth2AccessTokenManagerDelegate() = default;
+  ~FakeOAuth2AccessTokenManagerDelegate() override = default;
+
+  // OAuth2AccessTokenManager::Delegate:
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      OAuth2AccessTokenConsumer* consumer) override {
+    EXPECT_EQ(CoreAccountId(kRobotAccountId), account_id);
+    return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+        consumer, url_loader_factory, "fake_refresh_token");
+  }
+
+  bool HasRefreshToken(const CoreAccountId& account_id) const override {
+    return CoreAccountId(kRobotAccountId) == account_id;
+  }
+};
+
 }  // namespace
 
 class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
  public:
   UploadJobTestBase()
       : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    oauth2_service_.OverrideAccessTokenManagerForTesting(
-        std::make_unique<FakeOAuth2AccessTokenManagerWithCaching>(
-            &oauth2_service_ /* OAuth2AccessTokenManager::Delegate* */));
-    access_token_manager_ =
-        static_cast<FakeOAuth2AccessTokenManagerWithCaching*>(
-            oauth2_service_.GetAccessTokenManager());
-  }
+            content::TestBrowserThreadBundle::IO_MAINLOOP),
+        access_token_manager_(&token_manager_delegate_) {}
 
   // policy::UploadJob::Delegate:
   void OnSuccess() override {
@@ -197,7 +216,6 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   void SetUp() override {
     url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
-    oauth2_service_.AddAccount("robot@gmail.com");
     ASSERT_TRUE(test_server_.Start());
     // Set retry delay to prevent timeouts
     policy::UploadJobImpl::SetRetryDelayForTesting(0);
@@ -213,10 +231,9 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
       std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
           mime_boundary_generator) {
     std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
-        GetServerURL(), kRobotAccountId,
-        oauth2_service_.GetAccessTokenManager(), url_loader_factory_, this,
-        std::move(mime_boundary_generator), TRAFFIC_ANNOTATION_FOR_TESTS,
-        base::ThreadTaskRunnerHandle::Get()));
+        GetServerURL(), kRobotAccountId, &access_token_manager_,
+        url_loader_factory_, this, std::move(mime_boundary_generator),
+        TRAFFIC_ANNOTATION_FOR_TESTS, base::ThreadTaskRunnerHandle::Get()));
 
     std::map<std::string, std::string> header_entries;
     header_entries.insert(std::make_pair(kCustomField1, "CUSTOM1"));
@@ -234,8 +251,8 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   base::RunLoop run_loop_;
   net::EmbeddedTestServer test_server_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  FakeOAuth2TokenService oauth2_service_;
-  FakeOAuth2AccessTokenManagerWithCaching* access_token_manager_;
+  FakeOAuth2AccessTokenManagerDelegate token_manager_delegate_;
+  FakeOAuth2AccessTokenManagerWithCaching access_token_manager_;
 
   std::unique_ptr<UploadJob::ErrorCode> expected_error_;
 };
@@ -273,7 +290,7 @@ class UploadFlowTest : public UploadJobTestBase {
     }
 
     const std::string token = authorization_header.substr(pos + 1);
-    response->set_code(access_token_manager_->IsTokenValid(token)
+    response->set_code(access_token_manager_.IsTokenValid(token)
                            ? default_status_code_
                            : net::HTTP_UNAUTHORIZED);
     return std::move(response);
@@ -285,8 +302,8 @@ class UploadFlowTest : public UploadJobTestBase {
 };
 
 TEST_F(UploadFlowTest, SuccessfulUpload) {
-  access_token_manager_->SetTokenValid(kTokenValid);
-  access_token_manager_->AddTokenToQueue(kTokenValid);
+  access_token_manager_.SetTokenValid(kTokenValid);
+  access_token_manager_.AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
@@ -295,9 +312,9 @@ TEST_F(UploadFlowTest, SuccessfulUpload) {
 }
 
 TEST_F(UploadFlowTest, TokenExpired) {
-  access_token_manager_->SetTokenValid(kTokenValid);
-  access_token_manager_->AddTokenToQueue(kTokenExpired);
-  access_token_manager_->AddTokenToQueue(kTokenValid);
+  access_token_manager_.SetTokenValid(kTokenValid);
+  access_token_manager_.AddTokenToQueue(kTokenExpired);
+  access_token_manager_.AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
@@ -306,10 +323,10 @@ TEST_F(UploadFlowTest, TokenExpired) {
 }
 
 TEST_F(UploadFlowTest, TokenInvalid) {
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
   SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
@@ -321,10 +338,10 @@ TEST_F(UploadFlowTest, TokenInvalid) {
 }
 
 TEST_F(UploadFlowTest, TokenMultipleTries) {
-  access_token_manager_->SetTokenValid(kTokenValid);
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
-  access_token_manager_->AddTokenToQueue(kTokenInvalid);
-  access_token_manager_->AddTokenToQueue(kTokenValid);
+  access_token_manager_.SetTokenValid(kTokenValid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_.AddTokenToQueue(kTokenValid);
 
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
@@ -347,8 +364,8 @@ TEST_F(UploadFlowTest, TokenFetchFailure) {
 
 TEST_F(UploadFlowTest, InternalServerError) {
   SetResponseDefaultStatusCode(net::HTTP_INTERNAL_SERVER_ERROR);
-  access_token_manager_->SetTokenValid(kTokenValid);
-  access_token_manager_->AddTokenToQueue(kTokenValid);
+  access_token_manager_.SetTokenValid(kTokenValid);
+  access_token_manager_.AddTokenToQueue(kTokenValid);
 
   SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::SERVER_ERROR)));
@@ -390,8 +407,8 @@ class UploadRequestTest : public UploadJobTestBase {
 };
 
 TEST_F(UploadRequestTest, TestRequestStructure) {
-  access_token_manager_->SetTokenValid(kTokenValid);
-  access_token_manager_->AddTokenToQueue(kTokenValid);
+  access_token_manager_.SetTokenValid(kTokenValid);
+  access_token_manager_.AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job =
       PrepareUploadJob(std::make_unique<RepeatingMimeBoundaryGenerator>('A'));
   SetExpectedRequestContent(

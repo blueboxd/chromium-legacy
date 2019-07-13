@@ -374,6 +374,116 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       PlatformIframeAccessibility) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  // Create a data url and load it.
+  GURL url(
+      "data:text/html,"
+      "<!doctype html><html><body>"
+      "<button>Button 1</button>"
+      "<iframe src='data:text/html,"
+      "<!doctype html><html><body><button>Button 2</button></body></html>"
+      "'></iframe>"
+      "<button>Button 3</button>"
+      "</body></html>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button 2");
+
+  const BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_EQ(1U, root->PlatformChildCount());
+  const BrowserAccessibility* body = root->PlatformGetChild(0);
+  ASSERT_EQ(3U, body->PlatformChildCount());
+
+  const BrowserAccessibility* button1 = body->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kButton, button1->GetData().role);
+  EXPECT_STREQ(
+      "Button 1",
+      GetAttr(button1->node(), ax::mojom::StringAttribute::kName).c_str());
+
+  const BrowserAccessibility* iframe = body->PlatformGetChild(1);
+  EXPECT_STREQ(
+      "iframe",
+      GetAttr(iframe->node(), ax::mojom::StringAttribute::kHtmlTag).c_str());
+  EXPECT_EQ(1U, iframe->PlatformChildCount());
+
+  const BrowserAccessibility* sub_document = iframe->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, sub_document->GetData().role);
+  ASSERT_EQ(1U, sub_document->PlatformChildCount());
+
+  const BrowserAccessibility* sub_body = sub_document->PlatformGetChild(0);
+  ASSERT_EQ(1U, sub_body->PlatformChildCount());
+
+  const BrowserAccessibility* button2 = sub_body->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kButton, button2->GetData().role);
+  EXPECT_STREQ(
+      "Button 2",
+      GetAttr(button2->node(), ax::mojom::StringAttribute::kName).c_str());
+
+  const BrowserAccessibility* button3 = body->PlatformGetChild(2);
+  EXPECT_EQ(ax::mojom::Role::kButton, button3->GetData().role);
+  EXPECT_STREQ(
+      "Button 3",
+      GetAttr(button3->node(), ax::mojom::StringAttribute::kName).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       PlatformIterator) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  // Create a data url and load it.
+  GURL url(
+      "data:text/html,"
+      "<!doctype html><html><body>"
+      "<button>Button 1</button>"
+      "<iframe src='data:text/html,"
+      "<!doctype html><html><body>"
+      "<button>Button 2</button>"
+      "<button>Button 3</button>"
+      "</body></html>'></iframe>"
+      "<button>Button 4</button>"
+      "</body></html>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button 2");
+  const BrowserAccessibility* root = GetManager()->GetRoot();
+  BrowserAccessibility::PlatformChildIterator it =
+      root->PlatformChildrenBegin();
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, (*it).GetData().role);
+  it = (*it).PlatformChildrenBegin();
+  EXPECT_STREQ(
+      "Button 1",
+      GetAttr((*it).node(), ax::mojom::StringAttribute::kName).c_str());
+  EXPECT_STREQ(
+      "iframe",
+      GetAttr((*++it).node(), ax::mojom::StringAttribute::kHtmlTag).c_str());
+  EXPECT_EQ(1U, (*it).PlatformChildCount());
+  auto iframe_iterator = (*it).PlatformChildrenBegin();
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, (*iframe_iterator).GetData().role);
+  iframe_iterator = (*iframe_iterator).PlatformChildrenBegin();
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer,
+            (*iframe_iterator).GetData().role);
+  iframe_iterator = (*iframe_iterator).PlatformChildrenBegin();
+  EXPECT_STREQ("Button 2", GetAttr((*iframe_iterator).node(),
+                                   ax::mojom::StringAttribute::kName)
+                               .c_str());
+  EXPECT_STREQ("Button 3", GetAttr((*++iframe_iterator).node(),
+                                   ax::mojom::StringAttribute::kName)
+                               .c_str());
+
+  EXPECT_STREQ(
+      "Button 4",
+      GetAttr((*++it).node(), ax::mojom::StringAttribute::kName).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        DuplicateChildrenAccessibility) {
   // Here's another html snippet where WebKit has a parent node containing
   // two duplicate child nodes. Instead of checking the exact output, just

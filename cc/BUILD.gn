@@ -292,6 +292,8 @@ cc_component("cc") {
     "trees/element_id.h",
     "trees/frame_rate_counter.cc",
     "trees/frame_rate_counter.h",
+    "trees/frame_sequence_tracker.cc",
+    "trees/frame_sequence_tracker.h",
     "trees/image_animation_controller.cc",
     "trees/image_animation_controller.h",
     "trees/latency_info_swap_promise.cc",

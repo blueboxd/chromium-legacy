@@ -19,7 +19,7 @@ class WebUIMessageHandler;
 namespace chromeos {
 namespace settings {
 
-// The WebUI handler for chrome://settings.
+// The WebUI handler for chrome://os-settings.
 class OSSettingsUI : public ui::MojoWebUIController {
  public:
   explicit OSSettingsUI(content::WebUI* web_ui);

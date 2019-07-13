@@ -14,8 +14,7 @@
         android:id="@+id/bottom_sheet_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/toolbar_shadow_height"
-        android:visibility="invisible" />
+        android:layout_marginTop="@dimen/toolbar_shadow_height"/>
 
     <FrameLayout
         android:id="@+id/bottom_sheet_control_container"

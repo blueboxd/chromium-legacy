@@ -5,6 +5,7 @@
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 
 #include "base/guid.h"
+#include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -119,6 +120,18 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   // backed by a file on disk.
   blob_builder->AppendFileSystemFile(url().ToGURL(), 0, -1, info.last_modified,
                                      file_system_context());
+
+  base::FilePath::StringType extension = url().path().Extension();
+  if (!extension.empty()) {
+    std::string mime_type;
+    // TODO(https://crbug.com/962306): Using GetMimeTypeFromExtension and
+    // including platform defined mime type mappings might be nice/make sense,
+    // however that method can potentially block and thus can't be called from
+    // the IO thread.
+    if (net::GetWellKnownMimeTypeFromExtension(extension.substr(1), &mime_type))
+      blob_builder->set_content_type(mime_type);
+  }
+
   std::unique_ptr<BlobDataHandle> blob_handle =
       blob_context()->AddFinishedBlob(std::move(blob_builder));
   if (blob_handle->IsBroken()) {
@@ -127,16 +140,14 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
     return;
   }
 
+  std::string content_type = blob_handle->content_type();
   blink::mojom::BlobPtr blob_ptr;
   BlobImpl::Create(std::move(blob_handle), mojo::MakeRequest(&blob_ptr));
 
-  // TODO(mek): Figure out what mime-type to use for these files. The old
-  // file system API implementation uses net::GetWellKnownMimeTypeFromExtension
-  // to figure out a reasonable mime type based on the extension.
   std::move(callback).Run(
       NativeFileSystemError::New(base::File::FILE_OK),
-      blink::mojom::SerializedBlob::New(uuid, "application/octet-stream",
-                                        info.size, blob_ptr.PassInterface()));
+      blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
+                                        blob_ptr.PassInterface()));
 }
 
 void NativeFileSystemFileHandleImpl::RemoveImpl(RemoveCallback callback) {

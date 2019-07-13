@@ -127,6 +127,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // can send a CompositorFrame to the display compositor with appropriate
   // timing.
   void SetNeedsBeginMainFrame();
+  bool needs_begin_main_frame() const {
+    return state_machine_.needs_begin_main_frame();
+  }
+
   // Requests a single impl frame (after the current frame if there is one
   // active).
   void SetNeedsOneBeginImplFrame();
@@ -236,6 +240,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   void ClearHistory();
 
+  bool IsBeginMainFrameSentOrStarted() const;
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
@@ -339,7 +345,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
       base::TimeDelta bmf_to_activate_estimate,
       base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
-  bool IsBeginMainFrameSentOrStarted() const;
 
   void BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);

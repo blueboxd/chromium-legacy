@@ -144,8 +144,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
   void OnVideoAverageKeyframeDistanceUpdate();
-  void OnAudioDecoderChange(const PipelineDecoderInfo& info);
-  void OnVideoDecoderChange(const PipelineDecoderInfo& info);
+  void OnAudioDecoderChange(const std::string& name);
+  void OnVideoDecoderChange(const std::string& name);
   void OnRemotePlayStateChange(MediaStatus::State state);
 
   // Task completion callbacks from RendererWrapper.

@@ -13,8 +13,9 @@ namespace internal {
 
 // Defined in searchbox_extension.cc
 bool IsNtpBackgroundDark(SkColor ntp_text);
-SkColor CalculateIconColor(SkColor bg_color);
+SkColor GetContrastingColorForBackground(SkColor bg_color, float change);
 SkColor GetIconColor(const ThemeBackgroundInfo& theme_info);
+SkColor GetLogoColor(const ThemeBackgroundInfo& theme_info);
 
 TEST(SearchboxExtensionTest, TestIsNtpBackgroundDark) {
   // Dark font means light background.
@@ -27,62 +28,62 @@ TEST(SearchboxExtensionTest, TestIsNtpBackgroundDark) {
   EXPECT_TRUE(IsNtpBackgroundDark(SkColorSetARGB(255, 30, 144, 255)));
 }
 
-TEST(SearchboxExtensionTest, TestCalculateIconColor) {
+TEST(SearchboxExtensionTest, TestGetContrastingColor) {
+  const float change = 0.2f;
+
   // White icon for black background.
-  EXPECT_EQ(SK_ColorWHITE, CalculateIconColor(SK_ColorBLACK));
+  EXPECT_EQ(SK_ColorWHITE,
+            GetContrastingColorForBackground(SK_ColorBLACK, change));
 
   // Lighter icon for too dark colors.
   SkColor dark_background = SkColorSetARGB(255, 50, 0, 50);
-  EXPECT_LT(
-      color_utils::GetRelativeLuminance(dark_background),
-      color_utils::GetRelativeLuminance(CalculateIconColor(dark_background)));
+  EXPECT_LT(color_utils::GetRelativeLuminance(dark_background),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(dark_background, change)));
 
   // Darker icon for light backgrounds.
-  EXPECT_GT(
-      color_utils::GetRelativeLuminance(SK_ColorWHITE),
-      color_utils::GetRelativeLuminance(CalculateIconColor(SK_ColorWHITE)));
+  EXPECT_GT(color_utils::GetRelativeLuminance(SK_ColorWHITE),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(SK_ColorWHITE, change)));
 
   SkColor light_background = SkColorSetARGB(255, 100, 0, 100);
-  EXPECT_GT(
-      color_utils::GetRelativeLuminance(light_background),
-      color_utils::GetRelativeLuminance(CalculateIconColor(light_background)));
+  EXPECT_GT(color_utils::GetRelativeLuminance(light_background),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(light_background, change)));
 }
 
 TEST(SearchboxExtensionTest, TestGetIconColor) {
-  constexpr SkColor kLightIconColor = gfx::kGoogleGrey100;
-  constexpr SkColor kDarkIconColor = gfx::kGoogleGrey900;
-
   ThemeBackgroundInfo theme_info;
   theme_info.using_default_theme = true;
   theme_info.using_dark_mode = false;
   theme_info.background_color = SK_ColorRED;
 
-  // // Default theme in light mode.
-  EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
+  // Default theme in light mode.
+  EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
-  // // Default theme in dark mode.
+  // Default theme in dark mode.
   theme_info.using_dark_mode = true;
-  EXPECT_EQ(kDarkIconColor, GetIconColor(theme_info));
+  EXPECT_EQ(kNTPDarkIconColor, GetIconColor(theme_info));
 
   // Default theme with custom background, in dark mode.
   theme_info.custom_background_url = GURL("https://www.foo.com");
-  EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
+  EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Default theme with custom background.
   theme_info.using_dark_mode = false;
-  EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
+  EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Theme with image.
   theme_info.using_default_theme = false;
   theme_info.custom_background_url = GURL();
   theme_info.has_theme_image = true;
-  EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
+  EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Theme with image in dark mode.
   theme_info.using_dark_mode = true;
-  EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
+  EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
-  SkColor red_icon_color = CalculateIconColor(SK_ColorRED);
+  SkColor red_icon_color = GetContrastingColorForBackground(SK_ColorRED, 0.2f);
 
   // Theme with no image, in dark mode.
   theme_info.has_theme_image = false;
@@ -93,4 +94,39 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   EXPECT_EQ(red_icon_color, GetIconColor(theme_info));
 }
 
+TEST(SearchboxExtensionTest, TestGetLogoColor) {
+  ThemeBackgroundInfo theme_info;
+  theme_info.using_default_theme = true;
+  theme_info.logo_alternate = false;
+  theme_info.background_color = SK_ColorWHITE;
+
+  // Default theme.
+  EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
+
+  // Default theme in dark mode.
+  theme_info.using_dark_mode = true;
+  theme_info.background_color = SK_ColorBLACK;
+  EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
+
+  // Default theme with custom background.
+  theme_info.using_dark_mode = false;
+  theme_info.background_color = SK_ColorWHITE;
+  theme_info.custom_background_url = GURL("https://www.foo.com");
+  EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
+
+  // Theme with image.
+  theme_info.using_default_theme = false;
+  theme_info.logo_alternate = true;
+  theme_info.custom_background_url = GURL();
+  theme_info.has_theme_image = true;
+  theme_info.background_color = SK_ColorRED;
+  EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
+
+  // Theme with no image.
+  theme_info.has_theme_image = false;
+  theme_info.background_color = SK_ColorRED;
+  SkColor logo_color = GetLogoColor(theme_info);
+  EXPECT_NE(kNTPLightLogoColor, GetLogoColor(theme_info));
+  EXPECT_NE(SK_ColorRED, logo_color);
+}
 }  // namespace internal

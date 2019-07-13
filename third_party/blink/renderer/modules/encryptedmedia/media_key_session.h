@@ -38,6 +38,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
+namespace media {
+enum class EmeInitDataType;
+}
+
 namespace blink {
 
 class DOMException;
@@ -112,7 +116,7 @@ class MediaKeySession final
 
   // The following perform the asynchronous part of the command referenced.
   void GenerateRequestTask(ContentDecryptionModuleResult*,
-                           WebEncryptedMediaInitDataType,
+                           media::EmeInitDataType,
                            DOMArrayBuffer* init_data_buffer);
   void FinishGenerateRequest();
   void LoadTask(ContentDecryptionModuleResult*, const String& session_id);

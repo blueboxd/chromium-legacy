@@ -80,6 +80,48 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetChild(
   return nullptr;
 }
 
+BrowserAccessibility* BrowserAccessibilityMac::PlatformGetFirstChild() const {
+  return PlatformGetChild(0);
+}
+
+BrowserAccessibility* BrowserAccessibilityMac::PlatformGetLastChild() const {
+  const std::vector<ui::AXNode*>* extra_mac_nodes = node()->GetExtraMacNodes();
+  if (extra_mac_nodes && extra_mac_nodes->size())
+    return manager_->GetFromAXNode(extra_mac_nodes->back());
+  return BrowserAccessibility::PlatformGetLastChild();
+}
+
+BrowserAccessibility* BrowserAccessibilityMac::PlatformGetNextSibling() const {
+  BrowserAccessibility* parent = PlatformGetParent();
+  if (parent) {
+    uint32_t next_child_index = GetIndexInParent() + 1;
+    if (next_child_index >= parent->InternalChildCount() &&
+        next_child_index < parent->PlatformChildCount()) {
+      // get the extra_mac_node
+      return parent->PlatformGetChild(next_child_index);
+    } else if (next_child_index >= parent->PlatformChildCount()) {
+      return nullptr;
+    }
+  }
+  return BrowserAccessibility::PlatformGetNextSibling();
+}
+
+BrowserAccessibility* BrowserAccessibilityMac::PlatformGetPreviousSibling()
+    const {
+  BrowserAccessibility* parent = PlatformGetParent();
+  if (parent) {
+    uint32_t previous_child_index = GetIndexInParent() - 1;
+    if (previous_child_index >= parent->InternalChildCount() &&
+        previous_child_index < parent->PlatformChildCount()) {
+      // get the extra_mac_node
+      return parent->PlatformGetChild(previous_child_index);
+    } else if (previous_child_index < 0) {
+      return nullptr;
+    }
+  }
+  return BrowserAccessibility::PlatformGetPreviousSibling();
+}
+
 const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
     const BrowserAccessibility* obj) {
   DCHECK(obj);

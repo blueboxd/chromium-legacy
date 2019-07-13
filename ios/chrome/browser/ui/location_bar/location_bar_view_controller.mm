@@ -11,6 +11,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -487,6 +488,31 @@ typedef NS_ENUM(int, TrailingButtonState) {
 - (void)setInfobarButtonStyleActive:(BOOL)active {
   self.activeBadge = active;
   [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
+}
+
+#pragma mark - BadgeConsumer
+
+- (void)setupWithBadges:(NSArray*)badges {
+  self.locationBarSteadyView.leadingButton.hidden = (badges.count == 0);
+  self.shouldShowLeadingButton = (badges.count > 0);
+}
+
+- (void)addBadge:(id<BadgeItem>)badgeItem {
+  self.locationBarSteadyView.leadingButton.hidden = NO;
+  self.shouldShowLeadingButton = YES;
+  self.activeBadge = badgeItem.isAccepted;
+  [self.locationBarSteadyView.leadingButton setActive:badgeItem.isAccepted
+                                             animated:YES];
+}
+
+- (void)removeBadge:(id<BadgeItem>)badgeItem {
+  self.locationBarSteadyView.leadingButton.hidden = YES;
+  self.shouldShowLeadingButton = NO;
+}
+
+- (void)updateBadge:(id<BadgeItem>)badgeItem {
+  [self.locationBarSteadyView.leadingButton setActive:badgeItem.isAccepted
+                                             animated:YES];
 }
 
 #pragma mark - UIMenu

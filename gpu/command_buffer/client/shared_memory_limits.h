@@ -80,8 +80,8 @@ struct SharedMemoryLimits {
     DCHECK(!screen_size.IsEmpty());
 
     SharedMemoryLimits limits;
-    constexpr size_t kBytesPerPixel = 4;
-    const size_t full_screen_texture_size_in_bytes =
+    constexpr uint32_t kBytesPerPixel = 4;
+    const uint32_t full_screen_texture_size_in_bytes =
         screen_size.width() * screen_size.height() * kBytesPerPixel;
 
     // Android uses a smaller command buffer for the display compositor. Meant

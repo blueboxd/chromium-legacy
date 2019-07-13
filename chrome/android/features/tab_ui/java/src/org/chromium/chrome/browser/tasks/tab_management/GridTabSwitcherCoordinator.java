@@ -74,31 +74,23 @@ public class GridTabSwitcherCoordinator
                 context, compositorViewHolder, tabModelSelector, tabContentManager);
 
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
+        mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
+                fullscreenManager, compositorViewHolder,
+                mTabSelectionEditorCoordinator.getController());
+
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager, new CompositorViewHolder(context), this,
-                    this::getTabGridCardPosition);
-
-            mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                    fullscreenManager, compositorViewHolder,
-                    mTabGridDialogCoordinator.getResetHandler(),
-                    mTabSelectionEditorCoordinator.getController());
-
-            gridCardOnClickListenerProvider = mMediator::getGridCardOnClickListener;
+                    mMediator, this::getTabGridCardPosition);
 
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
+
+            mMediator.setTabGridDialogResetHandler(mTabGridDialogCoordinator.getResetHandler());
         } else {
             mTabGridDialogCoordinator = null;
-
-            mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                    fullscreenManager, compositorViewHolder, null,
-                    mTabSelectionEditorCoordinator.getController());
-
-            gridCardOnClickListenerProvider = null;
             mUndoGroupSnackbarController = null;
         }
-
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
 
@@ -114,9 +106,9 @@ public class GridTabSwitcherCoordinator
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
-                mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
-                null, null, null, compositorViewHolder,
-                compositorViewHolder.getDynamicResourceLoader(), true, COMPONENT_NAME);
+                mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
+                compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
+                COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
 
@@ -129,6 +121,11 @@ public class GridTabSwitcherCoordinator
     }
 
     // GridTabSwitcher implementation.
+    @Override
+    public void setOnTabSelectingListener(OnTabSelectingListener listener) {
+        mMediator.setOnTabSelectingListener(listener);
+    }
+
     @Override
     public GridController getGridController() {
         return mMediator;

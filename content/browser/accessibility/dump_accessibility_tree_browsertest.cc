@@ -327,8 +327,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAomChecked) {
   RunAomTest(FILE_PATH_LITERAL("aom-checked.html"));
 }
 
+// TODO(crbug.com/983709): Flaky.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaActivedescendant) {
+                       DISABLED_AccessibilityAriaActivedescendant) {
   RunAriaTest(FILE_PATH_LITERAL("aria-activedescendant.html"));
 }
 

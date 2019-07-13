@@ -297,8 +297,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-live-changed.html"));
 }
 
+// TODO(crbug.com/983709): Flaky.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaMenuItemFocus) {
+                       DISABLED_AccessibilityEventsAriaMenuItemFocus) {
   RunEventTest(FILE_PATH_LITERAL("aria-menuitem-focus.html"));
 }
 

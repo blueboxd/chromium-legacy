@@ -66,11 +66,12 @@ void SystemMediaControlsNotifier::Initialize() {
 
   // Observe the active media controller for changes to playback state and
   // supported actions.
-  media_session::mojom::MediaControllerObserverPtr
-      media_controller_observer_ptr;
-  media_controller_observer_binding_.Bind(
-      mojo::MakeRequest(&media_controller_observer_ptr));
-  media_controller_ptr_->AddObserver(std::move(media_controller_observer_ptr));
+  mojo::PendingRemote<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_remote;
+  media_controller_observer_receiver_.Bind(
+      media_controller_observer_remote.InitWithNewPipeAndPassReceiver());
+  media_controller_ptr_->AddObserver(
+      std::move(media_controller_observer_remote));
 
   // Observe the active media controller for changes to provided artwork.
   mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>

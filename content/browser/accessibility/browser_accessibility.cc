@@ -113,13 +113,8 @@ bool BrowserAccessibility::CanFireEvents() const {
 
 uint32_t BrowserAccessibility::PlatformChildCount() const {
   if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    AXTreeID child_tree_id = AXTreeID::FromString(
-        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
-    BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(child_tree_id);
-    if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
+    if (PlatformGetRootOfChildTree())
       return 1;
-
     return 0;
   }
 
@@ -135,6 +130,50 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
     return manager_->GetFromAXNode(parent);
 
   return manager_->GetParentNodeFromParentTree();
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetFirstChild() const {
+  return PlatformGetChild(0);
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
+  BrowserAccessibility* last_unignored_child = InternalGetLastChild();
+  if (!last_unignored_child)
+    last_unignored_child = PlatformGetRootOfChildTree();
+  return last_unignored_child;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetNextSibling() const {
+  BrowserAccessibility* next_sibling = InternalGetNextSibling();
+  if (next_sibling)
+    return next_sibling;
+
+  ui::AXNode* parent = node_->GetUnignoredParent();
+  if (!parent) {
+    BrowserAccessibility* parent_tree_parent =
+        manager_->GetParentNodeFromParentTree();
+    if (parent_tree_parent)
+      return parent_tree_parent->PlatformGetChild(1);
+  }
+  return nullptr;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetPreviousSibling() const {
+  BrowserAccessibility* previous_sibling = InternalGetPreviousSibling();
+  if (!previous_sibling)
+    previous_sibling = PlatformGetRootOfChildTree();
+
+  return previous_sibling;
+}
+
+BrowserAccessibility::PlatformChildIterator
+BrowserAccessibility::PlatformChildrenBegin() const {
+  return PlatformChildIterator(this, PlatformGetFirstChild());
+}
+
+BrowserAccessibility::PlatformChildIterator
+BrowserAccessibility::PlatformChildrenEnd() const {
+  return PlatformChildIterator(this, nullptr);
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetSelectionContainer()
@@ -184,12 +223,7 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
 
   if (child_index == 0 &&
       HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    AXTreeID child_tree_id = AXTreeID::FromString(
-        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
-    BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(child_tree_id);
-    if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
-      result = child_manager->GetRoot();
+    result = PlatformGetRootOfChildTree();
   } else {
     result = InternalGetChild(child_index);
   }
@@ -231,25 +265,8 @@ BrowserAccessibility* BrowserAccessibility::GetClosestPlatformObject() const {
   return platform_object;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() const {
-  if (PlatformGetParent() && GetIndexInParent() > 0)
-    return PlatformGetParent()->InternalGetChild(GetIndexInParent() - 1);
-
-  return nullptr;
-}
-
-BrowserAccessibility* BrowserAccessibility::GetNextSibling() const {
-  if (PlatformGetParent() && GetIndexInParent() >= 0 &&
-      GetIndexInParent() <
-          static_cast<int>(PlatformGetParent()->InternalChildCount() - 1)) {
-    return PlatformGetParent()->InternalGetChild(GetIndexInParent() + 1);
-  }
-
-  return nullptr;
-}
-
 bool BrowserAccessibility::IsPreviousSiblingOnSameLine() const {
-  const BrowserAccessibility* previous_sibling = GetPreviousSibling();
+  const BrowserAccessibility* previous_sibling = PlatformGetPreviousSibling();
   if (!previous_sibling)
     return false;
 
@@ -273,7 +290,7 @@ bool BrowserAccessibility::IsPreviousSiblingOnSameLine() const {
 }
 
 bool BrowserAccessibility::IsNextSiblingOnSameLine() const {
-  const BrowserAccessibility* next_sibling = GetNextSibling();
+  const BrowserAccessibility* next_sibling = PlatformGetNextSibling();
   if (!next_sibling)
     return false;
 
@@ -299,9 +316,9 @@ BrowserAccessibility* BrowserAccessibility::PlatformDeepestFirstChild() const {
   if (!PlatformChildCount())
     return nullptr;
 
-  BrowserAccessibility* deepest_child = PlatformGetChild(0);
+  BrowserAccessibility* deepest_child = PlatformGetFirstChild();
   while (deepest_child->PlatformChildCount())
-    deepest_child = deepest_child->PlatformGetChild(0);
+    deepest_child = deepest_child->PlatformGetFirstChild();
 
   return deepest_child;
 }
@@ -310,11 +327,9 @@ BrowserAccessibility* BrowserAccessibility::PlatformDeepestLastChild() const {
   if (!PlatformChildCount())
     return nullptr;
 
-  BrowserAccessibility* deepest_child =
-      PlatformGetChild(PlatformChildCount() - 1);
+  BrowserAccessibility* deepest_child = PlatformGetLastChild();
   while (deepest_child->PlatformChildCount()) {
-    deepest_child = deepest_child->PlatformGetChild(
-        deepest_child->PlatformChildCount() - 1);
+    deepest_child = deepest_child->PlatformGetLastChild();
   }
 
   return deepest_child;
@@ -324,9 +339,9 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestFirstChild() const {
   if (!InternalChildCount())
     return nullptr;
 
-  BrowserAccessibility* deepest_child = InternalGetChild(0);
+  BrowserAccessibility* deepest_child = InternalGetFirstChild();
   while (deepest_child->InternalChildCount())
-    deepest_child = deepest_child->InternalGetChild(0);
+    deepest_child = deepest_child->InternalGetFirstChild();
 
   return deepest_child;
 }
@@ -335,12 +350,9 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
   if (!InternalChildCount())
     return nullptr;
 
-  BrowserAccessibility* deepest_child =
-      InternalGetChild(InternalChildCount() - 1);
-  while (deepest_child->InternalChildCount()) {
-    deepest_child = deepest_child->InternalGetChild(
-        deepest_child->InternalChildCount() - 1);
-  }
+  BrowserAccessibility* deepest_child = InternalGetLastChild();
+  while (deepest_child->InternalChildCount())
+    deepest_child = deepest_child->InternalGetLastChild();
 
   return deepest_child;
 }
@@ -356,20 +368,58 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
   if (!node_ || !manager_)
     return nullptr;
   auto* child_node = node_->GetUnignoredChildAtIndex(child_index);
-  if (child_node)
-    return manager_->GetFromAXNode(child_node);
+  if (!child_node)
+    return nullptr;
 
-  return nullptr;
+  return manager_->GetFromAXNode(child_node);
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
   if (!node_ || !manager_)
     return nullptr;
   auto* child_node = node_->GetUnignoredParent();
-  if (child_node)
-    return manager_->GetFromAXNode(child_node);
+  if (!child_node)
+    return nullptr;
 
-  return nullptr;
+  return manager_->GetFromAXNode(child_node);
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalGetFirstChild() const {
+  return InternalGetChild(0);
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalGetLastChild() const {
+  auto* child_node = node_->GetLastUnignoredChild();
+  if (!child_node)
+    return nullptr;
+
+  return manager_->GetFromAXNode(child_node);
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalGetNextSibling() const {
+  auto* child_node = node_->GetNextUnignoredSibling();
+  if (!child_node)
+    return nullptr;
+
+  return manager_->GetFromAXNode(child_node);
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalGetPreviousSibling() const {
+  auto* child_node = node_->GetPreviousUnignoredSibling();
+  if (!child_node)
+    return nullptr;
+
+  return manager_->GetFromAXNode(child_node);
+}
+
+BrowserAccessibility::InternalChildIterator
+BrowserAccessibility::InternalChildrenBegin() const {
+  return InternalChildIterator(this, InternalGetFirstChild());
+}
+
+BrowserAccessibility::InternalChildIterator
+BrowserAccessibility::InternalChildrenEnd() const {
+  return InternalChildIterator(this, nullptr);
 }
 
 int32_t BrowserAccessibility::GetId() const {
@@ -510,14 +560,15 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsPlainTextField() && InternalChildCount() == 1) {
-    return InternalGetChild(0)->GetRootFrameHypertextRangeBoundsRect(
+    return InternalGetFirstChild()->GetRootFrameHypertextRangeBoundsRect(
         start, len, clipping_behavior, offscreen_result);
   }
 
   if (GetRole() != ax::mojom::Role::kStaticText) {
     gfx::Rect bounds;
-    for (size_t i = 0; i < InternalChildCount() && len > 0; ++i) {
-      BrowserAccessibility* child = InternalGetChild(i);
+    for (InternalChildIterator it = InternalChildrenBegin();
+         it != InternalChildrenEnd() && len > 0; ++it) {
+      const BrowserAccessibility* child = it.get();
       // Child objects are of length one, since they are represented by a single
       // embedded object character. The exception is text-only objects.
       int child_length_in_parent = 1;
@@ -552,8 +603,9 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
   int child_start = 0;
   int child_end = 0;
   gfx::Rect bounds;
-  for (size_t i = 0; i < InternalChildCount() && child_end < start + len; ++i) {
-    BrowserAccessibility* child = InternalGetChild(i);
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd() && child_end < start + len; ++it) {
+    const BrowserAccessibility* child = it.get();
     if (child->GetRole() != ax::mojom::Role::kInlineTextBox) {
       DLOG(WARNING) << "BrowserAccessibility objects with role STATIC_TEXT "
                     << "should have children of role INLINE_TEXT_BOX.";
@@ -618,7 +670,7 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextBoundsPastEndOfText(
   if (InternalChildCount() > 0) {
     // When past the end of text, use bounds provided by a last child if
     // available, and then correct for thickness of caret.
-    BrowserAccessibility* child = InternalGetChild(InternalChildCount() - 1);
+    BrowserAccessibility* child = InternalGetLastChild();
     int child_text_len = child->GetHypertext().size();
     bounds = child->GetRootFrameHypertextRangeBoundsRect(
         child_text_len, child_text_len, clipping_behavior, offscreen_result);
@@ -688,16 +740,16 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
 
   const uint32_t internal_child_count = InternalChildCount();
   if (IsPlainTextField() && internal_child_count == 1) {
-    return InternalGetChild(0)->RelativeToAbsoluteBounds(
+    return InternalGetFirstChild()->RelativeToAbsoluteBounds(
         GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
   gfx::Rect bounds;
   int child_offset_in_parent = 0;
-  for (uint32_t i = 0; i < internal_child_count; ++i) {
-    const BrowserAccessibility* browser_accessibility_child =
-        InternalGetChild(i);
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd(); ++it) {
+    const BrowserAccessibility* browser_accessibility_child = it.get();
     const int child_inner_text_length =
         browser_accessibility_child->GetInnerText().length();
 
@@ -1043,8 +1095,9 @@ bool BrowserAccessibility::HasExplicitlyEmptyName() const {
 
 std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() const {
   std::string name;
-  for (size_t i = 0; i < InternalChildCount(); ++i) {
-    BrowserAccessibility* child = InternalGetChild(i);
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd(); ++it) {
+    const BrowserAccessibility* child = it.get();
     std::string child_name;
     if (child->GetStringAttribute(ax::mojom::StringAttribute::kName,
                                   &child_name)) {
@@ -1072,8 +1125,9 @@ std::string BrowserAccessibility::GetLiveRegionText() const {
   if (!text.empty())
     return text;
 
-  for (size_t i = 0; i < InternalChildCount(); ++i) {
-    BrowserAccessibility* child = InternalGetChild(i);
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd(); ++it) {
+    const BrowserAccessibility* child = it.get();
     if (!child)
       continue;
 
@@ -1134,8 +1188,9 @@ base::string16 BrowserAccessibility::GetInnerText() const {
     return GetString16Attribute(ax::mojom::StringAttribute::kName);
 
   base::string16 text;
-  for (size_t i = 0; i < InternalChildCount(); ++i)
-    text += InternalGetChild(i)->GetInnerText();
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd(); ++it)
+    text += (*it).GetInnerText();
   return text;
 }
 
@@ -1331,7 +1386,7 @@ const std::vector<gfx::NativeViewAccessible>
 BrowserAccessibility::GetDescendants() const {
   std::vector<gfx::NativeViewAccessible> descendants;
   if (!HasState(ax::mojom::State::kIgnored) && PlatformChildCount() > 0) {
-    BrowserAccessibility* next_sibling_node = GetNextSibling();
+    BrowserAccessibility* next_sibling_node = PlatformGetNextSibling();
     BrowserAccessibility* next_descendant_node =
         BrowserAccessibilityManager::NextInTreeOrder(this);
     while (next_descendant_node && next_descendant_node != next_sibling_node) {
@@ -1718,6 +1773,20 @@ bool BrowserAccessibility::SetHypertextSelection(int start_offset,
       AXPlatformRange(CreatePositionForSelectionAt(start_offset),
                       CreatePositionForSelectionAt(end_offset)));
   return true;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetRootOfChildTree() const {
+  if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
+    return nullptr;
+
+  AXTreeID child_tree_id = AXTreeID::FromString(
+      GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+  BrowserAccessibilityManager* child_manager =
+      BrowserAccessibilityManager::FromID(child_tree_id);
+  if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
+    return child_manager->GetRoot();
+
+  return nullptr;
 }
 
 }  // namespace content

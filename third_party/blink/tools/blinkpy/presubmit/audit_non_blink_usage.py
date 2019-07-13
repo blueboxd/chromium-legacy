@@ -578,6 +578,14 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/encryptedmedia/',
+        ],
+        'allowed': [
+            'media::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/imagecapture/',
         ],
         'allowed': [

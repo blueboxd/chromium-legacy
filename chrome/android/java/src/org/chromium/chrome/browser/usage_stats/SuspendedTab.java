@@ -38,6 +38,12 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     private static final String TAG = "SuspendedTab";
     private static final Class<SuspendedTab> USER_DATA_KEY = SuspendedTab.class;
 
+    public static boolean isShowing(Tab tab) {
+        if (tab == null || !tab.isInitialized()) return false;
+        SuspendedTab suspendedTab = get(tab);
+        return suspendedTab != null && suspendedTab.isShowing();
+    }
+
     public static SuspendedTab from(Tab tab) {
         SuspendedTab suspendedTab = get(tab);
         if (suspendedTab == null) {

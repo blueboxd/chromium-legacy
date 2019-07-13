@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
@@ -141,11 +142,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // If the surface is not visible within in the current view port, we should
   // not submit. Not submitting when off-screen saves significant memory.
-  //
-  // We start as visible to avoid a white flash for on-screen content. This does
-  // not seem to cause a memory regression, since when off-screen it the layer
-  // will quickly be marked as such.
-  bool is_surface_visible_ = true;
+  bool is_surface_visible_ = false;
 
   // Likewise, if the entire page is not visible, we should not submit. Not
   // submitting in the background causes the VideoFrameProvider to enter a
@@ -178,10 +175,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   using FrameTokenType = decltype(*std::declval<viz::FrameTokenGenerator>());
   base::flat_map<FrameTokenType, base::TimeTicks> frame_token_to_timestamp_map_;
 
-  THREAD_CHECKER(thread_checker_);
+  base::OneShotTimer empty_frame_timer_;
 
-  // Weak factory that's used to cancel empty frame callbacks.
-  base::WeakPtrFactory<VideoFrameSubmitter> empty_frame_weak_ptr_factory_{this};
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_{this};
 

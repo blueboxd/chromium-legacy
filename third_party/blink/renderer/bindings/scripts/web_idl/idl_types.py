@@ -26,6 +26,7 @@ from .user_defined_type import UserDefinedType
 # + PromiseType
 # + UnionType
 # + NullableType
+# + VariadicType
 
 
 class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
@@ -46,12 +47,15 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     """
 
     def __init__(self,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
+        assert isinstance(is_optional, bool)
         WithExtendedAttributes.__init__(self, extended_attributes)
         WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
+        self._is_optional = is_optional
 
     def __str__(self):
         return self.syntactic_form
@@ -206,13 +210,35 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         return bool(self.extended_attributes)
 
     @property
+    def is_optional(self):
+        """
+        Returns True if this type is used for a non-required dictionary member
+        or an optional argument.
+        """
+        return self._is_optional
+
+    @property
+    def is_variadic(self):
+        """
+        Returns True if this represents variadic arguments' type.
+
+        Variadic argument type is represented as a type-wrapping-type like
+        sequence type.  You can access the type of each argument through
+        |element_type|.
+        """
+        return False
+
+    @property
     def original_type(self):
         """Returns the typedef'ed type."""
         return None
 
     @property
     def element_type(self):
-        """Returns the element type if |is_sequence| or |is_frozen_array|."""
+        """
+        Returns the element type if |is_sequence|, |is_frozen_array|, or
+        |is_variadic|.
+        """
         return None
 
     @property
@@ -253,10 +279,11 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
 
     def _format_syntactic_form(self, syntactic_form_inner):
         """Helper function to implement |syntactic_form|."""
-        if self.extended_attributes:
-            return '{} {}'.format(self.extended_attributes,
-                                  syntactic_form_inner)
-        return syntactic_form_inner
+        optional_form = 'optional ' if self.is_optional else ''
+        ext_attr_form = ('{} '.format(self.extended_attributes)
+                         if self.extended_attributes else '')
+        return '{}{}{}'.format(optional_form, ext_attr_form,
+                               syntactic_form_inner)
 
     def _format_type_name(self, type_name_inner):
         """Helper function to implement |type_name|."""
@@ -281,6 +308,7 @@ class SimpleType(IdlType):
 
     def __init__(self,
                  name,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
@@ -288,6 +316,7 @@ class SimpleType(IdlType):
             'Unknown type name: {}'.format(name))
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -351,12 +380,14 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
 
     def __init__(self,
                  ref_to_idl_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         assert RefByIdFactory.is_reference(ref_to_idl_type)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -392,11 +423,13 @@ class DefinitionType(IdlType, WithIdentifier):
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
+        assert not self.is_optional
         return self.identifier
 
     @property
     def type_name(self):
         assert not self.extended_attributes
+        assert not self.is_optional
         return self.identifier
 
     @property
@@ -443,11 +476,13 @@ class TypedefType(IdlType, WithIdentifier):
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
+        assert not self.is_optional
         return self.identifier
 
     @property
     def type_name(self):
         assert not self.extended_attributes
+        assert not self.is_optional
         return self.original_type.type_name
 
     @property
@@ -466,12 +501,14 @@ class TypedefType(IdlType, WithIdentifier):
 class _ArrayLikeType(IdlType):
     def __init__(self,
                  element_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         assert isinstance(element_type, IdlType)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -484,14 +521,18 @@ class _ArrayLikeType(IdlType):
 
 
 class SequenceType(_ArrayLikeType):
+    """https://heycam.github.io/webidl/#idl-sequence"""
+
     def __init__(self,
                  element_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         _ArrayLikeType.__init__(
             self,
             element_type,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -513,14 +554,18 @@ class SequenceType(_ArrayLikeType):
 
 
 class FrozenArrayType(_ArrayLikeType):
+    """https://heycam.github.io/webidl/#idl-frozen-array"""
+
     def __init__(self,
                  element_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         _ArrayLikeType.__init__(
             self,
             element_type,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -542,9 +587,12 @@ class FrozenArrayType(_ArrayLikeType):
 
 
 class RecordType(IdlType):
+    """https://heycam.github.io/webidl/#idl-record"""
+
     def __init__(self,
                  key_type,
                  value_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
@@ -552,6 +600,7 @@ class RecordType(IdlType):
         assert isinstance(value_type, IdlType)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -583,14 +632,18 @@ class RecordType(IdlType):
 
 
 class PromiseType(IdlType):
+    """https://heycam.github.io/webidl/#idl-promise"""
+
     def __init__(self,
                  result_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         assert isinstance(result_type, IdlType)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -625,6 +678,7 @@ class UnionType(IdlType):
 
     def __init__(self,
                  member_types,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
@@ -632,6 +686,7 @@ class UnionType(IdlType):
         assert all(isinstance(member, IdlType) for member in member_types)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -667,14 +722,18 @@ class UnionType(IdlType):
 
 
 class NullableType(IdlType):
+    """https://heycam.github.io/webidl/#idl-nullable-type"""
+
     def __init__(self,
                  inner_type,
+                 is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
         assert isinstance(inner_type, IdlType)
         IdlType.__init__(
             self,
+            is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
             debug_info=debug_info)
@@ -711,3 +770,38 @@ class NullableType(IdlType):
     @property
     def inner_type(self):
         return self._inner_type
+
+
+class VariadicType(IdlType):
+    """Represents a type used for variadic arguments."""
+
+    def __init__(self, element_type, code_generator_info=None,
+                 debug_info=None):
+        IdlType.__init__(
+            self,
+            code_generator_info=code_generator_info,
+            debug_info=debug_info)
+        assert isinstance(element_type, IdlType)
+        self._element_type = element_type
+
+    # IdlType overrides
+    @property
+    def syntactic_form(self):
+        assert not self.extended_attributes
+        assert not self.is_optional
+        return '{}...'.format(self.element_type.syntactic_form)
+
+    @property
+    def type_name(self):
+        # Blink-specific expansion of type name
+        # The type name of a variadic type is the concatenation of the type
+        # name of the element type and the string "Variadic".
+        return '{}Variadic'.format(self.element_type.type_name)
+
+    @property
+    def is_variadic(self):
+        return True
+
+    @property
+    def element_type(self):
+        return self._element_type

@@ -41,7 +41,11 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
         'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
         'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
         'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4')
+        'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
+        'Graphics.Smoothness.Throughput.MainThread.RAF',
+        'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
+        'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
+        'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll')
     options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 
@@ -77,6 +81,10 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
     options.config.enable_platform_display_trace = True
     options.config.chrome_trace_config.EnableUMAHistograms(
         'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
+        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
+        'Graphics.Smoothness.Throughput.MainThread.RAF',
+        'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
+        'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
+        'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll')
     options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options

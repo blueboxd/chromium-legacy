@@ -112,6 +112,8 @@ public class TabListMediatorUnitTest {
     TabListMediator.TabGridDialogHandler mTabGridDialogHandler;
     @Mock
     TabListMediator.CreateGroupButtonProvider mCreateGroupButtonProvider;
+    @Mock
+    TabListMediator.GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -181,7 +183,8 @@ public class TabListMediatorUnitTest {
         mModel = new TabListModel();
         mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
-                false, null, null, null, null, getClass().getSimpleName());
+                false, null, null, mGridCardOnClickListenerProvider, null,
+                getClass().getSimpleName());
     }
 
     @After
@@ -226,7 +229,8 @@ public class TabListMediatorUnitTest {
                 .get(TabProperties.TAB_SELECTED_LISTENER)
                 .run(mModel.get(1).get(TabProperties.TAB_ID));
 
-        verify(mTabModel).setIndex(eq(1), anyInt());
+        verify(mGridCardOnClickListenerProvider)
+                .onTabSelecting(mModel.get(1).get(TabProperties.TAB_ID));
     }
 
     @Test

@@ -37,7 +37,7 @@ class WebContentDecryptionModuleSessionImpl
   blink::WebString SessionId() const override;
 
   void InitializeNewSession(
-      blink::WebEncryptedMediaInitDataType init_data_type,
+      EmeInitDataType init_data_type,
       const unsigned char* initData,
       size_t initDataLength,
       blink::WebEncryptedMediaSessionType session_type,

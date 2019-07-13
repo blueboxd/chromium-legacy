@@ -67,6 +67,19 @@ void ShowFilePickerOnUIThread(
     return;
   }
 
+  // Renderer process should already check for user activation before sending
+  // IPC, but just to be sure double check here as well. This is not treated
+  // as a BadMessage because it is possible for the transient user activation
+  // to expire between the renderer side check and this check.
+  if (!rfh->HasTransientUserActivation()) {
+    callback_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::NativeFileSystemError::New(
+                                      base::File::FILE_ERROR_ACCESS_DENIED),
+                                  std::vector<base::FilePath>()));
+    return;
+  }
+
   FileSystemChooser::CreateAndShow(web_contents, type, std::move(accepts),
                                    include_accepts_all, std::move(callback),
                                    std::move(callback_runner));
@@ -151,35 +164,9 @@ blink::mojom::NativeFileSystemEntryPtr
 NativeFileSystemManagerImpl::CreateFileEntryFromPath(
     const BindingContext& binding_context,
     const base::FilePath& file_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
-
-  auto read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-      PermissionStatus::GRANTED);
-  scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
-  if (permission_context_) {
-    write_grant = permission_context_->GetWritePermissionGrant(
-        binding_context.origin, file_path, /*is_directory=*/false);
-  } else {
-    // Auto-deny all write grants if no permisson context is available, unless
-    // Experimental Web Platform features are enabled.
-    // TODO(mek): Remove experimental web platform check when permission UI is
-    // implemented.
-    write_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures)
-            ? PermissionStatus::GRANTED
-            : PermissionStatus::DENIED);
-  }
-
-  return blink::mojom::NativeFileSystemEntry::New(
-      blink::mojom::NativeFileSystemHandle::NewFile(
-          CreateFileHandle(
-              binding_context, url.url,
-              SharedHandleState(std::move(read_grant), std::move(write_grant),
-                                std::move(url.file_system)))
-              .PassInterface()),
-      url.base_name);
+  return CreateFileEntryFromPathImpl(
+      binding_context, file_path,
+      NativeFileSystemPermissionContext::UserAction::kOpen);
 }
 
 blink::mojom::NativeFileSystemEntryPtr
@@ -195,7 +182,8 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
   if (permission_context_) {
     write_grant = permission_context_->GetWritePermissionGrant(
-        binding_context.origin, directory_path, /*is_directory=*/true);
+        binding_context.origin, directory_path, /*is_directory=*/true,
+        NativeFileSystemPermissionContext::UserAction::kOpen);
   } else {
     // Auto-deny all write grants if no permisson context is available, unless
     // Experimental Web Platform features are enabled.
@@ -216,6 +204,15 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
                                 std::move(url.file_system)))
               .PassInterface()),
       url.base_name);
+}
+
+blink::mojom::NativeFileSystemEntryPtr
+NativeFileSystemManagerImpl::CreateWritableFileEntryFromPath(
+    const BindingContext& binding_context,
+    const base::FilePath& file_path) {
+  return CreateFileEntryFromPathImpl(
+      binding_context, file_path,
+      NativeFileSystemPermissionContext::UserAction::kSave);
 }
 
 blink::mojom::NativeFileSystemFileHandlePtr
@@ -357,11 +354,15 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
   }
 
   result_entries.reserve(entries.size());
-  for (const auto& entry : entries)
-    result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+  for (const auto& entry : entries) {
+    if (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
+      result_entries.push_back(
+          CreateWritableFileEntryFromPath(binding_context, entry));
+    } else {
+      result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+    }
+  }
 
-  // TODO(mek): Auto-grant write permission if this was a file as a result of a
-  // save dialog.
   std::move(callback).Run(std::move(result), std::move(result_entries));
 }
 
@@ -450,6 +451,42 @@ NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
   result.url = context()->CreateCrackedFileSystemURL(
       origin.GetURL(), storage::kFileSystemTypeIsolated, isolated_path);
   return result;
+}
+
+blink::mojom::NativeFileSystemEntryPtr
+NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
+    const BindingContext& binding_context,
+    const base::FilePath& file_path,
+    NativeFileSystemPermissionContext::UserAction user_action) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
+
+  auto read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+      PermissionStatus::GRANTED);
+  scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
+  if (permission_context_) {
+    write_grant = permission_context_->GetWritePermissionGrant(
+        binding_context.origin, file_path, /*is_directory=*/false, user_action);
+  } else {
+    // Auto-deny all write grants if no permisson context is available, unless
+    // Experimental Web Platform features are enabled.
+    // TODO(mek): Remove experimental web platform check when permission UI is
+    // implemented.
+    write_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalWebPlatformFeatures)
+            ? PermissionStatus::GRANTED
+            : PermissionStatus::DENIED);
+  }
+
+  return blink::mojom::NativeFileSystemEntry::New(
+      blink::mojom::NativeFileSystemHandle::NewFile(
+          CreateFileHandle(
+              binding_context, url.url,
+              SharedHandleState(std::move(read_grant), std::move(write_grant),
+                                std::move(url.file_system)))
+              .PassInterface()),
+      url.base_name);
 }
 
 }  // namespace content

@@ -15,9 +15,10 @@ html {
        * make the width shorter than it should be. */
       + 1px);
 
+  --logo-color: #eee; /* Background color for alternative logo. */
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
-  --logo-margin-bottom: 29px; /* Between logo and fakebox. */
+  --logo-margin-bottom: 38px; /* Between logo and fakebox. */
 
   /* Initial height determines the margin between the logo and the fakebox. If
    * the iframe height exceeds the normal --logo-height, the difference is
@@ -327,9 +328,13 @@ body.fakebox-focused #fakebox-cursor {
   border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
+  box-sizing: border-box;
   font-size: 12px;
   height: fit-content;
   margin: 0 auto;
+  /* Set min-height in order to prevent the border from disappearing at certain
+     zooms. */
+  min-height: 35px;
   opacity: 1;
   width: fit-content;
 }
@@ -346,7 +351,8 @@ body.fakebox-focused #fakebox-cursor {
   cursor: default;
   display: inline-block;
   height: auto;
-  line-height: 32px;
+  /* Use odd height in order to prevent rounding errors at certain zooms. */
+  line-height: 33px;
   vertical-align: unset;
 }
 
@@ -896,7 +902,8 @@ html[dir=rtl] .menu-option {
   visibility: visible;
 }
 
-#customization-menu .bg-sel-tile-bg {
+#backgrounds-menu .bg-sel-tile-bg,
+#backgrounds-image-menu .bg-sel-tile-bg {
   border-radius: 4px;
   height: 176px;
   margin-bottom: 45px;
@@ -910,21 +917,15 @@ html[dir=rtl] .menu-option {
   margin-bottom: 8px;
 }
 
-#colors-menu .bg-sel-tile-bg {
-  height: 120px;
-}
-
-#customization-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+#backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
   height: 144px;
   margin: 16px 16px 0 16px;
   width: 144px;
 }
 
-#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile {
-  height: 88px;
-}
-
-#customization-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+#backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
   outline: none;
 }
 
@@ -932,7 +933,8 @@ html[dir=rtl] .menu-option {
   outline: none;
 }
 
-#customization-menu .bg-sel-tile {
+#backgrounds-menu .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
   cursor: pointer;
@@ -965,13 +967,15 @@ html[dir=rtl] .menu-option {
   }
 }
 
-#customization-menu .bg-sel-tile-bg.selected  {
+#backgrounds-menu .bg-sel-tile-bg.selected,
+#backgrounds-image-menu .bg-sel-tile-bg.selected  {
   background-color: rgba(var(--GB900-rgb), .08);
 }
 
 @media (prefers-color-scheme: dark) {
   #backgrounds-default.selected,
-  #customization-menu .bg-sel-tile-bg.selected {
+  #backgrounds-menu .bg-sel-tile-bg.selected,
+  #backgrounds-image-menu .bg-sel-tile-bg.selected {
     background-color: rgba(var(--GB200-rgb), .1);
   }
 }
@@ -1522,11 +1526,57 @@ input:checked + .toggle .highlight {
   }
 }
 
+#colors-menu .bg-sel-tile-bg {
+  background-color: unset;
+  border-radius: 45px;
+  box-sizing: border-box;
+  height: 80px;
+  margin-bottom: 32px;
+  margin-inline-end: 33px;
+  margin-inline-start: 0;
+  margin-top: 0;
+  width: 80px;
+}
+
+#colors-menu .bg-sel-tile-bg.selected {
+  border: 4px solid rgba(var(--GB600-rgb), 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-menu .bg-sel-tile-bg.selected {
+    border: 4px solid rgb(var(--GB200-rgb));
+  }
+}
+
+#colors-menu .bg-sel-tile .selected-circle {
+  right: 0;
+  top: 6px;
+}
+
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
+  left: 0;
+}
+
+#colors-menu .bg-sel-tile .selected-check {
+  right: 0;
+  top: 4px;
+}
+
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
+  left: 0;
+}
+
 #colors-default-icon {
   background-image: url(icons/default-theme.svg);
   background-repeat: no-repeat;
   background-size: contain;
   opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-default-icon {
+    background-image: url(icons/default-theme-dark.svg);
+  }
 }
 
 #colors-theme {

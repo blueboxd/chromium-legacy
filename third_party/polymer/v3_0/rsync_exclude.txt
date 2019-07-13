@@ -40,6 +40,10 @@ iron-checked-element-behavior/*
 # iron-form-element-behavior
 iron-form-element-behavior/*
 
+# iron-test-helpers
+iron-test-helpers/iron-test-helpers.js
+iron-test-helpers/test-helpers.js
+
 # paper-behaviors
 paper-behaviors/paper-button-behavior.js
 paper-behaviors/paper-checked-element-behavior.js
@@ -76,3 +80,5 @@ neon-animation/animations/slide-up-animation.js
 neon-animation/animations/transform-animation.js
 neon-animation/neon-animation.js
 neon-animation/neon-animations.js
+neon-animation/neon-shared-element-animatable-behavior.js
+neon-animation/neon-shared-element-animation-behavior.js

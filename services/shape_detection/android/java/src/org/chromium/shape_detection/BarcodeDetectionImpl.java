@@ -31,11 +31,47 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
     private BarcodeDetector mBarcodeDetector;
 
     public BarcodeDetectionImpl(BarcodeDetectorOptions options) {
-        // TODO(mcasas): extract the barcode formats to hunt for out of
-        // |options| and use them for building |mBarcodeDetector|.
-        // https://crbug.com/582266.
-        mBarcodeDetector =
-                new BarcodeDetector.Builder(ContextUtils.getApplicationContext()).build();
+        int formats = Barcode.ALL_FORMATS;
+        if (options.formats != null && options.formats.length > 0) {
+            formats = 0;
+            // Keep this list in sync with the constants defined in
+            // com.google.android.gms.vision.barcode.Barcode and the list of
+            // supported formats in BarcodeDetectionProviderImpl.
+            for (int i = 0; i < options.formats.length; ++i) {
+                if (options.formats[i] == BarcodeFormat.AZTEC) {
+                    formats |= Barcode.AZTEC;
+                } else if (options.formats[i] == BarcodeFormat.CODE_128) {
+                    formats |= Barcode.CODE_128;
+                } else if (options.formats[i] == BarcodeFormat.CODE_39) {
+                    formats |= Barcode.CODE_39;
+                } else if (options.formats[i] == BarcodeFormat.CODE_93) {
+                    formats |= Barcode.CODE_93;
+                } else if (options.formats[i] == BarcodeFormat.CODABAR) {
+                    formats |= Barcode.CODABAR;
+                } else if (options.formats[i] == BarcodeFormat.DATA_MATRIX) {
+                    formats |= Barcode.DATA_MATRIX;
+                } else if (options.formats[i] == BarcodeFormat.EAN_13) {
+                    formats |= Barcode.EAN_13;
+                } else if (options.formats[i] == BarcodeFormat.EAN_8) {
+                    formats |= Barcode.EAN_8;
+                } else if (options.formats[i] == BarcodeFormat.ITF) {
+                    formats |= Barcode.ITF;
+                } else if (options.formats[i] == BarcodeFormat.PDF417) {
+                    formats |= Barcode.PDF417;
+                } else if (options.formats[i] == BarcodeFormat.QR_CODE) {
+                    formats |= Barcode.QR_CODE;
+                } else if (options.formats[i] == BarcodeFormat.UPC_A) {
+                    formats |= Barcode.UPC_A;
+                } else if (options.formats[i] == BarcodeFormat.UPC_E) {
+                    formats |= Barcode.UPC_E;
+                } else {
+                    Log.e(TAG, "Unsupported barcode format hint: " + options.formats[i]);
+                }
+            }
+        }
+        mBarcodeDetector = new BarcodeDetector.Builder(ContextUtils.getApplicationContext())
+                                   .setBarcodeFormats(formats)
+                                   .build();
     }
 
     @Override

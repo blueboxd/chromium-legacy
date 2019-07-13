@@ -25,6 +25,9 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el" ||
     current_cpu == "mips" || current_cpu == "mips64") {
   import("//build/config/mips.gni")
 }
+if (current_cpu == "x64") {
+  import("//build/config/x64.gni")
+}
 if (is_mac) {
   import("//build/config/mac/symbols.gni")
 }
@@ -736,7 +739,7 @@ config("compiler_cpu_abi") {
     if (current_cpu == "x64") {
       cflags += [
         "-m64",
-        "-march=x86-64",
+        "-march=$x64_arch",
       ]
       ldflags += [ "-m64" ]
     } else if (current_cpu == "x86") {

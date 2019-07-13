@@ -46,7 +46,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -62,22 +61,23 @@ bool IsNtpBackgroundDark(SkColor ntp_text) {
   return !color_utils::IsDark(ntp_text);
 }
 
-// Calculate icon color for given background color.
-SkColor CalculateIconColor(SkColor bg_color) {
+// Calculate contrasting color for given |bg_color|. Returns lighter color if
+// the color is very dark and returns darker color otherwise.
+SkColor GetContrastingColorForBackground(SkColor bg_color,
+                                         float luminosity_change) {
   color_utils::HSL hsl;
   SkColorToHSL(bg_color, &hsl);
 
-  // If luminosity is 0, it means |bg_color| color is black. Use white icon
-  // color for black backgrounds.
+  // If luminosity is 0, it means |bg_color| is black. Use white for black
+  // backgrounds.
   if (hsl.l == 0)
     return SK_ColorWHITE;
 
-  // Decrease luminosity by 20%, unless color is already dark.
-  float change = -0.2;
-  if (hsl.l <= 0.15)
-    change = 0.2;
+  // Decrease luminosity, unless color is already dark.
+  if (hsl.l > 0.15)
+    luminosity_change *= -1;
 
-  hsl.l *= 1 + change;
+  hsl.l *= 1 + luminosity_change;
   if (hsl.l >= 0.0f && hsl.l <= 1.0f)
     return HSLToSkColor(hsl, 255);
   return bg_color;
@@ -89,19 +89,34 @@ SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
   bool has_background_image = theme_info.has_theme_image ||
                               !theme_info.custom_background_url.is_empty();
   if (has_background_image)
-    return gfx::kGoogleGrey100;
+    return kNTPLightIconColor;
 
   if (theme_info.using_dark_mode && theme_info.using_default_theme)
-    return gfx::kGoogleGrey900;
+    return kNTPDarkIconColor;
 
   SkColor bg_color = theme_info.background_color;
-  SkColor icon_color = gfx::kGoogleGrey100;
-  if (!theme_info.using_default_theme && bg_color != SK_ColorWHITE)
-    icon_color = CalculateIconColor(bg_color);
+  SkColor icon_color = kNTPLightIconColor;
+  if (!theme_info.using_default_theme && bg_color != SK_ColorWHITE) {
+    icon_color =
+        GetContrastingColorForBackground(bg_color, /*luminosity_change=*/0.2f);
+  }
 
   return icon_color;
 }
 
+// For themes that use alternate logo and no NTP background image is present,
+// set logo color in the same hue as NTP background.
+SkColor GetLogoColor(const ThemeBackgroundInfo& theme_info) {
+  SkColor logo_color = kNTPLightLogoColor;
+  bool has_background_image = theme_info.has_theme_image ||
+                              !theme_info.custom_background_url.is_empty();
+  if (theme_info.logo_alternate && !has_background_image) {
+    logo_color = GetContrastingColorForBackground(theme_info.background_color,
+                                                  /*luminosity_change=*/0.4f);
+  }
+
+  return logo_color;
+}
 }  // namespace internal
 
 namespace {
@@ -285,6 +300,8 @@ bool ArrayToSkColor(v8::Isolate* isolate,
   return true;
 }
 
+// TODO(gayane): Move all non-trival logic to |instant_service| and do only
+// mapping here. crbug.com/983717.
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -415,6 +432,8 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("iconBackgroundColor", SkColorToArray(isolate, icon_color));
   builder.Set("useWhiteAddIcon", color_utils::IsDark(icon_color));
 
+  builder.Set("logoColor",
+              SkColorToArray(isolate, internal::GetLogoColor(theme_info)));
   return builder.Build();
 }
 

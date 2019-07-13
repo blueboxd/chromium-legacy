@@ -8,12 +8,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
-#include "ios/chrome/browser/infobars/legacy_infobar_badge_tab_helper_delegate.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
@@ -34,7 +31,6 @@
 #endif
 
 @interface LocationBarMediator () <CRWWebStateObserver,
-                                   LegacyInfobarBadgeTabHelperDelegate,
                                    SearchEngineObserving,
                                    WebStateListObserving>
 
@@ -50,7 +46,6 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
-@synthesize badgeState = _badgeState;
 
 - (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
   DCHECK(locationBarModel);
@@ -159,18 +154,6 @@
       search_engines::SupportsSearchByImage(self.templateURLService);
 }
 
-#pragma mark - InfobarBadgeTabHelper
-
-- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType {
-  DCHECK(IsInfobarUIRebootEnabled());
-  [self.consumer displayInfobarBadge:display type:infobarType];
-}
-
-- (void)setBadgeState:(InfobarBadgeState)badgeState {
-  _badgeState = badgeState;
-  [self.consumer activeInfobarBadge:_badgeState & InfobarBadgeStateAccepted];
-}
-
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {
@@ -182,26 +165,6 @@
 
   if (_webState) {
     _webState->AddObserver(_webStateObserver.get());
-
-    if (IsInfobarUIRebootEnabled()) {
-      InfobarBadgeTabHelper* infobarBadgeTabHelper =
-          InfobarBadgeTabHelper::FromWebState(_webState);
-      DCHECK(infobarBadgeTabHelper);
-      infobarBadgeTabHelper->SetLegacyDelegate(self);
-      if (self.consumer) {
-        // Whenever the WebState changes ask the corresponding
-        // InfobarBadgeTabHelper if a badge should be displayed, and if its
-        // Active or not.
-        [self.consumer
-            displayInfobarBadge:infobarBadgeTabHelper->is_infobar_displaying()
-                           type:infobarBadgeTabHelper->infobar_type()];
-        if (infobarBadgeTabHelper->is_badge_accepted()) {
-          self.badgeState |= InfobarBadgeStateAccepted;
-        } else {
-          self.badgeState &= ~InfobarBadgeStateAccepted;
-        }
-      }
-    }
 
     if (self.consumer) {
       [self notifyConsumerOfChangedLocation];

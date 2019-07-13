@@ -248,12 +248,6 @@ class WatchTimeReporterTest
     void SetContainerName(
         container_names::MediaContainerName container_name) override {}
     void AddBytesReceived(uint64_t bytes_received) override {}
-    void SetHasPlayed() override {}
-    void SetHaveEnough() override {}
-    void SetHasAudio(AudioCodec audio_codec) override {}
-    void SetHasVideo(VideoCodec video_codec) override {}
-    void SetVideoPipelineInfo(const PipelineDecoderInfo& info) override {}
-    void SetAudioPipelineInfo(const PipelineDecoderInfo& info) override {}
 
    private:
     WatchTimeReporterTest* parent_;

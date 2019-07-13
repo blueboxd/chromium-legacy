@@ -57,7 +57,7 @@ void ExploreSitesInternalsPageHandler::GetProperties(
 
 void ExploreSitesInternalsPageHandler::ClearCachedExploreSitesCatalog(
     ClearCachedExploreSitesCatalogCallback callback) {
-  if (ExploreSitesVariation::ENABLED != GetExploreSitesVariation()) {
+  if (ExploreSitesVariation::DISABLED == GetExploreSitesVariation()) {
     std::move(callback).Run(false);
     return;
   }
@@ -77,7 +77,7 @@ void ExploreSitesInternalsPageHandler::ForceNetworkRequest(
 void ExploreSitesInternalsPageHandler::OverrideCountryCode(
     const std::string& country_code,
     OverrideCountryCodeCallback callback) {
-  if (ExploreSitesVariation::ENABLED != GetExploreSitesVariation()) {
+  if (ExploreSitesVariation::DISABLED == GetExploreSitesVariation()) {
     std::move(callback).Run(false);
     return;
   }

@@ -1072,6 +1072,8 @@ component("ash") {
     "wm/desks/desks_controller.h",
     "wm/desks/desks_util.cc",
     "wm/desks/desks_util.h",
+    "wm/desks/hit_the_wall_desk_switch_animation.cc",
+    "wm/desks/hit_the_wall_desk_switch_animation.h",
     "wm/desks/new_desk_button.cc",
     "wm/desks/new_desk_button.h",
     "wm/desks/root_window_desk_switch_animator.cc",
@@ -1535,6 +1537,7 @@ static_library("ash_shell_lib_with_content") {
     "//ui/events/devices",
     "//ui/message_center",
     "//ui/views:test_support",
+    "//ui/views/controls/webview",
     "//ui/views/examples:views_examples_with_content_lib",
     "//ui/wm",
   ]

@@ -746,8 +746,9 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
     // Count the number of selected items
     size_t selected_count = 0;
     BrowserAccessibility* first_selected_child = nullptr;
-    for (size_t i = 0; i < container->InternalChildCount(); ++i) {
-      auto* child = container->InternalGetChild(i);
+    for (auto it = container->InternalChildrenBegin();
+         it != container->InternalChildrenEnd(); ++it) {
+      auto* child = it.get();
       if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
         if (!first_selected_child)
           first_selected_child = child;

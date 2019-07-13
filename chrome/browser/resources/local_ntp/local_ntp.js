@@ -377,6 +377,11 @@ function renderTheme() {
   const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
 
+  if (info.logoColor) {
+    document.body.style.setProperty(
+        '--logo-color', convertToRGBAColor(info.logoColor));
+  }
+
   // The doodle notifier should be shown for non-default backgrounds. This
   // includes non-white backgrounds, excluding dark mode gray if dark mode is
   // enabled.

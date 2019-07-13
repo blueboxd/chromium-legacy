@@ -17,8 +17,11 @@ class Window;
 
 namespace content {
 class BrowserContext;
-class WebContents;
-}  // namespace content
+}
+
+namespace views {
+class Widget;
+}
 
 namespace ash {
 namespace shell {
@@ -39,7 +42,7 @@ class EmbeddedBrowser {
   // Callback invoked when the embedding is broken.
   void OnUnembed();
 
-  std::unique_ptr<content::WebContents> contents_;
+  views::Widget* widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedBrowser);
 };

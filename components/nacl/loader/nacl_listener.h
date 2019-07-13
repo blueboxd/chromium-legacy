@@ -69,6 +69,10 @@ class NaClListener : public IPC::Listener {
                            base::FilePath file_path);
 
  private:
+#if defined(OS_LINUX)
+  static int MakeSharedMemorySegment(size_t length, int executable);
+#endif
+
   bool OnMessageReceived(const IPC::Message& msg) override;
 
   typedef base::Callback<void(const IPC::Message&,

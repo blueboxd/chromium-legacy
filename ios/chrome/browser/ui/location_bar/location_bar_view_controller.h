@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
@@ -35,7 +36,7 @@
 // the omnibox textfield is displayed; in the non-editing state, the current
 // location is displayed.
 @interface LocationBarViewController
-    : UIViewController<FullscreenUIElement, LocationBarAnimatee>
+    : UIViewController <BadgeConsumer, FullscreenUIElement, LocationBarAnimatee>
 
 // Sets the edit view to use in the editing state. This must be set before the
 // view of this view controller is initialized. This must only be called once.

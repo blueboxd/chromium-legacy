@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 

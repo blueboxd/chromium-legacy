@@ -50,9 +50,9 @@ class AccessibilityLineLayoutBrowserTest : public ContentBrowserTest {
       line_link_count++;
     }
 
-    for (unsigned i = 0; i < node->InternalChildCount(); i++)
-      line_link_count +=
-          CountNextPreviousOnLineLinks(node->InternalGetChild(i));
+    for (auto it = node->InternalChildrenBegin();
+         it != node->InternalChildrenEnd(); ++it)
+      line_link_count += CountNextPreviousOnLineLinks(it.get());
 
     return line_link_count;
   }

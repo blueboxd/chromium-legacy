@@ -82,12 +82,6 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
       int load_flags);
 
-  CONTENT_EXPORT static std::string SerializeFetchRequestToString(
-      const blink::mojom::FetchAPIRequest& request);
-
-  CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
-  DeserializeFetchRequestFromString(const std::string& serialized);
-
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);
 

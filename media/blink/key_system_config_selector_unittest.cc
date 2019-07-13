@@ -23,7 +23,6 @@ namespace media {
 
 namespace {
 
-using blink::WebEncryptedMediaInitDataType;
 using blink::WebEncryptedMediaSessionType;
 using blink::WebMediaKeySystemConfiguration;
 using blink::WebMediaKeySystemMediaCapability;
@@ -562,9 +561,9 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_Empty) {
 TEST_F(KeySystemConfigSelectorTest, InitDataTypes_NoneSupported) {
   key_systems_->init_data_type_webm_supported_ = true;
 
-  std::vector<WebEncryptedMediaInitDataType> init_data_types;
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kUnknown);
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kCenc);
+  std::vector<EmeInitDataType> init_data_types;
+  init_data_types.push_back(EmeInitDataType::UNKNOWN);
+  init_data_types.push_back(EmeInitDataType::CENC);
 
   auto config = UsableConfiguration();
   config.init_data_types = init_data_types;
@@ -576,10 +575,10 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_NoneSupported) {
 TEST_F(KeySystemConfigSelectorTest, InitDataTypes_SubsetSupported) {
   key_systems_->init_data_type_webm_supported_ = true;
 
-  std::vector<WebEncryptedMediaInitDataType> init_data_types;
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kUnknown);
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kCenc);
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kWebm);
+  std::vector<EmeInitDataType> init_data_types;
+  init_data_types.push_back(EmeInitDataType::UNKNOWN);
+  init_data_types.push_back(EmeInitDataType::CENC);
+  init_data_types.push_back(EmeInitDataType::WEBM);
 
   auto config = UsableConfiguration();
   config.init_data_types = init_data_types;
@@ -587,7 +586,7 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_SubsetSupported) {
 
   SelectConfigReturnsConfig();
   ASSERT_EQ(1u, config_.init_data_types.size());
-  EXPECT_EQ(WebEncryptedMediaInitDataType::kWebm, config_.init_data_types[0]);
+  EXPECT_EQ(EmeInitDataType::WEBM, config_.init_data_types[0]);
 }
 
 // --- distinctiveIdentifier ---
@@ -1451,8 +1450,8 @@ TEST_F(KeySystemConfigSelectorTest, Configurations_AllSupported) {
 TEST_F(KeySystemConfigSelectorTest, Configurations_SubsetSupported) {
   auto config1 = UsableConfiguration();
   config1.label = "a";
-  std::vector<WebEncryptedMediaInitDataType> init_data_types;
-  init_data_types.push_back(WebEncryptedMediaInitDataType::kUnknown);
+  std::vector<EmeInitDataType> init_data_types;
+  init_data_types.push_back(EmeInitDataType::UNKNOWN);
   config1.init_data_types = init_data_types;
   configs_.push_back(config1);
 

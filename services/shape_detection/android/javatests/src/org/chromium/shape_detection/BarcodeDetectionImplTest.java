@@ -57,6 +57,19 @@ public class BarcodeDetectionImplTest {
 
     private static BarcodeDetectionResult[] detect(org.chromium.skia.mojom.Bitmap mojoBitmap) {
         BarcodeDetectorOptions options = new BarcodeDetectorOptions();
+        return detectWithOptions(mojoBitmap, options);
+    }
+
+    private static BarcodeDetectionResult[] detectWithHint(
+            org.chromium.skia.mojom.Bitmap mojoBitmap, int format) {
+        Assert.assertTrue(BarcodeFormat.isKnownValue(format));
+        BarcodeDetectorOptions options = new BarcodeDetectorOptions();
+        options.formats = new int[] {format};
+        return detectWithOptions(mojoBitmap, options);
+    }
+
+    private static BarcodeDetectionResult[] detectWithOptions(
+            org.chromium.skia.mojom.Bitmap mojoBitmap, BarcodeDetectorOptions options) {
         BarcodeDetection detector = new BarcodeDetectionImpl(options);
 
         final ArrayBlockingQueue<BarcodeDetectionResult[]> queue = new ArrayBlockingQueue<>(1);
@@ -90,7 +103,24 @@ public class BarcodeDetectionImplTest {
     @Test
     @SmallTest
     @Feature({"ShapeDetection"})
-    public void testDetectBase64ValidImageString() {
+    public void testDetectQrCodeWithHint() {
+        if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
+            return;
+        }
+        BarcodeDetectionResult[] results = detectWithHint(QR_CODE_BITMAP, BarcodeFormat.QR_CODE);
+        Assert.assertEquals(1, results.length);
+        Assert.assertEquals("https://chromium.org", results[0].rawValue);
+        Assert.assertEquals(40.0, results[0].boundingBox.x, 0.0);
+        Assert.assertEquals(40.0, results[0].boundingBox.y, 0.0);
+        Assert.assertEquals(250.0, results[0].boundingBox.width, 0.0);
+        Assert.assertEquals(250.0, results[0].boundingBox.height, 0.0);
+        Assert.assertEquals(BarcodeFormat.QR_CODE, results[0].format);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ShapeDetection"})
+    public void testDetectQrCodeWithoutHint() {
         if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
             return;
         }
@@ -102,5 +132,16 @@ public class BarcodeDetectionImplTest {
         Assert.assertEquals(250.0, results[0].boundingBox.width, 0.0);
         Assert.assertEquals(250.0, results[0].boundingBox.height, 0.0);
         Assert.assertEquals(BarcodeFormat.QR_CODE, results[0].format);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ShapeDetection"})
+    public void testTryDetectQrCodeWithAztecHint() {
+        if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
+            return;
+        }
+        BarcodeDetectionResult[] results = detectWithHint(QR_CODE_BITMAP, BarcodeFormat.AZTEC);
+        Assert.assertEquals(0, results.length);
     }
 }

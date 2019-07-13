@@ -85,7 +85,7 @@ body.alternate-logo #logo-non-white {
       url(../../../../ui/webui/resources/images/google_logo.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
-  background: #eee;
+  background: var(--logo-color);
 }
 
 #logo-default,

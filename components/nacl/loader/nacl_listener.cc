@@ -78,13 +78,7 @@ void LoadStatusCallback(int load_status) {
       static_cast<NaClErrorCode>(load_status));
 }
 
-#if defined(OS_LINUX)
-
-int CreateMemoryObject(size_t size, int executable) {
-  return service_manager::MakeSharedMemorySegmentViaIPC(size, executable);
-}
-
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 int AttachDebugExceptionHandler(const void* info, size_t info_size) {
   std::string info_string(reinterpret_cast<const char*>(info), info_size);
   bool result = false;
@@ -231,6 +225,14 @@ void NaClListener::Listen() {
   base::RunLoop().Run();
 }
 
+#if defined(OS_LINUX)
+// static
+int NaClListener::MakeSharedMemorySegment(size_t length, int executable) {
+  return service_manager::SharedMemoryIPCSupport::MakeSharedMemorySegment(
+      length, executable);
+}
+#endif
+
 bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClListener, msg)
@@ -349,7 +351,7 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
 #endif
 
 #if defined(OS_LINUX)
-  args->create_memory_object_func = CreateMemoryObject;
+  args->create_memory_object_func = &MakeSharedMemorySegment;
 #endif
 
   DCHECK(params.process_type != nacl::kUnknownNaClProcessType);

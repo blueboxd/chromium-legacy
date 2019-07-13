@@ -20,19 +20,15 @@ namespace ui {
 AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
                int32_t id,
-               size_t index_in_parent)
+               size_t index_in_parent,
+               size_t unignored_index_in_parent)
     : tree_(tree),
       index_in_parent_(index_in_parent),
+      unignored_index_in_parent_(unignored_index_in_parent),
       unignored_child_count_(0),
       parent_(parent),
       language_info_(nullptr) {
   data_.id = id;
-  // If this node is the root, use the given index_in_parent to provide
-  // consistency.
-  if (!parent)
-    unignored_index_in_parent_ = index_in_parent_;
-  else
-    unignored_index_in_parent_ = 0;
 }
 
 AXNode::~AXNode() = default;
@@ -47,19 +43,11 @@ AXNodeData&& AXNode::TakeData() {
 
 AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
   size_t count = 0;
-  for (AXNode* child : children_) {
-    DCHECK_LE(count, index);
-    size_t child_count = 1;
-    if (child->data().HasState(ax::mojom::State::kIgnored)) {
-      child_count = child->GetUnignoredChildCount();
-      if (index < count + child_count)
-        return child->GetUnignoredChildAtIndex(index - count);
-    } else if (count == index) {
-      return child;
-    }
-    count += child_count;
+  for (auto it = UnignoredChildrenBegin(); it != UnignoredChildrenEnd(); ++it) {
+    if (count == index)
+      return it.get();
+    ++count;
   }
-
   return nullptr;
 }
 
@@ -71,8 +59,80 @@ AXNode* AXNode::GetUnignoredParent() const {
 }
 
 size_t AXNode::GetUnignoredIndexInParent() const {
-  DCHECK(!data().HasState(ax::mojom::State::kIgnored));
   return unignored_index_in_parent_;
+}
+
+AXNode* AXNode::GetFirstUnignoredChild() const {
+  return ComputeFirstUnignoredChildRecursive();
+}
+
+AXNode* AXNode::GetLastUnignoredChild() const {
+  return ComputeLastUnignoredChildRecursive();
+}
+
+AXNode* AXNode::GetNextUnignoredSibling() const {
+  AXNode* parent_node = parent();
+  size_t index = index_in_parent() + 1;
+  while (parent_node) {
+    if (index < parent_node->children().size()) {
+      AXNode* child = parent_node->children()[index];
+      if (!child->data().HasState(ax::mojom::State::kIgnored))
+        return child;  // valid position (unignored child)
+
+      // If the node is ignored, drill down to the ignored node's first child.
+      parent_node = child;
+      index = 0;
+    } else {
+      // If the parent is not ignored and we are past all of its children, there
+      // is no next sibling.
+      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+        return nullptr;
+
+      // If the parent is ignored and we are past all of its children, continue
+      // on to the parent's next sibling.
+      index = parent_node->index_in_parent() + 1;
+      parent_node = parent_node->parent();
+    }
+  }
+  return nullptr;
+}
+
+AXNode* AXNode::GetPreviousUnignoredSibling() const {
+  AXNode* parent_node = parent();
+  bool before_first_child = index_in_parent() <= 0;
+  size_t index = index_in_parent() - 1;
+  while (parent_node) {
+    if (!before_first_child) {
+      AXNode* child = parent_node->children()[index];
+      if (!child->data().HasState(ax::mojom::State::kIgnored))
+        return child;  // valid position (unignored child)
+
+      // If the node is ignored, drill down to the ignored node's last child.
+      parent_node = child;
+      before_first_child = parent_node->children().size() == 0;
+      index = parent_node->children().size() - 1;
+    } else {
+      // If the parent is not ignored and we are past all of its children, there
+      // is no next sibling.
+      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+        return nullptr;
+
+      // If the parent is ignored and we are past all of its children, continue
+      // on to the parent's previous sibling.
+      before_first_child = parent_node->index_in_parent() == 0;
+      index = parent_node->index_in_parent() - 1;
+      parent_node = parent_node->parent();
+    }
+  }
+  return nullptr;
+}
+
+AXNode::UnignoredChildIterator AXNode::UnignoredChildrenBegin() const {
+  return UnignoredChildIterator(this, GetFirstUnignoredChild());
+}
+
+AXNode::UnignoredChildIterator AXNode::UnignoredChildrenEnd() const {
+  return UnignoredChildIterator(this, nullptr);
 }
 
 bool AXNode::IsText() const {
@@ -698,6 +758,35 @@ AXNode* AXNode::GetOrderedSet() const {
     result = result->parent();
   }
   return result;
+}
+
+AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
+  if (children().size() == 0)
+    return nullptr;
+
+  for (size_t i = children().size() - 1; i >= 0; --i) {
+    AXNode* child = children_[i];
+    if (!child->data().HasState(ax::mojom::State::kIgnored))
+      return child;
+
+    AXNode* descendant = child->ComputeLastUnignoredChildRecursive();
+    if (descendant)
+      return descendant;
+  }
+  return nullptr;
+}
+
+AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
+  for (size_t i = 0; i < children().size(); i++) {
+    AXNode* child = children_[i];
+    if (!child->data().HasState(ax::mojom::State::kIgnored))
+      return child;
+
+    AXNode* descendant = child->ComputeFirstUnignoredChildRecursive();
+    if (descendant)
+      return descendant;
+  }
+  return nullptr;
 }
 
 }  // namespace ui

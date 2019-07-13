@@ -37,6 +37,7 @@
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
+#include "cc/trees/frame_sequence_tracker.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -157,6 +158,9 @@ class LayerTreeHostImplClient {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) = 0;
+
+  // Returns whether the main-thread is expected to receive a BeginMainFrame.
+  virtual bool IsBeginMainFrameExpected() = 0;
 
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
@@ -330,7 +334,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   virtual void WillSendBeginMainFrame() {}
-  virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {}
+  virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args);
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
@@ -1197,6 +1201,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 
+  // Tracks whether a BeginMainFrame is expected to be dispatched during an
+  // 'impl frame' (i.e. between WillBeginImplFrame() and DidFinishImplFrame()),
+  // and whether it was actually dispatched during the impl frame.
+  bool begin_main_frame_expected_during_impl_ = false;
+  bool begin_main_frame_sent_during_impl_ = false;
+
   ImageAnimationController image_animation_controller_;
 
   std::unique_ptr<UkmManager> ukm_manager_;
@@ -1223,6 +1233,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Manages composited scrollbar hit testing.
   std::unique_ptr<ScrollbarController> scrollbar_controller_;
+
+  FrameSequenceTrackerCollection frame_trackers_;
+  std::unique_ptr<FrameSequenceTracker> pinch_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> scroll_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> compositor_animation_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> request_animation_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> main_thread_animation_frame_tracker_;
 
   // Set to true when a scroll gesture being handled on the compositor has
   // ended. i.e. When a GSE has arrived and any ongoing scroll animation has

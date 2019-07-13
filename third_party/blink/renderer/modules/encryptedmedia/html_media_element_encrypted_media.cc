@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 
 #include "base/macros.h"
+#include "media/base/eme_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -392,7 +393,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
 }
 
 // Create a MediaEncryptedEvent for WD EME.
-static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
+static Event* CreateEncryptedEvent(media::EmeInitDataType init_data_type,
                                    const unsigned char* init_data,
                                    unsigned init_data_length) {
   MediaEncryptedEventInit* initializer = MediaEncryptedEventInit::Create();
@@ -407,7 +408,7 @@ static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
 }
 
 void HTMLMediaElementEncryptedMedia::Encrypted(
-    WebEncryptedMediaInitDataType init_data_type,
+    media::EmeInitDataType init_data_type,
     const unsigned char* init_data,
     unsigned init_data_length) {
   DVLOG(EME_LOG_LEVEL) << __func__;
@@ -418,8 +419,7 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
   } else {
     // Current page is not allowed to see content from the media file,
     // so don't return the initData. However, they still get an event.
-    event = CreateEncryptedEvent(WebEncryptedMediaInitDataType::kUnknown,
-                                 nullptr, 0);
+    event = CreateEncryptedEvent(media::EmeInitDataType::UNKNOWN, nullptr, 0);
     media_element_->GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning,

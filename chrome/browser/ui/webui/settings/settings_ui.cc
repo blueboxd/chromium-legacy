@@ -215,8 +215,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<ImportDataHandler>());
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  // TODO(jamescook): Sort out how language is split between Chrome OS and
-  // and browser settings.
   AddSettingsPageUIHandler(std::make_unique<LanguagesHandler>(web_ui));
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
@@ -305,6 +303,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif
 
 #if defined(OS_CHROMEOS)
+  // This is the browser settings page.
+  html_source->AddBoolean("isOSSettings", false);
+  // If false, hides OS-specific settings (like networks) in browser settings.
   html_source->AddBoolean(
       "showOSSettings",
       !base::FeatureList::IsEnabled(chromeos::features::kSplitSettings));

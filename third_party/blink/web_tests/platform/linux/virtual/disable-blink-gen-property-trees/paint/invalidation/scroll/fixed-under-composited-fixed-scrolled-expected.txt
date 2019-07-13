@@ -37,18 +37,6 @@
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='fixed-container'",
-          "rect": [0, 0, 785, 600],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='fixed-container'",
-          "rect": [0, 0, 785, 600],
-          "reason": "disappeared"
-        }
-      ],
       "transform": 1
     }
   ],

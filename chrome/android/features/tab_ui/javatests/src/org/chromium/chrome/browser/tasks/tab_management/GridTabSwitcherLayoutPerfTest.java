@@ -238,7 +238,8 @@ public class GridTabSwitcherLayoutPerfTest {
             mGtsLayout.setPerfListenerForTesting(null);
             // Make sure the fading animation is done.
             Thread.sleep(1000);
-            TestThreadUtils.runOnUiThreadBlocking(() -> gts.getGridController().hideOverview(true));
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { gts.getGridController().onBackPressed(); });
             Thread.sleep(1000);
             CriteriaHelper.pollInstrumentationThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),

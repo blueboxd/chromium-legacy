@@ -127,23 +127,29 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
     DirectCompositionChildSurfaceWin* root_surface) {
   TRACE_EVENT1("gpu", "DCLayerTree::CommitAndClearPendingOverlays",
                "num_pending_overlays", pending_overlays_.size());
-  DCHECK(!needs_commit_);
+  DCHECK(!needs_rebuild_visual_tree_);
+  bool needs_commit = false;
   // Check if root surface visual needs a commit first.
   if (!root_surface_visual_) {
     dcomp_device_->CreateVisual(&root_surface_visual_);
-    needs_commit_ = true;
+    needs_rebuild_visual_tree_ = true;
   }
 
   if (root_surface->swap_chain() != root_swap_chain_ ||
-      root_surface->dcomp_surface() != root_dcomp_surface_ ||
-      root_surface->dcomp_surface_serial() != root_dcomp_surface_serial_) {
+      root_surface->dcomp_surface() != root_dcomp_surface_) {
     root_swap_chain_ = root_surface->swap_chain();
     root_dcomp_surface_ = root_surface->dcomp_surface();
-    root_dcomp_surface_serial_ = root_surface->dcomp_surface_serial();
     root_surface_visual_->SetContent(
         root_swap_chain_ ? static_cast<IUnknown*>(root_swap_chain_.Get())
                          : static_cast<IUnknown*>(root_dcomp_surface_.Get()));
-    needs_commit_ = true;
+    needs_rebuild_visual_tree_ = true;
+  }
+
+  // dcomp_surface data is updated. But visual tree is not affected.
+  // Just needs a commit.
+  if (root_surface->dcomp_surface_serial() != root_dcomp_surface_serial_) {
+    root_dcomp_surface_serial_ = root_surface->dcomp_surface_serial();
+    needs_commit = true;
   }
 
   std::vector<std::unique_ptr<ui::DCRendererLayerParams>> overlays;
@@ -171,7 +177,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
       }
     }
     video_swap_chains_.swap(new_video_swap_chains);
-    needs_commit_ = true;
+    needs_rebuild_visual_tree_ = true;
   }
 
   // Present to each swap chain.
@@ -184,9 +190,12 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
   }
 
   // Rebuild visual tree and commit if any visual changed.
-  if (needs_commit_) {
-    TRACE_EVENT0("gpu", "DCLayerTree::CommitAndClearPendingOverlays::Commit");
-    needs_commit_ = false;
+  // Note: needs_rebuild_visual_tree_ might be set in this function and in
+  // SetNeedsRebuildVisualTree() during video_swap_chain->PresentToSwapChain()
+  if (needs_rebuild_visual_tree_) {
+    TRACE_EVENT0(
+        "gpu", "DCLayerTree::CommitAndClearPendingOverlays::ReBuildVisualTree");
+    needs_rebuild_visual_tree_ = false;
     dcomp_root_visual_->RemoveAllVisuals();
 
     // Add layers with negative z-order first.
@@ -210,7 +219,11 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
       IDCompositionVisual2* visual = video_swap_chains_[i]->visual().Get();
       dcomp_root_visual_->AddVisual(visual, FALSE, nullptr);
     }
+    needs_commit = true;
+  }
 
+  if (needs_commit) {
+    TRACE_EVENT0("gpu", "DCLayerTree::CommitAndClearPendingOverlays::Commit");
     HRESULT hr = dcomp_device_->Commit();
     if (FAILED(hr)) {
       DLOG(ERROR) << "Commit failed with error 0x" << std::hex << hr;

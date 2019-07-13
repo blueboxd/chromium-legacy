@@ -13,6 +13,7 @@ from .idl_types import RecordType
 from .idl_types import SequenceType
 from .idl_types import SimpleType
 from .idl_types import UnionType
+from .idl_types import VariadicType
 
 
 class IdlTypesTest(unittest.TestCase):
@@ -36,21 +37,37 @@ class IdlTypesTest(unittest.TestCase):
 
         short_type = SimpleType('short')
         string_type = SimpleType('DOMString')
-        ext_attrs = ExtendedAttributes([ExtendedAttribute('Clamp')])
         self.assertTrue(PromiseType(short_type).is_promise)
         self.assertTrue(RecordType(short_type, string_type).is_record)
         self.assertTrue(SequenceType(short_type).is_sequence)
         self.assertTrue(FrozenArrayType(short_type).is_frozen_array)
         self.assertTrue(UnionType([short_type, string_type]).is_union)
         self.assertTrue(NullableType(short_type).is_nullable)
-        self.assertFalse(NullableType(short_type).is_numeric)
-        annotated_type = SimpleType('short', extended_attributes=ext_attrs)
-        self.assertTrue(annotated_type.is_annotated)
-        self.assertTrue(annotated_type.is_numeric)
+        self.assertTrue(VariadicType(short_type).is_variadic)
 
         self.assertFalse(SimpleType('long').is_string)
         self.assertFalse(SimpleType('DOMString').is_object)
         self.assertFalse(SimpleType('symbol').is_string)
+
+        self.assertFalse(NullableType(short_type).is_numeric)
+        self.assertFalse(VariadicType(short_type).is_numeric)
+        self.assertTrue(NullableType(short_type).inner_type.is_numeric)
+        self.assertTrue(VariadicType(short_type).element_type.is_numeric)
+
+        ext_attrs = ExtendedAttributes([ExtendedAttribute('Clamp')])
+        annotated_type = SimpleType('short', extended_attributes=ext_attrs)
+        self.assertTrue(annotated_type.is_annotated)
+        self.assertTrue(annotated_type.is_numeric)
+
+        optional_type = SimpleType('DOMString', is_optional=True)
+        self.assertTrue(optional_type.is_optional)
+        self.assertTrue(optional_type.is_string)
+
+        annotated_optional = SimpleType(
+            'long', is_optional=True, extended_attributes=ext_attrs)
+        self.assertTrue(annotated_optional.is_annotated)
+        self.assertTrue(annotated_optional.is_optional)
+        self.assertTrue(annotated_optional.is_numeric)
 
     def test_type_name(self):
         type_names = {

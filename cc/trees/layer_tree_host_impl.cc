@@ -428,10 +428,21 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   mutator_host_->SetMutatorHostClient(nullptr);
 }
 
+void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
+  if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME)
+    begin_main_frame_sent_during_impl_ = true;
+  frame_trackers_.NotifyBeginMainFrame(args);
+}
+
 void LayerTreeHostImpl::BeginMainFrameAborted(
     CommitEarlyOutReason reason,
     std::vector<std::unique_ptr<SwapPromise>> swap_promises,
     const viz::BeginFrameArgs& args) {
+  if (reason == CommitEarlyOutReason::ABORTED_NOT_VISIBLE ||
+      reason == CommitEarlyOutReason::FINISHED_NO_UPDATES) {
+    frame_trackers_.NotifyMainFrameCausedNoDamage(args);
+  }
+
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
@@ -485,6 +496,18 @@ void LayerTreeHostImpl::CommitComplete() {
 
   UpdateSyncTreeAfterCommitOrImplSideInvalidation();
   micro_benchmark_controller_.DidCompleteCommit();
+
+  if (mutator_host_->CurrentFrameHadRAF() &&
+      !request_animation_frame_tracker_) {
+    request_animation_frame_tracker_ =
+        frame_trackers_.CreateTracker(FrameSequenceTrackerType::kRAF);
+  }
+
+  if (mutator_host_->MainThreadAnimationsCount() > 0 &&
+      !main_thread_animation_frame_tracker_) {
+    main_thread_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+        FrameSequenceTrackerType::kMainThreadAnimation);
+  }
 }
 
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
@@ -1900,6 +1923,7 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
+  frame_trackers_.NotifyFramePresented(frame_token, feedback);
   PresentationTimeCallbackBuffer::PendingCallbacks activated =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
@@ -1917,6 +1941,7 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {
   skipped_frame_tracker_.WillNotProduceFrame();
+  frame_trackers_.NotifyPauseFrameProduction();
 }
 
 void LayerTreeHostImpl::ReclaimResources(
@@ -2160,6 +2185,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (frame->has_no_damage) {
     DCHECK(!resourceless_software_draw_);
 
+    frame_trackers_.NotifyImplFrameCausedNoDamage(frame->begin_frame_ack);
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
@@ -2173,6 +2199,21 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
+
+  frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
+                                    frame->begin_frame_ack,
+                                    frame->origin_begin_main_frame_args);
+  if (request_animation_frame_tracker_ &&
+      !mutator_host_->NextFrameHasPendingRAF()) {
+    frame_trackers_.ScheduleRemoval(
+        std::move(request_animation_frame_tracker_));
+  }
+
+  if (main_thread_animation_frame_tracker_ &&
+      mutator_host_->MainThreadAnimationsCount() == 0) {
+    frame_trackers_.ScheduleRemoval(
+        std::move(main_thread_animation_frame_tracker_));
+  }
 
   // Clears the list of swap promises after calling DidSwap on each of them to
   // signal that the swap is over.
@@ -2523,6 +2564,10 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
 bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
   current_begin_frame_tracker_.Start(args);
+  frame_trackers_.NotifyBeginImplFrame(args);
+
+  begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
+  begin_main_frame_sent_during_impl_ = false;
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -2566,6 +2611,18 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 }
 
 void LayerTreeHostImpl::DidFinishImplFrame() {
+  if (!begin_main_frame_sent_during_impl_ &&
+      !begin_main_frame_expected_during_impl_) {
+    // A begin-main-frame was never dispatched for this BeginFrameArgs, and one
+    // was not expected to be dispatched either. So notify the trackers of the
+    // begin-main-frame, and not to expect any updates from it. This is
+    // necessary to make sure the trackers can correctly know which frames were
+    // not expected to produce any updates.
+    frame_trackers_.NotifyBeginMainFrame(
+        current_begin_frame_tracker_.Current());
+    frame_trackers_.NotifyMainFrameCausedNoDamage(
+        current_begin_frame_tracker_.Current());
+  }
   skipped_frame_tracker_.FinishFrame();
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
@@ -3416,6 +3473,14 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
 
   bool all_resources_are_lost = layer_tree_frame_sink_->context_provider();
 
+  // Destroy the submit-frame trackers before destroying the frame sink.
+  pinch_frame_tracker_ = nullptr;
+  scroll_frame_tracker_ = nullptr;
+  compositor_animation_frame_tracker_ = nullptr;
+  request_animation_frame_tracker_ = nullptr;
+  main_thread_animation_frame_tracker_ = nullptr;
+  frame_trackers_.ClearAll();
+
   // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
   // pointer as this surface is going to be destroyed independent of if binding
   // the new LayerTreeFrameSink succeeds or not.
@@ -3817,6 +3882,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     scroll_status.bubble = true;
   }
 
+  scroll_frame_tracker_ = frame_trackers_.CreateTracker(
+      wheel_scrolling_ ? FrameSequenceTrackerType::kWheelScroll
+                       : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -4892,6 +4960,7 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
   ClearCurrentlyScrollingNode();
+  frame_trackers_.ScheduleRemoval(std::move(scroll_frame_tracker_));
 }
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
@@ -5025,6 +5094,8 @@ void LayerTreeHostImpl::PinchGestureBegin() {
                        OuterViewportScrollNode() ? false : true);
   active_tree_->SetCurrentlyScrollingNode(OuterViewportScrollNode());
   browser_controls_offset_manager_->PinchBegin();
+  pinch_frame_tracker_ =
+      frame_trackers_.CreateTracker(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -5057,6 +5128,7 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   // scales that we want when we're not inside a pinch.
   active_tree_->set_needs_update_draw_properties();
   SetNeedsRedraw();
+  frame_trackers_.ScheduleRemoval(std::move(pinch_frame_tracker_));
 }
 
 void LayerTreeHostImpl::CollectScrollDeltas(
@@ -5235,8 +5307,17 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   // TODO(crbug.com/551138): We currently have a single signal from the
   // animation_host, so on the last frame of an animation we will
   // still request an extra SetNeedsAnimate here.
-  if (animated)
+  if (animated) {
     SetNeedsOneBeginImplFrame();
+    if (!compositor_animation_frame_tracker_) {
+      compositor_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+          FrameSequenceTrackerType::kCompositorAnimation);
+    }
+  } else {
+    frame_trackers_.ScheduleRemoval(
+        std::move(compositor_animation_frame_tracker_));
+  }
+
   // TODO(crbug.com/551138): We could return true only if the animaitons are on
   // the active tree. There's no need to cause a draw to take place from
   // animations starting/ticking on the pending tree.

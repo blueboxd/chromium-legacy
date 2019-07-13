@@ -57,6 +57,8 @@ import java.util.Map;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    private static final int INVALID_INDEX = -1;
+
     private boolean mVisible;
     private boolean mShownIPH;
 
@@ -168,15 +170,21 @@ class TabListMediator {
     public interface SelectionDelegateProvider { SelectionDelegate getSelectionDelegate(); }
 
     /**
-     * An interface to get the onClickListener for opening dialog when click on a grid card.
+     * An interface to get the onClickListener when clicking on a grid card.
      */
-    public interface GridCardOnClickListenerProvider {
+    interface GridCardOnClickListenerProvider {
         /**
-         * @return {@link TabActionListener} to open tabgrid dialog. If the given {@link Tab} is not
-         * able to create group, return null;
+         * @return {@link TabActionListener} to open Tab Grid dialog.
+         * If the given {@link Tab} is not able to create group, return null;
          */
         @Nullable
-        TabActionListener getGridCardOnClickListener(Tab tab);
+        TabActionListener openTabGridDialog(Tab tab);
+
+        /**
+         * Run additional actions on tab selection.
+         * @param tabId The ID of selected {@link Tab}.
+         */
+        void onTabSelecting(int tabId);
     }
 
     @IntDef({TabClosedFrom.TAB_STRIP, TabClosedFrom.TAB_GRID_SHEET, TabClosedFrom.GRID_TAB_SWITCHER,
@@ -207,17 +215,19 @@ class TabListMediator {
     private boolean mActionsOnAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
     private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
+    private int mNextTabIndex = INVALID_INDEX;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
         public void run(int tabId) {
             Tab currentTab = mTabModelSelector.getCurrentTab();
 
-            int newIndex =
-                    TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId);
-            mTabModelSelector.getCurrentModel().setIndex(newIndex, TabSelectionType.FROM_USER);
+            mNextTabIndex = TabModelUtils.getTabIndexById(
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                    tabId);
 
-            Tab newlySelectedTab = mTabModelSelector.getCurrentTab();
+            Tab newlySelectedTab =
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
 
             if (!mActionsOnAllRelatedTabs) {
                 // We filtered the tab switching related metric for components that takes actions on
@@ -231,6 +241,13 @@ class TabListMediator {
                 //     same tab as before entering the component, and we don't have this information
                 //     here.
                 recordUserSwitchedTab(currentTab, newlySelectedTab);
+            }
+            if (mGridCardOnClickListenerProvider != null) {
+                mGridCardOnClickListenerProvider.onTabSelecting(tabId);
+            } else {
+                mTabModelSelector.getCurrentModel().setIndex(
+                        TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId),
+                        TabSelectionType.FROM_USER);
             }
         }
 
@@ -358,6 +375,7 @@ class TabListMediator {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
+                mNextTabIndex = INVALID_INDEX;
                 if (tab.getId() == lastId) return;
                 int oldIndex = mModel.indexFromId(lastId);
                 if (oldIndex != TabModel.INVALID_TAB_INDEX) {
@@ -748,11 +766,15 @@ class TabListMediator {
         }
 
         TabActionListener tabSelectedListener;
-        if (mGridCardOnClickListenerProvider == null
-                || getRelatedTabsForId(tab.getId()).size() == 1) {
+        if (mGridCardOnClickListenerProvider == null || getRelatedTabsForId(tab.getId()).size() == 1
+                || !mActionsOnAllRelatedTabs) {
             tabSelectedListener = mTabSelectedListener;
         } else {
-            tabSelectedListener = mGridCardOnClickListenerProvider.getGridCardOnClickListener(tab);
+            tabSelectedListener = mGridCardOnClickListenerProvider.openTabGridDialog(tab);
+
+            if (tabSelectedListener == null) {
+                tabSelectedListener = mTabSelectedListener;
+            }
         }
         mModel.get(index).set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
         mModel.get(index).set(
@@ -840,11 +862,15 @@ class TabListMediator {
             showIPH = getRelatedTabsForId(tab.getId()).size() > 1;
         }
         TabActionListener tabSelectedListener;
-        if (mGridCardOnClickListenerProvider == null
-                || getRelatedTabsForId(tab.getId()).size() == 1) {
+        if (mGridCardOnClickListenerProvider == null || getRelatedTabsForId(tab.getId()).size() == 1
+                || !mActionsOnAllRelatedTabs) {
             tabSelectedListener = mTabSelectedListener;
         } else {
-            tabSelectedListener = mGridCardOnClickListenerProvider.getGridCardOnClickListener(tab);
+            tabSelectedListener = mGridCardOnClickListenerProvider.openTabGridDialog(tab);
+
+            if (tabSelectedListener == null) {
+                tabSelectedListener = mTabSelectedListener;
+            }
         }
 
         PropertyModel tabInfo =
@@ -907,5 +933,10 @@ class TabListMediator {
                     mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
         }
         return createGroupButtonOnClickListener;
+    }
+
+    int indexOfSelected() {
+        if (mNextTabIndex != INVALID_INDEX) return mNextTabIndex;
+        return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
     }
 }

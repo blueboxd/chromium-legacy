@@ -1292,7 +1292,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_firstChild(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetChild(0))
+  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetFirstChild())
               ->NewReference();
   return S_OK;
 }
@@ -1311,8 +1311,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_lastChild(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetChild(owner()->PlatformChildCount() - 1))
+  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetLastChild())
               ->NewReference();
   return S_OK;
 }
@@ -1331,9 +1330,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_previousSibling(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetParent()->InternalGetChild(
-                  GetIndexInParent() - 1))
+  *node = ToBrowserAccessibilityComWin(owner()->InternalGetPreviousSibling())
               ->NewReference();
   return S_OK;
 }
@@ -1355,9 +1352,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nextSibling(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetParent()->InternalGetChild(
-                  GetIndexInParent() + 1))
+  *node = ToBrowserAccessibilityComWin(owner()->InternalGetNextSibling())
               ->NewReference();
   return S_OK;
 }
@@ -1650,8 +1645,10 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
   }
 
   int start_offset = 0;
-  for (size_t i = 0; i < owner()->PlatformChildCount(); ++i) {
-    auto* child = ToBrowserAccessibilityComWin(owner()->PlatformGetChild(i));
+  for (BrowserAccessibility::PlatformChildIterator it =
+           owner()->PlatformChildrenBegin();
+       it != owner()->PlatformChildrenEnd(); ++it) {
+    auto* child = ToBrowserAccessibilityComWin(it.get());
     DCHECK(child);
     std::vector<base::string16> attributes(child->ComputeTextAttributes());
 
@@ -2027,8 +2024,8 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
     int start_offset = 0;
     for (BrowserAccessibility* static_text =
              BrowserAccessibilityManager::NextTextOnlyObject(
-                 owner()->InternalGetChild(0));
-         static_text; static_text = static_text->GetNextSibling()) {
+                 owner()->InternalGetFirstChild());
+         static_text; static_text = static_text->InternalGetNextSibling()) {
       auto* text_win = ToBrowserAccessibilityComWin(static_text);
       if (text_win) {
         std::map<int, std::vector<base::string16>> text_spelling_attributes =

@@ -48,9 +48,10 @@ class BrowserAccessibilityCocoaBrowserTest : public ContentBrowserTest {
                                           ax::mojom::Role role) {
     if (node.GetRole() == role)
       return &node;
-    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      BrowserAccessibility* result =
-          FindNodeInSubtree(*node.PlatformGetChild(i), role);
+    for (BrowserAccessibility::PlatformChildIterator it =
+             node.PlatformChildrenBegin();
+         it != node.PlatformChildrenEnd(); ++it) {
+      BrowserAccessibility* result = FindNodeInSubtree(*it, role);
       if (result)
         return result;
     }

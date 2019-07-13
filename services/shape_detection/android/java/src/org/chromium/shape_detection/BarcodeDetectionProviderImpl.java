@@ -6,7 +6,6 @@ package org.chromium.shape_detection;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.vision.barcode.Barcode;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -16,6 +15,7 @@ import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionProvider;
 import org.chromium.shape_detection.mojom.BarcodeDetectorOptions;
+import org.chromium.shape_detection.mojom.BarcodeFormat;
 
 /**
  * Service provider to create BarcodeDetection services
@@ -33,9 +33,14 @@ public class BarcodeDetectionProviderImpl implements BarcodeDetectionProvider {
 
     @Override
     public void enumerateSupportedFormats(EnumerateSupportedFormatsResponse callback) {
-        int[] supportedFormats = {Barcode.AZTEC, Barcode.CODE_128, Barcode.CODE_39, Barcode.CODE_93,
-                Barcode.CODABAR, Barcode.DATA_MATRIX, Barcode.EAN_13, Barcode.EAN_8, Barcode.ITF,
-                Barcode.PDF417, Barcode.QR_CODE, Barcode.UPC_A, Barcode.UPC_E};
+        // Keep this list in sync with the constants defined in
+        // com.google.android.gms.vision.barcode.Barcode and the format hints
+        // supported by BarcodeDetectionImpl.
+        int[] supportedFormats = {BarcodeFormat.AZTEC, BarcodeFormat.CODE_128,
+                BarcodeFormat.CODE_39, BarcodeFormat.CODE_93, BarcodeFormat.CODABAR,
+                BarcodeFormat.DATA_MATRIX, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+                BarcodeFormat.ITF, BarcodeFormat.PDF417, BarcodeFormat.QR_CODE, BarcodeFormat.UPC_A,
+                BarcodeFormat.UPC_E};
         callback.call(supportedFormats);
     }
 

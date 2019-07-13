@@ -54,6 +54,7 @@
  *   KEYBOARD: (undefined|!settings.Route),
  *   KNOWN_NETWORKS: (undefined|!settings.Route),
  *   LANGUAGES: (undefined|!settings.Route),
+ *   LANGUAGES_DETAILS: (undefined|!settings.Route),
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
@@ -436,7 +437,13 @@ cr.define('settings', function() {
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
       // <if expr="chromeos">
-      r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
+      if (loadTimeData.getBoolean('isOSSettings')) {
+        r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
+        r.INPUT_METHODS =
+            r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
+      } else {
+        r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
+      }
       // </if>
       // <if expr="not is_macosx">
       r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');

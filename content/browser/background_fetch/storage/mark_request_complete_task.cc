@@ -16,7 +16,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/fetch/fetch_api_request_proto.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
@@ -196,8 +196,7 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
   completed_request_.set_unique_id(registration_id_.unique_id());
   completed_request_.set_request_index(request_info_->request_index());
   completed_request_.set_serialized_request(
-      ServiceWorkerUtils::SerializeFetchRequestToString(
-          *(request_info_->fetch_request())));
+      SerializeFetchRequestToString(*(request_info_->fetch_request())));
   completed_request_.set_download_guid(request_info_->download_guid());
   completed_request_.set_failure_reason(failure_reason_);
 

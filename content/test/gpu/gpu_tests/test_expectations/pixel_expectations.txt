@@ -219,3 +219,6 @@ crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLTransparentGree
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+
+# Flakily produces a ~50% blank image
+crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ RetryOnFailure ]

@@ -55,7 +55,6 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/native_ip_synthesizer.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -1022,11 +1021,7 @@ void ChromotingInstance::Disconnect() {
 
 void ChromotingInstance::UpdateNetConfigAndConnect(
     const base::DictionaryValue& data) {
-  // We can't bind HandleConnect() directly because base::DictionaryValue has
-  // no copy constructor. CreateDeepCopy() returns a unique_ptr.
-  protocol::RefreshNativeIpSynthesizer(
-      base::BindOnce(&ChromotingInstance::OnNetConfigUpdated,
-                     weak_factory_.GetWeakPtr(), data.CreateDeepCopy()));
+  OnNetConfigUpdated(data);
 }
 
 void ChromotingInstance::OnNetConfigUpdated(

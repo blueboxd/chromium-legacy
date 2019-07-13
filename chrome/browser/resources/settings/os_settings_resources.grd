@@ -519,6 +519,14 @@
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_SECTION_HTML"
+                 file="chromeos/os_languages_page/os_languages_section.html"
+                 type="chrome_html"
+                 allowexternalscript="true" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_SECTION_JS"
+                 file="chromeos/os_languages_page/os_languages_section.js"
+                 type="chrome_html"
+                 allowexternalscript="true" />
       <structure name="IDR_OS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_HTML"
                  file="languages_page/manage_input_methods_page.html"
                  type="chrome_html" />

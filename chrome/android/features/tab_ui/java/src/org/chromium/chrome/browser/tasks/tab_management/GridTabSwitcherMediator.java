@@ -24,6 +24,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -52,8 +54,9 @@ import java.util.List;
  * The Mediator that is responsible for resetting the tab grid based on visibility and model
  * changes.
  */
-class GridTabSwitcherMediator
-        implements GridTabSwitcher.GridController, TabListRecyclerView.VisibilityListener {
+class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
+                                         TabListRecyclerView.VisibilityListener,
+                                         TabListMediator.GridCardOnClickListenerProvider {
     // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
     // to be on the 2nd row.
     static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
@@ -79,7 +82,7 @@ class GridTabSwitcherMediator
     private final ObserverList<GridTabSwitcher.GridOverviewModeObserver> mObservers =
             new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
-    private final TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
+    private TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
             new ChromeFullscreenManager.FullscreenListener() {
                 @Override
@@ -99,6 +102,8 @@ class GridTabSwitcherMediator
             };
 
     private final CompositorViewHolder mCompositorViewHolder;
+    private Layout mLayout;
+    private GridTabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
 
@@ -144,7 +149,6 @@ class GridTabSwitcherMediator
     GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             CompositorViewHolder compositorViewHolder,
-            TabGridDialogMediator.ResetHandler tabGridDialogResetHandler,
             TabSelectionEditorCoordinator
                     .TabSelectionEditorController tabSelectionEditorController) {
         mResetHandler = resetHandler;
@@ -188,8 +192,7 @@ class GridTabSwitcherMediator
                     // Use TabSelectionType.From_USER to filter the new tab creation case.
                     if (type == TabSelectionType.FROM_USER) recordUserSwitchedTab(tab, lastId);
 
-                    hideOverview(
-                            !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+                    onTabSelecting(tab.getId());
                 }
             }
         };
@@ -220,12 +223,20 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(SHADOW_TOP_MARGIN, shadowTopMargin);
 
         mCompositorViewHolder = compositorViewHolder;
-        mTabGridDialogResetHandler = tabGridDialogResetHandler;
 
         mSoftClearTabListRunnable = mResetHandler::softCleanup;
         mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null, false);
         mHandler = new Handler();
         mTabSelectionEditorController = tabSelectionEditorController;
+    }
+
+    /**
+     * Set the handler of the Grid Dialog so that it can be directly controlled.
+     * @param tabGridDialogResetHandler The handler of the Grid Dialog
+     */
+    void setTabGridDialogResetHandler(
+            TabGridDialogMediator.ResetHandler tabGridDialogResetHandler) {
+        mTabGridDialogResetHandler = tabGridDialogResetHandler;
     }
 
     private int getSoftCleanupDelay() {
@@ -333,6 +344,12 @@ class GridTabSwitcherMediator
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(false);
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+
+        if (mTabGridDialogResetHandler != null) {
+            // Don't wait until didSelectTab(), which is after the GTS animation.
+            // We need to hide the dialog immediately.
+            mTabGridDialogResetHandler.hideDialog(false);
+        }
     }
 
     boolean prepareOverview() {
@@ -401,7 +418,7 @@ class GridTabSwitcherMediator
 
         recordUserSwitchedTab(
                 mTabModelSelector.getCurrentTab(), mTabModelSelector.getCurrentTabId());
-        hideOverview(!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+        onTabSelecting(mTabModelSelector.getCurrentTabId());
         return true;
     }
 
@@ -438,12 +455,24 @@ class GridTabSwitcherMediator
                 mTabModelObserver);
     }
 
+    void setOnTabSelectingListener(GridTabSwitcher.OnTabSelectingListener listener) {
+        mOnTabSelectingListener = listener;
+    }
+
+    @Override
     @Nullable
-    TabListMediator.TabActionListener getGridCardOnClickListener(Tab tab) {
+    public TabListMediator.TabActionListener openTabGridDialog(Tab tab) {
+        if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
+        assert getRelatedTabs(tab.getId()).size() != 1;
         return tabId -> {
             mTabGridDialogResetHandler.resetWithListOfTabs(getRelatedTabs(tabId));
         };
+    }
+
+    @Override
+    public void onTabSelecting(int tabId) {
+        mOnTabSelectingListener.onTabSelecting(LayoutManager.time(), tabId);
     }
 
     @Nullable

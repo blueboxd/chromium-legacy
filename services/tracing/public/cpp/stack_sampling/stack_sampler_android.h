@@ -6,6 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_SAMPLER_ANDROID_H_
 
 #include "base/profiler/stack_sampler.h"
+#include "base/sampling_heap_profiler/module_cache.h"
 #include "base/threading/platform_thread.h"
 #include "services/tracing/public/cpp/stack_sampling/stack_unwinder_android.h"
 
@@ -18,7 +19,8 @@ class StackSamplerAndroid : public base::StackSampler {
   // StackUnwinderAndroid only supports sampling one thread at a time. So, the
   // clients of this class must ensure synchronization between multiple
   // instances of the sampler.
-  explicit StackSamplerAndroid(base::PlatformThreadId thread_id);
+  explicit StackSamplerAndroid(base::PlatformThreadId thread_id,
+                               base::ModuleCache*);
   ~StackSamplerAndroid() override;
 
   StackSamplerAndroid(const StackSamplerAndroid&) = delete;
@@ -31,6 +33,7 @@ class StackSamplerAndroid : public base::StackSampler {
 
  private:
   base::PlatformThreadId tid_;
+  base::ModuleCache* module_cache_;
   StackUnwinderAndroid unwinder_;
 };
 

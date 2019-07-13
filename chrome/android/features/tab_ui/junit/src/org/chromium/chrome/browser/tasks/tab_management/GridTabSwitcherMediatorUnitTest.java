@@ -9,11 +9,14 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +43,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -106,6 +110,8 @@ public class GridTabSwitcherMediatorUnitTest {
     GridTabSwitcher.GridOverviewModeObserver mOverviewModeObserver;
     @Mock
     CompositorViewHolder mCompositorViewHolder;
+    @Mock
+    Layout mLayout;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -169,8 +175,9 @@ public class GridTabSwitcherMediatorUnitTest {
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new GridTabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null, null);
+                mFullscreenManager, mCompositorViewHolder, null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
+        mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
     }
 
     @After
@@ -327,7 +334,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
 
-        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
+        verify(mLayout).onTabSelecting(anyLong(), eq(TAB1_ID));
     }
 
     @Test
@@ -339,10 +346,10 @@ public class GridTabSwitcherMediatorUnitTest {
         doReturn(true).when(mTab3).isClosing();
         mTabModelObserverCaptor.getValue().didSelectTab(
                 mTab1, TabSelectionType.FROM_CLOSE, TAB3_ID);
-        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+        verify(mLayout, never()).onTabSelecting(anyLong(), anyInt());
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
-        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
+        verify(mLayout).onTabSelecting(anyLong(), eq(TAB1_ID));
     }
 
     @Test
@@ -353,10 +360,10 @@ public class GridTabSwitcherMediatorUnitTest {
 
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
-        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+        verify(mLayout, never()).onTabSelecting(anyLong(), anyInt());
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
-        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
+        verify(mLayout).onTabSelecting(anyLong(), eq(TAB1_ID));
     }
 
     private void initAndAssertAllProperties() {

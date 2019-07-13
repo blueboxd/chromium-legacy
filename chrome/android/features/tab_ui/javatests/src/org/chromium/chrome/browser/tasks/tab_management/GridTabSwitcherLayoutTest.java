@@ -218,9 +218,9 @@ public class GridTabSwitcherLayoutTest {
         for (int i = 0; i < mRepeat; i++) {
             enterGTS();
 
-            // clang-format off
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> gts.getGridController().hideOverview(false));
+                    () -> { gts.getGridController().onBackPressed(); });
+            // clang-format off
             CriteriaHelper.pollInstrumentationThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
                     "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
@@ -305,11 +305,16 @@ public class GridTabSwitcherLayoutTest {
             Espresso.onView(ViewMatchers.withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .perform(RecyclerViewActions.actionOnItemAtPosition(
                             targetIndex, ViewActions.click()));
-            // clang-format off
-            CriteriaHelper.pollUiThread(
-                    () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
-                    "Overview not hidden yet");
-            // clang-format on
+            CriteriaHelper.pollUiThread(() -> {
+                boolean doneHiding =
+                        !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
+                if (!doneHiding) {
+                    // Before overview hiding animation is done, the tab index should not change.
+                    Assert.assertEquals(
+                            index, mActivityTestRule.getActivity().getCurrentTabModel().index());
+                }
+                return doneHiding;
+            }, "Overview not hidden yet");
             int delta;
             if (switchToAnotherTab
                     && !TextUtils.equals(mActivityTestRule.getActivity()

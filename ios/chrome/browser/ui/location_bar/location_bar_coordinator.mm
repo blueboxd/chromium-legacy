@@ -21,12 +21,14 @@
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/badges/badge_mediator.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
@@ -78,6 +80,8 @@ const int kLocationAuthorizationStatusCount = 5;
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 // Coordinator for the omnibox popup.
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
+// Mediator for the badges displayed in the LocationBar.
+@property(nonatomic, strong) BadgeMediator* badgeMediator;
 // Coordinator for the omnibox.
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
@@ -157,6 +161,13 @@ const int kLocationAuthorizationStatusCount = 5;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
+  // Create BadgeMediator and set the viewController as its consumer.
+  if (IsInfobarUIRebootEnabled()) {
+    self.badgeMediator =
+        [[BadgeMediator alloc] initWithConsumer:self.viewController
+                                   webStateList:self.webStateList];
+  }
+
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
   self.mediator.webStateList = self.webStateList;
@@ -180,6 +191,7 @@ const int kLocationAuthorizationStatusCount = 5;
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];
   [self.omniboxCoordinator stop];
+  [self.badgeMediator disconnect];
   _editController.reset();
 
   self.viewController = nil;

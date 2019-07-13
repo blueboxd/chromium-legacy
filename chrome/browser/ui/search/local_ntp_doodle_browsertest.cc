@@ -48,13 +48,10 @@ namespace {
 
 const char kCachedB64[] = "\161\247\041\171\337\276";  // b64decode("cached++")
 const char kFreshB64[] = "abc";                        // b64decode("YWJj")
-const int kFakeboxTopPx = 56 + 200 + 29;  // top margin + height + bottom margin
+const int kFakeboxTopPx = 56 + 200 + 38;  // top margin + height + bottom margin
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 const char kFreshDarkB64[] = "xyz";  // b64decode("eHl6");
-const int kDarkModeFakeboxTopPx =
-    56 + 200 + 29 +
-    5;  // top margin + height + bottom margin + extra spacing in dark mode
 #endif
 
 // A base64 encoding of a tiny but valid gif file.
@@ -1495,8 +1492,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeDoodleTest,
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   WaitForFadeIn(active_tab, "logo-doodle");
-  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"),
-              Eq(kDarkModeFakeboxTopPx));
+  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
@@ -1587,8 +1583,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeDoodleTest,
 
   WaitForLogoSwap(active_tab, "logo-doodle");
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
-  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"),
-              Eq(kDarkModeFakeboxTopPx));
+  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),

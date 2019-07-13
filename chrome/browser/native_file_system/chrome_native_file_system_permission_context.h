@@ -44,7 +44,8 @@ class ChromeNativeFileSystemPermissionContext
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
-                          bool is_directory) override;
+                          bool is_directory,
+                          UserAction user_action) override;
 
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,

@@ -50,7 +50,7 @@ class DCLayerTree {
   bool InitializeVideoProcessor(const gfx::Size& input_size,
                                 const gfx::Size& output_size);
 
-  void SetNeedsCommit() { needs_commit_ = true; }
+  void SetNeedsRebuildVisualTree() { needs_rebuild_visual_tree_ = true; }
 
   bool disable_nv12_dynamic_textures() const {
     return disable_nv12_dynamic_textures_;
@@ -100,8 +100,8 @@ class DCLayerTree {
   gfx::Size video_input_size_;
   gfx::Size video_output_size_;
 
-  // Set to true if a direct composition commit is needed.
-  bool needs_commit_ = false;
+  // Set to true if a direct composition visual tree needs rebuild.
+  bool needs_rebuild_visual_tree_ = false;
 
   // Set if root surface is using a swap chain currently.
   Microsoft::WRL::ComPtr<IDXGISwapChain1> root_swap_chain_;

@@ -10,7 +10,6 @@
 -Http/MediaTest.VideoBearMp4/0
 -Http/MediaTest.VideoBearSilentMp4/0
 -Http/MediaTest.VideoTulipWebm/0
--MediaCanPlayTypeTest.CodecSupportTest_NewVp9Variants
 -MediaColorTest.Yuv420pTheora
 -MediaColorTest.Yuv420pVp8
 -MediaSessionImplBrowserTest.MetadataWhenFileUrlScheme

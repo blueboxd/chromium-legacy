@@ -271,22 +271,24 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // be used for comparison with their after layout size.
   NGBoxStrut before_layout_scrollbars =
       ComputeScrollbars(constraint_space, *this);
+  bool before_layout_preferred_logical_widths_dirty =
+      box_->PreferredLogicalWidthsDirty();
 
   if (!layout_result)
     layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
-  if (before_layout_scrollbars != ComputeScrollbars(constraint_space, *this)) {
-    // If our scrollbars have changed, we need to relayout because either:
-    // - Our size has changed (if shrinking to fit), or
-    // - Space available to our children has changed.
-    // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
-    // TODO(cbiesinger): It seems that we should also check if
-    // PreferredLogicalWidthsDirty() has changed from false to true during
-    // layout, so that we correctly size ourselves when shrinking to fit
-    // and a child gained a vertical scrollbar. However, no test fails
-    // without that check.
+  // We may need to relayout if:
+  // - Our scrollbars have changed causing our size to change (shrink-to-fit)
+  //   or the available space to our children changing.
+  // - A child changed scrollbars causing our size to change (shrink-to-fit).
+  //
+  // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
+  if ((before_layout_scrollbars !=
+       ComputeScrollbars(constraint_space, *this)) ||
+      (!before_layout_preferred_logical_widths_dirty &&
+       box_->PreferredLogicalWidthsDirty())) {
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
 
 #if DCHECK_IS_ON()

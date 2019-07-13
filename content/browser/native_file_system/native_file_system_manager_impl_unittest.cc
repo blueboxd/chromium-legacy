@@ -83,6 +83,9 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   scoped_refptr<FixedNativeFileSystemPermissionGrant> ask_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
           FixedNativeFileSystemPermissionGrant::PermissionStatus::ASK);
+  scoped_refptr<FixedNativeFileSystemPermissionGrant> allow_grant_ =
+      base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+          FixedNativeFileSystemPermissionGrant::PermissionStatus::GRANTED);
 };
 
 TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
@@ -107,7 +110,9 @@ TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
   EXPECT_CALL(permission_context_,
-              GetWritePermissionGrant(kTestOrigin, kTestPath, false))
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -122,11 +127,34 @@ TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
 }
 
 TEST_F(NativeFileSystemManagerImplTest,
+       CreateWritableFileEntryFromPath_Permissions) {
+  const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
+
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kSave))
+      .WillOnce(testing::Return(allow_grant_));
+
+  blink::mojom::NativeFileSystemEntryPtr entry =
+      manager_->CreateWritableFileEntryFromPath(kBindingContext, kTestPath);
+  blink::mojom::NativeFileSystemFileHandlePtr handle(
+      std::move(entry->entry_handle->get_file()));
+
+  EXPECT_EQ(PermissionStatus::GRANTED,
+            GetPermissionStatusSync(/*writable=*/false, handle.get()));
+  EXPECT_EQ(PermissionStatus::GRANTED,
+            GetPermissionStatusSync(/*writable=*/true, handle.get()));
+}
+
+TEST_F(NativeFileSystemManagerImplTest,
        CreateDirectoryEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
   EXPECT_CALL(permission_context_,
-              GetWritePermissionGrant(kTestOrigin, kTestPath, true))
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/true,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =

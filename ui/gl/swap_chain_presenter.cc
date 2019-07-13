@@ -414,7 +414,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
     dcomp_device_->CreateVisual(&content_visual_);
     DCHECK(content_visual_);
     clip_visual_->AddVisual(content_visual_.Get(), FALSE, nullptr);
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   }
 
   // Visual offset is applied before transform so it behaves similar to how the
@@ -436,7 +436,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
   if (visual_info_.offset != offset || visual_info_.transform != transform) {
     visual_info_.offset = offset;
     visual_info_.transform = transform;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
 
     content_visual_->SetOffsetX(offset.x());
     content_visual_->SetOffsetY(offset.y());
@@ -457,7 +457,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
       visual_info_.clip_rect != params.clip_rect) {
     visual_info_.is_clipped = params.is_clipped;
     visual_info_.clip_rect = params.clip_rect;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
     // DirectComposition clips happen in the pre-transform visual space, while
     // cc/ clips happen post-transform. So the clip needs to go on a separate
     // parent visual that's untransformed.
@@ -477,7 +477,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
 
   if (visual_info_.z_order != params.z_order) {
     visual_info_.z_order = params.z_order;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   }
 }
 
@@ -628,7 +628,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
     DCHECK(decode_surface_);
 
     content_visual_->SetContent(decode_surface_.Get());
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   } else if (last_y_image_ == image_dxgi && last_uv_image_ == image_dxgi &&
              swap_chain_size_ == swap_chain_size) {
     // Early out if we're presenting the same image again.
@@ -715,7 +715,7 @@ bool SwapChainPresenter::PresentToSwapChain(
     if (swap_chain_) {
       ReleaseSwapChainResources();
       content_visual_->SetContent(nullptr);
-      layer_tree_->SetNeedsCommit();
+      layer_tree_->SetNeedsRebuildVisualTree();
     }
     return true;
   }
@@ -746,7 +746,7 @@ bool SwapChainPresenter::PresentToSwapChain(
       return false;
     }
     content_visual_->SetContent(swap_chain_.Get());
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   } else if (last_y_image_ == params.y_image &&
              last_uv_image_ == params.uv_image) {
     // The swap chain is presenting the same images as last swap, which means

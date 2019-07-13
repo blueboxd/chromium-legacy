@@ -701,13 +701,15 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
         env, obj, info, android_node->unique_id());
     base::debug::ClearCrashKeyString(crbug_974444_crash_key);
   }
-  for (unsigned i = 0; i < node->PlatformChildCount(); ++i) {
-    auto* android_node =
-        static_cast<BrowserAccessibilityAndroid*>(node->PlatformGetChild(i));
+  unsigned child_index = 0;
+  for (BrowserAccessibility::PlatformChildIterator it =
+           node->PlatformChildrenBegin();
+       it != node->PlatformChildrenEnd(); ++it) {
+    auto* android_node = static_cast<BrowserAccessibilityAndroid*>(it.get());
     if (!android_node) {
       std::stringstream message;
-      message << base_message.str() << ", PlatformGetChild [" << i << "/"
-              << node->PlatformChildCount() << "]";
+      message << base_message.str() << ", PlatformGetChild [" << child_index
+              << "/" << node->PlatformChildCount() << "]";
       const size_t actual_unignored_child_count =
           ActualUnignoredChildCount(node->node());
       if (actual_unignored_child_count != node->PlatformChildCount()) {

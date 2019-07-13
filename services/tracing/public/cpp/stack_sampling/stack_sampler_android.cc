@@ -13,8 +13,9 @@ namespace {
 constexpr size_t kMaxFrameDepth = 48;
 }  // namespace
 
-StackSamplerAndroid::StackSamplerAndroid(base::PlatformThreadId tid)
-    : tid_(tid) {}
+StackSamplerAndroid::StackSamplerAndroid(base::PlatformThreadId tid,
+                                         base::ModuleCache* module_cache)
+    : tid_(tid), module_cache_(module_cache) {}
 
 StackSamplerAndroid::~StackSamplerAndroid() = default;
 
@@ -38,8 +39,8 @@ void StackSamplerAndroid::RecordStackFrames(
   std::vector<base::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
-    // TODO(ssid): Add support for obtaining modules here.
-    frames.emplace_back(reinterpret_cast<uintptr_t>(pcs[i]), nullptr);
+    uintptr_t address = reinterpret_cast<uintptr_t>(pcs[i]);
+    frames.emplace_back(address, module_cache_->GetModuleForAddress(address));
   }
   profile_builder->OnSampleCompleted(std::move(frames));
 }

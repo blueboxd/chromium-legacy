@@ -751,6 +751,31 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/se/log/types",
           WrapToCommand("GetLogTypes",
                         base::BindRepeating(&ExecuteGetAvailableLogTypes))),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kPost, "session/:sessionId/file",
+          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
+      // Command is used by Ruby OSS mode
+      // No W3C equivalent.
+      CommandMapping(
+          kGet, "session/:sessionId/element/:id/value",
+          WrapToCommand("GetElementValue",
+                        base::BindRepeating(&ExecuteGetElementValue),
+                        false /*w3c_standard_command*/)),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kGet, kShutdownPath,
+          base::BindRepeating(
+              &ExecuteQuitAll,
+              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
+              &session_thread_map_)),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kPost, kShutdownPath,
+          base::BindRepeating(
+              &ExecuteQuitAll,
+              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
+              &session_thread_map_)),
 
       //
       // ChromeDriver specific extension commands.
@@ -811,7 +836,8 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(&ExecuteGetIssueMessage))),
 
       //
-      // Commands of unknown origins.
+      // Commands used for internal testing only.
+      // They are used in run_py_tests.py
       //
 
       CommandMapping(kGet, "session/:sessionId/alert",
@@ -820,31 +846,17 @@ HttpHandler::HttpHandler(
                                        &ExecuteAlertCommand,
                                        base::BindRepeating(&ExecuteGetAlert)))),
       CommandMapping(
-          kPost, "session/:sessionId/file",
-          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
-      CommandMapping(
-          kGet, "session/:sessionId/element/:id/value",
-          WrapToCommand("GetElementValue",
-                        base::BindRepeating(&ExecuteGetElementValue))),
+          kGet, "session/:sessionId/is_loading",
+          WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
+
+      //
+      // Commands of unknown origins.
+      //
+
       CommandMapping(
           kPost, "session/:sessionId/element/:id/hover",
           WrapToCommand("HoverElement",
                         base::BindRepeating(&ExecuteHoverOverElement))),
-      CommandMapping(
-          kGet, kShutdownPath,
-          base::BindRepeating(
-              &ExecuteQuitAll,
-              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
-              &session_thread_map_)),
-      CommandMapping(
-          kPost, kShutdownPath,
-          base::BindRepeating(
-              &ExecuteQuitAll,
-              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
-              &session_thread_map_)),
-      CommandMapping(
-          kGet, "session/:sessionId/is_loading",
-          WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
       CommandMapping(
           kGet, "session/:sessionId/autoreport",
           WrapToCommand("IsAutoReporting",

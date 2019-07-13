@@ -176,40 +176,6 @@ void ReportPipelineError(WebMediaPlayer::LoadType load_type,
       "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError");
 }
 
-EmeInitDataType ConvertToEmeInitDataType(
-    WebEncryptedMediaInitDataType init_data_type) {
-  switch (init_data_type) {
-    case WebEncryptedMediaInitDataType::kWebm:
-      return EmeInitDataType::WEBM;
-    case WebEncryptedMediaInitDataType::kCenc:
-      return EmeInitDataType::CENC;
-    case WebEncryptedMediaInitDataType::kKeyids:
-      return EmeInitDataType::KEYIDS;
-    case WebEncryptedMediaInitDataType::kUnknown:
-      return EmeInitDataType::UNKNOWN;
-  }
-
-  NOTREACHED();
-  return EmeInitDataType::UNKNOWN;
-}
-
-WebEncryptedMediaInitDataType ConvertToWebInitDataType(
-    EmeInitDataType init_data_type) {
-  switch (init_data_type) {
-    case EmeInitDataType::WEBM:
-      return WebEncryptedMediaInitDataType::kWebm;
-    case EmeInitDataType::CENC:
-      return WebEncryptedMediaInitDataType::kCenc;
-    case EmeInitDataType::KEYIDS:
-      return WebEncryptedMediaInitDataType::kKeyids;
-    case EmeInitDataType::UNKNOWN:
-      return WebEncryptedMediaInitDataType::kUnknown;
-  }
-
-  NOTREACHED();
-  return WebEncryptedMediaInitDataType::kUnknown;
-}
-
 OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(
     WebSetSinkIdCompleteCallback callback) {
   return media::BindToCurrentLoop(

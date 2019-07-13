@@ -120,6 +120,15 @@ void AXSelection::ClearCurrentSelection(Document& document) {
 AXSelection AXSelection::FromCurrentSelection(
     const Document& document,
     const AXSelectionBehavior selection_behavior) {
+  // Previously, retrieving the selection would cause the layout to become
+  // clean, because we were using a deprecated function for retrieving the
+  // selection from the DOM tree,
+  // FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated. The layout
+  // should not be dirty in the first place, but somehow it is. While we are
+  // investigating the reasons behind this, the workaround is to restore the
+  // previous behavior by forcing the layout to  clean.
+  // TODO(nektar): Remove the following line at the earliest opportunity.
+  const_cast<Document&>(document).UpdateStyleAndLayout();
   const LocalFrame* frame = document.GetFrame();
   if (!frame)
     return {};

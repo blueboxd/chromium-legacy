@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace media {
+enum class EmeInitDataType;
+}
+
 namespace blink {
 
 constexpr const char* kEncryptedMediaFeaturePolicyConsoleWarning =
@@ -22,9 +26,9 @@ class EncryptedMediaUtils {
   STATIC_ONLY(EncryptedMediaUtils);
 
  public:
-  static WebEncryptedMediaInitDataType ConvertToInitDataType(
+  static media::EmeInitDataType ConvertToInitDataType(
       const String& init_data_type);
-  static String ConvertFromInitDataType(WebEncryptedMediaInitDataType);
+  static String ConvertFromInitDataType(media::EmeInitDataType init_data_type);
 
   static WebEncryptedMediaSessionType ConvertToSessionType(
       const String& session_type);

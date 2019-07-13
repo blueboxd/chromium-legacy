@@ -60,6 +60,7 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/hit_the_wall_desk_switch_animation.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -274,10 +275,13 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
       NOTREACHED();
   }
 
-  // TODO(afakhry): Finalize the hit-the-wall animation with UX.
-  // https://crbug.com/977434.
-  if (desk_to_activate)
+  if (desk_to_activate) {
     desks_controller->ActivateDesk(desk_to_activate);
+  } else {
+    const bool going_left = accelerator.key_code() == ui::VKEY_OEM_4;
+    for (auto* root : Shell::GetAllRootWindows())
+      PerformHitTheWallDeskSwitchAnimation(root, going_left);
+  }
 }
 
 void HandleMoveActiveItem(const ui::Accelerator& accelerator) {

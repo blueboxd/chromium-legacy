@@ -406,6 +406,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // main frame.
   virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
 
+  // Returns the transient bit of the User Activation v2 state of the
+  // FrameTreeNode associated with this RenderFrameHost.
+  virtual bool HasTransientUserActivation() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

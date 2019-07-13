@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -151,9 +152,10 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     // block-size).
     if (!child.IsFloating()) {
       const ComputedStyle& child_style = child.Style();
-      NGMarginStrut margin_strut = result->EndMarginStrut();
       NGBoxStrut child_margins = ComputeMarginsFor(
           child_style, child_available_inline_size_, writing_mode_, direction_);
+
+      NGMarginStrut margin_strut = result->EndMarginStrut();
       margin_strut.Append(child_margins.block_end,
                           child_style.HasMarginBeforeQuirk());
       static_block_offset_ += margin_strut.Sum();
@@ -184,9 +186,9 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
     NGBfcOffset origin_bfc_offset = {
         container_builder_.BfcLineOffset() +
             border_scrollbar_padding_.LineLeft(direction_),
-        (container_builder_.BfcBlockOffset()
-             ? *container_builder_.BfcBlockOffset()
-             : ConstraintSpace().BfcOffset().block_offset) +
+        container_builder_.BfcBlockOffset().value_or(
+            ConstraintSpace().ForcedBfcBlockOffset().value_or(
+                ConstraintSpace().BfcOffset().block_offset)) +
             static_block_offset_};
 
     static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
@@ -210,14 +212,51 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
       writing_mode_, direction_, previous_physical_container_size_,
       physical_child_size);
 
-  // Add the new fragemnt to the builder.
+  // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset);
 
-  // Update the static block-offset for any OOF-positioned children.
-  // Only consider inflow children (floats don't contribute to the intrinsic
-  // block-size).
-  if (!new_fragment.IsFloating())
+  if (!new_fragment.IsFloating()) {
+    // Update the static block-offset for any OOF-positioned children.
+    // Only consider inflow children (floats don't contribute to the intrinsic
+    // block-size).
     static_block_offset_ = child_offset.block_offset + child_size.block_size;
+  } else {
+    // We need to add the float to the exclusion space so that any inline-level
+    // OOF-positioned nodes can correctly determine their static-position.
+    const ComputedStyle& child_style = new_fragment.Style();
+    NGBoxStrut child_margins = ComputeMarginsFor(
+        child_style, child_available_inline_size_, writing_mode_, direction_);
+
+    LayoutUnit child_line_offset = IsLtr(direction_)
+                                       ? child_offset.inline_offset
+                                       : container_builder_.InlineSize() -
+                                             child_size.inline_size -
+                                             child_offset.inline_offset;
+
+    NGBfcOffset container_bfc_offset = {
+        container_builder_.BfcLineOffset(),
+        container_builder_.BfcBlockOffset().value_or(
+            ConstraintSpace().ForcedBfcBlockOffset().value_or(
+                ConstraintSpace().BfcOffset().block_offset))};
+
+    // Determine the offsets for the exclusion (the margin-box of the float).
+    NGBfcOffset start_offset = {
+        container_bfc_offset.line_offset + child_line_offset -
+            child_margins.LineLeft(direction_),
+        container_bfc_offset.block_offset + child_offset.block_offset -
+            child_margins.block_start};
+    NGBfcOffset end_offset = {
+        start_offset.line_offset +
+            (child_size.inline_size + child_margins.InlineSum())
+                .ClampNegativeToZero(),
+        start_offset.block_offset +
+            (child_size.block_size + child_margins.BlockSum())
+                .ClampNegativeToZero()};
+
+    exclusion_space_.Add(
+        NGExclusion::Create(NGBfcRect(start_offset, end_offset),
+                            ResolvedFloating(child_style, Style()), nullptr));
+  }
 }
 
 }  // namespace blink

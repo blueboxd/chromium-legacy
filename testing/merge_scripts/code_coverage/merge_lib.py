@@ -161,7 +161,11 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
     logging.warning('Validating and converting %r to %r failed with output: %r',
                     profraw_file, output_profdata_file, error.output)
     invalid_profraw_files.append(profraw_file)
-
+    if os.path.exists(output_profdata_file):
+      # The output file may be created before llvm-profdata determines the
+      # input is invalid. Delete it so that it does not leak and affect other
+      # merge scripts.
+      os.remove(output_profdata_file)
 
 def merge_java_exec_files(input_dir, output_path, jacococli_path):
   """Merges generated .exec files to output_path.

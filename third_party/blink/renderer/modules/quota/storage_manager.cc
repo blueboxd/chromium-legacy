@@ -39,6 +39,9 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
                                        int64_t usage_in_bytes,
                                        int64_t quota_in_bytes,
                                        UsageBreakdownPtr usage_breakdown) {
+  // Avoid crash on shutdown. crbug.com/971594
+  if (!resolver)
+    return;
   if (status_code != mojom::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.

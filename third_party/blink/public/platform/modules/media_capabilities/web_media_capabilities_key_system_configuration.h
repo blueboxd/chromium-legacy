@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_KEY_SYSTEM_CONFIGURATION_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_KEY_SYSTEM_CONFIGURATION_H_
 
+#include "media/base/eme_constants.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_media_key_system_configuration.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -20,9 +21,9 @@ struct WebMediaCapabilitiesKeySystemConfiguration {
   // is not guaranteed that the value is valid.
   WebString key_system;
 
-  // This is optional and will contain WebEncryptedMediaInitDataType::kUnknown
+  // This is optional and will contain media::EmeInitDataType::UNKNOWN
   // if invalid or not present.
-  WebEncryptedMediaInitDataType init_data_type;
+  media::EmeInitDataType init_data_type;
 
   // Robustness properties are optional and will contain the empty string if not
   // set. These values are not verified.

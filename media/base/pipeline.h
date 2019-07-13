@@ -78,8 +78,8 @@ class MEDIA_EXPORT Pipeline {
 
     // Executed whenever the underlying AudioDecoder or VideoDecoder changes
     // during playback.
-    virtual void OnAudioDecoderChange(const PipelineDecoderInfo& info) = 0;
-    virtual void OnVideoDecoderChange(const PipelineDecoderInfo& info) = 0;
+    virtual void OnAudioDecoderChange(const std::string& name) = 0;
+    virtual void OnVideoDecoderChange(const std::string& name) = 0;
   };
 
   virtual ~Pipeline() {}

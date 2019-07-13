@@ -1343,6 +1343,7 @@ customize.richerPicker_resetCustomizationMenu = function() {
  * Close and reset the customization menu.
  */
 customize.richerPicker_closeCustomizationMenu = function() {
+  $(customize.IDS.BACKGROUNDS_MENU).scrollTop = 0;
   $(customize.IDS.CUSTOMIZATION_MENU).close();
   customize.richerPicker_resetCustomizationMenu();
 

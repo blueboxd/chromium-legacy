@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/badges/badge_coordinator.h"
 
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,8 +21,10 @@
 @implementation BadgeCoordinator
 
 - (void)start {
-  self.mediator = [[BadgeMediator alloc] initWithConsumer:self.viewController
-                                             webStateList:self.webStateList];
+  if (IsInfobarUIRebootEnabled()) {
+    self.mediator = [[BadgeMediator alloc] initWithConsumer:self.viewController
+                                               webStateList:self.webStateList];
+  }
 }
 
 - (void)stop {

@@ -66,10 +66,9 @@ static bool HasListDescendant(const content::BrowserAccessibility* current,
       return true;
   }
 
-  int num_children = current->InternalChildCount();
-
-  for (int i = 0; i < num_children; ++i) {
-    if (HasListDescendant(current->InternalGetChild(i), root))
+  for (auto it = current->InternalChildrenBegin();
+       it != current->InternalChildrenEnd(); ++it) {
+    if (HasListDescendant(it.get(), root))
       return true;
   }
   return false;
@@ -403,9 +402,10 @@ BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
     return this;
 
   const BrowserAccessibilityAndroid* sole_interesting_node = nullptr;
-  for (uint32_t i = 0; i < PlatformChildCount(); ++i) {
+  for (PlatformChildIterator it = PlatformChildrenBegin();
+       it != PlatformChildrenEnd(); ++it) {
     const BrowserAccessibilityAndroid* interesting_node =
-        static_cast<const BrowserAccessibilityAndroid*>(PlatformGetChild(i))
+        static_cast<const BrowserAccessibilityAndroid*>(it.get())
             ->GetSoleInterestingNodeFromSubtree();
     if (interesting_node && sole_interesting_node) {
       // If there are two interesting nodes, return nullptr.
@@ -423,9 +423,9 @@ bool BrowserAccessibilityAndroid::AreInlineTextBoxesLoaded() const {
     return InternalChildCount() > 0;
 
   // Return false if any descendant needs to load inline text boxes.
-  for (uint32_t i = 0; i < InternalChildCount(); ++i) {
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+        static_cast<BrowserAccessibilityAndroid*>(it.get());
     if (!child->AreInlineTextBoxesLoaded())
       return false;
   }
@@ -488,9 +488,9 @@ base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
   // from within this!
   if (text.empty() && (HasOnlyTextChildren() ||
                        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
-    for (uint32_t i = 0; i < InternalChildCount(); i++) {
-      BrowserAccessibility* child = InternalGetChild(i);
-      text += static_cast<BrowserAccessibilityAndroid*>(child)->GetInnerText();
+    for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+      text +=
+          static_cast<BrowserAccessibilityAndroid*>(it.get())->GetInnerText();
     }
   }
 
@@ -1499,14 +1499,16 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
   // inline text boxes if possible.
   if (GetRole() == ax::mojom::Role::kStaticText) {
     int last_y = 0;
-    for (uint32_t i = 0; i < InternalChildCount(); i++) {
+    bool is_first = true;
+    for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
       BrowserAccessibilityAndroid* child =
-          static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+          static_cast<BrowserAccessibilityAndroid*>(it.get());
       CHECK_EQ(ax::mojom::Role::kInlineTextBox, child->GetRole());
       // TODO(dmazzoni): replace this with a proper API to determine
       // if two inline text boxes are on the same line. http://crbug.com/421771
       int y = child->GetClippedRootFrameBoundsRect().y();
-      if (i == 0) {
+      if (is_first) {
+        is_first = false;
         line_starts->push_back(offset);
       } else if (y != last_y) {
         line_ends->push_back(offset);
@@ -1520,9 +1522,9 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
   }
 
   // Otherwise, call GetLineBoundaries recursively on the children.
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+        static_cast<BrowserAccessibilityAndroid*>(it.get());
     child->GetLineBoundaries(line_starts, line_ends, offset);
     offset += child->GetInnerText().size();
   }
@@ -1545,9 +1547,9 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   }
 
   base::string16 concatenated_text;
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+        static_cast<BrowserAccessibilityAndroid*>(it.get());
     base::string16 child_text = child->GetInnerText();
     concatenated_text += child->GetInnerText();
   }
@@ -1556,9 +1558,9 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   if (text.empty() || concatenated_text == text) {
     // Great - this node is just the concatenation of its children, so
     // we can get the word boundaries recursively.
-    for (uint32_t i = 0; i < InternalChildCount(); i++) {
+    for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
       BrowserAccessibilityAndroid* child =
-          static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+          static_cast<BrowserAccessibilityAndroid*>(it.get());
       child->GetWordBoundaries(word_starts, word_ends, offset);
       offset += child->GetInnerText().size();
     }
@@ -1581,8 +1583,8 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
 bool BrowserAccessibilityAndroid::HasFocusableNonOptionChild() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
-    BrowserAccessibility* child = InternalGetChild(i);
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    BrowserAccessibility* child = it.get();
     if (child->HasState(ax::mojom::State::kFocusable) &&
         child->GetRole() != ax::mojom::Role::kMenuListOption)
       return true;
@@ -1601,9 +1603,8 @@ bool BrowserAccessibilityAndroid::HasCharacterLocations() const {
   if (GetRole() == ax::mojom::Role::kStaticText)
     return true;
 
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
-    BrowserAccessibility* child = InternalGetChild(i);
-    if (static_cast<BrowserAccessibilityAndroid*>(child)
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    if (static_cast<BrowserAccessibilityAndroid*>(it.get())
             ->HasCharacterLocations())
       return true;
   }
@@ -1614,9 +1615,8 @@ bool BrowserAccessibilityAndroid::HasImage() const {
   if (ui::IsImage(GetRole()))
     return true;
 
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
-    BrowserAccessibility* child = InternalGetChild(i);
-    if (static_cast<BrowserAccessibilityAndroid*>(child)->HasImage())
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    if (static_cast<BrowserAccessibilityAndroid*>(it.get())->HasImage())
       return true;
   }
   return false;
@@ -1625,9 +1625,8 @@ bool BrowserAccessibilityAndroid::HasImage() const {
 bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
-    BrowserAccessibility* child = InternalGetChild(i);
-    if (!child->IsTextOnlyObject())
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    if (!it->IsTextOnlyObject())
       return false;
   }
   return true;
@@ -1636,8 +1635,8 @@ bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
 bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32_t i = 0; i < InternalChildCount(); i++) {
-    BrowserAccessibility* child = InternalGetChild(i);
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    BrowserAccessibility* child = it.get();
     if (child->GetRole() != ax::mojom::Role::kStaticText &&
         !ui::IsImage(child->GetRole())) {
       return false;
@@ -1688,8 +1687,9 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
 int BrowserAccessibilityAndroid::CountChildrenWithRole(
     ax::mojom::Role role) const {
   int count = 0;
-  for (uint32_t i = 0; i < PlatformChildCount(); i++) {
-    if (PlatformGetChild(i)->GetRole() == role)
+  for (PlatformChildIterator it = PlatformChildrenBegin();
+       it != PlatformChildrenEnd(); ++it) {
+    if (it->GetRole() == role)
       count++;
   }
   return count;

@@ -94,6 +94,13 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       const base::FilePath& directory_path) override;
 
+  // Same as CreateFileEntryFromPath, except informs the permission context that
+  // the returned entry should be writable, because this entry was the result of
+  // a "save" operation.
+  blink::mojom::NativeFileSystemEntryPtr CreateWritableFileEntryFromPath(
+      const BindingContext& binding_context,
+      const base::FilePath& file_path);
+
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
   blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
@@ -184,6 +191,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   FileSystemURLAndFSHandle CreateFileSystemURLFromPath(
       const url::Origin& origin,
       const base::FilePath& path);
+
+  blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPathImpl(
+      const BindingContext& binding_context,
+      const base::FilePath& file_path,
+      NativeFileSystemPermissionContext::UserAction user_action);
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;

@@ -562,8 +562,10 @@ public class BottomSheet
         mTabModelSelector = activity.getTabModelSelector();
         mFullscreenManager = activity.getFullscreenManager();
 
+        int colorId = R.color.sheet_bg_color;
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
+        mToolbarHolder.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), colorId));
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
         mActivity = activity;
@@ -575,7 +577,7 @@ public class BottomSheet
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
         mBottomSheetContentContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.sheet_bg_color));
+                ApiCompatibilityUtils.getColor(getResources(), colorId));
 
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
@@ -996,8 +998,6 @@ public class BottomSheet
             TabBrowserControlsState.update(getActiveTab(), BrowserControlsState.SHOWN, false);
         }
 
-        mBottomSheetContentContainer.setVisibility(View.VISIBLE);
-
         // Browser controls should stay visible until the sheet is closed.
         mPersistentControlsToken =
                 mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
@@ -1013,7 +1013,6 @@ public class BottomSheet
      */
     private void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsSheetOpen) return;
-        mBottomSheetContentContainer.setVisibility(View.INVISIBLE);
         mIsSheetOpen = false;
 
         // Update the browser controls since they are permanently shown while the sheet is open.

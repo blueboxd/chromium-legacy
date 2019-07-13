@@ -334,18 +334,16 @@ int SSLConnectJob::DoSSLConnect() {
   // Set the timeout to just the time allowed for the SSL handshake.
   ResetTimer(kSSLHandshakeTimeout);
 
-  // If the handle has a fresh socket, get its connect start and DNS times.
-  const LoadTimingInfo::ConnectTiming* socket_connect_timing = nullptr;
-  socket_connect_timing = &nested_connect_job_->connect_timing();
+  // Get the transport's connect start and DNS times.
+  const LoadTimingInfo::ConnectTiming& socket_connect_timing =
+      nested_connect_job_->connect_timing();
 
-  if (socket_connect_timing) {
-    // Overwriting |connect_start| serves two purposes - it adjusts timing so
-    // |connect_start| doesn't include dns times, and it adjusts the time so
-    // as not to include time spent waiting for an idle socket.
-    connect_timing_.connect_start = socket_connect_timing->connect_start;
-    connect_timing_.dns_start = socket_connect_timing->dns_start;
-    connect_timing_.dns_end = socket_connect_timing->dns_end;
-  }
+  // Overwriting |connect_start| serves two purposes - it adjusts timing so
+  // |connect_start| doesn't include dns times, and it adjusts the time so
+  // as not to include time spent waiting for an idle socket.
+  connect_timing_.connect_start = socket_connect_timing.connect_start;
+  connect_timing_.dns_start = socket_connect_timing.dns_start;
+  connect_timing_.dns_end = socket_connect_timing.dns_end;
 
   ssl_negotiation_started_ = true;
   connect_timing_.ssl_start = base::TimeTicks::Now();

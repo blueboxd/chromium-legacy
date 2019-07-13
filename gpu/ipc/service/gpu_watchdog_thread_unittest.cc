@@ -104,4 +104,46 @@ TEST_F(GpuWatchdogTest, GpuInitializationAndRunningTasks) {
   EXPECT_FALSE(result);
 }
 
+// GPU Hang when running a task
+TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
+  // Report gpu init complete
+  watchdog_thread_->OnInitComplete();
+
+  // Start running a GPU task. This long task takes 3000 milliseconds to finish.
+  main_loop.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+                                      base::TimeDelta::FromMilliseconds(1000)));
+
+  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // This GPU task takes too long. A GPU hang should be detected.
+  bool result = watchdog_thread_->IsGpuHangDetected();
+  EXPECT_TRUE(result);
+}
+
+TEST_F(GpuWatchdogTest, ChromeInBackground) {
+  // Chrome starts in the background.
+  watchdog_thread_->OnBackgrounded();
+
+  // Gpu init (2000 ms) takes longer than timeout (1000 ms).
+  SimpleTask(kGpuWatchdogTimeout + base::TimeDelta::FromMilliseconds(1000));
+
+  // Report GPU init complete.
+  watchdog_thread_->OnInitComplete();
+
+  // Run a task that takes longer (3000 milliseconds) than timeout.
+  main_loop.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+                                      base::TimeDelta::FromMilliseconds(1000)));
+  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // The gpu might be slow when running in the background. This is ok.
+  bool result = watchdog_thread_->IsGpuHangDetected();
+  EXPECT_FALSE(result);
+}
+
 }  // namespace gpu

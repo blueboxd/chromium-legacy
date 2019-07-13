@@ -424,7 +424,7 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
   int color_table_length = 0;
 
   // For more information on BITMAPINFOHEADER and biBitCount definition,
-  // see https://docs.microsoft.com/en-us/previous-versions//dd183376(v=vs.85)
+  // see https://docs.microsoft.com/en-us/windows/win32/wmdm/-bitmapinfoheader
   switch (bitmap->bmiHeader.biBitCount) {
     case 1:
     case 4:
@@ -647,7 +647,8 @@ void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
 
   // ::CreateDIBSection allocates memory for us to copy our bitmap into.
   // Unfortunately, we can't write the created bitmap to the clipboard,
-  // (see http://msdn2.microsoft.com/en-us/library/ms532292.aspx)
+  // (see
+  // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createdibsection)
   void* bits;
   HBITMAP source_hbitmap =
       ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, &bits, NULL, 0);

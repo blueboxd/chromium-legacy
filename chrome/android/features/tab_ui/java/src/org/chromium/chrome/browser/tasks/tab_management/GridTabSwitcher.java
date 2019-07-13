@@ -8,12 +8,32 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * Interface for the Grid Tab Switcher.
  */
 public interface GridTabSwitcher {
+    /**
+     * Defines an interface to pass out tab selecting event.
+     */
+    interface OnTabSelectingListener {
+        /**
+         * Called when a tab is getting selected. Typically when exiting the overview mode.
+         * @param time  The current time of the app in ms.
+         * @param tabId The ID of selected {@link Tab}.
+         * @see Layout#onTabSelecting(long, int)
+         */
+        void onTabSelecting(long time, int tabId);
+    }
+
+    /**
+     * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
+     * @param listener The {@link OnTabSelectingListener} to use.
+     */
+    void setOnTabSelectingListener(OnTabSelectingListener listener);
+
     // TODO(960196): Remove the following interfaces when the associated bug is resolved.
     /**
      * An observer that is notified when the GridTabSwitcher view state changes.

@@ -356,20 +356,18 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
   if (!web_contents())
     return;
 
-  // The |dialog_manager| might temporarily be unavailable while te tab is being
+  // The |dialog_manager| might temporarily be unavailable while the tab is being
   // dragged from one browser window to the other.
   auto* dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents());
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          constrained_window::GetTopLevelWebContents(web_contents()));
   if (!dialog_manager)
     return;
 
   // Update the dialog size and position, as the preferred size of the sheet
   // might have changed.
   constrained_window::UpdateWebContentsModalDialogPosition(
-      GetWidget(),
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents())
-          ->delegate()
-          ->GetWebContentsModalDialogHost());
+      GetWidget(), dialog_manager->delegate()->GetWebContentsModalDialogHost());
 
   // Reset focus to the highest priority control on the new/updated sheet.
   if (GetInitiallyFocusedView())

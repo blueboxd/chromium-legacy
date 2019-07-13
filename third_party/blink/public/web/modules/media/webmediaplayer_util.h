@@ -49,14 +49,6 @@ BLINK_MODULES_EXPORT void ReportPipelineError(
     media::PipelineStatus error,
     media::MediaLog* media_log);
 
-// TODO(ddorwin): Move this function to an EME-specific file.
-// We may also want to move the next one and pass Blink types to WMPI.
-BLINK_MODULES_EXPORT media::EmeInitDataType ConvertToEmeInitDataType(
-    WebEncryptedMediaInitDataType init_data_type);
-
-BLINK_MODULES_EXPORT WebEncryptedMediaInitDataType
-ConvertToWebInitDataType(media::EmeInitDataType init_data_type);
-
 // Wraps a WebSetSinkIdCompleteCallback into a
 // media::OutputDeviceStatusCB and binds it to the current thread
 BLINK_MODULES_EXPORT media::OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(

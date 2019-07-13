@@ -199,7 +199,7 @@ Other options:
       return 2
 
     xmb_path = args[0]
-    res_tree = grd_reader.Parse(opts.input, debug=opts.extra_verbose)
+    res_tree = grd_reader.Parse(opts.input, debug=opts.extra_verbose, defines=self.defines)
     res_tree.SetOutputLanguage('en')
     res_tree.SetDefines(self.defines)
     res_tree.OnlyTheseTranslations([])

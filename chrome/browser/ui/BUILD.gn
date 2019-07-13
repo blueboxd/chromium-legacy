@@ -966,8 +966,6 @@ jumbo_split_static_library("ui") {
       "media_router/media_cast_mode.h",
       "media_router/media_router_file_dialog.cc",
       "media_router/media_router_file_dialog.h",
-      "media_router/media_router_ui_base.cc",
-      "media_router/media_router_ui_base.h",
       "media_router/media_router_ui_helper.cc",
       "media_router/media_router_ui_helper.h",
       "media_router/media_router_ui_service.cc",

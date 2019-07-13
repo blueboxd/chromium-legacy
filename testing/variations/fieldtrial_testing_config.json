@@ -5096,6 +5096,51 @@
             ]
         }
     ],
+    "TabGroupsQuicklyComparePages": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IPH_TabGroupsQuicklyComparePages"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabGroupsTapToSeeAnotherTab": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IPH_TabGroupsTapToSeeAnotherTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabGroupsYourTabsTogether": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IPH_TabGroupsYourTabsTogether"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabHoverCards": [
         {
             "platforms": [

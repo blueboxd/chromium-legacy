@@ -162,6 +162,9 @@ enum class PlayPromiseRejectReason {
   kCount,
 };
 
+static const base::TimeDelta kStalledNotificationInterval =
+    base::TimeDelta::FromSeconds(3);
+
 // Limits the range of media playback rate.
 const double kMinRate = 0.0625;
 const double kMaxRate = 16.0;
@@ -478,7 +481,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       ready_state_maximum_(kHaveNothing),
       volume_(1.0f),
       last_seek_time_(0),
-      previous_progress_time_(std::numeric_limits<double>::max()),
       duration_(std::numeric_limits<double>::quiet_NaN()),
       last_time_update_event_media_time_(
           std::numeric_limits<double>::quiet_NaN()),
@@ -1502,7 +1504,7 @@ void HTMLMediaElement::StartProgressEventTimer() {
   if (progress_event_timer_.IsActive())
     return;
 
-  previous_progress_time_ = WTF::CurrentTime();
+  previous_progress_time_ = base::ElapsedTimer();
   // 350ms is not magic, it is in the spec!
   progress_event_timer_.StartRepeating(base::TimeDelta::FromMilliseconds(350),
                                        FROM_HERE);
@@ -1910,16 +1912,18 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
   if (MediaShouldBeOpaque())
     return;
 
-  double time = WTF::CurrentTime();
-  double timedelta = time - previous_progress_time_;
+  DCHECK(previous_progress_time_);
 
   if (GetWebMediaPlayer() && GetWebMediaPlayer()->DidLoadingProgress()) {
     ScheduleEvent(event_type_names::kProgress);
-    previous_progress_time_ = time;
+    previous_progress_time_ = base::ElapsedTimer();
     sent_stalled_event_ = false;
     if (GetLayoutObject())
       GetLayoutObject()->UpdateFromElement();
-  } else if (!media_source_ && timedelta > 3.0 && !sent_stalled_event_) {
+  } else if (!media_source_ &&
+             previous_progress_time_->Elapsed() >
+                 kStalledNotificationInterval &&
+             !sent_stalled_event_) {
     // Note the !media_source_ condition above. The 'stalled' event is not
     // fired when using MSE. MSE's resource is considered 'local' (we don't
     // manage the donwload - the app does), so the HTML5 spec text around
@@ -2669,7 +2673,7 @@ void HTMLMediaElement::StartPlaybackProgressTimer() {
   if (playback_progress_timer_.IsActive())
     return;
 
-  previous_progress_time_ = WTF::CurrentTime();
+  previous_progress_time_ = base::ElapsedTimer();
   playback_progress_timer_.StartRepeating(kMaxTimeupdateEventFrequency,
                                           FROM_HERE);
 }

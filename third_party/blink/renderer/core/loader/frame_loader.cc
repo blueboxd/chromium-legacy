@@ -917,26 +917,30 @@ void FrameLoader::CommitNavigation(
   DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
       frame_, navigation_type, std::move(navigation_params),
       std::move(extra_data));
-  if (history_item)
-    provisional_document_loader->SetItemForHistoryNavigation(history_item);
-  if (is_javascript_url)
-    provisional_document_loader->SetLoadingJavaScriptUrl();
 
-  progress_tracker_->ProgressStarted();
-  provisional_document_loader_ = provisional_document_loader;
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   {
-    FrameNavigationDisabler navigation_disabler(*frame_);
-    Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+    base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
+    if (history_item)
+      provisional_document_loader->SetItemForHistoryNavigation(history_item);
+    if (is_javascript_url)
+      provisional_document_loader->SetLoadingJavaScriptUrl();
+
+    progress_tracker_->ProgressStarted();
+    provisional_document_loader_ = provisional_document_loader;
+    frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+    {
+      FrameNavigationDisabler navigation_disabler(*frame_);
+      Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+    }
+    probe::DidStartProvisionalLoad(frame_);
+    virtual_time_pauser_.PauseVirtualTime();
+
+    provisional_document_loader_->StartLoading();
+    WillCommitNavigation();
+
+    if (!DetachDocument())
+      return;
   }
-  probe::DidStartProvisionalLoad(frame_);
-  virtual_time_pauser_.PauseVirtualTime();
-
-  provisional_document_loader_->StartLoading();
-  WillCommitNavigation();
-
-  if (!DetachDocument())
-    return;
 
   CommitDocumentLoader(provisional_document_loader_.Release());
 
@@ -1209,6 +1213,7 @@ void FrameLoader::Detach() {
     DetachDocumentLoader(provisional_document_loader_);
   }
   ClearClientNavigation();
+  committing_navigation_ = false;
   DidFinishNavigation();
 
   if (progress_tracker_) {

@@ -190,7 +190,7 @@ class CORE_EXPORT FrameLoader final {
   void RestoreScrollPositionAndViewState();
 
   bool HasProvisionalNavigation() const {
-    return client_navigation_.get() || provisional_document_loader_.Get();
+    return committing_navigation_ || client_navigation_.get();
   }
 
   bool MaybeRenderFallbackContent();
@@ -285,6 +285,7 @@ class CORE_EXPORT FrameLoader final {
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;
+  bool committing_navigation_ = false;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
 

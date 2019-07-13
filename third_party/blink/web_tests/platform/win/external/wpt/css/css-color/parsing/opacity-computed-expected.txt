@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Property opacity value '1' computes to '1'
+PASS Property opacity value '0.5' computes to '0.5'
+PASS Property opacity value '0' computes to '0'
+PASS Property opacity value '-2' computes to '0'
+PASS Property opacity value '3' computes to '1'
+FAIL Property opacity value '-100%' computes to '0' assert_equals: expected "0" but got "1"
+FAIL Property opacity value '50%' computes to '0.5' assert_equals: expected "0.5" but got "1"
+PASS Property opacity value '300%' computes to '1'
+Harness: the test ran to completion.
+

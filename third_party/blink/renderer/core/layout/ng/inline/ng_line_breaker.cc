@@ -636,39 +636,58 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
     options |= ShapingLineBreaker::kNoResultIfOverflow;
 
-  ShapingLineBreaker::Result result;
-  scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
-      item_result->start_offset, available_width.ClampNegativeToZero(), options,
-      &result);
+#if DCHECK_IS_ON()
+  unsigned try_count = 0;
+#endif
+  LayoutUnit inline_size;
+  while (true) {
+#if DCHECK_IS_ON()
+    ++try_count;
+    DCHECK_LE(try_count, 2u);
+#endif
+    ShapingLineBreaker::Result result;
+    scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
+        item_result->start_offset, available_width.ClampNegativeToZero(),
+        options, &result);
 
-  // If this item overflows and 'break-word' is set, this line will be
-  // rewinded. Making this item long enough to overflow is enough.
-  if (!shape_result) {
-    DCHECK(options & ShapingLineBreaker::kNoResultIfOverflow);
-    item_result->inline_size = available_width + 1;
-    item_result->end_offset = item.EndOffset();
-    return kOverflow;
+    // If this item overflows and 'break-word' is set, this line will be
+    // rewinded. Making this item long enough to overflow is enough.
+    if (!shape_result) {
+      DCHECK(options & ShapingLineBreaker::kNoResultIfOverflow);
+      item_result->inline_size = available_width + 1;
+      item_result->end_offset = item.EndOffset();
+      return kOverflow;
+    }
+    DCHECK_EQ(shape_result->NumCharacters(),
+              result.break_offset - item_result->start_offset);
+    // It is critical to move the offset forward, or NGLineBreaker may keep
+    // adding NGInlineItemResult until all the memory is consumed.
+    CHECK_GT(result.break_offset, item_result->start_offset);
+
+    inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
+    item_result->inline_size = inline_size;
+    if (UNLIKELY(result.is_hyphenated)) {
+      const WritingMode writing_mode = constraint_space_.GetWritingMode();
+      scoped_refptr<const NGPhysicalTextFragment> hyphen_fragment =
+          CreateHyphenFragment(node_, writing_mode, item);
+      LayoutUnit space_for_hyphen = available_width - inline_size;
+      LayoutUnit hyphen_inline_size = IsHorizontalWritingMode(writing_mode)
+                                          ? hyphen_fragment->Size().width
+                                          : hyphen_fragment->Size().height;
+      // If the hyphen overflows, retry with the reduced available width.
+      if (space_for_hyphen >= 0 && hyphen_inline_size > space_for_hyphen) {
+        available_width -= hyphen_inline_size;
+        continue;
+      }
+      inline_size += SetLineEndFragment(std::move(hyphen_fragment), line_info);
+      item_result->text_end_effect = NGTextEndEffect::kHyphen;
+    }
+    item_result->inline_size =
+        shape_result->SnappedWidth().ClampNegativeToZero();
+    item_result->end_offset = result.break_offset;
+    item_result->shape_result = std::move(shape_result);
+    break;
   }
-  DCHECK_EQ(shape_result->NumCharacters(),
-            result.break_offset - item_result->start_offset);
-  // It is critical to move the offset forward, or NGLineBreaker may keep adding
-  // NGInlineItemResult until all the memory is consumed.
-  CHECK_GT(result.break_offset, item_result->start_offset);
-
-  LayoutUnit inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
-  item_result->inline_size = inline_size;
-  if (result.is_hyphenated) {
-    inline_size += SetLineEndFragment(
-        CreateHyphenFragment(node_, constraint_space_.GetWritingMode(), item),
-        line_info);
-
-    // TODO(kojii): Implement when adding a hyphen caused overflow.
-    // crbug.com/714962: Should be removed when switched to NGPaint.
-    item_result->text_end_effect = NGTextEndEffect::kHyphen;
-  }
-  item_result->inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
-  item_result->end_offset = result.break_offset;
-  item_result->shape_result = std::move(shape_result);
 
   // * If width <= available_width:
   //   * If offset < item.EndOffset(): the break opportunity to fit is found.

@@ -481,6 +481,10 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     LayoutUnit content_size,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
+  LayoutUnit min = ResolveMinBlockLength(
+      constraint_space, style, border_padding, style.LogicalMinHeight(),
+      content_size, LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
   const Length& logical_height = style.LogicalHeight();
   // Scrollable percentage-sized children of table cells, in the table
   // "measure" phase contribute nothing to the row height measurement.
@@ -499,7 +503,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
       (style.OverflowY() == EOverflow::kAuto ||
        style.OverflowY() == EOverflow::kScroll) &&
       constraint_space.IsInRestrictedBlockSizeTableCell())
-    return border_padding.BlockSum();
+    return min;
 
   LayoutUnit extent = ResolveMainBlockLength(
       constraint_space, style, border_padding, logical_height, content_size,
@@ -512,10 +516,6 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
 
   LayoutUnit max = ResolveMaxBlockLength(
       constraint_space, style, border_padding, style.LogicalMaxHeight(),
-      content_size, LengthResolvePhase::kLayout,
-      opt_percentage_resolution_block_size_for_min_max);
-  LayoutUnit min = ResolveMinBlockLength(
-      constraint_space, style, border_padding, style.LogicalMinHeight(),
       content_size, LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
 

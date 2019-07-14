@@ -1140,7 +1140,7 @@ int LayoutTableSection::DistributeExtraLogicalHeightToRows(
   return extra_logical_height - remaining_extra_logical_height;
 }
 
-bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
+static bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
   if (cell.StyleRef().LogicalHeight().IsFixed())
     return true;
   LayoutBlock* cb = cell.ContainingBlock();
@@ -1153,6 +1153,9 @@ static bool ShouldFlexCellChild(const LayoutTableCell& cell,
                                 LayoutObject* cell_descendant) {
   if (!CellHasExplicitlySpecifiedHeight(cell))
     return false;
+  // TODO(dgrogan): Delete ShouldFlexCellChild. It's only called when
+  // CellHasExplicitlySpecifiedHeight is false.
+  NOTREACHED() << "This is dead code?";
   if (cell_descendant->StyleRef().OverflowY() == EOverflow::kVisible ||
       cell_descendant->StyleRef().OverflowY() == EOverflow::kHidden)
     return true;
